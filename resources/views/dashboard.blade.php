@@ -262,7 +262,7 @@
                     <th>Supplier</th>
                     <th>Donor Name</th>
                     <th>S. Status</th>
-                    <th>Folio</th>
+                    <th>Avail. Qty</th>
                     <th>Qty (Var)</th>
                     <th>Type</th>
                     <th>Bal.</th>
@@ -293,7 +293,7 @@
                             {{ $supStatus }}
                         </span>
                     </td>
-                    <td data-label="Folio"><code>{{ $transaction->folio }}</code></td>
+                    <td data-label="Avail. Qty" style="font-weight: 600;">{{ $transaction->qty ?? '0' }}</td>
                     <td data-label="Qty/Variance" style="font-weight: 700; color: {{ is_numeric($transaction->variance) && (float)$transaction->variance > 0 ? 'var(--secondary)' : (is_numeric($transaction->variance) && (float)$transaction->variance < 0 ? 'var(--danger)' : 'inherit') }}">
                         {{ is_numeric($transaction->variance) && (float)$transaction->variance > 0 ? '+' : '' }}{{ $transaction->variance }}
                     </td>
@@ -647,6 +647,7 @@
                     folio: $(this).find('.row-folio').val(),
                     ledge_balance: $(this).find('.row-ledge-balance').val() || '0',
                     stock_balance: $(this).find('.row-stock-balance').val() || '0',
+                    qty: $(this).find('.row-qty').val() || '',
                     variance: $(this).find('.row-variance').val() || '0',
                     remarks: $(this).find('.row-remarks').val() || ''
                 });
@@ -793,6 +794,10 @@
                             <div class="form-group">
                                 <label>Stock Balance</label>
                                 <input type="text" class="row-stock-balance" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Available Qty</label>
+                                <input type="text" class="row-qty" placeholder="0" style="border-color: var(--primary-light);">
                             </div>
                             <div class="form-group">
                                 <label>Variance Status</label>

@@ -20,6 +20,7 @@ class InventoryController extends Controller
             'items.*.folio' => 'required|string',
             'items.*.ledge_balance' => 'required|string',
             'items.*.stock_balance' => 'required|string',
+            'items.*.qty' => 'nullable|string',
             'items.*.variance' => 'required|string',
             'items.*.remarks' => 'nullable|string',
         ]);

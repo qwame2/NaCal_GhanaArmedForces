@@ -64,8 +64,8 @@
             </div>
             <div style="display: grid; gap: 1.25rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Supplier Name</span>
-                    <span style="color: var(--text-main); font-weight: 700;">{{ $batch->supplier_name }}</span>
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Logistics Source</span>
+                    <span style="color: var(--text-main); font-weight: 700;">{{ trim(preg_replace('/\[.*?\]/', '', $batch->supplier_name)) }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Total Line Items</span>
@@ -89,7 +89,7 @@
                 <thead>
                     <tr style="background: rgba(0,0,0,0.02); text-align: left;">
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Description</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Folio</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Avail. Qty</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Qty Received</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Record Status</th>
@@ -102,7 +102,7 @@
                         <td style="padding: 1.25rem 1.5rem;">
                             <div style="font-weight: 700; color: var(--text-main);">{{ $item->description }}</div>
                         </td>
-                        <td style="padding: 1.25rem 1.5rem; font-family: monospace; color: var(--text-muted);">{{ $item->folio }}</td>
+                        <td style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ $item->qty ?? '0' }}</td>
                         <td style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.75rem; color: var(--text-muted);">{{ $ledgeMap[$batch->ledge_category] ?? $batch->ledge_category }}</span>
                         </td>

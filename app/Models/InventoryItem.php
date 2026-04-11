@@ -15,6 +15,7 @@ class InventoryItem extends Model
         'folio',
         'ledge_balance',
         'stock_balance',
+        'qty',
         'variance',
         'remarks'
     ];

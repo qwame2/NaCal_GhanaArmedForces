@@ -138,7 +138,7 @@
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Supplier</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Donor</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Status</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Folio</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Avail. Qty</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Ledge</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
@@ -177,7 +177,7 @@
                                 {{ $status }}
                             </span>
                         </td>
-                        <td data-label="Folio" style="padding: 1.25rem 1.5rem; font-family: monospace; color: var(--text-muted);">{{ $item->folio }}</td>
+                        <td data-label="Avail. Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ $item->qty ?? '0' }}</td>
                         <td data-label="ledge_balance" style="padding: 1.25rem 1.5rem;">
                             <span style="font-weight: 800; color: {{ (float)$item->ledge_balance > 0 ? '#3b82f6' : '#1e40af' }};">
                                 {{ $item->ledge_balance }}
@@ -1127,7 +1127,7 @@
                         <div style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; ${!isLast ? 'border-bottom: 1px solid var(--border-color);' : ''}">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                 <div style="font-weight: 800; color: var(--text-main); font-size: 1rem;">${item.description}</div>
-                                <div style="font-family: monospace; background: var(--bg-card); padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; border: 1px solid var(--border-color);">${item.folio || 'N/A'}</div>
+                                <div data-label="Avail. Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">${item.qty || '0'}</div>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 0.75rem 1rem; border-radius: 12px;">
                                 <div style="display: flex; flex-direction: column;">
@@ -1152,7 +1152,7 @@
                     <div style="background: var(--bg-main); border-radius: 20px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 2rem;">
                         <div style="padding: 1.15rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
                             <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Logistics Source</span>
-                            <span style="color: var(--text-main); font-weight: 800;">${batch.supplier_name}</span>
+                            <span style="color: var(--text-main); font-weight: 800;">${batch.supplier_name.replace(/\[.*?\]/g, '').trim()}</span>
                         </div>
                         <div style="padding: 1.15rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
                             <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Transaction Date</span>
@@ -1381,7 +1381,7 @@
                 if (row) row.style.zIndex = '';
             }
         });
-        
+
         const menu = document.getElementById(`actionMenu-${batchId}`);
         if (menu) {
             menu.classList.toggle('active');
