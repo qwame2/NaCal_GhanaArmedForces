@@ -636,9 +636,14 @@
                 });
             });
 
-            const supplierName = $('#supplierNameSelect').val();
+            let finalSupplierName = $('#supplierNameSelect').val() || '';
             const supplierStatus = $('#supplierStatusSelect').val();
-            const mergedSupplier = supplierStatus ? `${supplierName} [${supplierStatus}]` : supplierName;
+
+            if (supplierStatus === 'Donor' && $('#donorNameInput').val().trim() !== '') {
+                finalSupplierName = $('#donorNameInput').val().trim();
+            }
+
+            const mergedSupplier = supplierStatus ? `${finalSupplierName} [${supplierStatus}]` : finalSupplierName;
 
             const payload = {
                 _token: '{{ csrf_token() }}',
@@ -843,6 +848,15 @@
             dropdownParent: $('#newEntryModal')
         });
 
+        // Toggle Donor Name Input
+        $('#supplierStatusSelect').on('change', function() {
+            if ($(this).val() === 'Donor') {
+                $('#donorNameWrapper').slideDown(300);
+            } else {
+                $('#donorNameWrapper').slideUp(300);
+            }
+        });
+
         // Initialize Supplier Name Search/Type
         $('#supplierNameSelect').select2({
             placeholder: "Search or type new supplier...",
@@ -1028,6 +1042,10 @@
                                     <option value="Partial Delivery" data-icon="alert-circle" data-color="#f59e0b">Partial Delivery</option>
                                 </select>
                             </div>
+                        </div>
+                        <div id="donorNameWrapper" style="display: none; margin-top: 1rem;">
+                            <label>Donor's Name *</label>
+                            <input type="text" id="donorNameInput" placeholder="Enter the donor's full name..." style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit;">
                         </div>
                     </div>
                 </div>
