@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Content Security Policy: Essential for ApexCharts and Select2 functionality -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdn.jsdelivr.net https://code.jquery.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self';">
-    <title>NaCal | Advanced Inventory System</title>
+    <title>NACOC | Advanced Inventory System</title>
 
     <!-- CSS -->
     <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}">
@@ -34,11 +34,24 @@
             <i data-lucide="x" style="width: 20px; color: var(--text-main);"></i>
         </button>
         <div class="logo-container">
-            <div class="logo-icon">
-                <i data-lucide="shield-check" style="color: white; width: 24px;"></i>
+            <div class="logo-icon" style="background: transparent; box-shadow: none; perspective: 1000px;">
+                <img src="{{ asset('img/NACOC1.png') }}"
+                    alt="NACOC Logo"
+                    class="logo-3d"
+                    style="
+                 width: 48px;
+                 height: 48px;
+                 object-fit: contain;
+                 filter: drop-shadow(5px 10px 15px rgba(0,0,0,0.2));
+                 transform: rotateY(-15deg) rotateX(5deg) translateZ(10px);
+                 transition: transform 0.4s ease;
+                 transform-style: preserve-3d;
+             "
+                    onmouseover="this.style.transform='rotateY(0deg) rotateX(0deg) translateZ(20px) scale(1.1)'"
+                    onmouseout="this.style.transform='rotateY(-15deg) rotateX(5deg) translateZ(10px)'">
             </div>
             <div>
-                <h1 style="font-size: 1.75rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1;">NaCal</h1>
+                <h1 style="font-size: 1.75rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1;">NACOC</h1>
                 <div class="sidebar-branding-subtitle" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; opacity: 0.8;">Inventory Management System</div>
             </div>
         </div>
@@ -113,7 +126,7 @@
                 <div class="search-bar" style="position: relative;">
                     <i data-lucide="search" style="color: var(--text-muted); width: 18px;"></i>
                     <input type="text" id="global-search-input" placeholder="Search inventory, reports, transactions..." autocomplete="off">
-                    
+
                     <!-- Search Results Portal -->
                     <div id="global-search-results" style="display: none; position: absolute; top: calc(100% + 10px); left: 0; right: 0; background: var(--bg-card); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); border: 1px solid var(--border-color); z-index: 2000; overflow: hidden; max-height: 400px; overflow-y: auto;">
                     </div>
@@ -207,7 +220,7 @@
             if (globalSearchInput && searchResults) {
                 globalSearchInput.addEventListener('input', (e) => {
                     const query = e.target.value.trim();
-                    
+
                     if (query.length < 2) {
                         searchResults.style.display = 'none';
                         return;
@@ -227,7 +240,7 @@
                             })
                             .then(data => {
                                 if (data.length === 0) {
-                                                                    searchResults.innerHTML = `
+                                    searchResults.innerHTML = `
                                         <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
                                             <i data-lucide="search-x" style="width: 24px; margin-bottom: 0.5rem; opacity: 0.5;"></i>
                                             <p style="font-size: 0.85rem; font-weight: 600;">No matches found for "${query}"</p>

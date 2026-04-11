@@ -80,6 +80,11 @@ $dashboardLogic = function () {
         return is_numeric($item->variance) ? (float)$item->variance : 0;
     });
 
+    // Low Stock Alerts (Stock < 10)
+    $lowStockCount = \App\Models\InventoryItem::get()->filter(function ($item) {
+        return is_numeric($item->stock_balance) && (float)$item->stock_balance < 10;
+    })->count();
+
     // Distribution Data (Donut Chart)
     $ledgeMap = [
         'A' => 'Stationary',
@@ -178,6 +183,7 @@ $dashboardLogic = function () {
         'totalInventory',
         'trendValue',
         'totalVariance',
+        'lowStockCount',
         'dailyIssuance',
         'stockValue',
         'expiredCount',

@@ -158,6 +158,20 @@
                 </div>
             </div>
         </div>
+
+        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #f97316; animation-delay: 0.5s;">
+            <div class="stat-icon" style="background: rgba(249, 115, 22, 0.15); color: #f97316;">
+                <i data-lucide="alert-triangle"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Low Stock Alerts</span>
+                <span class="stat-value">{{ number_format($lowStockCount) }}</span>
+                <div class="stat-trend" style="color: {{ $lowStockCount > 0 ? '#f97316' : '#10b981' }};">
+                    <i data-lucide="{{ $lowStockCount > 0 ? 'bell' : 'check-circle' }}" style="width: 14px;"></i>
+                    {{ $lowStockCount > 0 ? 'Items below threshold' : 'Sufficient stock level' }}
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Charts Section -->
