@@ -159,20 +159,83 @@
             </div>
         </div>
 
-        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #f97316; animation-delay: 0.5s;">
-            <div class="stat-icon" style="background: rgba(249, 115, 22, 0.15); color: #f97316;">
+        @php
+            $isLedgeCritical = count($lowStockLedges) > 0;
+            $ledgeAlertMsg = '';
+            if (count($lowStockLedges) === 1) {
+                $ledgeAlertMsg = "Ledge {$lowStockLedges[0]['code']} ({$lowStockLedges[0]['name']}) is at {$lowStockLedges[0]['percentage']}%";
+            } elseif (count($lowStockLedges) > 1) {
+                $ledgeAlertMsg = count($lowStockLedges) . " Ledges are below 50%";
+            }
+        @endphp
+        <div class="stat-card glass-card {{ $isLedgeCritical ? 'alert-blink' : '' }}" 
+             style="border-top: 4px solid #ef4444; cursor: pointer; position: relative; overflow: visible;"
+             onclick="toggleLowStockPopover(event)">
+            
+            <div class="stat-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
                 <i data-lucide="alert-triangle"></i>
             </div>
             <div class="stat-info">
-                <span class="stat-label">Low Stock Alerts</span>
-                <span class="stat-value">{{ number_format($lowStockCount) }}</span>
-                <div class="stat-trend" style="color: {{ $lowStockCount > 0 ? '#f97316' : '#10b981' }};">
-                    <i data-lucide="{{ $lowStockCount > 0 ? 'bell' : 'check-circle' }}" style="width: 14px;"></i>
-                    {{ $lowStockCount > 0 ? 'Items below threshold' : 'Sufficient stock level' }}
+                <span class="stat-label">Low Stock Monitor</span>
+                <div class="stat-trend" style="color: {{ $isLedgeCritical ? '#ef4444' : '#10b981' }}; margin-top: 0.5rem;">
+                    <i data-lucide="{{ $isLedgeCritical ? 'bell' : 'check-circle' }}" style="width: 14px;"></i>
+                    {{ $isLedgeCritical ? $ledgeAlertMsg : 'No critical ledges detected' }}
                 </div>
+            </div>
+
+            <style>
+                .no-scrollbar::-webkit-scrollbar { display: none; }
+                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            </style>
+            <div id="lowStockPopover" class="low-stock-popover glass-card no-scrollbar" style="width: 340px; max-height: 280px; overflow-y: auto;">
+                <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; font-weight: 800; display: flex; justify-content: space-between;">
+                    <span>Category Monitor</span>
+                </h4>
+                
+                @if($isLedgeCritical)
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid rgba(239, 68, 68, 0.1); padding-bottom: 0.75rem;">
+                            <span style="font-size: 0.65rem; color: var(--danger); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Alerts: {{ count($lowStockLedges) }} Ledges</span>
+                        </div>
+                        
+                        @foreach($lowStockLedges as $l)
+                        @php
+                            $isCritical = $l['percentage'] <= 50;
+                            $statusLabel = $isCritical ? 'CRITICAL DEPLETION' : 'WATCHLIST';
+                            $statusColor = $isCritical ? '#ef4444' : '#f59e0b';
+                        @endphp
+                        <div class="popover-item" style="display: block; padding: 0.75rem 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.03);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                                <div>
+                                    <div style="font-weight: 800; color: var(--text-main); font-size: 0.9rem; line-height: 1.2;">Ledge {{ $l['code'] }}</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">{{ $l['name'] }}</div>
+                                </div>
+                                <span style="font-size: 0.55rem; font-weight: 900; color: white; background: {{ $statusColor }}; padding: 0.2rem 0.6rem; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">{{ $statusLabel }}</span>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="flex-grow: 1; height: 6px; background: var(--bg-main); border-radius: 10px; overflow: hidden; border: 1px solid rgba(0,0,0,0.02);">
+                                    <div style="width: {{ $l['percentage'] }}%; height: 100%; background: {{ $statusColor }}; box-shadow: 0 0 10px {{ $statusColor }}4d;"></div>
+                                </div>
+                                <span style="font-size: 0.8rem; font-weight: 900; color: {{ $statusColor }}; min-width: 35px; text-align: right;">{{ $l['percentage'] }}%</span>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div style="text-align: center; padding: 2.5rem 0; color: var(--text-muted);">
+                        <i data-lucide="shield-check" style="width: 32px; height: 32px; margin-bottom: 0.75rem; color: #10b981; opacity: 0.8;"></i>
+                        <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">All Ledges Healthy</p>
+                        <p style="font-size: 0.7rem;">Stock levels are currently safe.</p>
+                    </div>
+                @endif
+                
+                <div style="font-size: 0.65rem; color: var(--text-muted); text-align: center; margin-top: 1rem; font-style: italic; border-top: 1px solid rgba(0,0,0,0.02); padding-top: 0.75rem;">Tap anywhere else to close</div>
             </div>
         </div>
     </div>
+
+
 
     <!-- Charts Section -->
     <div class="charts-grid">
@@ -205,6 +268,8 @@
             </div>
         </div>
     </div>
+
+
 
     <!-- Recent Activity Table -->
     <div class="glass-card pop-in float-card" style="border-bottom: 4px solid var(--accent); animation-delay: 0.7s; overflow: visible;">
@@ -644,7 +709,6 @@
             $('.item-entry-row').each(function() {
                 items.push({
                     description: $(this).find('.item-select-dynamic').val(),
-                    folio: $(this).find('.row-folio').val(),
                     ledge_balance: $(this).find('.row-ledge-balance').val() || '0',
                     stock_balance: $(this).find('.row-stock-balance').val() || '0',
                     qty: $(this).find('.row-qty').val() || '',
@@ -782,10 +846,6 @@
                                     <option value=""></option>
                                     ${filteredItems.map(item => `<option value="${item.description}">${item.description}</option>`).join('')}
                                 </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Ledge Folio</label>
-                                <input type="text" class="row-folio" placeholder="e.g. 001-023">
                             </div>
                             <div class="form-group">
                                 <label>Ledge Balance</label>
@@ -960,7 +1020,6 @@
                                     const $row = $(this);
                                     
                                     $row.find('.item-select-dynamic').val(item.description).trigger('change');
-                                    $row.find('.row-folio').val(item.folio);
                                     $row.find('.row-ledge-balance').val(item.stock_balance).trigger('input');
                                     $row.find('.row-stock-balance').focus();
                                 });
@@ -1098,4 +1157,27 @@
         </form>
     </div>
 </div>
+@endpush
+
+@push('scripts')
+<script>
+    function toggleLowStockPopover(event) {
+        event.stopPropagation();
+        const popover = document.getElementById('lowStockPopover');
+        if (popover) {
+            popover.style.display = popover.style.display === 'block' ? 'none' : 'block';
+        }
+    }
+
+    // Close popover when clicking anywhere else
+    document.addEventListener('click', function(event) {
+        const popover = document.getElementById('lowStockPopover');
+        const card = event.target.closest('.stat-card');
+        if (popover && !card) {
+            popover.style.display = 'none';
+        }
+    });
+
+    // Existing scripts continue below or were here...
+</script>
 @endpush

@@ -12,7 +12,6 @@ class InventoryItem extends Model
     protected $fillable = [
         'batch_id',
         'description',
-        'folio',
         'ledge_balance',
         'stock_balance',
         'qty',

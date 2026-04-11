@@ -61,28 +61,28 @@
 
         <ul class="nav-menu">
             <li class="nav-item">
-                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') || request()->is('/') ? 'active' : '' }}">
+                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') || request()->is('/') ? 'active' : '' }}" data-tooltip="Dashboard View">
                     <i data-lucide="layout-grid"></i>
-                    Dashboard
+                    <span>Dashboard</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('receiveditems') }}" class="nav-link {{ request()->routeIs('receiveditems') ? 'active' : '' }}">
+                <a href="{{ route('receiveditems') }}" class="nav-link {{ request()->routeIs('receiveditems') ? 'active' : '' }}" data-tooltip="Received Items Log">
                     <i data-lucide="package-plus"></i>
-                    Received Items
+                    <span>Received Items</span>
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="#" class="nav-link" data-tooltip="Issue Items Out">
                     <i data-lucide="package-minus"></i>
-                    Issue Items
+                    <span>Issue Items</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="#" class="nav-link" data-tooltip="Global Inventory">
                     <i data-lucide="database"></i>
-                    Inventory
+                    <span>Inventory</span>
                 </a>
             </li>
         </ul>
@@ -90,16 +90,16 @@
         <div class="nav-section-title">Operations</div>
         <ul class="nav-menu">
             <li class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="#" class="nav-link" data-tooltip="Analytical Reports">
                     <i data-lucide="file-bar-chart"></i>
-                    Reports
+                    <span>Reports</span>
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="#" class="nav-link" data-tooltip="System Configuration">
                     <i data-lucide="settings"></i>
-                    System Settings
+                    <span>System Settings</span>
                 </a>
             </li>
         </ul>
@@ -123,6 +123,9 @@
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <button id="mobile-toggle" style="display: none; background: var(--bg-main); border: none; width: 44px; height: 44px; border-radius: 12px; align-items: center; justify-content: center; cursor: pointer;">
                     <i data-lucide="menu" style="width: 22px; color: var(--text-main);"></i>
+                </button>
+                <button id="sidebar-toggle" style="background: var(--bg-main); border: none; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);">
+                    <i data-lucide="panel-left-close" style="width: 20px; color: var(--text-main);"></i>
                 </button>
                 <div class="search-bar" style="position: relative;">
                     <i data-lucide="search" style="color: var(--text-muted); width: 18px;"></i>
@@ -192,11 +195,21 @@
                 });
             }
 
-            // Mobile Sidebar Toggle Logic
             const mobileToggle = document.getElementById('mobile-toggle');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
             const sidebarClose = document.getElementById('sidebar-close');
             const sidebar = document.querySelector('.sidebar');
+            const mainWrapper = document.querySelector('.main-wrapper');
             const overlay = document.getElementById('sidebar-overlay');
+
+            // Apply saved sidebar state
+            const isSidebarCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+            if (isSidebarCollapsed) {
+                sidebar.classList.add('collapsed');
+                mainWrapper.classList.add('expanded');
+                if (sidebarToggle) sidebarToggle.innerHTML = '<i data-lucide="panel-left-open" style="width: 20px; color: var(--text-main);"></i>';
+                lucide.createIcons();
+            }
 
             function toggleSidebar(show) {
                 if (show) {
@@ -207,6 +220,20 @@
                     sidebar.classList.remove('active');
                     overlay.style.display = 'none';
                 }
+            }
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', () => {
+                    const isNowCollapsed = sidebar.classList.toggle('collapsed');
+                    mainWrapper.classList.toggle('expanded');
+                    localStorage.setItem('sidebar-collapsed', isNowCollapsed);
+                    
+                    // Update Icon
+                    sidebarToggle.innerHTML = isNowCollapsed ? 
+                        '<i data-lucide="panel-left-open" style="width: 20px; color: var(--text-main);"></i>' : 
+                        '<i data-lucide="panel-left-close" style="width: 20px; color: var(--text-main);"></i>';
+                    lucide.createIcons();
+                });
             }
 
             if (mobileToggle) mobileToggle.addEventListener('click', () => toggleSidebar(true));

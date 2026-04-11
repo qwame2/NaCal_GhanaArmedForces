@@ -68,6 +68,12 @@ class ReceivedItemsController extends Controller
         $perPage = $request->input('per_page', 10);
         $receivedItems = $query->orderBy('inventory_batches.entry_date', 'desc')->paginate($perPage);
 
+        // Fetch aggregate totals for item status display in the table
+        $itemAggregates = InventoryItem::selectRaw('description, SUM(qty) as total_received_qty, SUM(stock_balance) as total_available, SUM(ledge_balance) as total_book')
+            ->groupBy('description')
+            ->get()
+            ->keyBy('description');
+
         // Statistics
         $totalReceived = InventoryBatch::count();
         $totalItemsCount = InventoryItem::count();
@@ -81,7 +87,8 @@ class ReceivedItemsController extends Controller
             'ledgeMap',
             'isSearching',
             'searchSum',
-            'searchQtySum'
+            'searchQtySum',
+            'itemAggregates'
         ));
     }
 

@@ -128,7 +128,7 @@
 
     <!-- Results Table -->
     <div id="resultsContainer" class="glass-card" style="overflow: visible; position: relative; border-radius: 20px;">
-        
+
         <!-- Dynamic Search Analytics Dashboard -->
         @if(isset($isSearching) && $isSearching && request('search'))
         <div style="background: var(--bg-card); border-radius: 20px 20px 0 0; border-bottom: 2px solid var(--primary); padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.05); z-index: 10;">
@@ -145,8 +145,8 @@
                 <div style="text-align: right;">
                     <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 800; margin-bottom: 0.25rem;">Total System Sum</div>
                     <div style="font-size: 2rem; font-weight: 900; color: var(--text-main); line-height: 1;">
-                        <span style="color: var(--primary);">{{ number_format((float)($searchQtySum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Qty</span> 
-                        <span style="color: rgba(0,0,0,0.1); margin: 0 0.5rem;">|</span> 
+                        <span style="color: var(--primary);">{{ number_format((float)($searchQtySum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Qty</span>
+                        <span style="color: rgba(0,0,0,0.1); margin: 0 0.5rem;">|</span>
                         <span>{{ number_format((float)($searchSum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Stock</span>
                     </div>
                 </div>
@@ -154,7 +154,7 @@
         </div>
         @endif
         <div class="table-scroll-wrapper">
-            <table class="activity-table" style="width: 100%; min-width: 800px; border-collapse: collapse;">
+            <table class="activity-table" style="width: 100%; min-width: 1200px; border-collapse: collapse;">
                 <thead>
                     <tr style="background: rgba(0,0,0,0.02); text-align: left;">
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Date</th>
@@ -167,12 +167,37 @@
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Ledge</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">System Health</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($receivedItems as $item)
-                    <tr class="activity-row" style="border-top: 1px solid var(--border-color);">
+                    @php
+                    $agg = $itemAggregates[$item->description] ?? null;
+                    $totalQty = $agg ? (float)$agg->total_received_qty : 0;
+                    $totalStock = $agg ? (float)$agg->total_available : 0;
+                    $totalLedge = $agg ? (float)$agg->total_book : 0;
+                    
+                    // Calculation: (Available Qty / Stock Balance) * 100
+                    $percentage = ($totalStock > 0) ? ($totalQty / $totalStock) * 100 : 0;
+                    
+                    $hStatus = 'IN STOCK';
+                    $hColor = '#10b981';
+                    
+                    // Status Override: IF stock_balance == 0 OR available_qty == 0
+                    if ($totalStock <= 0 || $totalQty <= 0) {
+                        $hStatus = 'OUT OF STOCK';
+                        $hColor = '#ef4444';
+                    } elseif ($percentage <= 50) {
+                        $hStatus = 'LOW STOCK';
+                        $hColor = '#ef4444';
+                    } elseif ($percentage <= 70) {
+                        $hStatus = 'WARNING';
+                        $hColor = '#f59e0b';
+                    }
+                        @endphp
+                        <tr class="activity-row" style="border-top: 1px solid var(--border-color);">
                         <td data-label="Date" style="padding: 1.25rem 1.5rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($item->entry_date)->format('M d, Y') }}</td>
                         <td data-label="Description" style="padding: 1.25rem 1.5rem;">
                             <div style="font-weight: 700; color: var(--text-main);">{{ $item->description }}</div>
@@ -214,6 +239,15 @@
                                 {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '+' : '' }}{{ $item->variance }}
                             </span>
                         </td>
+                        <td data-label="System Health" style="padding: 1.25rem 1.5rem;">
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-size: 0.6rem; font-weight: 900; color: white; background: {{ $hColor }}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; width: fit-content; text-transform: uppercase;">{{ $hStatus }}</span>
+                                    <span style="font-size: 0.75rem; font-weight: 800; color: {{ $hColor }};">{{ round($percentage) }}%</span>
+                                </div>
+                                <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-main);">{{ number_format($totalQty) }} <span style="font-size: 0.65rem; color: var(--text-muted);">Available</span></div>
+                            </div>
+                        </td>
 
                         <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right; display: flex; justify-content: flex-end;">
                             <div class="action-dropdown-wrapper">
@@ -231,36 +265,40 @@
                                         <i data-lucide="eye"></i>
                                         View Details
                                     </button>
+                                    <button onclick="performStockCheck('{{ addslashes($item->description) }}', {{ $totalQty }}, {{ $totalStock }}, '{{ $hStatus }}', '{{ round($percentage) }}%')" class="menu-item" style="color: var(--primary);">
+                                        <i data-lucide="shield-check"></i>
+                                        Stock Check
+                                    </button>
                                 </div>
                             </div>
                         </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="9" style="padding: 7rem 2rem; text-align: center;">
-                            <div style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
-                                <div style="background: var(--bg-main); width: 84px; height: 84px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); box-shadow: 0 10px 40px rgba(0,0,0,0.04); border: 1px solid var(--border-color);">
-                                    <i data-lucide="package-search" style="width: 38px; opacity: 0.6;"></i>
-                                </div>
-                                <div style="max-width: 450px; margin: 0 auto;">
-                                    <h4 style="font-size: 1.35rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.02em;">No Records Discovered</h4>
-                                    <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.6;">Your inventory ledger is currently empty or no items match your current search filters. Try broadening your criteria or record a new batch.</p>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="9" style="padding: 7rem 2rem; text-align: center;">
+                                <div style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
+                                    <div style="background: var(--bg-main); width: 84px; height: 84px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); box-shadow: 0 10px 40px rgba(0,0,0,0.04); border: 1px solid var(--border-color);">
+                                        <i data-lucide="package-search" style="width: 38px; opacity: 0.6;"></i>
+                                    </div>
+                                    <div style="max-width: 450px; margin: 0 auto;">
+                                        <h4 style="font-size: 1.35rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.02em;">No Records Discovered</h4>
+                                        <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.6;">Your inventory ledger is currently empty or no items match your current search filters. Try broadening your criteria or record a new batch.</p>
 
-                                    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                                        <a href="{{ route('receiveditems') }}" class="glass-card" style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-size: 0.9rem; color: var(--text-main); font-weight: 700; transition: all 0.3s; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem;">
-                                            <i data-lucide="refresh-ccw" style="width: 16px;"></i>
-                                            Reset Filters
-                                        </a>
-                                        <button onclick="window.location.href='/'" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px; border: none; font-size: 0.9rem; background: var(--primary); color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);">
-                                            <i data-lucide="plus-circle" style="width: 18px;"></i>
-                                            New Inventory Entry
-                                        </button>
+                                        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                                            <a href="{{ route('receiveditems') }}" class="glass-card" style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-size: 0.9rem; color: var(--text-main); font-weight: 700; transition: all 0.3s; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem;">
+                                                <i data-lucide="refresh-ccw" style="width: 16px;"></i>
+                                                Reset Filters
+                                            </a>
+                                            <button onclick="window.location.href='/'" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px; border: none; font-size: 0.9rem; background: var(--primary); color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);">
+                                                <i data-lucide="plus-circle" style="width: 18px;"></i>
+                                                New Inventory Entry
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
+                            </td>
+                        </tr>
+                        @endforelse
                 </tbody>
             </table>
         </div>
@@ -1419,6 +1457,21 @@
                 }
             }
         }
+    }
+
+    function performStockCheck(description, available, total, status, percentage) {
+        const type = status === 'IN STOCK' ? 'success' : (status === 'WARNING' ? 'info' : 'error');
+        const icon = status === 'IN STOCK' ? '✅' : (status === 'WARNING' ? '⚠️' : '🚨');
+        
+        showToast(
+            `Stock Health Audit: ${description}`,
+            `${icon} Currently ${status} (${percentage}). ${available} units available out of ${total} system capacity.`,
+            type,
+            6000
+        );
+        
+        // Close all menus after action
+        document.querySelectorAll('.action-menu.active').forEach(m => m.classList.remove('active'));
     }
 </script>
 @endsection

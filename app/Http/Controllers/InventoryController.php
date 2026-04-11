@@ -17,7 +17,6 @@ class InventoryController extends Controller
             'entry_date' => 'required',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
-            'items.*.folio' => 'required|string',
             'items.*.ledge_balance' => 'required|string',
             'items.*.stock_balance' => 'required|string',
             'items.*.qty' => 'nullable|string',
@@ -87,13 +86,12 @@ class InventoryController extends Controller
 
         // 2. Search in specific items
         $items = InventoryItem::where('description', 'LIKE', "%$query%")
-            ->orWhere('folio', 'LIKE', "%$query%")
             ->limit(5)
             ->get()
             ->map(function($item) {
                 return [
                     'title' => $item->description,
-                    'subtitle' => "Folio: {$item->folio} • Stock: {$item->stock_balance}",
+                    'subtitle' => "Stock: {$item->stock_balance}",
                     'url' => route('receiveditems', ['search' => $item->description]),
                     'type' => 'item',
                     'icon' => 'package'

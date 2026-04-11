@@ -80,12 +80,7 @@ $dashboardLogic = function () {
         return is_numeric($item->variance) ? (float)$item->variance : 0;
     });
 
-    // Low Stock Alerts (Stock < 10)
-    $lowStockCount = \App\Models\InventoryItem::get()->filter(function ($item) {
-        return is_numeric($item->stock_balance) && (float)$item->stock_balance < 10;
-    })->count();
-
-    // Distribution Data (Donut Chart)
+    // Ledge mapping for display and calculations
     $ledgeMap = [
         'A' => 'Stationary',
         'B' => 'Cleaning',
@@ -96,10 +91,49 @@ $dashboardLogic = function () {
         'J' => 'Equipment'
     ];
 
-    $distData = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+    // Low Stock Alerts (Stock < 10) - Grouped by Description to handle duplicates
+    $lowStockCount = \App\Models\InventoryItem::selectRaw('description, SUM(stock_balance) as total_stock')
+        ->groupBy('description')
+        ->havingRaw('SUM(stock_balance) < 10')
         ->get()
-        ->groupBy('ledge_category')
-        ->map(function ($items) {
+        ->count();
+
+    // 50% Threshold Monitoring for Ledge Categories
+    $thresholdLedges = ['A', 'B', 'C', 'D', 'E', 'G', 'J'];
+    $lowStockLedges = [];
+
+    $categoryStats = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+        ->whereIn('inventory_batches.ledge_category', $thresholdLedges)
+        ->get()
+        ->groupBy('ledge_category');
+
+    foreach ($categoryStats as $code => $items) {
+        $avail = $items->sum(fn($i) => is_numeric($i->qty) ? (float)$i->qty : 0);
+        $target = $items->sum(fn($i) => is_numeric($i->ledge_balance) ? (float)$i->ledge_balance : 0);
+        
+        if ($target > 0) {
+            $percentage = round(($avail / $target) * 100);
+            if ($percentage <= 50) {
+                $lowStockLedges[] = [
+                    'code' => $code,
+                    'name' => $ledgeMap[$code] ?? "Ledge $code",
+                    'percentage' => $percentage
+                ];
+            }
+        }
+    }
+
+    // Individual items below threshold for the alerts container (Grouped by Description)
+    $lowStockItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+        ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.stock_balance) as stock_balance, SUM(inventory_items.ledge_balance) as ledge_balance')
+        ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
+        ->havingRaw('SUM(inventory_items.stock_balance) < 10')
+        ->orderBy('stock_balance', 'asc')
+        ->limit(10)
+        ->get();
+
+    // Distribution Data (Donut Chart)
+    $distData = $categoryStats->map(function ($items) {
             return $items->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
         });
 
@@ -201,7 +235,9 @@ $dashboardLogic = function () {
         'dayReceived',
         'dayVariance',
         'recentTransactions',
-        'ledgeMap'
+        'ledgeMap',
+        'lowStockLedges',
+        'lowStockItems'
     ));
 };
 
