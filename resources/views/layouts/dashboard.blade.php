@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Content Security Policy: Essential for ApexCharts and Select2 functionality -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdn.jsdelivr.net https://code.jquery.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self';">
+    <link rel="icon" type="image/png" href="{{ asset('img/cropped_circle_image.png') }}">
     <title>NACOC | Advanced Inventory System</title>
 
     <!-- CSS -->
