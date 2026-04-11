@@ -246,6 +246,7 @@
                     <th>Product</th>
                     <th>Category</th>
                     <th>Supplier</th>
+                    <th>Donor Name</th>
                     <th>S. Status</th>
                     <th>Folio</th>
                     <th>Qty (Var)</th>
@@ -271,7 +272,8 @@
                         elseif ($supStatus === 'Full Delivery') $supColor = '#10b981';
                         elseif ($supStatus === 'Partial Delivery') $supColor = '#ef4444';
                     @endphp
-                    <td data-label="Supplier">{{ $cleanSup }}</td>
+                    <td data-label="Supplier" style="color: {{ $supStatus === 'Donor Action' ? 'var(--text-muted)' : 'inherit' }}">{{ $supStatus === 'Donor Action' ? '-' : $cleanSup }}</td>
+                    <td data-label="Donor Name" style="color: var(--text-main); font-weight: {{ $supStatus === 'Donor Action' ? '700' : '400' }};">{{ $supStatus === 'Donor Action' ? $cleanSup : '-' }}</td>
                     <td data-label="Supp. Status">
                         <span style="font-size: 0.65rem; font-weight: 800; color: white; background: {{ $supColor }}; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase;">
                             {{ $supStatus }}

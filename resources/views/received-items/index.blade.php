@@ -136,6 +136,7 @@
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Description</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Supplier</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Donor</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Status</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Folio</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Ledge</th>
@@ -169,7 +170,8 @@
                         elseif ($status === 'Full Delivery') $statusColor = '#10b981';
                         elseif ($status === 'Partial Delivery') $statusColor = '#ef4444';
                         @endphp
-                        <td data-label="Supplier" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 500;">{{ $cleanSupplier }}</td>
+                        <td data-label="Supplier" style="padding: 1.25rem 1.5rem; color: {{ $status === 'Donor Action' ? 'var(--text-muted)' : 'var(--text-main)' }}; font-weight: 500;">{{ $status === 'Donor Action' ? '-' : $cleanSupplier }}</td>
+                        <td data-label="Donor" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: {{ $status === 'Donor Action' ? '700' : '400' }};">{{ $status === 'Donor Action' ? $cleanSupplier : '-' }}</td>
                         <td data-label="Status" style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.7rem; font-weight: 800; color: white; background: {{ $statusColor }}; padding: 0.35rem 0.8rem; border-radius: 8px; text-transform: uppercase; box-shadow: 0 4px 10px {{ $statusColor }}30;">
                                 {{ $status }}
