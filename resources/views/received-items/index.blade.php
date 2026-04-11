@@ -128,6 +128,31 @@
 
     <!-- Results Table -->
     <div id="resultsContainer" class="glass-card" style="overflow: visible; position: relative; border-radius: 20px;">
+        
+        <!-- Dynamic Search Analytics Dashboard -->
+        @if(isset($isSearching) && $isSearching && request('search'))
+        <div style="background: var(--bg-card); border-radius: 20px 20px 0 0; border-bottom: 2px solid var(--primary); padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.05); z-index: 10;">
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <div style="width: 50px; height: 50px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="search" style="width: 24px; height: 24px;"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-main);">Search: <span style="color: var(--primary);">"{{ request('search') }}"</span></h3>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Found {{ $receivedItems->total() }} matching system records</p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 2rem; align-items: center;">
+                <div style="text-align: right;">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 800; margin-bottom: 0.25rem;">Total System Sum</div>
+                    <div style="font-size: 2rem; font-weight: 900; color: var(--text-main); line-height: 1;">
+                        <span style="color: var(--primary);">{{ number_format((float)($searchQtySum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Qty</span> 
+                        <span style="color: rgba(0,0,0,0.1); margin: 0 0.5rem;">|</span> 
+                        <span>{{ number_format((float)($searchSum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Stock</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
         <div class="table-scroll-wrapper">
             <table class="activity-table" style="width: 100%; min-width: 800px; border-collapse: collapse;">
                 <thead>

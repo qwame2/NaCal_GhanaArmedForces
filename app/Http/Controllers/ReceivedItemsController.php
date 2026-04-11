@@ -46,13 +46,23 @@ class ReceivedItemsController extends Controller
             $query->where('inventory_batches.ledge_category', $request->ledge_category);
         }
 
+        $isSearching = false;
+        $searchSum = 0;
+        $searchQtySum = 0;
+
         // Search by Product or Batch ID
         if ($request->has('search') && $request->search) {
+            $isSearching = true;
             $searchTerm = $request->search;
             $query->where(function($q) use ($searchTerm) {
                 $q->where('inventory_items.description', 'LIKE', '%' . $searchTerm . '%')
                   ->orWhere('inventory_items.batch_id', 'LIKE', '%' . $searchTerm . '%');
             });
+
+            // Calculate exact sum based on search term directly across inventory
+            $sumQuery = clone $query;
+            $searchSum = $sumQuery->sum('inventory_items.stock_balance');
+            $searchQtySum = $sumQuery->sum('inventory_items.qty');
         }
 
         $perPage = $request->input('per_page', 10);
@@ -68,7 +78,10 @@ class ReceivedItemsController extends Controller
             'totalReceived',
             'totalItemsCount',
             'recentReceived',
-            'ledgeMap'
+            'ledgeMap',
+            'isSearching',
+            'searchSum',
+            'searchQtySum'
         ));
     }
 
