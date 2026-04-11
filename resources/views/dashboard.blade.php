@@ -133,14 +133,14 @@
 
         <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #f59e0b; animation-delay: 0.3s;">
             <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
-                <i data-lucide="alert-circle"></i>
+                <i data-lucide="activity"></i>
             </div>
             <div class="stat-info">
-                <span class="stat-label">Low Stock Alerts</span>
-                <span class="stat-value">{{ number_format($lowStockCount) }}</span>
-                <div class="stat-trend" style="color: {{ $lowStockCount > 0 ? '#ef4444' : '#10b981' }};">
-                    <i data-lucide="{{ $lowStockCount > 0 ? 'alert-triangle' : 'check-circle' }}" style="width: 14px;"></i>
-                    {{ $lowStockCount > 0 ? 'Critical levels detected' : 'All stock levels healthy' }}
+                <span class="stat-label">Total Variance</span>
+                <span class="stat-value">{{ $totalVariance > 0 ? '+' : '' }}{{ number_format($totalVariance) }}</span>
+                <div class="stat-trend" style="color: {{ $totalVariance > 0 ? '#10b981' : ($totalVariance < 0 ? '#ef4444' : '#3b82f6') }};">
+                    <i data-lucide="{{ $totalVariance > 0 ? 'trending-up' : ($totalVariance < 0 ? 'trending-down' : 'minus') }}" style="width: 14px;"></i>
+                    {{ $totalVariance > 0 ? 'Net Surplus' : ($totalVariance < 0 ? 'Net Shortage' : 'Balanced') }}
                 </div>
             </div>
         </div>
@@ -166,6 +166,7 @@
             <div class="card-title">
                 <span>Stock Performance</span>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span id="btnDaily" style="font-size: 0.75rem; background: var(--bg-main); color: var(--text-main); padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; transition: var(--transition);">Daily</span>
                     <span id="btnWeekly" style="font-size: 0.75rem; background: var(--bg-main); color: var(--text-main); padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; transition: var(--transition);">Weekly</span>
                     <span id="btnMonthly" style="font-size: 0.75rem; background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; transition: var(--transition);">Monthly</span>
                 </div>
@@ -329,8 +330,8 @@
             name: 'Received',
             data: @json($receivedSeries)
         }, {
-            name: 'Issued',
-            data: @json($issuedSeries)
+            name: 'Net Variance',
+            data: @json($varianceSeries)
         }],
         chart: {
             type: 'area',
@@ -347,7 +348,7 @@
         theme: {
             mode: document.documentElement.getAttribute('data-theme') || 'light'
         },
-        colors: ['#6366f1', '#10b981'],
+        colors: ['#6366f1', '#ef4444'],
         fill: {
             type: 'gradient',
             gradient: {
@@ -412,17 +413,35 @@
     areaChart.render();
 
     // Chart Timeframe Toggling Logic
+    const dailyData = {
+        labels: @json($dayLabels),
+        received: @json($dayReceived),
+        variance: @json($dayVariance)
+    };
+
     const weeklyData = {
         labels: @json($weekLabels),
         received: @json($weekReceived),
-        issued: @json($weekIssued)
+        variance: @json($weekVariance)
     };
     
     const monthlyData = {
         labels: @json($chartMonths),
         received: @json($receivedSeries),
-        issued: @json($issuedSeries)
+        variance: @json($varianceSeries)
     };
+
+    $('#btnDaily').on('click', function() {
+        areaChart.updateOptions({
+            xaxis: { categories: dailyData.labels }
+        });
+        areaChart.updateSeries([
+            { name: 'Received', data: dailyData.received },
+            { name: 'Net Variance', data: dailyData.variance }
+        ]);
+        $(this).css({background: 'var(--primary)', color: 'white'});
+        $('#btnWeekly, #btnMonthly').css({background: 'var(--bg-main)', color: 'var(--text-main)'});
+    });
 
     $('#btnWeekly').on('click', function() {
         areaChart.updateOptions({
@@ -430,10 +449,10 @@
         });
         areaChart.updateSeries([
             { name: 'Received', data: weeklyData.received },
-            { name: 'Issued', data: weeklyData.issued }
+            { name: 'Net Variance', data: weeklyData.variance }
         ]);
         $(this).css({background: 'var(--primary)', color: 'white'});
-        $('#btnMonthly').css({background: 'var(--bg-main)', color: 'var(--text-main)'});
+        $('#btnDaily, #btnMonthly').css({background: 'var(--bg-main)', color: 'var(--text-main)'});
     });
 
     $('#btnMonthly').on('click', function() {
@@ -442,10 +461,10 @@
         });
         areaChart.updateSeries([
             { name: 'Received', data: monthlyData.received },
-            { name: 'Issued', data: monthlyData.issued }
+            { name: 'Net Variance', data: monthlyData.variance }
         ]);
         $(this).css({background: 'var(--primary)', color: 'white'});
-        $('#btnWeekly').css({background: 'var(--bg-main)', color: 'var(--text-main)'});
+        $('#btnDaily, #btnWeekly').css({background: 'var(--bg-main)', color: 'var(--text-main)'});
     });
 
     // Enhanced Donut Chart
@@ -857,6 +876,69 @@
                 });
             });
         });
+
+        // Check for continue_batch parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const continueBatchId = urlParams.get('continue_batch');
+
+        if (continueBatchId) {
+            $.ajax({
+                url: `/received-items/${continueBatchId}?json=1`,
+                method: 'GET',
+                success: function(response) {
+                    const batch = response.batch;
+                    if (batch) {
+                        // Open Modal
+                        modal.css('display', 'flex');
+                        
+                        // Set Date
+                        const now = new Date();
+                        const year = now.getFullYear();
+                        const month = String(now.getMonth() + 1).padStart(2, '0');
+                        const day = String(now.getDate()).padStart(2, '0');
+                        const hours = String(now.getHours()).padStart(2, '0');
+                        const minutes = String(now.getMinutes()).padStart(2, '0');
+                        const seconds = String(now.getSeconds()).padStart(2, '0');
+                        const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                        $('#entryDate').val(formattedDate);
+
+                        // Set Ledge
+                        ledgeSelect.val(batch.ledge_category).trigger('change');
+
+                        // Set Supplier (clean name)
+                        const rawSupplier = batch.supplier_name;
+                        const cleanSupplier = rawSupplier.replace(/\s\[.*\]$/, '');
+                        
+                        // We need to wait for Select2 to be ready or just set values if they exist
+                        setTimeout(() => {
+                            $('#supplierNameSelect').val(cleanSupplier).trigger('change');
+                            $('#supplierStatusSelect').val('Full Delivery').trigger('change');
+                            
+                            // Render Rows for items
+                            if (batch.items && batch.items.length > 0) {
+                                $('#multiQty').val(batch.items.length);
+                                renderItemRows(batch.items.length);
+                                
+                                // Fill row data
+                                $('.item-entry-row').each(function(index) {
+                                    const item = batch.items[index];
+                                    const $row = $(this);
+                                    
+                                    $row.find('.item-select-dynamic').val(item.description).trigger('change');
+                                    $row.find('.row-folio').val(item.folio);
+                                    $row.find('.row-ledge-balance').val(item.stock_balance).trigger('input');
+                                    $row.find('.row-stock-balance').focus();
+                                });
+                            }
+                        }, 500);
+
+                        // Clean URL
+                        const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                        window.history.replaceState({}, '', cleanUrl);
+                    }
+                }
+            });
+        }
     });
 
     // Listen for theme changes to update charts

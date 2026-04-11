@@ -93,9 +93,9 @@
         <div class="quick-filters-container" id="ledgeScroll" style="display: flex; gap: 0.75rem; overflow-x: auto; padding: 0.5rem 0.25rem; white-space: nowrap; scroll-behavior: smooth;">
             <button type="button" class="quick-ledge-btn {{ !request('ledge_category') ? 'active' : '' }}" data-ledge="" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-weight: 800; cursor: pointer; transition: all 0.3s; font-size: 0.85rem;">All Groups</button>
             @foreach($ledgeMap as $code => $name)
-                <button type="button" class="quick-ledge-btn {{ request('ledge_category') == $code ? 'active' : '' }}" data-ledge="{{ $code }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
-                    <span style="width: 8px; height: 8px; background: #94a3b8; border-radius: 50%;"></span> Ledge {{ $code }} ({{ $name }})
-                </button>
+            <button type="button" class="quick-ledge-btn {{ request('ledge_category') == $code ? 'active' : '' }}" data-ledge="{{ $code }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+                <span style="width: 8px; height: 8px; background: #94a3b8; border-radius: 50%;"></span> Ledge {{ $code }} ({{ $name }})
+            </button>
             @endforeach
         </div>
 
@@ -110,21 +110,24 @@
             -ms-overflow-style: none !important;
             scrollbar-width: none !important;
         }
+
         .quick-filters-container::-webkit-scrollbar {
             display: none !important;
         }
+
         .quick-ledge-btn.active {
             border-color: var(--primary) !important;
             background: rgba(99, 102, 241, 0.1) !important;
             color: var(--primary) !important;
         }
+
         .quick-ledge-btn.active span {
             background: var(--primary) !important;
         }
     </style>
 
     <!-- Results Table -->
-    <div id="resultsContainer" class="glass-card" style="overflow: hidden; position: relative;">
+    <div id="resultsContainer" class="glass-card" style="overflow: visible; position: relative; border-radius: 20px;">
         <div class="table-scroll-wrapper">
             <table class="activity-table" style="width: 100%; min-width: 800px; border-collapse: collapse;">
                 <thead>
@@ -135,8 +138,9 @@
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Supplier</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Status</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Folio</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Qty</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Balance</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Ledge</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Action</th>
                     </tr>
                 </thead>
@@ -154,16 +158,16 @@
                             </span>
                         </td>
                         @php
-                            $rawSupplier = $item->supplier_name;
-                            $cleanSupplier = preg_replace('/\s\[.*\]$/', '', $rawSupplier);
-                            $status = 'N/A';
-                            if (preg_match('/\[(.*)\]/', $rawSupplier, $matches)) {
-                                $status = $matches[1];
-                            }
-                            $statusColor = '#94a3b8';
-                            if ($status === 'Donor Action') $statusColor = '#3b82f6'; 
-                            elseif ($status === 'Full Delivery') $statusColor = '#10b981';
-                            elseif ($status === 'Partial Delivery') $statusColor = '#ef4444';
+                        $rawSupplier = $item->supplier_name;
+                        $cleanSupplier = preg_replace('/\s\[.*\]$/', '', $rawSupplier);
+                        $status = 'N/A';
+                        if (preg_match('/\[(.*)\]/', $rawSupplier, $matches)) {
+                        $status = $matches[1];
+                        }
+                        $statusColor = '#94a3b8';
+                        if ($status === 'Donor Action') $statusColor = '#3b82f6';
+                        elseif ($status === 'Full Delivery') $statusColor = '#10b981';
+                        elseif ($status === 'Partial Delivery') $statusColor = '#ef4444';
                         @endphp
                         <td data-label="Supplier" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 500;">{{ $cleanSupplier }}</td>
                         <td data-label="Status" style="padding: 1.25rem 1.5rem;">
@@ -172,17 +176,36 @@
                             </span>
                         </td>
                         <td data-label="Folio" style="padding: 1.25rem 1.5rem; font-family: monospace; color: var(--text-muted);">{{ $item->folio }}</td>
-                        <td data-label="Qty" style="padding: 1.25rem 1.5rem;">
-                            <span style="font-weight: 800; color: {{ (float)$item->variance > 0 ? '#10b981' : '#ef4444' }};">
-                                {{ (float)$item->variance > 0 ? '+' : '' }}{{ $item->variance }}
+                        <td data-label="ledge_balance" style="padding: 1.25rem 1.5rem;">
+                            <span style="font-weight: 800; color: {{ (float)$item->ledge_balance > 0 ? '#3b82f6' : '#1e40af' }};">
+                                {{ $item->ledge_balance }}
                             </span>
                         </td>
                         <td data-label="Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">{{ $item->stock_balance }}</td>
-                        <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right;">
-                            <button onclick="openModal('{{ $item->batch_id }}')" class="glass-btn-sm" title="View Details">
-                                <i data-lucide="eye" style="width: 16px;"></i>
-                                <span class="desktop-only" style="margin-left: 6px;">View</span>
-                            </button>
+                        <td data-label="Qty" style="padding: 1.25rem 1.5rem;">
+                            <span style="font-weight: 800; color: {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '#10b981' : (is_numeric($item->variance) && (float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">
+                                {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '+' : '' }}{{ $item->variance }}
+                            </span>
+                        </td>
+
+                        <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right; display: flex; justify-content: flex-end;">
+                            <div class="action-dropdown-wrapper">
+                                <button type="button" class="glass-btn-sm" title="Actions" onclick="toggleActionMenu('{{ $item->batch_id }}')" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="more-vertical" style="width: 18px;"></i>
+                                </button>
+                                <div id="actionMenu-{{ $item->batch_id }}" class="action-menu">
+                                    @if($status === 'Partial Delivery')
+                                    <button onclick="continueDelivery('{{ $item->batch_id }}')" class="menu-item" style="color: #f59e0b;">
+                                        <i data-lucide="package-plus"></i>
+                                        Continue Delivery
+                                    </button>
+                                    @endif
+                                    <button onclick="openModal('{{ $item->batch_id }}')" class="menu-item">
+                                        <i data-lucide="eye"></i>
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     @empty
@@ -195,7 +218,7 @@
                                 <div style="max-width: 450px; margin: 0 auto;">
                                     <h4 style="font-size: 1.35rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.02em;">No Records Discovered</h4>
                                     <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.6;">Your inventory ledger is currently empty or no items match your current search filters. Try broadening your criteria or record a new batch.</p>
-                                    
+
                                     <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                                         <a href="{{ route('receiveditems') }}" class="glass-card" style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-size: 0.9rem; color: var(--text-main); font-weight: 700; transition: all 0.3s; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem;">
                                             <i data-lucide="refresh-ccw" style="width: 16px;"></i>
@@ -351,20 +374,28 @@
         background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.8)) !important;
     }
 
-    .glass-card:hover { transform: translateY(-5px); }
+    .glass-card:hover {
+        transform: translateY(-5px);
+    }
 
     .table-scroll-wrapper {
         width: 100%;
-        overflow-x: auto;
+        overflow: visible;
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
-    .table-scroll-wrapper::-webkit-scrollbar { display: none; }
+
+    .table-scroll-wrapper::-webkit-scrollbar {
+        display: none;
+    }
 
     /* Modal Architecture */
     .modal-backdrop {
         position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         background: rgba(2, 6, 23, 0.7);
         backdrop-filter: blur(12px);
         display: none;
@@ -400,23 +431,40 @@
         align-items: center;
     }
 
-    .modal-body { 
-        padding: 2.5rem; 
-        overflow-y: auto; 
-        flex: 1; 
+    .modal-body {
+        padding: 2.5rem;
+        overflow-y: auto;
+        flex: 1;
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
-    .modal-body::-webkit-scrollbar { display: none; }
+
+    .modal-body::-webkit-scrollbar {
+        display: none;
+    }
 
     @keyframes slideUpIn {
-        from { transform: translateY(100%); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
     }
 
     @keyframes slideDownOut {
-        from { transform: translateY(0); opacity: 1; }
-        to { transform: translateY(100%); opacity: 0; }
+        from {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateY(100%);
+            opacity: 0;
+        }
     }
 
     .modal-content.slide-in {
@@ -468,7 +516,7 @@
             position: relative !important;
         }
 
-        .modal-header > div:last-child {
+        .modal-header>div:last-child {
             position: absolute !important;
             top: 1rem !important;
             right: 1rem !important;
@@ -480,8 +528,11 @@
     }
 
     .btn-icon {
-        width: 44px; height: 44px;
-        display: flex; align-items: center; justify-content: center;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         border-radius: 14px;
         border: 1.5px solid var(--border-color);
         background: var(--bg-card);
@@ -522,13 +573,24 @@
     /* Advanced Pagination */
     .pagination-footer {
         padding: 2rem 2.5rem;
-        background: rgba(0,0,0,0.02);
+        background: rgba(0, 0, 0, 0.02);
         border-top: 1px solid var(--border-color);
     }
 
-    .pagination-container { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
-    .pagination-info { display: flex; align-items: center; gap: 1rem; }
-    
+    .pagination-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .pagination-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
     .pagination-info-badge {
         background: var(--primary-gradient);
         color: white;
@@ -539,11 +601,18 @@
         box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
     }
 
-    .pagination-nav { display: flex; align-items: center; gap: 0.6rem; }
-    
+    .pagination-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
     .pagination-arrow {
-        display: flex; align-items: center; justify-content: center;
-        width: 48px; height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
         border-radius: 16px;
         background: var(--bg-card);
         border: 1.5px solid var(--border-color);
@@ -560,8 +629,11 @@
     }
 
     .pagination-number {
-        display: flex; align-items: center; justify-content: center;
-        min-width: 48px; height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 48px;
+        height: 48px;
         border-radius: 16px;
         background: var(--bg-card);
         border: 1.5px solid var(--border-color);
@@ -594,27 +666,107 @@
     }
 
     /* Table Logic */
-    .activity-row { transition: all 0.3s ease; }
+    .activity-row {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
     .activity-row:hover {
         background: rgba(99, 102, 241, 0.05) !important;
         box-shadow: inset 4px 0 0 var(--primary);
     }
 
-    @media (max-width: 1024px) {
-        .activity-table { min-width: unset !important; }
-        .activity-table thead { display: none !important; }
-        .activity-table, .activity-table tbody, .activity-table tr, .activity-table td { 
-            display: block !important; 
-            width: 100% !important; 
+    /* Action Dropdown Styles */
+    .action-dropdown-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .action-menu {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 10px);
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        min-width: 200px;
+        z-index: 1000;
+        display: none;
+        flex-direction: column;
+        padding: 0.75rem;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(12px);
+        animation: dropdownIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .action-menu.active {
+        display: flex;
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        border-radius: 10px;
+        color: var(--text-main);
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-align: left;
+        background: transparent;
+        border: none;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .menu-item:hover {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary) !important;
+        transform: translateX(5px);
+    }
+
+    .menu-item i {
+        width: 18px;
+        height: 18px;
+    }
+
+    @keyframes dropdownIn {
+        from {
+            opacity: 0;
+            transform: translateY(15px) scale(0.95);
         }
-        
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @media (max-width: 1024px) {
+        .activity-table {
+            min-width: unset !important;
+        }
+
+        .activity-table thead {
+            display: none !important;
+        }
+
+        .activity-table,
+        .activity-table tbody,
+        .activity-table tr,
+        .activity-table td {
+            display: block !important;
+            width: 100% !important;
+        }
+
         .activity-row {
             margin-bottom: 2rem !important;
             border-radius: 20px !important;
             background: var(--bg-card) !important;
             padding: 1.5rem !important;
             border: 1px solid var(--border-color) !important;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
             position: relative;
         }
 
@@ -636,17 +788,18 @@
             letter-spacing: 1px;
         }
 
-        .activity-row td[data-label="Description"] { 
-            display: block !important; 
+        .activity-row td[data-label="Description"] {
+            display: block !important;
             border-bottom: 2px solid var(--border-color) !important;
             padding-bottom: 1.5rem !important;
             margin-bottom: 1.25rem !important;
         }
-        
-        .activity-row td[data-label="Description"]::before { 
-            display: inline-block !important; 
+
+        .activity-row td[data-label="Description"]::before {
+            display: inline-block !important;
             margin-bottom: 0.75rem !important;
-            margin-right: 1rem !important; /* Added margin right */
+            margin-right: 1rem !important;
+            /* Added margin right */
             background: rgba(99, 102, 241, 0.1);
             color: var(--primary);
             padding: 0.35rem 0.85rem;
@@ -664,16 +817,52 @@
             padding-top: 1.25rem !important;
             text-align: center !important;
             justify-content: center !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            gap: 0.75rem !important;
+            height: auto !important;
         }
 
-        .desktop-only { display: none !important; }
-        .glass-btn-sm { width: 100%; justify-content: center; }
+        .desktop-only {
+            display: none !important;
+        }
+
+        .glass-btn-sm {
+            width: 100%;
+            justify-content: center;
+        }
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-    .animate-scale-up { animation: scaleUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-    .loader { width: 50px; height: 50px; border: 4px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes scaleUp {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .animate-scale-up {
+        animation: scaleUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .loader {
+        width: 50px;
+        height: 50px;
+        border: 4px solid var(--border-color);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
 
     /* Mobile Responsive Overrides */
     @media (max-width: 1024px) {
@@ -684,12 +873,13 @@
             padding: 1.75rem !important;
             background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-main) 100%) !important;
             border-radius: 0 0 28px 28px !important;
-            margin: -24px -24px 2.5rem -24px !important; /* Bleed to edges */
+            margin: -24px -24px 2.5rem -24px !important;
+            /* Bleed to edges */
             border: none !important;
             border-bottom: 1px solid var(--border-color) !important;
-            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.03) !important;
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.03) !important;
         }
-        
+
         .page-header h2 {
             font-size: 1.75rem !important;
             margin-top: 0.5rem !important;
@@ -700,14 +890,14 @@
             opacity: 0.8;
         }
 
-        .page-header > div:last-child {
+        .page-header>div:last-child {
             display: grid !important;
             grid-template-columns: 1fr 1fr !important;
             gap: 0.75rem !important;
             width: 100% !important;
         }
 
-        .page-header > div:last-child button {
+        .page-header>div:last-child button {
             width: 100% !important;
             justify-content: center !important;
             padding: 0.85rem !important;
@@ -720,11 +910,13 @@
     }
 
     @media (max-width: 768px) {
+
         /* Stats stacking */
         div[style*="grid-template-columns: repeat(auto-fit"] {
             grid-template-columns: repeat(2, 1fr) !important;
         }
-        div[style*="grid-template-columns: repeat(auto-fit"] > div {
+
+        div[style*="grid-template-columns: repeat(auto-fit"]>div {
             padding: 1rem !important;
             gap: 0.75rem !important;
         }
@@ -739,7 +931,7 @@
             height: 50px !important;
             font-size: 0.95rem !important;
             border-color: var(--border-color) !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
         }
 
         #filterForm label {
@@ -770,10 +962,14 @@
 
         /* Transforming Table into Cards for Mobile */
         .activity-table thead {
-            display: none; /* Hide headers on mobile */
+            display: none;
+            /* Hide headers on mobile */
         }
 
-        .activity-table, .activity-table tbody, .activity-table tr, .activity-table td {
+        .activity-table,
+        .activity-table tbody,
+        .activity-table tr,
+        .activity-table td {
             display: block;
             width: 100%;
         }
@@ -790,7 +986,7 @@
         .activity-table td {
             text-align: right;
             padding: 0.75rem 0.5rem !important;
-            border-top: 1px solid rgba(0,0,0,0.03);
+            border-top: 1px solid rgba(0, 0, 0, 0.03);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -865,6 +1061,7 @@
     }
 
     @media print {
+
         .sidebar,
         .top-nav,
         .glass-card form,
@@ -900,12 +1097,12 @@
         const modalContent = modal.querySelector('.modal-content');
         const modalBody = document.getElementById('modalBody');
         const modalSubtitle = document.getElementById('modalSubtitle');
-        
+
         modal.style.display = 'flex';
         modalContent.classList.remove('slide-out');
         modalContent.classList.add('slide-in');
         modalSubtitle.innerText = `#BATCH-${batchId}`;
-        
+
         // Show loader
         modalBody.innerHTML = `
             <div class="loader-container">
@@ -920,7 +1117,7 @@
             .then(data => {
                 const batch = data.batch;
                 let itemsHtml = '';
-                
+
                 batch.items.forEach((item, index) => {
                     const openingBalance = (parseFloat(item.stock_balance) - parseFloat(item.variance)).toFixed(0);
                     const isLast = index === batch.items.length - 1;
@@ -973,7 +1170,7 @@
 
                     <div>
                         <label style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-left: 1rem; margin-bottom: 0.75rem; font-weight: 800; letter-spacing: 0.5px;">Audit Remarks</label>
-                        <textarea id="batchRemarks" placeholder="Enter notes..." 
+                        <textarea id="batchRemarks" placeholder="Enter notes..."
                             style="width: 100%; padding: 1.25rem; border: 1px solid var(--border-color); border-radius: 20px; background: var(--bg-main); color: var(--text-main); font-size: 0.95rem; resize: none; min-height: 100px; transition: all 0.3s;"></textarea>
                     </div>
 
@@ -987,7 +1184,7 @@
                         </div>
                     </div>
                 `;
-                
+
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             })
             .catch(error => {
@@ -1004,10 +1201,10 @@
     function closeModal() {
         const modal = document.getElementById('detailModal');
         const modalContent = modal.querySelector('.modal-content');
-        
+
         modalContent.classList.remove('slide-in');
         modalContent.classList.add('slide-out');
-        
+
         setTimeout(() => {
             modal.style.display = 'none';
             modalContent.classList.remove('slide-out');
@@ -1020,6 +1217,11 @@
             const remarks = encodeURIComponent(document.getElementById('batchRemarks').value);
             window.open(`/received-items/${currentBatchId}/print?remarks=${remarks}`, '_blank');
         }
+    }
+
+    function continueDelivery(batchId) {
+        // Redirect to dashboard with continue_batch parameter
+        window.location.href = `/dashboard?continue_batch=${batchId}`;
     }
 
     // Close on backdrop click
@@ -1049,7 +1251,11 @@
         const params = new URLSearchParams(formData).toString();
         const url = `${window.location.pathname}?${params}`;
 
-        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
             .then(response => response.text())
             .then(html => {
                 const parser = new DOMParser();
@@ -1057,10 +1263,10 @@
                 const newContent = doc.getElementById('resultsContainer').innerHTML;
                 resultsContainer.innerHTML = newContent;
                 resultsContainer.style.opacity = '1';
-                
+
                 // Re-initialize icons and listeners for new content
                 if (typeof lucide !== 'undefined') lucide.createIcons();
-                
+
                 // Final Clean URL check
                 window.history.replaceState({}, '', cleanUrl);
             })
@@ -1096,7 +1302,7 @@
         btn.addEventListener('click', () => {
             ledgeBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
+
             ledgeInput.value = btn.dataset.ledge;
             performSearch();
         });
@@ -1111,20 +1317,26 @@
         const updateArrows = () => {
             const scrollLeft = ledgeScroll.scrollLeft;
             const maxScroll = ledgeScroll.scrollWidth - ledgeScroll.clientWidth;
-            
+
             prevBtn.style.opacity = scrollLeft > 10 ? '1' : '0';
             prevBtn.style.pointerEvents = scrollLeft > 10 ? 'auto' : 'none';
-            
+
             nextBtn.style.opacity = scrollLeft < maxScroll - 10 ? '1' : '0';
             nextBtn.style.pointerEvents = scrollLeft < maxScroll - 10 ? 'auto' : 'none';
         };
 
         prevBtn.addEventListener('click', () => {
-            ledgeScroll.scrollBy({ left: -250, behavior: 'smooth' });
+            ledgeScroll.scrollBy({
+                left: -250,
+                behavior: 'smooth'
+            });
         });
 
         nextBtn.addEventListener('click', () => {
-            ledgeScroll.scrollBy({ left: 250, behavior: 'smooth' });
+            ledgeScroll.scrollBy({
+                left: 250,
+                behavior: 'smooth'
+            });
         });
 
         ledgeScroll.addEventListener('scroll', updateArrows);
@@ -1144,6 +1356,42 @@
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
+
+        // Action Dropdown Close Listener
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.action-dropdown-wrapper')) {
+                document.querySelectorAll('.action-menu.active').forEach(menu => {
+                    menu.classList.remove('active');
+                    const row = menu.closest('.activity-row');
+                    if (row) row.style.zIndex = '';
+                });
+            }
+        });
     });
+
+    // Toggle Action Menu Logic
+    function toggleActionMenu(batchId) {
+        // Close all other active menus
+        document.querySelectorAll('.action-menu.active').forEach(menu => {
+            if (menu.id !== `actionMenu-${batchId}`) {
+                menu.classList.remove('active');
+                const row = menu.closest('.activity-row');
+                if (row) row.style.zIndex = '';
+            }
+        });
+        
+        const menu = document.getElementById(`actionMenu-${batchId}`);
+        if (menu) {
+            menu.classList.toggle('active');
+            const row = menu.closest('.activity-row');
+            if (row) {
+                if (menu.classList.contains('active')) {
+                    row.style.zIndex = '50';
+                } else {
+                    row.style.zIndex = '';
+                }
+            }
+        }
+    }
 </script>
 @endsection
