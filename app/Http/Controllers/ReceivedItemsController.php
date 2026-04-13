@@ -115,4 +115,24 @@ class ReceivedItemsController extends Controller
         $batch = InventoryBatch::with(['items'])->findOrFail($id);
         return view('received-items.print', compact('batch', 'ledgeMap'));
     }
+
+    public function destroy($id)
+    {
+        try {
+            $batch = InventoryBatch::findOrFail($id);
+            // Delete associated items first to maintain referential integrity if not handled by FK
+            $batch->items()->delete();
+            $batch->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Batch and associated records purged successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Purge failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

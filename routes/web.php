@@ -253,6 +253,7 @@ Route::get('/received-items', [ReceivedItemsController::class, 'index'])->name('
 Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
 Route::get('/received-items/{id}/print', [ReceivedItemsController::class, 'print'])->name('receiveditems.print');
 Route::get('/api/global-search', [App\Http\Controllers\InventoryController::class, 'globalSearch'])->name('api.search');
+Route::delete('/received-items/{id}', [ReceivedItemsController::class, 'destroy'])->name('receiveditems.destroy');
 Route::get('/api/item-audit-details', function (\Illuminate\Http\Request $request) {
     $description = $request->query('description');
     $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')

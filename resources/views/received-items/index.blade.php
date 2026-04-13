@@ -300,6 +300,11 @@
                                         <i data-lucide="shield-check"></i>
                                         Stock Check
                                     </button>
+                                    <div style="height: 1px; background: var(--border-color); margin: 4px 10px; opacity: 0.5;"></div>
+                                    <button onclick="deleteBatch('{{ $item->batch_id }}')" class="menu-item" style="color: #ef4444;">
+                                        <i data-lucide="trash-2"></i>
+                                        Delete Record
+                                    </button>
                                 </div>
                             </div>
                         </td>
@@ -1826,6 +1831,35 @@
                     row.style.zIndex = '';
                 }
             }
+        }
+    }
+
+    async function deleteBatch(batchId) {
+        if (!confirm('⚠️ SYSTEM CAUTION:\n\nYou are about to permanently purge this batch record and all its associated product logs from the database.\n\nThis action is forensic and IRREVERSIBLE. Do you wish to proceed?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/received-items/${batchId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Silent refresh using the existing background sync engine
+                performSearch(true);
+            } else {
+                alert('Purge Error: ' + (result.message || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Purge Transaction Error:', error);
+            alert('A critical system error occurred during the transaction purge.');
         }
     }
 
