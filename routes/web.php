@@ -250,6 +250,7 @@ Route::get('/dashboard', $dashboardLogic);
 
 Route::post('/inventory/store', [App\Http\Controllers\InventoryController::class, 'store'])->name('inventory.store');
 Route::get('/received-items', [ReceivedItemsController::class, 'index'])->name('receiveditems');
+Route::get('/issue-items', function() { return view('issue-items.index'); })->name('issueitems');
 Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
 Route::get('/received-items/{id}/print', [ReceivedItemsController::class, 'print'])->name('receiveditems.print');
 Route::get('/api/global-search', [App\Http\Controllers\InventoryController::class, 'globalSearch'])->name('api.search');
@@ -263,3 +264,63 @@ Route::get('/api/item-audit-details', function (\Illuminate\Http\Request $reques
         ->get();
     return response()->json($items);
 })->name('api.item-audit-details');
+Route::post('/api/inventory/receive-remainder', function (\Illuminate\Http\Request $request) {
+    try {
+        $updates = $request->input('updates', []);
+        $updatedItemsCount = 0;
+        $batchIdsToCheck = [];
+
+        foreach($updates as $update) {
+            $item = \App\Models\InventoryItem::find($update['item_id']);
+            if ($item) {
+                $incoming = floatval($update['incoming_qty']);
+                if ($incoming <= 0) continue;
+
+                $expected = floatval($item->stock_balance) - floatval($item->variance);
+                
+                $item->stock_balance += $incoming;
+                // If qty acts as 'brought', we increment it too.
+                $item->qty = floatval($item->qty) + $incoming; 
+                $item->variance = $item->stock_balance - $expected;
+                
+                // Keep the remarks updated to note the remainder was entered
+                $item->remarks = $item->remarks ? $item->remarks . " | Supplemented with $incoming additional units." : "Supplemented with $incoming additional units.";
+                
+                $item->save();
+                $updatedItemsCount++;
+                
+                if (!in_array($item->batch_id, $batchIdsToCheck)) {
+                    $batchIdsToCheck[] = $item->batch_id;
+                }
+            }
+        }
+        
+        // Evaluate batch status logic for Partial -> Full Delivery
+        foreach ($batchIdsToCheck as $batchId) {
+            $batch = \App\Models\InventoryBatch::find($batchId);
+            if ($batch && preg_match('/\[Partial Deliv(.*?)\]/i', $batch->supplier_name)) {
+                $allItems = \App\Models\InventoryItem::where('batch_id', $batchId)->get();
+                $allDelivered = true;
+                
+                foreach ($allItems as $i) {
+                    $expected = floatval($i->stock_balance) - floatval($i->variance);
+                    if (floatval($i->qty) < $expected) {
+                        $allDelivered = false;
+                        break;
+                    }
+                }
+                
+                if ($allDelivered) {
+                    // Update supplier_name to Full Delivery
+                    $batch->supplier_name = preg_replace('/\[Partial Deliv(.*?)\]/i', '[Full Delivery]', $batch->supplier_name);
+                    $batch->save();
+                }
+            }
+        }
+        
+        return response()->json(['success' => true, 'updated' => $updatedItemsCount]);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+    }
+})->name('api.inventory.receive-remainder');
+

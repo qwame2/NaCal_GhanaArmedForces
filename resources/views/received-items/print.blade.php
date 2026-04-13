@@ -302,51 +302,43 @@
         </div>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th>Supplier</th>
-                <th>Donor</th>
-                <th>Status</th>
-                <th style="text-align: center;">Avail. Qty</th>
-                <th style="text-align: center;">Ledge</th>
-                <th style="text-align: center;">Stock</th>
-                <th style="text-align: center;">Variance</th>
-            </tr>
-        </thead>
-        <tbody>
-            @php
-            $supStatus = preg_match('/\[(.*?)\]/', $batch->supplier_name, $m) ? $m[1] : 'Delivered';
-            if ($acqType === 'Donor') $supStatus = 'Donated';
+    <div class="narrative-section" style="margin-bottom: 40px;">
+        <h3 style="font-size: 15px; font-weight: 900; text-transform: uppercase; border-bottom: 2px solid var(--print-primary); padding-bottom: 8px; margin-bottom: 20px; letter-spacing: 2px;">Itemized Verification Narrative</h3>
+        
+        @foreach($batch->items as $index => $item)
+        @php
+            $expected = floatval($item->stock_balance) - floatval($item->variance);
+            $variance = floatval($item->variance);
             
-            $formattedDate = \Carbon\Carbon::parse($batch->entry_date)->format('M d, Y');
-            $categoryName = $ledgeMap[$batch->ledge_category] ?? $batch->ledge_category;
-            $supplierText = $isDonor ? '-' : $entityDisplay;
-            $donorText = $isDonor ? $entityDisplay : '-';
-            @endphp
-            @foreach($batch->items as $item)
-            <tr>
-                <td style="color: #64748b; white-space: nowrap;">{{ $formattedDate }}</td>
-                <td class="row-desc" style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $item->description }}">{{ $item->description }}</td>
-                <td style="color: #475569;">{{ $categoryName }}</td>
-                <td style="max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $supplierText }}</td>
-                <td style="max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ $donorText }}</td>
-                <td style="font-weight: 800; color: var(--print-accent);">{{ $supStatus }}</td>
-                <td style="text-align: center; font-weight: 800;">{{ $item->qty ?? '0' }}</td>
-                <td style="text-align: center; color: #64748b;">{{ $item->ledge_balance }}</td>
-                <td class="row-bal" style="text-align: center;">{{ $item->stock_balance }}</td>
-                <td class="row-qty" style="text-align: center;">{{ is_numeric($item->variance) && $item->variance > 0 ? '+' : '' }}{{ $item->variance }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+            $varText = 'no variance';
+            if ($variance < 0) {
+                $varText = 'a shortage of ' . abs($variance);
+            } elseif ($variance > 0) {
+                $varText = 'a surplus of ' . $variance;
+            }
+
+            $remarks = $item->remarks ?: 'No extraordinary conditions or operational remarks were documented for this line item during the inspection.';
+        @endphp
+        <div style="margin-bottom: 25px; padding: 20px; background: #f8fafc; border: 1px solid var(--print-border); border-radius: 12px; page-break-inside: avoid;">
+            <div style="font-weight: 900; font-size: 14px; margin-bottom: 12px; color: var(--print-primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+                Scope {{ $index + 1 }} &bull; {{ strtoupper($item->description) }}
+            </div>
+            <p style="margin: 0 0 15px; font-size: 13px; color: #334155; line-height: 1.8; text-align: justify;">
+                At the initiation of the verification procedure, the ledger mandated an expected baseline of <strong>{{ number_format($expected) }} units</strong>. 
+                Upon the physical handover process by the logistics personnel, <strong>{{ $item->qty ?? '0' }} units</strong> were formally presented. 
+                A rigorous count conducted on the floor yielded <strong>{{ $item->stock_balance }} units</strong> formally registered into the active stock baseline in verified condition.
+                This operation culminated in <strong>{{ $varText }}</strong> units when matched against the authorized expected capacity.
+            </p>
+            <div style="background: rgba(99, 102, 241, 0.05); padding: 12px 15px; border-radius: 8px; border-left: 3px solid var(--print-accent); font-size: 12px; color: #475569; font-style: italic;">
+                <strong>Auditor's Field Note:</strong> {{ $remarks }}
+            </div>
+        </div>
+        @endforeach
+    </div>
 
     <div class="remarks-box">
-        <strong>AUDIT REMARKS:</strong><br>
-        {{ request('remarks') ?: 'The items described above have been formally received, inspected against the accompanying dispatch documents, and found to be in full compliance with the reported quantities.' }}
+        <strong>FINAL AUDIT DECLARATION:</strong><br>
+        The items itemized in this narrative report have been formally processed, completely audited by standard operational protocols, and legally transitioned into the jurisdiction of the facility's ledger.
     </div>
 
     <div class="footer">

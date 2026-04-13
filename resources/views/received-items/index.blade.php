@@ -154,7 +154,7 @@
         </div>
         @endif
         <div class="table-scroll-wrapper">
-            <table class="activity-table" style="width: 100%; min-width: 1200px; border-collapse: collapse;">
+            <table class="activity-table" style="width: 100%; min-width: 1500px; border-collapse: collapse;">
                 <thead>
                     <tr style="background: rgba(0,0,0,0.02); text-align: left;">
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Date</th>
@@ -179,24 +179,24 @@
                     $totalQty = $agg ? (float)$agg->total_received_qty : 0;
                     $totalStock = $agg ? (float)$agg->total_available : 0;
                     $totalLedge = $agg ? (float)$agg->total_book : 0;
-                    
+
                     // Calculation: (Available Qty / Stock Balance) * 100
                     $percentage = ($totalStock > 0) ? ($totalQty / $totalStock) * 100 : 0;
-                    
+
                     $hStatus = 'IN STOCK';
                     $hColor = '#10b981';
-                    
+
                     // Status Override: IF stock_balance == 0 OR available_qty == 0
-                    if ($totalStock <= 0 || $totalQty <= 0) {
-                        $hStatus = 'OUT OF STOCK';
-                        $hColor = '#ef4444';
-                    } elseif ($percentage <= 50) {
-                        $hStatus = 'LOW STOCK';
-                        $hColor = '#ef4444';
-                    } elseif ($percentage <= 70) {
-                        $hStatus = 'WARNING';
-                        $hColor = '#f59e0b';
-                    }
+                    if ($totalStock <= 0 || $totalQty <=0) {
+                        $hStatus='OUT OF STOCK' ;
+                        $hColor='#ef4444' ;
+                        } elseif ($percentage <=50) {
+                        $hStatus='LOW STOCK' ;
+                        $hColor='#ef4444' ;
+                        } elseif ($percentage <=70) {
+                        $hStatus='WARNING' ;
+                        $hColor='#f59e0b' ;
+                        }
                         @endphp
                         <tr class="activity-row" style="border-top: 1px solid var(--border-color);">
                         <td data-label="Date" style="padding: 1.25rem 1.5rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($item->entry_date)->format('M d, Y') }}</td>
@@ -214,29 +214,29 @@
                         $acquisitionType = $item->acquisition_type ?? 'Supplier';
                         $donorName = $item->donor_name ?? '-';
                         if ($acquisitionType === 'Supplier' && preg_match('/\[Donor Action\]/', $rawSupplier)) {
-                            $acquisitionType = 'Donor';
-                            $donorName = preg_replace('/\s\[.*\]$/', '', $rawSupplier);
+                        $acquisitionType = 'Donor';
+                        $donorName = preg_replace('/\s\[.*\]$/', '', $rawSupplier);
                         }
-                        
+
                         $cleanSupplier = preg_replace('/\s\[.*\]$/', '', $rawSupplier);
                         $displayStatus = 'N/A';
                         if ($acquisitionType === 'Donor') {
-                            $displayStatus = 'DONOR';
+                        $displayStatus = 'DONOR';
                         } else {
-                            if (preg_match('/\[(.*)\]/', $rawSupplier, $matches)) {
-                                $displayStatus = $matches[1];
-                            }
+                        if (preg_match('/\[(.*)\]/', $rawSupplier, $matches)) {
+                        $displayStatus = $matches[1];
+                        }
                         }
 
                         $statusColor = '#94a3b8';
                         if ($acquisitionType === 'Donor') {
-                            $statusColor = '#8b5cf6';
+                        $statusColor = '#8b5cf6';
                         } elseif ($displayStatus === 'Full Delivery' || $displayStatus === 'Full Deliv') {
-                            $statusColor = '#10b981';
-                            $displayStatus = 'FULL DELIV';
+                        $statusColor = '#10b981';
+                        $displayStatus = 'FULL DELIV';
                         } elseif ($displayStatus === 'Partial Delivery' || $displayStatus === 'Partial Deliv') {
-                            $statusColor = '#ef4444';
-                            $displayStatus = 'PARTIAL DELIV';
+                        $statusColor = '#ef4444';
+                        $displayStatus = 'PARTIAL DELIV';
                         }
                         @endphp
                         <td data-label="Supplier" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 500;">{{ $cleanSupplier ?: '-' }}</td>
@@ -270,153 +270,153 @@
 
                         <td data-label="Available Item Health" style="padding: 1.25rem 1.5rem;">
                             @php
-                                $isItemLow = $totalQty <= 100;
-                                $itemHealthStatus = $isItemLow ? 'LOW STOCK' : 'IN STOCK';
-                                $itemHealthColor = $isItemLow ? '#ef4444' : '#10b981';
-                            @endphp
-                            <div style="display: flex; align-items: center; gap: 6px;">
+                            $isItemLow = $totalQty <= 100;
+                                $itemHealthStatus=$isItemLow ? 'LOW STOCK' : 'IN STOCK' ;
+                                $itemHealthColor=$isItemLow ? '#ef4444' : '#10b981' ;
+                                @endphp
+                                <div style="display: flex; align-items: center; gap: 6px;">
                                 <span style="font-size: 0.6rem; font-weight: 900; color: white; background: {{ $itemHealthColor }}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; width: fit-content; text-transform: uppercase;">{{ $itemHealthStatus }}</span>
                                 <i data-lucide="{{ $isItemLow ? 'alert-circle' : 'check-circle' }}" style="width: 14px; color: {{ $itemHealthColor }};"></i>
-                            </div>
-                        </td>
-
-                        <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right; display: flex; justify-content: flex-end;">
-                            <div class="action-dropdown-wrapper">
-                                <button type="button" class="glass-btn-sm" title="Actions" onclick="toggleActionMenu('{{ $item->batch_id }}')" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
-                                    <i data-lucide="more-vertical" style="width: 18px;"></i>
-                                </button>
-                                <div id="actionMenu-{{ $item->batch_id }}" class="action-menu">
-                                    @if($displayStatus === 'Partial Delivery' || $displayStatus === 'PARTIAL DELIV')
-                                    <button onclick="continueDelivery('{{ $item->batch_id }}')" class="menu-item" style="color: #f59e0b;">
-                                        <i data-lucide="package-plus"></i>
-                                        Continue Delivery
-                                    </button>
-                                    @endif
-                                    <button onclick="openModal('{{ $item->batch_id }}')" class="menu-item">
-                                        <i data-lucide="eye"></i>
-                                        View Details
-                                    </button>
-                                    <button onclick="openStockCheckModal('{{ addslashes($item->description) }}', {{ $totalLedge }}, {{ $totalStock }}, '{{ $agg->total_variance ?? 0 }}', '{{ $totalQty }}')" class="menu-item" style="color: var(--primary);">
-                                        <i data-lucide="shield-check"></i>
-                                        Stock Check
-                                    </button>
-                                    <div style="height: 1px; background: var(--border-color); margin: 4px 10px; opacity: 0.5;"></div>
-                                    <button onclick="deleteBatch('{{ $item->batch_id }}')" class="menu-item" style="color: #ef4444;">
-                                        <i data-lucide="trash-2"></i>
-                                        Delete Record
-                                    </button>
-                                </div>
-                            </div>
-                        </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="9" style="padding: 7rem 2rem; text-align: center;">
-                                <div style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
-                                    <div style="background: var(--bg-main); width: 84px; height: 84px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); box-shadow: 0 10px 40px rgba(0,0,0,0.04); border: 1px solid var(--border-color);">
-                                        <i data-lucide="package-search" style="width: 38px; opacity: 0.6;"></i>
-                                    </div>
-                                    <div style="max-width: 450px; margin: 0 auto;">
-                                        <h4 style="font-size: 1.35rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.02em;">No Records Discovered</h4>
-                                        <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.6;">Your inventory ledger is currently empty or no items match your current search filters. Try broadening your criteria or record a new batch.</p>
-
-                                        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                                            <a href="{{ route('receiveditems') }}" class="glass-card" style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-size: 0.9rem; color: var(--text-main); font-weight: 700; transition: all 0.3s; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem;">
-                                                <i data-lucide="refresh-ccw" style="width: 16px;"></i>
-                                                Reset Filters
-                                            </a>
-                                            <button onclick="window.location.href='/'" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px; border: none; font-size: 0.9rem; background: var(--primary); color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);">
-                                                <i data-lucide="plus-circle" style="width: 18px;"></i>
-                                                New Inventory Entry
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                </tbody>
-            </table>
         </div>
+        </td>
 
-        <!-- Advanced Pagination Footer -->
-        <div class="pagination-footer">
-            <div class="pagination-container">
-                <div class="pagination-info">
-                    <span class="pagination-info-badge">
-                        <i data-lucide="layers" style="width: 14px; height: 14px; display: inline; margin-right: 6px;"></i>
-                        {{ $receivedItems->total() }} Total Records
-                    </span>
-                    <span class="pagination-stats">
-                        Showing {{ $receivedItems->firstItem() ?? 0 }} - {{ $receivedItems->lastItem() ?? 0 }}
-                    </span>
-                </div>
-
-                <div class="pagination-nav">
-                    @if ($receivedItems->onFirstPage())
-                    <span class="pagination-arrow disabled">
-                        <i data-lucide="chevron-left" style="width: 20px;"></i>
-                    </span>
-                    @else
-                    <a href="{{ $receivedItems->previousPageUrl() }}" class="pagination-arrow">
-                        <i data-lucide="chevron-left" style="width: 20px;"></i>
-                    </a>
+        <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right;">
+            <div class="action-dropdown-wrapper">
+                <button type="button" class="glass-btn-sm" title="Actions" onclick="toggleActionMenu('{{ $item->batch_id }}')" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="more-vertical" style="width: 18px;"></i>
+                </button>
+                <div id="actionMenu-{{ $item->batch_id }}" class="action-menu">
+                    @if($displayStatus === 'Partial Delivery' || $displayStatus === 'PARTIAL DELIV')
+                    <button onclick="continueDelivery('{{ $item->batch_id }}')" class="menu-item" style="color: #f59e0b;">
+                        <i data-lucide="package-plus"></i>
+                        Continue Delivery
+                    </button>
                     @endif
-
-                    <div class="pagination-numbers">
-                        @php
-                        $currentPage = $receivedItems->currentPage();
-                        $lastPage = $receivedItems->lastPage();
-                        $start = max($currentPage - 2, 1);
-                        $end = min($currentPage + 2, $lastPage);
-                        @endphp
-
-                        @if($start > 1)
-                        <a href="{{ $receivedItems->url(1) }}" class="pagination-number">1</a>
-                        @if($start > 2)
-                        <span class="pagination-dots">...</span>
-                        @endif
-                        @endif
-
-                        @for($i = $start; $i <= $end; $i++)
-                            <a href="{{ $receivedItems->url($i) }}"
-                            class="pagination-number {{ $currentPage == $i ? 'active' : '' }}">
-                            {{ $i }}
-                            </a>
-                            @endfor
-
-                            @if($end < $lastPage)
-                                @if($end < $lastPage - 1)
-                                <span class="pagination-dots">...</span>
-                                @endif
-                                <a href="{{ $receivedItems->url($lastPage) }}" class="pagination-number">{{ $lastPage }}</a>
-                                @endif
+                    <button onclick="openModal('{{ $item->batch_id }}')" class="menu-item">
+                        <i data-lucide="eye"></i>
+                        View Details
+                    </button>
+                    <button onclick="openStockCheckModal('{{ addslashes($item->description) }}', {{ $totalLedge }}, {{ $totalStock }}, '{{ $agg->total_variance ?? 0 }}', '{{ $totalQty }}')" class="menu-item" style="color: var(--primary);">
+                        <i data-lucide="shield-check"></i>
+                        Stock Check
+                    </button>
+                    <div style="height: 1px; background: var(--border-color); margin: 4px 10px; opacity: 0.5;"></div>
+                    <button onclick="deleteBatch('{{ $item->batch_id }}')" class="menu-item" style="color: #ef4444;">
+                        <i data-lucide="trash-2"></i>
+                        Delete Record
+                    </button>
+                </div>
+            </div>
+        </td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="9" style="padding: 7rem 2rem; text-align: center;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
+                    <div style="background: var(--bg-main); width: 84px; height: 84px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); box-shadow: 0 10px 40px rgba(0,0,0,0.04); border: 1px solid var(--border-color);">
+                        <i data-lucide="package-search" style="width: 38px; opacity: 0.6;"></i>
                     </div>
+                    <div style="max-width: 450px; margin: 0 auto;">
+                        <h4 style="font-size: 1.35rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.02em;">No Records Discovered</h4>
+                        <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.6;">Your inventory ledger is currently empty or no items match your current search filters. Try broadening your criteria or record a new batch.</p>
 
-                    @if ($receivedItems->hasMorePages())
-                    <a href="{{ $receivedItems->nextPageUrl() }}" class="pagination-arrow">
-                        <i data-lucide="chevron-right" style="width: 20px;"></i>
-                    </a>
-                    @else
-                    <span class="pagination-arrow disabled">
-                        <i data-lucide="chevron-right" style="width: 20px;"></i>
-                    </span>
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <a href="{{ route('receiveditems') }}" class="glass-card" style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-size: 0.9rem; color: var(--text-main); font-weight: 700; transition: all 0.3s; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem;">
+                                <i data-lucide="refresh-ccw" style="width: 16px;"></i>
+                                Reset Filters
+                            </a>
+                            <button onclick="window.location.href='/'" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px; border: none; font-size: 0.9rem; background: var(--primary); color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);">
+                                <i data-lucide="plus-circle" style="width: 18px;"></i>
+                                New Inventory Entry
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        @endforelse
+        </tbody>
+        </table>
+    </div>
+
+    <!-- Advanced Pagination Footer -->
+    <div class="pagination-footer">
+        <div class="pagination-container">
+            <div class="pagination-info">
+                <span class="pagination-info-badge">
+                    <i data-lucide="layers" style="width: 14px; height: 14px; display: inline; margin-right: 6px;"></i>
+                    {{ $receivedItems->total() }} Total Records
+                </span>
+                <span class="pagination-stats">
+                    Showing {{ $receivedItems->firstItem() ?? 0 }} - {{ $receivedItems->lastItem() ?? 0 }}
+                </span>
+            </div>
+
+            <div class="pagination-nav">
+                @if ($receivedItems->onFirstPage())
+                <span class="pagination-arrow disabled">
+                    <i data-lucide="chevron-left" style="width: 20px;"></i>
+                </span>
+                @else
+                <a href="{{ $receivedItems->previousPageUrl() }}" class="pagination-arrow">
+                    <i data-lucide="chevron-left" style="width: 20px;"></i>
+                </a>
+                @endif
+
+                <div class="pagination-numbers">
+                    @php
+                    $currentPage = $receivedItems->currentPage();
+                    $lastPage = $receivedItems->lastPage();
+                    $start = max($currentPage - 2, 1);
+                    $end = min($currentPage + 2, $lastPage);
+                    @endphp
+
+                    @if($start > 1)
+                    <a href="{{ $receivedItems->url(1) }}" class="pagination-number">1</a>
+                    @if($start > 2)
+                    <span class="pagination-dots">...</span>
                     @endif
+                    @endif
+
+                    @for($i = $start; $i <= $end; $i++)
+                        <a href="{{ $receivedItems->url($i) }}"
+                        class="pagination-number {{ $currentPage == $i ? 'active' : '' }}">
+                        {{ $i }}
+                        </a>
+                        @endfor
+
+                        @if($end < $lastPage)
+                            @if($end < $lastPage - 1)
+                            <span class="pagination-dots">...</span>
+                            @endif
+                            <a href="{{ $receivedItems->url($lastPage) }}" class="pagination-number">{{ $lastPage }}</a>
+                            @endif
                 </div>
 
-                <div class="pagination-per-page">
-                    <select class="per-page-select" onchange="window.location.href=this.value">
-                        @foreach([10, 25, 50, 100] as $perPage)
-                        <option value="{{ request()->fullUrlWithQuery(['per_page' => $perPage]) }}"
-                            {{ request('per_page', 15) == $perPage ? 'selected' : '' }}>
-                            {{ $perPage }} per page
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
+                @if ($receivedItems->hasMorePages())
+                <a href="{{ $receivedItems->nextPageUrl() }}" class="pagination-arrow">
+                    <i data-lucide="chevron-right" style="width: 20px;"></i>
+                </a>
+                @else
+                <span class="pagination-arrow disabled">
+                    <i data-lucide="chevron-right" style="width: 20px;"></i>
+                </span>
+                @endif
+            </div>
+
+            <div class="pagination-per-page">
+                <select class="per-page-select" onchange="window.location.href=this.value">
+                    @foreach([10, 25, 50, 100] as $perPage)
+                    <option value="{{ request()->fullUrlWithQuery(['per_page' => $perPage]) }}"
+                        {{ request('per_page', 15) == $perPage ? 'selected' : '' }}>
+                        {{ $perPage }} per page
+                    </option>
+                    @endforeach
+                </select>
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <!-- Advanced Detail Modal -->
@@ -446,6 +446,35 @@
     </div>
 </div>
 
+<!-- Continue Delivery Modal -->
+<div id="continueDeliveryModal" class="modal-backdrop">
+    <div class="modal-content glass-card animate-scale-up" style="max-width: 800px; width: 95%;">
+        <div class="modal-header">
+            <div>
+                <h3 style="margin: 0; font-size: 1.5rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 10px;">
+                    <span style="width: 32px; height: 32px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="package-plus" style="width: 18px;"></i>
+                    </span>
+                    Receive Pending Remainder
+                </h3>
+                <p id="continueModalSubtitle" style="margin: 4px 0 0; font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">Loading batch details...</p>
+            </div>
+            <button onclick="closeContinueDeliveryModal()" class="btn-icon danger">
+                <i data-lucide="x" style="width: 18px;"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="continueModalBody" style="background: var(--bg-card); display: flex; flex-direction: column; gap: 1.5rem; max-height: 70vh; overflow-y: auto;">
+            <!-- Content dynamically generated -->
+        </div>
+        <div style="border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 1rem; padding: 1.5rem; background: var(--bg-card); border-radius: 0 0 28px 28px;">
+            <button onclick="closeContinueDeliveryModal()" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer; transition: all 0.3s; opacity: 0.8;">Cancel</button>
+            <button onclick="submitContinueDelivery()" id="submitContinueBtn" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: #f59e0b; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3); transition: all 0.3s;">
+                <i data-lucide="check-circle" style="width: 18px;"></i> Process Remaining Delivery
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Stock Check / Audit Modal -->
 <div id="stockCheckModal" class="modal-backdrop">
     <div class="modal-content glass-card animate-scale-up" style="max-width: 800px; width: 95%;">
@@ -470,7 +499,7 @@
                         <i data-lucide="layout-grid" style="width: 14px; margin-right: 6px;"></i> Full History
                     </button>
                 </div>
-                
+
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                     <div class="audit-stat-card" onclick="toggleAuditBreakdown('balance')" title="Drill down into Ledger record">
                         <label>Ledger Balance</label>
@@ -518,7 +547,7 @@
                             <div id="newAuditVariance" style="font-size: 2.5rem; font-weight: 900; color: var(--primary); line-height: 1;">--</div>
                         </div>
                     </div>
-                    
+
                     <div class="variance-indicator">
                         <div id="varianceIndicatorFill" class="variance-indicator-fill"></div>
                     </div>
@@ -554,7 +583,7 @@
                         <i data-lucide="shield-check" style="width: 18px;"></i>
                         Seal Record
                     </button>
-                    
+
                     <button type="button" onclick="generateAuditReport()" id="genRepBtn" class="glass-btn audit-report-btn" style="width: 100%; padding: 1.1rem; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 800; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); color: #ffffff; cursor: pointer; transition: all 0.3s; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                         <i data-lucide="receipt-text" style="width: 18px;"></i>
                         Auto-Report
@@ -584,7 +613,7 @@
                             [Locked Content] Waiting for generation...
                         </div>
                     </div>
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1rem;">
                         <button type="button" onclick="document.getElementById('reportComposerDrawer').style.display='none'" class="glass-btn" style="padding: 1rem; border-radius: 14px; font-weight: 700; border: 1px solid var(--border-color); background: transparent; cursor: pointer; color: var(--text-muted);">Discard</button>
                         <button type="button" onclick="printFinalAudit()" class="btn-primary" style="padding: 1rem; border-radius: 14px; font-weight: 900; background: #0c0e12; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
@@ -616,7 +645,7 @@
     .audit-report-btn:hover {
         background: #0f172a !important;
         transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(0,0,0,0.2) !important;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2) !important;
     }
 
     .custom-select-wrapper {
@@ -626,7 +655,8 @@
 
     .custom-select-wrapper select {
         width: 100%;
-        height: 50px; /* Fixed height for precision */
+        height: 50px;
+        /* Fixed height for precision */
         padding: 0 40px 0 15px;
         border: 2px solid var(--border-color);
         border-radius: 12px;
@@ -644,7 +674,8 @@
         content: "";
         position: absolute;
         right: 15px;
-        bottom: 18px; /* Position relative to baseline */
+        bottom: 18px;
+        /* Position relative to baseline */
         width: 12px;
         height: 12px;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='3'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
@@ -656,7 +687,8 @@
 
     .custom-select-wrapper:focus-within::after {
         transform: rotate(180deg);
-        filter: sepia(1) saturate(5) hue-rotate(200deg); /* Shift to primary color */
+        filter: sepia(1) saturate(5) hue-rotate(200deg);
+        /* Shift to primary color */
     }
 
     .custom-select-wrapper select:hover {
@@ -683,7 +715,10 @@
     .audit-stat-card::before {
         content: '';
         position: absolute;
-        top: 0; left: 0; width: 4px; height: 100%;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
         background: var(--primary);
         opacity: 0;
         transition: opacity 0.3s;
@@ -775,10 +810,17 @@
     }
 
     @keyframes slideInUp {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-    
+
     [data-theme='dark'] {
         --bg-main: #020617;
     }
@@ -1541,27 +1583,37 @@
                 let itemsHtml = '';
 
                 batch.items.forEach((item, index) => {
-                    const openingBalance = (parseFloat(item.stock_balance) - parseFloat(item.variance)).toFixed(0);
+                    const expected = (parseFloat(item.stock_balance) - parseFloat(item.variance)).toFixed(0);
                     const isLast = index === batch.items.length - 1;
+                    const varianceColor = parseFloat(item.variance) < 0 ? '#ef4444' : (parseFloat(item.variance) > 0 ? '#3b82f6' : '#10b981');
+                    const varianceSign = parseFloat(item.variance) > 0 ? '+' : '';
+
                     itemsHtml += `
                         <div style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; ${!isLast ? 'border-bottom: 1px solid var(--border-color);' : ''}">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div style="font-weight: 800; color: var(--text-main); font-size: 1rem;">${item.description}</div>
-                                <div data-label="Avail. Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">${item.qty || '0'}</div>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 0.75rem 1rem; border-radius: 12px;">
+                            <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; margin-bottom: 0.25rem;">${item.description}</div>
+                            
+                            <div style="background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center;">
                                 <div style="display: flex; flex-direction: column;">
-                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Opening</span>
-                                    <span style="font-weight: 700; color: var(--text-main);">${openingBalance}</span>
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Expected</span>
+                                    <span style="font-weight: 700; color: var(--text-main); font-size: 1rem;">${expected}</span>
                                 </div>
-                                <div style="display: flex; flex-direction: column; align-items: center;">
-                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Received</span>
-                                    <span style="font-weight: 900; color: #10b981;">+${item.variance}</span>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Brought</span>
+                                    <span style="font-weight: 700; color: var(--text-main); font-size: 1rem;">${item.qty || '0'}</span>
                                 </div>
-                                <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Closing</span>
-                                    <span style="font-weight: 900; color: var(--primary); font-size: 1.1rem;">${item.stock_balance}</span>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Recorded</span>
+                                    <span style="font-weight: 900; color: #10b981; font-size: 1rem;">${item.stock_balance}</span>
                                 </div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Variance</span>
+                                    <span style="font-weight: 900; color: ${varianceColor}; font-size: 1rem;">${varianceSign}${item.variance}</span>
+                                </div>
+                            </div>
+                            
+                            <div style="background: rgba(99, 102, 241, 0.03); padding: 0.75rem 1rem; border-radius: 12px; border-left: 2px solid var(--primary); font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: 8px;">
+                                <i data-lucide="message-circle" style="width: 14px; min-width: 14px; margin-top: 2px;"></i>
+                                <span style="font-style: italic;">${item.remarks ? item.remarks : 'No remarks provided'}</span>
                             </div>
                         </div>
                     `;
@@ -1590,11 +1642,6 @@
                         ${itemsHtml}
                     </div>
 
-                    <div>
-                        <label style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-left: 1rem; margin-bottom: 0.75rem; font-weight: 800; letter-spacing: 0.5px;">Audit Remarks</label>
-                        <textarea id="batchRemarks" placeholder="Enter notes..."
-                            style="width: 100%; padding: 1.25rem; border: 1px solid var(--border-color); border-radius: 20px; background: var(--bg-main); color: var(--text-main); font-size: 0.95rem; resize: none; min-height: 100px; transition: all 0.3s;"></textarea>
-                    </div>
 
                     <div style="margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem;">
                         <button onclick="printModal()" style="width: 100%; background: var(--primary); color: white; border: none; padding: 1.15rem; border-radius: 20px; font-weight: 800; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);">
@@ -1636,14 +1683,224 @@
 
     function printModal() {
         if (currentBatchId) {
-            const remarks = encodeURIComponent(document.getElementById('batchRemarks').value);
-            window.open(`/received-items/${currentBatchId}/print?remarks=${remarks}`, '_blank');
+            window.open(`/received-items/${currentBatchId}/print`, '_blank');
         }
     }
 
+    let continueBatchData = null;
+
     function continueDelivery(batchId) {
-        // Redirect to dashboard with continue_batch parameter
-        window.location.href = `/dashboard?continue_batch=${batchId}`;
+        // Hide standard detail modal if open
+        const actionMenu = document.getElementById('actionMenu-' + batchId);
+        if (actionMenu) {
+            actionMenu.classList.remove('active');
+        }
+        
+        const modal = document.getElementById('continueDeliveryModal');
+        const subtitle = document.getElementById('continueModalSubtitle');
+        const body = document.getElementById('continueModalBody');
+        const submitBtn = document.getElementById('submitContinueBtn');
+        
+        modal.style.display = 'flex';
+        subtitle.innerText = `Fetching pending details for Batch #${batchId}...`;
+        submitBtn.style.display = 'none';
+        
+        body.innerHTML = `
+            <div class="loader-container">
+                <div class="loader"></div>
+                <p>Retrieving transaction data...</p>
+            </div>
+        `;
+
+        fetch(`/received-items/${batchId}?json=true`)
+            .then(response => response.json())
+            .then(data => {
+                continueBatchData = data.batch;
+                subtitle.innerText = `Original Transaction: #${continueBatchData.id} • ${new Date(continueBatchData.entry_date).toLocaleDateString()}`;
+                
+                let html = `
+                    <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; margin-bottom: 0.5rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 4px;">Logistics Source</div>
+                                <div style="font-weight: 800; color: var(--text-main);">${continueBatchData.supplier_name.replace(/\[.*?\]/g, '').trim()}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 4px;">Ledge Category</div>
+                                <div style="font-weight: 800; color: var(--primary);">${ledgeMap[continueBatchData.ledge_category] || continueBatchData.ledge_category}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                let hasPending = false;
+
+                continueBatchData.items.forEach((item, index) => {
+                    const expected = parseFloat(item.stock_balance) - parseFloat(item.variance);
+                    const qty = parseFloat(item.qty) || 0;
+                    const outstanding = expected - qty;
+                    
+                    if (outstanding <= 0) return; // Full quantity has been brought
+                    
+                    hasPending = true;
+                    
+                    html += `
+                    <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div style="font-weight: 800; font-size: 1.1rem; color: var(--text-main);">${item.description}</div>
+                            <div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 800; font-size: 0.8rem;">
+                                ${outstanding} Outstanding
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; background: rgba(0,0,0,0.02); border-radius: 12px; padding: 1rem;">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Expected</span>
+                                <span style="font-weight: 700; color: var(--text-main); font-size: 1rem;">${expected}</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Already Brought</span>
+                                <span style="font-weight: 900; color: #10b981; font-size: 1rem;">${qty}</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Pending Deficit</span>
+                                <span style="font-weight: 900; color: #ef4444; font-size: 1rem;">${outstanding}</span>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 0.5rem;">
+                            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: block;">Newly Arrived Quantity</label>
+                            <input type="number" class="continue-input" data-item-id="${item.id}" max="${outstanding}" min="0" placeholder="Enter additional units received..." 
+                                style="width: 100%; padding: 1.15rem; border-radius: 12px; border: 2px solid var(--border-color); font-size: 1rem; font-weight: 700; background: var(--bg-card); color: var(--text-main); transition: all 0.3s;"
+                                oninput="previewRecalculation(${item.id}, ${expected}, ${item.stock_balance}, ${qty}, ${outstanding})">
+                        </div>
+
+                        <div id="recalc_preview_${item.id}" style="display: none; background: rgba(16, 185, 129, 0.05); border-left: 3px solid #10b981; padding: 0.75rem 1rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.85rem;">
+                            <!-- Preview injected here -->
+                        </div>
+                    </div>
+                    `;
+                });
+
+                
+                if (!hasPending) {
+                    html += `
+                        <div style="text-align: center; padding: 3rem 1rem;">
+                            <i data-lucide="check-circle" style="width: 48px; height: 48px; color: #10b981; margin-bottom: 1rem;"></i>
+                            <h3 style="margin: 0 0 0.5rem; font-weight: 900; color: var(--text-main);">Fully Delivered</h3>
+                            <p style="margin: 0; color: var(--text-muted);">There are no outstanding items to receive for this transaction.</p>
+                        </div>
+                    `;
+                } else {
+                    submitBtn.style.display = 'flex';
+                }
+
+                body.innerHTML = html;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
+    }
+
+    function closeContinueDeliveryModal() {
+        document.getElementById('continueDeliveryModal').style.display = 'none';
+        continueBatchData = null;
+    }
+
+    function previewRecalculation(itemId, expected, currentStock, currentQty, outstanding) {
+        const input = document.querySelector(`.continue-input[data-item-id="${itemId}"]`);
+        const preview = document.getElementById('recalc_preview_' + itemId);
+        
+        let incoming = parseFloat(input.value);
+        
+        if (isNaN(incoming) || incoming <= 0) {
+            preview.style.display = 'none';
+            return;
+        }
+
+        // Prevent exceeding outstanding
+        if (incoming > outstanding) {
+            incoming = outstanding;
+            input.value = incoming;
+        }
+        
+        const newStock = parseFloat(currentStock) + incoming;
+        const newVariance = newStock - expected;
+        const newQty = parseFloat(currentQty) + incoming;
+        
+        // Let's determine variance reason - if newQty == expected but the newStock != expected due to past damage
+        let varText = '';
+        if (newVariance == 0) {
+            varText = '<span style="color:#10b981">Perfect match (No variance)</span>';
+        } else if (newVariance < 0) {
+            if (newQty >= expected) {
+                varText = `<span style="color:#f59e0b">Variance of ${newVariance} due to previously declared faults</span>`;
+            } else {
+                varText = `<span style="color:#ef4444">Still missing ${Math.abs(newVariance)}</span>`;
+            }
+        } else {
+            varText = `<span style="color:#3b82f6">Surplus of ${newVariance}</span>`;
+        }
+
+        preview.style.display = 'block';
+        preview.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="font-weight: 800; color: var(--text-main);">Projected System Updates:</div>
+                <div style="color: var(--text-muted);">New Recorded Balance: <strong>${newStock}</strong></div>
+                <div style="color: var(--text-muted);">New Total Brought: <strong>${newQty}</strong></div>
+                <div style="color: var(--text-muted);">Status: <strong>${varText}</strong></div>
+            </div>
+        `;
+    }
+
+    async function submitContinueDelivery() {
+        const inputs = document.querySelectorAll('.continue-input');
+        const updates = [];
+        
+        inputs.forEach(input => {
+            const val = parseFloat(input.value);
+            if (!isNaN(val) && val > 0) {
+                updates.push({
+                    item_id: input.getAttribute('data-item-id'),
+                    incoming_qty: val
+                });
+            }
+        });
+        
+        if (updates.length === 0) {
+            alert('Please enter at least one quantity to receive.');
+            return;
+        }
+        
+        const btn = document.getElementById('submitContinueBtn');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = `<div class="loader" style="width: 18px; height: 18px; border-width: 2px;"></div> Processing...`;
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/inventory/receive-remainder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ updates })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                closeContinueDeliveryModal();
+                performSearch(true); // Silent refresh to show updated values on UI
+            } else {
+                alert('Execution Error: ' + (result.message || 'Unknown error occurred.'));
+            }
+        } catch (error) {
+            console.error('Submission Failed:', error);
+            alert('A critical system error occurred during submission.');
+        } finally {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
     }
 
     // Close on backdrop click
@@ -1685,7 +1942,7 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 const newBody = doc.getElementById('resultsContainer');
-                
+
                 if (newBody) {
                     const newContent = newBody.innerHTML;
                     // Only update DOM if content actually changed to save cycles
@@ -1694,7 +1951,7 @@
                         if (typeof lucide !== 'undefined') lucide.createIcons();
                     }
                 }
-                
+
                 if (!isSilent) resultsContainer.style.opacity = '1';
             })
             .catch(error => {
@@ -1714,7 +1971,7 @@
         if (!isDetailOpen && !isAuditOpen && !isMenuOpen && !isTyping) {
             performSearch(true);
         }
-    }, 4000); 
+    }, 4000);
 
     if (searchInput) {
         [searchInput, supplierInput, dateInput].forEach(input => {
@@ -1869,21 +2126,21 @@
         document.getElementById('auditStockBal').innerText = stockBal;
         document.getElementById('auditPrevVar').innerText = prevVar || '0';
         document.getElementById('auditPrevAvail').innerText = prevAvail || '0';
-        
+
         document.getElementById('physicalCount').value = '';
         document.getElementById('auditReason').value = '';
         document.getElementById('auditNotes').value = '';
         const varianceDisplay = document.getElementById('newAuditVariance');
         varianceDisplay.innerText = '--';
         varianceDisplay.style.color = 'var(--primary)';
-        
+
         // Reset Visual Gauge and Insight Pill
         const indicatorFill = document.getElementById('varianceIndicatorFill');
         if (indicatorFill) {
             indicatorFill.style.width = '0%';
             indicatorFill.style.background = 'var(--primary-gradient)';
         }
-        
+
         const insightPill = document.getElementById('auditInsight');
         if (insightPill) {
             insightPill.innerHTML = '<i data-lucide="info"></i> <span>Enter count to begin analysis...</span>';
@@ -1891,7 +2148,7 @@
             insightPill.style.background = 'rgba(99, 102, 241, 0.05)';
             insightPill.style.color = 'var(--text-muted)';
         }
-        
+
         // Comprehensive Report Reset (Clear previous audit artifacts)
         const reportDrawer = document.getElementById('reportComposerDrawer');
         if (reportDrawer) {
@@ -1899,16 +2156,16 @@
             document.getElementById('finalReportBody').value = '';
             document.getElementById('lockedConclusionArea').innerHTML = '<div style="color: var(--text-muted); font-style: italic; font-size: 0.75rem;">Waiting for generation...</div>';
         }
-        
+
         // Proactively Prefetch Audit History Data for Reporting
         auditHistoryData = [];
         fetchAuditHistory().catch(() => {});
-        
+
         document.getElementById('auditHistoryDrawer').style.display = 'none';
-        
+
         const modal = document.getElementById('stockCheckModal');
         modal.style.display = 'flex';
-        
+
         // Close all menus
         document.querySelectorAll('.action-menu.active').forEach(m => m.classList.remove('active'));
         if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -1919,7 +2176,7 @@
     async function fetchAuditHistory() {
         const description = document.getElementById('auditItemName').innerText;
         const container = document.getElementById('auditHistoryContent');
-        
+
         container.innerHTML = `
             <div class="loader-container" style="padding: 1rem;">
                 <div class="loader" style="width: 20px; height: 20px; border-width: 2px;"></div>
@@ -1940,7 +2197,7 @@
     function toggleAuditBreakdown(type) {
         const drawer = document.getElementById('auditHistoryDrawer');
         const isCurrentlyOpen = drawer.style.display === 'block';
-        
+
         if (isCurrentlyOpen) {
             drawer.style.display = 'none';
         } else {
@@ -1959,7 +2216,7 @@
         const display = document.getElementById('newAuditVariance');
         const insight = document.getElementById('auditInsight');
         const indicatorFill = document.getElementById('varianceIndicatorFill');
-        
+
         if (isNaN(physical)) {
             display.innerText = '--';
             display.style.color = 'var(--primary)';
@@ -1968,10 +2225,10 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
             return;
         }
-        
+
         const variance = physical - stockBal;
         display.innerText = (variance > 0 ? '+' : '') + variance;
-        
+
         // Progress Indicator Logic
         const diffPercent = Math.min(100, Math.abs((variance / (stockBal || 1)) * 100));
         indicatorFill.style.width = `${diffPercent}%`;
@@ -1999,28 +2256,46 @@
             insight.style.color = '#3b82f6';
             insight.innerHTML = `<i data-lucide="package-plus"></i> <span>Surplus Noted: ${variance} extra units identified.</span>`;
         }
-        
+
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function renderAuditBreakdown(type) {
         const container = document.getElementById('auditHistoryContent');
         const title = document.getElementById('breakdownTitle');
-        
+
         let label = "";
         let key = "";
         let icon = "list";
-        
-        switch(type) {
-            case 'balance': label = "Ledger Trail"; key = "ledge_balance"; icon = "book"; break;
-            case 'stock': label = "System Trail"; key = "stock_balance"; icon = "layers"; break;
-            case 'variance': label = "Variance Trail"; key = "variance"; icon = "git-commit"; break;
-            case 'avail': label = "Available Trail"; key = "qty"; icon = "check-circle"; break;
-            default: label = "Batch History"; key = "qty";
+
+        switch (type) {
+            case 'balance':
+                label = "Ledger Trail";
+                key = "ledge_balance";
+                icon = "book";
+                break;
+            case 'stock':
+                label = "System Trail";
+                key = "stock_balance";
+                icon = "layers";
+                break;
+            case 'variance':
+                label = "Variance Trail";
+                key = "variance";
+                icon = "git-commit";
+                break;
+            case 'avail':
+                label = "Available Trail";
+                key = "qty";
+                icon = "check-circle";
+                break;
+            default:
+                label = "Batch History";
+                key = "qty";
         }
 
         title.innerHTML = `<i data-lucide="${icon}" style="width: 14px;"></i> ${label}`;
-        
+
         if (auditHistoryData.length === 0) {
             container.innerHTML = `<div style="text-align: center; padding: 2rem;"><p style="color: var(--text-muted); font-size: 0.75rem;">No historical trail found.</p></div>`;
             return;
@@ -2028,11 +2303,14 @@
 
         let html = '';
         auditHistoryData.forEach(item => {
-            const date = new Date(item.entry_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+            const date = new Date(item.entry_date).toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'short'
+            });
             const val = item[key] ?? 0;
             const sign = val > 0 ? '+' : '';
             const valColor = val < 0 ? '#ef4444' : (val > 0 ? '#10b981' : 'var(--text-main)');
-            
+
             html += `
                 <div class="batch-audit-card" style="display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start;">
                     <div class="batch-icon-box" style="margin-top: 4px;">
@@ -2041,7 +2319,7 @@
                     <div>
                         <div style="font-weight: 800; font-size: 0.85rem; color: var(--text-main);">${date} - ${item.supplier_name.split(' [')[0]}</div>
                         <div style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 4px;">BATCH ID: #${item.batch_id} | ORIG QTY: ${item.qty}</div>
-                        
+
                         ${item.remarks ? `
                             <div style="background: rgba(99, 102, 241, 0.03); padding: 0.5rem; border-radius: 8px; border-left: 2px solid var(--primary); font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: 6px; margin-top: 4px;">
                                 <i data-lucide="message-circle" style="width: 12px; min-width: 12px; margin-top: 1px;"></i>
@@ -2070,9 +2348,9 @@
         const count = document.getElementById('physicalCount').value;
         const reason = document.getElementById('auditReason').value;
         const notes = document.getElementById('auditNotes').value;
-        
+
         closeStockCheckModal();
-        
+
         showToast(
             'Audit Submitted',
             `Stock audit for ${item} completed. Variance: ${document.getElementById('newAuditVariance').innerText}`,
@@ -2097,7 +2375,7 @@
         // Logic to ensure history data is loaded before synthesis
         const genBtn = document.getElementById('genRepBtn');
         const originalHtml = genBtn.innerHTML;
-        
+
         if (auditHistoryData.length === 0) {
             genBtn.innerHTML = `<div class="loader" style="width: 14px; height: 14px; border-width: 2px;"></div> Synchronizing Trail...`;
             genBtn.style.opacity = '0.7';
@@ -2111,9 +2389,16 @@
         }
 
         const now = new Date();
-        const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-        const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-        
+        const dateStr = now.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        const timeStr = now.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
         // Editable Narrative Body
         let narrative = `This audit was conducted to verify the physical existence and condition of the inventory item: ${item.toUpperCase()}.\n\n`;
         narrative += `Based on the physical verification conducted on ${dateStr} at exactly ${timeStr}, the following observations were recorded regarding the inventory state:\n\n`;
@@ -2131,13 +2416,15 @@
         } else {
             conclusion += `<div style="color: #3b82f6;">NOTICE: A surplus of ${varValue} units has been discovered. Update requested for system ledger records to incorporate identified surplus.</div>`;
         }
-        
+
         document.getElementById('finalReportBody').value = narrative;
         document.getElementById('lockedConclusionArea').innerHTML = conclusion;
         document.getElementById('reportComposerDrawer').style.display = 'block';
-        
+
         showToast('Certificate Synthesized', 'Professional audit document is ready for review.', 'success');
-        document.getElementById('reportComposerDrawer').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('reportComposerDrawer').scrollIntoView({
+            behavior: 'smooth'
+        });
     }
 
     function printFinalAudit() {
@@ -2147,11 +2434,18 @@
         const variance = document.getElementById('newAuditVariance').innerText;
         const narrative = document.getElementById('finalReportBody').value;
         const conclusion = document.getElementById('lockedConclusionArea').innerHTML;
-        
+
         const now = new Date();
-        const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-        const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-        
+        const dateStr = now.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        const timeStr = now.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
         // Build Batch History Table for Report
         let historyHtml = `
             <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.75rem;">
@@ -2169,7 +2463,11 @@
         `;
 
         auditHistoryData.forEach(batch => {
-            const bDate = new Date(batch.entry_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            const bDate = new Date(batch.entry_date).toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
             historyHtml += `
                 <tr style="border-bottom: 1px solid #eee;">
                     <td style="padding: 8px;">${bDate}</td>
@@ -2258,7 +2556,7 @@
                                     <span style="font-weight: 900; color: ${parseFloat(variance) < 0 ? '#ef4444' : '#10b981'};">${variance} Units</span>
                                 </div>
                             </div>
-                            
+
                             <div class="avoid-break">
                                 <div class="section-title" style="background: #ef4444;">IV. FINAL DETERMINATION</div>
                                 <div class="conclusion-inner">${conclusion}</div>
@@ -2271,13 +2569,12 @@
                         <div class="sig-line">FACILITY MANAGER</div>
                         <div class="sig-line">QUALITY CONTROL OFFICE</div>
                     </div>
-                    
+
                     <script>window.onload = function() { window.print(); window.close(); }<\/script>
                 </body>
             </html>
         `);
         printWindow.document.close();
     }
-
 </script>
 @endsection

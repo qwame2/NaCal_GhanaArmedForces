@@ -74,15 +74,9 @@
             </li>
 
             <li class="nav-item">
-                <a href="#" class="nav-link" data-tooltip="Issue Items Out">
+                <a href="{{ route('issueitems') }}" class="nav-link {{ request()->routeIs('issueitems') ? 'active' : '' }}" data-tooltip="Issue Items Out">
                     <i data-lucide="package-minus"></i>
                     <span>Issue Items</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link" data-tooltip="Global Inventory">
-                    <i data-lucide="database"></i>
-                    <span>Inventory</span>
                 </a>
             </li>
         </ul>
