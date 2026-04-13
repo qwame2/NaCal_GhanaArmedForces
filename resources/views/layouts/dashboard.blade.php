@@ -204,11 +204,18 @@
 
             // Apply saved sidebar state
             const isSidebarCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
-            if (isSidebarCollapsed) {
+            const isMobile = window.innerWidth <= 1024;
+
+            if (isSidebarCollapsed && !isMobile) {
                 sidebar.classList.add('collapsed');
                 mainWrapper.classList.add('expanded');
                 if (sidebarToggle) sidebarToggle.innerHTML = '<i data-lucide="panel-left-open" style="width: 20px; color: var(--text-main);"></i>';
                 lucide.createIcons();
+            }
+
+            // Mobile/Tablet Default: Show in full regardless of desktop saved state
+            if (isMobile) {
+                toggleSidebar(true);
             }
 
             function toggleSidebar(show) {

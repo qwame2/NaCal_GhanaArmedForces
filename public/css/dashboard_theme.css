@@ -123,6 +123,30 @@ body {
         margin-top: auto;
         padding-top: 2rem;
     }
+
+    /* Force full width on mobile even if collapsed class is inherited */
+    .sidebar.collapsed {
+        width: 300px !important;
+        padding: 3.5rem 1.25rem 2.5rem 1.25rem !important;
+    }
+
+    .sidebar.collapsed .logo-container h1,
+    .sidebar.collapsed .sidebar-branding-subtitle,
+    .sidebar.collapsed .nav-section-title,
+    .sidebar.collapsed .nav-link span,
+    .sidebar.collapsed .user-profile-card div,
+    .sidebar.collapsed .user-profile-card button {
+        display: block !important;
+    }
+    
+    .sidebar.collapsed .logo-container {
+        justify-content: flex-start !important;
+    }
+    
+    .sidebar.collapsed .nav-link {
+        justify-content: flex-start !important;
+        padding: 1.15rem 1.25rem !important;
+    }
 }
 
 .logo-container {
