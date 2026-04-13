@@ -187,7 +187,7 @@
                 .no-scrollbar::-webkit-scrollbar { display: none; }
                 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             </style>
-            <div id="lowStockPopover" class="low-stock-popover glass-card no-scrollbar" style="width: 340px; max-height: 280px; overflow-y: auto;">
+            <div id="lowStockPopover" class="low-stock-popover glass-card no-scrollbar">
                 <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; font-weight: 800; display: flex; justify-content: space-between;">
                     <span>Category Monitor</span>
                 </h4>
@@ -200,7 +200,7 @@
                         
                         @foreach($lowStockLedges as $l)
                         @php
-                            $isCritical = $l['percentage'] <= 50;
+                            $isCritical = $l['percentage'] <= 50 || ($l['is_override'] ?? false);
                             $statusLabel = $isCritical ? 'CRITICAL DEPLETION' : 'WATCHLIST';
                             $statusColor = $isCritical ? '#ef4444' : '#f59e0b';
                         @endphp

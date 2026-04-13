@@ -104,7 +104,7 @@
             </li>
         </ul>
 
-        <div style="position: absolute; bottom: 2rem; left: 1rem; right: 1rem;">
+        <div class="sidebar-footer" style="margin-top: auto;">
             <div class="user-profile-card">
                 <div style="width: 44px; height: 44px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);">PK</div>
                 <div style="overflow: hidden; flex: 1;">

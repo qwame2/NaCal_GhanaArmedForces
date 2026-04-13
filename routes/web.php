@@ -91,10 +91,10 @@ $dashboardLogic = function () {
         'J' => 'Equipment'
     ];
 
-    // Low Stock Alerts (Stock < 10) - Grouped by Description to handle duplicates
+    // Low Stock Alerts (Stock < 100) - Grouped by Description to handle duplicates
     $lowStockCount = \App\Models\InventoryItem::selectRaw('description, SUM(stock_balance) as total_stock')
         ->groupBy('description')
-        ->havingRaw('SUM(stock_balance) < 10')
+        ->havingRaw('SUM(stock_balance) < 100')
         ->get()
         ->count();
 
@@ -113,11 +113,15 @@ $dashboardLogic = function () {
         
         if ($target > 0) {
             $percentage = round(($avail / $target) * 100);
-            if ($percentage <= 50) {
+            // COMMON SENSE OVERRIDE: Low stock if percentage <= 50% OR absolute qty < 100 units
+            $isOverride = $avail < 100;
+            if ($percentage <= 50 || $isOverride) {
                 $lowStockLedges[] = [
                     'code' => $code,
                     'name' => $ledgeMap[$code] ?? "Ledge $code",
-                    'percentage' => $percentage
+                    'percentage' => $percentage,
+                    'avail' => $avail,
+                    'is_override' => $isOverride
                 ];
             }
         }
@@ -127,7 +131,7 @@ $dashboardLogic = function () {
     $lowStockItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
         ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.stock_balance) as stock_balance, SUM(inventory_items.ledge_balance) as ledge_balance')
         ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
-        ->havingRaw('SUM(inventory_items.stock_balance) < 10')
+        ->havingRaw('SUM(inventory_items.stock_balance) < 100')
         ->orderBy('stock_balance', 'asc')
         ->limit(10)
         ->get();
@@ -249,3 +253,12 @@ Route::get('/received-items', [ReceivedItemsController::class, 'index'])->name('
 Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
 Route::get('/received-items/{id}/print', [ReceivedItemsController::class, 'print'])->name('receiveditems.print');
 Route::get('/api/global-search', [App\Http\Controllers\InventoryController::class, 'globalSearch'])->name('api.search');
+Route::get('/api/item-audit-details', function (\Illuminate\Http\Request $request) {
+    $description = $request->query('description');
+    $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+        ->where('inventory_items.description', $description)
+        ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.supplier_name')
+        ->orderBy('inventory_batches.entry_date', 'desc')
+        ->get();
+    return response()->json($items);
+})->name('api.item-audit-details');

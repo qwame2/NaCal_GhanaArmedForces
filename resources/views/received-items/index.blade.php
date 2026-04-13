@@ -168,6 +168,7 @@
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">System Health</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Avail. Item Health</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Action</th>
                     </tr>
                 </thead>
@@ -211,17 +212,23 @@
                         @php
                         $rawSupplier = $item->supplier_name;
                         $cleanSupplier = preg_replace('/\s\[.*\]$/', '', $rawSupplier);
-                        $status = 'N/A';
+                        $statusRaw = 'N/A';
                         if (preg_match('/\[(.*)\]/', $rawSupplier, $matches)) {
-                        $status = $matches[1];
+                            $statusRaw = $matches[1];
                         }
+                        
+                        // Shorten statuses
+                        $status = $statusRaw;
+                        if ($statusRaw === 'Full Delivery') $status = 'Full Deliv';
+                        elseif ($statusRaw === 'Partial Delivery') $status = 'Partial Deliv';
+
                         $statusColor = '#94a3b8';
-                        if ($status === 'Donor Action') $statusColor = '#3b82f6';
-                        elseif ($status === 'Full Delivery') $statusColor = '#10b981';
-                        elseif ($status === 'Partial Delivery') $statusColor = '#ef4444';
+                        if ($statusRaw === 'Donor Action') $statusColor = '#3b82f6';
+                        elseif ($statusRaw === 'Full Delivery') $statusColor = '#10b981';
+                        elseif ($statusRaw === 'Partial Delivery') $statusColor = '#ef4444';
                         @endphp
-                        <td data-label="Supplier" style="padding: 1.25rem 1.5rem; color: {{ $status === 'Donor Action' ? 'var(--text-muted)' : 'var(--text-main)' }}; font-weight: 500;">{{ $status === 'Donor Action' ? '-' : $cleanSupplier }}</td>
-                        <td data-label="Donor" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: {{ $status === 'Donor Action' ? '700' : '400' }};">{{ $status === 'Donor Action' ? $cleanSupplier : '-' }}</td>
+                        <td data-label="Supplier" style="padding: 1.25rem 1.5rem; color: {{ $statusRaw === 'Donor Action' ? 'var(--text-muted)' : 'var(--text-main)' }}; font-weight: 500;">{{ $statusRaw === 'Donor Action' ? '-' : $cleanSupplier }}</td>
+                        <td data-label="Donor" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: {{ $statusRaw === 'Donor Action' ? '700' : '400' }};">{{ $statusRaw === 'Donor Action' ? $cleanSupplier : '-' }}</td>
                         <td data-label="Status" style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.7rem; font-weight: 800; color: white; background: {{ $statusColor }}; padding: 0.35rem 0.8rem; border-radius: 8px; text-transform: uppercase; box-shadow: 0 4px 10px {{ $statusColor }}30;">
                                 {{ $status }}
@@ -249,13 +256,25 @@
                             </div>
                         </td>
 
+                        <td data-label="Available Item Health" style="padding: 1.25rem 1.5rem;">
+                            @php
+                                $isItemLow = $totalQty <= 100;
+                                $itemHealthStatus = $isItemLow ? 'LOW STOCK' : 'IN STOCK';
+                                $itemHealthColor = $isItemLow ? '#ef4444' : '#10b981';
+                            @endphp
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 0.6rem; font-weight: 900; color: white; background: {{ $itemHealthColor }}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; width: fit-content; text-transform: uppercase;">{{ $itemHealthStatus }}</span>
+                                <i data-lucide="{{ $isItemLow ? 'alert-circle' : 'check-circle' }}" style="width: 14px; color: {{ $itemHealthColor }};"></i>
+                            </div>
+                        </td>
+
                         <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right; display: flex; justify-content: flex-end;">
                             <div class="action-dropdown-wrapper">
                                 <button type="button" class="glass-btn-sm" title="Actions" onclick="toggleActionMenu('{{ $item->batch_id }}')" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
                                     <i data-lucide="more-vertical" style="width: 18px;"></i>
                                 </button>
                                 <div id="actionMenu-{{ $item->batch_id }}" class="action-menu">
-                                    @if($status === 'Partial Delivery')
+                                    @if($statusRaw === 'Partial Delivery')
                                     <button onclick="continueDelivery('{{ $item->batch_id }}')" class="menu-item" style="color: #f59e0b;">
                                         <i data-lucide="package-plus"></i>
                                         Continue Delivery
@@ -265,7 +284,7 @@
                                         <i data-lucide="eye"></i>
                                         View Details
                                     </button>
-                                    <button onclick="performStockCheck('{{ addslashes($item->description) }}', {{ $totalQty }}, {{ $totalStock }}, '{{ $hStatus }}', '{{ round($percentage) }}%')" class="menu-item" style="color: var(--primary);">
+                                    <button onclick="openStockCheckModal('{{ addslashes($item->description) }}', {{ $totalLedge }}, {{ $totalStock }}, '{{ $agg->total_variance ?? 0 }}', '{{ $totalQty }}')" class="menu-item" style="color: var(--primary);">
                                         <i data-lucide="shield-check"></i>
                                         Stock Check
                                     </button>
@@ -410,6 +429,157 @@
     </div>
 </div>
 
+<!-- Stock Check / Audit Modal -->
+<div id="stockCheckModal" class="modal-backdrop">
+    <div class="modal-content glass-card animate-scale-up" style="max-width: 800px; width: 95%;">
+        <div class="modal-header">
+            <div>
+                <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.25rem;">Stock Audit</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">Physical Verification Form</p>
+            </div>
+            <button onclick="closeStockCheckModal()" class="btn-icon danger">
+                <i data-lucide="x" style="width: 18px;"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- Modern Stat Grid -->
+            <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 24px; margin-bottom: 1.5rem; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+                <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;">Audit Target</label>
+                        <div id="auditItemName" style="font-size: 1.4rem; font-weight: 900; color: var(--text-main); line-height: 1;">Broom</div>
+                    </div>
+                    <button onclick="fetchAuditHistory()" class="glass-btn-sm" style="border-radius: 12px; font-weight: 700;">
+                        <i data-lucide="layout-grid" style="width: 14px; margin-right: 6px;"></i> Full History
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="audit-stat-card" onclick="toggleAuditBreakdown('balance')" title="Drill down into Ledger record">
+                        <label>Ledger Balance</label>
+                        <div id="auditLedgeBal">0</div>
+                    </div>
+                    <div class="audit-stat-card" onclick="toggleAuditBreakdown('stock')" title="Drill down into System record">
+                        <label>Stock Balance</label>
+                        <div id="auditStockBal">0</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="audit-stat-card" onclick="toggleAuditBreakdown('variance')" title="Review historical discrepancies">
+                        <label>Prev. Variance</label>
+                        <div id="auditPrevVar">0</div>
+                    </div>
+                    <div class="audit-stat-card" onclick="toggleAuditBreakdown('avail')" title="Audit current availability trail">
+                        <label>Available Qty</label>
+                        <div id="auditPrevAvail">0</div>
+                    </div>
+                </div>
+
+                <!-- History Breakdown Drawer (Modernized) -->
+                <div id="auditHistoryDrawer" style="display: none; margin-top: 1.5rem; border-top: 2px solid var(--bg-main); padding-top: 1.5rem; max-height: 300px; overflow-y: auto; scrollbar-width: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 id="breakdownTitle" style="font-size: 0.8rem; font-weight: 900; text-transform: uppercase; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                            History Breakdown
+                        </h4>
+                        <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700;">Recent Batches First</span>
+                    </div>
+                    <div id="auditHistoryContent"></div>
+                </div>
+            </div>
+
+            <!-- Enhanced Input Form -->
+            <form id="stockCheckForm" onsubmit="event.preventDefault(); submitStockCheck();" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="audit-input-group" style="background: var(--bg-main); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border-color);">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
+                        <div>
+                            <label style="display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Physical Count</label>
+                            <input type="number" id="physicalCount" required placeholder="0" style="width: 100%; border: none; background: transparent; color: var(--text-main); font-size: 2rem; font-weight: 900; outline: none;" oninput="calculateAuditVariance()">
+                        </div>
+                        <div style="text-align: right;">
+                            <label style="display: block; font-size: 0.8rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem; text-transform: uppercase;">New Variance</label>
+                            <div id="newAuditVariance" style="font-size: 2.5rem; font-weight: 900; color: var(--primary); line-height: 1;">--</div>
+                        </div>
+                    </div>
+                    
+                    <div class="variance-indicator">
+                        <div id="varianceIndicatorFill" class="variance-indicator-fill"></div>
+                    </div>
+
+                    <div id="auditInsightArea">
+                        <div class="insight-pill" id="auditInsight" style="background: rgba(99, 102, 241, 0.05); color: var(--primary);">
+                            <i data-lucide="brain"></i>
+                            <span>Waiting for physical input...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1rem;">
+                    <div class="custom-select-wrapper">
+                        <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Condition</label>
+                        <select id="auditReason" style="width: 100%; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); color: var(--text-main); font-weight: 700; outline: none;">
+                            <option value="">Status...</option>
+                            <option value="Good">Good Condition</option>
+                            <option value="Missing">Missing</option>
+                            <option value="Damaged">Damaged</option>
+                            <option value="Found">Found</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Auditor Remarks / Variance Documentation</label>
+                        <textarea id="auditNotes" placeholder="Describe the situation, location, or damage details in depth..." style="width: 100%; height: 80px; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); color: var(--text-main); font-family: inherit; resize: none; outline: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 4px rgba(99, 102, 241, 0.1)'" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none'"></textarea>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn-primary" style="width: 100%; padding: 1.25rem; border-radius: 18px; border: none; background: var(--primary-gradient); color: white; font-weight: 900; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3); transition: all 0.3s;">
+                        <i data-lucide="shield-check"></i>
+                        Seal Audit Record
+                    </button>
+                    
+                    <button type="button" onclick="generateAuditReport()" id="genRepBtn" class="glass-btn" style="width: 100%; padding: 1.1rem; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer; transition: all 0.3s;">
+                        <i data-lucide="wand-2" style="width: 18px;"></i>
+                        Auto-Generate Detailed Report
+                    </button>
+                </div>
+
+                <!-- Report Composer Drawer (Formal) -->
+                <div id="reportComposerDrawer" style="display: none; margin-top: 2rem; border-top: 3px solid var(--primary); padding-top: 1.5rem; background: var(--bg-card); border-radius: 20px; padding: 1.5rem; border: 1px solid var(--border-color); box-shadow: 0 10px 40px rgba(0,0,0,0.05); animation: slideInUp 0.4s ease;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="file-edit" style="width: 18px;"></i>
+                            </div>
+                            <h4 style="font-size: 0.9rem; font-weight: 900; color: var(--text-main); text-transform: uppercase; margin:0;">Report Composer</h4>
+                        </div>
+                        <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800; background: rgba(99, 102, 241, 0.1); padding: 4px 10px; border-radius: 100px;">Internal Audit Mode</span>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Editable Auditor Narrative</label>
+                        <textarea id="finalReportBody" style="width: 100%; height: 180px; padding: 1.25rem; border-radius: 14px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 0.85rem; line-height: 1.6; resize: vertical; outline: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'"></textarea>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem; opacity: 0.8;">
+                        <label style="display: block; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">System-Generated Conclusion (Locked)</label>
+                        <div id="lockedConclusionArea" style="width: 100%; padding: 1rem; background: var(--bg-main); border: 1px dashed var(--border-color); border-radius: 14px; font-size: 0.8rem; font-weight: 700; color: #ef4444; position: relative;">
+                            [Locked Content] Waiting for generation...
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1rem;">
+                        <button type="button" onclick="document.getElementById('reportComposerDrawer').style.display='none'" class="glass-btn" style="padding: 1rem; border-radius: 14px; font-weight: 700; border: 1px solid var(--border-color); background: transparent; cursor: pointer; color: var(--text-muted);">Discard</button>
+                        <button type="button" onclick="printFinalAudit()" class="btn-primary" style="padding: 1rem; border-radius: 14px; font-weight: 900; background: #0c0e12; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+                            <i data-lucide="printer"></i> Finalize & Print Report
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <style>
     /* Premium Design System */
     :root {
@@ -423,6 +593,120 @@
     [data-theme='dark'] {
         --glass-bg: rgba(30, 41, 59, 0.7);
         --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Stock Audit Command Center Styles */
+    .audit-stat-card {
+        background: var(--bg-card);
+        padding: 1rem;
+        border-radius: 18px;
+        border: 1px solid var(--border-color);
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .audit-stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 4px; height: 100%;
+        background: var(--primary);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .audit-stat-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        background: var(--bg-main);
+        border-color: var(--primary);
+        box-shadow: 0 15px 35px -10px rgba(99, 102, 241, 0.2);
+    }
+
+    .audit-stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .audit-stat-card label {
+        display: block;
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .audit-stat-card div {
+        font-size: 1.4rem;
+        font-weight: 900;
+        color: var(--text-main);
+        letter-spacing: -0.5px;
+    }
+
+    .insight-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0.6rem 1.2rem;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        margin-top: 1rem;
+        animation: slideInUp 0.4s ease;
+    }
+
+    .batch-audit-card {
+        background: var(--bg-main);
+        border-radius: 14px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        border: 1px solid var(--border-color);
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 15px;
+        align-items: center;
+        transition: all 0.3s;
+    }
+
+    .batch-audit-card:hover {
+        border-color: var(--primary);
+        background: var(--bg-card);
+        transform: translateX(5px);
+    }
+
+    .batch-icon-box {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(99, 102, 241, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+    }
+
+    .variance-indicator {
+        height: 6px;
+        border-radius: 3px;
+        background: var(--border-color);
+        margin-top: 12px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .variance-indicator-fill {
+        height: 100%;
+        width: 0%;
+        transition: width 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    [data-theme='dark'] {
         --bg-main: #020617;
     }
 
@@ -1306,12 +1590,14 @@
 
     let debounceTimer;
 
-    function performSearch() {
-        // Instant Clean URL on search start
-        const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-        window.history.replaceState({}, '', cleanUrl);
+    function performSearch(isSilent = false) {
+        // Skip history updates and UI dimming during silent background sync
+        if (!isSilent) {
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.replaceState({}, '', cleanUrl);
+            resultsContainer.style.opacity = '0.6';
+        }
 
-        resultsContainer.style.opacity = '0.6';
         const formData = new FormData(filterForm);
         const params = new URLSearchParams(formData).toString();
         const url = `${window.location.pathname}?${params}`;
@@ -1325,21 +1611,37 @@
             .then(html => {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
-                const newContent = doc.getElementById('resultsContainer').innerHTML;
-                resultsContainer.innerHTML = newContent;
-                resultsContainer.style.opacity = '1';
-
-                // Re-initialize icons and listeners for new content
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-
-                // Final Clean URL check
-                window.history.replaceState({}, '', cleanUrl);
+                const newBody = doc.getElementById('resultsContainer');
+                
+                if (newBody) {
+                    const newContent = newBody.innerHTML;
+                    // Only update DOM if content actually changed to save cycles
+                    if (resultsContainer.innerHTML !== newContent) {
+                        resultsContainer.innerHTML = newContent;
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    }
+                }
+                
+                if (!isSilent) resultsContainer.style.opacity = '1';
             })
             .catch(error => {
-                console.error('Search error:', error);
-                resultsContainer.style.opacity = '1';
+                console.error('Background Sync Error:', error);
+                if (!isSilent) resultsContainer.style.opacity = '1';
             });
     }
+
+    // High-Fidelity Background Sync Engine (Silent Pulse)
+    // Refreshes the system every 4 seconds if the auditor is idle
+    setInterval(() => {
+        const isDetailOpen = document.getElementById('detailModal')?.style.display === 'flex';
+        const isAuditOpen = document.getElementById('stockCheckModal')?.style.display === 'flex';
+        const isMenuOpen = document.querySelector('.action-menu.active') !== null;
+        const isTyping = document.activeElement.matches('input, textarea, select');
+
+        if (!isDetailOpen && !isAuditOpen && !isMenuOpen && !isTyping) {
+            performSearch(true);
+        }
+    }, 4000); 
 
     if (searchInput) {
         [searchInput, supplierInput, dateInput].forEach(input => {
@@ -1459,19 +1761,421 @@
         }
     }
 
-    function performStockCheck(description, available, total, status, percentage) {
-        const type = status === 'IN STOCK' ? 'success' : (status === 'WARNING' ? 'info' : 'error');
-        const icon = status === 'IN STOCK' ? '✅' : (status === 'WARNING' ? '⚠️' : '🚨');
+    function openStockCheckModal(description, ledgeBal, stockBal, prevVar, prevAvail) {
+        document.getElementById('auditItemName').innerText = description;
+        document.getElementById('auditLedgeBal').innerText = ledgeBal;
+        document.getElementById('auditStockBal').innerText = stockBal;
+        document.getElementById('auditPrevVar').innerText = prevVar || '0';
+        document.getElementById('auditPrevAvail').innerText = prevAvail || '0';
+        
+        document.getElementById('physicalCount').value = '';
+        document.getElementById('auditReason').value = '';
+        document.getElementById('auditNotes').value = '';
+        const varianceDisplay = document.getElementById('newAuditVariance');
+        varianceDisplay.innerText = '--';
+        varianceDisplay.style.color = 'var(--primary)';
+        
+        // Reset Visual Gauge and Insight Pill
+        const indicatorFill = document.getElementById('varianceIndicatorFill');
+        if (indicatorFill) {
+            indicatorFill.style.width = '0%';
+            indicatorFill.style.background = 'var(--primary-gradient)';
+        }
+        
+        const insightPill = document.getElementById('auditInsight');
+        if (insightPill) {
+            insightPill.innerHTML = '<i data-lucide="info"></i> <span>Enter count to begin analysis...</span>';
+            insightPill.className = 'insight-pill';
+            insightPill.style.background = 'rgba(99, 102, 241, 0.05)';
+            insightPill.style.color = 'var(--text-muted)';
+        }
+        
+        // Comprehensive Report Reset (Clear previous audit artifacts)
+        const reportDrawer = document.getElementById('reportComposerDrawer');
+        if (reportDrawer) {
+            reportDrawer.style.display = 'none';
+            document.getElementById('finalReportBody').value = '';
+            document.getElementById('lockedConclusionArea').innerHTML = '<div style="color: var(--text-muted); font-style: italic; font-size: 0.75rem;">Waiting for generation...</div>';
+        }
+        
+        // Proactively Prefetch Audit History Data for Reporting
+        auditHistoryData = [];
+        fetchAuditHistory().catch(() => {});
+        
+        document.getElementById('auditHistoryDrawer').style.display = 'none';
+        
+        const modal = document.getElementById('stockCheckModal');
+        modal.style.display = 'flex';
+        
+        // Close all menus
+        document.querySelectorAll('.action-menu.active').forEach(m => m.classList.remove('active'));
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    let auditHistoryData = [];
+
+    async function fetchAuditHistory() {
+        const description = document.getElementById('auditItemName').innerText;
+        const container = document.getElementById('auditHistoryContent');
+        
+        container.innerHTML = `
+            <div class="loader-container" style="padding: 1rem;">
+                <div class="loader" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 8px;">Loading batch trail...</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(`/api/item-audit-details?description=${encodeURIComponent(description)}`);
+            auditHistoryData = await response.json();
+            return auditHistoryData;
+        } catch (error) {
+            container.innerHTML = `<p style="color: #ef4444; font-size: 0.7rem;">Failed to retrieve batch details: ${error.message}</p>`;
+            throw error;
+        }
+    }
+
+    function toggleAuditBreakdown(type) {
+        const drawer = document.getElementById('auditHistoryDrawer');
+        const isCurrentlyOpen = drawer.style.display === 'block';
+        
+        if (isCurrentlyOpen) {
+            drawer.style.display = 'none';
+        } else {
+            drawer.style.display = 'block';
+            if (auditHistoryData.length === 0) {
+                fetchAuditHistory().then(() => renderAuditBreakdown(type)).catch(() => {});
+            } else {
+                renderAuditBreakdown(type);
+            }
+        }
+    }
+
+    function calculateAuditVariance() {
+        const stockBal = parseFloat(document.getElementById('auditStockBal').innerText) || 0;
+        const physical = parseFloat(document.getElementById('physicalCount').value);
+        const display = document.getElementById('newAuditVariance');
+        const insight = document.getElementById('auditInsight');
+        const indicatorFill = document.getElementById('varianceIndicatorFill');
+        
+        if (isNaN(physical)) {
+            display.innerText = '--';
+            display.style.color = 'var(--primary)';
+            insight.innerHTML = `<i data-lucide="brain"></i> <span>Waiting for physical input...</span>`;
+            indicatorFill.style.width = '0%';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            return;
+        }
+        
+        const variance = physical - stockBal;
+        display.innerText = (variance > 0 ? '+' : '') + variance;
+        
+        // Progress Indicator Logic
+        const diffPercent = Math.min(100, Math.abs((variance / (stockBal || 1)) * 100));
+        indicatorFill.style.width = `${diffPercent}%`;
+
+        // Smart Insight Engine
+        if (variance === 0) {
+            display.style.color = '#10b981';
+            indicatorFill.style.background = '#10b981';
+            insight.className = 'insight-pill';
+            insight.style.background = 'rgba(16, 185, 129, 0.1)';
+            insight.style.color = '#10b981';
+            insight.innerHTML = `<i data-lucide="check-sparkles"></i> <span>Perfect Audit! Physical matches System.</span>`;
+        } else if (variance < 0) {
+            display.style.color = '#ef4444';
+            indicatorFill.style.background = '#ef4444';
+            insight.className = 'insight-pill';
+            insight.style.background = 'rgba(239, 68, 68, 0.1)';
+            insight.style.color = '#ef4444';
+            insight.innerHTML = `<i data-lucide="alert-triangle"></i> <span>Shortage Detected: System Expects ${stockBal} units.</span>`;
+        } else {
+            display.style.color = '#3b82f6';
+            indicatorFill.style.background = '#3b82f6';
+            insight.className = 'insight-pill';
+            insight.style.background = 'rgba(59, 130, 246, 0.1)';
+            insight.style.color = '#3b82f6';
+            insight.innerHTML = `<i data-lucide="package-plus"></i> <span>Surplus Noted: ${variance} extra units identified.</span>`;
+        }
+        
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function renderAuditBreakdown(type) {
+        const container = document.getElementById('auditHistoryContent');
+        const title = document.getElementById('breakdownTitle');
+        
+        let label = "";
+        let key = "";
+        let icon = "list";
+        
+        switch(type) {
+            case 'balance': label = "Ledger Trail"; key = "ledge_balance"; icon = "book"; break;
+            case 'stock': label = "System Trail"; key = "stock_balance"; icon = "layers"; break;
+            case 'variance': label = "Variance Trail"; key = "variance"; icon = "git-commit"; break;
+            case 'avail': label = "Available Trail"; key = "qty"; icon = "check-circle"; break;
+            default: label = "Batch History"; key = "qty";
+        }
+
+        title.innerHTML = `<i data-lucide="${icon}" style="width: 14px;"></i> ${label}`;
+        
+        if (auditHistoryData.length === 0) {
+            container.innerHTML = `<div style="text-align: center; padding: 2rem;"><p style="color: var(--text-muted); font-size: 0.75rem;">No historical trail found.</p></div>`;
+            return;
+        }
+
+        let html = '';
+        auditHistoryData.forEach(item => {
+            const date = new Date(item.entry_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+            const val = item[key] ?? 0;
+            const sign = val > 0 ? '+' : '';
+            const valColor = val < 0 ? '#ef4444' : (val > 0 ? '#10b981' : 'var(--text-main)');
+            
+            html += `
+                <div class="batch-audit-card" style="display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start;">
+                    <div class="batch-icon-box" style="margin-top: 4px;">
+                        <i data-lucide="database" style="width: 18px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 800; font-size: 0.85rem; color: var(--text-main);">${date} - ${item.supplier_name.split(' [')[0]}</div>
+                        <div style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 4px;">BATCH ID: #${item.batch_id} | ORIG QTY: ${item.qty}</div>
+                        
+                        ${item.remarks ? `
+                            <div style="background: rgba(99, 102, 241, 0.03); padding: 0.5rem; border-radius: 8px; border-left: 2px solid var(--primary); font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: 6px; margin-top: 4px;">
+                                <i data-lucide="message-circle" style="width: 12px; min-width: 12px; margin-top: 1px;"></i>
+                                <span style="font-style: italic;">${item.remarks}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: 900; font-size: 1.1rem; color: ${valColor};">${sign}${val}</div>
+                        <div style="font-size: 0.6rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Result</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function closeStockCheckModal() {
+        document.getElementById('stockCheckModal').style.display = 'none';
+    }
+
+    function submitStockCheck() {
+        const item = document.getElementById('auditItemName').innerText;
+        const count = document.getElementById('physicalCount').value;
+        const reason = document.getElementById('auditReason').value;
+        const notes = document.getElementById('auditNotes').value;
+        
+        closeStockCheckModal();
         
         showToast(
-            `Stock Health Audit: ${description}`,
-            `${icon} Currently ${status} (${percentage}). ${available} units available out of ${total} system capacity.`,
-            type,
-            6000
+            'Audit Submitted',
+            `Stock audit for ${item} completed. Variance: ${document.getElementById('newAuditVariance').innerText}`,
+            'success'
         );
-        
-        // Close all menus after action
-        document.querySelectorAll('.action-menu.active').forEach(m => m.classList.remove('active'));
     }
+    async function generateAuditReport() {
+        const item = document.getElementById('auditItemName').innerText;
+        const ledgeBal = document.getElementById('auditLedgeBal').innerText;
+        const stockBal = document.getElementById('auditStockBal').innerText;
+        const prevVar = document.getElementById('auditPrevVar').innerText;
+        const physical = document.getElementById('physicalCount').value;
+        const variance = document.getElementById('newAuditVariance').innerText;
+        const reason = document.getElementById('auditReason').value || 'General Stock Audit';
+        const remarks = document.getElementById('auditNotes').value || 'No specific situation remarks noted.';
+
+        if (!physical) {
+            showToast('Execution Halt', 'Please enter a physical count to initialize the formal report.', 'error');
+            return;
+        }
+
+        // Logic to ensure history data is loaded before synthesis
+        const genBtn = document.getElementById('genRepBtn');
+        const originalHtml = genBtn.innerHTML;
+        
+        if (auditHistoryData.length === 0) {
+            genBtn.innerHTML = `<div class="loader" style="width: 14px; height: 14px; border-width: 2px;"></div> Synchronizing Trail...`;
+            genBtn.style.opacity = '0.7';
+            try {
+                await fetchAuditHistory();
+            } catch (e) {
+                showToast('Synthesis Warning', 'Could not retrieve historical trail for the report.', 'warning');
+            }
+            genBtn.innerHTML = originalHtml;
+            genBtn.style.opacity = '1';
+        }
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        
+        // Editable Narrative Body
+        let narrative = `This audit was conducted to verify the physical existence and condition of the inventory item: ${item.toUpperCase()}.\n\n`;
+        narrative += `Based on the physical verification conducted on ${dateStr} at exactly ${timeStr}, the following observations were recorded regarding the inventory state:\n\n`;
+        narrative += `[AUDITOR NOTES]\n`;
+        narrative += `${remarks}\n\n`;
+        narrative += `The condition of the items has been categorized as "${reason}". This assessment reflects the current physical quality and storage situation for this batch.`;
+
+        // Uneditable Conclusion Content
+        let conclusion = `<div style="color: #000; font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem;">[AUDIT CONCLUSION]</div>`;
+        const varValue = parseFloat(variance);
+        if (varValue === 0) {
+            conclusion += `<div style="color: #10b981;">SUCCESS: No variance detected. Physical stock perfectly aligns with system ledger records.</div>`;
+        } else if (varValue < 0) {
+            conclusion += `<div style="color: #ef4444;">WARNING: A shortage of ${Math.abs(varValue)} units has been identified. Immediate reconciliation or loss investigation is required.</div>`;
+        } else {
+            conclusion += `<div style="color: #3b82f6;">NOTICE: A surplus of ${varValue} units has been discovered. Update requested for system ledger records to incorporate identified surplus.</div>`;
+        }
+        
+        document.getElementById('finalReportBody').value = narrative;
+        document.getElementById('lockedConclusionArea').innerHTML = conclusion;
+        document.getElementById('reportComposerDrawer').style.display = 'block';
+        
+        showToast('Certificate Synthesized', 'Professional audit document is ready for review.', 'success');
+        document.getElementById('reportComposerDrawer').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function printFinalAudit() {
+        const logoUrl = "{{ asset('img/NACOC.png') }}";
+        const item = document.getElementById('auditItemName').innerText;
+        const physical = document.getElementById('physicalCount').value;
+        const variance = document.getElementById('newAuditVariance').innerText;
+        const narrative = document.getElementById('finalReportBody').value;
+        const conclusion = document.getElementById('lockedConclusionArea').innerHTML;
+        
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        
+        // Build Batch History Table for Report
+        let historyHtml = `
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.75rem;">
+                <thead>
+                    <tr style="background: #f3f4f6; text-align: left; border-bottom: 2px solid #000;">
+                        <th style="padding: 10px;">Receipt Date</th>
+                        <th style="padding: 10px;">Batch ID</th>
+                        <th style="padding: 10px;">Source</th>
+                        <th style="padding: 10px; text-align: center;">Ledge</th>
+                        <th style="padding: 10px; text-align: center;">Stock</th>
+                        <th style="padding: 10px; text-align: center;">Var.</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        auditHistoryData.forEach(batch => {
+            const bDate = new Date(batch.entry_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            historyHtml += `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px;">${bDate}</td>
+                    <td style="padding: 8px; font-family: monospace;">#${batch.batch_id}</td>
+                    <td style="padding: 8px;">${batch.supplier_name.split(' [')[0]}</td>
+                    <td style="padding: 8px; text-align: center;">${batch.ledge_balance}</td>
+                    <td style="padding: 8px; text-align: center;">${batch.stock_balance}</td>
+                    <td style="padding: 8px; text-align: center; font-weight: 700;">${batch.variance > 0 ? '+' : ''}${batch.variance}</td>
+                </tr>
+            `;
+        });
+        historyHtml += `</tbody></table>`;
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>NACOC Audit - ${item}</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+                    <style>
+                        @page { size: A4; margin: 20mm 15mm 20mm 15mm; }
+                        body { padding: 0; margin: 0; font-family: 'Inter', sans-serif; color: #1a1a1a; line-height: 1.4; }
+                        .page-wrapper { padding: 10px; }
+                        .header { display: flex; justify-content: space-between; border-bottom: 4px solid #000; padding-bottom: 15px; margin-bottom: 30px; }
+                        .logo-box { display: flex; align-items: center; gap: 20px; }
+                        .logo-img { height: 75px; width: auto; object-fit: contain; }
+                        .company-info h1 { margin: 0; font-size: 1.6rem; font-weight: 900; color: #000; }
+                        .company-info p { margin: 0; font-size: 0.8rem; color: #444; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+                        .report-title { text-align: center; margin-bottom: 30px; }
+                        .report-title h2 { font-size: 1.5rem; font-weight: 900; margin: 0; padding: 10px; border: 2px solid #000; display: inline-block; }
+                        .meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; background: #fafafa; padding: 15px; border: 1px solid #ddd; border-radius: 8px; page-break-inside: avoid; }
+                        .meta-item label { display: block; font-size: 0.6rem; color: #666; font-weight: 800; text-transform: uppercase; margin-bottom: 2px; }
+                        .meta-item div { font-weight: 800; font-size: 0.9rem; }
+                        .section-title { font-weight: 900; font-size: 1rem; background: #000; color: #fff; padding: 6px 15px; margin: 25px 0 15px 0; display: inline-block; page-break-after: avoid; }
+                        .audit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+                        .narrative { font-size: 0.85rem; white-space: pre-wrap; }
+                        .conclusion-inner { background: #fff1f2; border: 2px solid #ef4444; padding: 15px; border-radius: 6px; margin-top: 10px; }
+                        .avoid-break { page-break-inside: avoid; break-inside: avoid; }
+                        .sig-line { border-top: 1px solid #000; padding-top: 8px; font-weight: 800; text-align: center; font-size: 0.7rem; }
+                    </style>
+                </head>
+                <body>
+                    <div class="page-wrapper">
+                        <div class="logo-box">
+                            <img src="${logoUrl}" class="logo-img" alt="NACOC">
+                            <div class="company-info">
+                                <h1>NACOC</h1>
+                                <p>Narcotics Control Commission</p>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: 900; font-size: 1.2rem;">AUDIT CERTIFICATE</div>
+                            <div style="font-size: 0.65rem; color: #666; font-weight: 700;">REG: NC/AUD-LOG/${new Date().getFullYear()}/${Math.floor(Math.random()*10000)}</div>
+                        </div>
+                    </div>
+
+                    <div class="report-title">
+                        <h2>VERIFIED STOCK AUDIT REPORT</h2>
+                    </div>
+
+                    <div class="meta-grid">
+                        <div class="meta-item"><label>Subject Material</label><div>${item}</div></div>
+                        <div class="meta-item"><label>Date of Audit</label><div>${dateStr}</div></div>
+                        <div class="meta-item"><label>Time of Verification</label><div>${timeStr}</div></div>
+                        <div class="meta-item"><label>Audit Status</label><div style="color: #ef4444;">FORMAL</div></div>
+                    </div>
+
+                    <div class="section-title">I. HISTORICAL RECEIPT FORENSICS</div>
+                    <p style="font-size: 0.7rem; color: #666; font-style: italic; margin-bottom: 10px;">Chronological timeline of all item batches received prior to this audit.</p>
+                    ${historyHtml}
+
+                    <div class="audit-grid" style="margin-top: 20px;">
+                        <div>
+                            <div class="section-title">II. AUDITOR OBSERVATIONS</div>
+                            <div class="narrative">${narrative}</div>
+                        </div>
+                        <div>
+                            <div class="section-title">III. PHYSICAL VERIFICATION DATA</div>
+                            <div style="background: #f0fdf4; border: 1px solid #10b981; padding: 15px; border-radius: 8px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                                    <span style="font-size: 0.7rem; font-weight: 800;">PHYSICAL QUANTITY:</span>
+                                    <span style="font-weight: 900; color: #000;">${physical} Units</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="font-size: 0.7rem; font-weight: 800;">AUDIT VARIANCE:</span>
+                                    <span style="font-weight: 900; color: ${parseFloat(variance) < 0 ? '#ef4444' : '#10b981'};">${variance} Units</span>
+                                </div>
+                            </div>
+                            
+                            <div class="avoid-break">
+                                <div class="section-title" style="background: #ef4444;">IV. FINAL DETERMINATION</div>
+                                <div class="conclusion-inner">${conclusion}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="footer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 70px;">
+                        <div class="sig-line">REPORTING AUDITOR</div>
+                        <div class="sig-line">FACILITY MANAGER</div>
+                        <div class="sig-line">QUALITY CONTROL OFFICE</div>
+                    </div>
+                    
+                    <script>window.onload = function() { window.print(); window.close(); }<\/script>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+
 </script>
 @endsection
