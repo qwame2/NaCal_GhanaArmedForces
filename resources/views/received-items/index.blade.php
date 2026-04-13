@@ -211,27 +211,39 @@
                         </td>
                         @php
                         $rawSupplier = $item->supplier_name;
-                        $cleanSupplier = preg_replace('/\s\[.*\]$/', '', $rawSupplier);
-                        $statusRaw = 'N/A';
-                        if (preg_match('/\[(.*)\]/', $rawSupplier, $matches)) {
-                            $statusRaw = $matches[1];
+                        $acquisitionType = $item->acquisition_type ?? 'Supplier';
+                        $donorName = $item->donor_name ?? '-';
+                        if ($acquisitionType === 'Supplier' && preg_match('/\[Donor Action\]/', $rawSupplier)) {
+                            $acquisitionType = 'Donor';
+                            $donorName = preg_replace('/\s\[.*\]$/', '', $rawSupplier);
                         }
                         
-                        // Shorten statuses
-                        $status = $statusRaw;
-                        if ($statusRaw === 'Full Delivery') $status = 'Full Deliv';
-                        elseif ($statusRaw === 'Partial Delivery') $status = 'Partial Deliv';
+                        $cleanSupplier = preg_replace('/\s\[.*\]$/', '', $rawSupplier);
+                        $displayStatus = 'N/A';
+                        if ($acquisitionType === 'Donor') {
+                            $displayStatus = 'DONOR';
+                        } else {
+                            if (preg_match('/\[(.*)\]/', $rawSupplier, $matches)) {
+                                $displayStatus = $matches[1];
+                            }
+                        }
 
                         $statusColor = '#94a3b8';
-                        if ($statusRaw === 'Donor Action') $statusColor = '#3b82f6';
-                        elseif ($statusRaw === 'Full Delivery') $statusColor = '#10b981';
-                        elseif ($statusRaw === 'Partial Delivery') $statusColor = '#ef4444';
+                        if ($acquisitionType === 'Donor') {
+                            $statusColor = '#8b5cf6';
+                        } elseif ($displayStatus === 'Full Delivery' || $displayStatus === 'Full Deliv') {
+                            $statusColor = '#10b981';
+                            $displayStatus = 'FULL DELIV';
+                        } elseif ($displayStatus === 'Partial Delivery' || $displayStatus === 'Partial Deliv') {
+                            $statusColor = '#ef4444';
+                            $displayStatus = 'PARTIAL DELIV';
+                        }
                         @endphp
-                        <td data-label="Supplier" style="padding: 1.25rem 1.5rem; color: {{ $statusRaw === 'Donor Action' ? 'var(--text-muted)' : 'var(--text-main)' }}; font-weight: 500;">{{ $statusRaw === 'Donor Action' ? '-' : $cleanSupplier }}</td>
-                        <td data-label="Donor" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: {{ $statusRaw === 'Donor Action' ? '700' : '400' }};">{{ $statusRaw === 'Donor Action' ? $cleanSupplier : '-' }}</td>
+                        <td data-label="Supplier" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 500;">{{ $cleanSupplier ?: '-' }}</td>
+                        <td data-label="Donor" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: {{ $acquisitionType === 'Donor' ? '800' : '400' }};">{{ $donorName }}</td>
                         <td data-label="Status" style="padding: 1.25rem 1.5rem;">
-                            <span style="font-size: 0.7rem; font-weight: 800; color: white; background: {{ $statusColor }}; padding: 0.35rem 0.8rem; border-radius: 8px; text-transform: uppercase; box-shadow: 0 4px 10px {{ $statusColor }}30;">
-                                {{ $status }}
+                            <span style="font-size: 0.7rem; font-weight: 900; color: white; background: {{ $statusColor }}; padding: 0.35rem 0.8rem; border-radius: 8px; text-transform: uppercase; box-shadow: 0 4px 10px {{ $statusColor }}30; letter-spacing: 0.5px;">
+                                {{ $displayStatus }}
                             </span>
                         </td>
                         <td data-label="Avail. Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ $item->qty ?? '0' }}</td>
@@ -274,7 +286,7 @@
                                     <i data-lucide="more-vertical" style="width: 18px;"></i>
                                 </button>
                                 <div id="actionMenu-{{ $item->batch_id }}" class="action-menu">
-                                    @if($statusRaw === 'Partial Delivery')
+                                    @if($displayStatus === 'Partial Delivery' || $displayStatus === 'PARTIAL DELIV')
                                     <button onclick="continueDelivery('{{ $item->batch_id }}')" class="menu-item" style="color: #f59e0b;">
                                         <i data-lucide="package-plus"></i>
                                         Continue Delivery

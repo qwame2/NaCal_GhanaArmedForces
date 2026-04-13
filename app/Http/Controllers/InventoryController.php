@@ -13,7 +13,9 @@ class InventoryController extends Controller
     {
         $validated = $request->validate([
             'ledge_category' => 'required|string',
-            'supplier_name' => 'required|string',
+            'supplier_name' => 'nullable|string',
+            'donor_name' => 'nullable|string',
+            'acquisition_type' => 'required|string',
             'entry_date' => 'required',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
@@ -31,6 +33,8 @@ class InventoryController extends Controller
             $batch = InventoryBatch::create([
                 'ledge_category' => $validated['ledge_category'],
                 'supplier_name' => $validated['supplier_name'],
+                'donor_name' => $validated['donor_name'],
+                'acquisition_type' => $validated['acquisition_type'],
                 'entry_date' => $validated['entry_date'],
             ]);
 
@@ -98,19 +102,21 @@ class InventoryController extends Controller
                 ];
             });
 
-        // 3. Search in log sources (suppliers or batch codes)
+        // 3. Search in log sources (suppliers or donors or batch codes)
         $batches = InventoryBatch::where('supplier_name', 'LIKE', "%$query%")
+            ->orWhere('donor_name', 'LIKE', "%$query%")
             ->orWhere('ledge_category', 'LIKE', "%$query%")
             ->limit(3)
             ->get()
             ->map(function($batch) use ($ledgeMap) {
                 $catName = $ledgeMap[$batch->ledge_category] ?? $batch->ledge_category;
+                $isDonor = $batch->acquisition_type === 'Donor';
                 return [
-                    'title' => $batch->supplier_name,
-                    'subtitle' => "{$catName} Source • Recorded " . date('M d, Y', strtotime($batch->entry_date)),
-                    'url' => route('receiveditems', ['supplier' => $batch->supplier_name]),
+                    'title' => $isDonor ? $batch->donor_name : $batch->supplier_name,
+                    'subtitle' => ($isDonor ? "Donor" : "Supplier") . " • {$catName} Source • Recorded " . date('M d, Y', strtotime($batch->entry_date)),
+                    'url' => route('receiveditems', [$isDonor ? 'donor' : 'supplier' => $isDonor ? $batch->donor_name : $batch->supplier_name]),
                     'type' => 'source',
-                    'icon' => 'truck'
+                    'icon' => $isDonor ? 'heart' : 'truck'
                 ];
             });
 

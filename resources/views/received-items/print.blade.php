@@ -273,13 +273,23 @@
         <div class="info-card">
             <h3>Logistics Entity</h3>
             @php
-                $isDonor = str_contains($batch->supplier_name, '[Donor Action]');
-                $entityName = trim(preg_replace('/\[.*?\]/', '', $batch->supplier_name));
+                $acqType = $batch->acquisition_type ?? 'Supplier';
+                $donorName = $batch->donor_name;
+                $supplierName = $batch->supplier_name;
+                
+                // Legacy Fallback
+                $isDonor = ($acqType === 'Donor' || str_contains($supplierName, '[Donor Action]'));
+                
+                if ($isDonor && !$donorName) {
+                    $donorName = trim(preg_replace('/\[.*?\]/', '', $supplierName));
+                }
+                
+                $entityDisplay = $isDonor ? $donorName : trim(preg_replace('/\[.*?\]/', '', $supplierName));
             @endphp
 
             <div class="info-line">
                 <span class="info-label">{{ $isDonor ? 'Donor / Organization' : 'Logistics Source' }}</span>
-                <span class="info-value" style="font-size: 15px;">{{ $entityName }}</span>
+                <span class="info-value" style="font-size: 15px;">{{ $entityDisplay }}</span>
             </div>
             <div class="info-line">
                 <span class="info-label">Transaction Type</span>
@@ -310,10 +320,12 @@
         <tbody>
             @php
             $supStatus = preg_match('/\[(.*?)\]/', $batch->supplier_name, $m) ? $m[1] : 'Delivered';
+            if ($acqType === 'Donor') $supStatus = 'Donated';
+            
             $formattedDate = \Carbon\Carbon::parse($batch->entry_date)->format('M d, Y');
             $categoryName = $ledgeMap[$batch->ledge_category] ?? $batch->ledge_category;
-            $supplierText = $isDonor ? '-' : $entityName;
-            $donorText = $isDonor ? $entityName : '-';
+            $supplierText = $isDonor ? '-' : $entityDisplay;
+            $donorText = $isDonor ? $entityDisplay : '-';
             @endphp
             @foreach($batch->items as $item)
             <tr>

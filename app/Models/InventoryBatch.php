@@ -12,6 +12,8 @@ class InventoryBatch extends Model
     protected $fillable = [
         'ledge_category',
         'supplier_name',
+        'donor_name',
+        'acquisition_type',
         'entry_date'
     ];
 

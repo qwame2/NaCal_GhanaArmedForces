@@ -341,21 +341,35 @@
                     <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">{{ $ledgeMap[$transaction->ledge_category] ?? "Ledge " . $transaction->ledge_category }}</span></td>
                     @php
                         $rawSup = $transaction->supplier_name;
-                        $cleanSup = preg_replace('/\s\[.*\]$/', '', $rawSup);
-                        $supStatus = 'N/A';
-                        if (preg_match('/\[(.*)\]/', $rawSup, $matches)) {
-                            $supStatus = $matches[1];
+                        $acqType = $transaction->acquisition_type ?? 'Supplier';
+                        $dName = $transaction->donor_name ?? '-';
+                        
+                        // Legacy Fallback
+                        if ($acqType === 'Supplier' && preg_match('/\[Donor Action\]/', $rawSup)) {
+                            $acqType = 'Donor';
+                            $dName = preg_replace('/\s\[.*\]$/', '', $rawSup);
                         }
-                        $supColor = '#94a3b8';
-                        if ($supStatus === 'Donor Action') $supColor = '#3b82f6'; 
-                        elseif ($supStatus === 'Full Delivery') $supColor = '#10b981';
-                        elseif ($supStatus === 'Partial Delivery') $supColor = '#ef4444';
+                        
+                        $cleanSupDisplay = preg_replace('/\s\[.*\]$/', '', $rawSup);
+                        $supStatusDisplay = 'N/A';
+                        
+                        if ($acqType === 'Donor') {
+                            $supStatusDisplay = 'Donor';
+                            $supColor = '#8b5cf6';
+                        } else {
+                             if (preg_match('/\[(.*)\]/', $rawSup, $matches)) {
+                                $supStatusDisplay = $matches[1];
+                            }
+                            $supColor = '#94a3b8';
+                            if ($supStatusDisplay === 'Full Delivery') $supColor = '#10b981';
+                            elseif ($supStatusDisplay === 'Partial Delivery') $supColor = '#ef4444';
+                        }
                     @endphp
-                    <td data-label="Supplier" style="color: {{ $supStatus === 'Donor Action' ? 'var(--text-muted)' : 'inherit' }}">{{ $supStatus === 'Donor Action' ? '-' : $cleanSup }}</td>
-                    <td data-label="Donor Name" style="color: var(--text-main); font-weight: {{ $supStatus === 'Donor Action' ? '700' : '400' }};">{{ $supStatus === 'Donor Action' ? $cleanSup : '-' }}</td>
+                    <td data-label="Supplier" style="color: var(--text-main);">{{ $cleanSupDisplay ?: '-' }}</td>
+                    <td data-label="Donor Name" style="color: var(--text-main); font-weight: {{ $acqType === 'Donor' ? '800' : '400' }};">{{ $dName }}</td>
                     <td data-label="Supp. Status">
                         <span style="font-size: 0.65rem; font-weight: 800; color: white; background: {{ $supColor }}; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase;">
-                            {{ $supStatus }}
+                            {{ $supStatusDisplay }}
                         </span>
                     </td>
                     <td data-label="Avail. Qty" style="font-weight: 600;">{{ $transaction->qty ?? '0' }}</td>
@@ -717,19 +731,24 @@
                 });
             });
 
-            let finalSupplierName = $('#supplierNameSelect').val() || '';
-            const supplierStatus = $('#supplierStatusSelect').val();
-
-            if (supplierStatus === 'Donor' && $('#donorNameInput').val().trim() !== '') {
-                finalSupplierName = $('#donorNameInput').val().trim();
-            }
-
-            const mergedSupplier = supplierStatus ? `${finalSupplierName} [${supplierStatus}]` : finalSupplierName;
+            const supplierStatus = $('#supplierStatusSelect').val(); // Can be Full/Partial or Donor
+            const acquisitionType = supplierStatus === 'Donor' ? 'Donor' : 'Supplier';
+            
+            // Capture both independently. They are different things!
+            const donorName = $('#donorNameInput').val() ? $('#donorNameInput').val().trim() : null;
+            const baseSupplier = $('#supplierNameSelect').val() || '';
+            
+            // Still append status to supplier name for legacy compatibility if it's not Donor status
+            const supplierName = (supplierStatus && supplierStatus !== 'Donor') 
+                ? `${baseSupplier} [${supplierStatus}]` 
+                : baseSupplier;
 
             const payload = {
                 _token: '{{ csrf_token() }}',
                 ledge_category: ledgeSelect.val(),
-                supplier_name: mergedSupplier,
+                supplier_name: supplierName || null,
+                donor_name: donorName,
+                acquisition_type: acquisitionType,
                 entry_date: $('#entryDate').val(),
                 items: items
             };
