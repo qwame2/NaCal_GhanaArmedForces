@@ -147,7 +147,7 @@
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <i data-lucide="shopping-cart" style="color: var(--primary);"></i> Disbursement List
                         </div>
-                        <span style="background: var(--primary-gradient); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.8rem;">1 Item</span>
+                        <span style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.8rem;">1 Item</span>
                     </h3>
                     
                     <!-- Empty State (Hidden for preview) -->
@@ -184,7 +184,7 @@
                 </div>
 
                 <div style="padding: 1.5rem; background: rgba(99, 102, 241, 0.03); border-radius: 0 0 24px 24px; border-top: 1px solid var(--border-color);">
-                    <button class="btn-primary" style="width: 100%; padding: 1.15rem; border-radius: 16px; border: none; background: var(--primary-gradient); color: white; font-size: 1rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3); transition: all 0.3s;" onclick="showToast('Success', 'Items formally issued and recorded into system history.', 'success')">
+                    <button class="btn-primary" style="width: 100%; padding: 1.15rem; border-radius: 16px; border: none; background: var(--primary); color: white; font-size: 1rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3); transition: all 0.3s;" onclick="showToast('Success', 'Items formally issued and recorded into system history.', 'success')">
                         <i data-lucide="send" style="width: 20px;"></i> Confirm Issuance
                     </button>
                 </div>
@@ -214,7 +214,7 @@
     }
     
     .quick-filter-btn.active {
-        background: var(--primary-gradient);
+        background: var(--primary);
         color: white;
         border-color: transparent;
         box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
