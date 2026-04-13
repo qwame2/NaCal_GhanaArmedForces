@@ -517,7 +517,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1rem;">
                     <div class="custom-select-wrapper">
                         <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Condition</label>
-                        <select id="auditReason" style="width: 100%; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); color: var(--text-main); font-weight: 700; outline: none;">
+                        <select id="auditReason">
                             <option value="">Status...</option>
                             <option value="Good">Good Condition</option>
                             <option value="Missing">Missing</option>
@@ -532,15 +532,15 @@
                     </div>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
-                    <button type="submit" class="btn-primary" style="width: 100%; padding: 1.25rem; border-radius: 18px; border: none; background: var(--primary-gradient); color: white; font-weight: 900; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3); transition: all 0.3s;">
-                        <i data-lucide="shield-check"></i>
-                        Seal Audit Record
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn-primary" style="width: 100%; padding: 1.1rem; border-radius: 18px; border: none; background: var(--primary-gradient); color: white; font-weight: 900; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); transition: all 0.3s;">
+                        <i data-lucide="shield-check" style="width: 18px;"></i>
+                        Seal Record
                     </button>
                     
-                    <button type="button" onclick="generateAuditReport()" id="genRepBtn" class="glass-btn" style="width: 100%; padding: 1.1rem; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer; transition: all 0.3s;">
-                        <i data-lucide="wand-2" style="width: 18px;"></i>
-                        Auto-Generate Detailed Report
+                    <button type="button" onclick="generateAuditReport()" id="genRepBtn" class="glass-btn audit-report-btn" style="width: 100%; padding: 1.1rem; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 800; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); color: #ffffff; cursor: pointer; transition: all 0.3s; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <i data-lucide="receipt-text" style="width: 18px;"></i>
+                        Auto-Report
                     </button>
                 </div>
 
@@ -596,6 +596,62 @@
     }
 
     /* Stock Audit Command Center Styles */
+    .audit-report-btn:hover {
+        background: #0f172a !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.2) !important;
+    }
+
+    .custom-select-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .custom-select-wrapper select {
+        width: 100%;
+        height: 50px; /* Fixed height for precision */
+        padding: 0 40px 0 15px;
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-card);
+        color: var(--text-main);
+        font-weight: 700;
+        font-size: 0.9rem;
+        outline: none;
+        appearance: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .custom-select-wrapper::after {
+        content: "";
+        position: absolute;
+        right: 15px;
+        bottom: 18px; /* Position relative to baseline */
+        width: 12px;
+        height: 12px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='3'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        pointer-events: none;
+        transition: transform 0.3s ease, filter 0.3s ease;
+    }
+
+    .custom-select-wrapper:focus-within::after {
+        transform: rotate(180deg);
+        filter: sepia(1) saturate(5) hue-rotate(200deg); /* Shift to primary color */
+    }
+
+    .custom-select-wrapper select:hover {
+        border-color: var(--primary);
+        background: var(--bg-main);
+    }
+
+    .custom-select-wrapper select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    }
+
     .audit-stat-card {
         background: var(--bg-card);
         padding: 1rem;
