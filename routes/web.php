@@ -250,7 +250,8 @@ Route::get('/dashboard', $dashboardLogic);
 
 Route::post('/inventory/store', [App\Http\Controllers\InventoryController::class, 'store'])->name('inventory.store');
 Route::get('/received-items', [ReceivedItemsController::class, 'index'])->name('receiveditems');
-Route::get('/issue-items', function() { return view('issue-items.index'); })->name('issueitems');
+Route::get('/issue-items', [App\Http\Controllers\IssueItemsController::class, 'index'])->name('issueitems');
+Route::post('/issue-items/store', [App\Http\Controllers\IssueItemsController::class, 'store'])->name('issueitems.store');
 Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
 Route::get('/received-items/{id}/print', [ReceivedItemsController::class, 'print'])->name('receiveditems.print');
 Route::get('/api/global-search', [App\Http\Controllers\InventoryController::class, 'globalSearch'])->name('api.search');
