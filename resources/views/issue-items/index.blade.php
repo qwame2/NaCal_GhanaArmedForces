@@ -1,284 +1,331 @@
 @extends('layouts.dashboard')
 
 @section('content')
-<div class="animate-slide-up">
-    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
-        <div>
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Disbursement Portal</span>
-                <span style="color: var(--text-muted); font-size: 0.85rem;">Active Operation</span>
+<div class="animate-slide-up" style="max-width: 1600px; margin: 0 auto; padding: 0 1.5rem;">
+    
+    <!-- Ultra-Modern Operations Header -->
+    <div class="glass-card header-mesh" style="padding: 3rem; border-radius: 32px; margin-bottom: 3rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08);">
+        <!-- Decorative background elements -->
+        <div style="position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%); z-index: 0;"></div>
+        <div style="position: absolute; bottom: -50px; left: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%); z-index: 0;"></div>
+
+        <div style="position: relative; z-index: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
+                        <span style="background: var(--primary); color: white; font-size: 0.65rem; font-weight: 900; padding: 0.4rem 1.25rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.1em; box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);">Inventory Control</span>
+                        <div style="width: 4px; height: 4px; background: var(--text-muted); border-radius: 50%; opacity: 0.5;"></div>
+                        <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <i data-lucide="cpu" style="width: 14px;"></i> System Operation
+                        </span>
+                    </div>
+                    <h1 style="margin: 0; font-size: 3rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em; line-height: 1;">Issue <span style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Inventory</span></h1>
+                    <p style="margin: 12px 0 0; color: var(--text-muted); font-size: 1.1rem; font-weight: 500; opacity: 0.8;">Seamlessly disburse stock items and track recipient allocations in real-time.</p>
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="window.location.reload()" class="modern-action-btn" title="Sync Catalog">
+                        <i data-lucide="refresh-cw" style="width: 20px;"></i>
+                        <span>Sync</span>
+                    </button>
+                    <button class="modern-action-btn secondary" title="View Audit Logs">
+                        <i data-lucide="scroll-text" style="width: 20px;"></i>
+                    </button>
+                </div>
             </div>
-            <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main);">Issue <span style="color: var(--primary);">Items</span></h2>
-            <p style="color: var(--text-muted);">Select products and assign them to departments or personnel.</p>
-        </div>
-        <div style="display: flex; gap: 1rem;">
-            <button onclick="window.location.reload()" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--text-main);">
-                <i data-lucide="refresh-cw" style="width: 18px;"></i>
-                Refresh Catalog
-            </button>
+
+            <div style="display: flex; flex-direction: column; gap: 2rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 2.5rem;">
+                <div style="display: flex; gap: 2.5rem; align-items: center; flex-wrap: wrap;">
+                    <!-- Elegant Search -->
+                    <div style="position: relative; flex: 1; min-width: 320px;">
+                        <i data-lucide="search" style="position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%); width: 22px; color: var(--primary); opacity: 0.6;"></i>
+                        <input type="text" id="catalogSearch" placeholder="What are you looking for today?" style="width: 100%; padding: 1.35rem 1.5rem 1.35rem 4rem; border-radius: 20px; border: 2px solid transparent; background: rgba(0,0,0,0.03); color: var(--text-main); font-size: 1.05rem; font-weight: 600; outline: none; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);" onfocus="this.style.borderColor='var(--primary)'; this.style.background='var(--bg-card)'; this.style.boxShadow='0 10px 25px rgba(99, 102, 241, 0.08)';" onblur="this.style.borderColor='transparent'; this.style.background='rgba(0,0,0,0.03)';">
+                    </div>
+
+                    <!-- Premium Category Selector with Scroll Indicators -->
+                    <div style="position: relative; flex: 1; display: flex; align-items: center; min-width: 0;">
+                        <button onclick="scrollCats(-1)" class="scroll-arrow prev" id="catLeftArrow" style="display: none;">
+                            <i data-lucide="chevron-left" style="width: 18px;"></i>
+                        </button>
+
+                        <div id="catList" style="display: flex; gap: 0.85rem; overflow-x: auto; scrollbar-width: none; padding: 0.25rem; scroll-behavior: smooth; flex: 1;">
+                            <button class="cat-pill modern active" onclick="filterCategory('all', this)">
+                                <i data-lucide="rocket" style="width: 16px;"></i>
+                                Everything
+                            </button>
+                            @foreach($ledgeMap as $code => $name)
+                            @php
+                                $icon = 'package';
+                                if ($code == 'B') $icon = 'trash-2';
+                                elseif ($code == 'C') $icon = 'monitor';
+                                elseif ($code == 'J') $icon = 'printer';
+                                elseif ($code == 'G') $icon = 'activity';
+                            @endphp
+                            <button class="cat-pill modern" onclick="filterCategory('{{ $code }}', this)">
+                                <i data-lucide="{{ $icon }}" style="width: 16px;"></i>
+                                {{ $name }}
+                            </button>
+                            @endforeach
+                        </div>
+
+                        <button onclick="scrollCats(1)" class="scroll-arrow next" id="catRightArrow">
+                            <i data-lucide="chevron-right" style="width: 18px;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Main Workspace -->
-    <div id="issuanceWorkspace" style="display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 1rem;">
+    <!-- Main Workspace Split -->
+    <div style="display: grid; grid-template-columns: 1fr 420px; gap: 3rem; align-items: flex-start; padding-bottom: 5rem;">
         
-        <!-- Left Column: Inventory Catalog -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-            <!-- Catalog Search & Filter -->
-            <div class="glass-card" style="padding: 2rem; border-radius: 20px;">
-                <div style="position: relative; margin-bottom: 1rem;">
-                    <i data-lucide="search" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 20px; color: var(--text-muted);"></i>
-                    <input type="text" placeholder="Search product name or reference ID..." style="width: 100%; padding: 1.25rem 1.25rem 1.25rem 3.5rem; border-radius: 14px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-size: 1rem; font-weight: 600; outline: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
-                </div>
-                
-                <div style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none;">
-                    <button class="quick-filter-btn active" onclick="filterCategory('all', this)">All Items</button>
-                    @foreach($ledgeMap as $code => $name)
-                    <button class="quick-filter-btn" onclick="filterCategory('{{ $code }}', this)">{{ $name }} ({{ $code }})</button>
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- Product Grid -->
-            <div id="productGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.75rem;">
-                
+        <!-- Left Column: Catalog -->
+        <div>
+            <div id="productGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1.5rem;">
                 @forelse($items as $item)
                 @php
-                    $icon = 'package';
-                    $color = 'var(--primary)';
-                    $bgColor = 'rgba(99, 102, 241, 0.05)';
-                    $badgeBg = 'rgba(99, 102, 241, 0.1)';
-                    $badgeBorder = 'rgba(99, 102, 241, 0.2)';
-
-                    if ($item->ledge_category == 'B') {
-                        $icon = 'trash-2';
-                        $color = '#ef4444';
-                        $bgColor = 'rgba(239, 68, 68, 0.05)';
-                        $badgeBg = 'rgba(239, 68, 68, 0.1)';
-                        $badgeBorder = 'rgba(239, 68, 68, 0.2)';
-                    } elseif ($item->ledge_category == 'C') {
-                        $icon = 'monitor';
-                        $color = '#f59e0b';
-                        $bgColor = 'rgba(245, 158, 11, 0.05)';
-                        $badgeBg = 'rgba(245, 158, 11, 0.1)';
-                        $badgeBorder = 'rgba(245, 158, 11, 0.2)';
-                    } elseif ($item->ledge_category == 'J') {
-                        $icon = 'printer';
-                        $color = '#10b981';
-                        $bgColor = 'rgba(16, 185, 129, 0.05)';
-                        $badgeBg = 'rgba(16, 185, 129, 0.1)';
-                        $badgeBorder = 'rgba(16, 185, 129, 0.2)';
-                    } elseif ($item->ledge_category == 'G') {
-                        $icon = 'activity';
-                        $color = '#8b5cf6';
-                        $bgColor = 'rgba(139, 92, 246, 0.05)';
-                        $badgeBg = 'rgba(139, 92, 246, 0.1)';
-                        $badgeBorder = 'rgba(139, 92, 246, 0.2)';
-                    }
-
+                    $colors = [
+                        'B' => ['#ef4444', 'rgba(239,68,68,0.05)', 'rgba(239,68,68,0.1)', 'trash-2'],
+                        'C' => ['#f59e0b', 'rgba(245,158,11,0.05)', 'rgba(245,158,11,0.1)', 'monitor'],
+                        'J' => ['#10b981', 'rgba(16,185,129,0.05)', 'rgba(16,185,129,0.1)', 'printer'],
+                        'G' => ['#8b5cf6', 'rgba(139,92,246,0.05)', 'rgba(139,92,246,0.1)', 'activity']
+                    ];
+                    $config = $colors[$item->ledge_category] ?? ['var(--primary)', 'rgba(99,102,241,0.05)', 'rgba(99,102,241,0.1)', 'package'];
                     $isOutOfStock = $item->total_stock <= 0;
                 @endphp
-                
+
                 <div class="product-card glass-card" data-category="{{ $item->ledge_category }}" data-description="{{ strtolower($item->description) }}" style="{{ $isOutOfStock ? 'opacity: 0.7;' : '' }}">
-                    <div class="product-badge" style="background: {{ $badgeBg }}; color: {{ $color }}; border-color: {{ $badgeBorder }};">Ledge {{ $item->ledge_category }}</div>
-                    <div style="height: 120px; display: flex; align-items: center; justify-content: center; background: {{ $bgColor }}; border-radius: 12px; margin-bottom: 1rem;">
-                        <i data-lucide="{{ $icon }}" style="width: 48px; height: 48px; color: {{ $color }}; opacity: 0.5;"></i>
+                    <div class="product-badge" style="background: {{ $config[2] }}; color: {{ $config[0] }};">Ledge {{ $item->ledge_category }}</div>
+                    <div style="height: 60px; display: flex; align-items: center; justify-content: center; background: {{ $config[1] }}; border-radius: 10px; margin-bottom: 0.75rem;">
+                        <i data-lucide="{{ $config[3] }}" style="width: 28px; height: 28px; color: {{ $config[0] }}; opacity: 0.6;"></i>
                     </div>
-                    <h4 style="margin: 0 0 0.5rem; font-size: 1.1rem; font-weight: 800; color: var(--text-main);">{{ $item->description }}</h4>
-                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1rem;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Stock Avail.</div>
-                        <div style="font-size: 1.25rem; font-weight: 900; color: {{ $isOutOfStock ? '#ef4444' : ($item->total_stock < 100 ? '#f59e0b' : '#10b981') }};">
-                            {{ number_format($item->total_stock) }}
-                        </div>
+                    <h4 style="margin: 0 0 0.5rem; font-size: 1rem; font-weight: 850; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $item->description }}</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Stock</span>
+                        <span style="font-size: 1.15rem; font-weight: 900; color: {{ $isOutOfStock ? '#ef4444' : '#10b981' }};">{{ number_format($item->total_stock) }}</span>
                     </div>
-                    
+
                     @if($isOutOfStock)
-                    <button class="add-to-cart-btn" style="background: var(--bg-main); color: var(--text-muted); border-color: var(--border-color); cursor: not-allowed;">
-                        <i data-lucide="x" style="width: 18px;"></i> Out of Stock
-                    </button>
+                        <button class="add-to-cart-btn" style="opacity: 0.5; cursor: not-allowed;"><i data-lucide="slash" style="width: 18px;"></i> Unavailable</button>
                     @else
-                    <button class="add-to-cart-btn" onclick="addToCart('{{ addslashes($item->description) }}', {{ (int)$item->total_stock }}, '{{ $item->ledge_category }}')">
-                        <i data-lucide="plus" style="width: 18px;"></i> Select Item
-                    </button>
+                        <button class="add-to-cart-btn" onclick="addToCart('{{ addslashes($item->description) }}', {{ (int)$item->total_stock }}, '{{ $item->ledge_category }}')">
+                            <i data-lucide="plus-circle" style="width: 18px;"></i> Add to List
+                        </button>
                     @endif
                 </div>
                 @empty
-                <div style="grid-column: 1 / -1; padding: 4rem; text-align: center; color: var(--text-muted);">
-                    <i data-lucide="package-search" style="width: 48px; height: 48px; opacity: 0.3; margin-bottom: 1rem;"></i>
-                    <h3 style="margin: 0; font-weight: 700;">No inventory items found.</h3>
-                    <p>Stock must be added before it can be issued.</p>
+                <div style="grid-column: 1 / -1; padding: 5rem; text-align: center;">
+                    <i data-lucide="package-x" style="width: 64px; height: 64px; color: var(--text-muted); opacity: 0.3; margin-bottom: 1.5rem;"></i>
+                    <h3 style="font-weight: 800; color: var(--text-main);">No Stock Items Available</h3>
+                    <p style="color: var(--text-muted);">Please add items to your inventory first.</p>
                 </div>
                 @endforelse
-
             </div>
         </div>
 
-        <!-- Right Column: Issuance Cart -->
-        <div>
-            <div class="glass-card" style="border-radius: 24px; position: sticky; top: 100px; padding: 0.5rem;">
-                
-                <!-- Beneficiary Details -->
-                <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
-                    <h3 style="margin: 0 0 1.5rem; font-size: 1.1rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 10px;">
-                        <i data-lucide="user-check" style="color: var(--primary);"></i> Recipient Details
+        <!-- Right Column: Cart Panel -->
+        <div style="position: sticky; top: 100px;">
+            <div class="glass-card" style="border-radius: 28px; padding: 0.5rem; border: 2px solid var(--border-color);">
+                <div style="padding: 1.75rem; border-bottom: 1px solid var(--border-color);">
+                    <h3 style="margin: 0 0 1.5rem; font-size: 1.25rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 12px;">
+                        <i data-lucide="clipboard-list" style="color: var(--primary);"></i> Disbursement Info
                     </h3>
-                    
                     <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                         <div>
-                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Issuance Date</label>
-                            <input type="date" id="issuanceDate" value="{{ date('Y-m-d') }}" style="width: 100%; padding: 0.85rem; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-family: inherit;">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Issue Date</label>
+                            <input type="date" id="issuanceDate" value="{{ date('Y-m-d') }}" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700;">
                         </div>
-
                         <div>
-                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Beneficiary / Department</label>
-                            <div style="position: relative;">
-                                <i data-lucide="building" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted);"></i>
-                                <input type="text" id="beneficiary" placeholder="e.g. IT Dept / John Doe" style="width: 100%; padding: 0.85rem 1rem 0.85rem 2.5rem; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main);">
-                            </div>
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Beneficiary</label>
+                            <input type="text" id="beneficiary" placeholder="Recipient / Department" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700;">
                         </div>
-                        
                         <div>
-                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Issuance Type</label>
-                            <div id="issueTypeSlider" style="display: flex; background: var(--bg-main); padding: 0.4rem; border-radius: 12px; border: 1px solid var(--border-color); position: relative; gap: 5px;">
-                                <div id="sliderPill" style="position: absolute; top: 0.4rem; left: 0.4rem; width: calc(50% - 0.5rem); height: calc(100% - 0.8rem); background: var(--primary); border-radius: 8px; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); z-index: 1;"></div>
-                                <button type="button" class="issue-type-btn active" onclick="setIssueType('Permanent', this, 0)" style="flex: 1; padding: 0.75rem; border: none; border-radius: 8px; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: all 0.3s; background: transparent; color: white; position: relative; z-index: 2;">PERMANENT</button>
-                                <button type="button" class="issue-type-btn" onclick="setIssueType('Temporary', this, 1)" style="flex: 1; padding: 0.75rem; border: none; border-radius: 8px; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: all 0.3s; background: transparent; color: var(--text-muted); position: relative; z-index: 2;">TEMPORARY</button>
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Alloc. Type</label>
+                            <div id="issueTypeSlider" style="display: flex; background: var(--bg-main); padding: 0.4rem; border-radius: 14px; border: 1px solid var(--border-color); position: relative;">
+                                <div id="sliderPill" style="position: absolute; top: 0.4rem; left: 0.4rem; width: calc(50% - 0.5rem); height: calc(100% - 0.8rem); background: var(--primary); border-radius: 10px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;"></div>
+                                <button type="button" class="issue-type-btn active" onclick="setIssueType('Permanent', this, 0)" style="flex: 1; padding: 0.75rem; border: none; background: transparent; color: white; font-weight: 800; font-size: 0.8rem; cursor: pointer; position: relative; z-index: 2;">PERMANENT</button>
+                                <button type="button" class="issue-type-btn" onclick="setIssueType('Temporary', this, 1)" style="flex: 1; padding: 0.75rem; border: none; background: transparent; color: var(--text-muted); font-weight: 800; font-size: 0.8rem; cursor: pointer; position: relative; z-index: 2;">TEMPORARY</button>
                                 <input type="hidden" id="issuanceType" value="Permanent">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Selected Items -->
-                <div style="padding: 1.5rem;">
-                    <h3 style="margin: 0 0 1rem; font-size: 1.1rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; justify-content: space-between;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <i data-lucide="shopping-cart" style="color: var(--primary);"></i> Disbursement List
-                        </div>
-                        <span style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 20px; font-size: 0.8rem;">1 Item</span>
-                    </h3>
-                    
-                    <!-- Empty State -->
-                    <div id="cartEmptyState" style="padding: 2rem 0; text-align: center; color: var(--text-muted); border: 2px dashed var(--border-color); border-radius: 14px; margin-bottom: 1.5rem;">
-                        <i data-lucide="package-open" style="width: 32px; height: 32px; opacity: 0.5; margin-bottom: 0.5rem;"></i>
-                        <div style="font-size: 0.85rem; font-weight: 600;">No items selected yet.</div>
+                <div style="padding: 1.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h4 style="margin: 0; font-weight: 900; color: var(--text-main);">Selected Items</h4>
+                        <span id="cartItemCount" style="padding: 0.25rem 0.75rem; background: var(--primary); color: white; border-radius: 99px; font-size: 0.75rem; font-weight: 800;">0</span>
                     </div>
-
-                    <!-- Selected Items Container -->
-                    <div id="cartItemsContainer" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 250px; overflow-y: auto; padding-right: 5px;">
-                        <!-- Cart Items will be injected here -->
+                    <div id="cartEmptyState" style="padding: 2.5rem 0; text-align: center; border: 2px dashed var(--border-color); border-radius: 18px; color: var(--text-muted);">
+                        <i data-lucide="package-open" style="width: 38px; height: 38px; opacity: 0.3; margin-bottom: 0.75rem;"></i>
+                        <p style="font-weight: 700; font-size: 0.9rem;">Select items to disburse</p>
                     </div>
+                    <div id="cartItemsContainer" style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto;"></div>
                 </div>
 
-                <div style="padding: 1.5rem; background: rgba(99, 102, 241, 0.03); border-radius: 0 0 24px 24px; border-top: 1px solid var(--border-color);">
-                    <button id="confirmBtn" class="btn-primary" style="width: 100%; padding: 1.15rem; border-radius: 16px; border: none; background: var(--primary); color: white; font-size: 1rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3); transition: all 0.3s;" onclick="confirmIssuance()">
-                        <i data-lucide="send" style="width: 20px;"></i> Confirm Issuance
+                <div style="padding: 1.5rem 1.75rem; border-top: 1px solid var(--border-color); background: rgba(99,102,241,0.02); border-radius: 0 0 28px 28px;">
+                    <button id="confirmBtn" class="confirm-btn-final" onclick="confirmIssuance()">
+                        <i data-lucide="zap" style="width: 24px; fill: white;"></i> 
+                        <span>Confirm Disbursement</span>
                     </button>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    .quick-filter-btn {
-        padding: 0.6rem 1.25rem;
-        border-radius: 999px;
-        border: 1.5px solid var(--border-color);
+    /* Premium Header Stylings */
+    /* Filter Scroll Arrows */
+    .scroll-arrow {
+        width: 40px; height: 40px; border-radius: 12px;
+        background: var(--bg-card); border: 2px solid var(--border-color);
+        color: var(--text-main); cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 10;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        flex-shrink: 0;
+    }
+    .scroll-arrow:hover {
+        background: var(--primary); color: white; border-color: var(--primary);
+        transform: scale(1.1);
+    }
+    .scroll-arrow.prev { margin-right: 0.5rem; }
+    .scroll-arrow.next { margin-left: 0.5rem; }
+
+    .header-mesh {
+        background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0, transparent 50%),
+                    radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0, transparent 50%),
+                    var(--bg-card);
+        backdrop-filter: blur(20px);
+    }
+
+    .modern-action-btn {
+        padding: 0.85rem 1.75rem;
+        border-radius: 18px;
+        border: 2px solid var(--border-color);
         background: var(--bg-card);
         color: var(--text-main);
-        font-weight: 700;
-        font-size: 0.85rem;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: all 0.3s;
-    }
-    
-    .quick-filter-btn:hover {
-        background: rgba(99, 102, 241, 0.05);
-        border-color: rgba(99, 102, 241, 0.3);
-    }
-    
-    .quick-filter-btn.active {
-        background: var(--primary);
-        color: white;
-        border-color: transparent;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-    }
-
-    .product-card {
-        padding: 1.75rem;
-        border-radius: 20px;
-        position: relative;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .product-badge {
-        position: absolute;
-        top: 1.5rem;
-        right: 1.5rem;
-        background: rgba(99, 102, 241, 0.1);
-        color: var(--primary);
-        padding: 0.25rem 0.6rem;
-        border-radius: 6px;
-        font-size: 0.65rem;
-        font-weight: 900;
-        letter-spacing: 0.5px;
-        border: 1px solid rgba(99, 102, 241, 0.2);
-    }
-
-    .add-to-cart-btn {
-        margin-top: auto;
-        width: 100%;
-        padding: 0.85rem;
-        border-radius: 12px;
-        border: 2px solid var(--primary);
-        background: transparent;
-        color: var(--primary);
         font-weight: 800;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         cursor: pointer;
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: all 0.3s;
+        gap: 12px;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     }
 
-    .add-to-cart-btn:hover:not(:disabled) {
+    .modern-action-btn:hover {
+        transform: translateY(-3px);
+        border-color: var(--primary);
+        color: var(--primary);
+        box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.15);
+    }
+
+    .modern-action-btn.secondary {
+        width: 58px;
+        height: 58px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .cat-pill.modern {
+        background: rgba(0,0,0,0.03);
+        border: 1px solid transparent;
+        padding: 1rem 1.75rem;
+        border-radius: 20px;
+        font-weight: 800;
+        font-size: 0.95rem;
+        color: var(--text-muted);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+    }
+
+    .cat-pill.modern:hover {
+        background: white;
+        color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        border-color: var(--primary-light);
+    }
+
+    .cat-pill.modern.active {
         background: var(--primary);
         color: white;
-        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+        border-color: var(--primary);
+        box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3);
+        transform: scale(1.05) translateY(-2px);
     }
 
-    .content-body {
-        padding: 1.5rem 2rem !important;
+    .product-card {
+        padding: 1.25rem; border-radius: 18px; display: flex; flex-direction: column;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid var(--border-color);
     }
-
-    @media (max-width: 1366px) {
-        #issuanceWorkspace {
-            gap: 1rem !important;
-            grid-template-columns: minmax(0, 1fr) 280px !important;
-        }
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--card-shadow-hover);
+        border-color: var(--primary-light);
     }
-
-    @media (max-width: 1200px) {
-        #issuanceWorkspace {
-            grid-template-columns: 1fr !important;
-            gap: 2rem !important;
-        }
+    .product-badge {
+        position: absolute; top: 1rem; right: 1rem;
+        padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.6rem; font-weight: 900;
+    }
+    .add-to-cart-btn {
+        margin-top: auto; padding: 0.75rem; border-radius: 12px;
+        border: 2px solid var(--primary); background: transparent;
+        color: var(--primary); font-weight: 900; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: 0.3s;
+        font-size: 0.85rem;
+    }
+    .add-to-cart-btn:hover:not(:disabled) {
+        background: var(--primary); color: white;
+        box-shadow: 0 8px 20px rgba(99,102,241,0.25);
+    }
+    .confirm-btn-final {
+        width: 100%; padding: 1.15rem; border-radius: 18px;
+        border: none; 
+        background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+        color: white;
+        font-size: 1.1rem; font-weight: 900; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 12px;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    .confirm-btn-final::before {
+        content: '';
+        position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: 0.5s;
+    }
+    .confirm-btn-final:hover:not(:disabled) {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(79, 70, 229, 0.45);
+        filter: brightness(1.1);
+    }
+    .confirm-btn-final:hover::before {
+        left: 100%;
+    }
+    .confirm-btn-final:active { transform: translateY(0) scale(0.98); }
+    .confirm-btn-final:disabled {
+        background: #94a3b8;
+        box-shadow: none;
+        cursor: not-allowed;
+        transform: none;
     }
 
     @media (max-width: 1024px) {
-        #issuanceWorkspace {
+        div[style*="grid-template-columns: 1fr 420px"] {
             grid-template-columns: 1fr !important;
-        }
-        
-        div[style*="position: sticky;"] {
-            position: relative !important;
-            top: 0 !important;
         }
     }
 </style>
@@ -289,205 +336,136 @@
     function updateCartUI() {
         const container = document.getElementById('cartItemsContainer');
         const emptyState = document.getElementById('cartEmptyState');
-        const cartBadge = document.querySelector('h3 span[style*="background: var(--primary)"]');
-        
+        const countBadge = document.getElementById('cartItemCount');
+
         container.innerHTML = '';
-        
+        countBadge.textContent = cart.length;
+
         if (cart.length === 0) {
             emptyState.style.display = 'block';
-            cartBadge.style.display = 'none';
         } else {
             emptyState.style.display = 'none';
-            cartBadge.style.display = 'inline-block';
-            cartBadge.textContent = `${cart.length} ${cart.length === 1 ? 'Item' : 'Items'}`;
-            
             cart.forEach((item, index) => {
-                const itemEl = document.createElement('div');
-                itemEl.className = 'animate-slide-up';
-                itemEl.style.cssText = 'background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 14px; padding: 1rem; margin-bottom: 0.75rem;';
-                itemEl.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                        <div style="font-weight: 800; color: var(--text-main); font-size: 0.95rem;">${item.description}</div>
-                        <button onclick="removeFromCart(${index})" style="background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 0;">
-                            <i data-lucide="trash-2" style="width: 16px;"></i>
-                        </button>
+                const el = document.createElement('div');
+                el.style.cssText = 'background: var(--bg-main); padding: 1.25rem; border-radius: 18px; border: 1px solid var(--border-color); margin-bottom: 0.75rem;';
+                el.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <span style="font-weight: 900; font-size: 0.95rem; color: var(--text-main);">${item.description}</span>
+                        <button onclick="removeFromCart(${index})" style="background:transparent; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Stock: ${item.maxStock}</div>
-                        <div style="display: flex; align-items: center; gap: 10px; background: var(--bg-card); padding: 0.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                            <button onclick="updateQty(${index}, -1)" style="border: none; background: transparent; cursor: pointer; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 6px;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
-                                <i data-lucide="minus" style="width: 14px;"></i>
-                            </button>
-                            <input type="number" value="${item.qty}" min="1" max="${item.maxStock}" onchange="manualUpdateQty(${index}, this.value)" style="width: 45px; border: none; background: transparent; text-align: center; font-weight: 800; font-size: 0.9rem; outline: none; color: var(--text-main); -moz-appearance: textfield;">
-                            <button onclick="updateQty(${index}, 1)" style="border: none; background: transparent; cursor: pointer; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 6px;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
-                                <i data-lucide="plus" style="width: 14px;"></i>
-                            </button>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">Avl: ${item.maxStock}</span>
+                        <div style="display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 0.35rem; border-radius: 10px; border: 1.5px solid var(--border-color);">
+                            <button onclick="updateQty(${index}, -1)" style="border:none; background:transparent; cursor:pointer;"><i data-lucide="minus-circle" style="width:18px; color:var(--text-muted);"></i></button>
+                            <span style="font-weight: 900; min-width: 30px; text-align: center;">${item.qty}</span>
+                            <button onclick="updateQty(${index}, 1)" style="border:none; background:transparent; cursor:pointer;"><i data-lucide="plus-circle" style="width:18px; color:var(--primary);"></i></button>
                         </div>
                     </div>
                 `;
-                container.appendChild(itemEl);
+                container.appendChild(el);
             });
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     }
 
-    function addToCart(description, maxStock, category) {
-        const existing = cart.find(i => i.description === description);
-        if (existing) {
-            if (existing.qty < maxStock) {
-                existing.qty++;
-                showToast('Updated', `Incremented quantity for ${description}`, 'info');
-            } else {
-                showToast('Limit Reached', `Only ${maxStock} units available in stock.`, 'warning');
-            }
+    function addToCart(desc, stock, cat) {
+        const exists = cart.find(i => i.description === desc);
+        if (exists) {
+            if (exists.qty < stock) exists.qty++;
+            else showToast('Stock Limit', 'Cannot exceed available stock', 'warning');
         } else {
-            cart.push({ description, maxStock, category, qty: 1 });
-            showToast('Added', `${description} added to disbursement list.`, 'success');
+            cart.push({ description: desc, maxStock: stock, category: cat, qty: 1 });
+            showToast('Added', desc, 'success');
         }
         updateCartUI();
     }
 
-    function removeFromCart(index) {
-        cart.splice(index, 1);
-        updateCartUI();
-    }
-
-    function updateQty(index, delta) {
-        const item = cart[index];
-        const newQty = parseInt(item.qty) + delta;
+    function removeFromCart(idx) { cart.splice(idx, 1); updateCartUI(); }
+    function updateQty(idx, delta) {
+        const item = cart[idx];
+        const newQty = item.qty + delta;
         if (newQty > 0 && newQty <= item.maxStock) {
             item.qty = newQty;
             updateCartUI();
-        } else if (newQty > item.maxStock) {
-            showToast('Stock Limit', `Only ${item.maxStock} units available.`, 'warning');
         }
     }
 
-    function manualUpdateQty(index, value) {
-        let newQty = parseInt(value);
-        const item = cart[index];
-        
-        if (isNaN(newQty) || newQty < 1) {
-            newQty = 1;
-            showToast('Invalid Input', 'Quantity must be at least 1.', 'warning');
-        } else if (newQty > item.maxStock) {
-            newQty = item.maxStock;
-            showToast('Stock Limit', `Adjusted to maximum available (${item.maxStock}).`, 'warning');
-        }
-        
-        item.qty = newQty;
-        updateCartUI();
+    function setIssueType(type, btn, idx) {
+        document.getElementById('issuanceType').value = type;
+        document.getElementById('sliderPill').style.transform = `translateX(${idx * 100}%)`;
+        document.querySelectorAll('.issue-type-btn').forEach(b => b.style.color = 'var(--text-muted)');
+        btn.style.color = 'white';
     }
+
+    function filterCategory(cat, btn) {
+        document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const cards = document.querySelectorAll('.product-card');
+        cards.forEach(c => c.style.display = (cat === 'all' || c.dataset.category === cat) ? 'flex' : 'none');
+    }
+
+    const catList = document.getElementById('catList');
+    const leftArrow = document.getElementById('catLeftArrow');
+    const rightArrow = document.getElementById('catRightArrow');
+
+    function scrollCats(dir) {
+        catList.scrollBy({ left: dir * 300, behavior: 'smooth' });
+    }
+
+    catList.addEventListener('scroll', () => {
+        leftArrow.style.display = catList.scrollLeft > 20 ? 'flex' : 'none';
+        const maxScroll = catList.scrollWidth - catList.clientWidth;
+        rightArrow.style.display = catList.scrollLeft < maxScroll - 20 ? 'flex' : 'none';
+    });
+
+    // Live Search
+    document.getElementById('catalogSearch').addEventListener('input', e => {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('.product-card').forEach(c => {
+            const desc = c.dataset.description;
+            c.style.display = desc.includes(term) ? 'flex' : 'none';
+        });
+    });
 
     async function confirmIssuance() {
-        if (cart.length === 0) {
-            showToast('Empty Cart', 'Please add items to the disbursement list first.', 'info');
-            return;
-        }
-
-        const date = document.getElementById('issuanceDate').value;
+        if (!cart.length) return showToast('Empty List', 'Add items first', 'info');
         const beneficiary = document.getElementById('beneficiary').value;
-        const type = document.getElementById('issuanceType').value;
+        if (!beneficiary) return showToast('Missing Recipient', 'Enter beneficiary name', 'warning');
 
-        if (!beneficiary) {
-            showToast('Missing Info', 'Please provide beneficiary details.', 'warning');
-            return;
-        }
-
-        const confirmBtn = document.getElementById('confirmBtn');
-        const originalContent = confirmBtn.innerHTML;
-        confirmBtn.disabled = true;
-        confirmBtn.innerHTML = '<div class="loader" style="width: 20px; height: 20px; border-width: 2px;"></div> Processing...';
+        const btn = document.getElementById('confirmBtn');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = 'Processing...';
 
         try {
-            const response = await fetch("{{ route('issueitems.store') }}", {
+            const res = await fetch("{{ route('issueitems.store') }}", {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({
-                    issuance_date: date,
+                    issuance_date: document.getElementById('issuanceDate').value,
                     beneficiary: beneficiary,
-                    issuance_type: type,
+                    issuance_type: document.getElementById('issuanceType').value,
                     items: cart
                 })
             });
-
-            const result = await response.json();
-
-            if (result.success) {
-                showToast('Success', result.message, 'success');
-                cart = [];
-                updateCartUI();
-                document.getElementById('beneficiary').value = '';
-                
-                // Refresh catalog after a short delay to see updated stock
+            const data = await res.json();
+            if (data.success) {
+                showToast('Dispatched', data.message, 'success');
                 setTimeout(() => window.location.reload(), 2000);
             } else {
-                showToast('Error', result.message, 'error');
+                showToast('Error', data.message, 'error');
             }
-        } catch (error) {
-            console.error('Issuance error:', error);
-            showToast('Error', 'A system error occurred. Please try again.', 'error');
+        } catch (e) {
+            showToast('System Error', 'Could not complete request', 'error');
         } finally {
-            confirmBtn.disabled = false;
-            confirmBtn.innerHTML = originalContent;
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     }
 
-    function filterCategory(category, btn) {
-        document.querySelectorAll('.quick-filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        const cards = document.querySelectorAll('.product-card');
-        cards.forEach(card => {
-            if (category === 'all' || card.dataset.category === category) {
-                card.style.display = 'flex';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
-
-    function setIssueType(type, btn, index) {
-        document.getElementById('issuanceType').value = type;
-        
-        // Update Pill Position
-        const pill = document.getElementById('sliderPill');
-        pill.style.transform = `translateX(calc(${index * 100}% + ${index * 5}px))`;
-        
-        // Update Buttons
-        document.querySelectorAll('.issue-type-btn').forEach(b => {
-            b.style.color = 'var(--text-muted)';
-            b.classList.remove('active');
-        });
-        btn.style.color = 'white';
-        btn.classList.add('active');
-        
-        showToast('Mode Switched', `Issuance set to ${type} mode.`, 'info');
-    }
-
-    // Search Logic
-    const searchInput = document.querySelector('input[placeholder*="Search product"]');
-    if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase();
-            const cards = document.querySelectorAll('.product-card');
-            cards.forEach(card => {
-                const desc = card.dataset.description;
-                if (desc.includes(term)) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
-        updateCartUI();
     });
 </script>
 @endsection
