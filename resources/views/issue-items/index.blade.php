@@ -10,9 +10,9 @@
         <div style="position: absolute; bottom: -50px; left: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%); z-index: 0;"></div>
 
         <div style="position: relative; z-index: 1;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem;">
+            <div class="header-top" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem;">
                 <div>
-                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
                         <span style="background: var(--primary); color: white; font-size: 0.65rem; font-weight: 900; padding: 0.4rem 1.25rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.1em; box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);">Inventory Control</span>
                         <div style="width: 4px; height: 4px; background: var(--text-muted); border-radius: 50%; opacity: 0.5;"></div>
                         <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
@@ -23,7 +23,7 @@
                     <p style="margin: 12px 0 0; color: var(--text-muted); font-size: 1.1rem; font-weight: 500; opacity: 0.8;">Seamlessly disburse stock items and track recipient allocations in real-time.</p>
                 </div>
                 
-                <div style="display: flex; gap: 1rem;">
+                <div class="header-actions" style="display: flex; gap: 1rem;">
                     <button onclick="window.location.reload()" class="modern-action-btn" title="Sync Catalog">
                         <i data-lucide="refresh-cw" style="width: 20px;"></i>
                         <span>Sync</span>
@@ -35,9 +35,9 @@
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 2rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 2.5rem;">
-                <div style="display: flex; gap: 2.5rem; align-items: center; flex-wrap: wrap;">
+                <div class="search-cat-container" style="display: flex; gap: 2.5rem; align-items: center; flex-wrap: wrap;">
                     <!-- Elegant Search -->
-                    <div style="position: relative; flex: 1; min-width: 320px;">
+                    <div class="search-box-wrapper" style="position: relative; flex: 1; min-width: 320px;">
                         <i data-lucide="search" style="position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%); width: 22px; color: var(--primary); opacity: 0.6;"></i>
                         <input type="text" id="catalogSearch" placeholder="What are you looking for today?" style="width: 100%; padding: 1.35rem 1.5rem 1.35rem 4rem; border-radius: 20px; border: 2px solid transparent; background: rgba(0,0,0,0.03); color: var(--text-main); font-size: 1.05rem; font-weight: 600; outline: none; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);" onfocus="this.style.borderColor='var(--primary)'; this.style.background='var(--bg-card)'; this.style.boxShadow='0 10px 25px rgba(99, 102, 241, 0.08)';" onblur="this.style.borderColor='transparent'; this.style.background='rgba(0,0,0,0.03)';">
                     </div>
@@ -78,7 +78,7 @@
     </div>
 
     <!-- Main Workspace Split -->
-    <div style="display: grid; grid-template-columns: 1fr 420px; gap: 3rem; align-items: flex-start; padding-bottom: 5rem;">
+    <div class="workspace-grid" style="display: grid; grid-template-columns: 1fr 420px; gap: 3rem; align-items: flex-start; padding-bottom: 5rem;">
         
         <!-- Left Column: Catalog -->
         <div>
@@ -125,7 +125,7 @@
         </div>
 
         <!-- Right Column: Cart Panel -->
-        <div style="position: sticky; top: 100px;">
+        <div class="cart-sticky" style="position: sticky; top: 100px;">
             <div class="glass-card" style="border-radius: 28px; padding: 0.5rem; border: 2px solid var(--border-color);">
                 <div style="padding: 1.75rem; border-bottom: 1px solid var(--border-color);">
                     <h3 style="margin: 0 0 1.5rem; font-size: 1.25rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 12px;">
@@ -324,9 +324,36 @@
     }
 
     @media (max-width: 1024px) {
-        div[style*="grid-template-columns: 1fr 420px"] {
+        .workspace-grid {
             grid-template-columns: 1fr !important;
+            gap: 2rem !important;
         }
+        .cart-sticky {
+            position: relative !important;
+            top: 0 !important;
+            margin-top: 1rem;
+        }
+        .header-mesh {
+            padding: 1.5rem !important;
+            border-radius: 20px !important;
+        }
+        .header-top {
+            flex-direction: column !important;
+            gap: 1.5rem !important;
+        }
+        .header-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+        .search-cat-container {
+            flex-direction: column !important;
+            gap: 1.5rem !important;
+        }
+        .search-box-wrapper {
+            max-width: 100% !important;
+            min-width: 100% !important;
+        }
+        h1 { font-size: 2.25rem !important; }
     }
 </style>
 

@@ -92,9 +92,9 @@
             </li>
 
             <li class="nav-item">
-                <a href="#" class="nav-link" data-tooltip="System Configuration">
-                    <i data-lucide="settings"></i>
-                    <span>System Settings</span>
+                <a href="{{ route('settings.index') }}" class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" data-tooltip="Manage your profile & security">
+                    <i data-lucide="user-cog"></i>
+                    <span>User Settings</span>
                 </a>
             </li>
         </ul>
