@@ -105,4 +105,15 @@ class IssueItemsController extends Controller
             ], 500);
         }
     }
+
+    public function history()
+    {
+        $issuedItems = IssuedItem::with('issuance')
+            ->join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->select('issued_items.*', 'issuances.issuance_date', 'issuances.beneficiary', 'issuances.issuance_type', 'issuances.created_at')
+            ->orderBy('issuances.created_at', 'desc')
+            ->get();
+
+        return response()->json($issuedItems);
+    }
 }

@@ -24,9 +24,9 @@
                 </div>
                 
                 <div class="header-actions" style="display: flex; gap: 1rem;">
-                    <button onclick="window.location.reload()" class="modern-action-btn" title="Sync Catalog">
-                        <i data-lucide="refresh-cw" style="width: 20px;"></i>
-                        <span>Sync</span>
+                    <button onclick="openHistorySheet()" class="modern-action-btn" title="View Issued Items">
+                        <i data-lucide="history" style="width: 20px;"></i>
+                        <span>View Issues</span>
                     </button>
                     <button class="modern-action-btn secondary" title="View Audit Logs">
                         <i data-lucide="scroll-text" style="width: 20px;"></i>
@@ -48,7 +48,7 @@
                             <i data-lucide="chevron-left" style="width: 18px;"></i>
                         </button>
 
-                        <div id="catList" style="display: flex; gap: 0.85rem; overflow-x: auto; scrollbar-width: none; padding: 0.25rem; scroll-behavior: smooth; flex: 1;">
+                        <div id="catList" class="hide-scrollbar" style="display: flex; gap: 0.85rem; overflow-x: auto; padding: 0.25rem; scroll-behavior: smooth; flex: 1;">
                             <button class="cat-pill modern active" onclick="filterCategory('all', this)">
                                 <i data-lucide="rocket" style="width: 16px;"></i>
                                 Everything
@@ -161,7 +161,7 @@
                         <i data-lucide="package-open" style="width: 38px; height: 38px; opacity: 0.3; margin-bottom: 0.75rem;"></i>
                         <p style="font-weight: 700; font-size: 0.9rem;">Select items to disburse</p>
                     </div>
-                    <div id="cartItemsContainer" style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto;"></div>
+                    <div id="cartItemsContainer" class="hide-scrollbar" style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto;"></div>
                 </div>
 
                 <div style="padding: 1.5rem 1.75rem; border-top: 1px solid var(--border-color); background: rgba(99,102,241,0.02); border-radius: 0 0 28px 28px;">
@@ -170,6 +170,26 @@
                         <span>Confirm Disbursement</span>
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- History Bottom Sheet -->
+<div id="historySheet" class="modal-backdrop">
+    <div class="sheet-content glass-card">
+        <div class="sheet-header" style="padding: 2.5rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
+            <div>
+                <h3 style="margin: 0; font-size: 2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">Issued Items <span style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">History</span></h3>
+                <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600; opacity: 0.8;">Full audit trail of disbursed inventory items and allocations.</p>
+            </div>
+            <button onclick="closeHistorySheet()" class="modern-action-btn secondary" style="width: 54px; height: 54px; border-radius: 18px; border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
+                <i data-lucide="x" style="width: 28px;"></i>
+            </button>
+        </div>
+        <div class="sheet-body hide-scrollbar" style="flex: 1; overflow-y: auto; padding: 3rem; background: var(--bg-main);">
+            <div id="historyTableContainer">
+                <!-- Data dynamically injected -->
             </div>
         </div>
     </div>
@@ -323,6 +343,64 @@
         transform: none;
     }
 
+    /* Bottom Sheet & Animation Effects */
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(8px);
+        z-index: 2000;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 0;
+    }
+
+    .modal-backdrop.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .sheet-content {
+        width: 100%;
+        height: 92vh;
+        border-radius: 32px 32px 0 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.4);
+        box-shadow: 0 -25px 50px -12px rgba(0,0,0,0.15);
+        transform: translateY(100%);
+        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-backdrop.active .sheet-content {
+        transform: translateY(0);
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .activity-row:hover {
+        transform: scale(1.01) translateY(-2px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.06) !important;
+        border-color: var(--primary-light) !important;
+    }
+
+    /* Hide Scrollbar Utility */
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
     @media (max-width: 1024px) {
         .workspace-grid {
             grid-template-columns: 1fr !important;
@@ -331,11 +409,12 @@
         .cart-sticky {
             position: relative !important;
             top: 0 !important;
-            margin-top: 1rem;
+            margin-top: 2rem;
         }
         .header-mesh {
-            padding: 1.5rem !important;
-            border-radius: 20px !important;
+            padding: 2rem !important;
+            border-radius: 24px !important;
+            margin-bottom: 2rem !important;
         }
         .header-top {
             flex-direction: column !important;
@@ -346,14 +425,82 @@
             justify-content: flex-start;
         }
         .search-cat-container {
-            flex-direction: column !important;
+            flex-direction: column-reverse !important;
             gap: 1.5rem !important;
         }
         .search-box-wrapper {
             max-width: 100% !important;
             min-width: 100% !important;
         }
-        h1 { font-size: 2.25rem !important; }
+        h1 { font-size: 2.5rem !important; }
+    }
+
+    @media (max-width: 768px) {
+        .header-mesh {
+            padding: 1.5rem !important;
+        }
+        h1 { font-size: 2rem !important; }
+        .header-top p { font-size: 0.95rem !important; }
+        
+        .product-card {
+            padding: 1rem !important;
+        }
+
+        .sheet-content {
+            height: 100vh !important;
+            border-radius: 0 !important;
+        }
+
+        .sheet-header {
+            padding: 1.5rem !important;
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: flex-start !important;
+        }
+
+        .sheet-header div { width: 100%; }
+        .sheet-header .modern-action-btn.secondary {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 44px !important;
+            height: 44px !important;
+        }
+
+        .sheet-body {
+            padding: 1.25rem !important;
+        }
+
+        /* Responsive Table Cards */
+        .responsive-history-table thead { display: none; }
+        .responsive-history-table tbody { display: block; }
+        .responsive-history-table tr {
+            display: block;
+            margin-bottom: 1.25rem;
+            padding: 1.25rem !important;
+            border-radius: 20px !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+        .responsive-history-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0 !important;
+            border-bottom: 1px dashed var(--border-color) !important;
+            border-radius: 0 !important;
+            width: 100%;
+        }
+        .responsive-history-table td:last-child { border-bottom: none !important; }
+        .responsive-history-table td::before {
+            content: attr(data-label);
+            font-weight: 850;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .responsive-history-table td div { text-align: right; }
     }
 </style>
 
@@ -489,6 +636,95 @@
             btn.innerHTML = originalHtml;
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
+    }
+
+    async function openHistorySheet() {
+        const sheet = document.getElementById('historySheet');
+        const container = document.getElementById('historyTableContainer');
+        
+        sheet.classList.add('active');
+        container.innerHTML = `
+            <div style="padding: 8rem 0; text-align: center;">
+                <div class="loader" style="width: 40px; height: 40px; border: 4px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem;"></div>
+                <p style="font-weight: 700; color: var(--text-muted); font-size: 1.1rem;">Accessing encrypted history logs...</p>
+            </div>
+        `;
+
+        try {
+            const res = await fetch("{{ route('api.issued-items-history') }}");
+            const data = await res.json();
+            
+            if (data.length === 0) {
+                container.innerHTML = `
+                    <div style="padding: 10rem 0; text-align: center;">
+                        <i data-lucide="package-x" style="width: 80px; height: 80px; color: var(--text-muted); opacity: 0.2; margin-bottom: 2rem;"></i>
+                        <h3 style="font-weight: 850; color: var(--text-main); font-size: 1.5rem;">Inventory Log is Clean</h3>
+                        <p style="color: var(--text-muted); font-size: 1.1rem;">No items have been issued yet. Start by adding items to your list.</p>
+                    </div>
+                `;
+            } else {
+                let html = `
+                    <table class="responsive-history-table" style="width: 100%; border-collapse: separate; border-spacing: 0 1.25rem;">
+                        <thead>
+                            <tr style="text-align: left; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800;">
+                                <th style="padding: 0 1.5rem 1rem;">Timestamp</th>
+                                <th style="padding: 0 1.5rem 1rem;">Primary Beneficiary</th>
+                                <th style="padding: 0 1.5rem 1rem;">Disbursed Item</th>
+                                <th style="padding: 0 1.5rem 1rem;">Asset Group</th>
+                                <th style="padding: 0 1.5rem 1rem;">Quantity</th>
+                                <th style="padding: 0 1.5rem 1rem;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                data.forEach(item => {
+                    const t = new Date(item.created_at);
+                    const date = t.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                    const time = t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+                    html += `
+                        <tr class="activity-row" style="background: var(--bg-card); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-radius: 20px;">
+                            <td data-label="Timestamp" style="padding: 1.75rem 1.5rem; border-radius: 20px 0 0 20px;">
+                                <div style="font-weight: 800; color: var(--text-main); font-size: 0.95rem;">${date}</div>
+                                <div style="font-weight: 700; color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                                    <i data-lucide="clock" style="width: 12px;"></i> ${time}
+                                </div>
+                            </td>
+                            <td data-label="Beneficiary" style="padding: 1.75rem 1.5rem; font-weight: 850; color: var(--text-main); font-size: 1.05rem;">${item.beneficiary}</td>
+                            <td data-label="Item" style="padding: 1.75rem 1.5rem; font-weight: 850; color: var(--primary); font-size: 1.05rem;">${item.description}</td>
+                            <td data-label="Group" style="padding: 1.75rem 1.5rem;">
+                                <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.75rem; font-weight: 800; border: 1px solid rgba(99, 102, 241, 0.1);">Ledge ${item.ledge_category}</span>
+                            </td>
+                            <td data-label="Quantity" style="padding: 1.75rem 1.5rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main);">${item.quantity}</td>
+                            <td data-label="Type" style="padding: 1.75rem 1.5rem; border-radius: 0 20px 20px 0;">
+                                <span class="status-badge ${item.issuance_type === 'Temporary' ? 'status-warning' : 'status-success'}" style="font-size: 0.7rem; padding: 0.4rem 0.85rem; border-radius: 8px; font-weight: 800;">${item.issuance_type.toUpperCase()}</span>
+                            </td>
+                        </tr>
+                    `;
+
+                });
+                
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+            }
+        } catch (e) {
+            container.innerHTML = `
+                <div style="padding: 8rem 0; text-align: center;">
+                    <div style="width: 64px; height: 64px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                        <i data-lucide="alert-circle" style="width: 32px; height: 32px;"></i>
+                    </div>
+                    <h3 style="font-weight: 850; color: var(--text-main);">Connection Interrupted</h3>
+                    <p style="color: var(--text-muted);">We couldn't synchronize with the vault. Please try again.</p>
+                </div>
+            `;
+        }
+        
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function closeHistorySheet() {
+        document.getElementById('historySheet').classList.remove('active');
     }
 
     document.addEventListener('DOMContentLoaded', () => {
