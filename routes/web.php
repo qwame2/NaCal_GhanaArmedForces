@@ -8,9 +8,9 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\SettingsController;
 
 // Authentication Routes
-Route::get('/auth', [AuthController::class, 'showAuth'])->name('auth');
+Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
-Route::post('/login', [AuthController::class, 'login'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Guest Redirection

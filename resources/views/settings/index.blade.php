@@ -9,9 +9,13 @@
         
         <div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 2.5rem;">
             <div style="position: relative;">
-                <div style="width: 110px; height: 110px; background: {{ $user['avatar_color'] }}; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 950; color: white; box-shadow: 0 15px 35px rgba(99,102,241,0.3); border: 4px solid white;">
-                    {{ substr($user['name'], 0, 1) }}{{ substr(explode(' ', $user['name'])[1] ?? '', 0, 1) }}
-                </div>
+                @if(auth()->user()->avatar)
+                    <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 110px; height: 110px; border-radius: 28px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 4px solid white;">
+                @else
+                    <div style="width: 110px; height: 110px; background: var(--primary); border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 950; color: white; box-shadow: 0 15px 35px rgba(99,102,241,0.3); border: 4px solid white;">
+                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', auth()->user()->name)[1] ?? '', 0, 1)) }}
+                    </div>
+                @endif
                 <button style="position: absolute; bottom: -8px; right: -8px; width: 36px; height: 36px; background: white; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 5px 10px rgba(0,0,0,0.1);">
                     <i data-lucide="camera" style="width: 18px; color: var(--primary);"></i>
                 </button>
@@ -19,13 +23,13 @@
             
             <div>
                 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
-                    <span style="background: rgba(99, 102, 241, 0.1); color: var(--primary); font-size: 0.65rem; font-weight: 950; padding: 0.35rem 1rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.1em;">Storekeeper Account</span>
+                    <span style="background: rgba(99, 102, 241, 0.1); color: var(--primary); font-size: 0.65rem; font-weight: 950; padding: 0.35rem 1rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.1em;">Authenticated Personnel</span>
                     <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                        <i data-lucide="shield-check" style="width: 14px; color: #10b981;"></i> Verified Profile
+                        <i data-lucide="shield-check" style="width: 14px; color: #10b981;"></i> Security Verified
                     </span>
                 </div>
-                <h1 style="margin: 0; font-size: 2.5rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em;">{{ $user['name'] }}</h1>
-                <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1.05rem; font-weight: 600;">{{ $user['role'] }} &bull; {{ $user['department'] }}</p>
+                <h1 style="margin: 0; font-size: 2.5rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em;">{{ auth()->user()->name }}</h1>
+                <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1.05rem; font-weight: 600;">@ {{ auth()->user()->username }} &bull; Inventory Management</p>
             </div>
         </div>
     </div>
@@ -80,27 +84,34 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem;">
                     <div class="form-group">
                         <label>Full Name</label>
-                        <input type="text" value="{{ $user['name'] }}" class="modern-input">
+                        <input type="text" id="prof-name" value="{{ auth()->user()->name }}" class="modern-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Identification Username</label>
+                        <input type="text" value="{{ auth()->user()->username }}" class="modern-input" readonly style="opacity: 0.7;">
                     </div>
                     <div class="form-group">
                         <label>Email Address</label>
-                        <input type="email" value="{{ $user['email'] }}" class="modern-input">
+                        <input type="email" id="prof-email" value="{{ auth()->user()->email }}" class="modern-input">
                     </div>
                     <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="text" value="{{ $user['phone'] }}" class="modern-input">
+                        <label>Contact Phone</label>
+                        <input type="text" id="prof-phone" value="{{ auth()->user()->phone }}" class="modern-input" placeholder="+233 ...">
                     </div>
                     <div class="form-group">
                         <label>Professional Role</label>
-                        <input type="text" value="{{ $user['role'] }}" class="modern-input" readonly style="opacity: 0.7; background: rgba(0,0,0,0.02);">
-                        <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 6px;">* Contact administration to change role.</p>
+                        <input type="text" id="prof-role" value="{{ auth()->user()->role }}" class="modern-input" placeholder="e.g. Storekeeper">
+                    </div>
+                    <div class="form-group">
+                        <label>Assigned Department</label>
+                        <input type="text" id="prof-dept" value="{{ auth()->user()->department }}" class="modern-input" placeholder="e.g. Logistics">
                     </div>
                 </div>
 
                 <div style="background: rgba(99, 102, 241, 0.05); padding: 2rem; border-radius: 20px; border: 1px solid rgba(99, 102, 241, 0.1);">
                     <div style="display: flex; gap: 1rem; align-items: center;">
                         <i data-lucide="info" style="color: var(--primary); width: 24px;"></i>
-                        <p style="font-size: 0.9rem; color: var(--text-main); font-weight: 700; margin: 0;">Your profile information is visible to department heads for auditing purposes.</p>
+                        <p style="font-size: 0.9rem; color: var(--text-main); font-weight: 700; margin: 0;">Your profile information is verified and visible for internal auditing and logistical tracking.</p>
                     </div>
                 </div>
             </div>
@@ -153,7 +164,7 @@
 
             <!-- Action Bar -->
             <div style="margin-top: 5rem; border-top: 2px solid var(--border-color); padding-top: 2.5rem; display: flex; justify-content: flex-end; gap: 1.5rem;">
-                <button class="modern-action-btn secondary" style="width: auto; padding: 1.15rem 2.5rem; background: transparent; border-color: transparent;">Discard Changes</button>
+                <button class="modern-action-btn secondary" style="width: auto; padding: 1.15rem 2.5rem;" onclick="location.reload()">Discard Changes</button>
                 <button class="save-btn" onclick="saveSettings()">
                     <i data-lucide="save" style="width: 20px;"></i>
                     Update My Profile
@@ -225,6 +236,22 @@
     .toggle-switch.active { background: var(--primary); }
     .toggle-switch.active .toggle-nob { left: 31px; }
 
+    .modern-action-btn.secondary {
+        background: var(--bg-main);
+        color: var(--text-muted);
+        border: 2px solid var(--border-color);
+        border-radius: 20px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .modern-action-btn.secondary:hover {
+        background: white;
+        color: var(--text-main);
+        border-color: var(--text-muted);
+    }
+
     .save-btn {
         padding: 1.25rem 3rem; border-radius: 20px; border: none;
         background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%);
@@ -260,14 +287,23 @@
             const res = await fetch("{{ route('settings.update') }}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify({ /* profile data */ })
+                body: JSON.stringify({
+                    name: document.getElementById('prof-name').value,
+                    email: document.getElementById('prof-email').value,
+                    phone: document.getElementById('prof-phone').value,
+                    role: document.getElementById('prof-role').value,
+                    department: document.getElementById('prof-dept').value
+                })
             });
             const data = await res.json();
             if (data.success) {
-                showToast('Profile Updated', data.message, 'success');
+                showToast(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('Update Failed', data.message || 'Generic error', 'error');
             }
         } catch (e) {
-            showToast('System Error', 'Failed to update profile', 'error');
+            showToast('Connection Error', 'Failed to reach synchronization node', 'error');
         } finally {
             btn.disabled = false;
             btn.innerHTML = originalHtml;
