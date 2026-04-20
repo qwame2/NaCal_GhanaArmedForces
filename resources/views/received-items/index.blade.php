@@ -154,7 +154,7 @@
         </div>
         @endif
         <div class="table-scroll-wrapper">
-            <table class="activity-table">
+            <table class="activity-table" style="width: 100%; min-width: 1500px; border-collapse: collapse;">
                 <thead>
                     <tr style="background: rgba(0,0,0,0.02); text-align: left;">
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Date</th>

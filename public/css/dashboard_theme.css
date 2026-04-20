@@ -225,38 +225,10 @@ body {
     margin-left: var(--sidebar-width);
     min-height: 100vh;
     transition: var(--transition);
-    max-width: 100vw;
-    overflow-x: hidden;
 }
 
 .main-wrapper.expanded {
     margin-left: var(--sidebar-mini-width);
-}
-
-/* Fluid Workspace Grid */
-.workspace-grid {
-    display: grid;
-    grid-template-columns: 1fr 420px;
-    gap: 2.5rem;
-    align-items: flex-start;
-}
-
-@media (max-width: 1366px) {
-    .workspace-grid {
-        grid-template-columns: 1fr 360px;
-        gap: 1.5rem;
-    }
-}
-
-@media (max-width: 1024px) {
-    .workspace-grid {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
-    
-    .cart-sticky {
-        position: static !important;
-    }
 }
 
 /* Sidebar Collapsed States */
@@ -301,24 +273,15 @@ body {
     height: var(--header-height);
     background: var(--bg-nav);
     backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 3rem;
     width: 100%;
     position: sticky;
     top: 0;
     z-index: 900;
     border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-}
-
-.top-nav-inner {
-    max-width: 1440px;
-    margin: 0 auto;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2rem;
-    gap: 1rem;
 }
 
 @media (max-width: 768px) {
@@ -339,8 +302,7 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    width: 100%;
-    max-width: 400px;
+    width: 400px;
     border: 1px solid transparent;
     transition: var(--transition);
 }
@@ -462,10 +424,10 @@ body {
 
 .page-header {
     background: var(--bg-card);
-    padding: 1.75rem 2.25rem;
-    border-radius: 1.5rem;
+    padding: 2.5rem;
+    border-radius: 2rem;
     box-shadow: var(--card-shadow);
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -489,10 +451,7 @@ body {
 }
 
 .content-body {
-    padding: 2rem 2.5rem;
-    max-width: 1440px;
-    margin: 0 auto;
-    width: 100%;
+    padding: 2.5rem 3rem;
 }
 
 @media (max-width: 768px) {
@@ -524,12 +483,6 @@ body {
     grid-template-columns: repeat(5, 1fr);
     gap: 1rem;
     margin-bottom: 2.5rem;
-}
-
-@media (max-width: 1440px) {
-    .stats-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
 }
 
 @media (max-width: 1200px) {
@@ -611,8 +564,8 @@ body {
 
 .glass-card {
     background: var(--bg-card);
-    padding: 1.75rem;
-    border-radius: 1.25rem;
+    padding: 2rem;
+    border-radius: var(--radius-xl);
     box-shadow: var(--card-shadow);
     border: 1px solid var(--border-color);
 }
@@ -806,67 +759,19 @@ button:active {
     }
 }
 
-@media (max-width: 1366px) {
-    :root {
-        --sidebar-width: 88px; /* Force mini-sidebar on laptops */
-    }
-
-    .main-wrapper {
-        margin-left: 88px !important;
-    }
-
-    .sidebar {
-        width: 88px;
-        padding: 2.5rem 0.75rem;
-    }
-
-    .sidebar .logo-container h1,
-    .sidebar .sidebar-branding-subtitle,
-    .sidebar .nav-section-title,
-    .sidebar .nav-link span,
-    .sidebar .user-profile-card div,
-    .sidebar .user-profile-card button {
-        display: none !important;
-    }
-
-    .sidebar .nav-link {
-        justify-content: center;
-        padding: 1rem 0;
-    }
-
-    .sidebar .logo-container {
-        justify-content: center;
-    }
-}
-
 @media (max-width: 1024px) {
     :root {
         --sidebar-width: 0px;
     }
 
     .sidebar {
-        position: fixed;
-        left: -300px;
-        top: 0;
-        width: 300px;
-        height: 100vh;
-        z-index: 2000;
-        transition: transform 0.4s ease;
-        transform: none;
-        display: flex; /* Show elements when active as overlay */
-    }
-    
-    .sidebar.active {
-        left: 0;
+        transform: translateX(-100%);
+        width: 280px;
     }
 
-    .sidebar.active .logo-container h1,
-    .sidebar.active .sidebar-branding-subtitle,
-    .sidebar.active .nav-section-title,
-    .sidebar.active .nav-link span,
-    .sidebar.active .user-profile-card div,
-    .sidebar.active .user-profile-card button {
-        display: block !important;
+    .sidebar.active {
+        transform: translateX(0);
+        --sidebar-width: 280px;
     }
 
     .main-wrapper {
@@ -874,7 +779,17 @@ button:active {
     }
 
     .top-nav {
-        padding: 0 1rem;
+        padding: 0 1.5rem;
+    }
+
+    .search-bar {
+        width: auto !important;
+        flex: 1 !important;
+        max-width: 300px !important;
+    }
+
+    #mobile-toggle {
+        display: flex !important;
     }
 }
 
