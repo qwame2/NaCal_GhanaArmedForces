@@ -3,8 +3,8 @@
 @section('content')
 <div class="animate-slide-up" style="max-width: 1600px; margin: 0 auto; padding: 0 1.5rem;">
     
-    <!-- Ultra-Modern Operations Header -->
-    <div class="glass-card header-mesh" style="padding: 3rem; border-radius: 32px; margin-bottom: 3rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08);">
+    <!-- Premium Operations Header -->
+    <div class="glass-card header-mesh" style="padding: 2rem 2.5rem; border-radius: 28px; margin-bottom: 2rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 20px 40px -12px rgba(0,0,0,0.06);">
         <!-- Decorative background elements -->
         <div style="position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%); z-index: 0;"></div>
         <div style="position: absolute; bottom: -50px; left: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%); z-index: 0;"></div>
@@ -19,8 +19,8 @@
                             <i data-lucide="cpu" style="width: 14px;"></i> System Operation
                         </span>
                     </div>
-                    <h1 style="margin: 0; font-size: 3rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em; line-height: 1;">Issue <span style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Inventory</span></h1>
-                    <p style="margin: 12px 0 0; color: var(--text-muted); font-size: 1.1rem; font-weight: 500; opacity: 0.8;">Seamlessly disburse stock items and track recipient allocations in real-time.</p>
+                    <h1 style="margin: 0; font-size: 2.25rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em; line-height: 1;">Issue <span style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Inventory</span></h1>
+                    <p style="margin: 10px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 500; opacity: 0.8;">Seamlessly disburse stock items and track recipient allocations in real-time.</p>
                 </div>
                 
                 <div class="header-actions" style="display: flex; gap: 1rem;">
@@ -34,7 +34,7 @@
                 </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 2rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 2.5rem;">
+            <div style="display: flex; flex-direction: column; gap: 1.5rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 2rem;">
                 <div class="search-cat-container" style="display: flex; gap: 2.5rem; align-items: center; flex-wrap: wrap;">
                     <!-- Elegant Search -->
                     <div class="search-box-wrapper" style="position: relative; flex: 1; min-width: 320px;">
@@ -78,7 +78,7 @@
     </div>
 
     <!-- Main Workspace Split -->
-    <div class="workspace-grid" style="display: grid; grid-template-columns: 1fr 420px; gap: 3rem; align-items: flex-start; padding-bottom: 5rem;">
+    <div class="workspace-grid" style="display: grid; grid-template-columns: 1fr 380px; gap: 2.5rem; align-items: flex-start; padding-bottom: 4rem;">
         
         <!-- Left Column: Catalog -->
         <div>
@@ -95,8 +95,8 @@
                     $isOutOfStock = $item->total_stock <= 0;
                 @endphp
 
-                <div class="product-card glass-card" data-category="{{ $item->ledge_category }}" data-description="{{ strtolower($item->description) }}" style="{{ $isOutOfStock ? 'opacity: 0.7;' : '' }}">
-                    <div class="product-badge" style="background: {{ $config[2] }}; color: {{ $config[0] }};">Ledge {{ $item->ledge_category }}</div>
+                <div class="product-card glass-card" data-category="{{ $item->ledge_category }}" data-description="{{ strtolower($item->description) }}" style="{{ $isOutOfStock ? 'opacity: 0.7;' : 'padding: 1rem;' }}">
+                    <div class="product-badge" style="background: {{ $config[2] }}; color: {{ $config[0] }}; top: 0.75rem; right: 0.75rem;">Ledge {{ $item->ledge_category }}</div>
                     <div style="height: 60px; display: flex; align-items: center; justify-content: center; background: {{ $config[1] }}; border-radius: 10px; margin-bottom: 0.75rem;">
                         <i data-lucide="{{ $config[3] }}" style="width: 28px; height: 28px; color: {{ $config[0] }}; opacity: 0.6;"></i>
                     </div>
@@ -127,9 +127,9 @@
         <!-- Right Column: Cart Panel -->
         <div class="cart-sticky" style="position: sticky; top: 100px;">
             <div class="glass-card" style="border-radius: 28px; padding: 0.5rem; border: 2px solid var(--border-color);">
-                <div style="padding: 1.75rem; border-bottom: 1px solid var(--border-color);">
-                    <h3 style="margin: 0 0 1.5rem; font-size: 1.25rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 12px;">
-                        <i data-lucide="clipboard-list" style="color: var(--primary);"></i> Disbursement Info
+                <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
+                    <h3 style="margin: 0 0 1.25rem; font-size: 1.1rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="clipboard-list" style="color: var(--primary); width: 20px;"></i> Disbursement Info
                     </h3>
                     <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                         <div>
@@ -152,16 +152,16 @@
                     </div>
                 </div>
 
-                <div style="padding: 1.75rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h4 style="margin: 0; font-weight: 900; color: var(--text-main);">Selected Items</h4>
-                        <span id="cartItemCount" style="padding: 0.25rem 0.75rem; background: var(--primary); color: white; border-radius: 99px; font-size: 0.75rem; font-weight: 800;">0</span>
+                <div style="padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 900; color: var(--text-main);">Selected Items</h4>
+                        <span id="cartItemCount" style="padding: 0.2rem 0.6rem; background: var(--primary); color: white; border-radius: 99px; font-size: 0.7rem; font-weight: 800;">0</span>
                     </div>
-                    <div id="cartEmptyState" style="padding: 2.5rem 0; text-align: center; border: 2px dashed var(--border-color); border-radius: 18px; color: var(--text-muted);">
-                        <i data-lucide="package-open" style="width: 38px; height: 38px; opacity: 0.3; margin-bottom: 0.75rem;"></i>
-                        <p style="font-weight: 700; font-size: 0.9rem;">Select items to disburse</p>
+                    <div id="cartEmptyState" style="padding: 2rem 0; text-align: center; border: 2px dashed var(--border-color); border-radius: 18px; color: var(--text-muted);">
+                        <i data-lucide="package-open" style="width: 32px; height: 32px; opacity: 0.3; margin-bottom: 0.5rem;"></i>
+                        <p style="font-weight: 700; font-size: 0.85rem;">Select items to disburse</p>
                     </div>
-                    <div id="cartItemsContainer" class="hide-scrollbar" style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto;"></div>
+                    <div id="cartItemsContainer" class="hide-scrollbar" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 350px; overflow-y: auto;"></div>
                 </div>
 
                 <div style="padding: 1.5rem 1.75rem; border-top: 1px solid var(--border-color); background: rgba(99,102,241,0.02); border-radius: 0 0 28px 28px;">
@@ -180,8 +180,8 @@
     <div class="sheet-content glass-card">
         <div class="sheet-header" style="padding: 2.5rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
             <div>
-                <h3 style="margin: 0; font-size: 2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">Issued Items <span style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">History</span></h3>
-                <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600; opacity: 0.8;">Full audit trail of disbursed inventory items and allocations.</p>
+                <h3 style="margin: 0; font-size: 1.75rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">Issued Items <span style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">History</span></h3>
+                <p style="margin: 4px 0 0; color: var(--text-muted); font-size: 0.9rem; font-weight: 600; opacity: 0.8;">Full audit trail of disbursed inventory items and allocations.</p>
             </div>
             <button onclick="closeHistorySheet()" class="modern-action-btn secondary" style="width: 54px; height: 54px; border-radius: 18px; border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
                 <i data-lucide="x" style="width: 28px;"></i>

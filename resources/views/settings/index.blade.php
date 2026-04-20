@@ -4,15 +4,15 @@
 <div class="animate-slide-up" style="max-width: 1400px; margin: 0 auto; padding: 0 1.5rem;">
     
     <!-- Premium User Settings Header -->
-    <div class="glass-card header-mesh" style="padding: 2.5rem 3rem; border-radius: 32px; margin-bottom: 2.5rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08);">
+    <div class="glass-card header-mesh" style="padding: 2rem; border-radius: 28px; margin-bottom: 2rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 20px 40px -12px rgba(0,0,0,0.06);">
         <div style="position: absolute; top: -50px; right: -50px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%); z-index: 0;"></div>
         
-        <div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 2.5rem;">
+        <div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 2rem;">
             <div style="position: relative;">
                 @if(auth()->user()->avatar)
-                    <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 110px; height: 110px; border-radius: 28px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 4px solid white;">
+                    <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 90px; height: 90px; border-radius: 24px; object-fit: cover; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 3px solid white;">
                 @else
-                    <div style="width: 110px; height: 110px; background: var(--primary); border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 950; color: white; box-shadow: 0 15px 35px rgba(99,102,241,0.3); border: 4px solid white;">
+                    <div style="width: 90px; height: 90px; background: var(--primary); border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 950; color: white; box-shadow: 0 10px 25px rgba(99,102,241,0.2); border: 3px solid white;">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', auth()->user()->name)[1] ?? '', 0, 1)) }}
                     </div>
                 @endif
@@ -28,8 +28,8 @@
                         <i data-lucide="shield-check" style="width: 14px; color: #10b981;"></i> Security Verified
                     </span>
                 </div>
-                <h1 style="margin: 0; font-size: 2.5rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em;">{{ auth()->user()->name }}</h1>
-                <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1.05rem; font-weight: 600;">@ {{ auth()->user()->username }} &bull; Inventory Management</p>
+                <h1 style="margin: 0; font-size: 2rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.05em;">{{ auth()->user()->name }}</h1>
+                <p style="margin: 4px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600;">@ {{ auth()->user()->username }} &bull; Inventory Management</p>
             </div>
         </div>
     </div>
@@ -38,8 +38,8 @@
     <div style="display: grid; grid-template-columns: 320px 1fr; gap: 2.5rem; align-items: flex-start; padding-bottom: 5rem;" class="settings-grid">
         
         <!-- Sidebar Navigation -->
-        <div class="glass-card" style="padding: 1.5rem; border-radius: 24px;">
-            <nav style="display: flex; flex-direction: column; gap: 0.65rem;">
+        <div class="glass-card" style="padding: 1.25rem; border-radius: 20px;">
+            <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <button class="settings-nav-btn active" onclick="switchSection('profile', this)">
                     <i data-lucide="user"></i>
                     <span>Personal Profile</span>
@@ -69,13 +69,13 @@
         </div>
 
         <!-- Content Area -->
-        <div id="settingsContent" class="glass-card" style="padding: 3.5rem; border-radius: 32px; min-height: 600px;">
+        <div id="settingsContent" class="glass-card" style="padding: 2.25rem 2.5rem; border-radius: 28px; min-height: 550px;">
             
             <!-- Personal Profile Section -->
             <div id="section-profile" class="settings-section active">
-                <div style="margin-bottom: 3rem; border-bottom: 1px solid var(--border-color); padding-bottom: 2rem;">
-                    <h2 style="font-size: 1.75rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Personal Information</h2>
-                    <p style="color: var(--text-muted); font-size: 1rem;">Update your name, contact email, and professional designation.</p>
+                <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.4rem; letter-spacing: -0.02em;">Personal Information</h2>
+                    <p style="color: var(--text-muted); font-size: 0.95rem;">Update your name, contact email, and professional designation.</p>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem;">

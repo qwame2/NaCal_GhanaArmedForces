@@ -8,8 +8,8 @@
                 <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Inventory Log</span>
                 <span style="color: var(--text-muted); font-size: 0.85rem;">Historical Records</span>
             </div>
-            <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main);">Received <span style="color: var(--primary);">Items</span></h2>
-            <p style="color: var(--text-muted);">View all items received into the inventory system.</p>
+            <h2 style="font-size: 1.75rem; font-weight: 900; color: var(--text-main);">Received <span style="color: var(--primary);">Items</span></h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">View all items received into the inventory system.</p>
         </div>
 
         <div style="display: flex; gap: 1rem;">
@@ -26,31 +26,31 @@
 
     <!-- Quick Stats -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-        <div class="glass-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem;">
-            <div style="width: 48px; height: 48px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                <i data-lucide="package" style="width: 24px;"></i>
+        <div class="glass-card" style="padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 44px; height: 44px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="package" style="width: 22px;"></i>
             </div>
             <div>
-                <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Total Batches</div>
-                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{ $totalReceived }}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Total Batches</div>
+                <div style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">{{ $totalReceived }}</div>
             </div>
         </div>
-        <div class="glass-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem;">
-            <div style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                <i data-lucide="layers" style="width: 24px;"></i>
+        <div class="glass-card" style="padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 44px; height: 44px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="layers" style="width: 22px;"></i>
             </div>
             <div>
-                <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Total Items Recorded</div>
-                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{ $totalItemsCount }}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Total Items Recorded</div>
+                <div style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">{{ $totalItemsCount }}</div>
             </div>
         </div>
-        <div class="glass-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem;">
-            <div style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                <i data-lucide="trending-up" style="width: 24px;"></i>
+        <div class="glass-card" style="padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 44px; height: 44px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="trending-up" style="width: 22px;"></i>
             </div>
             <div>
-                <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Recent Batches</div>
-                <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{ $recentReceived }}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Recent Batches</div>
+                <div style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">{{ $recentReceived }}</div>
             </div>
         </div>
     </div>
@@ -100,7 +100,7 @@
         </div>
 
         <!-- Right Nav Arrow -->
-        <button type="button" id="nextLedge" style="position: absolute; right: -10px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s;">
+        <button type="button" id="nextLedge" style="position: absolute; right: -10px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s; margin-bottom: 2rem;">
             <i data-lucide="chevron-right" style="width: 18px;"></i>
         </button>
     </div>
@@ -131,23 +131,23 @@
 
         <!-- Dynamic Search Analytics Dashboard -->
         @if(isset($isSearching) && $isSearching && request('search'))
-        <div style="background: var(--bg-card); border-radius: 20px 20px 0 0; border-bottom: 2px solid var(--primary); padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.05); z-index: 10;">
-            <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <div style="width: 50px; height: 50px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                    <i data-lucide="search" style="width: 24px; height: 24px;"></i>
+        <div style="background: var(--bg-card); border-radius: 20px 20px 0 0; border-bottom: 2px solid var(--primary); padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.05); z-index: 10;">
+            <div style="display: flex; align-items: center; gap: 1.25rem;">
+                <div style="width: 44px; height: 44px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="search" style="width: 20px; height: 20px;"></i>
                 </div>
                 <div>
-                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-main);">Search: <span style="color: var(--primary);">"{{ request('search') }}"</span></h3>
-                    <p style="margin: 0.25rem 0 0; color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Found {{ $receivedItems->total() }} matching system records</p>
+                    <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: var(--text-main);">Search: <span style="color: var(--primary);">"{{ request('search') }}"</span></h3>
+                    <p style="margin: 0.15rem 0 0; color: var(--text-muted); font-size: 0.85rem; font-weight: 600;">Found {{ $receivedItems->total() }} matching system records</p>
                 </div>
             </div>
-            <div style="display: flex; gap: 2rem; align-items: center;">
+            <div style="display: flex; gap: 1.5rem; align-items: center;">
                 <div style="text-align: right;">
-                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 800; margin-bottom: 0.25rem;">Total System Sum</div>
-                    <div style="font-size: 2rem; font-weight: 900; color: var(--text-main); line-height: 1;">
-                        <span style="color: var(--primary);">{{ number_format((float)($searchQtySum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Qty</span>
-                        <span style="color: rgba(0,0,0,0.1); margin: 0 0.5rem;">|</span>
-                        <span>{{ number_format((float)($searchSum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Stock</span>
+                    <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 800; margin-bottom: 0.2rem;">Total System Sum</div>
+                    <div style="font-size: 1.55rem; font-weight: 900; color: var(--text-main); line-height: 1;">
+                        <span style="color: var(--primary);">{{ number_format((float)($searchQtySum ?? 0)) }}</span> <span style="font-size: 0.85rem; color: var(--text-muted);">Qty</span>
+                        <span style="color: rgba(0,0,0,0.1); margin: 0 0.4rem;">|</span>
+                        <span>{{ number_format((float)($searchSum ?? 0)) }}</span> <span style="font-size: 0.85rem; color: var(--text-muted);">Stock</span>
                     </div>
                 </div>
             </div>
@@ -157,19 +157,19 @@
             <table class="activity-table" style="width: 100%; min-width: 1500px; border-collapse: collapse;">
                 <thead>
                     <tr style="background: rgba(0,0,0,0.02); text-align: left;">
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Date</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Description</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Supplier</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Donor</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Status</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Avail. Qty</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Ledge</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">System Health</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Avail. Item Health</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Action</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Date</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Description</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Supplier</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Donor</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Status</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Avail. Qty</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Ledge</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Health</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Item Health</th>
+                        <th style="padding: 1rem 1.25rem; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -199,10 +199,10 @@
                         }
                         @endphp
                         <tr class="activity-row" style="border-top: 1px solid var(--border-color);">
-                        <td data-label="Date" style="padding: 1.25rem 1.5rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($item->entry_date)->format('M d, Y') }}</td>
-                        <td data-label="Description" style="padding: 1.25rem 1.5rem;">
-                            <div style="font-weight: 700; color: var(--text-main);">{{ $item->description }}</div>
-                            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Batch #{{ $item->batch_id }}</div>
+                        <td data-label="Date" style="padding: 1rem 1.25rem; color: var(--text-muted); font-size: 0.85rem;">{{ \Carbon\Carbon::parse($item->entry_date)->format('M d, Y') }}</td>
+                        <td data-label="Description" style="padding: 1rem 1.25rem;">
+                            <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">{{ $item->description }}</div>
+                            <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Batch #{{ $item->batch_id }}</div>
                         </td>
                         <td data-label="Category" style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
@@ -264,23 +264,22 @@
                                     <span style="font-size: 0.6rem; font-weight: 900; color: white; background: {{ $hColor }}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; width: fit-content; text-transform: uppercase;">{{ $hStatus }}</span>
                                     <span style="font-size: 0.75rem; font-weight: 800; color: {{ $hColor }};">{{ round($percentage) }}%</span>
                                 </div>
-                                <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-main);">{{ number_format($totalQty) }} <span style="font-size: 0.65rem; color: var(--text-muted);">Available</span></div>
+                                <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-main);">{{ number_format($totalQty) }} <span style="font-size: 0.65rem; color: var(--text-muted);">Avl</span></div>
                             </div>
                         </td>
 
-                        <td data-label="Available Item Health" style="padding: 1.25rem 1.5rem;">
+                        <td data-label="Available Item Health" style="padding: 1rem 1.25rem;">
                             @php
                             $isItemLow = $totalQty <= 100;
-                                $itemHealthStatus=$isItemLow ? 'LOW STOCK' : 'IN STOCK' ;
+                                $itemHealthStatus=$isItemLow ? 'LOW' : 'GOOD' ;
                                 $itemHealthColor=$isItemLow ? '#ef4444' : '#10b981' ;
                                 @endphp
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                <span style="font-size: 0.6rem; font-weight: 900; color: white; background: {{ $itemHealthColor }}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; width: fit-content; text-transform: uppercase;">{{ $itemHealthStatus }}</span>
-                                <i data-lucide="{{ $isItemLow ? 'alert-circle' : 'check-circle' }}" style="width: 14px; color: {{ $itemHealthColor }};"></i>
-        </div>
-        </td>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                <span style="font-size: 0.55rem; font-weight: 900; color: white; background: {{ $itemHealthColor }}; padding: 0.15rem 0.4rem; border-radius: 4px; display: inline-block; width: fit-content; text-transform: uppercase;">{{ $itemHealthStatus }}</span>
+         </div>
+         </td>
 
-        <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right;">
+        <td data-label="Action" style="padding: 1rem 1.25rem; text-align: right;">
             <div class="action-dropdown-wrapper">
                 <button type="button" class="glass-btn-sm" title="Actions" onclick="toggleActionMenu('{{ $item->batch_id }}')" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
                     <i data-lucide="more-vertical" style="width: 18px;"></i>
