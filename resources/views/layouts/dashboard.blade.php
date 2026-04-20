@@ -124,34 +124,36 @@
 
     <div class="main-wrapper">
         <nav class="top-nav">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <button id="mobile-toggle" style="display: none; background: var(--bg-main); border: none; width: 44px; height: 44px; border-radius: 12px; align-items: center; justify-content: center; cursor: pointer;">
-                    <i data-lucide="menu" style="width: 22px; color: var(--text-main);"></i>
-                </button>
-                <button id="sidebar-toggle" style="background: var(--bg-main); border: none; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);">
-                    <i data-lucide="panel-left-close" style="width: 20px; color: var(--text-main);"></i>
-                </button>
-                <div class="search-bar" style="position: relative;">
-                    <i data-lucide="search" style="color: var(--text-muted); width: 18px;"></i>
-                    <input type="text" id="global-search-input" placeholder="Search inventory, reports, transactions..." autocomplete="off">
+            <div class="top-nav-inner">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button id="mobile-toggle" style="display: none; background: var(--bg-main); border: none; width: 44px; height: 44px; border-radius: 12px; align-items: center; justify-content: center; cursor: pointer;">
+                        <i data-lucide="menu" style="width: 22px; color: var(--text-main);"></i>
+                    </button>
+                    <button id="sidebar-toggle" style="background: var(--bg-main); border: none; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);">
+                        <i data-lucide="panel-left-close" style="width: 20px; color: var(--text-main);"></i>
+                    </button>
+                    <div class="search-bar" style="position: relative;">
+                        <i data-lucide="search" style="color: var(--text-muted); width: 18px;"></i>
+                        <input type="text" id="global-search-input" placeholder="Search inventory, reports, transactions..." autocomplete="off">
 
-                    <!-- Search Results Portal -->
-                    <div id="global-search-results" style="display: none; position: absolute; top: calc(100% + 10px); left: 0; right: 0; background: var(--bg-card); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); border: 1px solid var(--border-color); z-index: 2000; overflow: hidden; max-height: 400px; overflow-y: auto;">
+                        <!-- Search Results Portal -->
+                        <div id="global-search-results" style="display: none; position: absolute; top: calc(100% + 10px); left: 0; right: 0; background: var(--bg-card); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); border: 1px solid var(--border-color); z-index: 2000; overflow: hidden; max-height: 400px; overflow-y: auto;">
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="top-nav-actions">
-                <div class="icon-btn">
-                    <i data-lucide="message-square" style="width: 20px;"></i>
-                </div>
-                <div style="height: 32px; width: 1px; background: var(--border-color);"></div>
-                <div class="icon-btn">
-                    <i data-lucide="bell" style="width: 20px;"></i>
-                    <span class="badge">3</span>
-                </div>
-                <div class="icon-btn" id="theme-toggle" style="border: none; background: transparent;">
-                    <i data-lucide="moon" style="width: 20px;"></i>
+                <div class="top-nav-actions">
+                    <div class="icon-btn">
+                        <i data-lucide="message-square" style="width: 20px;"></i>
+                    </div>
+                    <div style="height: 32px; width: 1px; background: var(--border-color);"></div>
+                    <div class="icon-btn">
+                        <i data-lucide="bell" style="width: 20px;"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="icon-btn" id="theme-toggle" style="border: none; background: transparent;">
+                        <i data-lucide="moon" style="width: 20px;"></i>
+                    </div>
                 </div>
             </div>
         </nav>

@@ -1,13 +1,13 @@
 @extends('layouts.dashboard')
 
 @section('content')
-<div class="animate-slide-up" style="max-width: 1400px; margin: 0 auto; padding: 0 1.5rem;">
+<div class="animate-slide-up" style="max-width: 1440px; margin: 0 auto; padding: 0;">
     
     <!-- Premium User Settings Header -->
-    <div class="glass-card header-mesh" style="padding: 2.5rem 3rem; border-radius: 32px; margin-bottom: 2.5rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08);">
+    <div class="glass-card header-mesh" style="padding: 2rem 2.5rem; border-radius: 28px; margin-bottom: 2.5rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08);">
         <div style="position: absolute; top: -50px; right: -50px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%); z-index: 0;"></div>
         
-        <div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 2.5rem;">
+        <div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 2rem;">
             <div style="position: relative;">
                 @if(auth()->user()->avatar)
                     <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 110px; height: 110px; border-radius: 28px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 4px solid white;">
