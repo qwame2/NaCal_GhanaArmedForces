@@ -187,7 +187,7 @@
                 <i data-lucide="x" style="width: 28px;"></i>
             </button>
         </div>
-        <div class="sheet-body hide-scrollbar" style="flex: 1; overflow-y: auto; padding: 3rem; background: var(--bg-main);">
+        <div class="sheet-body" style="flex: 1; overflow-y: auto; padding: 3rem; background: var(--bg-main);">
             <!-- History Real-time Filters -->
             <div id="historyFiltersContainer" style="display: none; margin-bottom: 2.5rem; background: var(--bg-card); padding: 1.75rem; border-radius: 24px; border: 1px solid var(--border-color); align-items: flex-end; flex-wrap: wrap; gap: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
                 <div style="flex: 2; min-width: 250px;">
@@ -758,18 +758,18 @@
                 </div>
             `;
             let html = `
-                <div class="table-scroll-wrapper" style="width: 100%; overflow-x: auto; padding-bottom: 1rem; scrollbar-width: thin; scrollbar-color: var(--primary) transparent;">
-                    <table class="responsive-history-table" style="width: 100%; min-width: 900px; border-collapse: separate; border-spacing: 0 1.25rem;">
+                <div class="table-scroll-wrapper" style="width: 100%; overflow-x: auto; padding-bottom: 1.5rem; -webkit-overflow-scrolling: touch;">
+                    <table class="responsive-history-table" style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0 1.25rem; table-layout: auto;">
                         <thead>
-                        <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900;">
-                            <th style="padding: 0 1.5rem 0.5rem;">Timeline</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Beneficiary</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Disbursed Asset</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Category</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Qty</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Security Status</th>
-                        </tr>
-                    </thead>
+                            <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900; white-space: nowrap;">
+                                <th style="padding: 0 1.5rem 0.5rem;">Timeline</th>
+                                <th style="padding: 0 1.5rem 0.5rem;">Beneficiary</th>
+                                <th style="padding: 0 1.5rem 0.5rem;">Disbursed Asset</th>
+                                <th style="padding: 0 1.5rem 0.5rem;">Category</th>
+                                <th style="padding: 0 1.5rem 0.5rem;">Qty</th>
+                                <th style="padding: 0 1.5rem 0.5rem;">Security Status</th>
+                            </tr>
+                        </thead>
                     <tbody>
             `;
             
@@ -786,9 +786,9 @@
                                 <i data-lucide="clock" style="width: 12px;"></i> ${time}
                             </div>
                         </td>
-                        <td data-label="Beneficiary" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--text-main); font-size: 1.05rem;">${item.beneficiary}</td>
-                        <td data-label="Asset" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--primary); font-size: 1.05rem;">${item.description}</td>
-                        <td data-label="Category" style="padding: 1.75rem 1.5rem;">
+                        <td data-label="Beneficiary" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--text-main); font-size: 1.05rem; white-space: nowrap;">${item.beneficiary}</td>
+                        <td data-label="Asset" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--primary); font-size: 1.05rem; white-space: nowrap;">${item.description}</td>
+                        <td data-label="Category" style="padding: 1.75rem 1.5rem; white-space: nowrap;">
                             <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.7rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1); letter-spacing: 0.03em;">LEDGE ${item.ledge_category}</span>
                         </td>
                         <td data-label="Qty" style="padding: 1.75rem 1.5rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main);">${item.quantity}</td>
