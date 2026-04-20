@@ -515,6 +515,8 @@
         }
 
         /* Responsive Table Cards */
+        .table-scroll-wrapper { overflow-x: visible !important; }
+        .responsive-history-table { min-width: auto !important; }
         .responsive-history-table thead { display: none; }
         .responsive-history-table tbody { display: block; }
         .responsive-history-table tr {
@@ -755,10 +757,10 @@
                     <p style="color: var(--text-muted); font-size: 1.1rem;">Try adjusting your filters to find existing transactions.</p>
                 </div>
             `;
-        } else {
             let html = `
-                <table class="responsive-history-table" style="width: 100%; border-collapse: separate; border-spacing: 0 1.25rem;">
-                    <thead>
+                <div class="table-scroll-wrapper" style="width: 100%; overflow-x: auto; padding-bottom: 1rem; scrollbar-width: thin; scrollbar-color: var(--primary) transparent;">
+                    <table class="responsive-history-table" style="width: 100%; min-width: 900px; border-collapse: separate; border-spacing: 0 1.25rem;">
+                        <thead>
                         <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900;">
                             <th style="padding: 0 1.5rem 0.5rem;">Timeline</th>
                             <th style="padding: 0 1.5rem 0.5rem;">Beneficiary</th>
@@ -797,7 +799,7 @@
                 `;
             });
             
-            html += `</tbody></table>`;
+            html += `</tbody></table></div>`;
             container.innerHTML = html;
         }
         if (typeof lucide !== 'undefined') lucide.createIcons();
