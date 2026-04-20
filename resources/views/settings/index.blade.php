@@ -48,25 +48,22 @@
                     <i data-lucide="lock"></i>
                     <span>Login & Security</span>
                 </button>
-                <button class="settings-nav-btn" onclick="switchSection('preferences', this)">
-                    <i data-lucide="layers"></i>
-                    <span>Display Preferences</span>
-                </button>
-                <button class="settings-nav-btn" onclick="switchSection('notifications', this)">
-                    <i data-lucide="bell"></i>
-                    <span>Notification Center</span>
-                </button>
             </nav>
             
             <div style="margin-top: 3rem; padding: 1.75rem; background: var(--bg-main); border-radius: 20px; border: 1px solid var(--border-color);">
                 <div style="font-size: 0.7rem; font-weight: 900; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em;">Account Status</div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
                     <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Last Sign-in</span>
-                    <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-main);">2h ago</span>
+                    <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-main);">
+                        {{ auth()->user()->last_login_at ? auth()->user()->last_login_at->diffForHumans() : 'Just now' }}
+                    </span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Security Level</span>
-                    <span style="font-size: 0.85rem; font-weight: 800; color: #10b981;">Strong</span>
+                    @php $sec = auth()->user()->getSecurityStatus(); @endphp
+                    <span id="security-level-label" style="font-size: 0.85rem; font-weight: 800; color: {{ $sec['color'] }};">
+                        {{ $sec['label'] }}
+                    </span>
                 </div>
             </div>
         </div>
@@ -129,18 +126,12 @@
                             <div style="font-weight: 850; color: var(--text-main); margin-bottom: 4px;">Update Password</div>
                             <div style="font-size: 0.85rem; color: var(--text-muted);">Ensure your account is protected with a strong, complex password.</div>
                         </div>
-                        <button class="modern-action-btn" style="width: auto; padding: 0.75rem 1.5rem; font-size: 0.85rem;">Change Password</button>
+                        <button class="security-action-btn" onclick="openPasswordModal()">
+                            <i data-lucide="shield-keyhole"></i>
+                            <span>Configure Password</span>
+                        </button>
                     </div>
 
-                    <div class="setting-item">
-                        <div style="flex: 1;">
-                            <div style="font-weight: 850; color: var(--text-main); margin-bottom: 4px;">Two-Factor Authentication</div>
-                            <div style="font-size: 0.85rem; color: var(--text-muted);">Add an extra layer of security to your account login.</div>
-                        </div>
-                        <div class="toggle-switch">
-                            <div class="toggle-nob"></div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -170,6 +161,60 @@
                     Update My Profile
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Password Change Modal -->
+<div id="passwordModal" class="modal-overlay" style="display: none;">
+    <div class="glass-card modal-content animate-pop-in" style="max-width: 500px; width: 90%; border-radius: 32px; padding: 3rem;">
+        <div style="margin-bottom: 2.5rem;">
+            <h2 style="font-size: 1.75rem; font-weight: 950; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Security Credentials</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Please enter your current and new password below.</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1.75rem;">
+            <div class="form-group">
+                <label>Current Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="current_password" class="modern-input" placeholder="••••••••">
+                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)">
+                        <i data-lucide="eye"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>New Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="new_password" class="modern-input" placeholder="••••••••" oninput="validatePassword()">
+                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)">
+                        <i data-lucide="eye"></i>
+                    </button>
+                </div>
+                <div id="password-strength" style="margin-top: 8px; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden; display: none;">
+                    <div id="strength-bar" style="height: 100%; width: 0%; transition: 0.3s;"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Confirm New Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="confirm_password" class="modern-input" placeholder="••••••••" oninput="validatePassword()">
+                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)">
+                        <i data-lucide="eye"></i>
+                    </button>
+                </div>
+                <div id="password-match-tag" style="font-size: 0.7rem; font-weight: 800; margin-top: 8px; display: none;"></div>
+            </div>
+        </div>
+
+        <div style="margin-top: 3.5rem; display: flex; gap: 1rem;">
+            <button class="modern-action-btn secondary" style="flex: 1;" onclick="closePasswordModal()">Cancel</button>
+            <button class="save-btn" style="flex: 2; justify-content: center; padding: 1rem;" onclick="performPasswordUpdate()">
+                <i data-lucide="lock" style="width: 18px;"></i>
+                Update Password
+            </button>
         </div>
     </div>
 </div>
@@ -215,7 +260,7 @@
         color: var(--text-main); font-weight: 800; font-size: 1.05rem;
         outline: none; transition: all 0.3s;
     }
-    .modern-input:focus { border-color: var(--primary); background: white; box-shadow: 0 12px 25px rgba(99,102,241,0.08); }
+    .modern-input:focus { border-color: var(--primary); background: var(--bg-card); box-shadow: 0 12px 25px rgba(99,102,241,0.08); }
 
     .setting-item {
         display: flex; align-items: center; justify-content: space-between;
@@ -223,7 +268,7 @@
         border: 1px solid var(--border-color);
         transition: 0.3s;
     }
-    .setting-item:hover { border-color: var(--primary-light); background: white; }
+    .setting-item:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.02); }
 
     .toggle-switch {
         width: 58px; height: 32px; background: #e2e8f0; border-radius: 99px;
@@ -247,9 +292,9 @@
     }
 
     .modern-action-btn.secondary:hover {
-        background: white;
+        background: var(--bg-card);
         color: var(--text-main);
-        border-color: var(--text-muted);
+        border-color: var(--primary);
     }
 
     .save-btn {
@@ -260,6 +305,74 @@
         transition: all 0.4s; box-shadow: 0 12px 30px rgba(79, 70, 229, 0.3);
     }
     .save-btn:hover { transform: translateY(-5px); box-shadow: 0 20px 45px rgba(79, 70, 229, 0.45); }
+
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+        display: flex; align-items: center; justify-content: center; z-index: 1000;
+        animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    .animate-pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+    .password-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .password-toggle {
+        position: absolute;
+        right: 1.25rem;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        border-radius: 8px;
+    }
+    .password-toggle:hover {
+        color: var(--primary);
+        background: rgba(99, 102, 241, 0.05);
+    }
+    .password-toggle i {
+        width: 18px;
+        height: 18px;
+    }
+
+    .security-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        padding: 0.85rem 1.75rem;
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        font-weight: 850;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .security-action-btn i {
+        width: 18px;
+        color: #94a3b8;
+        transition: 0.3s;
+    }
+    .security-action-btn:hover {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    .security-action-btn:hover i {
+        color: #3b82f6;
+        transform: rotate(15deg);
+    }
 
     @media (max-width: 1024px) {
         .settings-grid { grid-template-columns: 1fr; }
@@ -297,8 +410,7 @@
             });
             const data = await res.json();
             if (data.success) {
-                showToast(data.message, 'success');
-                setTimeout(() => location.reload(), 1000);
+                showToast('Synchronization Complete', data.message, 'success');
             } else {
                 showToast('Update Failed', data.message || 'Generic error', 'error');
             }
@@ -310,13 +422,117 @@
         }
     }
 
+    function openPasswordModal() {
+        document.getElementById('passwordModal').style.display = 'flex';
+    }
+
+    function closePasswordModal() {
+        document.getElementById('passwordModal').style.display = 'none';
+        // Clear fields
+        document.getElementById('current_password').value = '';
+        document.getElementById('new_password').value = '';
+        document.getElementById('confirm_password').value = '';
+    }
+
+    function validatePassword() {
+        const pass = document.getElementById('new_password').value;
+        const confirm = document.getElementById('confirm_password').value;
+        const strengthBar = document.getElementById('strength-bar');
+        const strengthCont = document.getElementById('password-strength');
+        const matchTag = document.getElementById('password-match-tag');
+
+        if (pass.length > 0) {
+            strengthCont.style.display = 'block';
+            let strength = 0;
+            if (pass.length >= 8) strength += 25;
+            if (/[A-Z]/.test(pass)) strength += 25;
+            if (/[0-9]/.test(pass)) strength += 25;
+            if (/[^A-Za-z0-9]/.test(pass)) strength += 25;
+
+            strengthBar.style.width = strength + '%';
+            if (strength <= 25) strengthBar.style.background = '#ef4444';
+            else if (strength <= 50) strengthBar.style.background = '#f59e0b';
+            else if (strength <= 75) strengthBar.style.background = '#3b82f6';
+            else strengthBar.style.background = '#10b981';
+        } else {
+            strengthCont.style.display = 'none';
+        }
+
+        if (confirm.length > 0) {
+            matchTag.style.display = 'block';
+            if (pass === confirm) {
+                matchTag.innerText = '✓ Passwords Match';
+                matchTag.style.color = '#10b981';
+            } else {
+                matchTag.innerText = '✗ Passwords do not match';
+                matchTag.style.color = '#ef4444';
+            }
+        } else {
+            matchTag.style.display = 'none';
+        }
+    }
+
+    async function performPasswordUpdate() {
+        const current = document.getElementById('current_password').value;
+        const pass = document.getElementById('new_password').value;
+        const confirm = document.getElementById('confirm_password').value;
+
+        if (!current || !pass || !confirm) {
+            showToast('Incomplete Fields', 'Please fill in all password fields', 'warning');
+            return;
+        }
+
+        if (pass !== confirm) {
+            showToast('Mismatch', 'New passwords do not match', 'error');
+            return;
+        }
+
+        try {
+            const res = await fetch("{{ route('settings.password') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify({
+                    current_password: current,
+                    password: pass,
+                    password_confirmation: confirm
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('Security Updated', data.message, 'success');
+                closePasswordModal();
+            } else {
+                showToast('Authentication Error', data.message || 'Verification failed', 'error');
+            }
+        } catch (e) {
+            showToast('Gateway Error', 'Could not verify credentials with security node', 'error');
+        }
+    }
+
+    function togglePasswordVisibility(btn) {
+        const input = btn.parentElement.querySelector('input');
+        const icon = btn.querySelector('i');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+            input.type = 'password';
+            icon.setAttribute('data-lucide', 'eye');
+        }
+        
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
         
-        // Add toggle functionality
+        // Remove global toggle functionality to use specific functions
+        /*
         document.querySelectorAll('.toggle-switch').forEach(toggle => {
             toggle.addEventListener('click', () => toggle.classList.toggle('active'));
         });
+        */
     });
 </script>
 @endsection

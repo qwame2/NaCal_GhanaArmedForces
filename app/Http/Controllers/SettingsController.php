@@ -30,4 +30,21 @@ class SettingsController extends Controller
             'message' => 'Personnel Records Synchronized'
         ]);
     }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|current_password',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        auth()->user()->update([
+            'password' => \Hash::make($request->password)
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Security Credentials Updated'
+        ]);
+    }
 }

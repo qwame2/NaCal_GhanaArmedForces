@@ -188,6 +188,49 @@
             </button>
         </div>
         <div class="sheet-body hide-scrollbar" style="flex: 1; overflow-y: auto; padding: 3rem; background: var(--bg-main);">
+            <!-- History Real-time Filters -->
+            <div id="historyFiltersContainer" style="display: none; margin-bottom: 2.5rem; background: var(--bg-card); padding: 1.75rem; border-radius: 24px; border: 1px solid var(--border-color); align-items: flex-end; flex-wrap: wrap; gap: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+                <div style="flex: 2; min-width: 250px;">
+                    <label style="display: block; font-size: 0.7rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Search Transaction</label>
+                    <div style="position: relative;">
+                        <i data-lucide="search" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6;"></i>
+                        <input type="text" id="historySearch" placeholder="Beneficiary name or identification code..." style="width: 100%; padding: 1rem 1rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; transition: all 0.3s; font-size: 0.95rem;" oninput="filterHistory()" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='var(--border-color)'; this.style.background='var(--bg-main)';">
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 180px;">
+                    <label style="display: block; font-size: 0.7rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Ledge Filter</label>
+                    <div style="position: relative;">
+                        <i data-lucide="layers" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6; pointer-events: none;"></i>
+                        <select id="historyCatFilter" onchange="filterHistory()" style="width: 100%; padding: 1rem 1.25rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; cursor: pointer; font-size: 0.95rem; appearance: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='var(--border-color)'; this.style.background='var(--bg-main)';">
+                            <option value="all">All Ledges</option>
+                            @foreach($ledgeMap as $code => $name)
+                                <option value="{{ $code }}">Ledge {{ $code }} - {{ $name }}</option>
+                            @endforeach
+                        </select>
+                        <i data-lucide="chevron-down" style="position: absolute; right: 1.25rem; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted); pointer-events: none;"></i>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 180px;">
+                    <label style="display: block; font-size: 0.7rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Alloc. Status</label>
+                    <div style="position: relative;">
+                        <i data-lucide="clipboard-check" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6; pointer-events: none;"></i>
+                        <select id="historyTypeFilter" onchange="filterHistory()" style="width: 100%; padding: 1rem 1.25rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; cursor: pointer; font-size: 0.95rem; appearance: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='var(--border-color)'; this.style.background='var(--bg-main)';">
+                            <option value="all">All Types</option>
+                            <option value="Permanent">Permanent</option>
+                            <option value="Temporary">Temporary</option>
+                        </select>
+                        <i data-lucide="chevron-down" style="position: absolute; right: 1.25rem; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted); pointer-events: none;"></i>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 180px;">
+                    <label style="display: block; font-size: 0.7rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Timeline</label>
+                    <div style="position: relative;">
+                        <i data-lucide="calendar" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6; pointer-events: none;"></i>
+                        <input type="date" id="historyDateFilter" onchange="filterHistory()" style="width: 100%; padding: 1rem 1.25rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; cursor: pointer; font-size: 0.95rem; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='var(--border-color)'; this.style.background='var(--bg-main)';">
+                    </div>
+                </div>
+            </div>
+
             <div id="historyTableContainer">
                 <!-- Data dynamically injected -->
             </div>
@@ -638,88 +681,125 @@
         }
     }
 
+    let fullHistoryData = [];
+
     async function openHistorySheet() {
         const sheet = document.getElementById('historySheet');
         const container = document.getElementById('historyTableContainer');
+        const filters = document.getElementById('historyFiltersContainer');
         
         sheet.classList.add('active');
+        filters.style.display = 'none';
         container.innerHTML = `
-            <div style="padding: 8rem 0; text-align: center;">
-                <div class="loader" style="width: 40px; height: 40px; border: 4px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem;"></div>
-                <p style="font-weight: 700; color: var(--text-muted); font-size: 1.1rem;">Accessing encrypted history logs...</p>
+            <div style="padding: 12rem 0; text-align: center;">
+                <div class="loader" style="width: 48px; height: 48px; border: 5px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 2rem;"></div>
+                <p style="font-weight: 850; color: var(--text-main); font-size: 1.25rem;">Synchronizing with Registry...</p>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Decrypting secure inventory transaction logs</p>
             </div>
         `;
 
         try {
             const res = await fetch("{{ route('api.issued-items-history') }}");
-            const data = await res.json();
+            fullHistoryData = await res.json();
             
-            if (data.length === 0) {
-                container.innerHTML = `
-                    <div style="padding: 10rem 0; text-align: center;">
-                        <i data-lucide="package-x" style="width: 80px; height: 80px; color: var(--text-muted); opacity: 0.2; margin-bottom: 2rem;"></i>
-                        <h3 style="font-weight: 850; color: var(--text-main); font-size: 1.5rem;">Inventory Log is Clean</h3>
-                        <p style="color: var(--text-muted); font-size: 1.1rem;">No items have been issued yet. Start by adding items to your list.</p>
-                    </div>
-                `;
-            } else {
-                let html = `
-                    <table class="responsive-history-table" style="width: 100%; border-collapse: separate; border-spacing: 0 1.25rem;">
-                        <thead>
-                            <tr style="text-align: left; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800;">
-                                <th style="padding: 0 1.5rem 1rem;">Timestamp</th>
-                                <th style="padding: 0 1.5rem 1rem;">Primary Beneficiary</th>
-                                <th style="padding: 0 1.5rem 1rem;">Disbursed Item</th>
-                                <th style="padding: 0 1.5rem 1rem;">Asset Group</th>
-                                <th style="padding: 0 1.5rem 1rem;">Quantity</th>
-                                <th style="padding: 0 1.5rem 1rem;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-                
-                data.forEach(item => {
-                    const t = new Date(item.created_at);
-                    const date = t.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-                    const time = t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-
-                    html += `
-                        <tr class="activity-row" style="background: var(--bg-card); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-radius: 20px;">
-                            <td data-label="Timestamp" style="padding: 1.75rem 1.5rem; border-radius: 20px 0 0 20px;">
-                                <div style="font-weight: 800; color: var(--text-main); font-size: 0.95rem;">${date}</div>
-                                <div style="font-weight: 700; color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-                                    <i data-lucide="clock" style="width: 12px;"></i> ${time}
-                                </div>
-                            </td>
-                            <td data-label="Beneficiary" style="padding: 1.75rem 1.5rem; font-weight: 850; color: var(--text-main); font-size: 1.05rem;">${item.beneficiary}</td>
-                            <td data-label="Item" style="padding: 1.75rem 1.5rem; font-weight: 850; color: var(--primary); font-size: 1.05rem;">${item.description}</td>
-                            <td data-label="Group" style="padding: 1.75rem 1.5rem;">
-                                <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.75rem; font-weight: 800; border: 1px solid rgba(99, 102, 241, 0.1);">Ledge ${item.ledge_category}</span>
-                            </td>
-                            <td data-label="Quantity" style="padding: 1.75rem 1.5rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main);">${item.quantity}</td>
-                            <td data-label="Type" style="padding: 1.75rem 1.5rem; border-radius: 0 20px 20px 0;">
-                                <span class="status-badge ${item.issuance_type === 'Temporary' ? 'status-warning' : 'status-success'}" style="font-size: 0.7rem; padding: 0.4rem 0.85rem; border-radius: 8px; font-weight: 800;">${item.issuance_type.toUpperCase()}</span>
-                            </td>
-                        </tr>
-                    `;
-
-                });
-                
-                html += `</tbody></table>`;
-                container.innerHTML = html;
-            }
+            if (fullHistoryData.length > 0) filters.style.display = 'flex';
+            renderHistory(fullHistoryData);
         } catch (e) {
             container.innerHTML = `
-                <div style="padding: 8rem 0; text-align: center;">
-                    <div style="width: 64px; height: 64px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
-                        <i data-lucide="alert-circle" style="width: 32px; height: 32px;"></i>
+                <div style="padding: 10rem 0; text-align: center;">
+                    <div style="width: 72px; height: 72px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.1);">
+                        <i data-lucide="wifi-off" style="width: 36px; height: 36px;"></i>
                     </div>
-                    <h3 style="font-weight: 850; color: var(--text-main);">Connection Interrupted</h3>
-                    <p style="color: var(--text-muted);">We couldn't synchronize with the vault. Please try again.</p>
+                    <h3 style="font-weight: 900; color: var(--text-main); font-size: 1.75rem; letter-spacing: -0.02em;">Registry Connection Offline</h3>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 400px; margin: 1rem auto;">We were unable to establish a secure handshake with the inventory database.</p>
+                    <button onclick="openHistorySheet()" class="modern-action-btn" style="margin: 2rem auto; padding: 1rem 2.5rem;">
+                        <i data-lucide="refresh-cw" style="width: 18px;"></i>
+                        Retry Uplink
+                    </button>
                 </div>
             `;
         }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function filterHistory() {
+        const searchTerm = document.getElementById('historySearch').value.toLowerCase();
+        const catFilter = document.getElementById('historyCatFilter').value;
+        const typeFilter = document.getElementById('historyTypeFilter').value;
+        const dateFilter = document.getElementById('historyDateFilter').value;
+
+        const filtered = fullHistoryData.filter(item => {
+            const matchesSearch = item.beneficiary.toLowerCase().includes(searchTerm) || 
+                               item.description.toLowerCase().includes(searchTerm);
+            const matchesCat = catFilter === 'all' || item.ledge_category == catFilter;
+            const matchesType = typeFilter === 'all' || item.issuance_type == typeFilter;
+            
+            // Date matching (YYYY-MM-DD comparison)
+            const itemDate = new Date(item.created_at).toISOString().split('T')[0];
+            const matchesDate = !dateFilter || itemDate === dateFilter;
+            
+            return matchesSearch && matchesCat && matchesType && matchesDate;
+        });
+
+        renderHistory(filtered);
+    }
+
+    function renderHistory(data) {
+        const container = document.getElementById('historyTableContainer');
         
+        if (data.length === 0) {
+            container.innerHTML = `
+                <div style="padding: 10rem 0; text-align: center; background: rgba(0,0,0,0.01); border-radius: 32px; border: 2px dashed var(--border-color);">
+                    <i data-lucide="database-zap" style="width: 80px; height: 80px; color: var(--text-muted); opacity: 0.15; margin-bottom: 2rem;"></i>
+                    <h3 style="font-weight: 900; color: var(--text-main); font-size: 1.5rem;">No Records Found</h3>
+                    <p style="color: var(--text-muted); font-size: 1.1rem;">Try adjusting your filters to find existing transactions.</p>
+                </div>
+            `;
+        } else {
+            let html = `
+                <table class="responsive-history-table" style="width: 100%; border-collapse: separate; border-spacing: 0 1.25rem;">
+                    <thead>
+                        <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900;">
+                            <th style="padding: 0 1.5rem 0.5rem;">Timeline</th>
+                            <th style="padding: 0 1.5rem 0.5rem;">Beneficiary</th>
+                            <th style="padding: 0 1.5rem 0.5rem;">Disbursed Asset</th>
+                            <th style="padding: 0 1.5rem 0.5rem;">Category</th>
+                            <th style="padding: 0 1.5rem 0.5rem;">Qty</th>
+                            <th style="padding: 0 1.5rem 0.5rem;">Security Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.forEach(item => {
+                const t = new Date(item.created_at);
+                const date = t.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                const time = t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+                html += `
+                    <tr class="activity-row" style="background: var(--bg-card); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-radius: 20px;">
+                        <td data-label="Timeline" style="padding: 1.75rem 1.5rem; border-radius: 20px 0 0 20px;">
+                            <div style="font-weight: 800; color: var(--text-main); font-size: 0.95rem;">${date}</div>
+                            <div style="font-weight: 700; color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                                <i data-lucide="clock" style="width: 12px;"></i> ${time}
+                            </div>
+                        </td>
+                        <td data-label="Beneficiary" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--text-main); font-size: 1.05rem;">${item.beneficiary}</td>
+                        <td data-label="Asset" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--primary); font-size: 1.05rem;">${item.description}</td>
+                        <td data-label="Category" style="padding: 1.75rem 1.5rem;">
+                            <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.7rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1); letter-spacing: 0.03em;">LEDGE ${item.ledge_category}</span>
+                        </td>
+                        <td data-label="Qty" style="padding: 1.75rem 1.5rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main);">${item.quantity}</td>
+                        <td data-label="Status" style="padding: 1.75rem 1.5rem; border-radius: 0 20px 20px 0;">
+                            <span class="status-badge ${item.issuance_type === 'Temporary' ? 'status-warning' : 'status-success'}" style="font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">${item.issuance_type.toUpperCase()}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 

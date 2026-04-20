@@ -275,6 +275,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/received-items/{id}', [ReceivedItemsController::class, 'destroy'])->name('receiveditems.destroy');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings/update', [SettingsController::class, 'update'])->name('settings.update');
+    Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
 
     Route::get('/api/item-audit-details', function (\Illuminate\Http\Request $request) {
         $description = $request->query('description');

@@ -50,6 +50,7 @@ class AuthController extends Controller
         ]);
 
         Auth::login($user);
+        $user->update(['last_login_at' => now()]);
 
         return redirect()->route('dashboard');
     }
@@ -63,6 +64,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->remember)) {
             $request->session()->regenerate();
+            auth()->user()->update(['last_login_at' => now()]);
             return redirect()->intended('dashboard');
         }
 
