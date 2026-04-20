@@ -78,7 +78,7 @@
     </div>
 
     <!-- Main Workspace Split -->
-    <div class="workspace-grid" style="display: grid; grid-template-columns: 1fr 420px; gap: 3rem; align-items: flex-start; padding-bottom: 5rem;">
+    <div class="workspace-grid" style="padding-bottom: 5rem;">
         
         <!-- Left Column: Catalog -->
         <div>
@@ -757,18 +757,19 @@
             `;
         } else {
             let html = `
-                <table class="responsive-history-table" style="width: 100%; border-collapse: separate; border-spacing: 0 1.25rem;">
-                    <thead>
-                        <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900;">
-                            <th style="padding: 0 1.5rem 0.5rem;">Timeline</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Beneficiary</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Disbursed Asset</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Category</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Qty</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Security Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="table-scroll-wrapper" style="margin-top: 1rem;">
+                    <table class="responsive-history-table" style="width: 100%; border-collapse: separate; border-spacing: 0 1.25rem;">
+                        <thead>
+                            <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900;">
+                                <th style="padding: 0 1.5rem 0.5rem;">Timeline</th>
+                                <th style="padding: 0 1.5rem 0.5rem;">Beneficiary</th>
+                                <th style="padding: 0 1.5rem 0.5rem;">Disbursed Asset</th>
+                                <th style="padding: 0 1.5rem 0.5rem;">Category</th>
+                                <th style="padding: 0 1.5rem 0.5rem;">Qty</th>
+                                <th style="padding: 0 1.5rem 0.5rem;">Security Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
             `;
             
             data.forEach(item => {
@@ -797,7 +798,7 @@
                 `;
             });
             
-            html += `</tbody></table>`;
+            html += `</tbody></table></div>`;
             container.innerHTML = html;
         }
         if (typeof lucide !== 'undefined') lucide.createIcons();

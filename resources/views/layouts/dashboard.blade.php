@@ -210,18 +210,19 @@
 
             // Apply saved sidebar state
             const isSidebarCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
-            const isMobile = window.innerWidth <= 1024;
+            const isLaptopOrBelow = window.innerWidth <= 1366;
+            const isMobileOrTablet = window.innerWidth <= 1024;
 
-            if (isSidebarCollapsed && !isMobile) {
+            if ((isSidebarCollapsed || isLaptopOrBelow) && !isMobileOrTablet) {
                 sidebar.classList.add('collapsed');
                 mainWrapper.classList.add('expanded');
                 if (sidebarToggle) sidebarToggle.innerHTML = '<i data-lucide="panel-left-open" style="width: 20px; color: var(--text-main);"></i>';
                 lucide.createIcons();
             }
 
-            // Mobile/Tablet Default: Show in full regardless of desktop saved state
-            if (isMobile) {
-                toggleSidebar(true);
+            // Tablet/Mobile Default: Ensure sidebar is closed initially as it is an overlay
+            if (isMobileOrTablet) {
+                toggleSidebar(false);
             }
 
             function toggleSidebar(show) {
@@ -240,6 +241,9 @@
                     const isNowCollapsed = sidebar.classList.toggle('collapsed');
                     mainWrapper.classList.toggle('expanded');
                     localStorage.setItem('sidebar-collapsed', isNowCollapsed);
+                    
+                    // Trigger resize to refresh charts
+                    window.dispatchEvent(new Event('resize'));
                     
                     // Update Icon
                     sidebarToggle.innerHTML = isNowCollapsed ? 
