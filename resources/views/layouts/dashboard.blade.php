@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Content Security Policy: Essential for ApexCharts and Select2 functionality -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdn.jsdelivr.net https://code.jquery.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self';">
@@ -20,164 +20,6 @@
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="{{ asset('js/apexcharts.js') }}"></script>
 
-    <style>
-        /* ===== RESPONSIVE OVERRIDES - Preserving original design ===== */
-        /* Mobile & Tablet Responsive Fixes - keeps exact same visual design */
-
-        @media (max-width: 1024px) {
-
-            /* Sidebar becomes off-canvas overlay */
-            .sidebar {
-                position: fixed !important;
-                left: -300px !important;
-                top: 0 !important;
-                height: 100vh !important;
-                z-index: 1050 !important;
-                transition: left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1) !important;
-                box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.2) !important;
-            }
-
-            .sidebar.active {
-                left: 0 !important;
-            }
-
-            /* Sidebar close button visible on mobile */
-            #sidebar-close {
-                display: flex !important;
-            }
-
-            /* Main wrapper takes full width */
-            .main-wrapper {
-                width: 100% !important;
-                margin-left: 0 !important;
-            }
-
-            /* Top nav adjustments */
-            #mobile-toggle {
-                display: flex !important;
-            }
-
-            #sidebar-toggle {
-                display: none !important;
-            }
-
-            /* Search bar responsive */
-            .search-bar {
-                width: 100% !important;
-                max-width: 300px !important;
-            }
-
-            .search-bar input {
-                width: 100% !important;
-            }
-
-            /* Content padding */
-            .content-body {
-                padding: 1rem !important;
-            }
-        }
-
-        @media (max-width: 768px) {
-
-            /* Top nav stacking for very small screens */
-            .top-nav {
-                flex-wrap: wrap !important;
-                gap: 0.75rem !important;
-                padding: 0.75rem 1rem !important;
-            }
-
-            .top-nav>div:first-child {
-                flex: 1 !important;
-                min-width: 0 !important;
-            }
-
-            .search-bar {
-                max-width: 100% !important;
-            }
-
-            .top-nav-actions {
-                gap: 0.5rem !important;
-            }
-
-            .icon-btn {
-                width: 36px !important;
-                height: 36px !important;
-            }
-
-            /* Toast positioning */
-            .toast-container {
-                right: 10px !important;
-                left: 10px !important;
-                bottom: 10px !important;
-            }
-
-            .toast {
-                min-width: auto !important;
-                width: calc(100% - 20px) !important;
-            }
-        }
-
-        @media (min-width: 1025px) {
-
-            /* Desktop normal behavior */
-            #sidebar-close {
-                display: none !important;
-            }
-
-            #mobile-toggle {
-                display: none !important;
-            }
-
-            .sidebar-overlay {
-                display: none !important;
-            }
-        }
-
-        /* Sidebar overlay styling */
-        .sidebar-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(4px);
-            z-index: 1040;
-            display: none;
-        }
-
-        .sidebar-overlay.active {
-            display: block !important;
-        }
-
-        /* Ensure tables scroll horizontally on mobile */
-        .content-body {
-            overflow-x: auto;
-        }
-
-        /* Responsive table container */
-        .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Keep original card styles but allow wrapping */
-        .dashboard-grid,
-        .stats-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-        }
-
-        /* Preserve original spacing on all devices */
-        @media (max-width: 640px) {
-            .logo-container h1 {
-                font-size: 1.5rem !important;
-            }
-
-            .user-name {
-                font-size: 0.85rem !important;
-            }
-        }
-    </style>
-
     <script>
         // Pre-initialization to prevent flash
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -187,10 +29,10 @@
 
 <body>
     <div class="toast-container" id="toast-container"></div>
-    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+    <div id="sidebar-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 950; display: none; backdrop-filter: blur(4px);"></div>
 
     <div class="sidebar">
-        <button id="sidebar-close" style="position: absolute; top: 1.5rem; right: 1.5rem; background: var(--bg-main); border: none; width: 36px; height: 36px; border-radius: 10px; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 1060;">
+        <button id="sidebar-close" style="position: absolute; top: 1.5rem; right: 1.5rem; background: var(--bg-main); border: none; width: 36px; height: 36px; border-radius: 10px; display: none; align-items: center; justify-content: center; cursor: pointer;">
             <i data-lucide="x" style="width: 20px; color: var(--text-main);"></i>
         </button>
         <div class="logo-container">
@@ -282,16 +124,16 @@
 
     <div class="main-wrapper">
         <nav class="top-nav">
-            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
                 <button id="mobile-toggle" style="display: none; background: var(--bg-main); border: none; width: 44px; height: 44px; border-radius: 12px; align-items: center; justify-content: center; cursor: pointer;">
                     <i data-lucide="menu" style="width: 22px; color: var(--text-main);"></i>
                 </button>
                 <button id="sidebar-toggle" style="background: var(--bg-main); border: none; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);">
                     <i data-lucide="panel-left-close" style="width: 20px; color: var(--text-main);"></i>
                 </button>
-                <div class="search-bar" style="position: relative; flex: 1; min-width: 200px;">
-                    <i data-lucide="search" style="color: var(--text-muted); width: 18px; position: absolute; left: 12px; top: 50%; transform: translateY(-50%);"></i>
-                    <input type="text" id="global-search-input" placeholder="Search inventory, reports, transactions..." autocomplete="off" style="padding-left: 38px; width: 100%;">
+                <div class="search-bar" style="position: relative;">
+                    <i data-lucide="search" style="color: var(--text-muted); width: 18px;"></i>
+                    <input type="text" id="global-search-input" placeholder="Search inventory, reports, transactions..." autocomplete="off">
 
                     <!-- Search Results Portal -->
                     <div id="global-search-results" style="display: none; position: absolute; top: calc(100% + 10px); left: 0; right: 0; background: var(--bg-card); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); border: 1px solid var(--border-color); z-index: 2000; overflow: hidden; max-height: 400px; overflow-y: auto;">
@@ -299,12 +141,12 @@
                 </div>
             </div>
 
-            <div class="top-nav-actions" style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="top-nav-actions">
                 <div class="icon-btn">
                     <i data-lucide="message-square" style="width: 20px;"></i>
                 </div>
                 <div style="height: 32px; width: 1px; background: var(--border-color);"></div>
-                <div class="icon-btn" style="position: relative;">
+                <div class="icon-btn">
                     <i data-lucide="bell" style="width: 20px;"></i>
                     <span class="badge">3</span>
                 </div>
@@ -364,98 +206,50 @@
             const mainWrapper = document.querySelector('.main-wrapper');
             const overlay = document.getElementById('sidebar-overlay');
 
-            // Function to check if mobile view
-            function isMobileView() {
-                return window.innerWidth <= 1024;
-            }
-
-            // Apply saved sidebar state for desktop only
+            // Apply saved sidebar state
             const isSidebarCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+            const isMobile = window.innerWidth <= 1024;
 
-            function applyDesktopState() {
-                if (!isMobileView()) {
-                    if (isSidebarCollapsed) {
-                        sidebar.classList.add('collapsed');
-                        mainWrapper.classList.add('expanded');
-                        if (sidebarToggle) sidebarToggle.innerHTML = '<i data-lucide="panel-left-open" style="width: 20px; color: var(--text-main);"></i>';
-                    } else {
-                        sidebar.classList.remove('collapsed');
-                        mainWrapper.classList.remove('expanded');
-                        if (sidebarToggle) sidebarToggle.innerHTML = '<i data-lucide="panel-left-close" style="width: 20px; color: var(--text-main);"></i>';
-                    }
-                    lucide.createIcons();
-                }
+            if (isSidebarCollapsed && !isMobile) {
+                sidebar.classList.add('collapsed');
+                mainWrapper.classList.add('expanded');
+                if (sidebarToggle) sidebarToggle.innerHTML = '<i data-lucide="panel-left-open" style="width: 20px; color: var(--text-main);"></i>';
+                lucide.createIcons();
             }
 
-            // Toggle sidebar for mobile (show/hide)
-            function toggleMobileSidebar(show) {
+            // Mobile/Tablet Default: Show in full regardless of desktop saved state
+            if (isMobile) {
+                toggleSidebar(true);
+            }
+
+            function toggleSidebar(show) {
                 if (show) {
                     sidebar.classList.add('active');
-                    overlay.classList.add('active');
+                    overlay.style.display = 'block';
+                    sidebarClose.style.display = 'flex';
                 } else {
                     sidebar.classList.remove('active');
-                    overlay.classList.remove('active');
+                    overlay.style.display = 'none';
                 }
             }
 
-            // Handle responsive behavior
-            function handleResponsive() {
-                if (isMobileView()) {
-                    // Mobile mode: hide desktop toggle, ensure sidebar is not collapsed visually
-                    sidebar.classList.remove('collapsed');
-                    mainWrapper.classList.remove('expanded');
-                    // Close mobile sidebar by default on resize if it was open? Better to keep state
-                    // But ensure overlay and sidebar state consistent
-                    if (!sidebar.classList.contains('active')) {
-                        overlay.classList.remove('active');
-                    }
-                } else {
-                    // Desktop mode: close mobile overlay if open
-                    sidebar.classList.remove('active');
-                    overlay.classList.remove('active');
-                    applyDesktopState();
-                }
-            }
-
-            // Desktop sidebar collapse toggle
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', () => {
-                    if (!isMobileView()) {
-                        const isNowCollapsed = sidebar.classList.toggle('collapsed');
-                        mainWrapper.classList.toggle('expanded');
-                        localStorage.setItem('sidebar-collapsed', isNowCollapsed);
+                    const isNowCollapsed = sidebar.classList.toggle('collapsed');
+                    mainWrapper.classList.toggle('expanded');
+                    localStorage.setItem('sidebar-collapsed', isNowCollapsed);
 
-                        // Update Icon
-                        sidebarToggle.innerHTML = isNowCollapsed ?
-                            '<i data-lucide="panel-left-open" style="width: 20px; color: var(--text-main);"></i>' :
-                            '<i data-lucide="panel-left-close" style="width: 20px; color: var(--text-main);"></i>';
-                        lucide.createIcons();
-                    }
+                    // Update Icon
+                    sidebarToggle.innerHTML = isNowCollapsed ?
+                        '<i data-lucide="panel-left-open" style="width: 20px; color: var(--text-main);"></i>' :
+                        '<i data-lucide="panel-left-close" style="width: 20px; color: var(--text-main);"></i>';
+                    lucide.createIcons();
                 });
             }
 
-            // Mobile menu toggle
-            if (mobileToggle) {
-                mobileToggle.addEventListener('click', () => toggleMobileSidebar(true));
-            }
-
-            // Sidebar close button (mobile)
-            if (sidebarClose) {
-                sidebarClose.addEventListener('click', () => toggleMobileSidebar(false));
-            }
-
-            // Overlay click to close
-            if (overlay) {
-                overlay.addEventListener('click', () => toggleMobileSidebar(false));
-            }
-
-            // Handle window resize
-            window.addEventListener('resize', () => {
-                handleResponsive();
-            });
-
-            // Initial responsive setup
-            handleResponsive();
+            if (mobileToggle) mobileToggle.addEventListener('click', () => toggleSidebar(true));
+            if (sidebarClose) sidebarClose.addEventListener('click', () => toggleSidebar(false));
+            if (overlay) overlay.addEventListener('click', () => toggleSidebar(false));
 
             // Global Real-time Search Logic with Results Dropdown
             const globalSearchInput = document.getElementById('global-search-input');
