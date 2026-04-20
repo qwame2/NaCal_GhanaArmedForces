@@ -80,6 +80,13 @@
                     <span>Issue Items</span>
                 </a>
             </li>
+
+            <li class="nav-item">
+                <a href="{{ route('returns.index') }}" class="nav-link {{ request()->routeIs('returns.index') ? 'active' : '' }}" data-tooltip="Process Returns">
+                    <i data-lucide="refresh-cw"></i>
+                    <span>Returns</span>
+                </a>
+            </li>
         </ul>
 
         <div class="nav-section-title">Operations</div>

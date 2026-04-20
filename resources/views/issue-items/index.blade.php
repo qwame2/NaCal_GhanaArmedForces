@@ -757,6 +757,7 @@
                     <p style="color: var(--text-muted); font-size: 1.1rem;">Try adjusting your filters to find existing transactions.</p>
                 </div>
             `;
+        } else {
             let html = `
                 <div class="table-scroll-wrapper" style="width: 100%; overflow-x: auto; padding-bottom: 1.5rem; -webkit-overflow-scrolling: touch;">
                     <table class="responsive-history-table" style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0 1.25rem; table-layout: auto;">

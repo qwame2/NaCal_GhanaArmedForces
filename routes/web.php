@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\IssueItemsController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\ReturnController;
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
@@ -276,6 +277,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings/update', [SettingsController::class, 'update'])->name('settings.update');
     Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
+
+    // Returns Routes
+    Route::get('/returns', [ReturnController::class, 'index'])->name('returns.index');
+    Route::post('/returns/store', [ReturnController::class, 'store'])->name('returns.store');
 
     Route::get('/api/item-audit-details', function (\Illuminate\Http\Request $request) {
         $description = $request->query('description');

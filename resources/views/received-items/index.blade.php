@@ -844,13 +844,25 @@
 
     .table-scroll-wrapper {
         width: 100%;
-        overflow: visible;
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+        overflow-x: auto !important;
+        margin-bottom: 1.5rem;
+        border-radius: 18px;
+        padding-bottom: 15px; /* Space for visible scrollbar */
     }
 
+    /* Style the scrollbar for visibility */
     .table-scroll-wrapper::-webkit-scrollbar {
-        display: none;
+        height: 10px;
+        display: block;
+    }
+    .table-scroll-wrapper::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.02);
+        border-radius: 10px;
+    }
+    .table-scroll-wrapper::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 10px;
+        opacity: 0.5;
     }
 
     /* Modal Architecture */
