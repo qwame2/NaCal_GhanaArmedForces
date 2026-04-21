@@ -282,10 +282,10 @@
 
         <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right;">
             <div class="action-dropdown-wrapper">
-                <button type="button" class="glass-btn-sm" title="Actions" onclick="toggleActionMenu('{{ $item->batch_id }}')" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                <button type="button" class="glass-btn-sm" title="Actions" onclick="toggleActionMenu('{{ $item->id }}', event)" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
                     <i data-lucide="more-vertical" style="width: 18px;"></i>
                 </button>
-                <div id="actionMenu-{{ $item->batch_id }}" class="action-menu">
+                <div id="actionMenu-{{ $item->id }}" class="action-menu">
                     @if($displayStatus === 'Partial Delivery' || $displayStatus === 'PARTIAL DELIV')
                     <button onclick="continueDelivery('{{ $item->batch_id }}')" class="menu-item" style="color: #f59e0b;">
                         <i data-lucide="package-plus"></i>
@@ -2057,39 +2057,53 @@
 
         // Action Dropdown Close Listener
         document.addEventListener('click', function(event) {
-            if (!event.target.closest('.action-dropdown-wrapper')) {
-                document.querySelectorAll('.action-menu.active').forEach(menu => {
-                    menu.classList.remove('active');
-                    const row = menu.closest('.activity-row');
-                    if (row) row.style.zIndex = '';
-                });
+            if (!event.target.closest('#action-menu-portal') && !event.target.closest('.glass-btn-sm')) {
+                const portal = document.getElementById('action-menu-portal');
+                if (portal) portal.remove();
             }
         });
+        
+        // Ensure menus close when scrolling inside scrollable areas
+        window.addEventListener('scroll', function() {
+            const portal = document.getElementById('action-menu-portal');
+            if (portal) portal.remove();
+        }, true);
     });
 
     // Toggle Action Menu Logic
-    function toggleActionMenu(batchId) {
-        // Close all other active menus
-        document.querySelectorAll('.action-menu.active').forEach(menu => {
-            if (menu.id !== `actionMenu-${batchId}`) {
-                menu.classList.remove('active');
-                const row = menu.closest('.activity-row');
-                if (row) row.style.zIndex = '';
-            }
-        });
+    function toggleActionMenu(menuId, event) {
+        if(event) event.stopPropagation();
 
-        const menu = document.getElementById(`actionMenu-${batchId}`);
-        if (menu) {
-            menu.classList.toggle('active');
-            const row = menu.closest('.activity-row');
-            if (row) {
-                if (menu.classList.contains('active')) {
-                    row.style.zIndex = '50';
-                } else {
-                    row.style.zIndex = '';
-                }
-            }
+        const btn = event ? (event.currentTarget || event.target.closest('.glass-btn-sm')) : window.event?.currentTarget;
+        if (!btn) return;
+
+        // Clean up any existing deployed menu
+        const existingPortal = document.getElementById('action-menu-portal');
+        if (existingPortal) {
+            const isSame = existingPortal.getAttribute('data-menu-id') === String(menuId);
+            existingPortal.remove();
+            if (isSame) return; // If clicking the same button, we just close it
         }
+
+        // Find the original menu in the table to use as a template
+        const templateMenu = document.getElementById(`actionMenu-${menuId}`);
+        if (!templateMenu) return;
+
+        // Clone the content and deploy it globally to escape the table's overflow
+        const portalMenu = templateMenu.cloneNode(true);
+        portalMenu.id = 'action-menu-portal';
+        portalMenu.setAttribute('data-menu-id', menuId);
+        portalMenu.classList.add('active'); // Display it
+        
+        document.body.appendChild(portalMenu);
+        
+        // Anchor the cloned menu relative to the viewport and original button
+        const rect = btn.getBoundingClientRect();
+        portalMenu.style.position = 'fixed';
+        portalMenu.style.top = (rect.bottom + 8) + 'px';
+        portalMenu.style.left = 'auto'; // clear left constraints
+        portalMenu.style.right = (window.innerWidth - rect.right - 10) + 'px';
+        portalMenu.style.zIndex = '99999';
     }
 
     async function deleteBatch(batchId) {
