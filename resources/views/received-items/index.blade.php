@@ -1972,18 +1972,7 @@
             });
     }
 
-    // High-Fidelity Background Sync Engine (Silent Pulse)
-    // Refreshes the system every 4 seconds if the auditor is idle
-    setInterval(() => {
-        const isDetailOpen = document.getElementById('detailModal')?.style.display === 'flex';
-        const isAuditOpen = document.getElementById('stockCheckModal')?.style.display === 'flex';
-        const isMenuOpen = document.querySelector('.action-menu.active') !== null;
-        const isTyping = document.activeElement.matches('input, textarea, select');
-
-        if (!isDetailOpen && !isAuditOpen && !isMenuOpen && !isTyping) {
-            performSearch(true);
-        }
-    }, 4000);
+    // Background Sync Engine (Silent Pulse) removed as per user request
 
     if (searchInput) {
         [searchInput, supplierInput, dateInput].forEach(input => {

@@ -61,11 +61,12 @@ body {
 /* Sidebar Styling - Modern Light Theme */
 .sidebar {
     width: var(--sidebar-width);
-    height: 100vh;
-    background-color: var(--bg-sidebar);
     position: fixed;
     left: 0;
     top: 0;
+    bottom: 0;
+    height: auto;
+    background-color: var(--bg-sidebar);
     color: var(--text-main);
     padding: 1.5rem 1.25rem;
     z-index: 1000;
@@ -1893,24 +1894,24 @@ button:active {
     color: var(--primary-light) !important;
 }
 
-/* Height-Based Responsiveness for Laptops & Zoom */
 @media (max-height: 850px) {
     .sidebar {
-        padding: 1.25rem 1rem !important;
+        padding: 1rem 0.75rem !important;
     }
     
     .logo-container {
-        padding-bottom: 1.5rem !important;
-        gap: 0.75rem !important;
+        padding-bottom: 1rem !important;
+        gap: 0.5rem !important;
+        margin-left: 0 !important;
     }
     
     .logo-icon img {
-        width: 38px !important;
-        height: 38px !important;
+        width: 32px !important;
+        height: 32px !important;
     }
     
     .logo-container h1 {
-        font-size: 1.4rem !important;
+        font-size: 1.25rem !important;
     }
     
     .sidebar-branding-subtitle {
@@ -1918,27 +1919,43 @@ button:active {
     }
     
     .nav-link {
-        padding: 0.85rem 1rem !important;
-        font-size: 0.85rem !important;
+        padding: 0.65rem 0.75rem !important;
+        font-size: 0.8rem !important;
+        gap: 0.75rem !important;
+    }
+    
+    .nav-link i {
+        width: 16px !important;
     }
     
     .nav-section-title {
-        margin: 1.25rem 0 0.5rem 0.75rem !important;
+        margin: 1rem 0 0.5rem 0.5rem !important;
+        font-size: 0.65rem !important;
     }
 
     .user-profile-card {
-        padding: 0.75rem !important;
+        padding: 0.5rem !important;
+        gap: 0.75rem !important;
+        border-radius: 12px !important;
+    }
+    
+    .user-profile-card img, .user-profile-card .user-profile-card > div:first-child {
+        width: 36px !important;
+        height: 36px !important;
     }
 }
 
-@media (max-height: 650px) {
+@media (max-height: 720px) {
     .nav-section-title {
         display: none !important;
     }
     .nav-link {
-        padding: 0.65rem 0.85rem !important;
+        padding: 0.55rem 0.75rem !important;
     }
     .logo-container {
-        padding-bottom: 1rem !important;
+        padding-bottom: 0.75rem !important;
+    }
+    .sidebar {
+        padding-top: 1rem !important;
     }
 }
