@@ -8,17 +8,18 @@
         <div style="position: absolute; top: -50px; right: -50px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%); z-index: 0;"></div>
         
         <div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 2.5rem;">
-            <div style="position: relative;">
+            <div style="position: relative;" id="avatar-preview-container">
                 @if(auth()->user()->avatar)
-                    <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 110px; height: 110px; border-radius: 28px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 4px solid white;">
+                    <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 110px; height: 110px; border-radius: 28px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 4px solid white;" id="user-avatar-img">
                 @else
-                    <div style="width: 110px; height: 110px; background: var(--primary); border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 950; color: white; box-shadow: 0 15px 35px rgba(99,102,241,0.3); border: 4px solid white;">
+                    <div id="user-avatar-placeholder" style="width: 110px; height: 110px; background: var(--primary); border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 950; color: white; box-shadow: 0 15px 35px rgba(99,102,241,0.3); border: 4px solid white;">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', auth()->user()->name)[1] ?? '', 0, 1)) }}
                     </div>
                 @endif
-                <button style="position: absolute; bottom: -8px; right: -8px; width: 36px; height: 36px; background: white; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 5px 10px rgba(0,0,0,0.1);">
+                <button onclick="document.getElementById('avatar-upload').click()" style="position: absolute; bottom: -8px; right: -8px; width: 36px; height: 36px; background: white; border-radius: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 5px 10px rgba(0,0,0,0.1); transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Upload new photo">
                     <i data-lucide="camera" style="width: 18px; color: var(--primary);"></i>
                 </button>
+                <input type="file" id="avatar-upload" accept="image/*" style="display: none;" onchange="uploadAvatarFile(this)">
             </div>
             
             <div>
@@ -577,6 +578,90 @@
                 else if (percentage < 100) label.innerText = 'Compact';
                 else label.innerText = 'Enlarged';
             }
+        }
+    }
+
+    async function uploadAvatarFile(input) {
+        if (!input.files || !input.files[0]) return;
+        
+        const file = input.files[0];
+        
+        // --- Client-Side Limit Fix: Block files > 2MB directly to avoid PHP runtime crash ---
+        const maxSizeMB = 2; 
+        if (file.size > maxSizeMB * 1024 * 1024) {
+            showToast('File Too Large', `Please select an image smaller than ${maxSizeMB}MB.`, 'error');
+            input.value = ''; // Reset input
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+        
+        const btn = input.previousElementSibling;
+        const orgHtml = btn.innerHTML;
+        btn.innerHTML = `<i data-lucide="upload" style="width: 18px; color: var(--primary);"></i>`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        try {
+            const res = await fetch("{{ route('settings.avatar') }}", {
+                method: 'POST',
+                headers: { 
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json' 
+                },
+                body: formData
+            });
+
+            // Read raw text first to avoid breaking if PHP throws an HTML fatal crash page
+            const textResponse = await res.text();
+            let data;
+            try {
+                data = JSON.parse(textResponse);
+            } catch (err) {
+                showToast('System Error', 'The server rejected the file. It may be too large.', 'error');
+                btn.innerHTML = orgHtml;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                return;
+            }
+            
+            if (res.ok && data.success) {
+                showToast('Upload Successful', data.message, 'success');
+                
+                // Dynamically update the image
+                const container = document.getElementById('avatar-preview-container');
+                const existingImg = document.getElementById('user-avatar-img');
+                const placeholder = document.getElementById('user-avatar-placeholder');
+                
+                if (existingImg) {
+                    existingImg.src = data.url + '?t=' + new Date().getTime(); 
+                } else if (placeholder) {
+                    const img = document.createElement('img');
+                    img.src = data.url;
+                    img.id = 'user-avatar-img';
+                    img.style.cssText = 'width: 110px; height: 110px; border-radius: 28px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 4px solid white;';
+                    container.insertBefore(img, placeholder);
+                    placeholder.remove();
+                }
+
+                const globalNavAvatars = document.querySelectorAll(`img[src*="${data.url.split('?')[0]}"]`);
+                globalNavAvatars.forEach(av => av.src = data.url + '?t=' + new Date().getTime());
+
+                btn.innerHTML = orgHtml;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            } else {
+                // Intelligently catch Laravel's deep nested validation errors
+                let serverError = data.message || 'Image rejected by validation node.';
+                if (data.errors && data.errors.avatar) {
+                    serverError = data.errors.avatar[0];
+                }
+                showToast('Upload Failed', serverError, 'error');
+                btn.innerHTML = orgHtml;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        } catch (e) {
+            showToast('Connection Error', 'Could not transmit image array.', 'error');
+            btn.innerHTML = orgHtml;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     }
 

@@ -677,6 +677,97 @@
         --glass-border: rgba(255, 255, 255, 0.1);
     }
 
+    /* Modern Pagination Dropdown Design */
+    .modern-pagination-select {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        background: rgba(99, 102, 241, 0.04);
+        border: 1.5px solid rgba(99, 102, 241, 0.15);
+        border-radius: 999px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+
+    .modern-pagination-select:hover {
+        background: rgba(99, 102, 241, 0.08);
+        border-color: rgba(99, 102, 241, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(99, 102, 241, 0.1);
+    }
+
+    .modern-pagination-select:focus-within {
+        background: var(--bg-main);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    }
+
+    .modern-pagination-select .select-icon-left {
+        position: absolute;
+        left: 16px;
+        color: var(--primary);
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        opacity: 0.9;
+    }
+
+    .modern-pagination-select .select-icon-left i {
+        width: 14px;
+        height: 14px;
+    }
+
+    .modern-pagination-select select {
+        appearance: none;
+        -webkit-appearance: none;
+        background: transparent;
+        border: none;
+        color: var(--text-main);
+        font-weight: 800;
+        font-size: 0.8rem;
+        padding: 0.65rem 3rem 0.65rem 2.5rem;
+        cursor: pointer;
+        outline: none;
+        width: 100%;
+        font-family: inherit;
+        letter-spacing: 0.2px;
+    }
+
+    .modern-pagination-select select option {
+        background: var(--bg-main);
+        color: var(--text-main);
+        font-weight: 600;
+    }
+
+    .modern-pagination-select .select-icon-right {
+        position: absolute;
+        right: 16px;
+        background: var(--bg-card);
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        color: var(--text-muted);
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid var(--border-color);
+    }
+
+    .modern-pagination-select .select-icon-right i {
+        width: 12px;
+        height: 12px;
+    }
+
+    .modern-pagination-select:focus-within .select-icon-right {
+        transform: rotate(180deg);
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+    }
+
     /* Stock Audit Command Center Styles */
     .audit-report-btn:hover {
         background: #0f172a !important;

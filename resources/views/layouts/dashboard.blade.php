@@ -113,7 +113,7 @@
         <div class="nav-section-title">Operations</div>
         <ul class="nav-menu">
             <li class="nav-item">
-                <a href="#" class="nav-link" data-tooltip="Analytical Reports">
+                <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" data-tooltip="Analytical Reports">
                     <i data-lucide="file-bar-chart"></i>
                     <span>Reports</span>
                 </a>

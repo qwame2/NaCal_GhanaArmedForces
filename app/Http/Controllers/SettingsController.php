@@ -47,4 +47,29 @@ class SettingsController extends Controller
             'message' => 'Security Credentials Updated'
         ]);
     }
+
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
+        ]);
+
+        $user = auth()->user();
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
+            }
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->update(['avatar' => $path]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile Photo Uploaded Successfully',
+                'url' => \Illuminate\Support\Facades\Storage::url($path)
+            ]);
+        }
+        
+        return response()->json(['success' => false, 'message' => 'Upload failed.']);
+    }
 }

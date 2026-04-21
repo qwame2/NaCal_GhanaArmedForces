@@ -7,6 +7,7 @@ use App\Http\Controllers\IssueItemsController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ReturnController;
+use App\Http\Controllers\ReportController;
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
@@ -282,6 +283,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings/update', [SettingsController::class, 'update'])->name('settings.update');
     Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
+    Route::post('/settings/avatar', [SettingsController::class, 'updateAvatar'])->name('settings.avatar');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
     // Returns Routes
     Route::get('/returns', [ReturnController::class, 'index'])->name('returns.index');
