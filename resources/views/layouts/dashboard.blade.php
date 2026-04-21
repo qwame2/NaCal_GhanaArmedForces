@@ -32,7 +32,7 @@
     <title>NACOC | Advanced Inventory System</title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/vendor/select2.min.css') }}" />
 
     <!-- Scripts -->
