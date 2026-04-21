@@ -609,6 +609,7 @@ body {
     font-weight: 600;
     font-size: 0.75rem;
     text-transform: uppercase;
+    white-space: nowrap;
 }
 
 .activity-row {
@@ -626,6 +627,7 @@ body {
     background: var(--bg-card);
     border-top: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
 }
 
 .activity-row td:first-child {

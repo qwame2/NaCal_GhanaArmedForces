@@ -153,6 +153,22 @@
             </div>
         </div>
         @endif
+
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(99, 102, 241, 0.08); padding: 0.25rem 0.5rem; border-radius: 10px; border: 1px dashed rgba(99, 102, 241, 0.3);">
+                <button type="button" onclick="document.querySelector('.table-scroll-wrapper').scrollBy({left: -400, behavior: 'smooth'})" style="background: transparent; border: none; cursor: pointer; padding: 0.35rem; border-radius: 6px; display: flex; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)'" onmouseout="this.style.background='transparent'" title="Scroll Left">
+                    <i data-lucide="chevron-left" style="width: 16px; color: var(--primary);"></i>
+                </button>
+                <div style="display: flex; align-items: center; gap: 6px; padding: 0 0.5rem; user-select: none;">
+                    <i data-lucide="move-horizontal" style="width: 14px; color: var(--primary); opacity: 0.8;"></i>
+                    <span style="font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Fast Navigate</span>
+                </div>
+                <button type="button" onclick="document.querySelector('.table-scroll-wrapper').scrollBy({left: 400, behavior: 'smooth'})" style="background: transparent; border: none; cursor: pointer; padding: 0.35rem; border-radius: 6px; display: flex; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)'" onmouseout="this.style.background='transparent'" title="Scroll Right">
+                    <i data-lucide="chevron-right" style="width: 16px; color: var(--primary);"></i>
+                </button>
+            </div>
+        </div>
+
         <div class="table-scroll-wrapper">
             <table class="activity-table" style="width: 100%; min-width: 1500px; border-collapse: collapse;">
                 <thead>
@@ -339,7 +355,21 @@
         </table>
     </div>
 
-    <!-- Advanced Pagination Footer -->
+    <!-- Bottom Fast Navigate Control Pad -->
+    <div style="display: flex; justify-content: flex-end; margin-top: 0.75rem; margin-bottom: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(99, 102, 241, 0.08); padding: 0.25rem 0.5rem; border-radius: 10px; border: 1px dashed rgba(99, 102, 241, 0.3);">
+            <button type="button" onclick="document.querySelector('.table-scroll-wrapper').scrollBy({left: -400, behavior: 'smooth'})" style="background: transparent; border: none; cursor: pointer; padding: 0.35rem; border-radius: 6px; display: flex; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)'" onmouseout="this.style.background='transparent'" title="Scroll Left">
+                <i data-lucide="chevron-left" style="width: 16px; color: var(--primary);"></i>
+            </button>
+            <div style="display: flex; align-items: center; gap: 6px; padding: 0 0.5rem; user-select: none;">
+                <i data-lucide="move-horizontal" style="width: 14px; color: var(--primary); opacity: 0.8;"></i>
+                <span style="font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Fast Navigate</span>
+            </div>
+            <button type="button" onclick="document.querySelector('.table-scroll-wrapper').scrollBy({left: 400, behavior: 'smooth'})" style="background: transparent; border: none; cursor: pointer; padding: 0.35rem; border-radius: 6px; display: flex; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)'" onmouseout="this.style.background='transparent'" title="Scroll Right">
+                <i data-lucide="chevron-right" style="width: 16px; color: var(--primary);"></i>
+            </button>
+        </div>
+    </div>    <!-- Advanced Pagination Footer -->
     <div class="pagination-footer">
         <div class="pagination-container">
             <div class="pagination-info">
