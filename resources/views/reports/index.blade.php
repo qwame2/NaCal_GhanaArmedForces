@@ -94,7 +94,9 @@
                 <button type="button" onclick="autoGenerateReport()" class="btn-primary" style="padding: 0.5rem 1rem; border-radius: 12px; border: none; background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                     <i data-lucide="sparkles" style="width: 16px;"></i> Auto-Generate
                 </button>
-                <button type="button" onclick="clearNarrative()" class="glass-btn-sm" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.2);">Clear Setup</button>
+                <button type="button" onclick="clearNarrative()" class="btn-secondary" style="padding: 0.5rem 1.25rem; border-radius: 12px; border: none; background: rgba(239, 68, 68, 0.08); color: #ef4444; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'; this.style.transform='translateY(0)'">
+                    <i data-lucide="rotate-ccw" style="width: 16px;"></i> Clear Setup
+                </button>
             </div>
         </div>
         
