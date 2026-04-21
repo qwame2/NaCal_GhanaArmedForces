@@ -508,12 +508,10 @@
             @endforeach
         @endif
 
-        // Auto-switch to Registration if there are registry-specific errors
-        @if ($errors->hasAny(['name', 'password_confirmation', 'avatar']))
+        // Auto-switch to Registration if there are registry-specific errors or old input present
+        @if ($errors->hasAny(['name', 'username', 'password', 'password_confirmation', 'avatar']) && old('name'))
             toggleAuth('register');
-        @endif
-
-        @if ($errors->has('password') && !$errors->has('username'))
+        @elseif ($errors->hasAny(['name', 'password_confirmation', 'avatar']))
             toggleAuth('register');
         @endif
     });

@@ -22,7 +22,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users',
+            'username' => 'required|string|max:255|unique:users,username',
             'password' => [
                 'required',
                 'string',
@@ -32,27 +32,32 @@ class AuthController extends Controller
             ],
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ], [
+            'username.unique' => 'The personnel callsign "@' . $request->username . '" has already been registered in the database.',
             'password.regex' => 'The password must contain at least one letter and one number or symbol.',
             'password.min' => 'The password must be at least 8 characters long.',
             'password.confirmed' => 'The password confirmation does not match.',
         ]);
 
-        $avatarPath = null;
-        if ($request->hasFile('avatar')) {
-            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+        try {
+            $avatarPath = null;
+            if ($request->hasFile('avatar')) {
+                $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            }
+
+            $user = User::create([
+                'name' => $request->name,
+                'username' => $request->username,
+                'password' => Hash::make($request->password),
+                'avatar' => $avatarPath,
+            ]);
+
+            Auth::login($user);
+            $user->update(['last_login_at' => now()]);
+
+            return redirect()->route('dashboard')->with('success', 'Registry initialized. Welcome, ' . $user->name);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Critical System Failure: ' . $e->getMessage())->withInput();
         }
-
-        $user = User::create([
-            'name' => $request->name,
-            'username' => $request->username,
-            'password' => Hash::make($request->password),
-            'avatar' => $avatarPath,
-        ]);
-
-        Auth::login($user);
-        $user->update(['last_login_at' => now()]);
-
-        return redirect()->route('dashboard');
     }
 
     public function login(Request $request)
