@@ -247,12 +247,12 @@
                         $statusColor = '#94a3b8';
                         if ($acquisitionType === 'Donor') {
                         $statusColor = '#8b5cf6';
-                        } elseif ($displayStatus === 'Full Delivery' || $displayStatus === 'Full Deliv') {
+                        } elseif ($displayStatus === 'Full Delivery' || $displayStatus === 'Full Delivery') {
                         $statusColor = '#10b981';
-                        $displayStatus = 'FULL DELIV';
-                        } elseif ($displayStatus === 'Partial Delivery' || $displayStatus === 'Partial Deliv') {
+                        $displayStatus = 'FULL DELIVERY';
+                        } elseif ($displayStatus === 'Partial Delivery' || $displayStatus === 'Partial Delivery') {
                         $statusColor = '#ef4444';
-                        $displayStatus = 'PARTIAL DELIV';
+                        $displayStatus = 'PARTIAL DELIVERY';
                         }
                         @endphp
                         <td data-label="Supplier" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 500;">{{ $cleanSupplier ?: '-' }}</td>
@@ -434,15 +434,21 @@
                 @endif
             </div>
 
-            <div class="pagination-per-page">
+            <div class="pagination-per-page modern-pagination-select">
+                <div class="select-icon-left">
+                    <i data-lucide="sliders-horizontal"></i>
+                </div>
                 <select class="per-page-select" onchange="window.location.href=this.value">
                     @foreach([10, 25, 50, 100] as $perPage)
                     <option value="{{ request()->fullUrlWithQuery(['per_page' => $perPage]) }}"
-                        {{ request('per_page', 15) == $perPage ? 'selected' : '' }}>
-                        {{ $perPage }} per page
+                        {{ request('per_page', 10) == $perPage ? 'selected' : '' }}>
+                        Show {{ $perPage }} entries
                     </option>
                     @endforeach
                 </select>
+                <div class="select-icon-right">
+                    <i data-lucide="chevron-down"></i>
+                </div>
             </div>
         </div>
     </div>
