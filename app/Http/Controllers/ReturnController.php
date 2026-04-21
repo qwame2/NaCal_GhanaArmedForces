@@ -12,11 +12,9 @@ class ReturnController extends Controller
 {
     public function index()
     {
-        // Get all items that were issued as 'Temporary' and haven't been fully returned
-        // For simplicity, let's just show all issued items that can be returned
+        // Get all items that were issued and haven't been fully returned
         $issuedItems = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->select('issued_items.*', 'issuances.beneficiary', 'issuances.issuance_date', 'issuances.issuance_type')
-            ->where('issuances.issuance_type', 'Temporary')
             ->orderBy('issuances.issuance_date', 'desc')
             ->get();
 

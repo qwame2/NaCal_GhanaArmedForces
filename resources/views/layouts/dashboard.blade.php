@@ -6,8 +6,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Content Security Policy: Essential for ApexCharts and Select2 functionality -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://cdn.jsdelivr.net https://code.jquery.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data:; connect-src 'self';">
-    <link rel="icon" type="image/png" href="{{ asset('img/cropped_circle_image.png') }}">
+    <style>
+        :root {
+            --system-zoom: 1;
+        }
+        
+        body {
+            zoom: var(--system-zoom);
+            min-height: 100vh;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+
+        /* Responsive Fix for Zoom-out: Allow content to expand */
+        .content-body > div:first-child {
+            max-width: none !important;
+        }
+
+        @media (max-width: 576px) {
+            .zoom-controls {
+                display: none !important;
+            }
+        }
+    </style>
     <title>NACOC | Advanced Inventory System</title>
 
     <!-- CSS -->
@@ -149,6 +170,17 @@
             </div>
 
             <div class="top-nav-actions">
+                <!-- Zoom Controls -->
+                <div class="zoom-controls" style="display: flex; align-items: center; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 2px; margin-right: 0.5rem; transition: var(--transition);">
+                    <button id="zoom-out-btn" class="icon-btn" style="width: 32px; height: 32px; border: none; background: transparent;" title="Zoom Out">
+                        <i data-lucide="minus" style="width: 14px;"></i>
+                    </button>
+                    <span id="zoom-display" style="font-size: 0.7rem; font-weight: 800; min-width: 38px; text-align: center; color: var(--text-muted); cursor: pointer;" title="Reset Zoom">100%</span>
+                    <button id="zoom-in-btn" class="icon-btn" style="width: 32px; height: 32px; border: none; background: transparent;" title="Zoom In">
+                        <i data-lucide="plus" style="width: 14px;"></i>
+                    </button>
+                </div>
+
                 <div class="icon-btn">
                     <i data-lucide="message-square" style="width: 20px;"></i>
                 </div>
@@ -169,6 +201,46 @@
     </div>
 
     <script>
+        // Global Zoom Logic
+        window.currentZoom = parseFloat(localStorage.getItem('system-zoom')) || 1;
+
+        window.applyZoom = function() {
+            // Apply zoom using CSS variable and direct style for compatibility
+            document.documentElement.style.setProperty('--system-zoom', window.currentZoom);
+            document.body.style.zoom = window.currentZoom;
+            
+            // For Firefox fallback
+            if (navigator.userAgent.indexOf('Firefox') !== -1) {
+                document.body.style.transform = `scale(${window.currentZoom})`;
+                document.body.style.transformOrigin = 'top center';
+                document.body.style.width = `${100 / window.currentZoom}%`;
+                document.body.style.minHeight = `${100 / window.currentZoom}vh`;
+            }
+
+            const display = document.getElementById('zoom-display');
+            if (display) display.innerText = Math.round(window.currentZoom * 100) + '%';
+            
+            // Update settings UI if present
+            if (typeof updateSettingsZoomUI === 'function') updateSettingsZoomUI();
+            
+            localStorage.setItem('system-zoom', window.currentZoom);
+        }
+
+        document.getElementById('zoom-in-btn')?.addEventListener('click', () => {
+            window.currentZoom = Math.min(window.currentZoom + 0.1, 2);
+            window.applyZoom();
+        });
+
+        document.getElementById('zoom-out-btn')?.addEventListener('click', () => {
+            window.currentZoom = Math.max(window.currentZoom - 0.1, 0.5);
+            window.applyZoom();
+        });
+
+        document.getElementById('zoom-display')?.addEventListener('click', () => {
+            window.currentZoom = 1;
+            window.applyZoom();
+        });
+
         // Theme Toggle Logic
         function updateThemeIcon(theme) {
             const themeToggle = document.getElementById('theme-toggle');
@@ -184,6 +256,7 @@
 
         // Initialize on load
         document.addEventListener('DOMContentLoaded', () => {
+            window.applyZoom();
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             updateThemeIcon(currentTheme);
 

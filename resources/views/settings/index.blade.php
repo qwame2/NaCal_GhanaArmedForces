@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
 
 @section('content')
-<div class="animate-slide-up" style="max-width: 1400px; margin: 0 auto; padding: 0 1.5rem;">
+<div class="animate-slide-up" style="width: 100%; margin: 0 auto; padding: 0;">
     
     <!-- Premium User Settings Header -->
     <div class="glass-card header-mesh" style="padding: 2.5rem 3rem; border-radius: 32px; margin-bottom: 2.5rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08);">
@@ -47,6 +47,10 @@
                 <button class="settings-nav-btn" onclick="switchSection('security', this)">
                     <i data-lucide="lock"></i>
                     <span>Login & Security</span>
+                </button>
+                <button class="settings-nav-btn" onclick="switchSection('interface', this)">
+                    <i data-lucide="monitor"></i>
+                    <span>Display & Interface</span>
                 </button>
             </nav>
             
@@ -135,20 +139,49 @@
                 </div>
             </div>
 
-            <!-- Preferences Section -->
-            <div id="section-preferences" class="settings-section">
+            <!-- Preferences Section (Renamed/Moved to Interface) -->
+            <div id="section-interface" class="settings-section">
                 <div style="margin-bottom: 3rem;">
-                    <h2 style="font-size: 1.75rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">System Preferences</h2>
-                    <p style="color: var(--text-muted); font-size: 1rem;">Customize the visual appearance and behavior of the dashboard.</p>
+                    <h2 style="font-size: 1.75rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Display & Interface</h2>
+                    <p style="color: var(--text-muted); font-size: 1rem;">Customize the visual appearance and scaling of the system.</p>
                 </div>
 
-                <div class="setting-item">
-                    <div style="flex: 1;">
-                        <div style="font-weight: 850; color: var(--text-main); margin-bottom: 4px;">Glassmorphism Visuals</div>
-                        <div style="font-size: 0.85rem; color: var(--text-muted);">Enable semi-transparent surfaces and blur effects across the system.</div>
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <!-- Zoom Control Item -->
+                    <div class="setting-item" style="padding: 2.5rem;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 850; color: var(--text-main); margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+                                <i data-lucide="zoom-in" style="width: 20px; color: var(--primary);"></i>
+                                System-wide UI Scaling
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">Adjust the overall size of the interface elements. This affects menus, text, and charts.</div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 16px; padding: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
+                            <button onclick="settingsAdjustZoom(-0.1)" class="security-action-btn" style="padding: 0.75rem; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); width: 44px; height: 44px; justify-content: center;" title="Decrease Size">
+                                <i data-lucide="minus"></i>
+                            </button>
+                            <div style="padding: 0 1.5rem; text-align: center;">
+                                <div id="settings-zoom-val" style="font-size: 1.25rem; font-weight: 950; color: var(--primary);">100%</div>
+                                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 2px;">Standard</div>
+                            </div>
+                            <button onclick="settingsAdjustZoom(0.1)" class="security-action-btn" style="padding: 0.75rem; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); width: 44px; height: 44px; justify-content: center;" title="Increase Size">
+                                <i data-lucide="plus"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div class="toggle-switch active">
-                        <div class="toggle-nob"></div>
+
+                    <div class="setting-item">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 850; color: var(--text-main); margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+                                <i data-lucide="sparkles" style="width: 20px; color: #a855f7;"></i>
+                                Glassmorphism Visuals
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">Enable semi-transparent surfaces and blur effects across the system.</div>
+                        </div>
+                        <div class="toggle-switch active">
+                            <div class="toggle-nob"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -524,15 +557,39 @@
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
+    function settingsAdjustZoom(delta) {
+        if (window.currentZoom !== undefined && typeof window.applyZoom === 'function') {
+            window.currentZoom = Math.min(Math.max(window.currentZoom + delta, 0.5), 2);
+            window.applyZoom();
+            updateSettingsZoomUI();
+        }
+    }
+
+    function updateSettingsZoomUI() {
+        const valDisplay = document.getElementById('settings-zoom-val');
+        if (valDisplay && window.currentZoom !== undefined) {
+            const percentage = Math.round(window.currentZoom * 100);
+            valDisplay.innerText = percentage + '%';
+            
+            const label = valDisplay.nextElementSibling;
+            if (label) {
+                if (percentage === 100) label.innerText = 'Standard';
+                else if (percentage < 100) label.innerText = 'Compact';
+                else label.innerText = 'Enlarged';
+            }
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
+        updateSettingsZoomUI();
         
-        // Remove global toggle functionality to use specific functions
-        /*
-        document.querySelectorAll('.toggle-switch').forEach(toggle => {
-            toggle.addEventListener('click', () => toggle.classList.toggle('active'));
+        // Listen for global zoom changes (from top nav)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'system-zoom') {
+                updateSettingsZoomUI();
+            }
         });
-        */
     });
 </script>
 @endsection

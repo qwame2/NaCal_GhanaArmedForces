@@ -255,7 +255,7 @@
                 <span>Stock Distribution</span>
                 <i data-lucide="pie-chart" style="color: var(--primary); width: 20px;"></i>
             </div>
-            <div id="enhancedDonutChart" style="margin-top: -1.5rem; margin-inline: -1rem;"></div>
+            <div id="enhancedDonutChart" style="margin-top: -1.5rem; margin-inline: -1rem; min-height: 400px;"></div>
             <div class="distribution-details">
                 <div class="dist-item">
                     <div class="dist-label">TOP CATEGORY</div>
@@ -504,8 +504,10 @@
         }]
     };
 
-    var areaChart = new ApexCharts(document.querySelector("#advancedAreaChart"), areaOptions);
-    areaChart.render();
+    if (document.querySelector("#advancedAreaChart")) {
+        var areaChart = new ApexCharts(document.querySelector("#advancedAreaChart"), areaOptions);
+        areaChart.render();
+    }
 
     // Chart Timeframe Toggling Logic
     const dailyData = {
@@ -594,14 +596,14 @@
             mode: document.documentElement.getAttribute('data-theme') || 'light'
         },
         labels: @json($distLabels),
-        colors: @json($isEmptyDist) ? ['var(--border-color)'] : ['#6366f1', '#10b981', '#f59e0b', '#db2777', '#8b5cf6', '#06b6d4', '#ec4899'],
+        colors: @json($isEmptyDist) ? ['#cbd5e1'] : ['#6366f1', '#10b981', '#f59e0b', '#db2777', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6'],
         dataLabels: {
             enabled: false
         },
         legend: {
             position: 'bottom',
             fontFamily: 'Plus Jakarta Sans',
-            fontSize: '14px',
+            fontSize: '12px',
             markers: {
                 radius: 12,
                 width: 12,
@@ -612,7 +614,7 @@
             theme: document.documentElement.getAttribute('data-theme') || 'light',
             y: {
                 formatter: function(val) {
-                    return @json($isEmptyDist) ? "0 units" : val + "%"
+                    return @json($isEmptyDist) ? "No inventory recorded" : val.toLocaleString() + " units"
                 }
             }
         },
@@ -625,56 +627,40 @@
             pie: {
                 expandOnClick: true,
                 donut: {
-                    size: '60%',
+                    size: '72%',
                     borderRadius: 10,
                     labels: {
                         show: true,
                         total: {
                             show: true,
-                            label: @json($isEmptyDist) ? 'Awaiting Records' : 'Total Percentage',
+                            label: @json($isEmptyDist) ? 'Awaiting Records' : 'Total Units',
                             fontSize: '14px',
                             fontWeight: 600,
                             color: '#64748b',
                             formatter: function(w) {
-                                return @json($isEmptyDist) ? "0" : "100%";
+                                if (@json($isEmptyDist)) return "0";
+                                return w.globals.seriesTotals.reduce((a, b) => a + b, 0).toLocaleString();
                             }
                         },
                         value: {
                             show: true,
-                            fontSize: '32px',
+                            fontSize: '28px',
                             fontWeight: 800,
                             color: 'var(--text-main)',
                             formatter: function(val) {
-                                return @json($isEmptyDist) ? '0%' : val + '%'
+                                return @json($isEmptyDist) ? '0' : val.toLocaleString()
                             }
                         }
                     }
                 }
             }
-        },
-        states: {
-            hover: {
-                filter: {
-                    type: 'darken',
-                    value: 0.9
-                }
-            }
-        },
-        responsive: [{
-            breakpoint: 480,
-            options: {
-                chart: {
-                    height: 300
-                },
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }]
+        }
     };
 
-    var donutChart = new ApexCharts(document.querySelector("#enhancedDonutChart"), donutOptions);
-    donutChart.render();
+    if (document.querySelector("#enhancedDonutChart")) {
+        var donutChart = new ApexCharts(document.querySelector("#enhancedDonutChart"), donutOptions);
+        donutChart.render();
+    }
 
     // New Entry Modal Logic
     $(document).ready(function() {

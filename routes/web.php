@@ -155,8 +155,12 @@ Route::middleware(['auth'])->group(function () {
             ->limit(10)
             ->get();
 
-        // Distribution Data (Donut Chart)
-        $distData = $categoryStats->map(function ($items) {
+        // Distribution Data (Donut Chart) - Dynamic Categories
+        $distData = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->select('inventory_batches.ledge_category', 'inventory_items.stock_balance')
+            ->get()
+            ->groupBy('ledge_category')
+            ->map(function ($items) {
                 return $items->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
             });
 
@@ -164,12 +168,19 @@ Route::middleware(['auth'])->group(function () {
         $distSeries = $distData->values()->toArray();
 
         $topCategory = 'None';
-        if ($distData->count() > 0) {
+        if ($distData->count() > 0 && $distData->max() > 0) {
             $topKey = $distData->sortDesc()->keys()->first();
             $topCategory = $ledgeMap[$topKey] ?? "Ledge $topKey";
         }
 
         $avgStock = $distData->count() > 0 ? ($totalInventory / $distData->count()) : 0;
+
+        // Handle Empty Donut State (Array empty OR all values are zero)
+        $isEmptyDist = empty($distSeries) || array_sum($distSeries) <= 0;
+        if ($isEmptyDist) {
+            $distSeries = [100];
+            $distLabels = ['No Data Available'];
+        }
 
         // Weekly Chart Data (Last 12 Weeks)
         $weekLabels = [];
@@ -226,12 +237,6 @@ Route::middleware(['auth'])->group(function () {
                 return preg_replace('/\s\[.*\]$/', '', $name);
             })->unique()->values();
 
-        // Handle Empty Donut State
-        $isEmptyDist = empty($distSeries);
-        if ($isEmptyDist) {
-            $distSeries = [100];
-            $distLabels = ['No Data Available'];
-        }
 
         return view('dashboard', compact(
             'isEmptyDist',
