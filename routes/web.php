@@ -293,12 +293,24 @@ Route::get('/api/returned-items-history', [ReturnController::class, 'history'])-
 
 Route::get('/api/item-audit-details', function (\Illuminate\Http\Request $request) {
     $description = $request->query('description');
+    
     $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
         ->where('inventory_items.description', $description)
         ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.supplier_name')
         ->orderBy('inventory_batches.entry_date', 'desc')
         ->get();
-    return response()->json($items);
+
+    // Transparency logic: Calculate active temporary loans
+    $onLoan = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+        ->where('issued_items.description', $description)
+        ->where('issuances.issuance_type', 'Temporary')
+        ->where('issued_items.quantity', '>', 0)
+        ->sum('issued_items.quantity');
+
+    return response()->json([
+        'batches' => $items,
+        'on_loan' => $onLoan
+    ]);
 })->name('api.item-audit-details');
 
 Route::post('/api/inventory/receive-remainder', function (\Illuminate\Http\Request $request) {

@@ -679,14 +679,18 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
                     <div class="audit-stat-card" onclick="toggleAuditBreakdown('variance')" title="Review historical discrepancies">
-                        <label>Prev. Variance</label>
+                        <label>Prev. Var.</label>
                         <div id="auditPrevVar">0</div>
                     </div>
                     <div class="audit-stat-card" onclick="toggleAuditBreakdown('avail')" title="Audit current availability trail">
-                        <label>Available Qty</label>
+                        <label>Avail. Qty</label>
                         <div id="auditPrevAvail">0</div>
+                    </div>
+                    <div class="audit-stat-card" style="border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.02);" title="Units currently out on temporary loan">
+                        <label style="color: #f59e0b;">Active Loans</label>
+                        <div id="auditActiveLoans" style="color: #f59e0b;">0</div>
                     </div>
                 </div>
 
@@ -2407,6 +2411,7 @@
         document.getElementById('auditStockBal').innerText = stockBal;
         document.getElementById('auditPrevVar').innerText = prevVar || '0';
         document.getElementById('auditPrevAvail').innerText = prevAvail || '0';
+        document.getElementById('auditActiveLoans').innerText = '...';
 
         document.getElementById('physicalCount').value = '';
         document.getElementById('auditReason').value = '';
@@ -2467,7 +2472,11 @@
 
         try {
             const response = await fetch(`/api/item-audit-details?description=${encodeURIComponent(description)}`);
-            auditHistoryData = await response.json();
+            const data = await response.json();
+            
+            auditHistoryData = data.batches;
+            document.getElementById('auditActiveLoans').innerText = data.on_loan || '0';
+            
             return auditHistoryData;
         } catch (error) {
             container.innerHTML = `<p style="color: #ef4444; font-size: 0.7rem;">Failed to retrieve batch details: ${error.message}</p>`;
@@ -2493,6 +2502,7 @@
 
     function calculateAuditVariance() {
         const stockBal = parseFloat(document.getElementById('auditStockBal').innerText) || 0;
+        const onLoan = parseFloat(document.getElementById('auditActiveLoans').innerText) || 0;
         const physical = parseFloat(document.getElementById('physicalCount').value);
         const display = document.getElementById('newAuditVariance');
         const insight = document.getElementById('auditInsight');
@@ -2514,28 +2524,33 @@
         const diffPercent = Math.min(100, Math.abs((variance / (stockBal || 1)) * 100));
         indicatorFill.style.width = `${diffPercent}%`;
 
-        // Smart Insight Engine
+        // Smart Insight Engine (factor in active loans)
+        const totalAccounted = physical + onLoan;
+
         if (variance === 0) {
             display.style.color = '#10b981';
             indicatorFill.style.background = '#10b981';
-            insight.className = 'insight-pill';
             insight.style.background = 'rgba(16, 185, 129, 0.1)';
             insight.style.color = '#10b981';
             insight.innerHTML = `<i data-lucide="check-sparkles"></i> <span>Perfect Audit! Physical matches System.</span>`;
+        } else if (totalAccounted === stockBal) {
+            display.style.color = '#f59e0b';
+            indicatorFill.style.background = '#f59e0b';
+            insight.style.background = 'rgba(245, 158, 11, 0.1)';
+            insight.style.color = '#d97706';
+            insight.innerHTML = `<i data-lucide="info"></i> <span>Technically Balanced: ${physical} present + ${onLoan} on loan = ${stockBal} expected.</span>`;
         } else if (variance < 0) {
             display.style.color = '#ef4444';
             indicatorFill.style.background = '#ef4444';
-            insight.className = 'insight-pill';
             insight.style.background = 'rgba(239, 68, 68, 0.1)';
             insight.style.color = '#ef4444';
-            insight.innerHTML = `<i data-lucide="alert-triangle"></i> <span>Shortage Detected: System Expects ${stockBal} units.</span>`;
+            insight.innerHTML = `<i data-lucide="alert-triangle"></i> <span>Shortage: Even with ${onLoan} on loan, ${Math.abs(stockBal - totalAccounted)} units are still missing.</span>`;
         } else {
             display.style.color = '#3b82f6';
             indicatorFill.style.background = '#3b82f6';
-            insight.className = 'insight-pill';
             insight.style.background = 'rgba(59, 130, 246, 0.1)';
             insight.style.color = '#3b82f6';
-            insight.innerHTML = `<i data-lucide="package-plus"></i> <span>Surplus Noted: ${variance} extra units identified.</span>`;
+            insight.innerHTML = `<i data-lucide="package-plus"></i> <span>Surplus Noted: ${variance} extra units identified beyond system expectations.</span>`;
         }
 
         if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -2656,8 +2671,9 @@
         // Logic to ensure history data is loaded before synthesis
         const genBtn = document.getElementById('genRepBtn');
         const originalHtml = genBtn.innerHTML;
+        const loanDisplay = document.getElementById('auditActiveLoans').innerText;
 
-        if (auditHistoryData.length === 0) {
+        if (auditHistoryData.length === 0 || loanDisplay === '...') {
             genBtn.innerHTML = `<div class="loader" style="width: 14px; height: 14px; border-width: 2px;"></div> Synchronizing Trail...`;
             genBtn.style.opacity = '0.7';
             try {
@@ -2680,9 +2696,16 @@
             minute: '2-digit'
         });
 
+        const onLoan = parseFloat(document.getElementById('auditActiveLoans').innerText) || 0;
+
         // Editable Narrative Body
         let narrative = `This audit was conducted to verify the physical existence and condition of the inventory item: ${item.toUpperCase()}.\n\n`;
         narrative += `Based on the physical verification conducted on ${dateStr} at exactly ${timeStr}, the following observations were recorded regarding the inventory state:\n\n`;
+        
+        if (onLoan > 0) {
+            narrative += `[NOTICE] System records indicate ${onLoan} units are currently out on temporary loan. This active allocation explains why the physical count (${physical}) is lower than the system stock (${stockBal}).\n\n`;
+        }
+        
         narrative += `[AUDITOR NOTES]\n`;
         narrative += `${remarks}\n\n`;
         narrative += `The condition of the items has been categorized as "${reason}". This assessment reflects the current physical quality and storage situation for this batch.`;
@@ -2690,10 +2713,15 @@
         // Uneditable Conclusion Content
         let conclusion = `<div style="color: #000; font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem;">[AUDIT CONCLUSION]</div>`;
         const varValue = parseFloat(variance);
+        const totalAccounted = parseFloat(physical) + onLoan;
+
         if (varValue === 0) {
             conclusion += `<div style="color: #10b981;">SUCCESS: No variance detected. Physical stock perfectly aligns with system ledger records.</div>`;
-        } else if (varValue < 0) {
-            conclusion += `<div style="color: #ef4444;">WARNING: A shortage of ${Math.abs(varValue)} units has been identified. Immediate reconciliation or loss investigation is required.</div>`;
+        } else if (totalAccounted === parseFloat(stockBal)) {
+            conclusion += `<div style="color: #f59e0b;">BALANCED: System registry is balanced. Although physical stock is lower, all ${Math.abs(varValue)} missing units are accounted for via active temporary loans.</div>`;
+        } else if (totalAccounted < parseFloat(stockBal)) {
+            const netShortage = parseFloat(stockBal) - totalAccounted;
+            conclusion += `<div style="color: #ef4444;">WARNING: A shortage of ${netShortage} units has been identified. Even after accounting for ${onLoan} units on loan, the system remains unreconciled. Immediate investigation required.</div>`;
         } else {
             conclusion += `<div style="color: #3b82f6;">NOTICE: A surplus of ${varValue} units has been discovered. Update requested for system ledger records to incorporate identified surplus.</div>`;
         }
@@ -2809,10 +2837,11 @@
                         <h2>VERIFIED STOCK AUDIT REPORT</h2>
                     </div>
 
-                    <div class="meta-grid">
+                    <div class="meta-grid" style="grid-template-columns: repeat(5, 1fr);">
                         <div class="meta-item"><label>Subject Material</label><div>${item}</div></div>
                         <div class="meta-item"><label>Date of Audit</label><div>${dateStr}</div></div>
                         <div class="meta-item"><label>Time of Verification</label><div>${timeStr}</div></div>
+                        <div class="meta-item"><label>Active Loans (Temp)</label><div style="color: #f59e0b;">${document.getElementById('auditActiveLoans').innerText}</div></div>
                         <div class="meta-item"><label>Audit Status</label><div style="color: #ef4444;">FORMAL</div></div>
                     </div>
 
@@ -2831,6 +2860,10 @@
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05);">
                                     <span style="font-size: 0.7rem; font-weight: 800;">PHYSICAL QUANTITY:</span>
                                     <span style="font-weight: 900; color: #000;">${physical} Units</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                                    <span style="font-size: 0.7rem; font-weight: 800;">ACTIVE LOANS (TEMP):</span>
+                                    <span style="font-weight: 900; color: #f59e0b;">${document.getElementById('auditActiveLoans').innerText} Units</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between;">
                                     <span style="font-size: 0.7rem; font-weight: 800;">AUDIT VARIANCE:</span>
