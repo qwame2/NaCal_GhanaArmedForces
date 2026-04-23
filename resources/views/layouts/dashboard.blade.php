@@ -40,6 +40,7 @@
     <script src="{{ asset('js/vendor/select2.min.js') }}"></script>
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="{{ asset('js/apexcharts.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         // Pre-initialization to prevent flash
@@ -297,9 +298,9 @@
                 lucide.createIcons();
             }
 
-            // Mobile/Tablet Default: Show in full regardless of desktop saved state
+            // Mobile/Tablet Default: Keep hidden on load to avoid layout shifts
             if (isMobile) {
-                toggleSidebar(true);
+                toggleSidebar(false);
             }
 
             function toggleSidebar(show) {

@@ -8,9 +8,30 @@
             align-items: center;
             justify-content: center;
             background: radial-gradient(circle at top right, #f8fafc, #e2e8f0);
-            padding: 2rem;
+            padding: 1rem;
             margin: 0;
         }
+
+        .auth-vault {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255,255,255,0.8);
+            border-radius: 40px;
+            padding: 3.5rem;
+            backdrop-filter: blur(40px);
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.08);
+            position: relative;
+            transition: all 0.4s ease;
+        }
+
+        .code-input-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 3rem;
+        }
+
         .code-input {
             width: 50px;
             height: 64px;
@@ -23,6 +44,7 @@
             color: var(--text-main);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .code-input:focus {
             border-color: var(--primary);
             background: white;
@@ -30,9 +52,43 @@
             transform: translateY(-2px);
             outline: none;
         }
+
+        @media (max-width: 600px) {
+            .auth-vault {
+                padding: 2.5rem 1.5rem;
+                border-radius: 32px;
+            }
+
+            .code-input {
+                width: 42px;
+                height: 56px;
+                font-size: 1.25rem;
+                border-radius: 12px;
+            }
+
+            .code-input-container {
+                gap: 0.5rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .code-input {
+                width: 36px;
+                height: 48px;
+                font-size: 1.1rem;
+            }
+
+            .code-input-container {
+                gap: 0.25rem;
+            }
+
+            h2 {
+                font-size: 1.5rem !important;
+            }
+        }
     </style>
 
-    <div class="auth-vault glass-monolith" style="width: 100%; max-width: 500px; background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(255,255,255,0.8); border-radius: 40px; padding: 3.5rem; backdrop-filter: blur(40px); box-shadow: 0 40px 100px -20px rgba(0,0,0,0.08); position: relative;">
+    <div class="auth-vault glass-monolith">
         
         <div style="text-align: center; margin-bottom: 3rem;">
             <div style="width: 64px; height: 64px; background: rgba(99, 102, 241, 0.1); border-radius: 22px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
@@ -48,7 +104,7 @@
             @csrf
             <input type="hidden" name="code" id="verificationCode">
             
-            <div style="display: flex; justify-content: space-between; gap: 0.75rem; margin-bottom: 3rem;">
+            <div class="code-input-container">
                 <input type="text" maxlength="1" class="code-input" autofocus>
                 <input type="text" maxlength="1" class="code-input">
                 <input type="text" maxlength="1" class="code-input">
@@ -57,7 +113,7 @@
                 <input type="text" maxlength="1" class="code-input">
             </div>
 
-            <button type="submit" class="auth-btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%); height: 60px; font-size: 1rem; border-radius: 20px;">
+            <button type="submit" class="auth-btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%); height: 60px; font-size: 1rem; border-radius: 20px; width: 100%; border: none; color: white; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer;">
                 <span>Confirm Identity</span>
                 <i data-lucide="key-round"></i>
             </button>

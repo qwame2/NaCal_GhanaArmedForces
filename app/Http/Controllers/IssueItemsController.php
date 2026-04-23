@@ -13,9 +13,9 @@ class IssueItemsController extends Controller
 {
     public function index()
     {
-        // Get unique items by description and sum up their stock balance
+        // Get unique items by description and sum up their available qty
         $items = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.stock_balance) as total_stock')
+            ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.qty) as total_stock')
             ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
             ->get();
 
@@ -37,6 +37,7 @@ class IssueItemsController extends Controller
         $validated = $request->validate([
             'issuance_date' => 'required|date',
             'beneficiary' => 'required|string',
+            'authority' => 'required|string',
             'issuance_type' => 'required|string|in:Permanent,Temporary',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
@@ -50,6 +51,7 @@ class IssueItemsController extends Controller
             $issuance = Issuance::create([
                 'issuance_date' => $validated['issuance_date'],
                 'beneficiary' => $validated['beneficiary'],
+                'authority' => $validated['authority'],
                 'issuance_type' => $validated['issuance_type'],
             ]);
 
@@ -69,17 +71,18 @@ class IssueItemsController extends Controller
                     ->whereHas('batch', function ($q) use ($cartItem) {
                         $q->where('ledge_category', $cartItem['category']);
                     })
-                    ->where('stock_balance', '>', 0)
+                    ->where('qty', '>', 0)
                     ->orderBy('created_at', 'asc')
+                    ->orderBy('id', 'asc')
                     ->get();
 
                 foreach ($stockItems as $inventoryItem) {
                     if ($qtyToIssue <= 0) break;
 
-                    $available = floatval($inventoryItem->stock_balance);
+                    $available = floatval($inventoryItem->qty);
                     $take = min($available, $qtyToIssue);
 
-                    $inventoryItem->stock_balance = $available - $take;
+                    $inventoryItem->qty = $available - $take;
                     $inventoryItem->save();
 
                     $qtyToIssue -= $take;
@@ -110,7 +113,7 @@ class IssueItemsController extends Controller
     {
         $issuedItems = IssuedItem::with('issuance')
             ->join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-            ->select('issued_items.*', 'issuances.issuance_date', 'issuances.beneficiary', 'issuances.issuance_type', 'issuances.created_at')
+            ->select('issued_items.*', 'issuances.issuance_date', 'issuances.beneficiary', 'issuances.authority', 'issuances.issuance_type', 'issuances.created_at')
             ->orderBy('issuances.created_at', 'desc')
             ->get();
 

@@ -409,8 +409,62 @@
     }
 
     @media (max-width: 1024px) {
-        .settings-grid { grid-template-columns: 1fr; }
-        #settingsContent { padding: 2.5rem; }
+        .settings-grid { 
+            grid-template-columns: 1fr !important; 
+            gap: 1.5rem !important;
+        }
+        #settingsContent { 
+            padding: 2rem !important; 
+            border-radius: 28px !important;
+            min-height: auto !important;
+        }
+        .header-mesh {
+            padding: 2rem !important;
+            flex-direction: column !important;
+            text-align: center !important;
+        }
+        .header-mesh > div {
+            flex-direction: column !important;
+            gap: 1.5rem !important;
+        }
+        .header-mesh h1 {
+            font-size: 2rem !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        #section-profile div[style*="grid-template-columns"] {
+            grid-template-columns: 1fr !important;
+            gap: 1.5rem !important;
+        }
+        .setting-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.5rem;
+            padding: 1.75rem !important;
+            border-radius: 24px !important;
+        }
+        .setting-item > div:last-child {
+            width: 100%;
+            justify-content: flex-start;
+        }
+        .security-action-btn {
+            width: 100%;
+            justify-content: center;
+        }
+        .save-btn {
+            width: 100%;
+            justify-content: center;
+            padding: 1.25rem 1.5rem !important;
+        }
+        .header-mesh {
+            padding: 2.5rem 1.5rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+        .settings-nav-btn {
+            padding: 1.15rem 1.5rem !important;
+            font-size: 0.9rem !important;
+        }
     }
 </style>
 

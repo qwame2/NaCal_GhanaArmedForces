@@ -12,6 +12,7 @@ class Issuance extends Model
     protected $fillable = [
         'issuance_date',
         'beneficiary',
+        'authority',
         'issuance_type'
     ];
 

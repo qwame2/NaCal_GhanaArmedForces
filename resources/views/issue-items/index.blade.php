@@ -12,15 +12,15 @@
         <div style="position: relative; z-index: 1;">
             <div class="header-top" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem;">
                 <div>
-                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
-                        <span style="background: var(--primary); color: white; font-size: 0.65rem; font-weight: 900; padding: 0.4rem 1.25rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.1em; box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);">Inventory Control</span>
-                        <div style="width: 4px; height: 4px; background: var(--text-muted); border-radius: 50%; opacity: 0.5;"></div>
-                        <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                    <div class="header-badges" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <span class="inventory-badge">Inventory Control</span>
+                        <div class="header-dot"></div>
+                        <span class="operation-text">
                             <i data-lucide="cpu" style="width: 14px;"></i> System Operation
                         </span>
                     </div>
-                    <h1 style="margin: 0; font-size: 3rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em; line-height: 1;">Issue <span style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Inventory</span></h1>
-                    <p style="margin: 12px 0 0; color: var(--text-muted); font-size: 1.1rem; font-weight: 500; opacity: 0.8;">Seamlessly disburse stock items and track recipient allocations in real-time.</p>
+                    <h1 class="main-title">Issue <span class="gradient-text">Inventory</span></h1>
+                    <p class="subtitle-text">Seamlessly disburse stock items and track recipient allocations in real-time.</p>
                 </div>
                 
                 <div class="header-actions" style="display: flex; gap: 1rem;">
@@ -28,16 +28,16 @@
                         <i data-lucide="history" style="width: 20px;"></i>
                         <span>View Issues</span>
                     </button>
-                    <button class="modern-action-btn secondary" title="View Audit Logs">
+                    <!-- <button class="modern-action-btn secondary" title="View Audit Logs">
                         <i data-lucide="scroll-text" style="width: 20px;"></i>
-                    </button>
+                    </button> -->
                 </div>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 2rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 2.5rem;">
                 <div class="search-cat-container" style="display: flex; gap: 2.5rem; align-items: center; flex-wrap: wrap;">
                     <!-- Elegant Search -->
-                    <div class="search-box-wrapper" style="position: relative; flex: 1; min-width: 320px;">
+                    <div class="search-box-wrapper" style="position: relative; flex: 1; min-width: 250px;">
                         <i data-lucide="search" style="position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%); width: 22px; color: var(--primary); opacity: 0.6;"></i>
                         <input type="text" id="catalogSearch" placeholder="What are you looking for today?" style="width: 100%; padding: 1.35rem 1.5rem 1.35rem 4rem; border-radius: 20px; border: 2px solid transparent; background: rgba(0,0,0,0.03); color: var(--text-main); font-size: 1.05rem; font-weight: 600; outline: none; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);" onfocus="this.style.borderColor='var(--primary)'; this.style.background='var(--bg-card)'; this.style.boxShadow='0 10px 25px rgba(99, 102, 241, 0.08)';" onblur="this.style.borderColor='transparent'; this.style.background='rgba(0,0,0,0.03)';">
                     </div>
@@ -48,7 +48,7 @@
                             <i data-lucide="chevron-left" style="width: 18px;"></i>
                         </button>
 
-                        <div id="catList" class="hide-scrollbar" style="display: flex; gap: 0.85rem; overflow-x: auto; padding: 0.25rem; scroll-behavior: smooth; flex: 1;">
+                        <div id="catList" class="hide-scrollbar cat-slider-premium">
                             <button class="cat-pill modern active" onclick="filterCategory('all', this)">
                                 <i data-lucide="rocket" style="width: 16px;"></i>
                                 Everything
@@ -141,6 +141,10 @@
                             <input type="text" id="beneficiary" placeholder="Recipient / Department" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700;">
                         </div>
                         <div>
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Authority</label>
+                            <input type="text" id="authority" placeholder="Authorizing Officer / Doc Ref" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700;">
+                        </div>
+                        <div>
                             <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Alloc. Type</label>
                             <div id="issueTypeSlider" style="display: flex; background: var(--bg-main); padding: 0.4rem; border-radius: 14px; border: 1px solid var(--border-color); position: relative;">
                                 <div id="sliderPill" style="position: absolute; top: 0.4rem; left: 0.4rem; width: calc(50% - 0.5rem); height: calc(100% - 0.8rem); background: var(--primary); border-radius: 10px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;"></div>
@@ -178,6 +182,7 @@
 <!-- History Bottom Sheet -->
 <div id="historySheet" class="modal-backdrop">
     <div class="sheet-content glass-card">
+        <div class="samsung-drag-handle" style="display: none;"></div>
         <div class="sheet-header" style="padding: 2.5rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
             <div>
                 <h3 style="margin: 0; font-size: 2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">Issued Items <span style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">History</span></h3>
@@ -239,7 +244,27 @@
 </div>
 
 <style>
-    /* Premium Header Stylings */
+    .inventory-badge {
+        background: var(--primary); color: white; font-size: 0.65rem; font-weight: 900; 
+        padding: 0.4rem 1.25rem; border-radius: 99px; text-transform: uppercase; 
+        letter-spacing: 0.1em; box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+    }
+    .header-dot {
+        width: 4px; height: 4px; background: var(--text-muted); border-radius: 50%; opacity: 0.5;
+    }
+    .operation-text {
+        color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;
+    }
+    .main-title {
+        margin: 0; font-size: 3rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em; line-height: 1;
+    }
+    .gradient-text {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .subtitle-text {
+        margin: 12px 0 0; color: var(--text-muted); font-size: 1.1rem; font-weight: 500; opacity: 0.8;
+    }
+
     /* Filter Scroll Arrows */
     .scroll-arrow {
         width: 40px; height: 40px; border-radius: 12px;
@@ -295,11 +320,23 @@
         justify-content: center;
     }
 
+    .cat-slider-premium {
+        display: flex; gap: 0.85rem; overflow-x: auto; 
+        padding: 0.5rem 1rem; scroll-behavior: smooth; flex: 1;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;
+        scroll-padding-left: 1rem;
+        overscroll-behavior-x: contain;
+        /* Samsung-style soft edge fade */
+        mask-image: linear-gradient(to right, transparent, black 3%, black 97%, transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 3%, black 97%, transparent);
+    }
+
     .cat-pill.modern {
         background: rgba(0,0,0,0.03);
         border: 1px solid transparent;
         padding: 1rem 1.75rem;
-        border-radius: 20px;
+        border-radius: 99px; /* Fully rounded Samsung style */
         font-weight: 800;
         font-size: 0.95rem;
         color: var(--text-muted);
@@ -308,6 +345,8 @@
         align-items: center;
         gap: 10px;
         white-space: nowrap;
+        flex-shrink: 0;
+        scroll-snap-align: start;
     }
 
     .cat-pill.modern:hover {
@@ -475,77 +514,151 @@
             max-width: 100% !important;
             min-width: 100% !important;
         }
-        h1 { font-size: 2.5rem !important; }
+        .main-title { font-size: 2.5rem !important; }
+        .scroll-arrow { display: none !important; }
+        #catList { padding-bottom: 0.5rem !important; gap: 0.5rem !important; }
     }
 
     @media (max-width: 768px) {
         .header-mesh {
             padding: 1.5rem !important;
         }
-        h1 { font-size: 2rem !important; }
-        .header-top p { font-size: 0.95rem !important; }
+        .main-title { font-size: 2rem !important; }
+        .subtitle-text { font-size: 0.95rem !important; }
+        .inventory-badge { font-size: 0.65rem !important; padding: 0.35rem 1.1rem !important; }
         
         .product-card {
             padding: 1rem !important;
         }
 
         .sheet-content {
-            height: 100vh !important;
-            border-radius: 0 !important;
+            height: 92vh !important;
+            border-radius: 36px 36px 0 0 !important;
+            border: none !important;
+            border-top: 1px solid rgba(255,255,255,0.15) !important;
+        }
+        
+        .samsung-drag-handle { 
+            display: block !important; width: 44px; height: 5px; border-radius: 5px; 
+            background: rgba(150, 150, 150, 0.3); margin: 16px auto 0;
         }
 
         .sheet-header {
             padding: 1.5rem !important;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem;
             align-items: flex-start !important;
         }
 
         .sheet-header div { width: 100%; }
         .sheet-header .modern-action-btn.secondary {
-            position: absolute;
-            top: 1.5rem;
-            right: 1.5rem;
-            width: 44px !important;
-            height: 44px !important;
+            display: none !important;
         }
 
         .sheet-body {
             padding: 1.25rem !important;
         }
 
-        /* Responsive Table Cards */
+        /* PREMIUM SAMSUNG CARD VIEW - DISBURSEMENT HISTORY */
         .table-scroll-wrapper { overflow-x: visible !important; }
-        .responsive-history-table { min-width: auto !important; }
+        .responsive-history-table { min-width: auto !important; border-spacing: 0 1.5rem !important; border-collapse: separate !important; }
         .responsive-history-table thead { display: none; }
         .responsive-history-table tbody { display: block; }
         .responsive-history-table tr {
             display: block;
-            margin-bottom: 1.25rem;
-            padding: 1.25rem !important;
-            border-radius: 20px !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important;
+            margin-bottom: 2rem;
+            padding: 2rem !important;
+            border-radius: 36px !important;
+            background: var(--bg-card) !important;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.06) !important;
             border: 1px solid var(--border-color) !important;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .responsive-history-table tr::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            background: var(--primary);
+            opacity: 0.8;
         }
         .responsive-history-table td {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.75rem 0 !important;
-            border-bottom: 1px dashed var(--border-color) !important;
+            padding: 1.1rem 0 !important;
+            border-bottom: 1px solid rgba(0,0,0,0.04) !important;
             border-radius: 0 !important;
-            width: 100%;
+            width: 100% !important;
         }
-        .responsive-history-table td:last-child { border-bottom: none !important; }
+        .responsive-history-table td:last-child { border-bottom: none !important; padding-top: 1.5rem !important; }
         .responsive-history-table td::before {
             content: attr(data-label);
             font-weight: 850;
             color: var(--text-muted);
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
         }
-        .responsive-history-table td div { text-align: right; }
+        .responsive-history-table td div,
+        .responsive-history-table td span { text-align: right; font-weight: 700; font-size: 1rem; }
+    }
+
+    @media (max-width: 480px) {
+        .main-title { font-size: 1.75rem !important; }
+        .subtitle-text { font-size: 0.85rem !important; }
+        .inventory-badge { padding: 0.35rem 1rem !important; font-size: 0.6rem !important; }
+        .operation-text { font-size: 0.75rem !important; }
+        
+        .modern-action-btn { 
+            padding: 0.75rem 1.25rem !important; 
+            font-size: 0.85rem !important;
+            width: 100% !important;
+            justify-content: center !important;
+        }
+        .header-actions {
+            flex-direction: column !important;
+        }
+        .modern-action-btn.secondary {
+            width: 100% !important;
+            height: auto !important;
+            padding: 0.75rem !important;
+        }
+        .cat-pill.modern {
+            padding: 0.75rem 1.25rem !important;
+            font-size: 0.85rem !important;
+        }
+        .search-box-wrapper input {
+            padding: 1.15rem 1.25rem 1.15rem 3.5rem !important;
+            font-size: 0.95rem !important;
+        }
+        #productGrid {
+            grid-template-columns: 1fr !important;
+        }
+        .product-card {
+            padding: 1.25rem !important;
+        }
+        .product-card h4 {
+            font-size: 0.95rem !important;
+        }
+        .header-badges {
+        .header-badges {
+            gap: 0.5rem !important;
+        }
+    }
+
+    /* Hide native number spinners for custom quantity input */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+    }
+    input[type=number] {
+        -moz-appearance: textfield;
     }
 </style>
 
@@ -574,9 +687,9 @@
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">Avl: ${item.maxStock}</span>
-                        <div style="display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 0.35rem; border-radius: 10px; border: 1.5px solid var(--border-color);">
+                        <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 0.25rem 0.35rem; border-radius: 10px; border: 1.5px solid var(--border-color);">
                             <button onclick="updateQty(${index}, -1)" style="border:none; background:transparent; cursor:pointer;"><i data-lucide="minus-circle" style="width:18px; color:var(--text-muted);"></i></button>
-                            <span style="font-weight: 900; min-width: 30px; text-align: center;">${item.qty}</span>
+                            <input type="number" value="${item.qty}" min="1" max="${item.maxStock}" onchange="setQty(${index}, this.value)" style="font-weight: 900; width: 40px; text-align: center; border: none; background: transparent; outline: none; color: var(--text-main); font-size: 0.95rem;">
                             <button onclick="updateQty(${index}, 1)" style="border:none; background:transparent; cursor:pointer;"><i data-lucide="plus-circle" style="width:18px; color:var(--primary);"></i></button>
                         </div>
                     </div>
@@ -606,7 +719,21 @@
         if (newQty > 0 && newQty <= item.maxStock) {
             item.qty = newQty;
             updateCartUI();
+        } else if (newQty > item.maxStock) {
+            showToast('Stock Limit', 'Cannot exceed available stock', 'warning');
         }
+    }
+
+    function setQty(idx, val) {
+        const item = cart[idx];
+        let newQty = parseInt(val);
+        if (isNaN(newQty) || newQty <= 0) newQty = 1;
+        if (newQty > item.maxStock) {
+            newQty = item.maxStock;
+            showToast('Stock Limit', 'Cannot exceed available stock', 'warning');
+        }
+        item.qty = newQty;
+        updateCartUI();
     }
 
     function setIssueType(type, btn, idx) {
@@ -649,7 +776,9 @@
     async function confirmIssuance() {
         if (!cart.length) return showToast('Empty List', 'Add items first', 'info');
         const beneficiary = document.getElementById('beneficiary').value;
+        const authority = document.getElementById('authority').value;
         if (!beneficiary) return showToast('Missing Recipient', 'Enter beneficiary name', 'warning');
+        if (!authority) return showToast('Missing Authority', 'Enter authorizing authority', 'warning');
 
         const btn = document.getElementById('confirmBtn');
         const originalHtml = btn.innerHTML;
@@ -663,6 +792,7 @@
                 body: JSON.stringify({
                     issuance_date: document.getElementById('issuanceDate').value,
                     beneficiary: beneficiary,
+                    authority: authority,
                     issuance_type: document.getElementById('issuanceType').value,
                     items: cart
                 })
@@ -732,7 +862,8 @@
 
         const filtered = fullHistoryData.filter(item => {
             const matchesSearch = item.beneficiary.toLowerCase().includes(searchTerm) || 
-                               item.description.toLowerCase().includes(searchTerm);
+                               item.description.toLowerCase().includes(searchTerm) ||
+                               (item.authority && item.authority.toLowerCase().includes(searchTerm));
             const matchesCat = catFilter === 'all' || item.ledge_category == catFilter;
             const matchesType = typeFilter === 'all' || item.issuance_type == typeFilter;
             
@@ -765,6 +896,7 @@
                             <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900; white-space: nowrap;">
                                 <th style="padding: 0 1.5rem 0.5rem;">Timeline</th>
                                 <th style="padding: 0 1.5rem 0.5rem;">Beneficiary</th>
+                                <th style="padding: 0 1.5rem 0.5rem;">Authority</th>
                                 <th style="padding: 0 1.5rem 0.5rem;">Disbursed Asset</th>
                                 <th style="padding: 0 1.5rem 0.5rem;">Category</th>
                                 <th style="padding: 0 1.5rem 0.5rem;">Qty</th>
@@ -779,6 +911,14 @@
                 const date = t.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
                 const time = t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
+                let statusBadge = '';
+                if (item.quantity === 0 && item.issuance_type === 'Temporary') {
+                    statusBadge = `<span class="status-badge" style="background: rgba(100, 116, 139, 0.1); color: var(--text-muted); font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em; border: 1px dashed rgba(100, 116, 139, 0.3);">RETURNED</span>`;
+                } else {
+                    const badgeClass = item.issuance_type === 'Temporary' ? 'status-warning' : 'status-success';
+                    statusBadge = `<span class="status-badge ${badgeClass}" style="font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">${item.issuance_type.toUpperCase()}</span>`;
+                }
+
                 html += `
                     <tr class="activity-row" style="background: var(--bg-card); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-radius: 20px;">
                         <td data-label="Timeline" style="padding: 1.75rem 1.5rem; border-radius: 20px 0 0 20px;">
@@ -788,13 +928,14 @@
                             </div>
                         </td>
                         <td data-label="Beneficiary" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--text-main); font-size: 1.05rem; white-space: nowrap;">${item.beneficiary}</td>
+                        <td data-label="Authority" style="padding: 1.75rem 1.5rem; font-weight: 700; color: var(--text-muted); font-size: 0.95rem; white-space: nowrap;">${item.authority || '-'}</td>
                         <td data-label="Asset" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--primary); font-size: 1.05rem; white-space: nowrap;">${item.description}</td>
                         <td data-label="Category" style="padding: 1.75rem 1.5rem; white-space: nowrap;">
                             <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.7rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1); letter-spacing: 0.03em;">LEDGE ${item.ledge_category}</span>
                         </td>
                         <td data-label="Qty" style="padding: 1.75rem 1.5rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main);">${item.quantity}</td>
                         <td data-label="Status" style="padding: 1.75rem 1.5rem; border-radius: 0 20px 20px 0;">
-                            <span class="status-badge ${item.issuance_type === 'Temporary' ? 'status-warning' : 'status-success'}" style="font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">${item.issuance_type.toUpperCase()}</span>
+                            ${statusBadge}
                         </td>
                     </tr>
                 `;
@@ -807,11 +948,79 @@
     }
 
     function closeHistorySheet() {
-        document.getElementById('historySheet').classList.remove('active');
+        const sheet = document.getElementById('historySheet');
+        const content = sheet.querySelector('.sheet-content');
+        
+        sheet.classList.remove('active');
+        
+        if (content) {
+            setTimeout(() => {
+                content.style.transition = '';
+                content.style.transform = '';
+                sheet.style.opacity = '';
+                sheet.style.transition = '';
+            }, 400);
+        }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        const sheetBackdrop = document.getElementById('historySheet');
+        const sheetContent = sheetBackdrop ? sheetBackdrop.querySelector('.sheet-content') : null;
+        
+        if (sheetContent && sheetBackdrop) {
+            let startY = 0;
+            let currentY = 0;
+            let isDragging = false;
+            let windowHeight = window.innerHeight;
+
+            sheetContent.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.sheet-header') || e.target.closest('.samsung-drag-handle')) {
+                    startY = e.touches[0].clientY;
+                    isDragging = true;
+                    windowHeight = window.innerHeight;
+                    
+                    sheetContent.style.setProperty('transition', 'none', 'important');
+                    sheetBackdrop.style.setProperty('transition', 'none', 'important');
+                }
+            }, { passive: true });
+
+            sheetContent.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                currentY = e.touches[0].clientY;
+                const diff = currentY - startY;
+                
+                if (diff > 0) {
+                    sheetContent.style.transform = `translateY(${diff}px)`;
+                    let fade = 1 - (diff / (windowHeight * 0.8));
+                    sheetBackdrop.style.opacity = fade > 0 ? fade : 0;
+                    e.preventDefault();
+                } else {
+                    let resistance = diff * 0.15;
+                    sheetContent.style.transform = `translateY(${resistance}px)`;
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            sheetContent.addEventListener('touchend', () => {
+                if (!isDragging) return;
+                isDragging = false;
+                const diff = currentY - startY;
+                
+                sheetContent.style.setProperty('transition', 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)', 'important');
+                sheetBackdrop.style.setProperty('transition', 'opacity 0.4s ease', 'important');
+                
+                if (diff > 150 || diff > windowHeight * 0.25) {
+                    sheetContent.style.transform = 'translateY(100%)';
+                    sheetBackdrop.style.opacity = '0';
+                    setTimeout(() => closeHistorySheet(), 350);
+                } else {
+                    sheetContent.style.transform = 'translateY(0)';
+                    sheetBackdrop.style.opacity = '1';
+                }
+            });
+        }
     });
 </script>
 @endsection

@@ -124,6 +124,132 @@
         .quick-ledge-btn.active span {
             background: var(--primary) !important;
         }
+
+        /* Mobile Card View for Stock Receipts Log */
+        @media (max-width: 768px) {
+            .table-scroll-wrapper { 
+                overflow-x: visible !important; 
+                padding: 0 !important;
+            }
+            .activity-table { 
+                min-width: 100% !important; 
+            }
+            .activity-table thead { 
+                display: none; 
+            }
+            .activity-table tbody { 
+                display: block; 
+            }
+            .activity-table tr {
+                display: block;
+                margin-bottom: 1.5rem;
+                padding: 1.5rem !important;
+                background: var(--bg-card) !important;
+                border-radius: 24px !important;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.04) !important;
+                border: 1px solid var(--border-color) !important;
+                position: relative;
+            }
+            .activity-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.85rem 0 !important;
+                border-bottom: 1px dashed var(--border-color) !important;
+                border-radius: 0 !important;
+                width: 100% !important;
+                text-align: right;
+            }
+            .activity-table td:last-child { 
+                border-bottom: none !important; 
+                padding-top: 1.25rem !important;
+            }
+            .activity-table td::before {
+                content: attr(data-label);
+                font-weight: 850;
+                color: var(--text-muted);
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+            }
+            .activity-table td > div, 
+            .activity-table td > span { 
+                text-align: right; 
+                max-width: 60%;
+            }
+        }
+        /* PREMIUM SAMSUNG CARD VIEW - STOCK RECEIPTS LOG */
+        @media (max-width: 768px) {
+            .table-scroll-wrapper { 
+                overflow-x: visible !important; 
+                padding: 0.5rem !important;
+            }
+            .activity-table { 
+                min-width: 100% !important; 
+                border-spacing: 0 1rem !important;
+                border-collapse: separate !important;
+            }
+            .activity-table thead { 
+                display: none; 
+            }
+            .activity-table tbody { 
+                display: block; 
+            }
+            .activity-table tr {
+                display: block;
+                margin-bottom: 2rem;
+                padding: 1.75rem !important;
+                background: var(--bg-card) !important;
+                border-radius: 32px !important;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.06) !important;
+                border: 1px solid var(--border-color) !important;
+                position: relative;
+                overflow: hidden;
+            }
+            /* Samsung-style left accent bar */
+            .activity-table tr::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 6px;
+                background: var(--primary);
+            }
+            .activity-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem 0 !important;
+                border-bottom: 1px solid rgba(0,0,0,0.03) !important;
+                border-radius: 0 !important;
+                width: 100% !important;
+            }
+            .activity-table td:last-child { 
+                border-bottom: none !important; 
+                padding-top: 1.5rem !important;
+                justify-content: center !important;
+            }
+            .activity-table td::before {
+                content: attr(data-label);
+                font-weight: 800;
+                color: var(--text-muted);
+                font-size: 0.65rem;
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+            }
+            .activity-table td > div, 
+            .activity-table td > span { 
+                text-align: right; 
+                font-size: 0.95rem;
+                font-weight: 700;
+            }
+            .activity-table td[data-label="Description"] > div:first-child {
+                font-size: 1.1rem;
+                font-weight: 900;
+                color: var(--primary);
+            }
+        }
     </style>
 
     <!-- Results Table -->
@@ -2224,6 +2350,13 @@
         
         document.body.appendChild(portalMenu);
         
+        // Ensure menu closes when any action is clicked
+        portalMenu.addEventListener('click', (e) => {
+            if (e.target.closest('.menu-item')) {
+                setTimeout(() => portalMenu.remove(), 50);
+            }
+        });
+
         // Anchor the cloned menu relative to the viewport and original button
         const rect = btn.getBoundingClientRect();
         portalMenu.style.position = 'fixed';

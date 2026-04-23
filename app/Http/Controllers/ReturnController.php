@@ -5,16 +5,30 @@ namespace App\Http\Controllers;
 use App\Models\InventoryItem;
 use App\Models\Issuance;
 use App\Models\IssuedItem;
+use App\Models\ReturnedItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class ReturnController extends Controller
 {
     public function index()
     {
+        if (!Schema::hasTable('returned_items')) {
+            Schema::create('returned_items', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('issued_item_id')->constrained('issued_items')->onDelete('cascade');
+                $table->integer('returned_qty');
+                $table->date('return_date');
+                $table->timestamps();
+            });
+        }
+
         // Get all items that were issued and haven't been fully returned
         $issuedItems = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-            ->select('issued_items.*', 'issuances.beneficiary', 'issuances.issuance_date', 'issuances.issuance_type')
+            ->select('issued_items.*', 'issuances.beneficiary', 'issuances.authority', 'issuances.issuance_date', 'issuances.issuance_type')
+            ->where('issuances.issuance_type', 'Temporary')
             ->orderBy('issuances.issuance_date', 'desc')
             ->get();
 
@@ -34,6 +48,10 @@ class ReturnController extends Controller
 
             $issuedItem = IssuedItem::findOrFail($validated['issued_item_id']);
             
+            if ($issuedItem->issuance->issuance_type === 'Permanent') {
+                throw new \Exception("Permanently issued items cannot be returned.");
+            }
+            
             if ($validated['return_qty'] > $issuedItem->quantity) {
                 throw new \Exception("Return quantity cannot exceed issued quantity.");
             }
@@ -41,24 +59,58 @@ class ReturnController extends Controller
             // Restore stock to the most recent batch of this item+ledge
             // In a real system, we might want to return to the specific batches it came from, 
             // but for simplicity we'll just add it back to the first available batch for that description/category.
-            $inventoryItem = InventoryItem::where('description', $issuedItem->description)
+            $qtyToReturn = floatval($validated['return_qty']);
+            
+            // Find all matching inventory items (batches) for this specific asset
+            $inventoryItems = InventoryItem::where('description', $issuedItem->description)
                 ->whereHas('batch', function($q) use ($issuedItem) {
                     $q->where('ledge_category', $issuedItem->ledge_category);
                 })
-                ->orderBy('created_at', 'desc')
-                ->first();
+                ->orderBy('created_at', 'desc') // Fill newer/partially-used batches first as requested
+                ->orderBy('id', 'desc')
+                ->get();
 
-            if (!$inventoryItem) {
-                throw new \Exception("Could not find a valid inventory destination for this item.");
+            if ($inventoryItems->isEmpty()) {
+                throw new \Exception("Could not find a valid inventory destination for this item in the registry.");
             }
 
-            $inventoryItem->stock_balance += $validated['return_qty'];
-            $inventoryItem->save();
+            $remainingToRefill = $qtyToReturn;
+
+            // Phase 1: Refill depleted batches back to their original stock_balance levels
+            foreach ($inventoryItems as $invItem) {
+                if ($remainingToRefill <= 0) break;
+                
+                $stockLimit = floatval($invItem->stock_balance);
+                $currentQty = floatval($invItem->qty);
+                
+                $room = $stockLimit - $currentQty;
+                
+                if ($room > 0) {
+                    $refill = min($room, $remainingToRefill);
+                    $invItem->qty = $currentQty + $refill;
+                    $invItem->save();
+                    $remainingToRefill -= $refill;
+                }
+            }
+
+            // Phase 2: If there's still quantity left (e.g., returned more than originally issued from these batches),
+            // add the overflow to the most recent batch.
+            if ($remainingToRefill > 0) {
+                $latestItem = $inventoryItems->last();
+                $latestItem->qty = floatval($latestItem->qty) + $remainingToRefill;
+                $latestItem->save();
+            }
 
             // Update issued item quantity or mark as returned
             // For now, let's just reduce the issued quantity
             $issuedItem->quantity -= $validated['return_qty'];
             $issuedItem->save();
+
+            ReturnedItem::create([
+                'issued_item_id' => $issuedItem->id,
+                'returned_qty' => $validated['return_qty'],
+                'return_date' => $validated['return_date'],
+            ]);
 
             DB::commit();
 
@@ -67,6 +119,54 @@ class ReturnController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Return failed: ' . $e->getMessage());
+        }
+    }
+
+    public function history()
+    {
+        if (!Schema::hasTable('returned_items')) {
+            return response()->json([]);
+        }
+
+        $returnedItems = ReturnedItem::join('issued_items', 'returned_items.issued_item_id', '=', 'issued_items.id')
+            ->join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->select(
+                'returned_items.id', 
+                'returned_items.returned_qty',
+                'returned_items.return_date',
+                'returned_items.created_at',
+                'issued_items.description', 
+                'issued_items.ledge_category',
+                'issued_items.quantity as current_balance',
+                'issuances.beneficiary',
+                'issuances.authority',
+                'issuances.issuance_date'
+            )
+            ->orderBy('returned_items.created_at', 'desc')
+            ->get();
+
+        return response()->json($returnedItems);
+    }
+
+    public function purge(Request $request)
+    {
+        try {
+            $ids = $request->input('ids');
+            
+            if (!$ids || !is_array($ids)) {
+                return redirect()->back()->with('error', 'Audit Error: No valid recovery IDs detected for purge.');
+            }
+
+            // Direct SQL for maximum reliability
+            $idString = implode(',', array_map('intval', $ids));
+            \Illuminate\Support\Facades\DB::statement("DELETE FROM returned_items WHERE id IN ($idString)");
+
+            return redirect()->back()->with([
+                'success' => count($ids) . ' records successfully purged from NACOC logs.',
+                'reopen_history' => true
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Purge Protocol Failed: ' . $e->getMessage());
         }
     }
 }

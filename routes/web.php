@@ -287,8 +287,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
     // Returns Routes
+    Route::post('/returns/purge', [ReturnController::class, 'purge'])->name('returns.purge');
     Route::get('/returns', [ReturnController::class, 'index'])->name('returns.index');
     Route::post('/returns/store', [ReturnController::class, 'store'])->name('returns.store');
+    Route::get('/api/returned-items-history', [ReturnController::class, 'history'])->name('api.returned-items-history');
 
     Route::get('/api/item-audit-details', function (\Illuminate\Http\Request $request) {
         $description = $request->query('description');

@@ -37,7 +37,7 @@
         </div>
     </div>
 
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+    <div class="print-actions-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
         <h3 class="print-date-label" style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin: 0;">{{ $dateLabel }}</h3>
         <button onclick="triggerPrintMode()" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.25);">
             <i data-lucide="printer" style="width: 18px;"></i> Export or Print
@@ -82,7 +82,7 @@
 
     <!-- Customizable Report Writer -->
     <div style="margin-bottom: 3rem; position: relative;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;" class="hide-in-print">
+        <div class="narrative-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;" class="hide-in-print">
             <div>
                 <h4 style="font-size: 1.1rem; font-weight: 900; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px;">
                     <i data-lucide="pen-tool" style="width: 20px; color: var(--primary);"></i>
@@ -129,10 +129,10 @@
                         <tbody>
                             @foreach($recentReceivals as $rec)
                             <tr>
-                                <td style="white-space: nowrap;">{{ \Carbon\Carbon::parse($rec->entry_date)->format('M d, Y') }}</td>
-                                <td style="font-weight: 600;">{{ $rec->description }}</td>
-                                <td>{{ preg_replace('/\s\[.*\]$/', '', $rec->supplier_name ?: 'System') }}</td>
-                                <td style="text-align: right; font-weight: 800; color: #10b981;">{{ $rec->qty }}</td>
+                                <td data-label="Date" style="white-space: nowrap;">{{ \Carbon\Carbon::parse($rec->entry_date)->format('M d, Y') }}</td>
+                                <td data-label="Item Description" style="font-weight: 600;">{{ $rec->description }}</td>
+                                <td data-label="Supplier / Source">{{ preg_replace('/\s\[.*\]$/', '', $rec->supplier_name ?: 'System') }}</td>
+                                <td data-label="Quantity" style="text-align: right; font-weight: 800; color: #10b981;">{{ $rec->qty }}</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -165,10 +165,10 @@
                         <tbody>
                             @foreach($recentIssues as $iss)
                             <tr>
-                                <td style="white-space: nowrap;">{{ \Carbon\Carbon::parse($iss->entry_date)->format('M d, Y') }}</td>
-                                <td style="font-weight: 600;">{{ $iss->description }}</td>
-                                <td>{{ $iss->beneficiary }}</td>
-                                <td style="text-align: right; font-weight: 800; color: #f59e0b;">{{ $iss->quantity }}</td>
+                                <td data-label="Date" style="white-space: nowrap;">{{ \Carbon\Carbon::parse($iss->entry_date)->format('M d, Y') }}</td>
+                                <td data-label="Item Description" style="font-weight: 600;">{{ $iss->description }}</td>
+                                <td data-label="Beneficiary">{{ $iss->beneficiary }}</td>
+                                <td data-label="Quantity" style="text-align: right; font-weight: 800; color: #f59e0b;">{{ $iss->quantity }}</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -362,6 +362,94 @@
 
     .formal-table tbody tr:hover td {
         background: rgba(99, 102, 241, 0.04);
+    }
+
+    /* PREMIUM MOBILE OPTIMIZATIONS */
+    @media (max-width: 1024px) {
+        .page-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 2rem !important;
+            padding: 2rem !important;
+        }
+        .page-header h2 { font-size: 2rem !important; }
+        .period-toggle-group { width: 100% !important; justify-content: space-between; }
+        .period-btn { flex: 1; text-align: center; padding: 0.65rem 0.5rem !important; font-size: 0.8rem !important; }
+    }
+
+    @media (max-width: 768px) {
+        .report-container { padding: 0.5rem !important; }
+        .page-header { padding: 1.5rem !important; margin-bottom: 1.5rem !important; }
+        
+        .print-actions-bar {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+        }
+        .print-actions-bar button { width: 100% !important; justify-content: center; }
+
+        .narrative-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+        }
+        .narrative-header div:last-child {
+            width: 100%;
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .narrative-header button { width: 100% !important; justify-content: center; padding: 0.6rem !important; font-size: 0.75rem !important; }
+        
+        .stat-card { padding: 1.5rem !important; flex-direction: column; text-align: center; }
+        .stat-icon { margin: 0 auto 1rem; }
+        .stat-value { font-size: 1.8rem !important; }
+
+        /* FORMAL TABLE CARD VIEW */
+        .formal-table { border: none !important; border-radius: 0 !important; box-shadow: none !important; }
+        .formal-table thead { display: none !important; }
+        .formal-table tbody { display: block !important; }
+        .formal-table tr {
+            display: block !important;
+            background: var(--bg-card) !important;
+            margin-bottom: 1.5rem !important;
+            padding: 1.5rem !important;
+            border-radius: 24px !important;
+            border: 1px solid var(--border-color) !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        .formal-table tr::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary);
+        }
+        .formal-table td {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 0.75rem 0 !important;
+            border-bottom: 1px solid rgba(0,0,0,0.03) !important;
+            text-align: right !important;
+            width: 100% !important;
+            font-size: 0.9rem !important;
+        }
+        .formal-table td:last-child { border-bottom: none !important; }
+        .formal-table td::before {
+            content: attr(data-label);
+            font-weight: 800;
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-right: 1rem;
+            text-align: left !important;
+        }
     }
 
     /* Print Architecture */

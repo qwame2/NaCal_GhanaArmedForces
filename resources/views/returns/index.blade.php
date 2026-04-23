@@ -1,23 +1,35 @@
 @extends('layouts.dashboard')
 
 @section('content')
+    <!-- Hidden Purge Form for Absolute Reliability -->
+    <form id="purgeForm" action="{{ route('returns.purge') }}" method="POST" style="display: none;">
+        @csrf
+        <div id="purgeFormInputs"></div>
+    </form>
     
     <!-- Premium Returns Header -->
-    <div class="glass-card header-mesh" style="padding: 3.5rem; border-radius: 32px; margin-bottom: 3rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08);">
+    <div class="header-mesh" style="background: #ffffff; padding: 3.5rem; border-radius: 32px; margin-bottom: 3rem; position: relative; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
         <div style="position: absolute; top: -50px; right: -50px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%); z-index: 0;"></div>
         
-        <div style="position: relative; z-index: 1;">
-            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                <span class="status-badge-premium">
-                    <i data-lucide="refresh-cw" style="width: 12px;"></i>
-                    Stock Recovery Node
-                </span>
-                <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                    <i data-lucide="shield" style="width: 14px; color: #f59e0b;"></i> Audit Verified
-                </span>
+        <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 2rem;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <span class="status-badge-premium">
+                        <i data-lucide="refresh-cw" style="width: 12px;"></i>
+                        Stock Recovery Node
+                    </span>
+                    <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="shield" style="width: 14px; color: #f59e0b;"></i> Audit Verified
+                    </span>
+                </div>
+                <h1 style="margin: 0; font-size: 3.5rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.06em; line-height: 1;">Return <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Registry</span></h1>
+                <p style="margin: 15px 0 0; color: var(--text-muted); font-size: 1.15rem; font-weight: 600; max-width: 600px; line-height: 1.6;">Re-integrate issued assets back into the primary logistics store. Monitor outstanding allocations in real-time.</p>
             </div>
-            <h1 style="margin: 0; font-size: 3.5rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.06em; line-height: 1;">Return <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Registry</span></h1>
-            <p style="margin: 15px 0 0; color: var(--text-muted); font-size: 1.15rem; font-weight: 600; max-width: 600px; line-height: 1.6;">Re-integrate issued assets back into the primary logistics store. Monitor outstanding allocations in real-time.</p>
+            
+            <button onclick="openHistorySheet()" class="modern-action-btn" style="border-radius: 20px; padding: 1.15rem 1.75rem; border: 1px solid var(--border-color); background: #f8fafc; box-shadow: 0 4px 10px rgba(0,0,0,0.02); cursor: pointer; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 10px; transition: all 0.2s ease;">
+                <i data-lucide="history" style="width: 22px; color: #f59e0b;"></i>
+                <span>Return History</span>
+            </button>
         </div>
     </div>
 
@@ -45,6 +57,7 @@
                         <tr style="text-align: left; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 950;">
                             <th style="padding: 0 1.5rem 0.75rem;">Timelog</th>
                             <th style="padding: 0 1.5rem 0.75rem;">Recipient / Holder</th>
+                            <th style="padding: 0 1.5rem 0.75rem;">Authority</th>
                             <th style="padding: 0 1.5rem 0.75rem;">Asset Description</th>
                             <th style="padding: 0 1.5rem 0.75rem;">Classification</th>
                             <th style="padding: 0 1.5rem 0.75rem;">Balance</th>
@@ -60,6 +73,9 @@
                             </td>
                             <td style="padding: 1.75rem 1.5rem;">
                                 <div style="font-weight: 850; color: var(--text-main); font-size: 1.05rem;">{{ $item->beneficiary }}</div>
+                            </td>
+                            <td style="padding: 1.75rem 1.5rem;">
+                                <div style="font-weight: 700; color: var(--text-muted); font-size: 0.95rem;">{{ $item->authority ?: 'N/A' }}</div>
                             </td>
                             <td style="padding: 1.75rem 1.5rem;">
                                 <div style="font-weight: 900; color: #f59e0b; font-size: 1.1rem; letter-spacing: -0.01em;">{{ $item->description }}</div>
@@ -98,7 +114,8 @@
                         <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">{{ date('d/m/y', strtotime($item->issuance_date)) }}</span>
                     </div>
                     <h4 style="margin: 0; color: var(--text-main); font-size: 1.2rem; font-weight: 900;">{{ $item->description }}</h4>
-                    <p style="margin: 4px 0 1.5rem; color: var(--text-muted); font-weight: 700; font-size: 0.95rem;">Recipient: {{ $item->beneficiary }}</p>
+                    <p style="margin: 4px 0 0.25rem; color: var(--text-muted); font-weight: 700; font-size: 0.95rem;">Recipient: {{ $item->beneficiary }}</p>
+                    <p style="margin: 0 0 1.5rem; color: var(--text-muted); font-weight: 700; font-size: 0.85rem;">Authority: {{ $item->authority ?: 'N/A' }}</p>
                     
                     <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
                         <div>
@@ -131,7 +148,8 @@
 
 <!-- Return Overlay Modal -->
 <div id="returnModal" class="modal-backdrop-premium" onclick="handleOutsideClick(event)">
-    <div class="glass-card modal-container-premium animate-pop-in">
+    <div class="glass-card modal-container-premium animate-pop-in" id="modalContainer">
+        <div class="samsung-drag-handle"></div>
         <div class="modal-header-premium">
             <div>
                 <h3 style="margin: 0; font-size: 1.75rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.02em;">Process Recovery</h3>
@@ -155,19 +173,20 @@
                         <div>
                             <div id="modal_item_desc" style="font-size: 1.2rem; font-weight: 950; color: var(--text-main);"></div>
                             <div id="modal_item_beneficiary" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700;"></div>
+                            <div id="modal_item_authority" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; margin-top: 2px;"></div>
                         </div>
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem;">
+                <div class="modal-grid-premium">
                     <div class="form-group-premium">
                         <label>Quantity to Recover Control</label>
                         <div class="stepper-component-premium">
                             <button type="button" onclick="adjustStepper(-1)" class="stepper-btn">
                                 <i data-lucide="minus"></i>
                             </button>
-                            <div style="flex: 1; position: relative;">
-                                <input type="number" name="return_qty" id="modal_return_qty" min="1" required class="premium-qty-input-stepper" oninput="validateReturnQty()">
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                <input type="number" name="return_qty" id="modal_return_qty" min="1" required class="premium-qty-input-stepper" oninput="validateReturnQty()" style="width: 100px; padding: 0; text-align: right;">
                                 <span class="qty-max-label-stepper">/ <span id="modal_max_qty">0</span></span>
                             </div>
                             <button type="button" onclick="adjustStepper(1)" class="stepper-btn">
@@ -215,6 +234,48 @@
                 </button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- History Bottom Sheet -->
+<div id="historySheet" class="modal-backdrop-premium" onclick="handleHistoryOutsideClick(event)">
+    <div class="modal-container-premium animate-pop-in sheet-content" style="max-width: 1300px; width: 98%; max-height: 90vh; display: flex; flex-direction: column; background: #ffffff !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;">
+        <div class="samsung-drag-handle"></div>
+        <div class="modal-header-premium" style="display: flex; justify-content: space-between; align-items: center; padding: 2rem 3rem;">
+            <div>
+                <h3 style="margin: 0; font-size: 2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">Return <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">History</span></h3>
+                <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600;">Audit trail of all recovered assets</p>
+            </div>
+            <button type="button" onclick="closeHistorySheet()" class="close-btn-premium modern-action-btn secondary" style="width: 54px; height: 54px; border-radius: 18px; border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
+                <i data-lucide="x" style="width: 24px;"></i>
+            </button>
+        </div>
+        
+        <div class="modal-content-premium" style="flex: 1; overflow-y: auto; padding: 1rem 3rem 3rem;">
+            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center;">
+                <input type="text" id="historySearchInput" placeholder="Search item or recipient..." oninput="filterHistory()" style="flex: 2; min-width: 200px; padding: 1rem 1.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); outline: none;">
+                <input type="date" id="historyDateFilter" onchange="filterHistory()" style="flex: 1; min-width: 150px; padding: 1rem 1.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); outline: none;">
+                <div id="purgeActions" style="display: none; align-items: center; gap: 1rem;">
+                    <button onclick="generatePurgeReport()" class="modern-action-btn" style="background: var(--primary); color: white; border: none; padding: 1rem 1.5rem; border-radius: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="file-text" style="width: 18px;"></i>
+                        Generate Audit Report
+                    </button>
+                    <button id="finalizePurgeBtn" onclick="confirmPurge()" disabled class="modern-action-btn" style="background: #ef4444; color: white; border: none; padding: 1rem 1.5rem; border-radius: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; opacity: 0.5; cursor: not-allowed;">
+                        <i data-lucide="trash-2" style="width: 18px;"></i>
+                        Purge Selected
+                    </button>
+                </div>
+            </div>
+            <div id="historyTableContainer">
+                <div style="padding: 5rem 0; text-align: center;"><div class="loader" style="width: 40px; height: 40px; border: 4px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div></div>
+            </div>
+            
+            <!-- Hidden Purge Form for Absolute Reliability -->
+            <form id="purgeForm" action="{{ route('returns.purge') }}" method="POST" style="display: none;">
+                @csrf
+                <div id="purgeFormInputs"></div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -291,6 +352,11 @@
         z-index: 2000; display: none; align-items: center; justify-content: center; opacity: 0; transition: 0.4s;
     }
     .modal-backdrop-premium.active { display: flex; opacity: 1; }
+    
+    /* Ensure SweetAlert is always on top of premium modals */
+    .swal2-container {
+        z-index: 10000 !important;
+    }
 
     .modal-container-premium {
         width: 550px; max-width: 95%; border-radius: 36px; padding: 0; overflow: hidden;
@@ -354,9 +420,8 @@
     .stepper-btn i { width: 22px; stroke-width: 2.5; }
 
     .qty-max-label-stepper {
-        position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
-        font-weight: 850; color: var(--text-muted); font-size: 0.8rem;
-        pointer-events: none; opacity: 0.5;
+        font-weight: 850; color: var(--text-muted); font-size: 1rem;
+        opacity: 0.4; margin-top: 4px; pointer-events: none;
     }
 
     .premium-date-input {
@@ -372,33 +437,36 @@
     }
     .audit-warning p { margin: 0; font-size: 0.85rem; color: var(--text-main); font-weight: 700; line-height: 1.5; }
 
-    /* Modern Action Buttons */
+    /* Premium Samsung-Style Action Buttons */
     .modern-btn-cancel {
-        flex: 1; height: 56px; border-radius: 18px; border: 2px solid var(--border-color);
-        background: transparent; color: var(--text-muted); font-weight: 850; font-size: 0.9rem;
-        cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        flex: 1; height: 64px; border-radius: 999px; border: none;
+        background: rgba(100, 116, 139, 0.08); color: var(--text-main); font-weight: 700; font-size: 0.95rem;
+        cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+        text-transform: none !important; letter-spacing: 0;
     }
     .modern-btn-cancel:hover {
-        background: #f8fafc; color: #64748b; border-color: #cbd5e1;
+        background: rgba(100, 116, 139, 0.15);
         transform: translateY(-2px);
     }
-    .modern-btn-cancel i { width: 18px; }
+    .modern-btn-cancel:active { transform: translateY(0) scale(0.97); }
+    .modern-btn-cancel i { width: 18px; color: var(--text-muted); stroke-width: 2.5; }
 
     .modern-btn-finalize {
-        flex: 1.5; height: 56px; border-radius: 18px; border: none;
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: white; font-weight: 900; font-size: 1rem; cursor: pointer;
-        display: flex; align-items: center; justify-content: center; gap: 10px;
-        box-shadow: 0 12px 24px rgba(245, 158, 11, 0.3);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        flex: 1.5; height: 64px; border-radius: 999px; border: none;
+        background: #f59e0b; color: white; font-weight: 700; font-size: 0.95rem; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+        text-transform: none !important; letter-spacing: 0;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
     }
     .modern-btn-finalize:hover {
-        transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(245, 158, 11, 0.4);
+        background: #fbbf24;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(245, 158, 11, 0.25);
     }
-    .modern-btn-finalize:active { transform: translateY(0) scale(0.98); }
-    .modern-btn-finalize i { width: 22px; }
+    .modern-btn-finalize:active { transform: translateY(0) scale(0.97); }
+    .modern-btn-finalize i { width: 18px; stroke-width: 2.5; }
 
     /* Premium Error Banner */
     .error-banner-premium {
@@ -447,7 +515,50 @@
         box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
     }
 
-    .animate-pop-in { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .modal-grid-premium {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem;
+    }
+
+    .samsung-drag-handle { display: none; }
+
+    @media (max-width: 768px) {
+        .modal-backdrop-premium { align-items: flex-end !important; padding: 0 !important; }
+        .modal-container-premium { 
+            width: 100% !important; max-width: 100% !important; 
+            border-radius: 36px 36px 0 0 !important; 
+            border: none !important; border-top: 1px solid rgba(255,255,255,0.15) !important;
+            animation: slideUpSamsung 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.1) forwards !important;
+            padding-bottom: env(safe-area-inset-bottom) !important;
+            margin: 0 !important; margin-top: auto !important;
+            overflow: visible !important;
+        }
+        .samsung-drag-handle { 
+            display: block; width: 44px; height: 5px; border-radius: 5px; 
+            background: rgba(150, 150, 150, 0.3); margin: 16px auto -10px;
+        }
+        .modal-header-premium { padding: 2rem 1.75rem 1.5rem !important; }
+        .modal-content-premium { padding: 0 1.75rem 2rem !important; }
+        .modal-footer-premium { 
+            padding: 1.5rem 1.75rem 2.5rem !important; 
+            flex-direction: row !important; gap: 1rem !important; border-top: none !important;
+            background: transparent !important;
+        }
+        .modal-grid-premium { grid-template-columns: 1fr !important; gap: 1.25rem !important; margin-top: 1.5rem !important; }
+        .modern-btn-cancel, .modern-btn-finalize { height: 64px !important; border-radius: 20px !important; font-size: 1rem !important; flex: 1 !important; width: auto !important; }
+        .modern-btn-cancel { background: var(--bg-card) !important; border-color: transparent !important; }
+        .item-preview-card { border-radius: 24px !important; border: none !important; box-shadow: 0 4px 20px rgba(0,0,0,0.04) !important; background: var(--bg-card) !important; }
+        .close-btn-premium { display: none !important; }
+    }
+
+    @keyframes slideUpSamsung { 
+        from { transform: translateY(100%); opacity: 0; } 
+        to { transform: translateY(0); opacity: 1; } 
+    }
+
+    /* Desktop animation remains popIn */
+    @media (min-width: 769px) {
+        .animate-pop-in { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    }
     @keyframes popIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 </style>
 
@@ -456,6 +567,7 @@
         document.getElementById('modal_item_id').value = item.id;
         document.getElementById('modal_item_desc').innerText = item.description;
         document.getElementById('modal_item_beneficiary').innerText = 'Held by: ' + item.beneficiary;
+        document.getElementById('modal_item_authority').innerText = 'Authority: ' + (item.authority ? item.authority : 'N/A');
         document.getElementById('modal_return_qty').value = item.quantity;
         document.getElementById('modal_return_qty').max = item.quantity;
         document.getElementById('modal_max_qty').innerText = item.quantity;
@@ -469,6 +581,17 @@
         const modal = document.getElementById('returnModal');
         modal.classList.remove('active');
         document.body.style.overflow = 'auto';
+        
+        const container = document.getElementById('modalContainer');
+        if (container) {
+            setTimeout(() => {
+                container.style.transition = '';
+                container.style.transform = '';
+                container.style.animation = '';
+                modal.style.opacity = '';
+                modal.style.transition = '';
+            }, 400);
+        }
     }
 
     function handleOutsideClick(e) {
@@ -527,8 +650,577 @@
         validateReturnQty();
     }
 
+    // Return History Logic
+    let historyData = [];
+
+    async function openHistorySheet() {
+        const sheet = document.getElementById('historySheet');
+        sheet.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        try {
+            const res = await fetch("{{ route('api.returned-items-history') }}");
+            historyData = await res.json();
+            renderHistory(historyData);
+        } catch (e) {
+            document.getElementById('historyTableContainer').innerHTML = '<p style="text-align: center; color: red;">Failed to load history.</p>';
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function filterHistory() {
+        const term = document.getElementById('historySearchInput').value.toLowerCase();
+        const date = document.getElementById('historyDateFilter').value;
+        
+        const filtered = historyData.filter(i => {
+            const matchSearch = i.description.toLowerCase().includes(term) || 
+                               i.beneficiary.toLowerCase().includes(term) ||
+                               (i.authority && i.authority.toLowerCase().includes(term)) ||
+                               i.ledge_category.toLowerCase().includes(term);
+            const itemDate = i.return_date || new Date(i.created_at).toISOString().split('T')[0];
+            const matchDate = !date || itemDate === date;
+            return matchSearch && matchDate;
+        });
+        
+        renderHistory(filtered);
+    }
+
+    function renderHistory(data) {
+        const container = document.getElementById('historyTableContainer');
+        if (data.length === 0) {
+            container.innerHTML = `
+                <div style="padding: 6rem 0; text-align: center;">
+                    <i data-lucide="inbox" style="width: 64px; height: 64px; color: var(--text-muted); opacity: 0.2; margin-bottom: 1.5rem;"></i>
+                    <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin: 0 0 0.5rem;">No Recovered Items</h4>
+                    <p style="color: var(--text-muted);">Try adjusting your search filters.</p>
+                </div>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            return;
+        }
+
+        let desktopHtml = `
+            <div class="desktop-only">
+                <div class="table-scroll-wrapper" style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: separate; border-spacing: 0 1rem; min-width: 1100px;">
+                        <thead>
+                            <tr style="text-align: left; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em;">
+                                <th style="padding: 0 1rem 0.5rem; width: 40px;">
+                                    <input type="checkbox" id="selectAllHistory" onchange="toggleSelectAllHistory(this)" style="width: 18px; height: 18px; border-radius: 6px; cursor: pointer;">
+                                </th>
+                                <th style="padding: 0 1rem 0.5rem;">Return Date</th>
+                                <th style="padding: 0 1rem 0.5rem;">Original Issue Date</th>
+                                <th style="padding: 0 1rem 0.5rem;">Asset Description</th>
+                                <th style="padding: 0 1rem 0.5rem;">Classification</th>
+                                <th style="padding: 0 1rem 0.5rem;">Recipient</th>
+                                <th style="padding: 0 1rem 0.5rem;">Authority</th>
+                                <th style="padding: 0 1rem 0.5rem;">Returned Qty</th>
+                                <th style="padding: 0 1rem 0.5rem;">Outstanding Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        let mobileHtml = `
+            <div class="mobile-only">
+                <div style="display: grid; gap: 1.5rem;">
+        `;
+
+        data.forEach(item => {
+            const d = new Date(item.created_at);
+            const dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            const timeStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            
+            const issueDate = new Date(item.issuance_date);
+            const issueDateStr = issueDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            
+            desktopHtml += `
+                <tr style="background: var(--bg-main); border-radius: 16px;">
+                    <td style="padding: 1.25rem 1rem; border-radius: 16px 0 0 16px; vertical-align: middle;">
+                        <input type="checkbox" class="history-checkbox" value="${item.id}" onchange="updatePurgeSelection()" style="width: 18px; height: 18px; border-radius: 6px; cursor: pointer;">
+                    </td>
+                    <td style="padding: 1.25rem 1rem;">
+                        <div style="font-weight: 800; color: var(--text-main); font-size: 0.95rem;">${dateStr}</div>
+                        <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: flex; align-items: center; gap: 4px;"><i data-lucide="clock" style="width: 12px;"></i> ${timeStr}</div>
+                    </td>
+                    <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${issueDateStr}</td>
+                    <td style="padding: 1.25rem 1rem; font-weight: 800; color: var(--text-main); font-size: 1.05rem;">${item.description}</td>
+                    <td style="padding: 1.25rem 1rem;">
+                        <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1);">LEDGE ${item.ledge_category}</span>
+                    </td>
+                    <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.beneficiary}</td>
+                    <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.authority || '-'}</td>
+                    <td style="padding: 1.25rem 1rem; font-weight: 900; font-size: 1.2rem; color: #10b981;">${item.returned_qty}</td>
+                    <td style="padding: 1.25rem 1rem; border-radius: 0 16px 16px 0; font-weight: 900; font-size: 1.1rem; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'};">
+                        ${item.current_balance} 
+                        <span style="font-size: 0.65rem; font-weight: 950; text-transform: uppercase; margin-left: 6px;">
+                            ${item.current_balance > 0 ? 'Pending' : 'Cleared'}
+                        </span>
+                    </td>
+                </tr>
+            `;
+
+            mobileHtml += `
+                <div class="return-card-mobile" style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 1.75rem; position: relative;">
+                    <div style="position: absolute; top: 1.75rem; right: 1.75rem;">
+                        <input type="checkbox" class="history-checkbox" value="${item.id}" onchange="updatePurgeSelection()" style="width: 24px; height: 24px; border-radius: 8px; cursor: pointer;">
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; padding-right: 3rem;">
+                        <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900;">LEDGE ${item.ledge_category}</span>
+                        <div style="text-align: right;">
+                            <div style="color: var(--text-main); font-size: 0.75rem; font-weight: 800;">${dateStr}</div>
+                            <div style="color: var(--text-muted); font-size: 0.65rem; font-weight: 700; margin-top: 2px; display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
+                                <i data-lucide="clock" style="width: 10px;"></i> ${timeStr}
+                            </div>
+                        </div>
+                    </div>
+                    <h4 style="margin: 0; color: var(--text-main); font-size: 1.1rem; font-weight: 900;">${item.description}</h4>
+                    <p style="margin: 6px 0 0; color: var(--text-muted); font-weight: 700; font-size: 0.9rem;">Recipient: ${item.beneficiary}</p>
+                    <p style="margin: 2px 0 1.25rem; color: var(--text-muted); font-weight: 700; font-size: 0.85rem;">Authority: ${item.authority || '-'}</p>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
+                        <div>
+                            <div style="font-size: 0.6rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase;">Returned</div>
+                            <div style="font-size: 1.35rem; font-weight: 950; color: #10b981;">${item.returned_qty}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.6rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase;">Current Balance</div>
+                            <div style="font-size: 1.35rem; font-weight: 950; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'};">${item.current_balance}</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.75rem; text-align: center; font-size: 0.65rem; font-weight: 900; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'}; text-transform: uppercase; letter-spacing: 0.05em;">
+                        ${item.current_balance > 0 ? 'Pending Collection' : 'Fully Recovered'}
+                    </div>
+                </div>
+            `;
+        });
+        
+        desktopHtml += `</tbody></table></div></div>`;
+        mobileHtml += `</div></div>`;
+
+        container.innerHTML = desktopHtml + mobileHtml;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function closeHistorySheet() {
+        const sheet = document.getElementById('historySheet');
+        const content = sheet.querySelector('.sheet-content');
+        sheet.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        
+        if (content) {
+            setTimeout(() => {
+                content.style.transition = '';
+                content.style.transform = '';
+                sheet.style.opacity = '';
+                sheet.style.transition = '';
+            }, 400);
+        }
+    }
+    
+    function handleHistoryOutsideClick(e) {
+        if(e.target.id === 'historySheet') closeHistorySheet();
+    }
+
+    // Samsung Drag Logic for History Sheet
+    function initHistoryDrag() {
+        const sheetBackdrop = document.getElementById('historySheet');
+        const sheetContent = sheetBackdrop ? sheetBackdrop.querySelector('.sheet-content') : null;
+        
+        if (sheetContent && sheetBackdrop) {
+            let startY = 0;
+            let currentY = 0;
+            let isDragging = false;
+            let windowHeight = window.innerHeight;
+
+            sheetContent.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.modal-header-premium') || e.target.closest('.samsung-drag-handle')) {
+                    startY = e.touches[0].clientY;
+                    isDragging = true;
+                    windowHeight = window.innerHeight;
+                    
+                    sheetContent.style.setProperty('transition', 'none', 'important');
+                    sheetBackdrop.style.setProperty('transition', 'none', 'important');
+                }
+            }, { passive: true });
+
+            sheetContent.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                currentY = e.touches[0].clientY;
+                const diff = currentY - startY;
+                
+                if (diff > 0) {
+                    sheetContent.style.transform = `translateY(${diff}px)`;
+                    let fade = 1 - (diff / (windowHeight * 0.8));
+                    sheetBackdrop.style.opacity = fade > 0 ? fade : 0;
+                    e.preventDefault();
+                } else {
+                    let resistance = diff * 0.15;
+                    sheetContent.style.transform = `translateY(${resistance}px)`;
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            sheetContent.addEventListener('touchend', () => {
+                if (!isDragging) return;
+                isDragging = false;
+                const diff = currentY - startY;
+                
+                sheetContent.style.setProperty('transition', 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)', 'important');
+                sheetBackdrop.style.setProperty('transition', 'opacity 0.4s ease', 'important');
+                
+                if (diff > 150 || diff > windowHeight * 0.25) {
+                    sheetContent.style.transform = 'translateY(100%)';
+                    sheetBackdrop.style.opacity = '0';
+                    setTimeout(() => closeHistorySheet(), 350);
+                } else {
+                    sheetContent.style.transform = 'translateY(0)';
+                    sheetBackdrop.style.opacity = '1';
+                }
+            });
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
+        initHistoryDrag();
+
+        const modalContainer = document.getElementById('modalContainer');
+        const modalBackdrop = document.getElementById('returnModal');
+        if (modalContainer && modalBackdrop) {
+            let startY = 0;
+            let currentY = 0;
+            let isDragging = false;
+            let windowHeight = window.innerHeight;
+
+            modalContainer.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.modal-header-premium') || e.target.closest('.samsung-drag-handle')) {
+                    startY = e.touches[0].clientY;
+                    isDragging = true;
+                    windowHeight = window.innerHeight; // refresh height
+                    
+                    // Forcefully override CSS animations that lock the transform
+                    modalContainer.style.setProperty('animation', 'none', 'important');
+                    modalContainer.style.setProperty('transition', 'none', 'important');
+                    modalBackdrop.style.setProperty('transition', 'none', 'important');
+                }
+            }, { passive: true });
+
+            modalContainer.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                currentY = e.touches[0].clientY;
+                const diff = currentY - startY;
+                
+                if (diff > 0) {
+                    // Exact 1:1 tracking when pulling down
+                    modalContainer.style.transform = `translateY(${diff}px)`;
+                    // Smoothly fade out the dark background just like iOS
+                    let fade = 1 - (diff / (windowHeight * 0.8));
+                    modalBackdrop.style.opacity = fade > 0 ? fade : 0;
+                    e.preventDefault();
+                } else {
+                    // Apple's signature "rubber band" resistance when pulling up
+                    let resistance = diff * 0.15;
+                    modalContainer.style.transform = `translateY(${resistance}px)`;
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            modalContainer.addEventListener('touchend', () => {
+                if (!isDragging) return;
+                isDragging = false;
+                const diff = currentY - startY;
+                
+                // Re-enable smooth transitions for the snap/close physics
+                modalContainer.style.setProperty('transition', 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)', 'important');
+                modalBackdrop.style.setProperty('transition', 'opacity 0.4s ease', 'important');
+                
+                if (diff > 150 || diff > windowHeight * 0.25) {
+                    // Dragged far enough: Close it fully
+                    modalContainer.style.transform = 'translateY(100%)';
+                    modalBackdrop.style.opacity = '0';
+                    setTimeout(() => closeReturnModal(), 350);
+                } else {
+                    // Didn't drag far enough: Snap back instantly
+                    modalContainer.style.transform = 'translateY(0)';
+                    modalBackdrop.style.opacity = '1';
+                }
+            });
+        }
     });
+    let selectedHistoryIds = [];
+    let reportGenerated = false;
+
+    function toggleSelectAllHistory(el) {
+        const checkboxes = document.querySelectorAll('.history-checkbox');
+        checkboxes.forEach(cb => cb.checked = el.checked);
+        updatePurgeSelection();
+    }
+
+    function updatePurgeSelection() {
+        const checkboxes = document.querySelectorAll('.history-checkbox:checked');
+        selectedHistoryIds = Array.from(checkboxes).map(cb => cb.value);
+        
+        const actions = document.getElementById('purgeActions');
+        if (selectedHistoryIds.length > 0) {
+            actions.style.display = 'flex';
+        } else {
+            actions.style.display = 'none';
+            reportGenerated = false;
+            document.getElementById('finalizePurgeBtn').disabled = true;
+            document.getElementById('finalizePurgeBtn').style.opacity = '0.5';
+            document.getElementById('finalizePurgeBtn').style.cursor = 'not-allowed';
+        }
+    }
+
+    function generatePurgeReport() {
+        if (selectedHistoryIds.length === 0) return;
+        
+        const selectedItems = historyData.filter(item => selectedHistoryIds.includes(item.id.toString()));
+        const userName = "{{ auth()->user()->name }}";
+        const now = new Date().toLocaleString();
+        
+        let itemsListHtml = selectedItems.map(i => `<li>${i.description} (${i.returned_qty} units) - Recovered from ${i.beneficiary} on ${new Date(i.created_at).toLocaleDateString()}</li>`).join('');
+        
+        const reportHtml = `
+            <div class="report-wrapper">
+                <div class="samsung-header">
+                    <div class="samsung-badge">OFFICIAL AUDIT</div>
+                    <h1 class="samsung-page-title">Purge Authorization</h1>
+                    <p class="samsung-subtitle">NACOC Secure Registry Protocol</p>
+                </div>
+
+                <div class="report-card main-info">
+                    <div class="report-row header-row">
+                        <div class="brand-box">
+                            <img src="/img/NACOC.png" class="report-logo" alt="NACOC Logo">
+                            <div class="brand-text">
+                                <span class="brand-name">NACOC</span>
+                                <span class="brand-desc">Logistics System</span>
+                            </div>
+                        </div>
+                        <div class="audit-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Audit ID</span>
+                                <span class="meta-value">${Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Protocol</span>
+                                <span class="meta-value">V2.1 Secure</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="report-card narrative-card">
+                    <div class="card-header">Administrative Authorization</div>
+                    <p class="narrative-text">
+                        I, <strong>${userName}</strong>, acting in my official capacity as a verified system administrator for <strong>NACOC</strong>, hereby formally authorize the permanent removal and destruction of the 
+                        following <strong>${selectedItems.length}</strong> recovery records from the official Inventory Registry.
+                    </p>
+                </div>
+                
+                <div class="report-card items-card">
+                    <div class="card-header">Designated Inventory Assets</div>
+                    <ul class="samsung-list">
+                        ${selectedItems.map(i => `
+                            <li class="samsung-list-item">
+                                <div class="item-icon">📦</div>
+                                <div class="item-details">
+                                    <span class="item-name">${i.description}</span>
+                                    <span class="item-sub">${i.returned_qty} units • Recovered from ${i.beneficiary}</span>
+                                </div>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+                
+                <div class="report-card legal-card">
+                    <p class="legal-text">
+                        By signing below, I acknowledge that this action is irreversible and that the data associated with these specific return transactions will be permanently purged from the database. 
+                    </p>
+                </div>
+                
+                <div class="signature-grid">
+                    <div class="report-card sig-card">
+                        <div class="sig-line"></div>
+                        <div class="sig-label">Authorized Signature</div>
+                    </div>
+                    <div class="report-card sig-card">
+                        <div class="sig-data">${userName}</div>
+                        <div class="sig-line"></div>
+                        <div class="sig-label">Administrator</div>
+                    </div>
+                    <div class="report-card sig-card">
+                        <div class="sig-data">${new Date().toLocaleDateString()}</div>
+                        <div class="sig-line"></div>
+                        <div class="sig-label">Auth Date</div>
+                    </div>
+                </div>
+                
+                <div class="report-footer">
+                    Document generated by ${userName} • IP: Internal Authorization • ${now}
+                </div>
+            </div>
+        `;
+        
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>NACOC | Purge Authorization Report</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+                    <style>
+                        :root {
+                            --samsung-bg: #f4f7f9;
+                            --samsung-card: #ffffff;
+                            --samsung-primary: #000000;
+                            --samsung-text: #1d1d1f;
+                            --samsung-muted: #86868b;
+                            --samsung-radius: 28px;
+                            --samsung-accent: #3e61ff;
+                        }
+                        
+                        body { 
+                            margin: 0; padding: 0; 
+                            font-family: 'Inter', -apple-system, sans-serif; 
+                            color: var(--samsung-text); 
+                            background: var(--samsung-bg); 
+                            line-height: 1.5; 
+                            -webkit-font-smoothing: antialiased;
+                        }
+                        
+                        .report-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+                        
+                        .samsung-header { text-align: center; padding: 60px 0 40px; }
+                        .samsung-badge { 
+                            display: inline-block; padding: 6px 14px; background: #e8ebff; 
+                            color: var(--samsung-accent); border-radius: 99px; font-size: 11px; 
+                            font-weight: 800; letter-spacing: 1px; margin-bottom: 15px;
+                        }
+                        .samsung-page-title { font-size: 42px; font-weight: 800; margin: 0; letter-spacing: -1px; }
+                        .samsung-subtitle { font-size: 16px; color: var(--samsung-muted); font-weight: 600; margin-top: 5px; }
+                        
+                        .report-card { 
+                            background: var(--samsung-card); border-radius: var(--samsung-radius); 
+                            padding: 30px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+                            border: 1px solid rgba(0,0,0,0.02);
+                        }
+                        
+                        .card-header { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--samsung-muted); margin-bottom: 20px; }
+                        
+                        .header-row { display: flex; justify-content: space-between; align-items: center; }
+                        .brand-box { display: flex; align-items: center; gap: 15px; }
+                        .report-logo { width: 50px; height: auto; }
+                        .brand-text { display: flex; flex-direction: column; }
+                        .brand-name { font-size: 20px; font-weight: 800; }
+                        .brand-desc { font-size: 12px; color: var(--samsung-muted); font-weight: 600; }
+                        
+                        .audit-meta { display: flex; gap: 30px; }
+                        .meta-item { display: flex; flex-direction: column; }
+                        .meta-label { font-size: 10px; color: var(--samsung-muted); font-weight: 700; text-transform: uppercase; }
+                        .meta-value { font-size: 14px; font-weight: 700; }
+                        
+                        .narrative-text { font-size: 18px; color: var(--samsung-text); font-weight: 500; line-height: 1.6; margin: 0; }
+                        
+                        .samsung-list { list-style: none; padding: 0; margin: 0; }
+                        .samsung-list-item { 
+                            display: flex; align-items: center; gap: 15px; padding: 15px; 
+                            background: #f8f9fa; border-radius: 18px; margin-bottom: 10px;
+                        }
+                        .item-icon { font-size: 20px; }
+                        .item-details { display: flex; flex-direction: column; }
+                        .item-name { font-size: 15px; font-weight: 700; }
+                        .item-sub { font-size: 12px; color: var(--samsung-muted); font-weight: 600; }
+                        
+                        .legal-text { font-size: 14px; color: var(--samsung-muted); font-style: italic; margin: 0; }
+                        
+                        .signature-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; }
+                        .sig-card { text-align: center; padding: 25px 20px; }
+                        .sig-line { border-bottom: 2px solid #f0f0f0; height: 30px; margin-bottom: 10px; }
+                        .sig-data { font-weight: 800; font-size: 15px; height: 30px; display: flex; align-items: flex-end; justify-content: center; }
+                        .sig-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--samsung-muted); }
+                        
+                        .report-footer { margin-top: 60px; font-size: 11px; text-align: center; color: var(--samsung-muted); font-weight: 600; }
+
+                        @media (max-width: 768px) {
+                            .samsung-page-title { font-size: 32px; }
+                            .header-row { flex-direction: column; gap: 20px; text-align: center; }
+                            .brand-box { flex-direction: column; }
+                            .audit-meta { justify-content: center; width: 100%; }
+                            .signature-grid { grid-template-columns: 1fr; }
+                            .narrative-text { font-size: 16px; }
+                        }
+                        
+                        @media print {
+                            body { background: white; padding: 0; }
+                            .report-wrapper { width: 100%; padding: 0; max-width: none; }
+                            .report-card { border: none; box-shadow: none; padding: 20px 0; border-bottom: 1px solid #eee; border-radius: 0; }
+                            .samsung-header { padding: 40px 0 20px; }
+                            .samsung-list-item { background: transparent; border-bottom: 1px solid #f0f0f0; border-radius: 0; }
+                        }
+                    </style>
+                </head>
+                <body onload="setTimeout(() => { window.print(); window.close(); }, 800);">
+                    ${reportHtml}
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+        
+        // Unlock deletion after print
+        reportGenerated = true;
+        const btn = document.getElementById('finalizePurgeBtn');
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        
+        Swal.fire({
+            title: 'Report Generated',
+            text: 'Please save the report as PDF or print it. The purge command is now unlocked.',
+            icon: 'success',
+            confirmButtonColor: '#f59e0b'
+        });
+    }
+
+    function confirmPurge() {
+        if (!reportGenerated) {
+            Swal.fire('Error', 'You must generate and save the audit report before purging records.', 'error');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Permanent Purge?',
+            text: `You are about to permanently delete ${selectedHistoryIds.length} records. This cannot be undone.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Purge Permanently'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('purgeForm');
+                const inputsContainer = document.getElementById('purgeFormInputs');
+                inputsContainer.innerHTML = ''; // Clear previous inputs
+
+                selectedHistoryIds.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'ids[]';
+                    input.value = id;
+                    inputsContainer.appendChild(input);
+                });
+
+                form.submit();
+            }
+        });
+    }
+
+    @if(session('reopen_history'))
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(openHistorySheet, 500);
+    });
+    @endif
 </script>
 @endsection
