@@ -140,7 +140,8 @@ class ReturnController extends Controller
                 'issued_items.quantity as current_balance',
                 'issuances.beneficiary',
                 'issuances.authority',
-                'issuances.issuance_date'
+                'issuances.issuance_date',
+                'issuances.created_at as issuance_timestamp'
             )
             ->orderBy('returned_items.created_at', 'desc')
             ->get();
