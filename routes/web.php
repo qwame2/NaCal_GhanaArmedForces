@@ -9,10 +9,10 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\ReportController;
 
-// Authentication Routes
-Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
-Route::post('/register', [AuthController::class, 'register'])->name('register');
-Route::post('/login', [AuthController::class, 'login']);
+// Authentication Routes - Disabled (Bypass)
+Route::get('/login', function() { return redirect()->route('dashboard'); })->name('login');
+Route::post('/register', function() { return redirect()->route('dashboard'); });
+Route::post('/login', function() { return redirect()->route('dashboard'); });
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Guest Redirection
@@ -20,8 +20,11 @@ Route::get('/', function() {
     return redirect()->route('dashboard');
 });
 
-// Protected Routes
-Route::middleware(['auth'])->group(function () {
+// Protected Routes (Auto-Login Bypass enabled)
+Route::group([], function () {
+
+
+
     
     $dashboardLogic = function () {
         $existingItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
