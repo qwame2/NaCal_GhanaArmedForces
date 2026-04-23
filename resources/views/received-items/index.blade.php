@@ -250,6 +250,12 @@
                 color: var(--primary);
             }
         }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 
     <!-- Results Table -->
@@ -453,22 +459,22 @@
         </tr>
         @empty
         <tr>
-            <td colspan="9" style="padding: 7rem 2rem; text-align: center;">
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
-                    <div style="background: var(--bg-main); width: 84px; height: 84px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); box-shadow: 0 10px 40px rgba(0,0,0,0.04); border: 1px solid var(--border-color);">
-                        <i data-lucide="package-search" style="width: 38px; opacity: 0.6;"></i>
+            <td colspan="13" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; margin: 0 auto;">
+                    <div style="background: rgba(99, 102, 241, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(99, 102, 241, 0.2); animation: pulse 2s infinite;">
+                        <i data-lucide="package-search" style="width: 44px; stroke-width: 1.5px;"></i>
                     </div>
-                    <div style="max-width: 450px; margin: 0 auto;">
-                        <h4 style="font-size: 1.35rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.02em;">No Records Discovered</h4>
-                        <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.6;">Your inventory ledger is currently empty or no items match your current search filters. Try broadening your criteria or record a new batch.</p>
+                    <div style="max-width: 500px; text-align: center;">
+                        <h4 style="font-size: 1.75rem; font-weight: 950; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.04em;">No Records Discovered</h4>
+                        <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; font-weight: 500;">Your inventory ledger is currently empty or no items match your current search filters. Try broadening your criteria or record a new batch.</p>
 
-                        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                            <a href="{{ route('receiveditems') }}" class="glass-card" style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-size: 0.9rem; color: var(--text-main); font-weight: 700; transition: all 0.3s; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem;">
-                                <i data-lucide="refresh-ccw" style="width: 16px;"></i>
+                        <div style="margin-top: 2.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <a href="{{ route('receiveditems') }}" class="glass-card" style="padding: 0.85rem 1.75rem; border-radius: 14px; text-decoration: none; font-size: 0.95rem; color: var(--text-main); font-weight: 800; transition: all 0.3s; border: 1.5px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; background: var(--bg-card);">
+                                <i data-lucide="refresh-ccw" style="width: 18px;"></i>
                                 Reset Filters
                             </a>
-                            <button onclick="window.location.href='/'" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px; border: none; font-size: 0.9rem; background: var(--primary); color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);">
-                                <i data-lucide="plus-circle" style="width: 18px;"></i>
+                            <button onclick="window.location.href='/'" class="btn-primary" style="padding: 0.85rem 1.75rem; border-radius: 14px; border: none; font-size: 0.95rem; background: var(--primary-gradient); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 12px 24px -6px rgba(99, 102, 241, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                <i data-lucide="plus-circle" style="width: 20px;"></i>
                                 New Inventory Entry
                             </button>
                         </div>
