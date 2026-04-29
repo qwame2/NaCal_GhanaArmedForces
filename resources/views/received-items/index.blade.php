@@ -681,11 +681,7 @@
                         <div id="auditPrevVar">0</div>
                     </div>
                     <div class="audit-stat-card" onclick="toggleAuditBreakdown('avail')" title="Audit current availability trail">
-<<<<<<< HEAD
-                        <label>Received Qty</label>
-=======
                         <label>Avail. Qty</label>
->>>>>>> 897e205e5719451dae991190e23fefcebf8508f9
                         <div id="auditPrevAvail">0</div>
                     </div>
                     <div class="audit-stat-card" style="border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.02);" title="Units currently out on temporary loan">
@@ -2527,22 +2523,13 @@
         const diffPercent = Math.min(100, Math.abs((variance / (stockBal || 1)) * 100));
         indicatorFill.style.width = `${diffPercent}%`;
 
-<<<<<<< HEAD
-        // Smart Insight Engine
-        display.innerHTML = (variance > 0 ? '+' : '') + variance;
-=======
         // Smart Insight Engine (factor in active loans)
         const totalAccounted = physical + onLoan;
-
->>>>>>> 897e205e5719451dae991190e23fefcebf8508f9
         if (variance === 0) {
             display.style.color = '#10b981';
             indicatorFill.style.background = '#10b981';
             insight.style.background = 'rgba(16, 185, 129, 0.1)';
             insight.style.color = '#10b981';
-<<<<<<< HEAD
-            insight.innerHTML = `<i data-lucide="check-sparkles"></i> <span>Perfect Audit! Physical matches Delivered Qty.</span>`;
-=======
             insight.innerHTML = `<i data-lucide="check-sparkles"></i> <span>Perfect Audit! Physical matches System.</span>`;
         } else if (totalAccounted === stockBal) {
             display.style.color = '#f59e0b';
@@ -2550,27 +2537,18 @@
             insight.style.background = 'rgba(245, 158, 11, 0.1)';
             insight.style.color = '#d97706';
             insight.innerHTML = `<i data-lucide="info"></i> <span>Technically Balanced: ${physical} present + ${onLoan} on loan = ${stockBal} expected.</span>`;
->>>>>>> 897e205e5719451dae991190e23fefcebf8508f9
         } else if (variance < 0) {
             display.style.color = '#ef4444';
             indicatorFill.style.background = '#ef4444';
             insight.style.background = 'rgba(239, 68, 68, 0.1)';
             insight.style.color = '#ef4444';
-<<<<<<< HEAD
-            insight.innerHTML = `<i data-lucide="alert-triangle"></i> <span>Shortage Detected: Expected ${physical} units based on delivery.</span>`;
-=======
             insight.innerHTML = `<i data-lucide="alert-triangle"></i> <span>Shortage: Even with ${onLoan} on loan, ${Math.abs(stockBal - totalAccounted)} units are still missing.</span>`;
->>>>>>> 897e205e5719451dae991190e23fefcebf8508f9
         } else {
             display.style.color = '#3b82f6';
             indicatorFill.style.background = '#3b82f6';
             insight.style.background = 'rgba(59, 130, 246, 0.1)';
             insight.style.color = '#3b82f6';
-<<<<<<< HEAD
-            insight.innerHTML = `<i data-lucide="package-plus"></i> <span>Surplus Noted: ${variance} extra units identified over delivery.</span>`;
-=======
             insight.innerHTML = `<i data-lucide="package-plus"></i> <span>Surplus Noted: ${variance} extra units identified beyond system expectations.</span>`;
->>>>>>> 897e205e5719451dae991190e23fefcebf8508f9
         }
         insight.style.display = 'flex';       }
 
