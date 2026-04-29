@@ -1224,7 +1224,7 @@
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${issueDateStr}</td>
                     <td style="padding: 1.25rem 1rem; font-weight: 800; color: var(--text-main); font-size: 1.05rem;">${item.description}</td>
                     <td style="padding: 1.25rem 1rem;">
-                        <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1);">LEDGE ${item.ledge_category}</span>
+                        <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1);">CATEGORY ${item.ledge_category}</span>
                     </td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.beneficiary}</td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.authority || '-'}</td>
@@ -1244,7 +1244,7 @@
                         <input type="checkbox" class="history-checkbox" value="${item.id}" onchange="updatePurgeSelection()" style="width: 24px; height: 24px; border-radius: 8px; cursor: pointer;">
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; padding-right: 3rem;">
-                        <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900;">LEDGE ${item.ledge_category}</span>
+                        <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900;">CATEGORY ${item.ledge_category}</span>
                         <div style="text-align: right;">
                             <div style="color: var(--text-main); font-size: 0.75rem; font-weight: 800;">${dateStr}</div>
                             <div style="color: var(--text-muted); font-size: 0.65rem; font-weight: 700; margin-top: 2px; display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
