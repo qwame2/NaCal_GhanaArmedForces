@@ -37,7 +37,7 @@
                 background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-main) 100%) !important;
                 border-radius: 0 0 32px 32px !important;
                 margin: -24px -24px 2rem -24px !important;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.04) !important;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04) !important;
                 border: none !important;
                 border-bottom: 1px solid var(--border-color) !important;
                 position: relative;
@@ -82,7 +82,7 @@
                 position: relative !important;
             }
 
-            .modal-header-sticky .modal-header > div:first-child {
+            .modal-header-sticky .modal-header>div:first-child {
                 flex-direction: column !important;
                 gap: 0.75rem !important;
             }
@@ -96,7 +96,7 @@
                 position: absolute !important;
                 top: 0 !important;
                 right: 0 !important;
-                background: rgba(0,0,0,0.05) !important;
+                background: rgba(0, 0, 0, 0.05) !important;
             }
         }
     </style>
@@ -160,18 +160,18 @@
         </div>
 
         @php
-            $isLedgeCritical = count($lowStockLedges) > 0;
-            $ledgeAlertMsg = '';
-            if (count($lowStockLedges) === 1) {
-                $ledgeAlertMsg = "Ledge {$lowStockLedges[0]['code']} ({$lowStockLedges[0]['name']}) is at {$lowStockLedges[0]['percentage']}%";
-            } elseif (count($lowStockLedges) > 1) {
-                $ledgeAlertMsg = count($lowStockLedges) . " Ledges are below 50%";
-            }
+        $isLedgeCritical = count($lowStockLedges) > 0;
+        $ledgeAlertMsg = '';
+        if (count($lowStockLedges) === 1) {
+        $ledgeAlertMsg = "Category {$lowStockLedges[0]['code']} ({$lowStockLedges[0]['name']}) is at {$lowStockLedges[0]['percentage']}%";
+        } elseif (count($lowStockLedges) > 1) {
+        $ledgeAlertMsg = count($lowStockLedges) . " Categories are below 50%";
+        }
         @endphp
-        <div class="stat-card glass-card {{ $isLedgeCritical ? 'alert-blink' : '' }}" 
-             style="border-top: 4px solid #ef4444; cursor: pointer; position: relative; overflow: visible;"
-             onclick="toggleLowStockPopover(event)">
-            
+        <div class="stat-card glass-card {{ $isLedgeCritical ? 'alert-blink' : '' }}"
+            style="border-top: 4px solid #ef4444; cursor: pointer; position: relative; overflow: visible;"
+            onclick="toggleLowStockPopover(event)">
+
             <div class="stat-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
                 <i data-lucide="alert-triangle"></i>
             </div>
@@ -179,245 +179,280 @@
                 <span class="stat-label">Low Stock Monitor</span>
                 <div class="stat-trend" style="color: {{ $isLedgeCritical ? '#ef4444' : '#10b981' }}; margin-top: 0.5rem;">
                     <i data-lucide="{{ $isLedgeCritical ? 'bell' : 'check-circle' }}" style="width: 14px;"></i>
-                    {{ $isLedgeCritical ? $ledgeAlertMsg : 'No critical ledges detected' }}
+                    {{ $isLedgeCritical ? $ledgeAlertMsg : 'No critical categories detected' }}
                 </div>
             </div>
 
             <style>
-                .no-scrollbar::-webkit-scrollbar { display: none; }
-                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+
+                .no-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
             </style>
             <div id="lowStockPopover" class="low-stock-popover glass-card no-scrollbar">
                 <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; font-weight: 800; display: flex; justify-content: space-between;">
                     <span>Category Monitor</span>
                 </h4>
-                
+
                 @if($isLedgeCritical)
-                    <div style="display: flex; flex-direction: column; gap: 1rem;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid rgba(239, 68, 68, 0.1); padding-bottom: 0.75rem;">
-                            <span style="font-size: 0.65rem; color: var(--danger); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Alerts: {{ count($lowStockLedges) }} Ledges</span>
-                        </div>
-                        
-                        @foreach($lowStockLedges as $l)
-                        @php
-                            $isCritical = $l['percentage'] <= 50 || ($l['is_override'] ?? false);
-                            $statusLabel = $isCritical ? 'CRITICAL DEPLETION' : 'WATCHLIST';
-                            $statusColor = $isCritical ? '#ef4444' : '#f59e0b';
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid rgba(239, 68, 68, 0.1); padding-bottom: 0.75rem;">
+                        <span style="font-size: 0.65rem; color: var(--danger); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Alerts: {{ count($lowStockLedges) }} Ledges</span>
+                    </div>
+
+                    @foreach($lowStockLedges as $l)
+                    @php
+                    $isCritical = $l['percentage'] <= 50 || ($l['is_override'] ?? false);
+                        $statusLabel=$isCritical ? 'CRITICAL DEPLETION' : 'WATCHLIST' ;
+                        $statusColor=$isCritical ? '#ef4444' : '#f59e0b' ;
                         @endphp
                         <div class="popover-item" style="display: block; padding: 0.75rem 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.03);">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-                                <div>
-                                    <div style="font-weight: 800; color: var(--text-main); font-size: 0.9rem; line-height: 1.2;">Ledge {{ $l['code'] }}</div>
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">{{ $l['name'] }}</div>
-                                </div>
-                                <span style="font-size: 0.55rem; font-weight: 900; color: white; background: {{ $statusColor }}; padding: 0.2rem 0.6rem; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">{{ $statusLabel }}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                            <div>
+                                <div style="font-weight: 800; color: var(--text-main); font-size: 0.9rem; line-height: 1.2;">Category {{ $l['code'] }}</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">{{ $l['name'] }}</div>
                             </div>
-                            
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="flex-grow: 1; height: 6px; background: var(--bg-main); border-radius: 10px; overflow: hidden; border: 1px solid rgba(0,0,0,0.02);">
-                                    <div style="width: {{ $l['percentage'] }}%; height: 100%; background: {{ $statusColor }}; box-shadow: 0 0 10px {{ $statusColor }}4d;"></div>
-                                </div>
-                                <span style="font-size: 0.8rem; font-weight: 900; color: {{ $statusColor }}; min-width: 35px; text-align: right;">{{ $l['percentage'] }}%</span>
-                            </div>
+                            <span style="font-size: 0.55rem; font-weight: 900; color: white; background: {{ $statusColor }}; padding: 0.2rem 0.6rem; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">{{ $statusLabel }}</span>
                         </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div style="text-align: center; padding: 2.5rem 0; color: var(--text-muted);">
-                        <i data-lucide="shield-check" style="width: 32px; height: 32px; margin-bottom: 0.75rem; color: #10b981; opacity: 0.8;"></i>
-                        <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">All Ledges Healthy</p>
-                        <p style="font-size: 0.7rem;">Stock levels are currently safe.</p>
-                    </div>
-                @endif
-                
-                <div style="font-size: 0.65rem; color: var(--text-muted); text-align: center; margin-top: 1rem; font-style: italic; border-top: 1px solid rgba(0,0,0,0.02); padding-top: 0.75rem;">Tap anywhere else to close</div>
+
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="flex-grow: 1; height: 6px; background: var(--bg-main); border-radius: 10px; overflow: hidden; border: 1px solid rgba(0,0,0,0.02);">
+                                <div style="width: {{ $l['percentage'] }}%; height: 100%; background: {{ $statusColor }}; box-shadow: 0 0 10px {{ $statusColor }}4d;"></div>
+                            </div>
+                            <span style="font-size: 0.8rem; font-weight: 900; color: {{ $statusColor }}; min-width: 35px; text-align: right;">{{ $l['percentage'] }}%</span>
+                        </div>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <div style="text-align: center; padding: 2.5rem 0; color: var(--text-muted);">
+                <i data-lucide="shield-check" style="width: 32px; height: 32px; margin-bottom: 0.75rem; color: #10b981; opacity: 0.8;"></i>
+                <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">All Ledges Healthy</p>
+                <p style="font-size: 0.7rem;">Stock levels are currently safe.</p>
+            </div>
+            @endif
+
+            <div style="font-size: 0.65rem; color: var(--text-muted); text-align: center; margin-top: 1rem; font-style: italic; border-top: 1px solid rgba(0,0,0,0.02); padding-top: 0.75rem;">Tap anywhere else to close</div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Charts Section -->
+<div class="charts-grid">
+    <div class="glass-card pop-in float-card" style="border-left: 4px solid var(--secondary); animation-delay: 0.5s;">
+        <div class="card-title">
+            <span>Stock Performance</span>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span id="btnDaily" style="font-size: 0.75rem; background: var(--bg-main); color: var(--text-main); padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; transition: var(--transition);">Daily</span>
+                <span id="btnWeekly" style="font-size: 0.75rem; background: var(--bg-main); color: var(--text-main); padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; transition: var(--transition);">Weekly</span>
+                <span id="btnMonthly" style="font-size: 0.75rem; background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; transition: var(--transition);">Monthly</span>
+            </div>
+        </div>
+        <div id="advancedAreaChart"></div>
+    </div>
+    <div class="glass-card special-card pop-in float-card" style="border-left: 4px solid var(--primary); background: var(--bg-card); animation-delay: 0.6s;">
+        <div class="card-title">
+            <span>Stock Distribution</span>
+            <i data-lucide="pie-chart" style="color: var(--primary); width: 20px;"></i>
+        </div>
+        <div id="enhancedDonutChart" style="margin-top: -1.5rem; margin-inline: -1rem; min-height: 400px;"></div>
+        <div class="distribution-details">
+            <div class="dist-item">
+                <div class="dist-label">TOP CATEGORY</div>
+                <div class="dist-value" style="color: var(--primary);">{{ $topCategory }}</div>
+            </div>
+            <div class="dist-item">
+                <div class="dist-label">AVG. STOCK / CAT</div>
+                <div class="dist-value" style="color: var(--secondary);">{{ number_format($avgStock, 0) }}</div>
             </div>
         </div>
     </div>
+</div>
 
 
 
-    <!-- Charts Section -->
-    <div class="charts-grid">
-        <div class="glass-card pop-in float-card" style="border-left: 4px solid var(--secondary); animation-delay: 0.5s;">
-            <div class="card-title">
-                <span>Stock Performance</span>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <span id="btnDaily" style="font-size: 0.75rem; background: var(--bg-main); color: var(--text-main); padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; transition: var(--transition);">Daily</span>
-                    <span id="btnWeekly" style="font-size: 0.75rem; background: var(--bg-main); color: var(--text-main); padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; transition: var(--transition);">Weekly</span>
-                    <span id="btnMonthly" style="font-size: 0.75rem; background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; transition: var(--transition);">Monthly</span>
-                </div>
-            </div>
-            <div id="advancedAreaChart"></div>
-        </div>
-        <div class="glass-card special-card pop-in float-card" style="border-left: 4px solid var(--primary); background: var(--bg-card); animation-delay: 0.6s;">
-            <div class="card-title">
-                <span>Stock Distribution</span>
-                <i data-lucide="pie-chart" style="color: var(--primary); width: 20px;"></i>
-            </div>
-            <div id="enhancedDonutChart" style="margin-top: -1.5rem; margin-inline: -1rem; min-height: 400px;"></div>
-            <div class="distribution-details">
-                <div class="dist-item">
-                    <div class="dist-label">TOP CATEGORY</div>
-                    <div class="dist-value" style="color: var(--primary);">{{ $topCategory }}</div>
-                </div>
-                <div class="dist-item">
-                    <div class="dist-label">AVG. STOCK / CAT</div>
-                    <div class="dist-value" style="color: var(--secondary);">{{ number_format($avgStock, 0) }}</div>
-                </div>
-            </div>
-        </div>
+<!-- Recent Activity Table -->
+<div class="glass-card pop-in float-card" style="border-bottom: 4px solid var(--accent); animation-delay: 0.7s; overflow: visible;">
+    <div class="card-title" style="flex-wrap: wrap; gap: 1rem;">
+        <span>Recent Stock Transactions</span>
+        <button onclick="window.location.href='{{ route('receiveditems') }}'" class="btn-secondary" style="border: none; background: var(--bg-main); color: var(--primary); padding: 0.5rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">View All Transactions</button>
     </div>
 
-
-
-    <!-- Recent Activity Table -->
-    <div class="glass-card pop-in float-card" style="border-bottom: 4px solid var(--accent); animation-delay: 0.7s; overflow: visible;">
-        <div class="card-title" style="flex-wrap: wrap; gap: 1rem;">
-            <span>Recent Stock Transactions</span>
-            <button onclick="window.location.href='{{ route('receiveditems') }}'" class="btn-secondary" style="border: none; background: var(--bg-main); color: var(--primary); padding: 0.5rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">View All Transactions</button>
-        </div>
-        
-        <style>
-            @media (max-width: 768px) {
-                .activity-table thead { display: none; }
-                .activity-table, .activity-table tbody, .activity-table tr, .activity-table td { display: block; width: 100%; }
-                .activity-row {
-                    margin-bottom: 1rem;
-                    border-radius: 12px;
-                    background: var(--bg-main) !important;
-                    padding: 1rem;
-                    border: 1px solid var(--border-color);
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-                }
-                .activity-row:hover { transform: translateY(-2px); }
-                .activity-row td {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 0.4rem 0 !important;
-                    border: none !important;
-                    font-size: 0.85rem;
-                }
-                .activity-row td::before {
-                    content: attr(data-label);
-                    font-weight: 800;
-                    color: var(--text-muted);
-                    font-size: 0.7rem;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                .activity-row td:first-child { 
-                    border-bottom: 1px dashed var(--border-color) !important;
-                    margin-bottom: 0.5rem;
-                    padding-bottom: 0.75rem !important;
-                }
-                .activity-row td:first-child::before { content: 'Transaction Date'; }
-                .activity-row td:nth-child(2) { font-size: 1.1rem; font-weight: 900; color: var(--primary); display: block; text-align: left; }
-                .activity-row td:nth-child(2)::before { display: block; margin-bottom: 0.2rem; }
+    <style>
+        @media (max-width: 768px) {
+            .activity-table thead {
+                display: none;
             }
-        </style>
 
-        <table class="activity-table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Product</th>
-                    <th>Category</th>
-                    <th>Supplier</th>
-                    <th>Donor Name</th>
-                    <th>S. Status</th>
-                    <th>Avail. Qty</th>
-                    <th>Qty (Var)</th>
-                    <th>Type</th>
-                    <th>Bal.</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($recentTransactions as $transaction)
-                <tr class="activity-row">
-                    <td data-label="Date">{{ \Carbon\Carbon::parse($transaction->entry_date)->format('M d, H:i') }}</td>
-                    <td data-label="Product">{{ $transaction->description }}</td>
-                    <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">{{ $ledgeMap[$transaction->ledge_category] ?? "Ledge " . $transaction->ledge_category }}</span></td>
+            .activity-table,
+            .activity-table tbody,
+            .activity-table tr,
+            .activity-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .activity-row {
+                margin-bottom: 1rem;
+                border-radius: 12px;
+                background: var(--bg-main) !important;
+                padding: 1rem;
+                border: 1px solid var(--border-color);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            }
+
+            .activity-row:hover {
+                transform: translateY(-2px);
+            }
+
+            .activity-row td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.4rem 0 !important;
+                border: none !important;
+                font-size: 0.85rem;
+            }
+
+            .activity-row td::before {
+                content: attr(data-label);
+                font-weight: 800;
+                color: var(--text-muted);
+                font-size: 0.7rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .activity-row td:first-child {
+                border-bottom: 1px dashed var(--border-color) !important;
+                margin-bottom: 0.5rem;
+                padding-bottom: 0.75rem !important;
+            }
+
+            .activity-row td:first-child::before {
+                content: 'Transaction Date';
+            }
+
+            .activity-row td:nth-child(2) {
+                font-size: 1.1rem;
+                font-weight: 900;
+                color: var(--primary);
+                display: block;
+                text-align: left;
+            }
+
+            .activity-row td:nth-child(2)::before {
+                display: block;
+                margin-bottom: 0.2rem;
+            }
+        }
+    </style>
+
+    <table class="activity-table">
+        <thead>
+            <tr>
+                <th>Entry Date</th>
+                <th>Arrival Date</th>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Supplier</th>
+                <th>Donor Name</th>
+                <th>S. Status</th>
+                <th>Qty Received</th>
+                <th>Qty (Var)</th>
+                <th>Type</th>
+                <th>Stock Bal.</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($recentTransactions as $transaction)
+            <tr class="activity-row">
+                <td data-label="Entry Date">{{ \Carbon\Carbon::parse($transaction->entry_date)->format('M d, H:i') }}</td>
+                <td data-label="Arrival Date" style="color: var(--primary); font-weight: 700;">{{ $transaction->arrival_date ? \Carbon\Carbon::parse($transaction->arrival_date)->format('M d, Y') : '-' }}</td>
+                <td data-label="Product">{{ $transaction->description }} <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $transaction->unit ?? 'Units' }})</span></td>
+                <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">{{ $ledgeMap[$transaction->ledge_category] ?? "Category " . $transaction->ledge_category }}</span></td>
+                @php
+                $rawSup = $transaction->supplier_name;
+                $acqType = $transaction->acquisition_type ?? 'Supplier';
+                $dName = $transaction->donor_name ?? '-';
+
+                // Legacy Fallback
+                if ($acqType === 'Supplier' && preg_match('/\[(Donor Action|Donation)\]/', $rawSup)) {
+                $acqType = 'Donor';
+                $dName = preg_replace('/\s\[.*\]$/', '', $rawSup);
+                }
+
+                $cleanSupDisplay = preg_replace('/\s\[.*\]$/', '', $rawSup);
+                $supStatusDisplay = 'N/A';
+
+                if ($acqType === 'Donor') {
+                $supStatusDisplay = 'Donor';
+                $supColor = '#8b5cf6';
+                } else {
+                if (preg_match('/\[(.*)\]/', $rawSup, $matches)) {
+                $supStatusDisplay = $matches[1];
+                }
+                $supColor = '#94a3b8';
+                if ($supStatusDisplay === 'Full Delivery') $supColor = '#10b981';
+                elseif ($supStatusDisplay === 'Partial Delivery') $supColor = '#ef4444';
+                }
+                @endphp
+                <td data-label="Supplier" style="color: var(--text-main);">{{ $cleanSupDisplay ?: '-' }}</td>
+                <td data-label="Donor Name" style="color: var(--text-main); font-weight: {{ $acqType === 'Donor' ? '800' : '400' }};">{{ $dName }}</td>
+                <td data-label="Supp. Status">
+                    <span style="font-size: 0.65rem; font-weight: 800; color: white; background: {{ $supColor }}; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase;">
+                        {{ $supStatusDisplay }}
+                    </span>
+                </td>
+                <td data-label="Qty Received" style="font-weight: 600;">{{ $transaction->qty ?? '0' }}</td>
+                <td data-label="Qty/Variance" style="font-weight: 700; color: {{ is_numeric($transaction->variance) && (float)$transaction->variance > 0 ? 'var(--secondary)' : (is_numeric($transaction->variance) && (float)$transaction->variance < 0 ? 'var(--danger)' : 'inherit') }}">
+                    {{ is_numeric($transaction->variance) && (float)$transaction->variance > 0 ? '+' : '' }}{{ $transaction->variance }}
+                </td>
+                <td data-label="Transaction Type">
                     @php
-                        $rawSup = $transaction->supplier_name;
-                        $acqType = $transaction->acquisition_type ?? 'Supplier';
-                        $dName = $transaction->donor_name ?? '-';
-                        
-                        // Legacy Fallback
-                        if ($acqType === 'Supplier' && preg_match('/\[Donor Action\]/', $rawSup)) {
-                            $acqType = 'Donor';
-                            $dName = preg_replace('/\s\[.*\]$/', '', $rawSup);
+                    $v = (float)$transaction->variance;
+                    $stClass = 'status-success';
+                    $stText = 'Received';
+                    if ($v < 0) {
+                        $stClass='status-warning' ;
+                        $stText='Issued' ;
+                        } elseif ($transaction->variance == 'Expired') {
+                        $stClass = 'status-danger';
+                        $stText = 'Expired';
                         }
-                        
-                        $cleanSupDisplay = preg_replace('/\s\[.*\]$/', '', $rawSup);
-                        $supStatusDisplay = 'N/A';
-                        
-                        if ($acqType === 'Donor') {
-                            $supStatusDisplay = 'Donor';
-                            $supColor = '#8b5cf6';
-                        } else {
-                             if (preg_match('/\[(.*)\]/', $rawSup, $matches)) {
-                                $supStatusDisplay = $matches[1];
-                            }
-                            $supColor = '#94a3b8';
-                            if ($supStatusDisplay === 'Full Delivery') $supColor = '#10b981';
-                            elseif ($supStatusDisplay === 'Partial Delivery') $supColor = '#ef4444';
-                        }
-                    @endphp
-                    <td data-label="Supplier" style="color: var(--text-main);">{{ $cleanSupDisplay ?: '-' }}</td>
-                    <td data-label="Donor Name" style="color: var(--text-main); font-weight: {{ $acqType === 'Donor' ? '800' : '400' }};">{{ $dName }}</td>
-                    <td data-label="Supp. Status">
-                        <span style="font-size: 0.65rem; font-weight: 800; color: white; background: {{ $supColor }}; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase;">
-                            {{ $supStatusDisplay }}
-                        </span>
-                    </td>
-                    <td data-label="Avail. Qty" style="font-weight: 600;">{{ $transaction->qty ?? '0' }}</td>
-                    <td data-label="Qty/Variance" style="font-weight: 700; color: {{ is_numeric($transaction->variance) && (float)$transaction->variance > 0 ? 'var(--secondary)' : (is_numeric($transaction->variance) && (float)$transaction->variance < 0 ? 'var(--danger)' : 'inherit') }}">
-                        {{ is_numeric($transaction->variance) && (float)$transaction->variance > 0 ? '+' : '' }}{{ $transaction->variance }}
-                    </td>
-                    <td data-label="Transaction Type">
-                        @php
-                            $v = (float)$transaction->variance;
-                            $stClass = 'status-success';
-                            $stText = 'Received';
-                            if ($v < 0) {
-                                $stClass = 'status-warning';
-                                $stText = 'Issued';
-                            } elseif ($transaction->variance == 'Expired') {
-                                $stClass = 'status-danger';
-                                $stText = 'Expired';
-                            }
                         @endphp
                         <span class="status-badge {{ $stClass }}">{{ $stText }}</span>
-                    </td>
-                    <td data-label="Balance" style="font-weight: 700;">{{ $transaction->stock_balance }}</td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="9" style="padding: 5rem 2rem; text-align: center;">
-                        <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem;">
-                            <div style="background: var(--bg-main); width: 72px; height: 72px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); box-shadow: 0 10px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
-                                <i data-lucide="clipboard-list" style="width: 32px; opacity: 0.5;"></i>
-                            </div>
-                            <div>
-                                <h4 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">No Transactions Recorded</h4>
-                                <p style="color: var(--text-muted); font-size: 0.9rem;">Your recent stock movements and activity logs will appear here.</p>
-                            </div>
+                </td>
+                <td data-label="Stock Bal." style="font-weight: 700;">{{ $transaction->stock_balance }}</td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="9" style="padding: 5rem 2rem; text-align: center;">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem;">
+                        <div style="background: var(--bg-main); width: 72px; height: 72px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); box-shadow: 0 10px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
+                            <i data-lucide="clipboard-list" style="width: 32px; opacity: 0.5;"></i>
                         </div>
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                        <div>
+                            <h4 style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.25rem;">No Transactions Recorded</h4>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">Your recent stock movements and activity logs will appear here.</p>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
 </div>
 @endsection
 
 @push('scripts')
-<script id="inventory-data" type="application/json">
-    {!! json_encode($existingItems ?? []) !!}
-</script>
 <script>
     // Advanced Area Chart
     var areaOptions = {
@@ -521,7 +556,7 @@
         received: @json($weekReceived),
         variance: @json($weekVariance)
     };
-    
+
     const monthlyData = {
         labels: @json($chartMonths),
         received: @json($receivedSeries),
@@ -530,38 +565,77 @@
 
     $('#btnDaily').on('click', function() {
         areaChart.updateOptions({
-            xaxis: { categories: dailyData.labels }
+            xaxis: {
+                categories: dailyData.labels
+            }
         });
-        areaChart.updateSeries([
-            { name: 'Received', data: dailyData.received },
-            { name: 'Net Variance', data: dailyData.variance }
+        areaChart.updateSeries([{
+                name: 'Received',
+                data: dailyData.received
+            },
+            {
+                name: 'Net Variance',
+                data: dailyData.variance
+            }
         ]);
-        $(this).css({background: 'var(--primary)', color: 'white'});
-        $('#btnWeekly, #btnMonthly').css({background: 'var(--bg-main)', color: 'var(--text-main)'});
+        $(this).css({
+            background: 'var(--primary)',
+            color: 'white'
+        });
+        $('#btnWeekly, #btnMonthly').css({
+            background: 'var(--bg-main)',
+            color: 'var(--text-main)'
+        });
     });
 
     $('#btnWeekly').on('click', function() {
         areaChart.updateOptions({
-            xaxis: { categories: weeklyData.labels }
+            xaxis: {
+                categories: weeklyData.labels
+            }
         });
-        areaChart.updateSeries([
-            { name: 'Received', data: weeklyData.received },
-            { name: 'Net Variance', data: weeklyData.variance }
+        areaChart.updateSeries([{
+                name: 'Received',
+                data: weeklyData.received
+            },
+            {
+                name: 'Net Variance',
+                data: weeklyData.variance
+            }
         ]);
-        $(this).css({background: 'var(--primary)', color: 'white'});
-        $('#btnDaily, #btnMonthly').css({background: 'var(--bg-main)', color: 'var(--text-main)'});
+        $(this).css({
+            background: 'var(--primary)',
+            color: 'white'
+        });
+        $('#btnDaily, #btnMonthly').css({
+            background: 'var(--bg-main)',
+            color: 'var(--text-main)'
+        });
     });
 
     $('#btnMonthly').on('click', function() {
         areaChart.updateOptions({
-            xaxis: { categories: monthlyData.labels }
+            xaxis: {
+                categories: monthlyData.labels
+            }
         });
-        areaChart.updateSeries([
-            { name: 'Received', data: monthlyData.received },
-            { name: 'Net Variance', data: monthlyData.variance }
+        areaChart.updateSeries([{
+                name: 'Received',
+                data: monthlyData.received
+            },
+            {
+                name: 'Net Variance',
+                data: monthlyData.variance
+            }
         ]);
-        $(this).css({background: 'var(--primary)', color: 'white'});
-        $('#btnDaily, #btnWeekly').css({background: 'var(--bg-main)', color: 'var(--text-main)'});
+        $(this).css({
+            background: 'var(--primary)',
+            color: 'white'
+        });
+        $('#btnDaily, #btnWeekly').css({
+            background: 'var(--bg-main)',
+            color: 'var(--text-main)'
+        });
     });
 
     // Enhanced Donut Chart
@@ -661,7 +735,55 @@
         var donutChart = new ApexCharts(document.querySelector("#enhancedDonutChart"), donutOptions);
         donutChart.render();
     }
+</script>
 
+<script id="inventory-data" type="application/json">
+    @json($existingItems)
+</script>
+
+<script>
+    // Global Modal Controls for legacy onclick attributes
+    window.openModal = function() {
+            const modal = $('#newEntryModal');
+            if (modal.length) {
+                modal.css('display', 'flex');
+                
+                // Set current date/time to MySQL format (YYYY-MM-DD HH:MM:SS)
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+                $('#entryDate').val(formattedDate);
+                $('#arrivalDate').val(new Date().toISOString().split('T')[0]);
+
+                // Reset Form
+                $('#newEntryForm')[0].reset();
+                $('#ledgeSelect').val('').trigger('change');
+                $('#itemsContainer').empty();
+                $('#itemDetails').hide();
+                $('#qtyControl, #supplierControl').hide().css('opacity', 0);
+                $('#modalFooter').hide();
+            }
+        };
+
+        window.closeModal = function() {
+            const modal = $('#newEntryModal');
+            if (modal.length) {
+                const content = modal.find('.modal-content');
+                content.addClass('slide-out');
+                setTimeout(() => {
+                    modal.hide();
+                    content.removeClass('slide-out');
+                }, 600);
+            }
+        };
+    </script>
+    <script>
     // New Entry Modal Logic
     $(document).ready(function() {
         const modal = $('#newEntryModal');
@@ -675,27 +797,13 @@
 
         // Initialize Select2
         ledgeSelect.select2({
-            placeholder: 'Search and Select Ledge Category',
+            placeholder: 'Search and Select Category',
             width: '100%',
             dropdownParent: modal
         });
 
-        // Open Modal
-        openBtn.on('click', function() {
-            modal.css('display', 'flex');
-
-            // Set current date/time to MySQL format (YYYY-MM-DD HH:MM:SS)
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-
-            $('#entryDate').val(formattedDate);
-        });
+        // Open Modal Listener (jQuery way)
+        openBtn.on('click', window.openModal);
 
         // Final Submit Logic
         $('#newEntryForm').on('submit', function(e) {
@@ -709,25 +817,25 @@
             $('.item-entry-row').each(function() {
                 items.push({
                     description: $(this).find('.item-select-dynamic').val(),
-                    ledge_balance: $(this).find('.row-ledge-balance').val() || '0',
-                    stock_balance: $(this).find('.row-stock-balance').val() || '0',
-                    qty: $(this).find('.row-qty').val() || '',
+                    unit: $(this).find('.row-unit').val(),
+                    stock_balance: $(this).find('.row-stock-balance').val(),
+                    qty: $(this).find('.row-qty').val(),
                     variance: $(this).find('.row-variance').val() || '0',
-                    remarks: $(this).find('.row-remarks').val() || ''
+                    remarks: $(this).find('.row-remarks').val()
                 });
             });
 
             const supplierStatus = $('#supplierStatusSelect').val(); // Can be Full/Partial or Donor
             const acquisitionType = supplierStatus === 'Donor' ? 'Donor' : 'Supplier';
-            
+
             // Capture both independently. They are different things!
             const donorName = $('#donorNameInput').val() ? $('#donorNameInput').val().trim() : null;
             const baseSupplier = $('#supplierNameSelect').val() || '';
-            
+
             // Still append status to supplier name for legacy compatibility if it's not Donor status
-            const supplierName = (supplierStatus && supplierStatus !== 'Donor') 
-                ? `${baseSupplier} [${supplierStatus}]` 
-                : baseSupplier;
+            const supplierName = (supplierStatus && supplierStatus !== 'Donor') ?
+                `${baseSupplier} [${supplierStatus}]` :
+                baseSupplier;
 
             const payload = {
                 _token: '{{ csrf_token() }}',
@@ -736,6 +844,7 @@
                 donor_name: donorName,
                 acquisition_type: acquisitionType,
                 entry_date: $('#entryDate').val(),
+                arrival_date: $('#arrivalDate').val(),
                 items: items
             };
 
@@ -763,17 +872,7 @@
                 }
             });
         });
-        // Close Modal with Animation
-        const closeModal = () => {
-            const content = modal.find('.modal-content');
-            content.addClass('slide-out');
-            setTimeout(() => {
-                modal.hide();
-                content.removeClass('slide-out');
-            }, 600);
-        };
-
-        closeBtn.on('click', closeModal);
+        closeBtn.on('click', window.closeModal);
         $(window).on('click', (e) => {
             if (e.target == modal[0]) closeModal();
         });
@@ -852,22 +951,29 @@
                                     ${filteredItems.map(item => `<option value="${item.description}">${item.description}</option>`).join('')}
                                 </select>
                             </div>
+
                             <div class="form-group">
-                                <label>Ledge Balance</label>
-                                <input type="text" class="row-ledge-balance" placeholder="0">
+                                <label>Units</label>
+                                <select class="row-unit" style="width: 100%;">
+                                    <option value="Piece(s)">Piece(s)</option>
+                                    <option value="Pack">Pack</option>
+                                    <option value="Boxes">Boxes</option>
+                                </select>
                             </div>
+
                             <div class="form-group">
                                 <label>Stock Balance</label>
                                 <input type="text" class="row-stock-balance" placeholder="0">
                             </div>
                             <div class="form-group">
-                                <label>Available Qty</label>
+                                <label>Received Qty</label>
                                 <input type="text" class="row-qty" placeholder="0" style="border-color: var(--primary-light);">
                             </div>
                             <div class="form-group">
                                 <label>Variance Status</label>
                                 <input type="text" class="row-variance" value="0" readonly style="color: var(--danger); font-weight: 700; background: var(--bg-main);">
                             </div>
+
                             <div class="form-group full-width">
                                 <label>Situation Remarks / Notes</label>
                                 <input type="text" class="row-remarks" placeholder="Briefly describe the current situation or condition...">
@@ -886,26 +992,55 @@
                     dropdownParent: $('#newEntryModal')
                 });
 
-                // Auto-Calculation Logic
-                $row.on('input', '.row-ledge-balance, .row-stock-balance', function() {
-                    const ledgeVal = parseFloat($row.find('.row-ledge-balance').val()) || 0;
-                    const stockVal = parseFloat($row.find('.row-stock-balance').val()) || 0;
+                // Initialize Units Select2
+                $row.find('.row-unit').select2({
+                    placeholder: "Select or type unit...",
+                    width: '100%',
+                    tags: true, // Allow new units
+                    dropdownParent: $('#newEntryModal')
+                });
+
+                // Handle Item Selection to show previous data as placeholders
+                $row.on('change', '.item-select-dynamic', function() {
+                    const selectedDesc = $(this).val();
+                    const prevData = existingDBItems.find(item => item.description === selectedDesc);
+
+                    const stockInput = $row.find('.row-stock-balance');
+                    const qtyInput = $row.find('.row-qty');
                     const varianceInput = $row.find('.row-variance');
 
-                    // "Expired" special logic: Stock is 0 AND Ledge is 1 or more
-                    if (stockVal === 0 && ledgeVal >= 1) {
-                        varianceInput.val('Expired').css('color', '#ef4444'); // Red for Expired
-                    } else {
-                        const result = stockVal - ledgeVal; // Balanced = Stock - Ledge
-                        varianceInput.val(result);
+                    if (prevData) {
+                        stockInput.attr('placeholder', `Prev: ${prevData.stock_balance}`);
+                        qtyInput.attr('placeholder', `Prev: ${prevData.qty}`);
+                        varianceInput.attr('placeholder', `Prev: ${prevData.variance}`);
 
-                        if (result > 0) {
-                            varianceInput.css('color', '#10b981'); // Green for positive (Surplus)
-                        } else if (result < 0) {
-                            varianceInput.css('color', '#ef4444'); // Red for negative (Shortage)
-                        } else {
-                            varianceInput.css('color', '#3b82f6'); // Blue for zero (Balanced)
+                        // Visual cue for existing item
+                        if (!$row.find('.existing-indicator').length) {
+                            $row.find('.row-badge').append(' <span class="existing-indicator" style="font-size: 0.6rem; opacity: 0.8;">(Restocking)</span>');
                         }
+                    } else {
+                        stockInput.attr('placeholder', '0');
+                        qtyInput.attr('placeholder', '0');
+                        varianceInput.attr('placeholder', '0');
+                        $row.find('.existing-indicator').remove();
+                    }
+                });
+
+                // Auto-Calculation Logic: Variance = Stock Balance - Received Qty
+                $row.on('input', '.row-stock-balance, .row-qty', function() {
+                    const stockVal = parseFloat($row.find('.row-stock-balance').val()) || 0;
+                    const qtyVal = parseFloat($row.find('.row-qty').val()) || 0;
+                    const varianceInput = $row.find('.row-variance');
+
+                    const result = stockVal - qtyVal;
+                    varianceInput.val(result);
+
+                    if (result > 0) {
+                        varianceInput.css('color', '#10b981'); // Green for positive (Surplus)
+                    } else if (result < 0) {
+                        varianceInput.css('color', '#ef4444'); // Red for negative (Shortage)
+                    } else {
+                        varianceInput.css('color', '#3b82f6'); // Blue for zero (Balanced)
                     }
                 });
             }
@@ -990,7 +1125,7 @@
                     if (batch) {
                         // Open Modal
                         modal.css('display', 'flex');
-                        
+
                         // Set Date
                         const now = new Date();
                         const year = now.getFullYear();
@@ -1001,6 +1136,7 @@
                         const seconds = String(now.getSeconds()).padStart(2, '0');
                         const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
                         $('#entryDate').val(formattedDate);
+                        $('#arrivalDate').val(batch.arrival_date || new Date().toISOString().split('T')[0]);
 
                         // Set Ledge
                         ledgeSelect.val(batch.ledge_category).trigger('change');
@@ -1008,24 +1144,24 @@
                         // Set Supplier (clean name)
                         const rawSupplier = batch.supplier_name;
                         const cleanSupplier = rawSupplier.replace(/\s\[.*\]$/, '');
-                        
+
                         // We need to wait for Select2 to be ready or just set values if they exist
                         setTimeout(() => {
                             $('#supplierNameSelect').val(cleanSupplier).trigger('change');
                             $('#supplierStatusSelect').val('Full Delivery').trigger('change');
-                            
+
                             // Render Rows for items
                             if (batch.items && batch.items.length > 0) {
                                 $('#multiQty').val(batch.items.length);
                                 renderItemRows(batch.items.length);
-                                
+
                                 // Fill row data
                                 $('.item-entry-row').each(function(index) {
                                     const item = batch.items[index];
                                     const $row = $(this);
-                                    
+
                                     $row.find('.item-select-dynamic').val(item.description).trigger('change');
-                                    $row.find('.row-ledge-balance').val(item.stock_balance).trigger('input');
+
                                     $row.find('.row-stock-balance').focus();
                                 });
                             }
@@ -1091,16 +1227,16 @@
             <div class="modal-controls-sticky">
                 <div class="form-grid">
                     <div id="ledgeContainer" class="form-group full-width">
-                        <label>Ledge Section (Search & Select)</label>
+                        <label>Category Section (Search & Select)</label>
                         <select id="ledgeSelect" class="select2-input" style="width: 100%;">
                             <option value=""></option>
-                            <option value="A">Ledge A - Stationary</option>
-                            <option value="B">Ledge B - Cleaning</option>
-                            <option value="C">Ledge C - IT and Accessories</option>
-                            <option value="D">Ledge D - Transport Items</option>
-                            <option value="E">Ledge E - Safety and Hygiene</option>
-                            <option value="G">Ledge G - TEST KITS AND PHARMACEUTICAL PRODUCTS</option>
-                            <option value="J">Ledge J - FURNITURE, FIXTURE, FITTINGS, TOOLS AND EQUIPMENT</option>
+                            <option value="A">Category A - Stationary</option>
+                            <option value="B">Category B - Cleaning</option>
+                            <option value="C">Category C - IT and Accessories</option>
+                            <option value="D">Category D - Transport Items</option>
+                            <option value="E">Category E - Safety and Hygiene</option>
+                            <option value="G">Category G - Test Kits and Pharmaceutical Products</option>
+                            <option value="J">Category J - Furniture, Fixture, Fittings, Tools and Equipment</option>
                         </select>
                     </div>
                     <div id="qtyControl" class="form-group" style="display: none; opacity: 0;">
@@ -1114,7 +1250,7 @@
                                 <select id="supplierNameSelect" style="width: 100%;">
                                     <option value=""></option>
                                     @foreach($allSuppliers as $supplier)
-                                        <option value="{{ $supplier }}">{{ $supplier }}</option>
+                                    <option value="{{ $supplier }}">{{ $supplier }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -1122,7 +1258,7 @@
                                 <label>Delivery Status</label>
                                 <select id="supplierStatusSelect" style="width: 100%;">
                                     <option value="">Select Status</option>
-                                    <option value="Donor" data-icon="heart" data-color="#8b5cf6">Donor Action</option>
+                                    <option value="Donor" data-icon="heart" data-color="#8b5cf6">Donation</option>
                                     <option value="Full Delivery" data-icon="check-circle" data-color="#10b981">Full Delivery</option>
                                     <option value="Partial Delivery" data-icon="alert-circle" data-color="#f59e0b">Partial Delivery</option>
                                 </select>
@@ -1143,9 +1279,15 @@
                         <!-- Item Rows will be injected here -->
                     </div>
 
-                    <div class="form-group full-width" style="margin-top: 2rem;">
-                        <label>Common Entry Date & Time (Automatic)</label>
-                        <input type="text" id="entryDate" readonly style="background: var(--bg-main); cursor: not-allowed; opacity: 0.8;">
+                    <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
+                        <div class="form-group">
+                            <label>Items Arrival Date (Manual Selection)</label>
+                            <input type="date" id="arrivalDate" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit;">
+                        </div>
+                        <div class="form-group">
+                            <label>Common Entry Date & Time (Automatic)</label>
+                            <input type="text" id="entryDate" readonly style="background: var(--bg-main); cursor: not-allowed; opacity: 0.8;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1182,7 +1324,5 @@
             popover.style.display = 'none';
         }
     });
-
-    // Existing scripts continue below or were here...
 </script>
 @endpush

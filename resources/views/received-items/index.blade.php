@@ -299,15 +299,15 @@
             <table class="activity-table" style="width: 100%; min-width: 1500px; border-collapse: collapse;">
                 <thead>
                     <tr style="background: rgba(0,0,0,0.02); text-align: left;">
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Date</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Entry Date</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Arrival Date</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Description</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Supplier</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Donor</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Status</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Avail. Qty</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Ledge</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Received Qty</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Balance</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">System Health</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Avail. Item Health</th>
@@ -320,9 +320,9 @@
                     $agg = $itemAggregates[$item->description] ?? null;
                     $totalQty = $agg ? (float)$agg->total_received_qty : 0;
                     $totalStock = $agg ? (float)$agg->total_available : 0;
-                    $totalLedge = $agg ? (float)$agg->total_book : 0;
 
-                    // Calculation: (Available Qty / Stock Balance) * 100
+
+                    // Calculation: (Received Qty / Stock Balance) * 100
                     $percentage = ($totalStock > 0) ? ($totalQty / $totalStock) * 100 : 0;
 
                     $hStatus = 'IN STOCK';
@@ -341,21 +341,22 @@
                         }
                         @endphp
                         <tr class="activity-row" style="border-top: 1px solid var(--border-color);">
-                        <td data-label="Date" style="padding: 1.25rem 1.5rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($item->entry_date)->format('M d, Y') }}</td>
+                        <td data-label="Entry Date" style="padding: 1.25rem 1.5rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($item->entry_date)->format('M d, Y H:i') }}</td>
+                        <td data-label="Arrival Date" style="padding: 1.25rem 1.5rem; color: var(--primary); font-weight: 700;">{{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('M d, Y') : '-' }}</td>
                         <td data-label="Description" style="padding: 1.25rem 1.5rem;">
-                            <div style="font-weight: 700; color: var(--text-main);">{{ $item->description }}</div>
+                            <div style="font-weight: 700; color: var(--text-main);">{{ $item->description }} <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $item->unit ?? 'Units' }})</span></div>
                             <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Batch #{{ $item->batch_id }}</div>
                         </td>
                         <td data-label="Category" style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
-                                {{ $ledgeMap[$item->ledge_category] ?? "Ledge " . $item->ledge_category }}
+                                {{ $ledgeMap[$item->ledge_category] ?? "Category " . $item->ledge_category }}
                             </span>
                         </td>
                         @php
                         $rawSupplier = $item->supplier_name;
                         $acquisitionType = $item->acquisition_type ?? 'Supplier';
                         $donorName = $item->donor_name ?? '-';
-                        if ($acquisitionType === 'Supplier' && preg_match('/\[Donor Action\]/', $rawSupplier)) {
+                        if ($acquisitionType === 'Supplier' && preg_match('/\[(Donor Action|Donation)\]/', $rawSupplier)) {
                         $acquisitionType = 'Donor';
                         $donorName = preg_replace('/\s\[.*\]$/', '', $rawSupplier);
                         }
@@ -371,7 +372,7 @@
                         }
 
                         $statusColor = '#94a3b8';
-                        if ($acquisitionType === 'Donor') {
+                        if ($acquisitionType === 'Donor' || $displayStatus === 'DONATION') {
                         $statusColor = '#8b5cf6';
                         } elseif ($displayStatus === 'Full Delivery' || $displayStatus === 'Full Delivery') {
                         $statusColor = '#10b981';
@@ -388,14 +389,9 @@
                                 {{ $displayStatus }}
                             </span>
                         </td>
-                        <td data-label="Avail. Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ $item->qty ?? '0' }}</td>
-                        <td data-label="ledge_balance" style="padding: 1.25rem 1.5rem;">
-                            <span style="font-weight: 800; color: {{ (float)$item->ledge_balance > 0 ? '#3b82f6' : '#1e40af' }};">
-                                {{ $item->ledge_balance }}
-                            </span>
-                        </td>
-                        <td data-label="Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">{{ $item->stock_balance }}</td>
-                        <td data-label="Qty" style="padding: 1.25rem 1.5rem;">
+                        <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ $item->qty ?? '0' }}</td>
+                        <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">{{ $item->stock_balance }}</td>
+                        <td data-label="Variance" style="padding: 1.25rem 1.5rem;">
                             <span style="font-weight: 800; color: {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '#10b981' : (is_numeric($item->variance) && (float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">
                                 {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '+' : '' }}{{ $item->variance }}
                             </span>
@@ -438,7 +434,7 @@
                         <i data-lucide="eye"></i>
                         View Details
                     </button>
-                    <button onclick="openStockCheckModal('{{ addslashes($item->description) }}', {{ $totalLedge }}, {{ $totalStock }}, '{{ $agg->total_variance ?? 0 }}', '{{ $totalQty }}')" class="menu-item" style="color: var(--primary);">
+                    <button onclick="openStockCheckModal('{{ addslashes($item->description) }}', 0, {{ $totalStock }}, '{{ $agg->total_variance ?? 0 }}', '{{ $totalQty }}')" class="menu-item" style="color: var(--primary);">
                         <i data-lucide="shield-check"></i>
                         Stock Check
                     </button>
@@ -679,7 +675,7 @@
                         <div id="auditPrevVar">0</div>
                     </div>
                     <div class="audit-stat-card" onclick="toggleAuditBreakdown('avail')" title="Audit current availability trail">
-                        <label>Available Qty</label>
+                        <label>Received Qty</label>
                         <div id="auditPrevAvail">0</div>
                     </div>
                 </div>
@@ -727,7 +723,7 @@
                         <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Condition</label>
                         <select id="auditReason">
                             <option value="">Status...</option>
-                            <option value="Good">Good Condition</option>
+                            <option value="Donor" data-icon="heart" data-color="#8b5cf6">Donation</option>
                             <option value="Missing">Missing</option>
                             <option value="Damaged">Damaged</option>
                             <option value="Found">Found</option>
@@ -1855,7 +1851,7 @@
 
                     itemsHtml += `
                         <div style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; ${!isLast ? 'border-bottom: 1px solid var(--border-color);' : ''}">
-                            <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; margin-bottom: 0.25rem;">${item.description}</div>
+                            <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; margin-bottom: 0.25rem;">${item.description} <span style="font-size: 0.7rem; color: var(--primary); font-weight: 800;">(${item.unit || 'Units'})</span></div>
                             
                             <div style="background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center;">
                                 <div style="display: flex; flex-direction: column;">
@@ -1892,8 +1888,12 @@
                             <span style="color: var(--text-main); font-weight: 800;">${batch.supplier_name.replace(/\[.*?\]/g, '').trim()}</span>
                         </div>
                         <div style="padding: 1.15rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Transaction Date</span>
-                            <span style="color: var(--text-main); font-weight: 700;">${new Date(batch.entry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                            <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Transaction Date (Auto)</span>
+                            <span style="color: var(--text-main); font-weight: 700;">${new Date(batch.entry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <div style="padding: 1.15rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Arrival Date (Manual)</span>
+                            <span style="color: var(--primary); font-weight: 800;">${batch.arrival_date ? new Date(batch.arrival_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}</span>
                         </div>
                         <div style="padding: 1.15rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
                             <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Allocation</span>
@@ -2503,34 +2503,35 @@
 
         const variance = physical - stockBal;
         display.innerText = (variance > 0 ? '+' : '') + variance;
-
         // Progress Indicator Logic
         const diffPercent = Math.min(100, Math.abs((variance / (stockBal || 1)) * 100));
         indicatorFill.style.width = `${diffPercent}%`;
 
         // Smart Insight Engine
+        display.innerHTML = (variance > 0 ? '+' : '') + variance;
         if (variance === 0) {
             display.style.color = '#10b981';
             indicatorFill.style.background = '#10b981';
             insight.className = 'insight-pill';
             insight.style.background = 'rgba(16, 185, 129, 0.1)';
             insight.style.color = '#10b981';
-            insight.innerHTML = `<i data-lucide="check-sparkles"></i> <span>Perfect Audit! Physical matches System.</span>`;
+            insight.innerHTML = `<i data-lucide="check-sparkles"></i> <span>Perfect Audit! Physical matches Delivered Qty.</span>`;
         } else if (variance < 0) {
             display.style.color = '#ef4444';
             indicatorFill.style.background = '#ef4444';
             insight.className = 'insight-pill';
             insight.style.background = 'rgba(239, 68, 68, 0.1)';
             insight.style.color = '#ef4444';
-            insight.innerHTML = `<i data-lucide="alert-triangle"></i> <span>Shortage Detected: System Expects ${stockBal} units.</span>`;
+            insight.innerHTML = `<i data-lucide="alert-triangle"></i> <span>Shortage Detected: Expected ${physical} units based on delivery.</span>`;
         } else {
             display.style.color = '#3b82f6';
             indicatorFill.style.background = '#3b82f6';
             insight.className = 'insight-pill';
             insight.style.background = 'rgba(59, 130, 246, 0.1)';
             insight.style.color = '#3b82f6';
-            insight.innerHTML = `<i data-lucide="package-plus"></i> <span>Surplus Noted: ${variance} extra units identified.</span>`;
+            insight.innerHTML = `<i data-lucide="package-plus"></i> <span>Surplus Noted: ${variance} extra units identified over delivery.</span>`;
         }
+        insight.style.display = 'flex';       }
 
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
@@ -2544,13 +2545,9 @@
         let icon = "list";
 
         switch (type) {
-            case 'balance':
-                label = "Ledger Trail";
-                key = "ledge_balance";
-                icon = "book";
-                break;
+
             case 'stock':
-                label = "System Trail";
+                label = "Category Trail";
                 key = "stock_balance";
                 icon = "layers";
                 break;
@@ -2559,6 +2556,7 @@
                 key = "variance";
                 icon = "git-commit";
                 break;
+
             case 'avail':
                 label = "Available Trail";
                 key = "qty";

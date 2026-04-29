@@ -262,13 +262,14 @@
                 <span class="info-value">{{ str_pad($batch->id, 6, '0', STR_PAD_LEFT) }}</span>
             </div>
             <div class="info-line">
-                <span class="info-label">Entry Date</span>
+                <span class="info-label">Entry Date (Auto)</span>
                 <span class="info-value">{{ \Carbon\Carbon::parse($batch->entry_date)->format('M d, Y') }}</span>
             </div>
             <div class="info-line">
-                <span class="info-label">Stock Ledge</span>
-                <span class="info-value">{{ $ledgeMap[$batch->ledge_category] ?? $batch->ledge_category }}</span>
+                <span class="info-label">Arrival Date (Manual)</span>
+                <span class="info-value">{{ $batch->arrival_date ? \Carbon\Carbon::parse($batch->arrival_date)->format('M d, Y') : 'N/A' }}</span>
             </div>
+
         </div>
         <div class="info-card">
             <h3>Logistics Entity</h3>
@@ -278,7 +279,7 @@
                 $supplierName = $batch->supplier_name;
                 
                 // Legacy Fallback
-                $isDonor = ($acqType === 'Donor' || str_contains($supplierName, '[Donor Action]'));
+                $isDonor = ($acqType === 'Donor' || str_contains($supplierName, '[Donor Action]') || str_contains($supplierName, '[Donation]'));
                 
                 if ($isDonor && !$donorName) {
                     $donorName = trim(preg_replace('/\[.*?\]/', '', $supplierName));
@@ -307,7 +308,7 @@
         
         @foreach($batch->items as $index => $item)
         @php
-            $expected = floatval($item->stock_balance) - floatval($item->variance);
+            $expected = floatval($item->qty);
             $variance = floatval($item->variance);
             
             $varText = 'no variance';
@@ -321,13 +322,12 @@
         @endphp
         <div style="margin-bottom: 25px; padding: 20px; background: #f8fafc; border: 1px solid var(--print-border); border-radius: 12px; page-break-inside: avoid;">
             <div style="font-weight: 900; font-size: 14px; margin-bottom: 12px; color: var(--print-primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
-                Scope {{ $index + 1 }} &bull; {{ strtoupper($item->description) }}
+                Scope {{ $index + 1 }} &bull; {{ strtoupper($item->description) }} ({{ $item->unit ?? 'Units' }})
             </div>
             <p style="margin: 0 0 15px; font-size: 13px; color: #334155; line-height: 1.8; text-align: justify;">
-                At the initiation of the verification procedure, the ledger mandated an expected baseline of <strong>{{ number_format($expected) }} units</strong>. 
-                Upon the physical handover process by the logistics personnel, <strong>{{ $item->qty ?? '0' }} units</strong> were formally presented. 
+                The logistics personnel formally presented <strong>{{ $item->qty ?? '0' }} units</strong> for reception. 
                 A rigorous count conducted on the floor yielded <strong>{{ $item->stock_balance }} units</strong> formally registered into the active stock baseline in verified condition.
-                This operation culminated in <strong>{{ $varText }}</strong> units when matched against the authorized expected capacity.
+                This operation culminated in <strong>{{ $varText }}</strong> units when matched against the authorized delivered quantity.
             </p>
             <div style="background: rgba(99, 102, 241, 0.05); padding: 12px 15px; border-radius: 8px; border-left: 3px solid var(--print-accent); font-size: 12px; color: #475569; font-style: italic;">
                 <strong>Auditor's Field Note:</strong> {{ $remarks }}

@@ -25,8 +25,12 @@ Route::middleware(['auth'])->group(function () {
     
     $dashboardLogic = function () {
         $existingItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->select('inventory_items.description', 'inventory_batches.ledge_category')
-            ->distinct()
+            ->select('inventory_items.description', 'inventory_batches.ledge_category', 'inventory_items.stock_balance', 'inventory_items.qty', 'inventory_items.variance')
+            ->whereIn('inventory_items.id', function($query) {
+                $query->selectRaw('MAX(id)')
+                    ->from('inventory_items')
+                    ->groupBy('description');
+            })
             ->get();
 
         // Total Inventory: Sum of stock_balance
@@ -69,7 +73,7 @@ Route::middleware(['auth'])->group(function () {
         // Expired Items (Stock = 0 AND Ledge >= 1)
         $expiredCount = \App\Models\InventoryItem::get()->filter(function ($item) {
             return is_numeric($item->stock_balance) && (float)$item->stock_balance == 0 &&
-                is_numeric($item->ledge_balance) && (float)$item->ledge_balance >= 1;
+                is_numeric($item->qty) && (float)$item->qty >= 1;
         })->count();
 
         // Chart Data (Last 12 Months)
@@ -79,7 +83,7 @@ Route::middleware(['auth'])->group(function () {
 
         $allActivity = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.entry_date', '>=', now()->subMonths(11)->startOfMonth())
-            ->select('inventory_items.variance', 'inventory_items.stock_balance', 'inventory_batches.entry_date')
+            ->select('inventory_items.stock_balance', 'inventory_batches.entry_date')
             ->get();
 
         for ($i = 11; $i >= 0; $i--) {
@@ -99,6 +103,8 @@ Route::middleware(['auth'])->group(function () {
         $totalVariance = \App\Models\InventoryItem::get()->sum(function ($item) {
             return is_numeric($item->variance) ? (float)$item->variance : 0;
         });
+
+
 
         // Ledge mapping for display and calculations
         $ledgeMap = [
@@ -129,7 +135,7 @@ Route::middleware(['auth'])->group(function () {
 
         foreach ($categoryStats as $code => $items) {
             $avail = $items->sum(fn($i) => is_numeric($i->qty) ? (float)$i->qty : 0);
-            $target = $items->sum(fn($i) => is_numeric($i->ledge_balance) ? (float)$i->ledge_balance : 0);
+            $target = $items->sum(fn($i) => is_numeric($i->qty) ? (float)$i->qty : 0);
             
             if ($target > 0) {
                 $percentage = round(($avail / $target) * 100);
@@ -149,7 +155,7 @@ Route::middleware(['auth'])->group(function () {
 
         // Individual items below threshold for the alerts container (Grouped by Description)
         $lowStockItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.stock_balance) as stock_balance, SUM(inventory_items.ledge_balance) as ledge_balance')
+            ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.stock_balance) as stock_balance')
             ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
             ->havingRaw('SUM(inventory_items.stock_balance) < 100')
             ->orderBy('stock_balance', 'asc')
@@ -200,7 +206,6 @@ Route::middleware(['auth'])->group(function () {
                 return $d->between($w->copy()->startOfWeek(), $w->copy()->endOfWeek());
             });
             $weekReceived[] = (float)$itemsInWeek->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
-            $weekVariance[] = (float)$itemsInWeek->sum(fn($item) => is_numeric($item->variance) ? (float)$item->variance : 0);
         }
 
         // Daily Chart Data (Last 14 Days)
@@ -220,12 +225,11 @@ Route::middleware(['auth'])->group(function () {
                 return $entry->isSameDay($d);
             });
             $dayReceived[] = (float)$itemsInDay->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
-            $dayVariance[] = (float)$itemsInDay->sum(fn($item) => is_numeric($item->variance) ? (float)$item->variance : 0);
         }
 
         // Recent Transactions
             $recentTransactions = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-                ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.ledge_category', 'inventory_batches.supplier_name', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type')
+                ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.arrival_date', 'inventory_batches.ledge_category', 'inventory_batches.supplier_name', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type')
             ->orderBy('inventory_batches.entry_date', 'desc')
             ->limit(4)
             ->get();

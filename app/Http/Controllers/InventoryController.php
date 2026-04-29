@@ -17,12 +17,15 @@ class InventoryController extends Controller
             'donor_name' => 'nullable|string',
             'acquisition_type' => 'required|string',
             'entry_date' => 'required',
+            'arrival_date' => 'required|date',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
-            'items.*.ledge_balance' => 'required|string',
+            'items.*.unit' => 'required|string',
+
             'items.*.stock_balance' => 'required|string',
             'items.*.qty' => 'nullable|string',
             'items.*.variance' => 'required|string',
+
             'items.*.remarks' => 'nullable|string',
         ]);
 
@@ -36,11 +39,15 @@ class InventoryController extends Controller
                 'donor_name' => $validated['donor_name'],
                 'acquisition_type' => $validated['acquisition_type'],
                 'entry_date' => $validated['entry_date'],
+                'arrival_date' => $validated['arrival_date'],
             ]);
 
             // Create the Items
             foreach ($validated['items'] as $item) {
-                $batch->items()->create($item);
+                // Remove ledge_balance from the item data before creation
+                $itemData = $item;
+                unset($itemData['ledge_balance']);
+                $batch->items()->create($itemData);
             }
 
             DB::commit();
@@ -77,9 +84,9 @@ class InventoryController extends Controller
         // 1. Check for Category Match (Ledge Name or Code)
         $categoryResults = collect();
         foreach ($ledgeMap as $code => $name) {
-            if (stripos($name, $query) !== false || stripos($code, $query) !== false || stripos("Ledge $code", $query) !== false) {
-                $categoryResults->push([
-                    'title' => "Ledge $code ($name)",
+                if (stripos($name, $query) !== false || stripos($code, $query) !== false || stripos("Category $code", $query) !== false) {
+                    $categoryResults->push([
+                        'title' => "Category $code ($name)",
                     'subtitle' => "Major Category Section",
                     'url' => route('receiveditems', ['ledge_category' => $code]),
                     'type' => 'category',

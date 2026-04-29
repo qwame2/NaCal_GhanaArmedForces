@@ -42,12 +42,7 @@
                     <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Receiving Date</span>
                     <span style="color: var(--text-main); font-weight: 700;">{{ \Carbon\Carbon::parse($batch->entry_date)->format('F d, Y') }}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Ledge Account</span>
-                    <span style="background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 6px; font-weight: 800; font-size: 0.8rem;">
-                        {{ $ledgeMap[$batch->ledge_category] ?? "Ledge " . $batch->ledge_category }}
-                    </span>
-                </div>
+
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Transaction ID</span>
                     <span style="color: var(--text-main); font-weight: 700; font-family: monospace;">#NB-{{ date('Y') }}-{{ str_pad($batch->id, 4, '0', STR_PAD_LEFT) }}</span>
@@ -89,11 +84,11 @@
                 <thead>
                     <tr style="background: rgba(0,0,0,0.02); text-align: left;">
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Description</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Avail. Qty</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Received Qty</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Qty Received</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Record Status</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Unit Balance</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Stock Balance</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -107,7 +102,9 @@
                             <span style="font-size: 0.75rem; color: var(--text-muted);">{{ $ledgeMap[$batch->ledge_category] ?? $batch->ledge_category }}</span>
                         </td>
                         <td style="padding: 1.25rem 1.5rem;">
-                            <span style="font-weight: 800; color: #10b981;">+{{ $item->variance }}</span>
+                            <span style="font-weight: 800; color: {{ (float)$item->variance > 0 ? '#10b981' : ((float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">
+                                {{ (float)$item->variance > 0 ? '+' : '' }}{{ $item->variance }}
+                            </span>
                         </td>
                         <td style="padding: 1.25rem 1.5rem;">
                             <div style="display: flex; align-items: center; gap: 0.5rem; color: #10b981; font-weight: 600; font-size: 0.85rem;">

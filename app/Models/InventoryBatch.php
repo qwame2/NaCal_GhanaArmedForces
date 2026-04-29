@@ -14,7 +14,8 @@ class InventoryBatch extends Model
         'supplier_name',
         'donor_name',
         'acquisition_type',
-        'entry_date'
+        'entry_date',
+        'arrival_date'
     ];
 
     public function items()
