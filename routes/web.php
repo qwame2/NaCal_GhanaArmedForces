@@ -23,8 +23,12 @@ Route::get('/', function() {
 // Protected Routes (Auto-Login Bypass enabled globally via bootstrap/app.php)
 $dashboardLogic = function () {
     $existingItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-        ->select('inventory_items.description', 'inventory_batches.ledge_category')
-        ->distinct()
+        ->select('inventory_items.description', 'inventory_batches.ledge_category', 'inventory_items.stock_balance', 'inventory_items.qty', 'inventory_items.variance')
+        ->whereIn('inventory_items.id', function($query) {
+            $query->selectRaw('MAX(id)')
+                ->from('inventory_items')
+                ->groupBy('description');
+        })
         ->get();
 
     // Total Inventory: Sum of stock_balance
@@ -67,7 +71,7 @@ $dashboardLogic = function () {
     // Expired Items (Stock = 0 AND Ledge >= 1)
     $expiredCount = \App\Models\InventoryItem::get()->filter(function ($item) {
         return is_numeric($item->stock_balance) && (float)$item->stock_balance == 0 &&
-            is_numeric($item->ledge_balance) && (float)$item->ledge_balance >= 1;
+            is_numeric($item->qty) && (float)$item->qty >= 1;
     })->count();
 
     // Chart Data (Last 12 Months)
@@ -127,7 +131,7 @@ $dashboardLogic = function () {
 
     foreach ($categoryStats as $code => $items) {
         $avail = $items->sum(fn($i) => is_numeric($i->qty) ? (float)$i->qty : 0);
-        $target = $items->sum(fn($i) => is_numeric($i->ledge_balance) ? (float)$i->ledge_balance : 0);
+        $target = $items->sum(fn($i) => is_numeric($i->qty) ? (float)$i->qty : 0);
         
         if ($target > 0) {
             $percentage = round(($avail / $target) * 100);
@@ -147,7 +151,7 @@ $dashboardLogic = function () {
 
     // Individual items below threshold for the alerts container (Grouped by Description)
     $lowStockItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-        ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.stock_balance) as stock_balance, SUM(inventory_items.ledge_balance) as ledge_balance')
+        ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.stock_balance) as stock_balance, SUM(inventory_items.qty) as qty')
         ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
         ->havingRaw('SUM(inventory_items.stock_balance) < 100')
         ->orderBy('stock_balance', 'asc')
