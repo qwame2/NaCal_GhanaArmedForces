@@ -250,6 +250,12 @@
                 color: var(--primary);
             }
         }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 
     <!-- Results Table -->
@@ -449,22 +455,22 @@
         </tr>
         @empty
         <tr>
-            <td colspan="9" style="padding: 7rem 2rem; text-align: center;">
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
-                    <div style="background: var(--bg-main); width: 84px; height: 84px; border-radius: 24px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); box-shadow: 0 10px 40px rgba(0,0,0,0.04); border: 1px solid var(--border-color);">
-                        <i data-lucide="package-search" style="width: 38px; opacity: 0.6;"></i>
+            <td colspan="13" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; margin: 0 auto;">
+                    <div style="background: rgba(99, 102, 241, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(99, 102, 241, 0.2); animation: pulse 2s infinite;">
+                        <i data-lucide="package-search" style="width: 44px; stroke-width: 1.5px;"></i>
                     </div>
-                    <div style="max-width: 450px; margin: 0 auto;">
-                        <h4 style="font-size: 1.35rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.02em;">No Records Discovered</h4>
-                        <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.6;">Your inventory ledger is currently empty or no items match your current search filters. Try broadening your criteria or record a new batch.</p>
+                    <div style="max-width: 500px; text-align: center;">
+                        <h4 style="font-size: 1.75rem; font-weight: 950; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.04em;">No Records Discovered</h4>
+                        <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; font-weight: 500;">Your inventory ledger is currently empty or no items match your current search filters. Try broadening your criteria or record a new batch.</p>
 
-                        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                            <a href="{{ route('receiveditems') }}" class="glass-card" style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-size: 0.9rem; color: var(--text-main); font-weight: 700; transition: all 0.3s; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem;">
-                                <i data-lucide="refresh-ccw" style="width: 16px;"></i>
+                        <div style="margin-top: 2.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <a href="{{ route('receiveditems') }}" class="glass-card" style="padding: 0.85rem 1.75rem; border-radius: 14px; text-decoration: none; font-size: 0.95rem; color: var(--text-main); font-weight: 800; transition: all 0.3s; border: 1.5px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; background: var(--bg-card);">
+                                <i data-lucide="refresh-ccw" style="width: 18px;"></i>
                                 Reset Filters
                             </a>
-                            <button onclick="window.location.href='/'" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px; border: none; font-size: 0.9rem; background: var(--primary); color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);">
-                                <i data-lucide="plus-circle" style="width: 18px;"></i>
+                            <button onclick="window.location.href='/'" class="btn-primary" style="padding: 0.85rem 1.75rem; border-radius: 14px; border: none; font-size: 0.95rem; background: var(--primary-gradient); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 12px 24px -6px rgba(99, 102, 241, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                <i data-lucide="plus-circle" style="width: 20px;"></i>
                                 New Inventory Entry
                             </button>
                         </div>
@@ -669,14 +675,22 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
                     <div class="audit-stat-card" onclick="toggleAuditBreakdown('variance')" title="Review historical discrepancies">
-                        <label>Prev. Variance</label>
+                        <label>Prev. Var.</label>
                         <div id="auditPrevVar">0</div>
                     </div>
                     <div class="audit-stat-card" onclick="toggleAuditBreakdown('avail')" title="Audit current availability trail">
+<<<<<<< HEAD
                         <label>Received Qty</label>
+=======
+                        <label>Avail. Qty</label>
+>>>>>>> 897e205e5719451dae991190e23fefcebf8508f9
                         <div id="auditPrevAvail">0</div>
+                    </div>
+                    <div class="audit-stat-card" style="border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.02);" title="Units currently out on temporary loan">
+                        <label style="color: #f59e0b;">Active Loans</label>
+                        <div id="auditActiveLoans" style="color: #f59e0b;">0</div>
                     </div>
                 </div>
 
@@ -2401,6 +2415,7 @@
         document.getElementById('auditStockBal').innerText = stockBal;
         document.getElementById('auditPrevVar').innerText = prevVar || '0';
         document.getElementById('auditPrevAvail').innerText = prevAvail || '0';
+        document.getElementById('auditActiveLoans').innerText = '...';
 
         document.getElementById('physicalCount').value = '';
         document.getElementById('auditReason').value = '';
@@ -2461,7 +2476,11 @@
 
         try {
             const response = await fetch(`/api/item-audit-details?description=${encodeURIComponent(description)}`);
-            auditHistoryData = await response.json();
+            const data = await response.json();
+            
+            auditHistoryData = data.batches;
+            document.getElementById('auditActiveLoans').innerText = data.on_loan || '0';
+            
             return auditHistoryData;
         } catch (error) {
             container.innerHTML = `<p style="color: #ef4444; font-size: 0.7rem;">Failed to retrieve batch details: ${error.message}</p>`;
@@ -2487,6 +2506,7 @@
 
     function calculateAuditVariance() {
         const stockBal = parseFloat(document.getElementById('auditStockBal').innerText) || 0;
+        const onLoan = parseFloat(document.getElementById('auditActiveLoans').innerText) || 0;
         const physical = parseFloat(document.getElementById('physicalCount').value);
         const display = document.getElementById('newAuditVariance');
         const insight = document.getElementById('auditInsight');
@@ -2507,29 +2527,50 @@
         const diffPercent = Math.min(100, Math.abs((variance / (stockBal || 1)) * 100));
         indicatorFill.style.width = `${diffPercent}%`;
 
+<<<<<<< HEAD
         // Smart Insight Engine
         display.innerHTML = (variance > 0 ? '+' : '') + variance;
+=======
+        // Smart Insight Engine (factor in active loans)
+        const totalAccounted = physical + onLoan;
+
+>>>>>>> 897e205e5719451dae991190e23fefcebf8508f9
         if (variance === 0) {
             display.style.color = '#10b981';
             indicatorFill.style.background = '#10b981';
-            insight.className = 'insight-pill';
             insight.style.background = 'rgba(16, 185, 129, 0.1)';
             insight.style.color = '#10b981';
+<<<<<<< HEAD
             insight.innerHTML = `<i data-lucide="check-sparkles"></i> <span>Perfect Audit! Physical matches Delivered Qty.</span>`;
+=======
+            insight.innerHTML = `<i data-lucide="check-sparkles"></i> <span>Perfect Audit! Physical matches System.</span>`;
+        } else if (totalAccounted === stockBal) {
+            display.style.color = '#f59e0b';
+            indicatorFill.style.background = '#f59e0b';
+            insight.style.background = 'rgba(245, 158, 11, 0.1)';
+            insight.style.color = '#d97706';
+            insight.innerHTML = `<i data-lucide="info"></i> <span>Technically Balanced: ${physical} present + ${onLoan} on loan = ${stockBal} expected.</span>`;
+>>>>>>> 897e205e5719451dae991190e23fefcebf8508f9
         } else if (variance < 0) {
             display.style.color = '#ef4444';
             indicatorFill.style.background = '#ef4444';
-            insight.className = 'insight-pill';
             insight.style.background = 'rgba(239, 68, 68, 0.1)';
             insight.style.color = '#ef4444';
+<<<<<<< HEAD
             insight.innerHTML = `<i data-lucide="alert-triangle"></i> <span>Shortage Detected: Expected ${physical} units based on delivery.</span>`;
+=======
+            insight.innerHTML = `<i data-lucide="alert-triangle"></i> <span>Shortage: Even with ${onLoan} on loan, ${Math.abs(stockBal - totalAccounted)} units are still missing.</span>`;
+>>>>>>> 897e205e5719451dae991190e23fefcebf8508f9
         } else {
             display.style.color = '#3b82f6';
             indicatorFill.style.background = '#3b82f6';
-            insight.className = 'insight-pill';
             insight.style.background = 'rgba(59, 130, 246, 0.1)';
             insight.style.color = '#3b82f6';
+<<<<<<< HEAD
             insight.innerHTML = `<i data-lucide="package-plus"></i> <span>Surplus Noted: ${variance} extra units identified over delivery.</span>`;
+=======
+            insight.innerHTML = `<i data-lucide="package-plus"></i> <span>Surplus Noted: ${variance} extra units identified beyond system expectations.</span>`;
+>>>>>>> 897e205e5719451dae991190e23fefcebf8508f9
         }
         insight.style.display = 'flex';       }
 
@@ -2648,8 +2689,9 @@
         // Logic to ensure history data is loaded before synthesis
         const genBtn = document.getElementById('genRepBtn');
         const originalHtml = genBtn.innerHTML;
+        const loanDisplay = document.getElementById('auditActiveLoans').innerText;
 
-        if (auditHistoryData.length === 0) {
+        if (auditHistoryData.length === 0 || loanDisplay === '...') {
             genBtn.innerHTML = `<div class="loader" style="width: 14px; height: 14px; border-width: 2px;"></div> Synchronizing Trail...`;
             genBtn.style.opacity = '0.7';
             try {
@@ -2672,9 +2714,16 @@
             minute: '2-digit'
         });
 
+        const onLoan = parseFloat(document.getElementById('auditActiveLoans').innerText) || 0;
+
         // Editable Narrative Body
         let narrative = `This audit was conducted to verify the physical existence and condition of the inventory item: ${item.toUpperCase()}.\n\n`;
         narrative += `Based on the physical verification conducted on ${dateStr} at exactly ${timeStr}, the following observations were recorded regarding the inventory state:\n\n`;
+        
+        if (onLoan > 0) {
+            narrative += `[NOTICE] System records indicate ${onLoan} units are currently out on temporary loan. This active allocation explains why the physical count (${physical}) is lower than the system stock (${stockBal}).\n\n`;
+        }
+        
         narrative += `[AUDITOR NOTES]\n`;
         narrative += `${remarks}\n\n`;
         narrative += `The condition of the items has been categorized as "${reason}". This assessment reflects the current physical quality and storage situation for this batch.`;
@@ -2682,10 +2731,15 @@
         // Uneditable Conclusion Content
         let conclusion = `<div style="color: #000; font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem;">[AUDIT CONCLUSION]</div>`;
         const varValue = parseFloat(variance);
+        const totalAccounted = parseFloat(physical) + onLoan;
+
         if (varValue === 0) {
             conclusion += `<div style="color: #10b981;">SUCCESS: No variance detected. Physical stock perfectly aligns with system ledger records.</div>`;
-        } else if (varValue < 0) {
-            conclusion += `<div style="color: #ef4444;">WARNING: A shortage of ${Math.abs(varValue)} units has been identified. Immediate reconciliation or loss investigation is required.</div>`;
+        } else if (totalAccounted === parseFloat(stockBal)) {
+            conclusion += `<div style="color: #f59e0b;">BALANCED: System registry is balanced. Although physical stock is lower, all ${Math.abs(varValue)} missing units are accounted for via active temporary loans.</div>`;
+        } else if (totalAccounted < parseFloat(stockBal)) {
+            const netShortage = parseFloat(stockBal) - totalAccounted;
+            conclusion += `<div style="color: #ef4444;">WARNING: A shortage of ${netShortage} units has been identified. Even after accounting for ${onLoan} units on loan, the system remains unreconciled. Immediate investigation required.</div>`;
         } else {
             conclusion += `<div style="color: #3b82f6;">NOTICE: A surplus of ${varValue} units has been discovered. Update requested for system ledger records to incorporate identified surplus.</div>`;
         }
@@ -2801,10 +2855,11 @@
                         <h2>VERIFIED STOCK AUDIT REPORT</h2>
                     </div>
 
-                    <div class="meta-grid">
+                    <div class="meta-grid" style="grid-template-columns: repeat(5, 1fr);">
                         <div class="meta-item"><label>Subject Material</label><div>${item}</div></div>
                         <div class="meta-item"><label>Date of Audit</label><div>${dateStr}</div></div>
                         <div class="meta-item"><label>Time of Verification</label><div>${timeStr}</div></div>
+                        <div class="meta-item"><label>Active Loans (Temp)</label><div style="color: #f59e0b;">${document.getElementById('auditActiveLoans').innerText}</div></div>
                         <div class="meta-item"><label>Audit Status</label><div style="color: #ef4444;">FORMAL</div></div>
                     </div>
 
@@ -2823,6 +2878,10 @@
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05);">
                                     <span style="font-size: 0.7rem; font-weight: 800;">PHYSICAL QUANTITY:</span>
                                     <span style="font-weight: 900; color: #000;">${physical} Units</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                                    <span style="font-size: 0.7rem; font-weight: 800;">ACTIVE LOANS (TEMP):</span>
+                                    <span style="font-weight: 900; color: #f59e0b;">${document.getElementById('auditActiveLoans').innerText} Units</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between;">
                                     <span style="font-size: 0.7rem; font-weight: 800;">AUDIT VARIANCE:</span>

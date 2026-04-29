@@ -80,9 +80,17 @@ class IssueItemsController extends Controller
                     if ($qtyToIssue <= 0) break;
 
                     $available = floatval($inventoryItem->qty);
+                    $stockBal = floatval($inventoryItem->stock_balance);
                     $take = min($available, $qtyToIssue);
 
+                    // Always deduct from available quantity (qty)
                     $inventoryItem->qty = $available - $take;
+
+                    // If Permanent, also deduct from the system's stock balance
+                    if ($validated['issuance_type'] === 'Permanent') {
+                        $inventoryItem->stock_balance = $stockBal - $take;
+                    }
+
                     $inventoryItem->save();
 
                     $qtyToIssue -= $take;
