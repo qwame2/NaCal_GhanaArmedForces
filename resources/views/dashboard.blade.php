@@ -201,7 +201,7 @@
                 @if($isLedgeCritical)
                 <div style="display: flex; flex-direction: column; gap: 1rem;">
                     <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid rgba(239, 68, 68, 0.1); padding-bottom: 0.75rem;">
-                        <span style="font-size: 0.65rem; color: var(--danger); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Alerts: {{ count($lowStockLedges) }} Ledges</span>
+                        <span style="font-size: 0.65rem; color: var(--danger); text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">Alerts: {{ count($lowStockLedges) }} Categories</span>
                     </div>
 
                     @foreach($lowStockLedges as $l)
@@ -231,7 +231,7 @@
             @else
             <div style="text-align: center; padding: 2.5rem 0; color: var(--text-muted);">
                 <i data-lucide="shield-check" style="width: 32px; height: 32px; margin-bottom: 0.75rem; color: #10b981; opacity: 0.8;"></i>
-                <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">All Ledges Healthy</p>
+                <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">All Categories Healthy</p>
                 <p style="font-size: 0.7rem;">Stock levels are currently safe.</p>
             </div>
             @endif

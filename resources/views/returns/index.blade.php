@@ -81,7 +81,7 @@
                             <div style="font-weight: 900; color: #f59e0b; font-size: 1.1rem; letter-spacing: -0.01em;">{{ $item->description }}</div>
                         </td>
                         <td style="padding: 1.75rem 1.5rem;">
-                            <span class="ledge-badge-premium">Ledge {{ $item->ledge_category }}</span>
+                            <span class="ledge-badge-premium">Category {{ $item->ledge_category }}</span>
                         </td>
                         <td style="padding: 1.75rem 1.5rem;">
                             <div style="display: flex; align-items: center; gap: 8px;">
@@ -110,7 +110,7 @@
             @if($item->quantity > 0)
             <div class="return-card-mobile" data-search="{{ strtolower($item->beneficiary . ' ' . $item->description) }}">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
-                    <span class="ledge-badge-premium">Ledge {{ $item->ledge_category }}</span>
+                    <span class="ledge-badge-premium">Category {{ $item->ledge_category }}</span>
                     <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">{{ date('d/m/y', strtotime($item->issuance_date)) }}</span>
                 </div>
                 <h4 style="margin: 0; color: var(--text-main); font-size: 1.2rem; font-weight: 900;">{{ $item->description }}</h4>
@@ -139,7 +139,7 @@
                 <i data-lucide="refresh-cw" style="width: 40px; height: 40px; color: var(--primary); opacity: 0.2;"></i>
             </div>
         </div>
-        <h3 style="font-weight: 950; color: var(--text-main); font-size: 1.5rem;">Clean Ledger State</h3>
+        <h3 style="font-weight: 950; color: var(--text-main); font-size: 1.5rem;">Clean Slate</h3>
         <p style="color: var(--text-muted); font-weight: 600;">All issued assets have been accounted for and returned.</p>
     </div>
     @endif
