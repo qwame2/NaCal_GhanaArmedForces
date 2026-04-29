@@ -84,25 +84,36 @@
     </div>
 
     <!-- Quick Ledge Filters Carousel -->
-    <div class="category-carousel-wrapper" style="position: relative; margin-bottom: 3rem;">
-        <!-- Left Nav Arrow -->
-        <button type="button" id="prevLedge" style="position: absolute; left: -10px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); opacity: 0; transition: all 0.3s; pointer-events: none;">
-            <i data-lucide="chevron-left" style="width: 18px;"></i>
-        </button>
+    <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 3rem;">
+        <!-- Static Pending Partials Button -->
+        <a href="{{ request()->fullUrlWithQuery(['status' => request('status') === 'partial' ? null : 'partial']) }}" style="flex-shrink: 0; padding: 0.65rem 1.4rem; border-radius: 999px; border: {{ request('status') === 'partial' ? '1.5px solid #f59e0b' : '1.5px solid var(--border-color)' }}; background: {{ request('status') === 'partial' ? 'rgba(245, 158, 11, 0.1)' : 'var(--bg-card)' }}; color: {{ request('status') === 'partial' ? '#f59e0b' : 'var(--text-main)' }}; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 0.85rem;">
+            <i data-lucide="{{ request('status') === 'partial' ? 'x-circle' : 'alert-circle' }}" style="width: 16px;"></i>
+            {{ request('status') === 'partial' ? 'Clear Partials' : 'Pending Partials' }}
+        </a>
 
-        <div class="quick-filters-container" id="ledgeScroll" style="display: flex; gap: 0.75rem; overflow-x: auto; padding: 0.5rem 0.25rem; white-space: nowrap; scroll-behavior: smooth;">
-            <button type="button" class="quick-ledge-btn {{ !request('ledge_category') ? 'active' : '' }}" data-ledge="" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-weight: 800; cursor: pointer; transition: all 0.3s; font-size: 0.85rem;">All Groups</button>
-            @foreach($ledgeMap as $code => $name)
-            <button type="button" class="quick-ledge-btn {{ request('ledge_category') == $code ? 'active' : '' }}" data-ledge="{{ $code }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
-                <span style="width: 8px; height: 8px; background: #94a3b8; border-radius: 50%;"></span> Ledge {{ $code }} ({{ $name }})
+        <!-- Vertical Divider -->
+        <div style="width: 2px; height: 32px; background: var(--border-color); flex-shrink: 0; border-radius: 2px; opacity: 0.5;"></div>
+
+        <div class="category-carousel-wrapper" style="position: relative; flex-grow: 1; margin-bottom: 0; min-width: 0;">
+            <!-- Left Nav Arrow -->
+            <button type="button" id="prevLedge" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s;">
+                <i data-lucide="chevron-left" style="width: 18px;"></i>
             </button>
-            @endforeach
-        </div>
 
-        <!-- Right Nav Arrow -->
-        <button type="button" id="nextLedge" style="position: absolute; right: -10px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s;">
-            <i data-lucide="chevron-right" style="width: 18px;"></i>
-        </button>
+            <div class="quick-filters-container" id="ledgeScroll" style="display: flex; gap: 0.75rem; overflow-x: auto; padding: 0.5rem 0.25rem; white-space: nowrap; scroll-behavior: smooth;">
+                <button type="button" class="quick-ledge-btn {{ !request('ledge_category') ? 'active' : '' }}" data-ledge="" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-weight: 800; cursor: pointer; transition: all 0.3s; font-size: 0.85rem;">All Groups</button>
+                @foreach($ledgeMap as $code => $name)
+                <button type="button" class="quick-ledge-btn {{ request('ledge_category') == $code ? 'active' : '' }}" data-ledge="{{ $code }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 8px; height: 8px; background: #94a3b8; border-radius: 50%;"></span> Category {{ $code }} ({{ $name }})
+                </button>
+                @endforeach
+            </div>
+
+            <!-- Right Nav Arrow -->
+            <button type="button" id="nextLedge" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s;">
+                <i data-lucide="chevron-right" style="width: 18px;"></i>
+            </button>
+        </div>
     </div>
 
     <style>
@@ -426,11 +437,11 @@
 
         <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right;">
             <div class="action-dropdown-wrapper">
-                <button type="button" class="glass-btn-sm" title="Actions" onclick="toggleActionMenu('{{ $item->id }}', event)" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                <button type="button" class="glass-btn-sm" title="Actions" onclick="toggleActionMenu('{{ $item->id }}', this, event)" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
                     <i data-lucide="more-vertical" style="width: 18px;"></i>
                 </button>
                 <div id="actionMenu-{{ $item->id }}" class="action-menu">
-                    @if($displayStatus === 'Partial Delivery' || $displayStatus === 'PARTIAL DELIV')
+                    @if(($displayStatus === 'PARTIAL DELIVERY' || $displayStatus === 'Partial Delivery') && is_numeric($item->variance) && (float)$item->variance < 0)
                     <button onclick="continueDelivery('{{ $item->batch_id }}')" class="menu-item" style="color: #f59e0b;">
                         <i data-lucide="package-plus"></i>
                         Continue Delivery
@@ -1907,7 +1918,7 @@
                         </div>
                         <div style="padding: 1.15rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
                             <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Allocation</span>
-                            <span style="color: var(--primary); font-weight: 900;">${ledgeMap[batch.ledge_category] || 'Ledge ' + batch.ledge_category}</span>
+                            <span style="color: var(--primary); font-weight: 900;">${ledgeMap[batch.ledge_category] || 'Category ' + batch.ledge_category}</span>
                         </div>
                     </div>
 
@@ -1966,10 +1977,9 @@
 
     function continueDelivery(batchId) {
         // Hide standard detail modal if open
-        const actionMenu = document.getElementById('actionMenu-' + batchId);
-        if (actionMenu) {
-            actionMenu.classList.remove('active');
-        }
+        // Hide any active portals
+        const portal = document.getElementById('action-menu-portal');
+        if (portal) portal.remove();
         
         const modal = document.getElementById('continueDeliveryModal');
         const subtitle = document.getElementById('continueModalSubtitle');
@@ -2012,8 +2022,8 @@
 
                 continueBatchData.items.forEach((item, index) => {
                     const expected = parseFloat(item.stock_balance) - parseFloat(item.variance);
-                    const qty = parseFloat(item.qty) || 0;
-                    const outstanding = expected - qty;
+                    const alreadyBrought = parseFloat(item.stock_balance) || 0;
+                    const outstanding = expected - alreadyBrought;
                     
                     if (outstanding <= 0) return; // Full quantity has been brought
                     
@@ -2035,7 +2045,7 @@
                             </div>
                             <div style="display: flex; flex-direction: column;">
                                 <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Already Brought</span>
-                                <span style="font-weight: 900; color: #10b981; font-size: 1rem;">${qty}</span>
+                                <span style="font-weight: 900; color: #10b981; font-size: 1rem;">${alreadyBrought}</span>
                             </div>
                             <div style="display: flex; flex-direction: column;">
                                 <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Pending Deficit</span>
@@ -2047,7 +2057,7 @@
                             <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: block;">Newly Arrived Quantity</label>
                             <input type="number" class="continue-input" data-item-id="${item.id}" max="${outstanding}" min="0" placeholder="Enter additional units received..." 
                                 style="width: 100%; padding: 1.15rem; border-radius: 12px; border: 2px solid var(--border-color); font-size: 1rem; font-weight: 700; background: var(--bg-card); color: var(--text-main); transition: all 0.3s;"
-                                oninput="previewRecalculation(${item.id}, ${expected}, ${item.stock_balance}, ${qty}, ${outstanding})">
+                                oninput="previewRecalculation(${item.id}, ${expected}, ${item.stock_balance}, ${alreadyBrought}, ${outstanding})">
                         </div>
 
                         <div id="recalc_preview_${item.id}" style="display: none; background: rgba(16, 185, 129, 0.05); border-left: 3px solid #10b981; padding: 0.75rem 1rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.85rem;">
@@ -2279,11 +2289,13 @@
             const scrollLeft = ledgeScroll.scrollLeft;
             const maxScroll = ledgeScroll.scrollWidth - ledgeScroll.clientWidth;
 
-            prevBtn.style.opacity = scrollLeft > 10 ? '1' : '0';
-            prevBtn.style.pointerEvents = scrollLeft > 10 ? 'auto' : 'none';
+            // Show prevBtn only if pills are hidden to the left
+            prevBtn.style.opacity = scrollLeft > 2 ? '1' : '0';
+            prevBtn.style.pointerEvents = scrollLeft > 2 ? 'auto' : 'none';
 
-            nextBtn.style.opacity = scrollLeft < maxScroll - 10 ? '1' : '0';
-            nextBtn.style.pointerEvents = scrollLeft < maxScroll - 10 ? 'auto' : 'none';
+            // Show nextBtn only if pills are hidden to the right
+            nextBtn.style.opacity = maxScroll > 2 && scrollLeft < maxScroll - 2 ? '1' : '0';
+            nextBtn.style.pointerEvents = maxScroll > 2 && scrollLeft < maxScroll - 2 ? 'auto' : 'none';
         };
 
         prevBtn.addEventListener('click', () => {
@@ -2333,11 +2345,14 @@
         }, true);
     });
 
-    // Toggle Action Menu Logic
-    function toggleActionMenu(menuId, event) {
-        if(event) event.stopPropagation();
+    // Toggle Action Menu Logic (Bulletproof Portal)
+    function toggleActionMenu(menuId, button, event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
 
-        const btn = event ? (event.currentTarget || event.target.closest('.glass-btn-sm')) : window.event?.currentTarget;
+        const btn = button;
         if (!btn) return;
 
         // Clean up any existing deployed menu
@@ -2345,35 +2360,49 @@
         if (existingPortal) {
             const isSame = existingPortal.getAttribute('data-menu-id') === String(menuId);
             existingPortal.remove();
-            if (isSame) return; // If clicking the same button, we just close it
+            if (isSame) return; // Toggle off if same
         }
 
-        // Find the original menu in the table to use as a template
+        // Find the original menu template in the table
         const templateMenu = document.getElementById(`actionMenu-${menuId}`);
         if (!templateMenu) return;
 
-        // Clone the content and deploy it globally to escape the table's overflow
+        // Clone and deploy to body to escape table overflow and backdrop-filter containing blocks
         const portalMenu = templateMenu.cloneNode(true);
         portalMenu.id = 'action-menu-portal';
         portalMenu.setAttribute('data-menu-id', menuId);
-        portalMenu.classList.add('active'); // Display it
         
-        document.body.appendChild(portalMenu);
+        // Force visibility
+        portalMenu.style.display = 'flex';
+        portalMenu.classList.add('active');
         
-        // Ensure menu closes when any action is clicked
+        // Ensure menu closes when an option is selected
         portalMenu.addEventListener('click', (e) => {
             if (e.target.closest('.menu-item')) {
                 setTimeout(() => portalMenu.remove(), 50);
             }
         });
 
-        // Anchor the cloned menu relative to the viewport and original button
+        // Append to body FIRST so we can accurately measure/position it if needed
+        document.body.appendChild(portalMenu);
+
+        // Positioning relative to viewport
         const rect = btn.getBoundingClientRect();
         portalMenu.style.position = 'fixed';
         portalMenu.style.top = (rect.bottom + 8) + 'px';
-        portalMenu.style.left = 'auto'; // clear left constraints
-        portalMenu.style.right = (window.innerWidth - rect.right - 10) + 'px';
-        portalMenu.style.zIndex = '99999';
+        portalMenu.style.left = 'auto';
+        
+        // Avoid using innerWidth due to scrollbar width inconsistencies. 
+        // Calculate left position based on the right edge of the button minus the menu width.
+        const menuWidth = portalMenu.offsetWidth || 200;
+        let leftPos = rect.right - menuWidth;
+        
+        // Ensure it doesn't go off the left edge of the screen
+        if (leftPos < 10) leftPos = 10;
+        
+        portalMenu.style.left = leftPos + 'px';
+        portalMenu.style.right = 'auto'; // Clear right
+        portalMenu.style.zIndex = '999999';
     }
 
     async function deleteBatch(batchId) {
@@ -2550,7 +2579,7 @@
             insight.style.color = '#3b82f6';
             insight.innerHTML = `<i data-lucide="package-plus"></i> <span>Surplus Noted: ${variance} extra units identified beyond system expectations.</span>`;
         }
-        insight.style.display = 'flex';       }
+        insight.style.display = 'flex';
 
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }

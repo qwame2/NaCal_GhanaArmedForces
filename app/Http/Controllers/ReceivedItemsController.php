@@ -46,6 +46,11 @@ class ReceivedItemsController extends Controller
             $query->where('inventory_batches.donor_name', 'LIKE', '%' . $request->donor . '%');
         }
 
+        // Status filter (Partial Delivery)
+        if ($request->has('status') && $request->status === 'partial') {
+            $query->where('inventory_batches.supplier_name', 'LIKE', '%[Partial Deliv%');
+        }
+
         // Ledge Category filter
         if ($request->has('ledge_category') && $request->ledge_category) {
             $query->where('inventory_batches.ledge_category', $request->ledge_category);

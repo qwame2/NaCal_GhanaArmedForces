@@ -328,11 +328,12 @@ Route::post('/api/inventory/receive-remainder', function (\Illuminate\Http\Reque
                 $incoming = floatval($update['incoming_qty']);
                 if ($incoming <= 0) continue;
 
+                // Calculate expected amount based on original stock and variance
+                // This works for both new data (where variance = stock - qty) and old data
                 $expected = floatval($item->stock_balance) - floatval($item->variance);
                 
                 $item->stock_balance += $incoming;
-                // If qty acts as 'brought', we increment it too.
-                $item->qty = floatval($item->qty) + $incoming; 
+                // Variance is actual physical stock minus the expected invoice quantity
                 $item->variance = $item->stock_balance - $expected;
                 
                 // Keep the remarks updated to note the remainder was entered
@@ -356,7 +357,7 @@ Route::post('/api/inventory/receive-remainder', function (\Illuminate\Http\Reque
                 
                 foreach ($allItems as $i) {
                     $expected = floatval($i->stock_balance) - floatval($i->variance);
-                    if (floatval($i->qty) < $expected) {
+                    if (floatval($i->stock_balance) < $expected) {
                         $allDelivered = false;
                         break;
                     }

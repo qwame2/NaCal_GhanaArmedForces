@@ -967,12 +967,12 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Stock Balance</label>
-                                <input type="text" class="row-stock-balance" placeholder="0">
+                                <label class="lbl-stock-balance">Stock Balance</label>
+                                <input type="number" class="row-stock-balance" placeholder="0">
                             </div>
                             <div class="form-group">
-                                <label>Received Qty</label>
-                                <input type="text" class="row-qty" placeholder="0" style="border-color: var(--primary-light);">
+                                <label class="lbl-received-qty">Received Qty</label>
+                                <input type="number" class="row-qty" placeholder="0" style="border-color: var(--primary-light);">
                             </div>
                             <div class="form-group">
                                 <label>Variance Status</label>
@@ -1033,7 +1033,14 @@
 
                 // Auto-Calculation Logic: Variance = Stock Balance - Received Qty
                 $row.on('input', '.row-stock-balance, .row-qty', function() {
+                    const status = $('#supplierStatusSelect').val();
                     const stockVal = parseFloat($row.find('.row-stock-balance').val()) || 0;
+                    
+                    // Auto-sync qty if not a partial delivery
+                    if (status !== 'Partial Delivery' && $(this).hasClass('row-stock-balance')) {
+                        $row.find('.row-qty').val($row.find('.row-stock-balance').val());
+                    }
+
                     const qtyVal = parseFloat($row.find('.row-qty').val()) || 0;
                     const varianceInput = $row.find('.row-variance');
 
@@ -1048,6 +1055,23 @@
                         varianceInput.css('color', '#3b82f6'); // Blue for zero (Balanced)
                     }
                 });
+
+                // Apply initial labels based on current status
+                const initStatus = $('#supplierStatusSelect').val();
+                if (initStatus === 'Partial Delivery') {
+                    $row.find('.lbl-stock-balance').text('Physically Received');
+                    $row.find('.lbl-received-qty').text('Expected / Invoice Qty');
+                    $row.find('.row-qty').css('border-color', '#f59e0b');
+                } else {
+                    $row.find('.lbl-stock-balance').text('Stock Balance');
+                    $row.find('.lbl-received-qty').text('Received Qty');
+                    $row.find('.row-qty').css('border-color', 'var(--primary-light)');
+                    // Auto-hide the received qty if it's full delivery to reduce confusion? 
+                    // No, keeping it visible but read-only or auto-synced is better.
+                    if (initStatus === 'Full Delivery' || initStatus === 'Donor') {
+                        $row.find('.row-qty').prop('readonly', true).css('background', 'var(--bg-main)');
+                    }
+                }
             }
             lucide.createIcons(); // Re-init icons
         }
@@ -1074,12 +1098,35 @@
             dropdownParent: $('#newEntryModal')
         });
 
-        // Toggle Donor Name Input
+        // Toggle Donor Name Input and Update Labels
         $('#supplierStatusSelect').on('change', function() {
-            if ($(this).val() === 'Donor') {
+            const status = $(this).val();
+            
+            if (status === 'Donor') {
                 $('#donorNameWrapper').slideDown(300);
             } else {
                 $('#donorNameWrapper').slideUp(300);
+            }
+
+            // Update Labels & Fields for Partial Delivery UI
+            if (status === 'Partial Delivery') {
+                $('.item-entry-row').each(function() {
+                    $(this).find('.lbl-stock-balance').text('Physically Received');
+                    $(this).find('.lbl-received-qty').text('Expected / Invoice Qty');
+                    $(this).find('.row-qty').css({'border-color': '#f59e0b', 'background': 'var(--bg-card)'}).prop('readonly', false);
+                });
+            } else {
+                $('.item-entry-row').each(function() {
+                    $(this).find('.lbl-stock-balance').text('Stock Balance');
+                    $(this).find('.lbl-received-qty').text('Received Qty');
+                    $(this).find('.row-qty').css({'border-color': 'var(--primary-light)', 'background': 'var(--bg-main)'}).prop('readonly', true);
+                    
+                    // Auto-sync existing values if changed back to full
+                    const stockVal = $(this).find('.row-stock-balance').val();
+                    if (stockVal) {
+                        $(this).find('.row-qty').val(stockVal).trigger('input');
+                    }
+                });
             }
         });
 
