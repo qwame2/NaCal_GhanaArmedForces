@@ -758,15 +758,16 @@
                 const seconds = String(now.getSeconds()).padStart(2, '0');
                 const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
+                // Reset Form
+                $('#newEntryForm')[0].reset();
+
                 $('#entryDate').val(formattedDate);
                 $('#arrivalDate').val(new Date().toISOString().split('T')[0]);
 
-                // Reset Form
-                $('#newEntryForm')[0].reset();
                 $('#ledgeSelect').val('').trigger('change');
                 $('#itemsContainer').empty();
                 $('#itemDetails').hide();
-                $('#qtyControl, #supplierControl').hide().css('opacity', 0);
+                $('#qtyControl, #supplierControl, #dateControl').hide().css('opacity', 0);
                 $('#modalFooter').hide();
             }
         };
@@ -888,6 +889,9 @@
                 $('#supplierControl').show().animate({
                     opacity: 1
                 }, 400);
+                $('#dateControl').show().animate({
+                    opacity: 1
+                }, 400);
 
                 itemDetails.slideDown(400);
                 $('#modalFooter').fadeIn(400);
@@ -920,6 +924,7 @@
             } else {
                 $('#qtyControl').hide().css('opacity', 0);
                 $('#supplierControl').hide().css('opacity', 0);
+                $('#dateControl').hide().css('opacity', 0);
                 itemDetails.slideUp(400);
                 $('#modalFooter').fadeOut(400);
             }
@@ -1269,6 +1274,19 @@
                             <input type="text" id="donorNameInput" placeholder="Enter the donor's full name..." style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit;">
                         </div>
                     </div>
+
+                    <div id="dateControl" class="form-group full-width" style="display: none; opacity: 0; margin-top: 1rem;">
+                        <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>Arrival Date (Manual)</label>
+                                <input type="date" id="arrivalDate" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit;">
+                            </div>
+                            <div class="form-group">
+                                <label>Entry Date (Automatic)</label>
+                                <input type="text" id="entryDate" readonly style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; cursor: not-allowed; opacity: 1;">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1277,17 +1295,6 @@
                 <div id="itemDetails" style="display: none;">
                     <div id="itemsContainer">
                         <!-- Item Rows will be injected here -->
-                    </div>
-
-                    <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
-                        <div class="form-group">
-                            <label>Items Arrival Date (Manual Selection)</label>
-                            <input type="date" id="arrivalDate" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit;">
-                        </div>
-                        <div class="form-group">
-                            <label>Common Entry Date & Time (Automatic)</label>
-                            <input type="text" id="entryDate" readonly style="background: var(--bg-main); cursor: not-allowed; opacity: 0.8;">
-                        </div>
                     </div>
                 </div>
             </div>
