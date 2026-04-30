@@ -30,7 +30,7 @@ class AuthController extends Controller
                 'confirmed',
                 'regex:/^(?=.*[a-zA-Z])(?=.*[\d\W_]).+$/'
             ],
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
         ], [
             'username.unique' => 'The personnel callsign "@' . $request->username . '" has already been registered in the database.',
             'password.regex' => 'The password must contain at least one letter and one number or symbol.',

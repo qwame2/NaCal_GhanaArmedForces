@@ -11,39 +11,77 @@
 <div class="header-mesh" style="background: #ffffff; padding: 3.5rem; border-radius: 32px; margin-bottom: 3rem; position: relative; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
     <div style="position: absolute; top: -50px; right: -50px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%); z-index: 0;"></div>
 
-    <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 2rem;">
+    <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
                 <span class="status-badge-premium">
                     <i data-lucide="refresh-cw" style="width: 12px;"></i>
-                    Stock Recovery Node
+                    Registry Recovery Node
                 </span>
                 <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                    <i data-lucide="shield" style="width: 14px; color: #f59e0b;"></i> Audit Verified
+                    <i data-lucide="shield" style="width: 14px; color: #f59e0b;"></i> System Verified
                 </span>
             </div>
             <h1 style="margin: 0; font-size: 3.5rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.06em; line-height: 1;">Return <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Registry</span></h1>
-            <p style="margin: 15px 0 0; color: var(--text-muted); font-size: 1.15rem; font-weight: 600; max-width: 600px; line-height: 1.6;">Re-integrate issued assets back into the primary logistics store. Monitor outstanding allocations in real-time.</p>
+            <p style="margin: 15px 0 0; color: var(--text-muted); font-size: 1.15rem; font-weight: 600; max-width: 600px; line-height: 1.6;">Re-integrate issued assets back into the primary store. Monitor outstanding allocations in real-time.</p>
         </div>
 
-        <button onclick="openHistorySheet()" class="modern-action-btn" style="border-radius: 20px; padding: 1.15rem 1.75rem; border: 1px solid var(--border-color); background: #f8fafc; box-shadow: 0 4px 10px rgba(0,0,0,0.02); cursor: pointer; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 10px; transition: all 0.2s ease;">
-            <i data-lucide="history" style="width: 22px; color: #f59e0b;"></i>
-            <span>Return History</span>
-        </button>
+        <div style="display: flex; gap: 1rem;">
+            <button onclick="openHistorySheet()" class="modern-action-btn" style="border-radius: 20px; padding: 1.15rem 1.75rem; border: 1px solid var(--border-color); background: #f8fafc; box-shadow: 0 4px 10px rgba(0,0,0,0.02); cursor: pointer; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 10px; transition: all 0.2s ease;">
+                <i data-lucide="history" style="width: 22px; color: #f59e0b;"></i>
+                <span>Return History</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Statistical Insight Row -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+    <div class="glass-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem;">
+        <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="package-2" style="width: 32px;"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Outstanding Assets</div>
+            <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ $issuedItems->sum('quantity') }} <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">Units</span></div>
+        </div>
+    </div>
+
+    <div class="glass-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem;">
+        <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(99, 102, 241, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="users" style="width: 32px;"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Active Holders</div>
+            <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ $issuedItems->where('quantity', '>', 0)->pluck('beneficiary')->unique()->count() }} <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">Depts</span></div>
+        </div>
+    </div>
+
+    <div class="glass-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem;">
+        <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="check-circle" style="width: 32px;"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Registry Integrity</div>
+            <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">100% <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">Verified</span></div>
+        </div>
     </div>
 </div>
 
 <!-- Interface Workspace -->
-<div class="glass-card" style="border-radius: 32px; padding: 3rem; border: 1px solid var(--border-color); min-height: 500px;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4rem;" class="returns-controls">
+<div class="glass-card" style="border-radius: 32px; padding: 3rem 4rem; border: 1px solid var(--border-color); min-height: 500px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4rem; flex-wrap: wrap; gap: 2rem;" class="returns-controls">
         <div>
-            <h3 style="margin: 0; font-size: 1.75rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.02em;">Outstanding Allocations</h3>
-            <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 0.95rem; font-weight: 600;">Manage recovery for all active departmental holdings</p>
+            <h3 style="margin: 0; font-size: 2rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.02em;">Outstanding Allocations</h3>
+            <p style="margin: 8px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 10px #f59e0b;"></span>
+                Tracking {{ $issuedItems->where('quantity', '>', 0)->count() }} active holdings across the logistics network
+            </p>
         </div>
 
-        <div class="search-container-premium">
+        <div class="search-container-premium" style="min-width: 400px; flex: 1; max-width: 500px;">
             <i data-lucide="search" class="search-icon"></i>
-            <input type="text" id="returnSearch" placeholder="Filter by personnel or item..." oninput="filterReturns()">
+            <input type="text" id="returnSearch" placeholder="Search by recipient, item, or category..." oninput="filterReturns()" style="padding: 1.25rem 1.5rem 1.25rem 3.5rem; font-size: 1.05rem; border-radius: 20px;">
             <div class="search-accent"></div>
         </div>
     </div>
@@ -54,45 +92,51 @@
         <div class="table-scroll-wrapper" style="width: 100%; padding-bottom: 1.5rem;">
             <table style="width: 100%; border-collapse: separate; border-spacing: 0 1.25rem;">
                 <thead>
-                    <tr style="text-align: left; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 950;">
-                        <th style="padding: 0 1.5rem 0.75rem;">Timelog</th>
-                        <th style="padding: 0 1.5rem 0.75rem;">Recipient / Holder</th>
-                        <th style="padding: 0 1.5rem 0.75rem;">Authority</th>
-                        <th style="padding: 0 1.5rem 0.75rem;">Asset Description</th>
-                        <th style="padding: 0 1.5rem 0.75rem;">Classification</th>
-                        <th style="padding: 0 1.5rem 0.75rem;">Balance</th>
-                        <th style="padding: 0 1.5rem 0.75rem; text-align: right;">Operations</th>
+                    <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900; border-bottom: 2px solid var(--bg-main);">
+                        <th style="padding: 0 1.5rem 1rem;">Asset Breakdown</th>
+                        <th style="padding: 0 1.5rem 1rem;">Holder Information</th>
+                        <th style="padding: 0 1.5rem 1rem;">Classification</th>
+                        <th style="padding: 0 1.5rem 1rem;">Allocation Balance</th>
+                        <th style="padding: 0 1.5rem 1rem; text-align: right;">Action Control</th>
                     </tr>
                 </thead>
                 <tbody id="returnsTableBody">
                     @foreach($issuedItems as $item)
                     @if($item->quantity > 0)
-                    <tr class="return-row" data-search="{{ strtolower($item->beneficiary . ' ' . $item->description) }}">
-                        <td style="padding: 1.75rem 1.5rem; border-radius: 20px 0 0 20px; font-weight: 700; color: var(--text-muted);">
-                            {{ date('M d, Y', strtotime($item->issuance_date)) }}
+                    <tr class="return-row" data-search="{{ strtolower($item->beneficiary . ' ' . $item->description . ' ' . $item->ledge_category) }}">
+                        <td style="padding: 1.75rem 1.5rem; border-radius: 24px 0 0 24px;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="width: 48px; height: 48px; border-radius: 14px; background: #f8fafc; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                                    <i data-lucide="package" style="width: 24px;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 950; color: var(--text-main); font-size: 1.15rem; letter-spacing: -0.01em;">{{ $item->description }}</div>
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 5px;">
+                                        <i data-lucide="calendar" style="width: 12px;"></i>
+                                        Issued {{ date('M d, Y', strtotime($item->issuance_date)) }}
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                         <td style="padding: 1.75rem 1.5rem;">
                             <div style="font-weight: 850; color: var(--text-main); font-size: 1.05rem;">{{ $item->beneficiary }}</div>
+                            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Ref: {{ $item->authority ?: 'General Auth' }}</div>
                         </td>
                         <td style="padding: 1.75rem 1.5rem;">
-                            <div style="font-weight: 700; color: var(--text-muted); font-size: 0.95rem;">{{ $item->authority ?: 'N/A' }}</div>
+                            <span class="ledge-badge-premium" style="padding: 0.5rem 1.25rem; border-radius: 12px; font-size: 0.7rem;">CATEGORY {{ $item->ledge_category }}</span>
                         </td>
                         <td style="padding: 1.75rem 1.5rem;">
-                            <div style="font-weight: 900; color: #f59e0b; font-size: 1.1rem; letter-spacing: -0.01em;">{{ $item->description }}</div>
-                        </td>
-                        <td style="padding: 1.75rem 1.5rem;">
-                            <span class="ledge-badge-premium">Category {{ $item->ledge_category }}</span>
-                        </td>
-                        <td style="padding: 1.75rem 1.5rem;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span style="font-weight: 950; font-size: 1.4rem; color: var(--text-main);">{{ $item->quantity }}</span>
-                                <span style="color: var(--text-muted); font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">Units</span>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="padding: 0.75rem 1.25rem; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 16px;">
+                                    <span style="font-weight: 950; font-size: 1.4rem; color: #d97706;">{{ $item->quantity }}</span>
+                                    <span style="color: #f59e0b; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; margin-left: 4px;">{{ $item->unit ?: 'Units' }}</span>
+                                </div>
                             </div>
                         </td>
-                        <td style="padding: 1.75rem 1.5rem; border-radius: 0 20px 20px 0; text-align: right;">
-                            <button onclick="openReturnModal({{ json_encode($item) }})" class="recover-btn-premium">
-                                <i data-lucide="corner-up-left"></i>
-                                <span>Process Return</span>
+                        <td style="padding: 1.75rem 1.5rem; border-radius: 0 24px 24px 0; text-align: right;">
+                            <button onclick="openReturnModal({{ json_encode($item) }})" class="recover-btn-premium" style="padding: 1rem 1.5rem; border-radius: 16px; font-weight: 900; background: #0f172a; color: white; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);">
+                                <i data-lucide="corner-up-left" style="width: 18px;"></i>
+                                <span>Recovery</span>
                             </button>
                         </td>
                     </tr>
@@ -108,22 +152,35 @@
         <div style="display: grid; gap: 1.5rem;" id="returnsMobileBody">
             @foreach($issuedItems as $item)
             @if($item->quantity > 0)
-            <div class="return-card-mobile" data-search="{{ strtolower($item->beneficiary . ' ' . $item->description) }}">
+            <div class="return-card-mobile" data-search="{{ strtolower($item->beneficiary . ' ' . $item->description . ' ' . $item->ledge_category) }}" style="padding: 2rem; background: #ffffff; border-radius: 28px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
-                    <span class="ledge-badge-premium">Category {{ $item->ledge_category }}</span>
-                    <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">{{ date('d/m/y', strtotime($item->issuance_date)) }}</span>
+                    <span class="ledge-badge-premium" style="font-size: 0.65rem;">CAT {{ $item->ledge_category }}</span>
+                    <div style="text-align: right;">
+                        <div style="color: var(--text-muted); font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">Issued On</div>
+                        <div style="color: var(--text-main); font-size: 0.8rem; font-weight: 900;">{{ date('d/m/y', strtotime($item->issuance_date)) }}</div>
+                    </div>
                 </div>
-                <h4 style="margin: 0; color: var(--text-main); font-size: 1.2rem; font-weight: 900;">{{ $item->description }}</h4>
-                <p style="margin: 4px 0 0.25rem; color: var(--text-muted); font-weight: 700; font-size: 0.95rem;">Recipient: {{ $item->beneficiary }}</p>
-                <p style="margin: 0 0 1.5rem; color: var(--text-muted); font-weight: 700; font-size: 0.85rem;">Authority: {{ $item->authority ?: 'N/A' }}</p>
+                
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem;">
+                    <div style="width: 40px; height: 40px; border-radius: 12px; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                        <i data-lucide="package" style="width: 20px;"></i>
+                    </div>
+                    <h4 style="margin: 0; color: var(--text-main); font-size: 1.25rem; font-weight: 950; letter-spacing: -0.01em;">{{ $item->description }}</h4>
+                </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                <div style="background: #f8fafc; border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Holder</div>
+                    <div style="color: var(--text-main); font-weight: 850; font-size: 1.05rem;">{{ $item->beneficiary }}</div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-top: 2px;">Ref: {{ $item->authority ?: 'General' }}</div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px dashed var(--border-color);">
                     <div>
                         <div style="font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Balance</div>
-                        <div style="font-size: 1.5rem; font-weight: 950; color: var(--text-main);">{{ $item->quantity }}</div>
+                        <div style="font-size: 1.75rem; font-weight: 950; color: #d97706;">{{ $item->quantity }} <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted);">{{ $item->unit ?: 'Units' }}</span></div>
                     </div>
-                    <button onclick="openReturnModal({{ json_encode($item) }})" class="mobile-recover-btn">
-                        <i data-lucide="corner-up-left"></i>
+                    <button onclick="openReturnModal({{ json_encode($item) }})" class="mobile-recover-btn" style="width: 56px; height: 56px; border-radius: 18px; background: #0f172a; color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <i data-lucide="corner-up-left" style="width: 24px;"></i>
                     </button>
                 </div>
             </div>
@@ -215,11 +272,15 @@
                             </button>
                         </div>
                     </div>
+                    <div class="form-group-premium" style="grid-column: span 2;">
+                        <label>Item Status / State Description <span style="color: #ef4444;">*</span></label>
+                        <textarea name="remarks" required placeholder="Describe the physical condition or operational state of the item upon recovery..." style="width: 100%; height: 100px; padding: 1.25rem; border: 1px solid var(--border-color); border-radius: 18px; background: var(--bg-main); color: var(--text-main); font-family: inherit; font-weight: 600; font-size: 0.95rem; resize: none; outline: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'"></textarea>
+                    </div>
                 </div>
 
-                <div class="audit-warning">
-                    <i data-lucide="info" style="width: 20px; color: #f59e0b;"></i>
-                    <p>This action will automatically update current stock balances and mark this allocation as returned.</p>
+                <div class="audit-warning" style="display: flex; align-items: center; gap: 12px; background: rgba(245, 158, 11, 0.05); padding: 1.25rem; border-radius: 16px; border: 1px dashed rgba(245, 158, 11, 0.3);">
+                    <i data-lucide="shield-check" style="width: 20px; color: #f59e0b;"></i>
+                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; line-height: 1.5;">This action will automatically update current stock balances and mark this allocation as returned.</p>
                 </div>
             </div>
 
@@ -244,7 +305,7 @@
         <div class="modal-header-premium" style="display: flex; justify-content: space-between; align-items: center; padding: 2rem 3rem;">
             <div>
                 <h3 style="margin: 0; font-size: 2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">Return <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">History</span></h3>
-                <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600;">Audit trail of all recovered assets</p>
+                <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600;">Tracking history of all recovered assets</p>
             </div>
             <button type="button" onclick="closeHistorySheet()" class="close-btn-premium modern-action-btn secondary" style="width: 54px; height: 54px; border-radius: 18px; border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
                 <i data-lucide="x" style="width: 24px;"></i>
@@ -545,7 +606,7 @@
     }
 
     .modal-container-premium {
-        width: 550px;
+        width: 750px;
         max-width: 95%;
         border-radius: 36px;
         padding: 0;
@@ -1035,10 +1096,10 @@
         document.getElementById('modal_item_id').value = item.id;
         document.getElementById('modal_item_desc').innerText = item.description;
         document.getElementById('modal_item_beneficiary').innerText = 'Held by: ' + item.beneficiary;
-        document.getElementById('modal_item_authority').innerText = 'Authority: ' + (item.authority ? item.authority : 'N/A');
+        document.getElementById('modal_item_authority').innerText = 'Approval: ' + (item.authority ? item.authority : 'N/A');
         document.getElementById('modal_return_qty').value = item.quantity;
         document.getElementById('modal_return_qty').max = item.quantity;
-        document.getElementById('modal_max_qty').innerText = item.quantity;
+        document.getElementById('modal_max_qty').innerText = item.quantity + ' ' + (item.unit || 'Units');
 
         const modal = document.getElementById('returnModal');
         modal.classList.add('active');
@@ -1180,8 +1241,9 @@
                                 <th style="padding: 0 1rem 0.5rem;">Asset Description</th>
                                 <th style="padding: 0 1rem 0.5rem;">Classification</th>
                                 <th style="padding: 0 1rem 0.5rem;">Recipient</th>
-                                <th style="padding: 0 1rem 0.5rem;">Authority</th>
+                                <th style="padding: 0 1rem 0.5rem;">Approval</th>
                                 <th style="padding: 0 1rem 0.5rem;">Returned Qty</th>
+                                <th style="padding: 0 1rem 0.5rem;">Status / State</th>
                                 <th style="padding: 0 1rem 0.5rem;">Outstanding Balance</th>
                             </tr>
                         </thead>
@@ -1228,12 +1290,15 @@
                     </td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.beneficiary}</td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.authority || '-'}</td>
-                    <td style="padding: 1.25rem 1rem; font-weight: 900; font-size: 1.2rem; color: #10b981;">${item.returned_qty}</td>
+                    <td style="padding: 1.25rem 1rem; font-weight: 900; font-size: 1.2rem; color: #10b981;">${item.returned_qty} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.unit || 'Units'}</span></td>
+                    <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; max-width: 200px;">
+                        <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.remarks || 'No remarks'}">${item.remarks || '-'}</div>
+                    </td>
                     <td style="padding: 1.25rem 1rem; border-radius: 0 16px 16px 0; font-weight: 900; font-size: 1.1rem; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'};">
-                        ${item.current_balance} 
-                        <span style="font-size: 0.65rem; font-weight: 950; text-transform: uppercase; margin-left: 6px;">
+                        ${item.current_balance} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.unit || 'Units'}</span>
+                        <div style="font-size: 0.6rem; font-weight: 950; text-transform: uppercase; margin-top: 4px; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'}; opacity: 0.8;">
                             ${item.current_balance > 0 ? 'Pending' : 'Cleared'}
-                        </span>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -1254,16 +1319,17 @@
                     </div>
                     <h4 style="margin: 0; color: var(--text-main); font-size: 1.1rem; font-weight: 900;">${item.description}</h4>
                     <p style="margin: 6px 0 0; color: var(--text-muted); font-weight: 700; font-size: 0.9rem;">Recipient: ${item.beneficiary}</p>
-                    <p style="margin: 2px 0 1.25rem; color: var(--text-muted); font-weight: 700; font-size: 0.85rem;">Authority: ${item.authority || '-'}</p>
-                    
+                    <p style="margin: 2px 0 0.5rem; color: var(--text-muted); font-weight: 700; font-size: 0.85rem;">Approval: ${item.authority || '-'}</p>
+                    <p style="margin: 0 0 1.25rem; color: var(--text-main); font-weight: 600; font-size: 0.8rem; background: rgba(0,0,0,0.02); padding: 8px; border-radius: 8px;">State: ${item.remarks || 'No description'}</p>
+
                     <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
                         <div>
                             <div style="font-size: 0.6rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase;">Returned</div>
-                            <div style="font-size: 1.35rem; font-weight: 950; color: #10b981;">${item.returned_qty}</div>
+                            <div style="font-size: 1.35rem; font-weight: 950; color: #10b981;">${item.returned_qty} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.unit || 'Units'}</span></div>
                         </div>
                         <div style="text-align: right;">
                             <div style="font-size: 0.6rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase;">Current Balance</div>
-                            <div style="font-size: 1.35rem; font-weight: 950; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'};">${item.current_balance}</div>
+                            <div style="font-size: 1.35rem; font-weight: 950; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'};">${item.current_balance} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.unit || 'Units'}</span></div>
                         </div>
                     </div>
                     <div style="margin-top: 0.75rem; text-align: center; font-size: 0.65rem; font-weight: 900; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'}; text-transform: uppercase; letter-spacing: 0.05em;">
@@ -1488,7 +1554,7 @@
                         <span style="background: #d97706; color: white; padding: 0.25rem 1rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700;">CERTIFICATE OF REGISTRY PURGE</span>
                     </div>
                 </div>
-                
+
                 <div class="report-meta-grid">
                     <div class="report-meta-item">
                         <span class="report-meta-label">Document ID</span>
@@ -1507,42 +1573,43 @@
                         <span class="report-meta-value">LEVEL 4 (ADMINISTRATIVE)</span>
                     </div>
                 </div>
-                
+
                 <div style="background: #fef9e6; padding: 1rem; border-left: 4px solid #d97706; margin: 1rem 0;">
                     <p style="margin: 0; font-size: 0.85rem;"><strong>OFFICIAL DECLARATION:</strong> In accordance with the NACOC Secure Registry Protocol and the Data Protection Act, the undersigned hereby certifies the permanent erasure of the following digital records from the Centralized Inventory Database. These assets have been physically verified for disposal or recovery completion.</p>
                 </div>
-                
+
                 <div style="line-height: 1.8; font-size: 1rem; color: #334155; margin-top: 2rem; text-align: justify;">
                     <p>
-                        This audit confirms the successful recovery and verification of the following assets. 
+                        This audit confirms the successful recovery and verification of the following assets.
                         ${selectedItems.map((item, index) => {
                             const issueDate = new Date(item.issuance_date).toLocaleDateString('en-GB');
                             const issueTime = new Date(item.issuance_timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
                             const returnDate = new Date(item.created_at).toLocaleDateString('en-GB');
                             const returnTime = new Date(item.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-                            
+
                             return `
                                 The item identified as <strong>${item.description}</strong> (Ref ID: #${item.id}), 
                                 categorized under <strong>LEDGE ${item.ledge_category}</strong>, was officially recovered from 
-                                <strong>${item.beneficiary}${item.authority ? ' (Authority: ' + item.authority + ')' : ''}</strong>. 
+                                <strong>${item.beneficiary}${item.authority ? ' (Approval: ' + item.authority + ')' : ''}</strong>. 
+                                Upon recovery, the asset was documented in the following state: <em>"${item.remarks || 'No specific condition noted'}"</em>.
                                 This asset, originally issued on <strong>${issueDate} at ${issueTime}</strong>, involved the return of <strong>${item.returned_qty} unit(s)</strong> 
                                 to the central registry. The recovery process was formally completed and verified on 
                                 <strong>${returnDate} at ${returnTime}</strong>. ${index < selectedItems.length - 1 ? '<br><br>' : ''}
                             `;
                         }).join('')}
                     </p>
-                    
+
                     <div style="margin-top: 3rem; padding: 1.5rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 800; text-align: center;">
                         TOTAL AGGREGATE QUANTITY RECOVERED: ${totalQuantity} UNITS
                     </div>
                 </div>
-                
+
                 <div class="report-signature" style="justify-content: center; margin-top: 4rem;">
                     <div class="signature-line">
                         <div><strong>${userName}</strong></div>
                     </div>
                 </div>
-                
+
             </div>
         `;
 
@@ -1555,7 +1622,7 @@
                     <meta charset="UTF-8">
                     <style>
                         * { margin: 0; padding: 0; box-sizing: border-box; }
-                        body { 
+                        body {
                             font-family: 'Times New Roman', 'Inter', 'Segoe UI', serif;
                             background: white;
                             padding: 20mm;

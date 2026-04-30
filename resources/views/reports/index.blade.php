@@ -7,10 +7,10 @@
         <div style="position: relative; z-index: 1;">
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
                 <span style="background: rgba(99, 102, 241, 0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.35rem 1rem; border-radius: 99px; text-transform: uppercase;">Reporting Engine</span>
-                <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700;">Audit & Validation Tool</span>
+                <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700;">Verification & Validation Tool</span>
             </div>
             <h2 style="font-size: 2.5rem; font-weight: 950; color: var(--text-main); margin: 0; letter-spacing: -0.04em;">Analytical <span style="color: var(--primary);">Reports</span></h2>
-            <p style="color: var(--text-muted); font-size: 1rem; font-weight: 600; margin-top: 6px;">Aggregate logistics data across multiple time periods for official auditing.</p>
+            <p style="color: var(--text-muted); font-size: 1rem; font-weight: 600; margin-top: 6px;">Aggregate logistics data across multiple time periods for official verification.</p>
         </div>
 
         <div style="display: flex; gap: 1rem; position: relative; z-index: 1;">
@@ -86,7 +86,7 @@
             <div>
                 <h4 style="font-size: 1.1rem; font-weight: 900; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px;">
                     <i data-lucide="pen-tool" style="width: 20px; color: var(--primary);"></i>
-                    Auditor's Narrative
+                    Verification Narrative
                 </h4>
                 <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; margin: 4px 0 0;">Add custom contextual remarks to be included in the final print generation.</p>
             </div>

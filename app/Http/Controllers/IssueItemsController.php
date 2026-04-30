@@ -13,9 +13,15 @@ class IssueItemsController extends Controller
 {
     public function index()
     {
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('issued_items', 'unit')) {
+            \Illuminate\Support\Facades\Schema::table('issued_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('unit')->nullable();
+            });
+        }
+
         // Get unique items by description and sum up their available qty
         $items = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.qty) as total_stock')
+            ->selectRaw('inventory_items.description, inventory_batches.ledge_category, MAX(inventory_items.unit) as unit, SUM(inventory_items.qty) as total_stock')
             ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
             ->get();
 
@@ -58,12 +64,16 @@ class IssueItemsController extends Controller
             foreach ($validated['items'] as $cartItem) {
                 $qtyToIssue = $cartItem['qty'];
 
+                // Find the unit from inventory
+                $unit = InventoryItem::where('description', $cartItem['description'])->value('unit');
+
                 // Record the line item
                 IssuedItem::create([
                     'issuance_id' => $issuance->id,
                     'description' => $cartItem['description'],
                     'ledge_category' => $cartItem['category'],
                     'quantity' => $qtyToIssue,
+                    'unit' => $unit
                 ]);
 
                 // FIFO Stock Reduction

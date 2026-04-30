@@ -297,7 +297,7 @@
                 <span class="info-value">{{ $isDonor ? 'Gift / Donation' : 'Standard Delivery' }}</span>
             </div>
             <div class="info-line">
-                <span class="info-label">Audit Line</span>
+                <span class="info-label">Verification ID</span>
                 <span class="info-value">#{{ rand(1000,9999) }}</span>
             </div>
         </div>
@@ -330,15 +330,15 @@
                 This operation culminated in <strong>{{ $varText }}</strong> units when matched against the authorized delivered quantity.
             </p>
             <div style="background: rgba(99, 102, 241, 0.05); padding: 12px 15px; border-radius: 8px; border-left: 3px solid var(--print-accent); font-size: 12px; color: #475569; font-style: italic;">
-                <strong>Auditor's Field Note:</strong> {{ $remarks }}
+                <strong>Verification Field Note:</strong> {{ $remarks }}
             </div>
         </div>
         @endforeach
     </div>
 
     <div class="remarks-box">
-        <strong>FINAL AUDIT DECLARATION:</strong><br>
-        The items itemized in this narrative report have been formally processed, completely audited by standard operational protocols, and legally transitioned into the jurisdiction of the facility's ledger.
+        <strong>FINAL VERIFICATION DECLARATION:</strong><br>
+        The items itemized in this narrative report have been formally processed, completely verified by standard operational protocols, and legally transitioned into the jurisdiction of the facility's ledger.
     </div>
 
     <div class="footer">
@@ -347,11 +347,11 @@
             <p style="font-size: 10px; margin-top: 5px;">(Signature & Stamp)</p>
         </div>
         <div class="sign-box">
-            <div class="sign-line">Independent Auditor</div>
+            <div class="sign-line">Independent Verifier</div>
             <p style="font-size: 10px; margin-top: 5px;">(Signature & Stamp)</p>
         </div>
         <div class="sign-box">
-            <div class="sign-line">Approval Authority</div>
+            <div class="sign-line">Approval</div>
             <p style="font-size: 10px; margin-top: 5px;">(Signature & Date)</p>
         </div>
     </div>

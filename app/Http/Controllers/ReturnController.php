@@ -21,7 +21,12 @@ class ReturnController extends Controller
                 $table->foreignId('issued_item_id')->constrained('issued_items')->onDelete('cascade');
                 $table->integer('returned_qty');
                 $table->date('return_date');
+                $table->text('remarks')->nullable();
                 $table->timestamps();
+            });
+        } elseif (!Schema::hasColumn('returned_items', 'remarks')) {
+            Schema::table('returned_items', function (Blueprint $table) {
+                $table->text('remarks')->nullable();
             });
         }
 
@@ -41,6 +46,7 @@ class ReturnController extends Controller
             'issued_item_id' => 'required|exists:issued_items,id',
             'return_qty' => 'required|integer|min:1',
             'return_date' => 'required|date',
+            'remarks' => 'required|string|max:500',
         ]);
 
         try {
@@ -110,6 +116,7 @@ class ReturnController extends Controller
                 'issued_item_id' => $issuedItem->id,
                 'returned_qty' => $validated['return_qty'],
                 'return_date' => $validated['return_date'],
+                'remarks' => $validated['remarks'] ?? null,
             ]);
 
             DB::commit();
@@ -134,6 +141,7 @@ class ReturnController extends Controller
                 'returned_items.id', 
                 'returned_items.returned_qty',
                 'returned_items.return_date',
+                'returned_items.remarks',
                 'returned_items.created_at',
                 'issued_items.description', 
                 'issued_items.ledge_category',
@@ -141,7 +149,8 @@ class ReturnController extends Controller
                 'issuances.beneficiary',
                 'issuances.authority',
                 'issuances.issuance_date',
-                'issuances.created_at as issuance_timestamp'
+                'issuances.created_at as issuance_timestamp',
+                'issued_items.unit'
             )
             ->orderBy('returned_items.created_at', 'desc')
             ->get();

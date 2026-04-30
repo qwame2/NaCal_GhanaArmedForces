@@ -12,7 +12,8 @@ class ReturnedItem extends Model
     protected $fillable = [
         'issued_item_id',
         'returned_qty',
-        'return_date'
+        'return_date',
+        'remarks'
     ];
 
     public function issuedItem()

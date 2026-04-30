@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="animate-slide-up" style="max-width: 1600px; margin: 0 auto; padding: 0 1.5rem;">
-    
+
     <!-- Ultra-Modern Operations Header -->
     <div class="glass-card header-mesh" style="padding: 3rem; border-radius: 32px; margin-bottom: 3rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08);">
         <!-- Decorative background elements -->
@@ -22,7 +22,7 @@
                     <h1 class="main-title">Issue <span class="gradient-text">Inventory</span></h1>
                     <p class="subtitle-text">Seamlessly disburse stock items and track recipient allocations in real-time.</p>
                 </div>
-                
+
                 <div class="header-actions" style="display: flex; gap: 1rem;">
                     <button onclick="openHistorySheet()" class="modern-action-btn" title="View Issued Items">
                         <i data-lucide="history" style="width: 20px;"></i>
@@ -79,7 +79,7 @@
 
     <!-- Main Workspace Split -->
     <div class="workspace-grid" style="display: grid; grid-template-columns: 1fr 420px; gap: 3rem; align-items: flex-start; padding-bottom: 5rem;">
-        
+
         <!-- Left Column: Catalog -->
         <div>
             <div id="productGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1.5rem;">
@@ -96,20 +96,23 @@
                 @endphp
 
                 <div class="product-card glass-card" data-category="{{ $item->ledge_category }}" data-description="{{ strtolower($item->description) }}" style="{{ $isOutOfStock ? 'opacity: 0.7;' : '' }}">
-                    <div class="product-badge" style="background: {{ $config[2] }}; color: {{ $config[0] }};">Ledge {{ $item->ledge_category }}</div>
+                    <div class="product-badge" style="background: {{ $config[2] }}; color: {{ $config[0] }};">Category {{ $item->ledge_category }}</div>
                     <div style="height: 60px; display: flex; align-items: center; justify-content: center; background: {{ $config[1] }}; border-radius: 10px; margin-bottom: 0.75rem;">
                         <i data-lucide="{{ $config[3] }}" style="width: 28px; height: 28px; color: {{ $config[0] }}; opacity: 0.6;"></i>
                     </div>
                     <h4 style="margin: 0 0 0.5rem; font-size: 1rem; font-weight: 850; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $item->description }}</h4>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Stock</span>
-                        <span style="font-size: 1.15rem; font-weight: 900; color: {{ $isOutOfStock ? '#ef4444' : '#10b981' }};">{{ number_format($item->total_stock) }}</span>
+                        <div style="text-align: right;">
+                            <span style="font-size: 1.15rem; font-weight: 900; color: {{ $isOutOfStock ? '#ef4444' : '#10b981' }};">{{ number_format($item->total_stock) }}</span>
+                            <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-left: 2px;">{{ $item->unit ?: 'Units' }}</span>
+                        </div>
                     </div>
 
                     @if($isOutOfStock)
                         <button class="add-to-cart-btn" style="opacity: 0.5; cursor: not-allowed;"><i data-lucide="slash" style="width: 18px;"></i> Unavailable</button>
                     @else
-                        <button class="add-to-cart-btn" onclick="addToCart('{{ addslashes($item->description) }}', {{ (int)$item->total_stock }}, '{{ $item->ledge_category }}')">
+                        <button class="add-to-cart-btn" onclick="addToCart('{{ addslashes($item->description) }}', {{ (int)$item->total_stock }}, '{{ $item->ledge_category }}', '{{ $item->unit }}')">
                             <i data-lucide="plus-circle" style="width: 18px;"></i> Add to List
                         </button>
                     @endif
@@ -137,12 +140,12 @@
                             <input type="date" id="issuanceDate" value="{{ date('Y-m-d') }}" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700;">
                         </div>
                         <div>
-                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Beneficiary</label>
-                            <input type="text" id="beneficiary" placeholder="Recipient / Department" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700;">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">User Department</label>
+                            <input type="text" id="beneficiary" placeholder="User Department" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700;">
                         </div>
                         <div>
-                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Authority</label>
-                            <input type="text" id="authority" placeholder="Authorizing Officer / Doc Ref" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700;">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Approval</label>
+                            <input type="text" id="authority" placeholder="Approving Officer / Doc Ref" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700;">
                         </div>
                         <div>
                             <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Alloc. Type</label>
@@ -170,7 +173,7 @@
 
                 <div style="padding: 1.5rem 1.75rem; border-top: 1px solid var(--border-color); background: rgba(99,102,241,0.02); border-radius: 0 0 28px 28px;">
                     <button id="confirmBtn" class="confirm-btn-final" onclick="confirmIssuance()">
-                        <i data-lucide="zap" style="width: 24px; fill: white;"></i> 
+                        <i data-lucide="zap" style="width: 24px; fill: white;"></i>
                         <span>Confirm Disbursement</span>
                     </button>
                 </div>
@@ -186,7 +189,7 @@
         <div class="sheet-header" style="padding: 2.5rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
             <div>
                 <h3 style="margin: 0; font-size: 2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">Issued Items <span style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">History</span></h3>
-                <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600; opacity: 0.8;">Full audit trail of disbursed inventory items and allocations.</p>
+                <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600; opacity: 0.8;">Full tracking history of disbursed inventory items and allocations.</p>
             </div>
             <button onclick="closeHistorySheet()" class="modern-action-btn secondary" style="width: 54px; height: 54px; border-radius: 18px; border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
                 <i data-lucide="x" style="width: 28px;"></i>
@@ -199,17 +202,17 @@
                     <label style="display: block; font-size: 0.7rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Search Transaction</label>
                     <div style="position: relative;">
                         <i data-lucide="search" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6;"></i>
-                        <input type="text" id="historySearch" placeholder="Beneficiary name or identification code..." style="width: 100%; padding: 1rem 1rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; transition: all 0.3s; font-size: 0.95rem;" oninput="filterHistory()" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='var(--border-color)'; this.style.background='var(--bg-main)';">
+                        <input type="text" id="historySearch" placeholder="User Department name or identification code..." style="width: 100%; padding: 1rem 1rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; transition: all 0.3s; font-size: 0.95rem;" oninput="filterHistory()" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='var(--border-color)'; this.style.background='var(--bg-main)';">
                     </div>
                 </div>
                 <div style="flex: 1; min-width: 180px;">
-                    <label style="display: block; font-size: 0.7rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Ledge Filter</label>
+                    <label style="display: block; font-size: 0.7rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Category Filter</label>
                     <div style="position: relative;">
                         <i data-lucide="layers" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6; pointer-events: none;"></i>
                         <select id="historyCatFilter" onchange="filterHistory()" style="width: 100%; padding: 1rem 1.25rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; cursor: pointer; font-size: 0.95rem; appearance: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='var(--border-color)'; this.style.background='var(--bg-main)';">
-                            <option value="all">All Ledges</option>
+                            <option value="all">All Categories</option>
                             @foreach($ledgeMap as $code => $name)
-                                <option value="{{ $code }}">Ledge {{ $code }} - {{ $name }}</option>
+                                <option value="{{ $code }}">Category {{ $code }} - {{ $name }}</option>
                             @endforeach
                         </select>
                         <i data-lucide="chevron-down" style="position: absolute; right: 1.25rem; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted); pointer-events: none;"></i>
@@ -245,8 +248,8 @@
 
 <style>
     .inventory-badge {
-        background: var(--primary); color: white; font-size: 0.65rem; font-weight: 900; 
-        padding: 0.4rem 1.25rem; border-radius: 99px; text-transform: uppercase; 
+        background: var(--primary); color: white; font-size: 0.65rem; font-weight: 900;
+        padding: 0.4rem 1.25rem; border-radius: 99px; text-transform: uppercase;
         letter-spacing: 0.1em; box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
     }
     .header-dot {
@@ -321,7 +324,7 @@
     }
 
     .cat-slider-premium {
-        display: flex; gap: 0.85rem; overflow-x: auto; 
+        display: flex; gap: 0.85rem; overflow-x: auto;
         padding: 0.5rem 1rem; scroll-behavior: smooth; flex: 1;
         -webkit-overflow-scrolling: touch;
         scroll-snap-type: x mandatory;
@@ -393,7 +396,7 @@
     }
     .confirm-btn-final {
         width: 100%; padding: 1.15rem; border-radius: 18px;
-        border: none; 
+        border: none;
         background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
         color: white;
         font-size: 1.1rem; font-weight: 900; cursor: pointer;
@@ -526,7 +529,7 @@
         .main-title { font-size: 2rem !important; }
         .subtitle-text { font-size: 0.95rem !important; }
         .inventory-badge { font-size: 0.65rem !important; padding: 0.35rem 1.1rem !important; }
-        
+
         .product-card {
             padding: 1rem !important;
         }
@@ -537,9 +540,9 @@
             border: none !important;
             border-top: 1px solid rgba(255,255,255,0.15) !important;
         }
-        
-        .samsung-drag-handle { 
-            display: block !important; width: 44px; height: 5px; border-radius: 5px; 
+
+        .samsung-drag-handle {
+            display: block !important; width: 44px; height: 5px; border-radius: 5px;
             background: rgba(150, 150, 150, 0.3); margin: 16px auto 0;
         }
 
@@ -613,9 +616,9 @@
         .subtitle-text { font-size: 0.85rem !important; }
         .inventory-badge { padding: 0.35rem 1rem !important; font-size: 0.6rem !important; }
         .operation-text { font-size: 0.75rem !important; }
-        
-        .modern-action-btn { 
-            padding: 0.75rem 1.25rem !important; 
+
+        .modern-action-btn {
+            padding: 0.75rem 1.25rem !important;
             font-size: 0.85rem !important;
             width: 100% !important;
             justify-content: center !important;
@@ -652,10 +655,10 @@
     }
 
     /* Hide native number spinners for custom quantity input */
-    input[type=number]::-webkit-inner-spin-button, 
-    input[type=number]::-webkit-outer-spin-button { 
-        -webkit-appearance: none; 
-        margin: 0; 
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
     }
     input[type=number] {
         -moz-appearance: textfield;
@@ -686,7 +689,7 @@
                         <button onclick="removeFromCart(${index})" style="background:transparent; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">Avl: ${item.maxStock}</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">Avl: ${item.maxStock} ${item.unit || ''}</span>
                         <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 0.25rem 0.35rem; border-radius: 10px; border: 1.5px solid var(--border-color);">
                             <button onclick="updateQty(${index}, -1)" style="border:none; background:transparent; cursor:pointer;"><i data-lucide="minus-circle" style="width:18px; color:var(--text-muted);"></i></button>
                             <input type="number" value="${item.qty}" min="1" max="${item.maxStock}" onchange="setQty(${index}, this.value)" style="font-weight: 900; width: 40px; text-align: center; border: none; background: transparent; outline: none; color: var(--text-main); font-size: 0.95rem;">
@@ -700,13 +703,13 @@
         }
     }
 
-    function addToCart(desc, stock, cat) {
+    function addToCart(desc, stock, cat, unit) {
         const exists = cart.find(i => i.description === desc);
         if (exists) {
             if (exists.qty < stock) exists.qty++;
             else showToast('Stock Limit', 'Cannot exceed available stock', 'warning');
         } else {
-            cart.push({ description: desc, maxStock: stock, category: cat, qty: 1 });
+            cart.push({ description: desc, maxStock: stock, category: cat, qty: 1, unit: unit });
             showToast('Added', desc, 'success');
         }
         updateCartUI();
@@ -777,8 +780,8 @@
         if (!cart.length) return showToast('Empty List', 'Add items first', 'info');
         const beneficiary = document.getElementById('beneficiary').value;
         const authority = document.getElementById('authority').value;
-        if (!beneficiary) return showToast('Missing Recipient', 'Enter beneficiary name', 'warning');
-        if (!authority) return showToast('Missing Authority', 'Enter authorizing authority', 'warning');
+        if (!beneficiary) return showToast('Missing User Department', 'Enter user department name', 'warning');
+        if (!authority) return showToast('Missing Approval', 'Enter approving officer', 'warning');
 
         const btn = document.getElementById('confirmBtn');
         const originalHtml = btn.innerHTML;
@@ -819,7 +822,7 @@
         const sheet = document.getElementById('historySheet');
         const container = document.getElementById('historyTableContainer');
         const filters = document.getElementById('historyFiltersContainer');
-        
+
         sheet.classList.add('active');
         filters.style.display = 'none';
         container.innerHTML = `
@@ -833,7 +836,7 @@
         try {
             const res = await fetch("{{ route('api.issued-items-history') }}");
             fullHistoryData = await res.json();
-            
+
             if (fullHistoryData.length > 0) filters.style.display = 'flex';
             renderHistory(fullHistoryData);
         } catch (e) {
@@ -861,16 +864,16 @@
         const dateFilter = document.getElementById('historyDateFilter').value;
 
         const filtered = fullHistoryData.filter(item => {
-            const matchesSearch = item.beneficiary.toLowerCase().includes(searchTerm) || 
+            const matchesSearch = item.beneficiary.toLowerCase().includes(searchTerm) ||
                                item.description.toLowerCase().includes(searchTerm) ||
                                (item.authority && item.authority.toLowerCase().includes(searchTerm));
             const matchesCat = catFilter === 'all' || item.ledge_category == catFilter;
             const matchesType = typeFilter === 'all' || item.issuance_type == typeFilter;
-            
+
             // Date matching (YYYY-MM-DD comparison)
             const itemDate = new Date(item.created_at).toISOString().split('T')[0];
             const matchesDate = !dateFilter || itemDate === dateFilter;
-            
+
             return matchesSearch && matchesCat && matchesType && matchesDate;
         });
 
@@ -879,7 +882,7 @@
 
     function renderHistory(data) {
         const container = document.getElementById('historyTableContainer');
-        
+
         if (data.length === 0) {
             container.innerHTML = `
                 <div style="padding: 10rem 0; text-align: center; background: rgba(0,0,0,0.01); border-radius: 32px; border: 2px dashed var(--border-color);">
@@ -895,8 +898,8 @@
                         <thead>
                             <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900; white-space: nowrap;">
                                 <th style="padding: 0 1.5rem 0.5rem;">Timeline</th>
-                                <th style="padding: 0 1.5rem 0.5rem;">Beneficiary</th>
-                                <th style="padding: 0 1.5rem 0.5rem;">Authority</th>
+                                <th style="padding: 0 1.5rem 0.5rem;">User Department</th>
+                                <th style="padding: 0 1.5rem 0.5rem;">Approval</th>
                                 <th style="padding: 0 1.5rem 0.5rem;">Disbursed Asset</th>
                                 <th style="padding: 0 1.5rem 0.5rem;">Category</th>
                                 <th style="padding: 0 1.5rem 0.5rem;">Qty</th>
@@ -905,7 +908,7 @@
                         </thead>
                     <tbody>
             `;
-            
+
             data.forEach(item => {
                 const t = new Date(item.created_at);
                 const date = t.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -927,20 +930,20 @@
                                 <i data-lucide="clock" style="width: 12px;"></i> ${time}
                             </div>
                         </td>
-                        <td data-label="Beneficiary" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--text-main); font-size: 1.05rem; white-space: nowrap;">${item.beneficiary}</td>
-                        <td data-label="Authority" style="padding: 1.75rem 1.5rem; font-weight: 700; color: var(--text-muted); font-size: 0.95rem; white-space: nowrap;">${item.authority || '-'}</td>
+                        <td data-label="User Department" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--text-main); font-size: 1.05rem; white-space: nowrap;">${item.beneficiary}</td>
+                        <td data-label="Approval" style="padding: 1.75rem 1.5rem; font-weight: 700; color: var(--text-muted); font-size: 0.95rem; white-space: nowrap;">${item.authority || '-'}</td>
                         <td data-label="Asset" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--primary); font-size: 1.05rem; white-space: nowrap;">${item.description}</td>
                         <td data-label="Category" style="padding: 1.75rem 1.5rem; white-space: nowrap;">
-                            <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.7rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1); letter-spacing: 0.03em;">LEDGE ${item.ledge_category}</span>
+                            <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.7rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1); letter-spacing: 0.03em;">CATEGORY ${item.ledge_category}</span>
                         </td>
-                        <td data-label="Qty" style="padding: 1.75rem 1.5rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main);">${item.quantity}</td>
+                        <td data-label="Qty" style="padding: 1.75rem 1.5rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main);">${item.quantity} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.unit || 'Units'}</span></td>
                         <td data-label="Status" style="padding: 1.75rem 1.5rem; border-radius: 0 20px 20px 0;">
                             ${statusBadge}
                         </td>
                     </tr>
                 `;
             });
-            
+
             html += `</tbody></table></div>`;
             container.innerHTML = html;
         }
@@ -950,9 +953,9 @@
     function closeHistorySheet() {
         const sheet = document.getElementById('historySheet');
         const content = sheet.querySelector('.sheet-content');
-        
+
         sheet.classList.remove('active');
-        
+
         if (content) {
             setTimeout(() => {
                 content.style.transition = '';
@@ -968,7 +971,7 @@
 
         const sheetBackdrop = document.getElementById('historySheet');
         const sheetContent = sheetBackdrop ? sheetBackdrop.querySelector('.sheet-content') : null;
-        
+
         if (sheetContent && sheetBackdrop) {
             let startY = 0;
             let currentY = 0;
@@ -980,7 +983,7 @@
                     startY = e.touches[0].clientY;
                     isDragging = true;
                     windowHeight = window.innerHeight;
-                    
+
                     sheetContent.style.setProperty('transition', 'none', 'important');
                     sheetBackdrop.style.setProperty('transition', 'none', 'important');
                 }
@@ -990,7 +993,7 @@
                 if (!isDragging) return;
                 currentY = e.touches[0].clientY;
                 const diff = currentY - startY;
-                
+
                 if (diff > 0) {
                     sheetContent.style.transform = `translateY(${diff}px)`;
                     let fade = 1 - (diff / (windowHeight * 0.8));
@@ -1007,10 +1010,10 @@
                 if (!isDragging) return;
                 isDragging = false;
                 const diff = currentY - startY;
-                
+
                 sheetContent.style.setProperty('transition', 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)', 'important');
                 sheetBackdrop.style.setProperty('transition', 'opacity 0.4s ease', 'important');
-                
+
                 if (diff > 150 || diff > windowHeight * 0.25) {
                     sheetContent.style.transform = 'translateY(100%)';
                     sheetBackdrop.style.opacity = '0';

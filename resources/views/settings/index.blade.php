@@ -499,6 +499,10 @@
             const data = await res.json();
             if (data.success) {
                 showToast('Synchronization Complete', data.message, 'success');
+                // Refresh the page after a short delay to allow the toast to be seen
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
             } else {
                 showToast('Update Failed', data.message || 'Generic error', 'error');
             }
@@ -640,8 +644,8 @@
         
         const file = input.files[0];
         
-        // --- Client-Side Limit Fix: Block files > 2MB directly to avoid PHP runtime crash ---
-        const maxSizeMB = 2; 
+        // --- Client-Side Limit Fix: Block files > 5MB directly to avoid PHP runtime crash ---
+        const maxSizeMB = 5; 
         if (file.size > maxSizeMB * 1024 * 1024) {
             showToast('File Too Large', `Please select an image smaller than ${maxSizeMB}MB.`, 'error');
             input.value = ''; // Reset input
@@ -670,9 +674,13 @@
             const textResponse = await res.text();
             let data;
             try {
-                data = JSON.parse(textResponse);
+                // Intelligently find the JSON block in case PHP notices are prepended
+                const jsonMatch = textResponse.match(/\{.*\}/s);
+                const jsonClean = jsonMatch ? jsonMatch[0] : textResponse;
+                data = JSON.parse(jsonClean);
             } catch (err) {
-                showToast('System Error', 'The server rejected the file. It may be too large.', 'error');
+                const snippet = textResponse.substring(0, 100).replace(/<[^>]*>/g, '');
+                showToast('Server Output Conflict', `The server sent extra debug info that broke the upload. Snippet: ${snippet}`, 'error');
                 btn.innerHTML = orgHtml;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
                 return;

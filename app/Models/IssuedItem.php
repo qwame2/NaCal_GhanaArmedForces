@@ -13,7 +13,8 @@ class IssuedItem extends Model
         'issuance_id',
         'description',
         'ledge_category',
-        'quantity'
+        'quantity',
+        'unit'
     ];
 
     public function issuance()

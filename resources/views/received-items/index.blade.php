@@ -650,12 +650,12 @@
     </div>
 </div>
 
-<!-- Stock Check / Audit Modal -->
+<!-- Stock Check / Verification Modal -->
 <div id="stockCheckModal" class="modal-backdrop">
     <div class="modal-content glass-card animate-scale-up" style="max-width: 800px; width: 95%;">
         <div class="modal-header">
             <div>
-                <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.25rem;">Stock Audit</h3>
+                <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.25rem;">Stock Verification</h3>
                 <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">Physical Verification Form</p>
             </div>
             <button onclick="closeStockCheckModal()" class="btn-icon danger">
@@ -667,7 +667,7 @@
             <div style="background: var(--bg-card); padding: 1.5rem; border-radius: 24px; margin-bottom: 1.5rem; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
                 <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
                     <div>
-                        <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;">Audit Target</label>
+                        <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;">Verification Target</label>
                         <div id="auditItemName" style="font-size: 1.4rem; font-weight: 900; color: var(--text-main); line-height: 1;">Broom</div>
                     </div>
                     <button onclick="fetchAuditHistory()" class="glass-btn-sm" style="border-radius: 12px; font-weight: 700;">
@@ -778,11 +778,11 @@
                             </div>
                             <h4 style="font-size: 0.9rem; font-weight: 900; color: var(--text-main); text-transform: uppercase; margin:0;">Report Composer</h4>
                         </div>
-                        <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800; background: rgba(99, 102, 241, 0.1); padding: 4px 10px; border-radius: 100px;">Internal Audit Mode</span>
+                        <span style="font-size: 0.65rem; color: var(--text-main); font-weight: 800; background: rgba(99, 102, 241, 0.1); padding: 4px 10px; border-radius: 100px;">Internal Verification Mode</span>
                     </div>
 
                     <div style="margin-bottom: 1rem;">
-                        <label style="display: block; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Editable Auditor Narrative</label>
+                        <label style="display: block; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Editable Verifier Narrative</label>
                         <textarea id="finalReportBody" style="width: 100%; height: 180px; padding: 1.25rem; border-radius: 14px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; font-size: 0.85rem; line-height: 1.6; resize: vertical; outline: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'"></textarea>
                     </div>
 

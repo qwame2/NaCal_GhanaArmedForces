@@ -141,13 +141,12 @@
                     <div class="user-name" style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: var(--transition);">{{ auth()->user()->name }}</div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">@ {{ auth()->user()->username }}</div>
                 </div>
-                <!-- Logout disabled during bypass -->
-                {{-- <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
+                <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
                     @csrf
-                    <button type="submit" style="background: transparent; border: none; cursor: pointer; padding: 0.5rem; border-radius: 8px; transition: var(--transition); display: flex; align-items: center; justify-content: center;">
+                    <button type="submit" style="background: transparent; border: none; cursor: pointer; padding: 0.5rem; border-radius: 8px; transition: var(--transition); display: flex; align-items: center; justify-content: center;" title="Sign Out">
                         <i data-lucide="log-out" style="width: 18px; color: #94a3b8;"></i>
                     </button>
-                </form> --}}
+                </form>
 
             </div>
         </div>
