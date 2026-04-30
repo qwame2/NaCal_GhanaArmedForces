@@ -25,6 +25,8 @@ class User extends Authenticatable
         'password',
         'avatar',
         'role',
+        'is_admin',
+        'is_online',
         'department',
         'phone',
         'last_login_at',

@@ -13,7 +13,8 @@ class AuthController extends Controller
     public function showAuth()
     {
         if (Auth::check()) {
-            return redirect()->route('dashboard');
+            $user = Auth::user();
+            return $user->is_admin ? redirect()->route('admin.index') : redirect()->route('dashboard');
         }
         return view('auth.auth');
     }
@@ -44,17 +45,22 @@ class AuthController extends Controller
                 $avatarPath = $request->file('avatar')->store('avatars', 'public');
             }
 
+            $isAdmin = $request->role === 'Admin';
             $user = User::create([
                 'name' => $request->name,
                 'username' => $request->username,
                 'password' => Hash::make($request->password),
                 'avatar' => $avatarPath,
+                'role' => $request->role ?? 'Personnel',
+                'is_admin' => $isAdmin,
+                'is_online' => true,
             ]);
 
             Auth::login($user);
             $user->update(['last_login_at' => now()]);
 
-            return redirect()->route('dashboard')->with('success', 'Registry initialized. Welcome, ' . $user->name);
+            $redirectRoute = $isAdmin ? 'admin.index' : 'dashboard';
+            return redirect()->route($redirectRoute)->with('success', 'Registry initialized. Welcome, ' . $user->name);
         } catch (\Exception $e) {
             return back()->with('error', 'Critical System Failure: ' . $e->getMessage())->withInput();
         }
@@ -69,8 +75,40 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->remember)) {
             $request->session()->regenerate();
-            auth()->user()->update(['last_login_at' => now()]);
-            return redirect()->intended('dashboard');
+            $user = auth()->user();
+            $user->update([
+                'last_login_at' => now(),
+                'is_online' => true,
+            ]);
+            
+            $target = $request->target_interface; // 'admin' or 'personnel'
+
+            // SCENARIO 1: User tried to enter ADMIN terminal
+            if ($target === 'admin') {
+                if ($user->is_admin) {
+                    return redirect()->route('admin.index');
+                } else {
+                    Auth::logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                    return redirect()->route('login')->with('error', 'Security Violation: Administrative clearance required for this terminal.');
+                }
+            }
+
+            // SCENARIO 2: User tried to enter PERSONNEL terminal
+            if ($target === 'user') {
+                if (!$user->is_admin) {
+                    return redirect()->intended('dashboard');
+                } else {
+                    Auth::logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                    return redirect()->route('login')->with('error', 'Access Denied: Administrative accounts must use the Command Center terminal.');
+                }
+            }
+
+            // Default fallback based on role
+            return $user->is_admin ? redirect()->route('admin.index') : redirect()->route('dashboard');
         }
 
         return back()->withErrors([
@@ -80,6 +118,9 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        if (Auth::check()) {
+            Auth::user()->update(['is_online' => false]);
+        }
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

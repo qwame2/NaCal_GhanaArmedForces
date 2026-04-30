@@ -126,6 +126,7 @@
                     <span>User Settings</span>
                 </a>
             </li>
+
         </ul>
 
         <div class="sidebar-footer" style="margin-top: auto;">

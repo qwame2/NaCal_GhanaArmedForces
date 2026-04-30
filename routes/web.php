@@ -8,6 +8,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\AdminController;
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
@@ -24,6 +25,11 @@ Route::get('/', function() {
 Route::middleware(['auth'])->group(function () {
     
     Route::get('/dashboard', function () {
+        // STRICT ROLE ENFORCEMENT: Admins are not allowed in the Personnel Dashboard
+        if (auth()->user()->is_admin) {
+            return redirect()->route('admin.index')->with('warning', 'Strategic Oversight required. Redirecting to Command Center.');
+        }
+
         $existingItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->select('inventory_items.description', 'inventory_batches.ledge_category', 'inventory_items.stock_balance', 'inventory_items.qty', 'inventory_items.variance')
             ->whereIn('inventory_items.id', function($query) {
@@ -299,6 +305,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/avatar', [SettingsController::class, 'updateAvatar'])->name('settings.avatar');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
+    // Admin Routes
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::put('/admin/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
+    Route::delete('/admin/users/{id}', [AdminController::class, 'destroyUser'])->name('admin.users.destroy');
+
     // Returns Routes
     Route::post('/returns/purge', [ReturnController::class, 'purge'])->name('returns.purge');
     Route::get('/returns', [ReturnController::class, 'index'])->name('returns.index');
@@ -387,4 +398,13 @@ Route::middleware(['auth'])->group(function () {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     })->name('api.inventory.receive-remainder');
+});
+
+Route::get('/system/migrate', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return "System Registry Updated Successfully: " . \Illuminate\Support\Facades\Artisan::output();
+    } catch (\Exception $e) {
+        return "Migration Failed: " . $e->getMessage();
+    }
 });

@@ -199,6 +199,50 @@
                 font-size: 0.9rem;
             }
         }
+
+        .interface-selector {
+            display: flex;
+            background: rgba(0,0,0,0.04);
+            padding: 6px;
+            border-radius: 20px;
+            gap: 6px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            position: relative;
+            z-index: 10;
+        }
+        .interface-pill {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 0.75rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            color: var(--text-muted);
+            font-weight: 800;
+            font-size: 0.8rem;
+            user-select: none;
+        }
+        .interface-pill i {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.3s ease;
+        }
+        .interface-pill.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+        }
+        .interface-pill.active i {
+            transform: scale(1.1);
+        }
+        .interface-pill:hover:not(.active) {
+            background: rgba(255,255,255,0.5);
+            color: var(--text-main);
+        }
     </style>
 
     <!-- Main Auth Container -->
@@ -216,6 +260,19 @@
                 <h2 style="color: var(--text-main); font-size: 1.6rem; font-weight: 950; letter-spacing: -0.04em; margin-bottom: 0.15rem;">Advanced Registry</h2>
                 <p style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Strategic Inventory Nexus</p>
                 
+                <!-- Target Interface Selector -->
+                <div class="interface-selector" style="margin-top: 1.5rem; width: 100%; max-width: 300px; margin-inline: auto;">
+                    <input type="hidden" name="target_interface" id="targetInterfaceInput" value="user">
+                    <div class="interface-pill active" onclick="setInterface('user', this)">
+                        <i data-lucide="layout-grid"></i>
+                        <span>Personnel</span>
+                    </div>
+                    <div class="interface-pill" onclick="setInterface('admin', this)">
+                        <i data-lucide="shield-check"></i>
+                        <span>Admin</span>
+                    </div>
+                </div>
+
                 <!-- Auth Toggle Tabs -->
                 <div class="auth-tabs">
                     <button type="button" class="tab-btn active" id="tab-login" onclick="toggleAuth('login')">Secure Login</button>
@@ -253,6 +310,8 @@
                                 </div>
                             </div>
 
+                            <input type="hidden" name="target_interface" class="interface-hidden-sync" value="user">
+
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; gap: 10px; flex-wrap: wrap;">
                                 <label style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
                                     <input type="checkbox" style="width: 16px; height: 16px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent;">
@@ -272,6 +331,7 @@
                     <div id="registerForm" class="auth-form-side">
                         <form action="{{ route('register') }}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 1.1rem;">
                             @csrf
+                            <input type="hidden" name="target_interface" class="interface-hidden-sync" value="user">
                             
                             <div class="avatar-section">
                                 <div id="avatarPreview" style="width: 64px; height: 64px; background: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); overflow: hidden; flex-shrink: 0; cursor: pointer;" onclick="document.getElementById('avatarInput').click()">
@@ -303,7 +363,11 @@
                                         <input type="text" name="username" placeholder="@j_doe" required>
                                     </div>
                                 </div>
+                                <input type="hidden" name="role" id="regRoleHidden" value="Personnel">
                             </div>
+
+                            <script>
+                            </script>
 
                             <div class="form-grid">
                                 <div class="input-modern-group">
@@ -597,6 +661,31 @@
             const height = activeForm.scrollHeight;
             viewport.style.height = height + 'px';
         }
+    }
+
+    function setInterface(val, el) {
+        document.getElementById('targetInterfaceInput').value = val;
+        
+        // Sync with hidden inputs in all forms
+        document.querySelectorAll('.interface-hidden-sync').forEach(input => {
+            input.value = val;
+        });
+
+        document.querySelectorAll('.interface-pill').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        
+        // Map Interface to Database Roles
+        const roleMap = {
+            'user': 'Personnel',
+            'admin': 'Admin'
+        };
+        
+        const regRoleInput = document.getElementById('regRoleHidden');
+        if (regRoleInput) {
+            regRoleInput.value = roleMap[val];
+        }
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function toggleAuth(mode) {
