@@ -121,6 +121,28 @@ class ReturnController extends Controller
 
             DB::commit();
 
+            // Log the return
+            if (auth()->check()) {
+                $user = auth()->user();
+                
+                \App\Models\SystemLog::create([
+                    'user_id' => $user->id,
+                    'event_type' => 'INVENTORY',
+                    'action' => 'RETURN_ITEM',
+                    'description' => "Personnel logged return of {$validated['return_qty']} {$issuedItem->description}(s) from {$issuedItem->issuance->beneficiary}.",
+                    'severity' => 'info',
+                    'metadata' => [
+                        'item_description' => $issuedItem->description,
+                        'return_qty' => $validated['return_qty'],
+                        'beneficiary' => $issuedItem->issuance->beneficiary,
+                        'original_issuance_date' => $issuedItem->issuance->issuance_date,
+                        'return_date' => $validated['return_date'],
+                        'remarks' => $validated['remarks'] ?? 'No remarks provided'
+                    ],
+                    'ip_address' => request()->ip()
+                ]);
+            }
+
             return redirect()->back()->with('success', 'Item returned successfully to inventory.');
 
         } catch (\Exception $e) {
@@ -170,6 +192,21 @@ class ReturnController extends Controller
             // Direct SQL for maximum reliability
             $idString = implode(',', array_map('intval', $ids));
             \Illuminate\Support\Facades\DB::statement("DELETE FROM returned_items WHERE id IN ($idString)");
+
+            // Log the purge activity
+            if (auth()->check()) {
+                $user = auth()->user();
+                $count = count($ids);
+                
+                \App\Models\SystemLog::create([
+                    'user_id' => $user->id,
+                    'event_type' => 'SECURITY',
+                    'action' => 'PURGE_RECORDS',
+                    'description' => "Personnel purged {$count} recovery logs from the active database.",
+                    'severity' => 'danger',
+                    'ip_address' => request()->ip()
+                ]);
+            }
 
             return redirect()->back()->with([
                 'success' => count($ids) . ' records successfully purged from NACOC logs.',

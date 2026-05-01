@@ -127,6 +127,13 @@
                 </a>
             </li>
 
+            <li class="nav-item">
+                <a href="{{ route('notifications.index') }}" class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
+                    <i data-lucide="bell"></i>
+                    <span>Notifications</span>
+                </a>
+            </li>
+
         </ul>
 
         <div class="sidebar-footer" style="margin-top: auto;">
@@ -188,9 +195,44 @@
                     <i data-lucide="message-square" style="width: 20px;"></i>
                 </div>
                 <div style="height: 32px; width: 1px; background: var(--border-color);"></div>
-                <div class="icon-btn">
+                <div class="icon-btn" id="notification-btn" style="position: relative; cursor: pointer; transition: var(--transition);">
                     <i data-lucide="bell" style="width: 20px;"></i>
-                    <span class="badge">3</span>
+                    @if($globalNotificationCount > 0)
+                    <span class="badge" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 99px; border: 2px solid var(--bg-main); transition: var(--transition);">{{ $globalNotificationCount }}</span>
+                    @endif
+
+                    <!-- Notification Dropdown -->
+                    <div id="notification-dropdown" style="display: none; position: absolute; top: calc(100% + 15px); right: 0; width: 320px; z-index: 2100; padding: 0; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); border: 1px solid #edf2f7; background: white; overflow: hidden; animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);">
+                        <div style="padding: 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(99, 102, 241, 0.03);">
+                            <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin: 0;">Notifications</h3>
+                            @if($globalNotificationCount > 0)
+                            <span style="font-size: 0.7rem; background: var(--primary); color: white; padding: 0.2rem 0.6rem; border-radius: 99px; font-weight: 700;">{{ $globalNotificationCount }} New</span>
+                            @endif
+                        </div>
+                        <div style="max-height: 380px; overflow-y: auto;" class="no-scrollbar">
+                            @forelse($globalNotifications as $notif)
+                            <a href="{{ route($notif['route']) }}" style="display: flex; gap: 1rem; padding: 1.25rem; text-decoration: none; border-bottom: 1px solid var(--border-color); transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background='transparent'">
+                                <div style="width: 40px; height: 40px; border-radius: 12px; background: {{ $notif['type'] === 'warning' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}; color: {{ $notif['type'] === 'warning' ? '#f59e0b' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <i data-lucide="{{ $notif['icon'] }}" style="width: 20px;"></i>
+                                </div>
+                                <div style="flex: 1; text-align: left;">
+                                    <div style="font-weight: 700; color: var(--text-main); font-size: 0.85rem; margin-bottom: 0.25rem;">{{ $notif['title'] }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">{{ $notif['message'] }}</div>
+                                    <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.5rem; font-weight: 600;">Just now</div>
+                                </div>
+                            </a>
+                            @empty
+                            <div style="padding: 3rem 1.5rem; text-align: center; color: var(--text-muted);">
+                                <i data-lucide="bell-off" style="width: 32px; height: 32px; margin-bottom: 1rem; opacity: 0.3;"></i>
+                                <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">All caught up!</p>
+                                <p style="font-size: 0.75rem;">No new notifications at this time.</p>
+                            </div>
+                            @endforelse
+                        </div>
+                        <div style="padding: 1rem; text-align: center; background: rgba(0,0,0,0.01); border-top: 1px solid var(--border-color);">
+                            <a href="{{ route('notifications.index') }}" style="font-size: 0.75rem; font-weight: 800; color: var(--primary); text-decoration: none;">View All Notifications</a>
+                        </div>
+                    </div>
                 </div>
                 <div class="icon-btn" id="theme-toggle" style="border: none; background: transparent;">
                     <i data-lucide="moon" style="width: 20px;"></i>
@@ -417,6 +459,145 @@
                     }
                 });
             }
+
+            // Notification Dropdown Toggle
+            const notificationBtn = document.getElementById('notification-btn');
+            const notificationDropdown = document.getElementById('notification-dropdown');
+
+            if (notificationBtn && notificationDropdown) {
+                notificationBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isVisible = notificationDropdown.style.display === 'block';
+                    
+                    // Close other dropdowns if any
+                    if (typeof searchResults !== 'undefined') searchResults.style.display = 'none';
+                    
+                    notificationDropdown.style.display = isVisible ? 'none' : 'block';
+                    
+                    if (!isVisible) {
+                        notificationBtn.style.background = 'var(--bg-card)';
+                        notificationBtn.style.transform = 'scale(0.95)';
+                    } else {
+                        notificationBtn.style.background = 'transparent';
+                        notificationBtn.style.transform = 'scale(1)';
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!notificationBtn.contains(e.target)) {
+                        notificationDropdown.style.display = 'none';
+                        notificationBtn.style.background = 'transparent';
+                        notificationBtn.style.transform = 'scale(1)';
+                    }
+                });
+            }
+
+            // Real-time Notification Refresh Logic
+            window.refreshNotifications = function() {
+                fetch("{{ route('api.notifications') }}")
+                    .then(res => res.json())
+                    .then(data => {
+                        // Update Navbar Bell Badge
+                        const btn = document.getElementById('notification-btn');
+                        if (btn) {
+                            let bellBadge = btn.querySelector('.badge');
+                            if (data.count > 0) {
+                                if (!bellBadge) {
+                                    bellBadge = document.createElement('span');
+                                    bellBadge.className = 'badge';
+                                    bellBadge.style.cssText = 'position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 99px; border: 2px solid var(--bg-main); transition: var(--transition);';
+                                    btn.appendChild(bellBadge);
+                                }
+                                bellBadge.innerText = data.count;
+                                bellBadge.style.display = 'block';
+                            } else if (bellBadge) {
+                                bellBadge.style.display = 'none';
+                            }
+                        }
+
+                        // Update Dropdown Content if it exists
+                        const dropdown = document.getElementById('notification-dropdown');
+                        if (dropdown) {
+                            const list = dropdown.querySelector('.no-scrollbar');
+                            if (list) {
+                                if (data.notifications.length === 0) {
+                                    list.innerHTML = `
+                                        <div style="padding: 3rem 1.5rem; text-align: center; color: var(--text-muted);">
+                                            <i data-lucide="bell-off" style="width: 32px; height: 32px; margin-bottom: 1rem; opacity: 0.3;"></i>
+                                            <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">All caught up!</p>
+                                            <p style="font-size: 0.75rem;">No new notifications at this time.</p>
+                                        </div>
+                                    `;
+                                } else {
+                                    let html = '';
+                                    data.notifications.forEach(notif => {
+                                         const routeUrl = notif.route === 'admin.index' ? "{{ route('admin.index') }}" : "{{ route('dashboard') }}";
+                                         const cleanDesc = notif.title.includes(': ') ? notif.title.split(': ')[1] : notif.title;
+                                         html += `
+                                             <div style="position: relative; border-bottom: 1px solid var(--border-color);">
+                                                 <a href="${routeUrl}" style="display: flex; gap: 1rem; padding: 1.25rem; padding-right: 3rem; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background='transparent'">
+                                                     <div style="width: 40px; height: 40px; border-radius: 12px; background: ${notif.type === 'warning' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; color: ${notif.type === 'warning' ? '#f59e0b' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                         <i data-lucide="${notif.icon}" style="width: 20px;"></i>
+                                                     </div>
+                                                     <div style="flex: 1; text-align: left;">
+                                                         <div style="font-weight: 700; color: var(--text-main); font-size: 0.85rem; margin-bottom: 0.25rem;">${notif.title}</div>
+                                                         <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">${notif.message}</div>
+                                                     </div>
+                                                 </a>
+                                                 <button onclick="event.stopPropagation(); window.dismissNotification('${cleanDesc}')" style="position: absolute; top: 1.25rem; right: 1rem; background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 6px; transition: var(--transition);" onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444'" onmouseout="this.style.background='transparent'; this.style.color='var(--text-muted)'">
+                                                     <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                                                 </button>
+                                             </div>
+                                         `;
+                                    });
+                                    list.innerHTML = html;
+                                }
+                                if (typeof lucide !== 'undefined') lucide.createIcons();
+                            }
+                            
+                            const headerBadge = dropdown.querySelector('span[style*="background: var(--primary)"]');
+                            if (headerBadge) {
+                                headerBadge.innerText = data.count + ' New';
+                                headerBadge.style.display = data.count > 0 ? 'block' : 'none';
+                            }
+                        }
+
+                        // Sync to notifications page if active
+                        window.dispatchEvent(new CustomEvent('notificationsSynced', { detail: data }));
+                    })
+                    .catch(err => console.error('Notification Sync Error:', err));
+            };
+
+            // Start polling (every 30 seconds)
+            setInterval(window.refreshNotifications, 30000);
+
+            window.dismissNotification = function(description) {
+                // Optimistic UI Update: Instantly remove/hide elements containing this description
+                const allItems = document.querySelectorAll('.notification-item, .notif-item, [style*="position: relative; border-bottom: 1px solid var(--border-color)"]');
+                allItems.forEach(item => {
+                    if (item.innerText.includes(description)) {
+                        item.style.transition = '0.3s all';
+                        item.style.opacity = '0';
+                        item.style.transform = 'translateX(20px)';
+                        setTimeout(() => item.remove(), 300);
+                    }
+                });
+
+                fetch("{{ route('api.notifications.dismiss') }}", {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                    },
+                    body: JSON.stringify({ description: description })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.refreshNotifications();
+                    }
+                });
+            };
         });
 
         // Toast Notification System Logic
@@ -478,6 +659,27 @@
             showToast('Action Failed', "{{ session('error') }}", 'error');
         });
         @endif
+        // Global Premium Tooltip Engine
+        const initTooltips = () => {
+            document.querySelectorAll('[title]').forEach(el => {
+                const title = el.getAttribute('title');
+                if (title && !el.hasAttribute('data-tooltip')) {
+                    el.setAttribute('data-tooltip', title);
+                    el.removeAttribute('title');
+                }
+            });
+        };
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initTooltips);
+        
+        // Watch for dynamic DOM changes (AJAX results, Modals, etc)
+        const tooltipObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.addedNodes.length) initTooltips();
+            });
+        });
+        tooltipObserver.observe(document.body, { childList: true, subtree: true });
     </script>
     @stack('scripts')
 </body>

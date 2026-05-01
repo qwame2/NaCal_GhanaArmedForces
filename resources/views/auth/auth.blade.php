@@ -258,7 +258,7 @@
                     <img src="{{ asset('img/NACOC1.png') }}" style="width: 32px;" alt="Logo">
                 </div>
                 <h2 style="color: var(--text-main); font-size: 1.6rem; font-weight: 950; letter-spacing: -0.04em; margin-bottom: 0.15rem;">Advanced Registry</h2>
-                <p style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Strategic Inventory Nexus</p>
+                <p style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Strategic Inventory Management</p>
                 
                 <!-- Target Interface Selector -->
                 <div class="interface-selector" style="margin-top: 1.5rem; width: 100%; max-width: 300px; margin-inline: auto;">

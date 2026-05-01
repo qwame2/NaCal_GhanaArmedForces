@@ -331,13 +331,19 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link">
-                        <i data-lucide="activity"></i>
+                    <a href="{{ route('admin.logs') }}" class="nav-link {{ request()->routeIs('admin.logs') ? 'active' : '' }}">
+                        <i data-lucide="shield-check"></i>
                         <span>System Logs</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('notifications.index') }}" class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
+                        <i data-lucide="bell"></i>
+                        <span>System Alerts</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.permissions') }}" class="nav-link {{ request()->routeIs('admin.permissions') ? 'active' : '' }}">
                         <i data-lucide="lock"></i>
                         <span>Permissions</span>
                     </a>
@@ -392,10 +398,51 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="nav-icon-btn" title="System Notifications">
-                    <i data-lucide="bell"></i>
-                    <span class="alert-dot"></span>
-                </button>
+                <div style="position: relative;" id="admin-notification-wrapper">
+                    <button class="nav-icon-btn" id="admin-notification-btn" title="System Notifications">
+                        <i data-lucide="bell"></i>
+                        @if($globalNotificationCount > 0)
+                        <span class="alert-dot"></span>
+                        @endif
+                    </button>
+
+                    <!-- Notification Dropdown -->
+                    <div id="admin-notification-dropdown" style="display: none; position: absolute; top: calc(100% + 15px); right: 0; width: 340px; background: white; z-index: 2000; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); border: 1px solid #edf2f7; overflow: hidden; animation: slideDown 0.3s ease;">
+                        <style>
+                            @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+                            .notif-item:hover { background: #f8fafc; }
+                            .notif-item { transition: 0.2s; }
+                        </style>
+                        <div style="padding: 1.5rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="font-size: 1rem; font-weight: 900; color: #0f172a; margin: 0;">System Alerts</h3>
+                            @if($globalNotificationCount > 0)
+                            <span style="font-size: 0.65rem; background: #fef2f2; color: #ef4444; padding: 4px 10px; border-radius: 8px; font-weight: 800;">{{ $globalNotificationCount }} ACTIVE</span>
+                            @endif
+                        </div>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            @forelse($globalNotifications as $notif)
+                            <a href="{{ route($notif['route']) }}" class="notif-item" style="display: flex; gap: 1rem; padding: 1.25rem 1.5rem; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ $notif['type'] === 'warning' ? '#fffbeb' : '#fef2f2' }}; color: {{ $notif['type'] === 'warning' ? '#f59e0b' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <i data-lucide="{{ $notif['icon'] }}" style="width: 20px;"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 800; color: #0f172a; font-size: 0.85rem; margin-bottom: 4px;">{{ $notif['title'] }}</div>
+                                    <div style="font-size: 0.75rem; color: #64748b; line-height: 1.5;">{{ $notif['message'] }}</div>
+                                </div>
+                            </a>
+                            @empty
+                            <div style="padding: 3.5rem 2rem; text-align: center; color: #94a3b8;">
+                                <i data-lucide="bell-off" style="width: 36px; height: 36px; margin-bottom: 1rem; opacity: 0.3;"></i>
+                                <p style="font-size: 0.85rem; font-weight: 700; color: #475569;">No system alerts</p>
+                                <p style="font-size: 0.7rem;">System is running within normal parameters.</p>
+                            </div>
+                            @endforelse
+                        </div>
+                        <div style="padding: 1.25rem; text-align: center; background: #f8fafc;">
+                            <a href="{{ route('notifications.index') }}" style="font-size: 0.75rem; font-weight: 800; color: var(--primary); text-decoration: none;">Launch Intelligence Center</a>
+                        </div>
+                    </div>
+                </div>
                 <div class="live-status">
                     <div class="pulse-dot"></div>
                     <span>SYSTEM ONLINE</span>
@@ -408,6 +455,151 @@
 
     <script>
         lucide.createIcons();
+
+        // Admin Notification Toggle
+        const adminNotifBtn = document.getElementById('admin-notification-btn');
+        const adminNotifDropdown = document.getElementById('admin-notification-dropdown');
+
+        if (adminNotifBtn && adminNotifDropdown) {
+            adminNotifBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = adminNotifDropdown.style.display === 'block';
+                adminNotifDropdown.style.display = isVisible ? 'none' : 'block';
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!adminNotifBtn.contains(e.target) && !adminNotifDropdown.contains(e.target)) {
+                    adminNotifDropdown.style.display = 'none';
+                }
+            });
+        }
+
+        // Real-time Admin Notification Refresh Logic
+        window.refreshNotifications = function() {
+            fetch("{{ route('api.notifications') }}")
+                .then(res => res.json())
+                .then(data => {
+                    // Update Navbar Bell Dot
+                    const btn = document.getElementById('admin-notification-btn');
+                    if (btn) {
+                        let alertDot = btn.querySelector('.alert-dot');
+                        if (data.count > 0) {
+                            if (!alertDot) {
+                                alertDot = document.createElement('span');
+                                alertDot.className = 'alert-dot';
+                                btn.appendChild(alertDot);
+                            }
+                            alertDot.style.display = 'block';
+                        } else if (alertDot) {
+                            alertDot.style.display = 'none';
+                        }
+                    }
+
+                    // Update Dropdown Content
+                    const dropdown = document.getElementById('admin-notification-dropdown');
+                    if (dropdown) {
+                        const list = dropdown.querySelector('div[style*="max-height: 400px"]');
+                        if (list) {
+                            if (data.notifications.length === 0) {
+                                list.innerHTML = `
+                                    <div style="padding: 3.5rem 2rem; text-align: center; color: #94a3b8;">
+                                        <i data-lucide="bell-off" style="width: 36px; height: 36px; margin-bottom: 1rem; opacity: 0.3;"></i>
+                                        <p style="font-size: 0.85rem; font-weight: 700; color: #475569;">No system alerts</p>
+                                        <p style="font-size: 0.7rem;">System is running within normal parameters.</p>
+                                    </div>
+                                `;
+                            } else {
+                                let html = '';
+                                data.notifications.forEach(notif => {
+                                    const routeUrl = notif.route === 'admin.index' ? "{{ route('admin.index') }}" : "{{ route('dashboard') }}";
+                                    const cleanDesc = notif.title.includes(': ') ? notif.title.split(': ')[1] : notif.title;
+                                    html += `
+                                        <div style="position: relative; border-bottom: 1px solid #f1f5f9;">
+                                            <a href="${routeUrl}" class="notif-item" style="display: flex; gap: 1rem; padding: 1.25rem 1.5rem; padding-right: 3.5rem; text-decoration: none;">
+                                                <div style="width: 44px; height: 44px; border-radius: 12px; background: ${notif.type === 'warning' ? '#fffbeb' : '#fef2f2'}; color: ${notif.type === 'warning' ? '#f59e0b' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                    <i data-lucide="${notif.icon}" style="width: 20px;"></i>
+                                                </div>
+                                                <div style="flex: 1;">
+                                                    <div style="font-weight: 800; color: #0f172a; font-size: 0.85rem; margin-bottom: 4px;">${notif.title}</div>
+                                                    <div style="font-size: 0.75rem; color: #64748b; line-height: 1.5;">${notif.message}</div>
+                                                </div>
+                                            </a>
+                                            <button onclick="event.stopPropagation(); window.dismissNotification('${cleanDesc}')" style="position: absolute; top: 1.25rem; right: 1rem; background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 6px; border-radius: 8px; transition: 0.2s;" onmouseover="this.style.background='#fef2f2'; this.style.color='#ef4444'" onmouseout="this.style.background='transparent'; this.style.color='#94a3b8'">
+                                                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                            </button>
+                                        </div>
+                                    `;
+                                });
+                                list.innerHTML = html;
+                            }
+                            if (typeof lucide !== 'undefined') lucide.createIcons();
+                        }
+                        
+                        const headerBadge = dropdown.querySelector('span[style*="background: #fef2f2"]');
+                        if (headerBadge) {
+                            headerBadge.innerText = data.count + ' ACTIVE';
+                            headerBadge.style.display = data.count > 0 ? 'inline-block' : 'none';
+                        }
+                    }
+
+                    // Sync to notifications page if active
+                    window.dispatchEvent(new CustomEvent('notificationsSynced', { detail: data }));
+                })
+                .catch(err => console.error('Admin Notification Sync Error:', err));
+        };
+
+        // Start polling (every 30 seconds)
+        setInterval(window.refreshNotifications, 30000);
+
+        window.dismissNotification = function(description) {
+            // Optimistic UI Update: Instantly remove/hide elements containing this description
+            const allItems = document.querySelectorAll('.notification-item, .notif-item, [style*="position: relative; border-bottom: 1px solid #f1f5f9"]');
+            allItems.forEach(item => {
+                if (item.innerText.includes(description)) {
+                    item.style.transition = '0.3s all';
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateX(20px)';
+                    setTimeout(() => item.remove(), 300);
+                }
+            });
+
+            fetch("{{ route('api.notifications.dismiss') }}", {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                },
+                body: JSON.stringify({ description: description })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.refreshNotifications();
+                }
+            });
+        };
+    // Global Premium Tooltip Engine
+    const initTooltips = () => {
+        document.querySelectorAll('[title]').forEach(el => {
+            const title = el.getAttribute('title');
+            if (title && !el.hasAttribute('data-tooltip')) {
+                el.setAttribute('data-tooltip', title);
+                el.removeAttribute('title');
+            }
+        });
+    };
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', initTooltips);
+    
+    // Watch for dynamic DOM changes (AJAX results, Modals, etc)
+    const tooltipObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.addedNodes.length) initTooltips();
+        });
+    });
+    tooltipObserver.observe(document.body, { childList: true, subtree: true });
     </script>
+    @stack('scripts')
 </body>
 </html>

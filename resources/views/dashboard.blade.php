@@ -23,7 +23,14 @@
                 <i data-lucide="refresh-cw" style="width: 18px;"></i>
                 Refresh
             </button>
-            <button id="openNewEntry" onclick="openModal()" class="btn-primary" style="padding: 0.85rem 1.75rem; border-radius: 12px; border: none; background: var(--primary); color: white; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: var(--transition); box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.3);">
+            <button id="openNewEntry" 
+                @if(auth()->user()->can_add_inventory)
+                onclick="openModal()" 
+                @else
+                disabled title="Unauthorized: Permission Required"
+                @endif
+                class="btn-primary" 
+                style="padding: 0.85rem 1.75rem; border-radius: 12px; border: none; background: {{ auth()->user()->can_add_inventory ? 'var(--primary)' : '#cbd5e1' }}; color: white; display: flex; align-items: center; gap: 0.75rem; cursor: {{ auth()->user()->can_add_inventory ? 'pointer' : 'not-allowed' }}; transition: var(--transition); box-shadow: {{ auth()->user()->can_add_inventory ? '0 10px 20px -5px rgba(99, 102, 241, 0.3)' : 'none' }};">
                 <i data-lucide="plus" style="width: 20px;"></i>
                 New Entry
             </button>
@@ -1038,7 +1045,7 @@
                     
                     // Auto-sync qty if not a partial delivery
                     if (status !== 'Partial Delivery' && $(this).hasClass('row-stock-balance')) {
-                        $row.find('.row-qty').val($row.find('.row-stock-balance').val());
+                        // Removed auto-sync line
                     }
 
                     const qtyVal = parseFloat($row.find('.row-qty').val()) || 0;
@@ -1108,26 +1115,20 @@
                 $('#donorNameWrapper').slideUp(300);
             }
 
-            // Update Labels & Fields for Partial Delivery UI
-            if (status === 'Partial Delivery') {
-                $('.item-entry-row').each(function() {
-                    $(this).find('.lbl-stock-balance').text('Physically Received');
-                    $(this).find('.lbl-received-qty').text('Expected / Invoice Qty');
-                    $(this).find('.row-qty').css({'border-color': '#f59e0b', 'background': 'var(--bg-card)'}).prop('readonly', false);
-                });
-            } else {
-                $('.item-entry-row').each(function() {
-                    $(this).find('.lbl-stock-balance').text('Stock Balance');
-                    $(this).find('.lbl-received-qty').text('Received Qty');
-                    $(this).find('.row-qty').css({'border-color': 'var(--primary-light)', 'background': 'var(--bg-main)'}).prop('readonly', true);
-                    
-                    // Auto-sync existing values if changed back to full
-                    const stockVal = $(this).find('.row-stock-balance').val();
-                    if (stockVal) {
-                        $(this).find('.row-qty').val(stockVal).trigger('input');
+                    // Update Labels & Fields for Partial Delivery UI
+                    if (status === 'Partial Delivery') {
+                        $('.item-entry-row').each(function() {
+                            $(this).find('.lbl-stock-balance').text('Physically Received');
+                            $(this).find('.lbl-received-qty').text('Expected / Invoice Qty');
+                            $(this).find('.row-qty').css({'border-color': '#f59e0b', 'background': 'var(--bg-card)'}).prop('readonly', false);
+                        });
+                    } else {
+                        $('.item-entry-row').each(function() {
+                            $(this).find('.lbl-stock-balance').text('Stock Balance');
+                            $(this).find('.lbl-received-qty').text('Received Qty');
+                            $(this).find('.row-qty').css({'border-color': 'var(--primary-light)', 'background': 'var(--bg-main)'}).prop('readonly', false); // Allow entry even if full
+                        });
                     }
-                });
-            }
         });
 
         // Initialize Supplier Name Search/Type

@@ -111,6 +111,10 @@
 
                     @if($isOutOfStock)
                         <button class="add-to-cart-btn" style="opacity: 0.5; cursor: not-allowed;"><i data-lucide="slash" style="width: 18px;"></i> Unavailable</button>
+                    @elseif(!auth()->user()->can_operate_logistics)
+                        <button class="add-to-cart-btn" disabled title="Unauthorized: Logistics Permission Required" style="background: #cbd5e1; border-color: #cbd5e1; color: white; cursor: not-allowed; box-shadow: none;">
+                            <i data-lucide="lock" style="width: 18px;"></i> Locked
+                        </button>
                     @else
                         <button class="add-to-cart-btn" onclick="addToCart('{{ addslashes($item->description) }}', {{ (int)$item->total_stock }}, '{{ $item->ledge_category }}', '{{ $item->unit }}')">
                             <i data-lucide="plus-circle" style="width: 18px;"></i> Add to List

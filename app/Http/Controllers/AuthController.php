@@ -59,6 +59,16 @@ class AuthController extends Controller
             Auth::login($user);
             $user->update(['last_login_at' => now()]);
 
+            // Log the registration
+            \App\Models\SystemLog::create([
+                'user_id' => $user->id,
+                'event_type' => 'AUTH',
+                'action' => 'REGISTRATION',
+                'description' => "New personnel registry created for {$user->name} (@{$user->username}).",
+                'severity' => 'info',
+                'ip_address' => $request->ip()
+            ]);
+
             $redirectRoute = $isAdmin ? 'admin.index' : 'dashboard';
             return redirect()->route($redirectRoute)->with('success', 'Registry initialized. Welcome, ' . $user->name);
         } catch (\Exception $e) {
@@ -74,8 +84,17 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->remember)) {
-            $request->session()->regenerate();
             $user = auth()->user();
+
+            // Check if the user's account is deactivated
+            if (!$user->is_active) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect()->route('account.deactivated');
+            }
+
+            $request->session()->regenerate();
             $user->update([
                 'last_login_at' => now(),
                 'is_online' => true,
@@ -107,6 +126,16 @@ class AuthController extends Controller
                 }
             }
 
+            // Log the login
+            \App\Models\SystemLog::create([
+                'user_id' => $user->id,
+                'event_type' => 'AUTH',
+                'action' => 'LOGIN',
+                'description' => "User authenticated and entered " . ($target === 'admin' ? 'Administrative' : 'Personnel') . " terminal.",
+                'severity' => 'info',
+                'ip_address' => $request->ip()
+            ]);
+
             // Default fallback based on role
             return $user->is_admin ? redirect()->route('admin.index') : redirect()->route('dashboard');
         }
@@ -119,7 +148,20 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         if (Auth::check()) {
-            Auth::user()->update(['is_online' => false]);
+            $user = Auth::user();
+            // Log the logout
+            \App\Models\SystemLog::create([
+                'user_id' => $user->id,
+                'event_type' => 'AUTH',
+                'action' => 'LOGOUT',
+                'description' => "User session terminated.",
+                'severity' => 'info',
+                'ip_address' => $request->ip()
+            ]);
+            $user->update([
+                'is_online' => false,
+                'last_logout_at' => now()
+            ]);
         }
         Auth::logout();
         $request->session()->invalidate();

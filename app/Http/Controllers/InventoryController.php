@@ -52,6 +52,29 @@ class InventoryController extends Controller
 
             DB::commit();
 
+            // Log the activity if user is authenticated
+            if (auth()->check()) {
+                $user = auth()->user();
+                $itemCount = count($validated['items']);
+                $source = $validated['acquisition_type'] === 'Donor' ? $validated['donor_name'] : $validated['supplier_name'];
+                
+                \App\Models\SystemLog::create([
+                    'user_id' => $user->id,
+                    'event_type' => 'INVENTORY',
+                    'action' => 'ADD_INVENTORY',
+                    'description' => "Personnel added {$itemCount} items to Category {$validated['ledge_category']} from {$source}.",
+                    'severity' => 'info',
+                    'metadata' => [
+                        'ledge_category' => $validated['ledge_category'],
+                        'acquisition_type' => $validated['acquisition_type'],
+                        'source_name' => $source,
+                        'arrival_date' => $validated['arrival_date'],
+                        'items_added' => $validated['items']
+                    ],
+                    'ip_address' => request()->ip()
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Inventory records saved successfully!'

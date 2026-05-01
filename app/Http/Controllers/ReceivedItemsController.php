@@ -125,9 +125,24 @@ class ReceivedItemsController extends Controller
     {
         try {
             $batch = InventoryBatch::findOrFail($id);
+            $batchId = $batch->id;
+            $category = $batch->ledge_category;
             // Delete associated items first to maintain referential integrity if not handled by FK
             $batch->items()->delete();
             $batch->delete();
+
+            // Log the purge activity
+            if (auth()->check()) {
+                $user = auth()->user();
+                \App\Models\SystemLog::create([
+                    'user_id' => $user->id,
+                    'event_type' => 'SECURITY',
+                    'action' => 'DELETE_BATCH',
+                    'description' => "Personnel purged Inventory Batch #{$batchId} (Category {$category}) and all its associated items.",
+                    'severity' => 'danger',
+                    'ip_address' => request()->ip()
+                ]);
+            }
 
             return response()->json([
                 'success' => true,

@@ -20,9 +20,11 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', function() {
     return redirect()->route('login');
 });
+Route::get('/register', function() { return redirect()->route('login'); });
+Route::get('/account-deactivated', function() { return view('auth.deactivated'); })->name('account.deactivated');
 
-// Protected Routes (Grouped under auth)
-Route::middleware(['auth'])->group(function () {
+// Protected Routes (Grouped under auth and active status check)
+Route::middleware(['auth', 'check_status'])->group(function () {
     
     Route::get('/dashboard', function () {
         // STRICT ROLE ENFORCEMENT: Admins are not allowed in the Personnel Dashboard
@@ -304,11 +306,123 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
     Route::post('/settings/avatar', [SettingsController::class, 'updateAvatar'])->name('settings.avatar');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/notifications', function() {
+        return view('notifications');
+    })->name('notifications.index');
+
+    Route::get('/api/notifications', function() {
+        if (!auth()->check()) return response()->json(['error' => 'Unauthenticated'], 401);
+
+        try {
+            $acknowledged = \App\Models\NotificationAcknowledgement::where('user_id', auth()->id())
+                ->pluck('item_description')
+                ->toArray();
+        } catch (\Exception $e) {
+            $acknowledged = session()->get('acknowledged_notifications', []);
+        }
+
+        $lowStockItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+            ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
+            ->groupBy('description')
+            ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) < 100')
+            ->get();
+
+        $expiredItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) as total_qty')
+            ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
+            ->groupBy('description')
+            ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
+            ->get();
+
+        $notifications = [];
+        $is_admin = auth()->user()->is_admin;
+        
+        foreach ($lowStockItems as $item) {
+            $notifications[] = [
+                'type' => 'warning',
+                'title' => 'Low Stock: ' . $item->description,
+                'message' => "Critical balance detected: " . number_format($item->total_stock, 0) . " units remaining.",
+                'icon' => 'alert-triangle',
+                'route' => $is_admin ? 'admin.index' : 'dashboard'
+            ];
+        }
+
+        foreach ($expiredItems as $item) {
+            $notifications[] = [
+                'type' => 'danger',
+                'title' => 'Expired Record: ' . $item->description,
+                'message' => "Item registry indicates zero balance but exists in inventory records.",
+                'icon' => 'alert-octagon',
+                'route' => $is_admin ? 'admin.index' : 'dashboard'
+            ];
+        }
+
+        return response()->json([
+            'notifications' => $notifications,
+            'count' => count($notifications)
+        ]);
+    })->name('api.notifications');
+
+    Route::post('/api/notifications/mark-all-read', function() {
+        if (!auth()->check()) return response()->json(['success' => false], 401);
+
+        $lowStockItems = \App\Models\InventoryItem::selectRaw('description')
+            ->groupBy('description')
+            ->havingRaw('SUM(stock_balance) < 100')
+            ->pluck('description')
+            ->toArray();
+
+        $expiredItems = \App\Models\InventoryItem::selectRaw('description')
+            ->groupBy('description')
+            ->havingRaw('SUM(stock_balance) = 0 AND SUM(qty) >= 1')
+            ->pluck('description')
+            ->toArray();
+
+        $allDescs = array_unique(array_merge($lowStockItems, $expiredItems));
+        
+        // Permanent storage (Database)
+        try {
+            foreach ($allDescs as $desc) {
+                \App\Models\NotificationAcknowledgement::updateOrCreate(
+                    ['user_id' => auth()->id(), 'item_description' => $desc, 'alert_type' => 'system'],
+                    ['acknowledged_at' => now()]
+                );
+            }
+        } catch (\Exception $e) {
+            // Fallback to session
+            $acknowledged = session()->get('acknowledged_notifications', []);
+            session()->put('acknowledged_notifications', array_unique(array_merge($acknowledged, $allDescs)));
+        }
+
+        return response()->json(['success' => true]);
+    })->name('api.notifications.mark-all-read');
+
+    Route::post('/api/notifications/dismiss', function(\Illuminate\Http\Request $request) {
+        if (!auth()->check()) return response()->json(['success' => false], 401);
+        $desc = $request->description;
+        if (!$desc) return response()->json(['success' => false], 400);
+
+        try {
+            \App\Models\NotificationAcknowledgement::updateOrCreate(
+                ['user_id' => auth()->id(), 'item_description' => $desc, 'alert_type' => 'system'],
+                ['acknowledged_at' => now()]
+            );
+        } catch (\Exception $e) {
+            $acknowledged = session()->get('acknowledged_notifications', []);
+            $acknowledged[] = $desc;
+            session()->put('acknowledged_notifications', array_unique($acknowledged));
+        }
+
+        return response()->json(['success' => true]);
+    })->name('api.notifications.dismiss');
 
     // Admin Routes
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('/admin/logs', [AdminController::class, 'logs'])->name('admin.logs');
+    Route::get('/admin/permissions', [AdminController::class, 'permissions'])->name('admin.permissions');
+    Route::post('/admin/permissions/update', [AdminController::class, 'updatePermission'])->name('admin.permissions.update');
+    Route::post('/admin/logs/delete-multiple', [AdminController::class, 'destroyMultipleLogs'])->name('admin.logs.delete_multiple');
     Route::put('/admin/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
-    Route::delete('/admin/users/{id}', [AdminController::class, 'destroyUser'])->name('admin.users.destroy');
+    Route::patch('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
 
     // Returns Routes
     Route::post('/returns/purge', [ReturnController::class, 'purge'])->name('returns.purge');
@@ -399,9 +513,34 @@ Route::middleware(['auth'])->group(function () {
         }
     })->name('api.inventory.receive-remainder');
 });
-
 Route::get('/system/migrate', function () {
     try {
+        $messages = [];
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'last_logout_at')) {
+            \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->timestamp('last_logout_at')->nullable();
+            });
+            $messages[] = "Column 'last_logout_at' added successfully.";
+        }
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'is_active')) {
+            \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->boolean('is_active')->default(true);
+            });
+            $messages[] = "Column 'is_active' added successfully.";
+        }
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'can_add_inventory')) {
+            \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'can_view_inventory')) {
+                    $table->renameColumn('can_view_inventory', 'can_add_inventory');
+                } else {
+                    $table->boolean('can_add_inventory')->default(true);
+                }
+            });
+            $messages[] = "Permission column renamed to can_add_inventory.";
+        }
+        if (!empty($messages)) {
+            return implode("<br>", $messages);
+        }
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         return "System Registry Updated Successfully: " . \Illuminate\Support\Facades\Artisan::output();
     } catch (\Exception $e) {

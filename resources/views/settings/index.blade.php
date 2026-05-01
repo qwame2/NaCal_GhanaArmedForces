@@ -1,4 +1,6 @@
-@extends('layouts.dashboard')
+@extends(auth()->user()->is_admin ? 'layouts.admin' : 'layouts.dashboard')
+
+@section('title', 'System Settings')
 
 @section('content')
 <div class="animate-slide-up" style="width: 100%; margin: 0 auto; padding: 0;">

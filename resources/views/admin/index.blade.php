@@ -70,7 +70,7 @@
                     <div class="search-icon-wrap">
                         <i data-lucide="search"></i>
                     </div>
-                    <input type="text" id="nexusSearch" placeholder="Search registry...">
+                    <input type="text" id="registrySearch" placeholder="Search registry...">
                     <div class="shortcut-hint">
                         <span class="key-group">
                             <span class="key">Ctrl</span>
@@ -89,7 +89,8 @@
                         <th class="col-identity">OPERATIONAL IDENTITY</th>
                         <th class="col-clearance">CLASSIFICATION</th>
                         <th class="col-sector">SECTOR</th>
-                        <th class="col-sync">LAST SYNC</th>
+                        <th class="col-sync">LOGIN TIME</th>
+                        <th class="col-sync">LOGOUT TIME</th>
                         <th class="col-ops" style="text-align: center;">OPT</th>
                     </tr>
                 </thead>
@@ -122,16 +123,35 @@
                             @endif
                         </td>
                         <td><span class="sector-badge">{{ $user->department ?? 'UNASSIGNED' }}</span></td>
-                        <td><span class="sync-time">{{ $user->last_login_at ? $user->last_login_at->diffForHumans() : 'NO ACCESS' }}</span></td>
+                        <td>
+                            <span class="sync-time" style="color: #10b981; font-weight: 800;">
+                                {{ $user->last_login_at ? $user->last_login_at->format('M d, H:i') : 'NO RECORD' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="sync-time" style="color: #64748b; font-weight: 800;">
+                                {{ $user->last_logout_at ? $user->last_logout_at->format('M d, H:i') : 'NO RECORD' }}
+                            </span>
+                        </td>
                         <td style="text-align: center;">
-                            <div class="ops-cluster" style="justify-content: center;">
+                            <div class="ops-cluster" style="justify-content: center; display: flex; align-items: center; gap: 10px;">
+                                @if(!$user->is_active)
+                                <span style="background: #fef2f2; color: #ef4444; border: 1px solid #fecdd3; padding: 4px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: 900; letter-spacing: 0.05em;">INACTIVE</span>
+                                @endif
+                                
                                 @if($user->id !== auth()->id())
-                                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="display: inline;">
+                                <form action="{{ route('admin.users.toggle_status', $user->id) }}" method="POST" style="display: inline;">
                                     @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-purge" title="Purge Record">
-                                        <i data-lucide="trash-2"></i>
+                                    @method('PATCH')
+                                    @if($user->is_active)
+                                    <button type="submit" class="btn-purge" title="Deactivate Account" style="border: 1px solid #fef3c7; color: #f59e0b; background: #fffbeb;" onmouseover="this.style.background='#f59e0b'; this.style.color='white'" onmouseout="this.style.background='#fffbeb'; this.style.color='#f59e0b'">
+                                        <i data-lucide="power-off"></i>
                                     </button>
+                                    @else
+                                    <button type="submit" class="btn-purge" title="Reactivate Account" style="border: 1px solid #d1fae5; color: #10b981; background: #ecfdf5;" onmouseover="this.style.background='#10b981'; this.style.color='white'" onmouseout="this.style.background='#ecfdf5'; this.style.color='#10b981'">
+                                        <i data-lucide="power"></i>
+                                    </button>
+                                    @endif
                                 </form>
                                 @endif
                             </div>
@@ -307,9 +327,9 @@
     }
 
     /* Column Widths */
-    .col-identity { width: 35%; }
-    .col-clearance { width: 20%; }
-    .col-sector { width: 20%; }
+    .col-identity { width: 30%; }
+    .col-clearance { width: 15%; }
+    .col-sector { width: 15%; }
     .col-sync { width: 15%; }
     .col-ops { width: 10%; }
     
@@ -400,7 +420,7 @@
 
 <script>
     $(document).ready(function() {
-        $("#nexusSearch").on("keyup", function() {
+        $("#registrySearch").on("keyup", function() {
             var value = $(this).val().toLowerCase();
             $("#registryBody tr").filter(function() {
                 $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
@@ -411,7 +431,7 @@
         $(document).keydown(function(e) {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
                 e.preventDefault();
-                $('#nexusSearch').focus();
+                $('#registrySearch').focus();
             }
         });
     });

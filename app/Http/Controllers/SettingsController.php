@@ -25,6 +25,16 @@ class SettingsController extends Controller
         $user = auth()->user();
         $user->update($request->only(['name', 'email', 'phone', 'role', 'department']));
 
+        // Log the profile update
+        \App\Models\SystemLog::create([
+            'user_id' => $user->id,
+            'event_type' => 'SYSTEM',
+            'action' => 'UPDATE_PROFILE',
+            'description' => "Personnel updated their account profile details.",
+            'severity' => 'info',
+            'ip_address' => request()->ip()
+        ]);
+
         return response()->json([
             'success' => true, 
             'message' => 'Personnel Records Synchronized'
@@ -40,6 +50,16 @@ class SettingsController extends Controller
 
         auth()->user()->update([
             'password' => \Hash::make($request->password)
+        ]);
+
+        // Log the password change
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'CHANGE_PASSWORD',
+            'description' => "Personnel updated their security credentials (password).",
+            'severity' => 'warning',
+            'ip_address' => request()->ip()
         ]);
 
         return response()->json([

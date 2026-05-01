@@ -134,10 +134,17 @@
                             </div>
                         </td>
                         <td style="padding: 1.75rem 1.5rem; border-radius: 0 24px 24px 0; text-align: right;">
+                            @if(auth()->user()->can_operate_logistics)
                             <button onclick="openReturnModal({{ json_encode($item) }})" class="recover-btn-premium" style="padding: 1rem 1.5rem; border-radius: 16px; font-weight: 900; background: #0f172a; color: white; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);">
                                 <i data-lucide="corner-up-left" style="width: 18px;"></i>
                                 <span>Recovery</span>
                             </button>
+                            @else
+                            <button disabled title="Unauthorized: Logistics Permission Required" class="recover-btn-premium" style="padding: 1rem 1.5rem; border-radius: 16px; font-weight: 900; background: #cbd5e1; color: white; border: none; cursor: not-allowed; display: inline-flex; align-items: center; gap: 10px; box-shadow: none;">
+                                <i data-lucide="lock" style="width: 18px;"></i>
+                                <span>Locked</span>
+                            </button>
+                            @endif
                         </td>
                     </tr>
                     @endif
@@ -179,9 +186,15 @@
                         <div style="font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Balance</div>
                         <div style="font-size: 1.75rem; font-weight: 950; color: #d97706;">{{ $item->quantity }} <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted);">{{ $item->unit ?: 'Units' }}</span></div>
                     </div>
+                    @if(auth()->user()->can_operate_logistics)
                     <button onclick="openReturnModal({{ json_encode($item) }})" class="mobile-recover-btn" style="width: 56px; height: 56px; border-radius: 18px; background: #0f172a; color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                         <i data-lucide="corner-up-left" style="width: 24px;"></i>
                     </button>
+                    @else
+                    <button disabled title="Unauthorized" style="width: 56px; height: 56px; border-radius: 18px; background: #cbd5e1; color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: not-allowed;">
+                        <i data-lucide="lock" style="width: 24px;"></i>
+                    </button>
+                    @endif
                 </div>
             </div>
             @endif

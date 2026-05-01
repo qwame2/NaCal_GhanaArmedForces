@@ -113,6 +113,27 @@ class IssueItemsController extends Controller
 
             DB::commit();
 
+            // Log the issuance activity
+            if (auth()->check()) {
+                $user = auth()->user();
+                $itemCount = count($validated['items']);
+                
+                \App\Models\SystemLog::create([
+                    'user_id' => $user->id,
+                    'event_type' => 'INVENTORY',
+                    'action' => 'ISSUE_ITEM',
+                    'description' => "Personnel issued {$itemCount} items to {$validated['beneficiary']} on authority of {$validated['authority']}.",
+                    'severity' => $validated['issuance_type'] === 'Permanent' ? 'warning' : 'info',
+                    'metadata' => [
+                        'beneficiary' => $validated['beneficiary'],
+                        'authority' => $validated['authority'],
+                        'issuance_type' => $validated['issuance_type'],
+                        'items_issued' => $validated['items']
+                    ],
+                    'ip_address' => request()->ip()
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Items issued successfully and inventory updated.'
