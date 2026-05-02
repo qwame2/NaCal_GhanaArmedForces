@@ -526,7 +526,10 @@ Route::get('/system/migrate', function () {
             \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
                 $table->boolean('is_active')->default(true);
             });
-            $messages[] = "Column 'is_active' added successfully.";
+            \Illuminate\Support\Facades\DB::table('users')->whereNull('is_active')->update(['is_active' => 1]);
+            $messages[] = "Column 'is_active' added and initialized successfully.";
+        } else {
+            \Illuminate\Support\Facades\DB::table('users')->whereNull('is_active')->update(['is_active' => 1]);
         }
         if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'can_add_inventory')) {
             \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {

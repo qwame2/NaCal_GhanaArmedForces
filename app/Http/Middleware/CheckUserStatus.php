@@ -14,11 +14,16 @@ class CheckUserStatus
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && !Auth::user()->is_active) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-            return redirect()->route('account.deactivated');
+        if (Auth::check()) {
+            $user = Auth::user();
+            // Only block if explicitly set to 0 (false) and the user is NOT an admin
+            // This prevents accidental lockouts for existing users or admins
+            if ($user->is_active === 0 && !$user->is_admin) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect()->route('account.deactivated');
+            }
         }
 
         return $next($request);
