@@ -529,20 +529,13 @@ Route::get('/system/migrate', function () {
             \Illuminate\Support\Facades\DB::table('users')->whereNull('is_active')->update(['is_active' => 1]);
             $messages[] = "Column 'is_active' added and initialized successfully.";
         } else {
-            \Illuminate\Support\Facades\DB::table('users')->whereNull('is_active')->update(['is_active' => 1]);
+        $count = \Illuminate\Support\Facades\DB::table('users')->whereNull('is_active')->orWhere('is_active', 0)->update(['is_active' => 1]);
+        if ($count > 0) {
+            $messages[] = "Status synchronized for $count personnel accounts.";
         }
-        if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'can_add_inventory')) {
-            \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
-                if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'can_view_inventory')) {
-                    $table->renameColumn('can_view_inventory', 'can_add_inventory');
-                } else {
-                    $table->boolean('can_add_inventory')->default(true);
-                }
-            });
-            $messages[] = "Permission column renamed to can_add_inventory.";
-        }
+        
         if (!empty($messages)) {
-            return implode("<br>", $messages);
+            return "System Updates Applied:<br>" . implode("<br>", $messages);
         }
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         return "System Registry Updated Successfully: " . \Illuminate\Support\Facades\Artisan::output();
