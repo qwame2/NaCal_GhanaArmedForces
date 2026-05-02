@@ -529,9 +529,10 @@ Route::get('/system/migrate', function () {
             \Illuminate\Support\Facades\DB::table('users')->whereNull('is_active')->update(['is_active' => 1]);
             $messages[] = "Column 'is_active' added and initialized successfully.";
         } else {
-        $count = \Illuminate\Support\Facades\DB::table('users')->whereNull('is_active')->orWhere('is_active', 0)->update(['is_active' => 1]);
-        if ($count > 0) {
-            $messages[] = "Status synchronized for $count personnel accounts.";
+            $count = \Illuminate\Support\Facades\DB::table('users')->whereNull('is_active')->orWhere('is_active', 0)->update(['is_active' => 1]);
+            if ($count > 0) {
+                $messages[] = "Status synchronized for $count personnel accounts.";
+            }
         }
         
         if (!empty($messages)) {
