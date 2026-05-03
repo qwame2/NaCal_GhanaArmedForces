@@ -92,4 +92,10 @@ class SettingsController extends Controller
         
         return response()->json(['success' => false, 'message' => 'Upload failed.']);
     }
+    public function messages()
+    {
+        $admins = \App\Models\User::where('is_admin', true)->get();
+        $colleagues = \App\Models\User::where('is_admin', false)->where('id', '!=', auth()->id())->get();
+        return view('messages.index', compact('admins', 'colleagues'));
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\InventoryBatch;
 use App\Models\InventoryItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class ReceivedItemsController extends Controller
@@ -84,6 +85,21 @@ class ReceivedItemsController extends Controller
             ->get()
             ->keyBy('description');
 
+        // Fetch unique suppliers and donors for the dropdowns
+        $allSuppliers = InventoryBatch::where('acquisition_type', 'Supplier')
+            ->select('supplier_name')
+            ->distinct()
+            ->pluck('supplier_name')
+            ->map(function($name) {
+                return preg_replace('/\s\[.*\]$/', '', $name);
+            })->unique()->values();
+
+        $allDonors = InventoryBatch::where('acquisition_type', 'Donor')
+            ->select('donor_name')
+            ->distinct()
+            ->pluck('donor_name')
+            ->unique()->values();
+
         // Statistics
         $totalReceived = InventoryBatch::count();
         $totalItemsCount = InventoryItem::count();
@@ -98,8 +114,110 @@ class ReceivedItemsController extends Controller
             'isSearching',
             'searchSum',
             'searchQtySum',
-            'itemAggregates'
+            'itemAggregates',
+            'allSuppliers',
+            'allDonors'
         ));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'ledge_category' => 'required|string',
+            'supplier_name' => 'nullable|string',
+            'donor_name' => 'nullable|string',
+            'acquisition_type' => 'required|string',
+            'arrival_date' => 'required|date',
+            'items' => 'required|array',
+            'items.*.id' => 'required|exists:inventory_items,id',
+            'items.*.description' => 'required|string',
+            'items.*.unit' => 'required|string',
+            'items.*.qty' => 'required|numeric',
+            'items.*.stock_balance' => 'required|numeric',
+            'items.*.variance' => 'required|numeric',
+            'items.*.remarks' => 'nullable|string',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $batch = InventoryBatch::with('items')->findOrFail($id);
+
+            // Capture Original State for Forensic Audit
+            $originalBatch = $batch->only(['arrival_date', 'ledge_category', 'acquisition_type', 'supplier_name', 'donor_name']);
+            $originalItems = $batch->items->mapWithKeys(function($item) {
+                return [$item->id => $item->only(['description', 'unit', 'qty', 'stock_balance', 'variance', 'remarks'])];
+            });
+
+            $batch->update([
+                'ledge_category' => $validated['ledge_category'],
+                'supplier_name' => $validated['supplier_name'],
+                'donor_name' => $validated['donor_name'],
+                'acquisition_type' => $validated['acquisition_type'],
+                'arrival_date' => $validated['arrival_date'],
+            ]);
+
+            $itemChanges = [];
+            foreach ($validated['items'] as $itemData) {
+                $item = $batch->items()->findOrFail($itemData['id']);
+                
+                $old = $originalItems[$item->id] ?? [];
+                $new = [
+                    'description' => $itemData['description'],
+                    'unit' => $itemData['unit'],
+                    'qty' => $itemData['qty'],
+                    'stock_balance' => $itemData['stock_balance'],
+                    'variance' => $itemData['variance'],
+                    'remarks' => $itemData['remarks'],
+                ];
+
+                // Detect changes
+                $diff = [];
+                foreach ($new as $key => $val) {
+                    if (isset($old[$key]) && $old[$key] != $val) {
+                        $diff[$key] = ['old' => $old[$key], 'new' => $val];
+                    }
+                }
+
+                if (!empty($diff)) {
+                    $itemChanges[$item->id] = $diff;
+                }
+
+                $item->update($new);
+            }
+
+            DB::commit();
+
+            // Log the activity with Detailed Metadata
+            if (auth()->check()) {
+                $user = auth()->user();
+                \App\Models\SystemLog::create([
+                    'user_id' => $user->id,
+                    'event_type' => 'INVENTORY',
+                    'action' => 'UPDATE_BATCH',
+                    'description' => "Personnel modified Inventory Batch #{$id} and its associated items.",
+                    'severity' => 'info',
+                    'metadata' => [
+                        'batch_id' => $id,
+                        'batch_changes' => array_diff_assoc($batch->only(array_keys($originalBatch)), $originalBatch),
+                        'item_changes' => $itemChanges
+                    ],
+                    'ip_address' => request()->ip()
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Batch updated successfully.'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Update failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function show(Request $request, $id)
@@ -107,18 +225,34 @@ class ReceivedItemsController extends Controller
         $ledgeMap = $this->ledgeMap;
         $batch = InventoryBatch::with(['items'])->findOrFail($id);
         
+        // Fetch history logs for this batch
+        $history = \App\Models\SystemLog::where('action', 'UPDATE_BATCH')
+            ->where('metadata->batch_id', (int)$id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         if ($request->has('json')) {
-            return response()->json(['batch' => $batch]);
+            return response()->json([
+                'batch' => $batch,
+                'history' => $history
+            ]);
         }
 
-        return view('received-items.show', compact('batch', 'ledgeMap'));
+        return view('received-items.show', compact('batch', 'ledgeMap', 'history'));
     }
 
     public function print($id)
     {
         $ledgeMap = $this->ledgeMap;
         $batch = InventoryBatch::with(['items'])->findOrFail($id);
-        return view('received-items.print', compact('batch', 'ledgeMap'));
+        
+        // Fetch history logs for this batch
+        $history = \App\Models\SystemLog::where('action', 'UPDATE_BATCH')
+            ->where('metadata->batch_id', (int)$id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('received-items.print', compact('batch', 'ledgeMap', 'history'));
     }
 
     public function destroy($id)

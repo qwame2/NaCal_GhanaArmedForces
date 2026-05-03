@@ -149,7 +149,7 @@
                         </div>
                         <div>
                             <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Approval</label>
-                            <input type="text" id="authority" placeholder="Approving Officer / Doc Ref" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700;">
+                            <input type="text" id="authority" value="{{ $adminName }}" readonly placeholder="Approving Officer" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(99, 102, 241, 0.05); color: var(--primary); font-weight: 800; cursor: not-allowed;">
                         </div>
                         <div>
                             <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Alloc. Type</label>

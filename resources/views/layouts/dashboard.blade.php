@@ -109,6 +109,13 @@
                     <span>Returns</span>
                 </a>
             </li>
+
+            <li class="nav-item">
+                <a href="{{ route('stockcheck.index') }}" class="nav-link {{ request()->routeIs('stockcheck.index') ? 'active' : '' }}" data-tooltip="Verify Category & Physical Stock">
+                    <i data-lucide="clipboard-check"></i>
+                    <span>Stock Check</span>
+                </a>
+            </li>
         </ul>
 
         <div class="nav-section-title">Operations</div>
@@ -191,9 +198,10 @@
                     </button>
                 </div>
 
-                <div class="icon-btn">
+                <a href="{{ route('messages.index') }}" class="icon-btn" title="Secure Communication Hub" style="position: relative;">
                     <i data-lucide="message-square" style="width: 20px;"></i>
-                </div>
+                    <span id="global-unread-badge" style="display: none; position: absolute; top: -5px; right: -5px; background: var(--primary); color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 99px; border: 2px solid var(--bg-main); transition: var(--transition);">0</span>
+                </a>
                 <div style="height: 32px; width: 1px; background: var(--border-color);"></div>
                 <div class="icon-btn" id="notification-btn" style="position: relative; cursor: pointer; transition: var(--transition);">
                     <i data-lucide="bell" style="width: 20px;"></i>
@@ -598,6 +606,33 @@
                     }
                 });
             };
+
+            // Global Message Badge Sync
+            window.refreshUnreadMessages = function() {
+                const isMessagePage = window.location.href.includes('/messages');
+                if (isMessagePage) {
+                    const badge = document.getElementById('global-unread-badge');
+                    if (badge) badge.style.display = 'none';
+                    return;
+                }
+
+                fetch("{{ route('api.total-unread') }}")
+                    .then(res => res.json())
+                    .then(data => {
+                        const badge = document.getElementById('global-unread-badge');
+                        if (badge) {
+                            if (data.count > 0) {
+                                badge.textContent = data.count;
+                                badge.style.display = 'block';
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                        }
+                    });
+            };
+
+            setInterval(window.refreshUnreadMessages, 10000);
+            window.refreshUnreadMessages();
         });
 
         // Toast Notification System Logic
@@ -661,6 +696,7 @@
         @endif
         // Global Premium Tooltip Engine
         const initTooltips = () => {
+            // Convert title attributes to data-tooltip to avoid default browser tooltips
             document.querySelectorAll('[title]').forEach(el => {
                 const title = el.getAttribute('title');
                 if (title && !el.hasAttribute('data-tooltip')) {
@@ -669,6 +705,51 @@
                 }
             });
         };
+
+        // Global Tooltip DOM Element
+        const tooltipEl = document.createElement('div');
+        tooltipEl.className = 'global-premium-tooltip';
+        document.body.appendChild(tooltipEl);
+
+        // Tooltip Interaction Logic
+        document.addEventListener('mouseover', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target) {
+                const text = target.getAttribute('data-tooltip');
+                if (!text) return;
+
+                tooltipEl.textContent = text;
+                tooltipEl.classList.add('visible');
+                
+                // Position calculation
+                const rect = target.getBoundingClientRect();
+                const tooltipRect = tooltipEl.getBoundingClientRect();
+                
+                let top = rect.top - tooltipRect.height - 12;
+                let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                
+                // Boundary checks
+                tooltipEl.classList.remove('place-bottom');
+                if (top < 10) {
+                    top = rect.bottom + 12;
+                    tooltipEl.classList.add('place-bottom');
+                }
+                
+                if (left < 10) left = 10;
+                if (left + tooltipRect.width > window.innerWidth - 10) {
+                    left = window.innerWidth - tooltipRect.width - 10;
+                }
+                
+                tooltipEl.style.top = top + 'px';
+                tooltipEl.style.left = left + 'px';
+            }
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            if (e.target.closest('[data-tooltip]')) {
+                tooltipEl.classList.remove('visible');
+            }
+        });
 
         // Initialize on load
         document.addEventListener('DOMContentLoaded', initTooltips);
@@ -681,6 +762,55 @@
         });
         tooltipObserver.observe(document.body, { childList: true, subtree: true });
     </script>
+    
+    <style>
+        .global-premium-tooltip {
+            position: fixed;
+            z-index: 99999999;
+            background: #0f172a;
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.1);
+            white-space: nowrap;
+            transform: translateY(6px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            letter-spacing: 0.02em;
+        }
+
+        .global-premium-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #0f172a;
+        }
+
+        .global-premium-tooltip.place-bottom::after {
+            top: auto;
+            bottom: 100%;
+            border-top-color: transparent;
+            border-bottom-color: #0f172a;
+        }
+
+        .global-premium-tooltip.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        [data-tooltip] {
+            /* Removed help cursor as requested */
+        }
+    </style>
     @stack('scripts')
 </body>
 

@@ -8,7 +8,7 @@
 </form>
 
 <!-- Premium Returns Header -->
-<div class="header-mesh" style="background: #ffffff; padding: 3.5rem; border-radius: 32px; margin-bottom: 3rem; position: relative; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+<div class="header-mesh" style="background: var(--bg-card); padding: 3.5rem; border-radius: 32px; margin-bottom: 3rem; position: relative; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
     <div style="position: absolute; top: -50px; right: -50px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 70%); z-index: 0;"></div>
 
     <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
@@ -27,7 +27,7 @@
         </div>
 
         <div style="display: flex; gap: 1rem;">
-            <button onclick="openHistorySheet()" class="modern-action-btn" style="border-radius: 20px; padding: 1.15rem 1.75rem; border: 1px solid var(--border-color); background: #f8fafc; box-shadow: 0 4px 10px rgba(0,0,0,0.02); cursor: pointer; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 10px; transition: all 0.2s ease;">
+            <button onclick="openHistorySheet()" class="modern-action-btn" style="border-radius: 20px; padding: 1.15rem 1.75rem; border: 1px solid var(--border-color); background: var(--bg-main); box-shadow: 0 4px 10px rgba(0,0,0,0.02); cursor: pointer; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 10px; transition: all 0.2s ease;">
                 <i data-lucide="history" style="width: 22px; color: #f59e0b;"></i>
                 <span>Return History</span>
             </button>
@@ -43,7 +43,7 @@
         </div>
         <div>
             <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Outstanding Assets</div>
-            <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ $issuedItems->sum('quantity') }} <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">Units</span></div>
+            <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ $issuedItems->sum('quantity') }} <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">Total Assets</span></div>
         </div>
     </div>
 
@@ -106,7 +106,7 @@
                     <tr class="return-row" data-search="{{ strtolower($item->beneficiary . ' ' . $item->description . ' ' . $item->ledge_category) }}">
                         <td style="padding: 1.75rem 1.5rem; border-radius: 24px 0 0 24px;">
                             <div style="display: flex; align-items: center; gap: 15px;">
-                                <div style="width: 48px; height: 48px; border-radius: 14px; background: #f8fafc; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                                <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--bg-main); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--primary);">
                                     <i data-lucide="package" style="width: 24px;"></i>
                                 </div>
                                 <div>
@@ -127,9 +127,9 @@
                         </td>
                         <td style="padding: 1.75rem 1.5rem;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="padding: 0.75rem 1.25rem; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 16px;">
+                                <div style="padding: 0.75rem 1.25rem; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 16px;">
                                     <span style="font-weight: 950; font-size: 1.4rem; color: #d97706;">{{ $item->quantity }}</span>
-                                    <span style="color: #f59e0b; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; margin-left: 4px;">{{ $item->unit ?: 'Units' }}</span>
+                                    <span style="color: #f59e0b; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; margin-left: 4px;">{{ $item->actual_unit ?: ($item->unit ?: 'Units') }}</span>
                                 </div>
                             </div>
                         </td>
@@ -159,7 +159,7 @@
         <div style="display: grid; gap: 1.5rem;" id="returnsMobileBody">
             @foreach($issuedItems as $item)
             @if($item->quantity > 0)
-            <div class="return-card-mobile" data-search="{{ strtolower($item->beneficiary . ' ' . $item->description . ' ' . $item->ledge_category) }}" style="padding: 2rem; background: #ffffff; border-radius: 28px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+            <div class="return-card-mobile" data-search="{{ strtolower($item->beneficiary . ' ' . $item->description . ' ' . $item->ledge_category) }}" style="padding: 2rem; background: var(--bg-card); border-radius: 28px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
                     <span class="ledge-badge-premium" style="font-size: 0.65rem;">CAT {{ $item->ledge_category }}</span>
                     <div style="text-align: right;">
@@ -169,13 +169,13 @@
                 </div>
                 
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem;">
-                    <div style="width: 40px; height: 40px; border-radius: 12px; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                    <div style="width: 40px; height: 40px; border-radius: 12px; background: var(--bg-main); display: flex; align-items: center; justify-content: center; color: var(--primary);">
                         <i data-lucide="package" style="width: 20px;"></i>
                     </div>
                     <h4 style="margin: 0; color: var(--text-main); font-size: 1.25rem; font-weight: 950; letter-spacing: -0.01em;">{{ $item->description }}</h4>
                 </div>
 
-                <div style="background: #f8fafc; border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                <div style="background: var(--bg-main); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem;">
                     <div style="font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Holder</div>
                     <div style="color: var(--text-main); font-weight: 850; font-size: 1.05rem;">{{ $item->beneficiary }}</div>
                     <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-top: 2px;">Ref: {{ $item->authority ?: 'General' }}</div>
@@ -184,7 +184,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px dashed var(--border-color);">
                     <div>
                         <div style="font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Balance</div>
-                        <div style="font-size: 1.75rem; font-weight: 950; color: #d97706;">{{ $item->quantity }} <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted);">{{ $item->unit ?: 'Units' }}</span></div>
+                        <div style="font-size: 1.75rem; font-weight: 950; color: #d97706;">{{ $item->quantity }} <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted);">{{ $item->actual_unit ?: ($item->unit ?: 'Units') }}</span></div>
                     </div>
                     @if(auth()->user()->can_operate_logistics)
                     <button onclick="openReturnModal({{ json_encode($item) }})" class="mobile-recover-btn" style="width: 56px; height: 56px; border-radius: 18px; background: #0f172a; color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
@@ -313,9 +313,9 @@
 
 <!-- History Bottom Sheet with Modern Professional Report Design -->
 <div id="historySheet" class="modal-backdrop-premium" onclick="handleHistoryOutsideClick(event)">
-    <div class="modal-container-premium animate-pop-in sheet-content" style="max-width: 1400px; width: 98%; max-height: 90vh; display: flex; flex-direction: column; background: #ffffff !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;">
+    <div class="modal-container-premium animate-pop-in sheet-content" style="max-width: 1400px; width: 98%; max-height: 90vh; display: flex; flex-direction: column; background: var(--bg-card) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;">
         <div class="samsung-drag-handle"></div>
-        <div class="modal-header-premium" style="display: flex; justify-content: space-between; align-items: center; padding: 2rem 3rem;">
+        <div class="modal-header-premium" style="display: flex; justify-content: space-between; align-items: center; padding: 2rem 3rem; background: var(--bg-card);">
             <div>
                 <h3 style="margin: 0; font-size: 2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">Return <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">History</span></h3>
                 <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600;">Tracking history of all recovered assets</p>
@@ -478,7 +478,7 @@
 
     .header-mesh {
         background: radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.06) 0, transparent 50%),
-            var(--bg-card);
+            var(--bg-card) !important;
         backdrop-filter: blur(24px);
     }
 
@@ -678,7 +678,7 @@
     .item-icon-circle {
         width: 56px;
         height: 56px;
-        background: white;
+        background: var(--bg-main);
         border-radius: 18px;
         display: flex;
         align-items: center;
@@ -887,7 +887,7 @@
     .error-icon-box {
         width: 32px;
         height: 32px;
-        background: white;
+        background: var(--bg-card);
         border-radius: 8px;
         display: flex;
         align-items: center;
@@ -1112,7 +1112,7 @@
         document.getElementById('modal_item_authority').innerText = 'Approval: ' + (item.authority ? item.authority : 'N/A');
         document.getElementById('modal_return_qty').value = item.quantity;
         document.getElementById('modal_return_qty').max = item.quantity;
-        document.getElementById('modal_max_qty').innerText = item.quantity + ' ' + (item.unit || 'Units');
+        document.getElementById('modal_max_qty').innerText = item.quantity + ' ' + (item.actual_unit || item.unit || 'Units');
 
         const modal = document.getElementById('returnModal');
         modal.classList.add('active');
@@ -1288,7 +1288,7 @@
             });
 
             desktopHtml += `
-                <tr style="background: var(--bg-main); border-radius: 16px;">
+                <tr style="background: var(--bg-card); border-radius: 16px;">
                     <td style="padding: 1.25rem 1rem; border-radius: 16px 0 0 16px; vertical-align: middle;">
                         <input type="checkbox" class="history-checkbox" value="${item.id}" onchange="updatePurgeSelection()" style="width: 18px; height: 18px; border-radius: 6px; cursor: pointer;">
                     </td>
@@ -1303,12 +1303,12 @@
                     </td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.beneficiary}</td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.authority || '-'}</td>
-                    <td style="padding: 1.25rem 1rem; font-weight: 900; font-size: 1.2rem; color: #10b981;">${item.returned_qty} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.unit || 'Units'}</span></td>
+                    <td style="padding: 1.25rem 1rem; font-weight: 900; font-size: 1.2rem; color: #10b981;">${item.returned_qty} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.actual_unit || item.unit || 'Units'}</span></td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; max-width: 200px;">
                         <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.remarks || 'No remarks'}">${item.remarks || '-'}</div>
                     </td>
                     <td style="padding: 1.25rem 1rem; border-radius: 0 16px 16px 0; font-weight: 900; font-size: 1.1rem; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'};">
-                        ${item.current_balance} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.unit || 'Units'}</span>
+                        ${item.current_balance} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.actual_unit || item.unit || 'Units'}</span>
                         <div style="font-size: 0.6rem; font-weight: 950; text-transform: uppercase; margin-top: 4px; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'}; opacity: 0.8;">
                             ${item.current_balance > 0 ? 'Pending' : 'Cleared'}
                         </div>
@@ -1317,7 +1317,7 @@
             `;
 
             mobileHtml += `
-                <div class="return-card-mobile" style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 1.75rem; position: relative;">
+                <div class="return-card-mobile" style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 1.75rem; position: relative;">
                     <div style="position: absolute; top: 1.75rem; right: 1.75rem;">
                         <input type="checkbox" class="history-checkbox" value="${item.id}" onchange="updatePurgeSelection()" style="width: 24px; height: 24px; border-radius: 8px; cursor: pointer;">
                     </div>
@@ -1338,11 +1338,11 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
                         <div>
                             <div style="font-size: 0.6rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase;">Returned</div>
-                            <div style="font-size: 1.35rem; font-weight: 950; color: #10b981;">${item.returned_qty} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.unit || 'Units'}</span></div>
+                            <div style="font-size: 1.35rem; font-weight: 950; color: #10b981;">${item.returned_qty} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.actual_unit || item.unit || 'Units'}</span></div>
                         </div>
                         <div style="text-align: right;">
                             <div style="font-size: 0.6rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase;">Current Balance</div>
-                            <div style="font-size: 1.35rem; font-weight: 950; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'};">${item.current_balance} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.unit || 'Units'}</span></div>
+                            <div style="font-size: 1.35rem; font-weight: 950; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'};">${item.current_balance} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.actual_unit || item.unit || 'Units'}</span></div>
                         </div>
                     </div>
                     <div style="margin-top: 0.75rem; text-align: center; font-size: 0.65rem; font-weight: 900; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'}; text-transform: uppercase; letter-spacing: 0.05em;">

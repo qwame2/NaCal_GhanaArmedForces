@@ -298,6 +298,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/issue-items/store', [IssueItemsController::class, 'store'])->name('issueitems.store');
     Route::get('/api/issued-items-history', [IssueItemsController::class, 'history'])->name('api.issued-items-history');
     Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
+    Route::put('/received-items/{id}', [ReceivedItemsController::class, 'update'])->name('receiveditems.update');
     Route::get('/received-items/{id}/print', [ReceivedItemsController::class, 'print'])->name('receiveditems.print');
     Route::get('/api/global-search', [InventoryController::class, 'globalSearch'])->name('api.search');
     Route::delete('/received-items/{id}', [ReceivedItemsController::class, 'destroy'])->name('receiveditems.destroy');
@@ -306,9 +307,17 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
     Route::post('/settings/avatar', [SettingsController::class, 'updateAvatar'])->name('settings.avatar');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/stock-check', [\App\Http\Controllers\StockCheckController::class, 'index'])->name('stockcheck.index');
     Route::get('/notifications', function() {
         return view('notifications');
     })->name('notifications.index');
+    Route::get('/messages', [SettingsController::class, 'messages'])->name('messages.index');
+    Route::get('/api/messages/{userId}', [\App\Http\Controllers\MessageController::class, 'fetchMessages'])->name('api.messages.fetch');
+    Route::post('/api/messages/send', [\App\Http\Controllers\MessageController::class, 'sendMessage'])->name('api.messages.send');
+    Route::post('/api/messages/{userId}/read', [\App\Http\Controllers\MessageController::class, 'markAsRead'])->name('api.messages.read');
+    Route::get('/api/unread-counts', [\App\Http\Controllers\MessageController::class, 'getUnreadCounts'])->name('api.unread-counts');
+    Route::get('/api/total-unread', [\App\Http\Controllers\MessageController::class, 'getTotalUnreadCount'])->name('api.total-unread');
+    Route::get('/api/online-statuses', [\App\Http\Controllers\MessageController::class, 'getOnlineStatuses'])->name('api.online-statuses');
 
     Route::get('/api/notifications', function() {
         if (!auth()->check()) return response()->json(['error' => 'Unauthenticated'], 401);
@@ -422,6 +431,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/admin/permissions/update', [AdminController::class, 'updatePermission'])->name('admin.permissions.update');
     Route::post('/admin/logs/delete-multiple', [AdminController::class, 'destroyMultipleLogs'])->name('admin.logs.delete_multiple');
     Route::put('/admin/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
+    Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages');
     Route::patch('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
 
     // Returns Routes

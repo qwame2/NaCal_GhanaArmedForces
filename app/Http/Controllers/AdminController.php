@@ -190,4 +190,14 @@ class AdminController extends Controller
 
         return back()->with('success', "Successfully purged {$count} system audit logs.");
     }
+
+    public function messages()
+    {
+        if (!auth()->user()->is_admin) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        $users = User::where('is_admin', false)->get();
+        return view('admin.messages', compact('users'));
+    }
 }

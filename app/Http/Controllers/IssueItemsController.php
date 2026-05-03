@@ -35,7 +35,8 @@ class IssueItemsController extends Controller
             'J' => 'Equipment'
         ];
 
-        return view('issue-items.index', compact('items', 'ledgeMap'));
+        $adminName = \App\Models\User::where('is_admin', true)->value('name') ?? 'Administrator';
+        return view('issue-items.index', compact('items', 'ledgeMap', 'adminName'));
     }
 
     public function store(Request $request)

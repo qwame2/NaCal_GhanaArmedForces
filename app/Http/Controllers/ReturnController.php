@@ -32,7 +32,17 @@ class ReturnController extends Controller
 
         // Get all items that were issued and haven't been fully returned
         $issuedItems = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-            ->select('issued_items.*', 'issuances.beneficiary', 'issuances.authority', 'issuances.issuance_date', 'issuances.issuance_type')
+            ->leftJoin(DB::raw('(SELECT description, MAX(unit) as unit FROM inventory_items GROUP BY description) as inv_units'), function($join) {
+                $join->on(DB::raw('LOWER(TRIM(issued_items.description))'), '=', DB::raw('LOWER(TRIM(inv_units.description))'));
+            })
+            ->select(
+                'issued_items.*', 
+                'issuances.beneficiary', 
+                'issuances.authority', 
+                'issuances.issuance_date', 
+                'issuances.issuance_type',
+                DB::raw('COALESCE(NULLIF(issued_items.unit, ""), inv_units.unit) as actual_unit')
+            )
             ->where('issuances.issuance_type', 'Temporary')
             ->orderBy('issuances.issuance_date', 'desc')
             ->get();
@@ -159,6 +169,9 @@ class ReturnController extends Controller
 
         $returnedItems = ReturnedItem::join('issued_items', 'returned_items.issued_item_id', '=', 'issued_items.id')
             ->join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->leftJoin(DB::raw('(SELECT description, MAX(unit) as unit FROM inventory_items GROUP BY description) as inv_units'), function($join) {
+                $join->on(DB::raw('LOWER(TRIM(issued_items.description))'), '=', DB::raw('LOWER(TRIM(inv_units.description))'));
+            })
             ->select(
                 'returned_items.id', 
                 'returned_items.returned_qty',
@@ -172,7 +185,7 @@ class ReturnController extends Controller
                 'issuances.authority',
                 'issuances.issuance_date',
                 'issuances.created_at as issuance_timestamp',
-                'issued_items.unit'
+                DB::raw('COALESCE(NULLIF(issued_items.unit, ""), inv_units.unit) as actual_unit')
             )
             ->orderBy('returned_items.created_at', 'desc')
             ->get();

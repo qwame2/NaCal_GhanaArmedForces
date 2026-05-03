@@ -573,6 +573,55 @@
                 </tr>`;
                 html += '</tbody></table>';
             }
+            else if (action === 'UPDATE_BATCH') {
+                html += `
+                    <div class="detail-card">
+                        <div class="detail-label">Batch ID</div>
+                        <div class="detail-value">#${dataObj.batch_id || 'N/A'}</div>
+                    </div>
+                `;
+
+                if (dataObj.batch_changes && Object.keys(dataObj.batch_changes).length > 0) {
+                    html += `
+                        <div class="detail-card" style="border-color: #f59e0b; background: rgba(245, 158, 11, 0.02);">
+                            <div class="detail-label" style="color: #d97706;">Batch Header Changes</div>
+                            <div style="font-size: 0.85rem;">
+                                ${Object.entries(dataObj.batch_changes).map(([field, val]) => `
+                                    <div style="margin-bottom: 4px;">
+                                        <span style="font-weight: 800; text-transform: capitalize;">${field.replace('_', ' ')}:</span> 
+                                        <span style="color: var(--primary); font-weight: 900;">${val}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                html += `</div>`; // close detail-grid
+
+                if (dataObj.item_changes && Object.keys(dataObj.item_changes).length > 0) {
+                    html += '<h4 style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase; display: flex; align-items: center; gap: 8px;"><i data-lucide="edit-3" style="width: 14px; color: #f59e0b;"></i> Granular Item Revisions</h4>';
+                    html += '<table class="items-table"><thead><tr><th>Item ID</th><th>Field</th><th>Original State</th><th>New State</th></tr></thead><tbody>';
+                    
+                    Object.entries(dataObj.item_changes).forEach(([itemId, changes]) => {
+                        Object.entries(changes).forEach(([field, vals], fIdx) => {
+                            html += `<tr>
+                                ${fIdx === 0 ? `<td rowspan="${Object.keys(changes).length}" style="background: rgba(0,0,0,0.02); font-weight: 900; color: var(--text-muted); text-align: center; border-right: 1px solid var(--border-color);">#${itemId}</td>` : ''}
+                                <td style="text-transform: capitalize; font-weight: 700;">${field.replace('_', ' ')}</td>
+                                <td style="color: #ef4444; font-weight: 700; text-decoration: line-through;">${vals.old}</td>
+                                <td style="color: #10b981; font-weight: 900; background: rgba(16, 185, 129, 0.05);">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <i data-lucide="arrow-right" style="width: 12px;"></i>
+                                        ${vals.new}
+                                    </div>
+                                </td>
+                            </tr>`;
+                        });
+                    });
+                    html += '</tbody></table>';
+                } else {
+                    html += '<div style="padding: 2rem; text-align: center; color: var(--text-muted); font-style: italic;">No specific item attributes were modified.</div>';
+                }
+            }
             else {
                 html += `</div>`; // close detail-grid
                 html += `<pre style="background: var(--bg-card); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap; font-family: monospace;">${JSON.stringify(dataObj, null, 4)}</pre>`;

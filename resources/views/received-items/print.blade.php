@@ -332,13 +332,42 @@
             <div style="background: rgba(99, 102, 241, 0.05); padding: 12px 15px; border-radius: 8px; border-left: 3px solid var(--print-accent); font-size: 12px; color: #475569; font-style: italic;">
                 <strong>Verification Field Note:</strong> {{ $remarks }}
             </div>
+
+            {{-- Forensic Revision History --}}
+            @php
+                $itemHistory = $history->filter(function($log) use ($item) {
+                    return isset($log->metadata['item_changes'][$item->id]);
+                });
+            @endphp
+
+            @if($itemHistory->count() > 0)
+            <div style="margin-top: 15px; padding: 15px; background: #fffbeb; border: 1.5px dashed #d97706; border-radius: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 12px; font-weight: 900; color: #d97706; text-transform: uppercase;">
+                    <span>Revision History Detected</span>
+                </div>
+                @foreach($itemHistory as $log)
+                <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(217, 119, 6, 0.1);">
+                    <div style="font-size: 11px; font-weight: 700; color: #92400e; margin-bottom: 5px;">Updated on: {{ \Carbon\Carbon::parse($log->created_at)->format('d M Y, H:i') }}</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px;">
+                        @foreach($log->metadata['item_changes'][$item->id] as $field => $vals)
+                        <div style="font-size: 11px; color: #334155;">
+                            <strong style="text-transform: capitalize;">{{ str_replace('_', ' ', $field) }}:</strong>
+                            <span style="color: #ef4444; text-decoration: line-through;">{{ $vals['old'] }}</span>
+                            <span style="color: #10b981; font-weight: 800;">&rarr; {{ $vals['new'] }}</span>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @endif
         </div>
         @endforeach
     </div>
 
     <div class="remarks-box">
         <strong>FINAL VERIFICATION DECLARATION:</strong><br>
-        The items itemized in this narrative report have been formally processed, completely verified by standard operational protocols, and legally transitioned into the jurisdiction of the facility's ledger.
+        The items itemized in this narrative report have been formally processed, completely verified by standard operational protocols, and legally transitioned into the jurisdiction of the facility's category.
     </div>
 
     <div class="footer">

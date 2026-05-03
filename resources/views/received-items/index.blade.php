@@ -357,7 +357,7 @@
                         $hColor='#f59e0b' ;
                         }
                         @endphp
-                        <tr class="activity-row" style="border-top: 1px solid var(--border-color);">
+                        <tr class="activity-row" data-item-id="{{ $item->id }}" data-batch-id="{{ $item->batch_id }}" style="border-top: 1px solid var(--border-color);">
                         <td data-label="Entry Date" style="padding: 1.25rem 1.5rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($item->entry_date)->format('M d, Y H:i') }}</td>
                         <td data-label="Arrival Date" style="padding: 1.25rem 1.5rem; color: var(--primary); font-weight: 700;">{{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('M d, Y') : '-' }}</td>
                         <td data-label="Description" style="padding: 1.25rem 1.5rem;">
@@ -378,7 +378,7 @@
                         $donorName = preg_replace('/\s\[.*\]$/', '', $rawSupplier);
                         }
 
-                        $cleanSupplier = preg_replace('/\s\[.*\]$/', '', $rawSupplier);
+                        $cleanSupplier = preg_replace('/\s*\[.*\]\s*$/', '', $rawSupplier);
                         $displayStatus = 'N/A';
                         if ($acquisitionType === 'Donor') {
                         $displayStatus = 'DONOR';
@@ -451,9 +451,9 @@
                         <i data-lucide="eye"></i>
                         View Details
                     </button>
-                    <button onclick="openStockCheckModal('{{ addslashes($item->description) }}', 0, {{ $totalStock }}, '{{ $agg->total_variance ?? 0 }}', '{{ $totalQty }}')" class="menu-item" style="color: var(--primary);">
-                        <i data-lucide="shield-check"></i>
-                        Stock Check
+                    <button onclick="openEditBatchModal('{{ $item->batch_id }}')" class="menu-item" style="color: var(--primary);">
+                        <i data-lucide="edit-3"></i>
+                        Edit Entry
                     </button>
                     <div style="height: 1px; background: var(--border-color); margin: 4px 10px; opacity: 0.5;"></div>
                     <button onclick="deleteBatch('{{ $item->batch_id }}')" class="menu-item" style="color: #ef4444;">
@@ -670,28 +670,28 @@
                         <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;">Verification Target</label>
                         <div id="auditItemName" style="font-size: 1.4rem; font-weight: 900; color: var(--text-main); line-height: 1;">Broom</div>
                     </div>
-                    <button onclick="fetchAuditHistory()" class="glass-btn-sm" style="border-radius: 12px; font-weight: 700;">
-                        <i data-lucide="layout-grid" style="width: 14px; margin-right: 6px;"></i> Full History
-                    </button>
+                        <button onclick="fetchVerificationHistory()" class="glass-btn-sm" style="border-radius: 12px; font-weight: 700;">
+                            <i data-lucide="layout-grid" style="width: 14px; margin-right: 6px;"></i> Full History
+                        </button>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                    <div class="audit-stat-card" onclick="toggleAuditBreakdown('balance')" title="Drill down into Ledger record">
+                    <div class="audit-stat-card" onclick="toggleVerificationBreakdown('balance')" title="Drill down into Ledger record">
                         <label>Ledger Balance</label>
                         <div id="auditLedgeBal">0</div>
                     </div>
-                    <div class="audit-stat-card" onclick="toggleAuditBreakdown('stock')" title="Drill down into System record">
+                    <div class="audit-stat-card" onclick="toggleVerificationBreakdown('stock')" title="Drill down into System record">
                         <label>Stock Balance</label>
                         <div id="auditStockBal">0</div>
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                    <div class="audit-stat-card" onclick="toggleAuditBreakdown('variance')" title="Review historical discrepancies">
+                    <div class="audit-stat-card" onclick="toggleVerificationBreakdown('variance')" title="Review historical discrepancies">
                         <label>Prev. Var.</label>
                         <div id="auditPrevVar">0</div>
                     </div>
-                    <div class="audit-stat-card" onclick="toggleAuditBreakdown('avail')" title="Audit current availability trail">
+                    <div class="audit-stat-card" onclick="toggleVerificationBreakdown('avail')" title="Audit current availability trail">
                         <label>Avail. Qty</label>
                         <div id="auditPrevAvail">0</div>
                     </div>
@@ -752,7 +752,7 @@
                         </select>
                     </div>
                     <div style="grid-column: span 2;">
-                        <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Auditor Remarks / Variance Documentation</label>
+                        <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Verifier Remarks / Variance Documentation</label>
                         <textarea id="auditNotes" placeholder="Describe the situation, location, or damage details in depth..." style="width: 100%; height: 80px; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); color: var(--text-main); font-family: inherit; resize: none; outline: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 4px rgba(99, 102, 241, 0.1)'" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none'"></textarea>
                     </div>
                 </div>
@@ -763,10 +763,10 @@
                         Seal Record
                     </button>
 
-                    <button type="button" onclick="generateAuditReport()" id="genRepBtn" class="glass-btn audit-report-btn" style="width: 100%; padding: 1.1rem; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 800; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); color: #ffffff; cursor: pointer; transition: all 0.3s; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                        <i data-lucide="receipt-text" style="width: 18px;"></i>
-                        Auto-Report
-                    </button>
+                        <button type="button" onclick="generateVerificationReport()" id="genRepBtn" class="glass-btn audit-report-btn" style="width: 100%; padding: 1.1rem; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 800; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); color: #ffffff; cursor: pointer; transition: all 0.3s; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <i data-lucide="receipt-text" style="width: 18px;"></i>
+                            Auto-Report
+                        </button>
                 </div>
 
                 <!-- Report Composer Drawer (Formal) -->
@@ -1862,6 +1862,7 @@
             .then(response => response.json())
             .then(data => {
                 const batch = data.batch;
+                const history = data.history || [];
                 let itemsHtml = '';
 
                 batch.items.forEach((item, index) => {
@@ -1870,9 +1871,52 @@
                     const varianceColor = parseFloat(item.variance) < 0 ? '#ef4444' : (parseFloat(item.variance) > 0 ? '#3b82f6' : '#10b981');
                     const varianceSign = parseFloat(item.variance) > 0 ? '+' : '';
 
+                    // Find changes for this specific item in history
+                    let itemHistoryHtml = '';
+                    history.forEach(log => {
+                        const itemChanges = log.metadata?.item_changes || {};
+                        if (itemChanges[item.id]) {
+                            const changes = itemChanges[item.id];
+                            const timestamp = new Date(log.created_at).toLocaleString();
+                            itemHistoryHtml += `
+                                <div style="margin-top: 10px; padding: 12px; background: rgba(245, 158, 11, 0.05); border: 1.5px dashed rgba(245, 158, 11, 0.3); border-radius: 12px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <i data-lucide="history" style="width: 14px; color: #f59e0b;"></i>
+                                            <span style="font-size: 0.7rem; font-weight: 800; color: #f59e0b; text-transform: uppercase;">Revision Detected</span>
+                                        </div>
+                                        <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700;">${timestamp}</span>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;">
+                                        ${Object.entries(changes).map(([field, vals]) => `
+                                            <div style="background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05);">
+                                                <div style="font-size: 0.6rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800;">${field.replace('_', ' ')}</div>
+                                                <div style="font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                                                    <span style="color: #ef4444; text-decoration: line-through;">${vals.old}</span>
+                                                    <i data-lucide="arrow-right" style="width: 10px;"></i>
+                                                    <span style="color: #10b981;">${vals.new}</span>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+
                     itemsHtml += `
                         <div style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; ${!isLast ? 'border-bottom: 1px solid var(--border-color);' : ''}">
-                            <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; margin-bottom: 0.25rem;">${item.description} <span style="font-size: 0.7rem; color: var(--primary); font-weight: 800;">(${item.unit || 'Units'})</span></div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; margin-bottom: 0.25rem;">
+                                    ${item.description} 
+                                    <span style="font-size: 0.7rem; color: var(--primary); font-weight: 800;">(${item.unit || 'Units'})</span>
+                                </div>
+                                ${itemHistoryHtml ? `
+                                    <div style="background: #fef3c7; color: #d97706; font-size: 0.6rem; font-weight: 900; padding: 2px 8px; border-radius: 99px; border: 1px solid #f59e0b; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Modified Record
+                                    </div>
+                                ` : ''}
+                            </div>
                             
                             <div style="background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center;">
                                 <div style="display: flex; flex-direction: column;">
@@ -1892,6 +1936,8 @@
                                     <span style="font-weight: 900; color: ${varianceColor}; font-size: 1rem;">${varianceSign}${item.variance}</span>
                                 </div>
                             </div>
+
+                            ${itemHistoryHtml}
                             
                             <div style="background: rgba(99, 102, 241, 0.03); padding: 0.75rem 1rem; border-radius: 12px; border-left: 2px solid var(--primary); font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: 8px;">
                                 <i data-lucide="message-circle" style="width: 14px; min-width: 14px; margin-top: 2px;"></i>
@@ -1922,20 +1968,32 @@
                         </div>
                     </div>
 
-                    <!-- Inset Grouped Style: Items -->
-                    <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-left: 1rem; margin-bottom: 0.75rem; font-weight: 800; letter-spacing: 0.5px;">Product Specification</h4>
-                    <div style="background: var(--bg-main); border-radius: 20px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 2rem;">
-                        ${itemsHtml}
-                    </div>
+                    <!-- Inset Grouped Style: Items (Collapsible) -->
+                    <details open style="margin-bottom: 2rem; border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; background: var(--bg-main);">
+                        <summary style="padding: 1.25rem 1.5rem; list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border-bottom: 1px solid var(--border-color);">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="background: rgba(99, 102, 241, 0.1); color: var(--primary); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="list-checks" style="width: 18px;"></i>
+                                </div>
+                                <span style="font-weight: 800; font-size: 1rem; color: var(--text-main);">Associated Items</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; color: var(--text-muted);">
+                                <span style="font-size: 0.75rem; font-weight: 700;">${batch.items.length} Unique Records</span>
+                                <i data-lucide="chevron-down" style="width: 18px;"></i>
+                            </div>
+                        </summary>
+                        <div style="background: var(--bg-main);">
+                            ${itemsHtml}
+                        </div>
+                    </details>
 
-
-                    <div style="margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
                         <button onclick="printModal()" style="width: 100%; background: var(--primary); color: white; border: none; padding: 1.15rem; border-radius: 20px; font-weight: 800; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);">
                             <i data-lucide="printer" style="width: 20px;"></i>
                             Print Official Voucher
                         </button>
                         <div style="text-align: center; color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">
-                            Certified for System Audit • ${batch.items.length} Items
+                            Certified for System Verification • Verified Category Integrity
                         </div>
                     </div>
                 `;
@@ -2915,5 +2973,414 @@
         `);
         printWindow.document.close();
     }
+</script>
+<!-- Edit Batch Modal -->
+<div id="editBatchModal" class="modal-backdrop">
+    <div class="modal-content glass-card animate-scale-up" style="max-width: 1000px; width: 95%;">
+        <div class="modal-header">
+            <div>
+                <h3 id="editModalTitle" style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.25rem;">Edit Entry Details</h3>
+                <p id="editModalSubtitle" style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">#BATCH-0000</p>
+            </div>
+            <button onclick="closeEditBatchModal()" class="btn-icon danger" title="Close">
+                <i data-lucide="x" style="width: 18px;"></i>
+            </button>
+        </div>
+
+        <form id="editBatchForm" onsubmit="event.preventDefault(); submitEditBatch();" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="modal-body" id="editModalBody" style="flex: 1; overflow-y: auto; padding: 1.5rem; max-height: 65vh;">
+                <div class="loader-container" id="editModalLoader">
+                    <div class="loader"></div>
+                    <p>Fetching entry data...</p>
+                </div>
+                
+                <div id="editModalContent" style="display: none;">
+                    <!-- Batch Metadata -->
+                    <div id="editBatchInfo"></div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; background: var(--bg-main); padding: 1.5rem; border-radius: 20px;">
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Arrival Date</label>
+                            <input type="date" name="arrival_date" id="editArrivalDate" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-main);">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Category</label>
+                            <select name="ledge_category" id="editCategory" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-main);">
+                                @foreach($ledgeMap as $code => $name)
+                                <option value="{{ $code }}">Category {{ $code }} ({{ $name }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Acquisition Status</label>
+                            <select name="acquisition_status" id="editAcquisitionStatus" required onchange="toggleEditSourceFields()" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-main);">
+                                <option value="Full Delivery">Full Delivery</option>
+                                <option value="Partial Delivery">Partial Delivery</option>
+                                <option value="Donor">Donation (Donor)</option>
+                            </select>
+                        </div>
+                        <div id="editSupplierField">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Supplier Name</label>
+                            <select name="supplier_name" id="editSupplierName" style="width: 100%;" class="select2-edit">
+                                <option value="">Select Supplier...</option>
+                                @foreach($allSuppliers as $supplier)
+                                <option value="{{ $supplier }}">{{ $supplier }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div id="editDonorField" style="display: none;">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Donor Name</label>
+                            <select name="donor_name" id="editDonorName" style="width: 100%;" class="select2-edit">
+                                <option value="">Select Donor...</option>
+                                @foreach($allDonors as $donor)
+                                <option value="{{ $donor }}">{{ $donor }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Items List (Collapsible) -->
+                    <details open style="margin-bottom: 1rem; border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; background: var(--bg-main);">
+                        <summary style="padding: 1.25rem 1.5rem; list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border-bottom: 1px solid var(--border-color);">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="background: rgba(99, 102, 241, 0.1); color: var(--primary); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="list-checks" style="width: 18px;"></i>
+                                </div>
+                                <span style="font-weight: 800; font-size: 1rem; color: var(--text-main);">Associated Items</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; color: var(--text-muted);">
+                                <span style="font-size: 0.75rem; font-weight: 700;" id="editItemsCountLabel">0 Items</span>
+                                <i data-lucide="chevron-down" style="width: 18px;"></i>
+                            </div>
+                        </summary>
+                        <div id="editItemsList" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+                            <!-- Items will be injected here -->
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-color); padding: 1.25rem 2rem; display: flex; justify-content: flex-end; gap: 1rem; background: var(--bg-card); border-radius: 0 0 28px 28px; z-index: 10;">
+                <button type="button" onclick="closeEditBatchModal()" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer;">Cancel</button>
+                <button type="submit" id="saveEditBtn" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: var(--primary); border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);">
+                    <i data-lucide="save" style="width: 18px;"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let currentEditBatchId = null;
+
+function openEditBatchModal(batchId) {
+    currentEditBatchId = batchId;
+    const modal = document.getElementById('editBatchModal');
+    const loader = document.getElementById('editModalLoader');
+    const content = document.getElementById('editModalContent');
+    const title = document.getElementById('editModalSubtitle');
+    
+    title.innerText = `#BATCH-${batchId.toString().padStart(4, '0')}`;
+    modal.style.display = 'flex';
+    loader.style.display = 'flex';
+    content.style.display = 'none';
+
+    // Initialize Select2 with tags
+    $('.select2-edit').select2({
+        dropdownParent: $('#editBatchModal'),
+        tags: true,
+        width: '100%'
+    });
+
+    fetch(`/received-items/${batchId}?json=1`)
+        .then(response => response.json())
+        .then(data => {
+            const batch = data.batch;
+            document.getElementById('editArrivalDate').value = batch.arrival_date ? batch.arrival_date.split(' ')[0] : '';
+            document.getElementById('editCategory').value = batch.ledge_category;
+            
+            // Parse delivery status from supplier name or acquisition type
+            let supplierName = batch.supplier_name || '';
+            let status = 'Full Delivery';
+            let acqType = batch.acquisition_type || 'Supplier';
+
+            if (acqType === 'Donor') {
+                status = 'Donor';
+            } else {
+                if (supplierName.includes('[Partial Delivery]')) {
+                    status = 'Partial Delivery';
+                    supplierName = supplierName.replace(' [Partial Delivery]', '');
+                } else if (supplierName.includes('[Full Delivery]')) {
+                    status = 'Full Delivery';
+                    supplierName = supplierName.replace(' [Full Delivery]', '');
+                }
+            }
+            
+            document.getElementById('editAcquisitionStatus').value = status;
+            
+            // Set Select2 values
+            if (status === 'Donor') {
+                $('#editDonorName').val(batch.donor_name).trigger('change');
+            } else {
+                $('#editSupplierName').val(supplierName).trigger('change');
+            }
+            
+            toggleEditSourceFields();
+
+            const itemsList = document.getElementById('editItemsList');
+            itemsList.innerHTML = '';
+            
+            document.getElementById('editItemsCountLabel').innerText = `${batch.items.length} Items`;
+
+            batch.items.forEach((item, index) => {
+                const stock = parseFloat(item.stock_balance);
+                const healthColor = stock <= 0 ? '#ef4444' : (stock <= 100 ? '#f59e0b' : '#10b981');
+                
+                const itemHtml = `
+                    <div class="edit-item-card" data-id="${item.id}" style="background: var(--bg-card); padding: 1.5rem; border: 1.5px solid var(--border-color); border-radius: 24px; position: relative; overflow: hidden; transition: all 0.3s;">
+                        <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: ${healthColor};"></div>
+                        <input type="hidden" class="item-id" value="${item.id}">
+                        
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.25rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Item Description</label>
+                                <input type="text" class="item-description" value="${item.description}" style="width: 100%; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; font-weight: 800; color: var(--text-main); background: var(--bg-main);">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Unit Type</label>
+                                <input type="text" class="item-unit" value="${item.unit}" style="width: 100%; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; font-weight: 700; color: var(--text-main);">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Received Qty</label>
+                                <input type="number" class="item-qty" value="${item.qty}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; font-weight: 800; color: var(--text-main);">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Stock Balance</label>
+                                <input type="number" class="item-stock-balance" value="${item.stock_balance}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; font-weight: 800; color: var(--primary);">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 1.5rem; align-items: flex-end;">
+                            <div>
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Calculated Variance</label>
+                                <input type="number" class="item-variance" value="${item.variance}" readonly style="width: 100%; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 1.1rem; font-weight: 900; background: rgba(99, 102, 241, 0.05); color: var(--primary);">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Item Remarks / Historical Narrative</label>
+                                <textarea class="item-remarks" placeholder="Add specific details about this item's condition or source..." style="width: 100%; height: 50px; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); color: var(--text-main); font-family: inherit; resize: none; font-size: 0.85rem; font-weight: 500;">${item.remarks || ''}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                itemsList.insertAdjacentHTML('beforeend', itemHtml);
+            });
+
+            // Update Entry Info Panel
+            const infoPanel = document.getElementById('editBatchInfo');
+            infoPanel.innerHTML = `
+                <div style="margin-bottom: 1.5rem; padding: 1.25rem; background: rgba(99, 102, 241, 0.03); border: 1px dashed rgba(99, 102, 241, 0.2); border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i data-lucide="info" style="width: 20px; color: var(--primary);"></i>
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Recorded on Registry:</span>
+                            <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-main); margin-left: 8px;">${new Date(batch.entry_date).toLocaleString()}</span>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Batch Total Items:</span>
+                        <span style="font-size: 0.85rem; font-weight: 900; color: var(--primary); margin-left: 8px;">${batch.items.length} Unique Records</span>
+                    </div>
+                </div>
+            `;
+
+            loader.style.display = 'none';
+            content.style.display = 'block';
+            lucide.createIcons();
+        });
+}
+
+function closeEditBatchModal() {
+    document.getElementById('editBatchModal').style.display = 'none';
+}
+
+function toggleEditSourceFields() {
+    const status = document.getElementById('editAcquisitionStatus').value;
+    const supplier = document.getElementById('editSupplierField');
+    const donor = document.getElementById('editDonorField');
+    
+    if (status === 'Donor') {
+        supplier.style.display = 'none';
+        donor.style.display = 'block';
+    } else {
+        supplier.style.display = 'block';
+        donor.style.display = 'none';
+    }
+}
+
+function recalcEditVariance(input) {
+    const row = input.closest('.edit-item-card');
+    const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+    const stock = parseFloat(row.querySelector('.item-stock-balance').value) || 0;
+    const variance = stock - qty;
+    
+    const varInput = row.querySelector('.item-variance');
+    varInput.value = variance;
+    
+    // Visual feedback for variance
+    if (variance > 0) {
+        varInput.style.color = '#10b981'; // Green for surplus
+        varInput.style.background = 'rgba(16, 185, 129, 0.1)';
+    } else if (variance < 0) {
+        varInput.style.color = '#ef4444'; // Red for shortage
+        varInput.style.background = 'rgba(239, 68, 68, 0.1)';
+    } else {
+        varInput.style.color = 'var(--primary)';
+        varInput.style.background = 'rgba(99, 102, 241, 0.05)';
+    }
+}
+
+function submitEditBatch() {
+    const saveBtn = document.getElementById('saveEditBtn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width: 18px;"></i> Processing...';
+    lucide.createIcons();
+
+    const items = [];
+    document.querySelectorAll('.edit-item-card').forEach(row => {
+        items.push({
+            id: row.querySelector('.item-id').value,
+            description: row.querySelector('.item-description').value,
+            unit: row.querySelector('.item-unit').value,
+            qty: row.querySelector('.item-qty').value,
+            stock_balance: row.querySelector('.item-stock-balance').value,
+            variance: row.querySelector('.item-variance').value,
+            remarks: row.querySelector('.item-remarks').value
+        });
+    });
+
+    const acquisitionStatus = document.getElementById('editAcquisitionStatus').value;
+    let acqType = 'Supplier';
+    let finalSupplierName = $('#editSupplierName').val() || '';
+    
+    if (acquisitionStatus === 'Donor') {
+        acqType = 'Donor';
+        finalSupplierName = ''; // Donors don't have supplier names in our logic
+    } else {
+        finalSupplierName = `${finalSupplierName} [${acquisitionStatus}]`;
+    }
+
+    const payload = {
+        arrival_date: document.getElementById('editArrivalDate').value,
+        ledge_category: document.getElementById('editCategory').value,
+        acquisition_type: acqType,
+        supplier_name: finalSupplierName,
+        donor_name: acquisitionStatus === 'Donor' ? $('#editDonorName').val() : '',
+        items: items,
+        _token: '{{ csrf_token() }}'
+    };
+
+    fetch(`/received-items/${currentEditBatchId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Real-time DOM update
+            payload.items.forEach(item => {
+                const row = document.querySelector(`tr[data-item-id="${item.id}"]`);
+                if (row) {
+                    // Update Batch level fields in all rows of this batch
+                    const allBatchRows = document.querySelectorAll(`tr[data-batch-id="${currentEditBatchId}"]`);
+                    allBatchRows.forEach(r => {
+                        const arrivalDateTd = r.querySelector('td[data-label="Arrival Date"]');
+                        if (arrivalDateTd) {
+                            const date = new Date(payload.arrival_date);
+                            arrivalDateTd.innerText = date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+                        }
+                        
+                        const supplierTd = r.querySelector('td[data-label="Supplier"]');
+                        if (supplierTd) {
+                            let cleanSupplier = payload.acquisition_type === 'Supplier' ? payload.supplier_name : '-';
+                            if (cleanSupplier !== '-') {
+                                cleanSupplier = cleanSupplier.replace(/\s*\[.*\]\s*$/, '');
+                            }
+                            supplierTd.innerText = cleanSupplier;
+                        }
+                        
+                        const donorTd = r.querySelector('td[data-label="Donor"]');
+                        if (donorTd) donorTd.innerText = payload.acquisition_type === 'Donor' ? payload.donor_name : '-';
+
+                        const statusTd = r.querySelector('td[data-label="Status"] span');
+                        if (statusTd) {
+                            let status = 'FULL DELIVERY';
+                            let color = '#10b981';
+                            if (payload.supplier_name.toLowerCase().includes('partial')) {
+                                status = 'PARTIAL DELIVERY';
+                                color = '#ef4444';
+                            } else if (payload.acquisition_type === 'Donor') {
+                                status = 'DONOR';
+                                color = '#8b5cf6';
+                            }
+                            statusTd.innerText = status;
+                            statusTd.style.background = color;
+                        }
+                    });
+
+                    // Update Item specific fields
+                    const descDiv = row.querySelector('td[data-label="Description"] div:first-child');
+                    if (descDiv) descDiv.innerHTML = `${item.description} <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">(${item.unit})</span>`;
+                    
+                    const qtyTd = row.querySelector('td[data-label="Received Qty"]');
+                    if (qtyTd) qtyTd.innerText = item.qty;
+                    
+                    const stockTd = row.querySelector('td[data-label="Stock Balance"]');
+                    if (stockTd) stockTd.innerText = item.stock_balance;
+                    
+                    const varianceSpan = row.querySelector('td[data-label="Variance"] span');
+                    if (varianceSpan) {
+                        const v = parseFloat(item.variance);
+                        varianceSpan.innerText = (v > 0 ? '+' : '') + v;
+                        varianceSpan.style.color = v > 0 ? '#10b981' : (v < 0 ? '#ef4444' : '#94a3b8');
+                    }
+                }
+            });
+
+            Swal.fire({
+                title: 'Live Update Success',
+                text: 'The record has been updated and reflected in real-time.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
+            closeEditBatchModal();
+        } else {
+            Swal.fire({
+                title: 'Update Failed',
+                text: data.message,
+                icon: 'error'
+            });
+        }
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i data-lucide="save" style="width: 18px;"></i> Save Changes';
+        lucide.createIcons();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'Critical Error',
+            text: 'System communication failed.',
+            icon: 'error'
+        });
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i data-lucide="save" style="width: 18px;"></i> Save Changes';
+        lucide.createIcons();
+    });
+}
 </script>
 @endsection
