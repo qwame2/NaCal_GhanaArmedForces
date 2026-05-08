@@ -7,10 +7,10 @@
     <!-- Sidebar: Directory -->
     <div class="glass-card" style="width: 380px; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.04);">
         <div style="padding: 2rem; border-bottom: 1px solid var(--border-color); background: linear-gradient(145deg, var(--bg-card), var(--bg-main));">
-            <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Registry <span style="color: var(--primary);">Network</span></h3>
-            <div style="position: relative;">
-                <input type="text" placeholder="Search personnel..." style="width: 100%; padding: 0.85rem 1rem 0.85rem 2.75rem; border-radius: 14px; border: 1px solid var(--border-color); background: var(--bg-main); font-size: 0.9rem; outline: none; transition: 0.3s; color: var(--text-main);" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 4px var(--primary-glow)'">
-                <i data-lucide="search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; color: var(--text-muted);"></i>
+            <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Registry <span style="color: #4f46e5;">Network</span></h3>
+            <div class="search-vault">
+                <i data-lucide="search"></i>
+                <input type="text" id="networkSearch" placeholder="Search personnel..." oninput="filterNetwork()">
             </div>
         </div>
         
@@ -84,13 +84,13 @@
             <form id="msgForm" onsubmit="return handleSend(event)" enctype="multipart/form-data">
                 <div style="position: relative; display: flex; align-items: center; gap: 1.25rem;">
                     <input type="file" id="attachment" style="display: none;" onchange="handleFileSelect(this)">
-                    <button type="button" class="comms-btn" style="width: 50px; height: 50px; background: var(--bg-main);" onclick="document.getElementById('attachment').click()">
+                    <button type="button" class="comms-btn" style="width: 50px; height: 50px; background: var(--bg-main); flex-shrink: 0;" onclick="document.getElementById('attachment').click()">
                         <i data-lucide="paperclip"></i>
                     </button>
-                    <div style="flex: 1; position: relative;">
-                        <textarea id="msgContent" placeholder="Transmit secure command..." rows="1" style="width: 100%; padding: 1.1rem 5rem 1.1rem 1.75rem; border-radius: 20px; border: 2px solid var(--border-color); background: var(--bg-main); font-family: inherit; font-size: 1rem; font-weight: 600; outline: none; resize: none; transition: 0.3s; color: var(--text-main);" onfocus="this.style.borderColor='var(--primary)'; this.style.background='var(--bg-card)'; this.style.boxShadow='0 10px 30px var(--primary-glow)'"></textarea>
-                        <button type="submit" id="sendBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--primary); color: white; border: none; width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3); transition: 0.3s;" onmouseover="this.style.transform='translateY(-50%) scale(1.05)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">
-                            <i data-lucide="send" style="width: 20px;"></i>
+                    <div class="msg-input-vault">
+                        <textarea id="msgContent" placeholder="Transmit secure command..." rows="1"></textarea>
+                        <button type="submit" id="sendBtn" class="send-action-btn">
+                            <i data-lucide="send" style="width: 18px;"></i>
                         </button>
                     </div>
                 </div>
@@ -105,6 +105,111 @@
 </div>
 
 <style>
+    /* Admin view logic */
+    .admin-view { display: block !important; }
+    .personnel-view { display: none !important; }
+
+    /* Search Vault Styling */
+    .search-vault {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: white;
+        border: 2px solid #f1f5f9;
+        border-radius: 16px;
+        padding: 0.5rem 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        margin-top: 1rem;
+    }
+
+    .search-vault:focus-within {
+        border-color: #4f46e5;
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.1);
+    }
+
+    .search-vault i {
+        color: #4f46e5;
+        opacity: 0.6;
+        margin-right: 0.75rem;
+        width: 18px;
+    }
+
+    .search-vault input {
+        border: none;
+        outline: none;
+        padding: 0.5rem 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #0f172a;
+        width: 100%;
+        background: transparent;
+    }
+
+    .search-vault input::placeholder {
+        color: #94a3b8;
+        font-weight: 500;
+    }
+
+    /* Message Input Vault */
+    .msg-input-vault {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: white;
+        border: 2px solid #f1f5f9;
+        border-radius: 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        flex: 1;
+        padding-right: 8px;
+    }
+
+    .msg-input-vault:focus-within {
+        border-color: #4f46e5;
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .msg-input-vault textarea {
+        border: none;
+        outline: none;
+        padding: 1.1rem 1.5rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #0f172a;
+        width: 100%;
+        background: transparent;
+        resize: none;
+        font-family: inherit;
+    }
+
+    .msg-input-vault textarea::placeholder {
+        color: #94a3b8;
+        font-weight: 500;
+    }
+
+    .send-action-btn {
+        background: #4f46e5;
+        color: white;
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 8px 16px rgba(79, 70, 229, 0.3);
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
+    }
+    
+    .send-action-btn:hover {
+        transform: scale(1.08);
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.4);
+    }
+
     .network-item:hover {
         background: var(--bg-main);
         transform: translateX(8px);
@@ -231,6 +336,22 @@
     let activeUserId = null;
     let pollInterval = null;
     let countInterval = null;
+    let onlineStatuses = {};
+
+    function filterNetwork() {
+        const term = document.getElementById('networkSearch').value.toLowerCase();
+        const items = document.querySelectorAll('.network-item');
+        
+        items.forEach(item => {
+            const name = item.querySelector('div[style*="font-weight: 800"]').textContent.toLowerCase();
+            const role = item.querySelector('div[style*="font-size: 0.75rem"]').textContent.toLowerCase();
+            if (name.includes(term) || role.includes(term)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
 
     function selectChat(userId, name, role, avatar) {
         activeUserId = userId;
@@ -273,27 +394,37 @@
                 const container = document.getElementById('terminalOutput');
                 const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
                 
-                let html = `
-                    <div class="comms-group system">
-                        <div class="comms-bubble">Transmission protocol initialized. Node NA-${activeUserId.toString().padStart(3, '0')} connected.</div>
-                        <div class="comms-meta">SYSTEM &bull; SECURE LINE</div>
-                    </div>
-                `;
+                let html = '';
 
                 data.forEach(msg => {
                     const isMe = msg.sender_id == {{ auth()->id() }};
                     const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     
+                    let ticksHtml = '';
+                    if (isMe) {
+                        const isRead = msg.read_at != null;
+                        const isRecipientOnline = onlineStatuses[activeUserId];
+                        
+                        if (isRead) {
+                            ticksHtml = '<i data-lucide="check-check" style="color: #10b981; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
+                        } else if (isRecipientOnline) {
+                            ticksHtml = '<i data-lucide="check-check" style="color: #94a3b8; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
+                        } else {
+                            ticksHtml = '<i data-lucide="check" style="color: #94a3b8; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
+                        }
+                    }
+                    
                     html += `
                         <div class="comms-group ${isMe ? 'me' : 'recipient'}">
                             <div class="comms-bubble">
-                                ${msg.message || ''}
+                                ${msg.message ? `<span style="word-break: break-word;">${msg.message}</span>` : ''}
                                 ${msg.attachment ? `
                                     <a href="{{ asset('storage') }}/${msg.attachment}" target="_blank" class="attachment-pill">
                                         <i data-lucide="file-text" style="width: 16px;"></i>
                                         <span>${msg.attachment_name || 'Document Record'}</span>
                                     </a>
                                 ` : ''}
+                                ${ticksHtml ? `<span style="display: inline-block; margin-left: 8px; vertical-align: bottom;">${ticksHtml}</span>` : ''}
                             </div>
                             <div class="comms-meta">${isMe ? 'YOU' : 'SENDER'} &bull; ${time}</div>
                         </div>
@@ -337,6 +468,7 @@
         fetch("{{ route('api.online-statuses') }}")
             .then(res => res.json())
             .then(statuses => {
+                onlineStatuses = statuses;
                 Object.keys(statuses).forEach(userId => {
                     const isOnline = statuses[userId];
                     const dot = document.querySelector(`#user-${userId} div[style*="border-radius: 50%"]`);
@@ -415,6 +547,51 @@
         document.getElementById('attachment').value = '';
         document.getElementById('filePreview').style.display = 'none';
     }
+
+    // Process Edit Request logic
+    window.processEditRequest = function(id, status, btnElement) {
+        const actionsDiv = document.getElementById(`edit-req-actions-${id}`);
+        if (actionsDiv) {
+            const btns = actionsDiv.querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+        }
+        
+        btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
+
+        fetch(`{{ url('/edit-requests') }}/${id}/process`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ status: status })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Server error');
+            return res.json();
+        })
+        .then(data => {
+            if(data.success) {
+                const actionsDiv = document.getElementById(`edit-req-actions-${id}`);
+                if (actionsDiv) {
+                    const color = status === 'approved' ? '#10b981' : '#dc2626';
+                    const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+                    actionsDiv.innerHTML = `<div style="padding: 8px 12px; border-radius: 8px; background: ${bgColor}; color: ${color}; font-weight: 800; border: 1px solid ${color}; display: inline-block;">Request ${status.toUpperCase()}</div>`;
+                }
+            } else {
+                alert(data.message || 'Error processing request');
+                btnElement.innerText = status === 'approved' ? 'Approve' : 'Cancel';
+                btnElement.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('An unexpected error occurred. Please check system logs.');
+            btnElement.innerText = status === 'approved' ? 'Approve' : 'Cancel';
+            btnElement.disabled = false;
+        });
+    };
 
     // Initial counts and polling
     updateUnreadCounts();

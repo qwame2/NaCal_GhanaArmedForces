@@ -188,6 +188,13 @@ class ReceivedItemsController extends Controller
 
             DB::commit();
 
+            // Reset Edit Request status after successful update to lock it again
+            \App\Models\EditRequest::where('user_id', auth()->id())
+                ->where('item_id', $id)
+                ->where('item_type', 'batch')
+                ->where('status', 'approved')
+                ->update(['status' => 'completed']);
+
             // Log the activity with Detailed Metadata
             if (auth()->check()) {
                 $user = auth()->user();

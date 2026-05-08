@@ -434,6 +434,11 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages');
     Route::patch('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
 
+    // Edit Request Routes
+    Route::post('/edit-requests', [\App\Http\Controllers\EditRequestController::class, 'store'])->name('edit-requests.store');
+    Route::post('/edit-requests/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'process'])->name('edit-requests.process');
+    Route::get('/edit-requests/status/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'checkStatus'])->name('edit-requests.checkStatus');
+
     // Returns Routes
     Route::post('/returns/purge', [ReturnController::class, 'purge'])->name('returns.purge');
     Route::get('/returns', [ReturnController::class, 'index'])->name('returns.index');

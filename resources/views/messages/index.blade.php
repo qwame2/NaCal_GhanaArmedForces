@@ -122,6 +122,9 @@
 </div>
 
 <style>
+    /* Personnel view logic */
+    .personnel-view { display: block !important; }
+
     .network-item:hover {
         background: var(--bg-main);
         transform: translateX(8px);
@@ -237,6 +240,7 @@
 <script>
     let activeUserId = null;
     let pollInterval = null;
+    let onlineStatuses = {};
 
     function selectChat(userId, name, role, avatar) {
         activeUserId = userId;
@@ -281,27 +285,37 @@
                 const container = document.getElementById('terminalOutput');
                 const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
                 
-                let html = `
-                    <div class="comms-group system">
-                        <div class="comms-bubble">Transmission protocol initialized. Node NA-${activeUserId.toString().padStart(3, '0')} connected.</div>
-                        <div class="comms-meta">SYSTEM &bull; SECURE LINE</div>
-                    </div>
-                `;
+                let html = '';
 
                 data.forEach(msg => {
                     const isMe = msg.sender_id == {{ auth()->id() }};
                     const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     
+                    let ticksHtml = '';
+                    if (isMe) {
+                        const isRead = msg.read_at != null;
+                        const isRecipientOnline = onlineStatuses[activeUserId];
+                        
+                        if (isRead) {
+                            ticksHtml = '<i data-lucide="check-check" style="color: #10b981; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
+                        } else if (isRecipientOnline) {
+                            ticksHtml = '<i data-lucide="check-check" style="color: #94a3b8; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
+                        } else {
+                            ticksHtml = '<i data-lucide="check" style="color: #94a3b8; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
+                        }
+                    }
+                    
                     html += `
                         <div class="comms-group ${isMe ? 'me' : 'recipient'}">
                             <div class="comms-bubble">
-                                ${msg.message || ''}
+                                ${msg.message ? `<span style="word-break: break-word;">${msg.message}</span>` : ''}
                                 ${msg.attachment ? `
                                     <a href="{{ asset('storage') }}/${msg.attachment}" target="_blank" class="attachment-pill">
                                         <i data-lucide="file-text" style="width: 16px;"></i>
                                         <span>${msg.attachment_name || 'Document'}</span>
                                     </a>
                                 ` : ''}
+                                ${ticksHtml ? `<span style="display: inline-block; margin-left: 8px; vertical-align: bottom;">${ticksHtml}</span>` : ''}
                             </div>
                             <div class="comms-meta">${isMe ? 'YOU' : 'SENDER'} &bull; ${time}</div>
                         </div>
@@ -393,6 +407,7 @@
         fetch("{{ route('api.online-statuses') }}")
             .then(res => res.json())
             .then(statuses => {
+                onlineStatuses = statuses;
                 Object.keys(statuses).forEach(userId => {
                     const isOnline = statuses[userId];
                     const dot = document.querySelector(`#user-${userId} div[style*="border-radius: 50%"]`);

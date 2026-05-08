@@ -1858,7 +1858,7 @@
         `;
 
         // Fetch data
-        fetch(`/received-items/${batchId}?json=true`)
+        fetch(`{{ url('/received-items') }}/${batchId}?json=true`)
             .then(response => response.json())
             .then(data => {
                 const batch = data.batch;
@@ -2219,7 +2219,7 @@
         btn.disabled = true;
 
         try {
-            const response = await fetch('/api/inventory/receive-remainder', {
+            const response = await fetch('{{ url("/api/inventory/receive-remainder") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2464,12 +2464,43 @@
     }
 
     async function deleteBatch(batchId) {
+        // Strict Authorization: Check for administrative approval or role
+        try {
+            const checkRes = await fetch(`{{ url('/edit-requests/status') }}/${batchId}?type=delete`);
+            const checkData = await checkRes.json();
+            
+            if (!checkData.allowed) {
+                if (checkData.status === 'pending') {
+                    Swal.fire('Session Pending', 'A deletion request for this record is currently awaiting administrative authorization.', 'info');
+                    return;
+                } else if (checkData.status === 'canceled') {
+                    Swal.fire({
+                        title: 'Clearance Denied',
+                        text: 'Your previous request to purge this record was denied by the overseer. Do you wish to re-submit with new justification?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Re-submit Request'
+                    }).then((result) => {
+                        if (result.isConfirmed) promptActionReason(batchId, 'delete');
+                    });
+                    return;
+                } else {
+                    // No request exists yet
+                    promptActionReason(batchId, 'delete');
+                    return;
+                }
+            }
+        } catch (err) {
+            console.error('Auth Check Error:', err);
+        }
+
+        // Proceed if authorized
         if (!confirm('⚠️ SYSTEM CAUTION:\n\nYou are about to permanently purge this batch record and all its associated product logs from the database.\n\nThis action is forensic and IRREVERSIBLE. Do you wish to proceed?')) {
             return;
         }
 
         try {
-            const response = await fetch(`/received-items/${batchId}`, {
+            const response = await fetch(`{{ url('/received-items') }}/${batchId}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -2481,8 +2512,10 @@
             const result = await response.json();
 
             if (result.success) {
-                // Silent refresh using the existing background sync engine
+                // Success: record was purged
                 performSearch(true);
+                // Also clear any approved requests as they are now used
+                Swal.fire('Purged', 'Batch record has been forensically removed from the registry.', 'success');
             } else {
                 alert('Purge Error: ' + (result.message || 'Unknown error'));
             }
@@ -2558,7 +2591,7 @@
         `;
 
         try {
-            const response = await fetch(`/api/item-audit-details?description=${encodeURIComponent(description)}`);
+            const response = await fetch(`{{ url('/api/item-audit-details') }}?description=${encodeURIComponent(description)}`);
             const data = await response.json();
             
             auditHistoryData = data.batches;
@@ -3073,6 +3106,98 @@
 let currentEditBatchId = null;
 
 function openEditBatchModal(batchId) {
+    // Check permission first
+    fetch(`{{ url('/edit-requests/status') }}/${batchId}`)
+        .then(res => {
+            if (!res.ok) throw new Error('Server error');
+            return res.json();
+        })
+        .then(data => {
+            if (data.allowed) {
+                // Open modal normally
+                _openEditBatchModal(batchId);
+            } else if (data.status === 'pending') {
+                Swal.fire('Pending', 'Your request to edit this batch is pending admin approval.', 'info');
+            } else if (data.status === 'canceled') {
+                Swal.fire({
+                    title: 'Request Canceled',
+                    text: 'Your request has been canceled by the admin. Would you like to request again?',
+                    icon: 'error',
+                    showCancelButton: true,
+                    confirmButtonText: 'Request Again'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        promptEditReason(batchId);
+                    }
+                });
+            } else {
+                // status === 'none'
+                promptEditReason(batchId);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire('Error', 'Could not check edit status. Please ensure the database tables are migrated.', 'error');
+        });
+}
+
+function promptEditReason(batchId) {
+    promptActionReason(batchId, 'edit');
+}
+
+function promptActionReason(batchId, type = 'edit') {
+    const title = type === 'edit' ? 'Request Edit Access' : 'Request Deletion Clearance';
+    const label = type === 'edit' ? 'Justification for modification' : 'Justification for record purging';
+
+    Swal.fire({
+        title: title,
+        input: 'textarea',
+        inputLabel: label,
+        inputPlaceholder: 'Type your detailed reason here...',
+        showCancelButton: true,
+        confirmButtonText: 'Submit Request',
+        confirmButtonColor: type === 'delete' ? '#ef4444' : '#4f46e5',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Justification is mandatory for audit trails!'
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Submit request
+            fetch('{{ url("/edit-requests") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    item_id: batchId,
+                    reason: result.value,
+                    request_type: type
+                })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Secure line failure');
+                return res.json();
+            })
+            .then(data => {
+                if(data.success) {
+                    Swal.fire('Transmission Successful', `Your ${type} request has been synchronized with the overseer's terminal.`, 'success');
+                } else {
+                    Swal.fire('System Rejection', data.message || 'Failed to transmit request.', 'error');
+                }
+            })
+            .catch(err => {
+                console.error('Request Error:', err);
+                Swal.fire('Protocol Error', 'Failed to establish connection with the approval server.', 'error');
+            });
+        }
+    });
+}
+
+function _openEditBatchModal(batchId) {
     currentEditBatchId = batchId;
     const modal = document.getElementById('editBatchModal');
     const loader = document.getElementById('editModalLoader');
@@ -3091,8 +3216,11 @@ function openEditBatchModal(batchId) {
         width: '100%'
     });
 
-    fetch(`/received-items/${batchId}?json=1`)
-        .then(response => response.json())
+    fetch(`{{ url('/received-items') }}/${batchId}?json=1`)
+        .then(res => {
+            if (!res.ok) throw new Error('Data retrieval failed');
+            return res.json();
+        })
         .then(data => {
             const batch = data.batch;
             document.getElementById('editArrivalDate').value = batch.arrival_date ? batch.arrival_date.split(' ')[0] : '';
@@ -3278,15 +3406,19 @@ function submitEditBatch() {
         _token: '{{ csrf_token() }}'
     };
 
-    fetch(`/received-items/${currentEditBatchId}`, {
+    fetch(`{{ url('/received-items') }}/${currentEditBatchId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
         body: JSON.stringify(payload)
     })
-    .then(response => response.json())
+    .then(res => {
+        if (!res.ok) throw new Error('Update failed');
+        return res.json();
+    })
     .then(data => {
         if (data.success) {
             // Real-time DOM update
@@ -3382,5 +3514,30 @@ function submitEditBatch() {
         lucide.createIcons();
     });
 }
+
+// Auto-open editor if directed from messages
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const batchId = params.get('edit_batch');
+    if (batchId) {
+        // Clear param immediately for clean UX
+        const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+        window.history.replaceState({path:cleanUrl}, '', cleanUrl);
+
+        console.log("Auto-opening edit modal for batch:", batchId);
+        
+        let attempts = 0;
+        const loader = setInterval(() => {
+            if (typeof window.openEditBatchModal === 'function') {
+                clearInterval(loader);
+                window.openEditBatchModal(batchId);
+            } else if (attempts > 50) { // 5 seconds max
+                clearInterval(loader);
+                console.error("Critical: openEditBatchModal function not found.");
+            }
+            attempts++;
+        }, 100);
+    }
+})();
 </script>
 @endsection

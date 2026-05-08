@@ -35,7 +35,7 @@
             @endif
             <div style="flex: 1; min-width: 200px;">
                 <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Severity Level</label>
-                <select name="severity" style="width: 100%; background: white; border: 1px solid #e2e8f0; padding: 0.85rem 1rem; border-radius: 12px; color: var(--text-main); font-weight: 600; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79,70,229,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'">
+                <select name="severity" onchange="this.form.submit()" style="width: 100%; background: white; border: 1px solid #e2e8f0; padding: 0.85rem 1rem; border-radius: 12px; color: var(--text-main); font-weight: 600; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79,70,229,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'">
                     <option value="">All Severities</option>
                     <option value="info" {{ request('severity') == 'info' ? 'selected' : '' }}>Information</option>
                     <option value="warning" {{ request('severity') == 'warning' ? 'selected' : '' }}>Warning</option>
@@ -44,7 +44,7 @@
             </div>
             <div style="flex: 1; min-width: 200px;">
                 <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Event Category</label>
-                <select name="event_type" style="width: 100%; background: white; border: 1px solid #e2e8f0; padding: 0.85rem 1rem; border-radius: 12px; color: var(--text-main); font-weight: 600; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79,70,229,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'">
+                <select name="event_type" onchange="this.form.submit()" style="width: 100%; background: white; border: 1px solid #e2e8f0; padding: 0.85rem 1rem; border-radius: 12px; color: var(--text-main); font-weight: 600; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79,70,229,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'">
                     <option value="">All Categories</option>
                     <option value="SECURITY" {{ request('event_type') == 'SECURITY' ? 'selected' : '' }}>Security</option>
                     <option value="INVENTORY" {{ request('event_type') == 'INVENTORY' ? 'selected' : '' }}>Inventory</option>
@@ -389,6 +389,14 @@
         cursor: not-allowed;
         box-shadow: none;
     }
+
+    /* Checkbox visibility logic */
+    .log-checkbox {
+        display: none !important;
+    }
+    .log-checkbox.visible {
+        display: block !important;
+    }
 </style>
 
 <!-- Bottom Sheet -->
@@ -420,15 +428,34 @@
         
         if (selectAll) {
             selectAll.addEventListener('change', function() {
-                checkboxes.forEach(cb => cb.checked = this.checked);
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                    if (this.checked) {
+                        cb.classList.add('visible');
+                    } else {
+                        cb.classList.remove('visible');
+                    }
+                });
             });
         }
 
         checkboxes.forEach(cb => {
             cb.addEventListener('change', function() {
-                if (!this.checked) selectAll.checked = false;
-                if (document.querySelectorAll('.log-checkbox:checked').length === checkboxes.length && checkboxes.length > 0) {
+                if (!this.checked) {
+                    // We don't hide individual ones immediately if unchecked, 
+                    // but we ensure the master is unchecked
+                    selectAll.checked = false;
+                }
+                
+                const checkedCount = document.querySelectorAll('.log-checkbox:checked').length;
+                if (checkedCount === checkboxes.length && checkboxes.length > 0) {
                     selectAll.checked = true;
+                }
+                
+                // If all are unchecked manually, hide them? 
+                // Let's keep them visible if at least one is checked, or if master was clicked.
+                if (checkedCount === 0 && !selectAll.checked) {
+                    checkboxes.forEach(c => c.classList.remove('visible'));
                 }
             });
         });

@@ -183,14 +183,23 @@
         .main-wrapper {
             flex: 1;
             margin-left: 280px;
-            padding: 3rem 4rem;
+            padding: 0 4rem 4rem 4rem;
+            position: relative;
         }
 
         .view-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 4rem;
+            padding: 1.5rem 0;
+            margin-bottom: 3rem;
+            position: sticky;
+            top: 0;
+            background: rgba(248, 250, 252, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 900;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .title-group h2 {
