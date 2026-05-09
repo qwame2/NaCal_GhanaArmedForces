@@ -12,6 +12,10 @@ class ReportController extends Controller
 {
     public function index(Request $request)
     {
+        if (auth()->user()->is_admin) {
+            return redirect()->route('admin.inventory')->with('info', 'Strategic Oversight required. Redirecting to Command Center.');
+        }
+
         $period = $request->query('period', 'monthly');
         
         $startDate = Carbon::now();

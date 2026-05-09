@@ -13,6 +13,10 @@ class IssueItemsController extends Controller
 {
     public function index()
     {
+        if (auth()->user()->is_admin) {
+            return redirect()->route('admin.inventory')->with('info', 'Strategic Oversight required. Redirecting to Command Center.');
+        }
+
         if (!\Illuminate\Support\Facades\Schema::hasColumn('issued_items', 'unit')) {
             \Illuminate\Support\Facades\Schema::table('issued_items', function (\Illuminate\Database\Schema\Blueprint $table) {
                 $table->string('unit')->nullable();

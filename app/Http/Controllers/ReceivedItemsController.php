@@ -22,6 +22,10 @@ class ReceivedItemsController extends Controller
 
     public function index(Request $request)
     {
+        if (auth()->user()->is_admin) {
+            return redirect()->route('admin.inventory')->with('info', 'Strategic Oversight required. Redirecting to Command Center.');
+        }
+
         $ledgeMap = $this->ledgeMap;
 
         // Shift to querying individual items for a more detailed "Received Items" report

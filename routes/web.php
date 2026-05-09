@@ -427,6 +427,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     // Admin Routes
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
     Route::get('/admin/logs', [AdminController::class, 'logs'])->name('admin.logs');
+    Route::get('/admin/inventory', [AdminController::class, 'viewInventory'])->name('admin.inventory');
     Route::get('/admin/permissions', [AdminController::class, 'permissions'])->name('admin.permissions');
     Route::post('/admin/permissions/update', [AdminController::class, 'updatePermission'])->name('admin.permissions.update');
     Route::post('/admin/logs/delete-multiple', [AdminController::class, 'destroyMultipleLogs'])->name('admin.logs.delete_multiple');

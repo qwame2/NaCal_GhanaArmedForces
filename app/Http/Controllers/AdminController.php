@@ -5,6 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Models\InventoryBatch;
+use App\Models\InventoryItem;
+use App\Models\Issuance;
+use App\Models\IssuedItem;
+use App\Models\ReturnedItem;
 
 class AdminController extends Controller
 {
@@ -199,5 +204,74 @@ class AdminController extends Controller
 
         $users = User::where('is_admin', false)->get();
         return view('admin.messages', compact('users'));
+    }
+
+    public function viewInventory(Request $request)
+    {
+        // Query builder for Received Items
+        $query = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->select(
+                'inventory_items.*', 
+                'inventory_batches.entry_date', 
+                'inventory_batches.arrival_date', 
+                'inventory_batches.ledge_category', 
+                'inventory_batches.supplier_name', 
+                'inventory_batches.donor_name', 
+                'inventory_batches.acquisition_type'
+            );
+
+        // Apply Search Filter
+        if ($request->has('search') && $request->search) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('inventory_items.description', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('inventory_items.batch_id', 'LIKE', '%' . $searchTerm . '%');
+            });
+        }
+
+        // Apply Category Filter
+        if ($request->has('category') && $request->category) {
+            $query->where('inventory_batches.ledge_category', $request->category);
+        }
+
+        // Apply Date Range
+        if ($request->has('date_from') && $request->date_from) {
+            $query->whereDate('inventory_batches.entry_date', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $query->whereDate('inventory_batches.entry_date', '<=', $request->date_to);
+        }
+
+        $receivedItems = $query->orderBy('inventory_batches.entry_date', 'desc')->get();
+
+        $partialCount = $receivedItems->filter(function($item) {
+            return preg_match('/\[Partial Deliv/i', $item->supplier_name);
+        })->count();
+
+        // Fetch aggregate totals for item status display (System Health metrics)
+        $itemAggregates = InventoryItem::selectRaw('description, SUM(qty) as total_received_qty, SUM(stock_balance) as total_available, SUM(variance) as total_variance')
+            ->groupBy('description')
+            ->get()
+            ->keyBy('description');
+
+        $issuances = IssuedItem::with('issuance')
+            ->join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->select('issued_items.*', 'issuances.issuance_date', 'issuances.beneficiary', 'issuances.authority', 'issuances.issuance_type', 'issuances.created_at')
+            ->orderBy('issuances.created_at', 'desc')
+            ->get();
+
+        $returnedItems = ReturnedItem::with(['issuedItem.issuance'])->orderBy('return_date', 'desc')->get();
+
+        $ledgeMap = [
+            'A' => 'Stationary',
+            'B' => 'Cleaning',
+            'C' => 'IT & Acc.',
+            'D' => 'Transport',
+            'E' => 'Safety',
+            'G' => 'Pharmacy',
+            'J' => 'Equipment'
+        ];
+
+        return view('admin.inventory.index', compact('receivedItems', 'partialCount', 'itemAggregates', 'issuances', 'returnedItems', 'ledgeMap'));
     }
 }

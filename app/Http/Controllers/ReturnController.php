@@ -15,6 +15,10 @@ class ReturnController extends Controller
 {
     public function index()
     {
+        if (auth()->user()->is_admin) {
+            return redirect()->route('admin.inventory')->with('info', 'Strategic Oversight required. Redirecting to Command Center.');
+        }
+
         if (!Schema::hasTable('returned_items')) {
             Schema::create('returned_items', function (Blueprint $table) {
                 $table->id();

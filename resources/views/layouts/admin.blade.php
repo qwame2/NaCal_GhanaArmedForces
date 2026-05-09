@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | Strategic Registry</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     <style>
@@ -185,6 +185,83 @@
             margin-left: 280px;
             padding: 0 4rem 4rem 4rem;
             position: relative;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Mobile Trigger */
+        .mobile-nav-toggle {
+            display: none;
+            width: 44px;
+            height: 44px;
+            background: white;
+            border: 1px solid #edf2f7;
+            border-radius: 12px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-luxe);
+            color: var(--text-heading);
+            z-index: 1100;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 20px 0 60px rgba(0, 0, 0, 0.1);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-wrapper {
+                margin-left: 0;
+                padding: 0 1.5rem 2rem 1.5rem;
+            }
+            .mobile-nav-toggle {
+                display: flex;
+            }
+            .view-header {
+                padding: 1rem 0;
+                margin-bottom: 2rem;
+            }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(15, 23, 42, 0.4);
+                backdrop-filter: blur(4px);
+                z-index: 999;
+            }
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .view-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+                height: auto;
+                position: relative;
+                backdrop-filter: none;
+                background: var(--bg-body);
+                border: none;
+            }
+            .header-actions {
+                justify-content: space-between;
+                width: 100%;
+            }
+            .title-group {
+                width: 100%;
+            }
+            .title-capsule {
+                width: 100%;
+            }
         }
 
         .view-header {
@@ -200,14 +277,6 @@
             -webkit-backdrop-filter: blur(12px);
             z-index: 900;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .title-group h2 {
-            font-size: 1.85rem;
-            font-weight: 900;
-            color: var(--text-heading);
-            margin: 0;
-            letter-spacing: -0.04em;
         }
 
         .live-status {
@@ -319,7 +388,8 @@
     </style>
 </head>
 <body>
-    <aside class="sidebar">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <div class="brand-icon">
                 <i data-lucide="shield-check" style="width: 22px;"></i>
@@ -343,6 +413,12 @@
                     <a href="{{ route('admin.logs') }}" class="nav-link {{ request()->routeIs('admin.logs') ? 'active' : '' }}">
                         <i data-lucide="shield-check"></i>
                         <span>System Logs</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.inventory') }}" class="nav-link {{ request()->routeIs('admin.inventory') ? 'active' : '' }}">
+                        <i data-lucide="package"></i>
+                        <span>Inventory Oversight</span>
                     </a>
                 </li>
                 <li>
@@ -397,13 +473,18 @@
 
     <main class="main-wrapper">
         <header class="view-header">
-            <div class="title-group">
-                <div class="title-capsule">
-                    <div class="capsule-prefix">
-                        <i data-lucide="shield"></i>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-nav-toggle" id="mobile-toggle">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="title-group">
+                    <div class="title-capsule">
+                        <div class="capsule-prefix">
+                            <i data-lucide="shield"></i>
+                        </div>
+                        <h2>@yield('title')</h2>
+                        <span class="capsule-tag">ADMIN</span>
                     </div>
-                    <h2>@yield('title')</h2>
-                    <span class="capsule-tag">ADMIN</span>
                 </div>
             </div>
             <div class="header-actions">
@@ -468,6 +549,23 @@
 
     <script>
         lucide.createIcons();
+
+        // Mobile Sidebar Toggle
+        const mobileToggle = document.getElementById('mobile-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        if (mobileToggle && sidebar && overlay) {
+            mobileToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
 
         // Admin Notification Toggle
         const adminNotifBtn = document.getElementById('admin-notification-btn');
