@@ -370,33 +370,21 @@
                             </span>
                         </td>
                         @php
-                        $rawSupplier = $item->supplier_name;
+                        $cleanSupplier = $item->supplier_name;
                         $acquisitionType = $item->acquisition_type ?? 'Supplier';
                         $donorName = $item->donor_name ?? '-';
-                        if ($acquisitionType === 'Supplier' && preg_match('/\[(Donor Action|Donation)\]/', $rawSupplier)) {
-                        $acquisitionType = 'Donor';
-                        $donorName = preg_replace('/\s\[.*\]$/', '', $rawSupplier);
-                        }
-
-                        $cleanSupplier = preg_replace('/\s*\[.*\]\s*$/', '', $rawSupplier);
-                        $displayStatus = 'N/A';
-                        if ($acquisitionType === 'Donor') {
-                        $displayStatus = 'DONOR';
-                        } else {
-                        if (preg_match('/\[(.*)\]/', $rawSupplier, $matches)) {
-                        $displayStatus = $matches[1];
-                        }
-                        }
+                        $displayStatus = strtoupper($item->supplier_status ?: 'FULL DELIVERY');
 
                         $statusColor = '#94a3b8';
-                        if ($acquisitionType === 'Donor' || $displayStatus === 'DONATION') {
-                        $statusColor = '#8b5cf6';
-                        } elseif ($displayStatus === 'Full Delivery' || $displayStatus === 'Full Delivery') {
-                        $statusColor = '#10b981';
-                        $displayStatus = 'FULL DELIVERY';
-                        } elseif ($displayStatus === 'Partial Delivery' || $displayStatus === 'Partial Delivery') {
-                        $statusColor = '#ef4444';
-                        $displayStatus = 'PARTIAL DELIVERY';
+                        if ($acquisitionType === 'Donor' || $displayStatus === 'DONOR') {
+                            $statusColor = '#8b5cf6';
+                            $displayStatus = 'DONOR';
+                        } elseif ($displayStatus === 'FULL DELIVERY' || str_contains($displayStatus, 'FULL')) {
+                            $statusColor = '#10b981';
+                            $displayStatus = 'FULL DELIVERY';
+                        } elseif ($displayStatus === 'PARTIAL DELIVERY' || str_contains($displayStatus, 'PARTIAL')) {
+                            $statusColor = '#ef4444';
+                            $displayStatus = 'PARTIAL DELIVERY';
                         }
                         @endphp
                         <td data-label="Supplier" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 500;">{{ $cleanSupplier ?: '-' }}</td>
@@ -454,6 +442,10 @@
                     <button onclick="openEditBatchModal('{{ $item->batch_id }}')" class="menu-item" style="color: var(--primary);">
                         <i data-lucide="edit-3"></i>
                         Edit Entry
+                    </button>
+                    <button onclick="window.open('/received-items/{{ $item->batch_id }}/sra', '_blank')" class="menu-item" style="color: #6366f1;">
+                        <i data-lucide="file-text"></i>
+                        Generate SRA
                     </button>
                     <div style="height: 1px; background: var(--border-color); margin: 4px 10px; opacity: 0.5;"></div>
                     <button onclick="deleteBatch('{{ $item->batch_id }}')" class="menu-item" style="color: #ef4444;">
@@ -605,6 +597,9 @@
             <div style="display: flex; gap: 0.75rem;">
                 <button onclick="printModal()" class="btn-icon" title="Print Details">
                     <i data-lucide="printer" style="width: 18px;"></i>
+                </button>
+                <button id="modalSraBtn" class="btn-icon" title="Generate SRA" style="color: #6366f1;">
+                    <i data-lucide="file-text" style="width: 18px;"></i>
                 </button>
                 <button onclick="closeModal()" class="btn-icon danger" title="Close">
                     <i data-lucide="x" style="width: 18px;"></i>
@@ -1840,6 +1835,10 @@
     function openModal(batchId) {
         currentBatchId = batchId;
         const modal = document.getElementById('detailModal');
+        const sraBtn = document.getElementById('modalSraBtn');
+        if (sraBtn) {
+            sraBtn.onclick = () => window.open(`/received-items/${batchId}/sra`, '_blank');
+        }
         const modalContent = modal.querySelector('.modal-content');
         const modalBody = document.getElementById('modalBody');
         const modalSubtitle = document.getElementById('modalSubtitle');
@@ -2910,7 +2909,7 @@
         printWindow.document.write(`
             <html>
                 <head>
-                    <title>NACOC Audit - ${item}</title>
+                    <title>Narcotics Control Commission | Transaction Log</title>
                     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
                     <style>
                         @page { size: A4; margin: 20mm 15mm 20mm 15mm; }
@@ -3226,22 +3225,8 @@ function _openEditBatchModal(batchId) {
             document.getElementById('editArrivalDate').value = batch.arrival_date ? batch.arrival_date.split(' ')[0] : '';
             document.getElementById('editCategory').value = batch.ledge_category;
             
-            // Parse delivery status from supplier name or acquisition type
             let supplierName = batch.supplier_name || '';
-            let status = 'Full Delivery';
-            let acqType = batch.acquisition_type || 'Supplier';
-
-            if (acqType === 'Donor') {
-                status = 'Donor';
-            } else {
-                if (supplierName.includes('[Partial Delivery]')) {
-                    status = 'Partial Delivery';
-                    supplierName = supplierName.replace(' [Partial Delivery]', '');
-                } else if (supplierName.includes('[Full Delivery]')) {
-                    status = 'Full Delivery';
-                    supplierName = supplierName.replace(' [Full Delivery]', '');
-                }
-            }
+            let status = batch.supplier_status || 'Full Delivery';
             
             document.getElementById('editAcquisitionStatus').value = status;
             
@@ -3385,23 +3370,17 @@ function submitEditBatch() {
         });
     });
 
-    const acquisitionStatus = document.getElementById('editAcquisitionStatus').value;
-    let acqType = 'Supplier';
-    let finalSupplierName = $('#editSupplierName').val() || '';
-    
-    if (acquisitionStatus === 'Donor') {
-        acqType = 'Donor';
-        finalSupplierName = ''; // Donors don't have supplier names in our logic
-    } else {
-        finalSupplierName = `${finalSupplierName} [${acquisitionStatus}]`;
-    }
+    const supplierStatus = document.getElementById('editAcquisitionStatus').value;
+    let acqType = supplierStatus === 'Donor' ? 'Donor' : 'Supplier';
+    let supplierName = $('#editSupplierName').val() || '';
 
     const payload = {
         arrival_date: document.getElementById('editArrivalDate').value,
         ledge_category: document.getElementById('editCategory').value,
         acquisition_type: acqType,
-        supplier_name: finalSupplierName,
-        donor_name: acquisitionStatus === 'Donor' ? $('#editDonorName').val() : '',
+        supplier_name: supplierName || null,
+        supplier_status: supplierStatus,
+        donor_name: supplierStatus === 'Donor' ? $('#editDonorName').val() : '',
         items: items,
         _token: '{{ csrf_token() }}'
     };

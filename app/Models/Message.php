@@ -15,7 +15,9 @@ class Message extends Model
         'message',
         'attachment',
         'attachment_name',
-        'read_at'
+        'read_at',
+        'is_automated',
+        'edit_request_id'
     ];
 
     protected $casts = [

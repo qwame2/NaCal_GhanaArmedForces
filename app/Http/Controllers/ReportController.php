@@ -60,7 +60,7 @@ class ReportController extends Controller
             
         $recentIssues = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->whereBetween('issuances.issuance_date', [$startDate, $endDate])
-            ->select('issued_items.*', 'issuances.issuance_date as entry_date', 'issuances.beneficiary', \DB::raw("'Issued' as transaction_type"))
+            ->select('issued_items.*', 'issuances.issuance_date as entry_date', 'issuances.beneficiary', 'issued_items.ledge_category', \DB::raw("'Issued' as transaction_type"))
             ->orderBy('issuances.issuance_date', 'desc')
             ->limit(50)
             ->get();

@@ -303,9 +303,8 @@
                                 $hColor = '#f59e0b';
                             }
 
-                            $rawSupplier = $item->supplier_name;
-                            $isPartial = preg_match('/\[Partial Deliv/i', $rawSupplier);
-                            $cleanSupplier = preg_replace('/\s*\[.*\]\s*$/', '', $rawSupplier);
+                            $isPartial = str_contains(strtolower($item->supplier_status), 'partial');
+                            $cleanSupplier = $item->supplier_name;
                         @endphp
                         <tr class="inventory-row" data-is-partial="{{ $isPartial ? 'true' : 'false' }}">
                             <td>

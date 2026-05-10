@@ -20,6 +20,48 @@ class ReceivedItemsController extends Controller
         'J' => 'Equipment'
     ];
 
+    public function preview($id)
+    {
+        $req = \App\Models\EditRequest::findOrFail($id);
+        $data = json_decode($req->payload, true);
+        
+        // Mock a batch object for the view
+        $batch = (object)[
+            'id' => 'DRAFT',
+            'ledge_category' => $data['ledge_category'],
+            'supplier_name' => $data['supplier_name'],
+            'supplier_status' => $data['supplier_status'],
+            'donor_name' => $data['donor_name'] ?? null,
+            'acquisition_type' => $data['acquisition_type'],
+            'entry_date' => $data['entry_date'],
+            'arrival_date' => $data['arrival_date'],
+            'approval_status' => 'pending',
+            'approved_at' => null,
+            'recorded_by_name' => $req->user->name ?? 'Personnel',
+            'items' => collect($data['items'])->map(function($i) {
+                $item = (object)$i;
+                $item->ledger_id = $item->ledger_id ?? '-';
+                $item->remarks = $item->remarks ?? '';
+                $item->stock_balance = $item->stock_balance ?? 0;
+                $item->variance = $item->variance ?? 0;
+                return $item;
+            })
+        ];
+
+        $admin = auth()->user();
+        $ledgeMap = $this->ledgeMap;
+        $history = collect(); 
+
+        // Redirect to donation voucher if it's a donor
+        $isDonation = ($batch->acquisition_type === 'Donor' || str_contains(strtolower($batch->supplier_status), 'donor'));
+        
+        if ($isDonation) {
+            return view('received-items.donation_voucher', compact('batch', 'admin', 'ledgeMap', 'history'));
+        }
+
+        return view('received-items.sra', compact('batch', 'admin', 'ledgeMap', 'history'));
+    }
+
     public function index(Request $request)
     {
         if (auth()->user()->is_admin) {
@@ -129,6 +171,7 @@ class ReceivedItemsController extends Controller
         $validated = $request->validate([
             'ledge_category' => 'required|string',
             'supplier_name' => 'nullable|string',
+            'supplier_status' => 'nullable|string',
             'donor_name' => 'nullable|string',
             'acquisition_type' => 'required|string',
             'arrival_date' => 'required|date',
@@ -148,7 +191,7 @@ class ReceivedItemsController extends Controller
             $batch = InventoryBatch::with('items')->findOrFail($id);
 
             // Capture Original State for Forensic Audit
-            $originalBatch = $batch->only(['arrival_date', 'ledge_category', 'acquisition_type', 'supplier_name', 'donor_name']);
+            $originalBatch = $batch->only(['arrival_date', 'ledge_category', 'acquisition_type', 'supplier_name', 'supplier_status', 'donor_name']);
             $originalItems = $batch->items->mapWithKeys(function($item) {
                 return [$item->id => $item->only(['description', 'unit', 'qty', 'stock_balance', 'variance', 'remarks'])];
             });
@@ -156,6 +199,7 @@ class ReceivedItemsController extends Controller
             $batch->update([
                 'ledge_category' => $validated['ledge_category'],
                 'supplier_name' => $validated['supplier_name'],
+                'supplier_status' => $validated['supplier_status'],
                 'donor_name' => $validated['donor_name'],
                 'acquisition_type' => $validated['acquisition_type'],
                 'arrival_date' => $validated['arrival_date'],
@@ -264,6 +308,38 @@ class ReceivedItemsController extends Controller
             ->get();
 
         return view('received-items.print', compact('batch', 'ledgeMap', 'history'));
+    }
+
+    public function sra($id)
+    {
+        $ledgeMap = $this->ledgeMap;
+        $batch = InventoryBatch::with(['items'])->findOrFail($id);
+        
+        // Fetch the Admin who approved this specific batch
+        $admin = null;
+        if ($batch->approval_status === 'approved' && $batch->approved_by) {
+            $admin = \App\Models\User::find($batch->approved_by);
+        }
+        
+        // Fallback for legacy approved batches or system defaults
+        if (!$admin) {
+            $admin = \App\Models\User::where('is_admin', true)->first();
+        }
+
+        // Fetch history logs for this batch
+        $history = \App\Models\SystemLog::where('action', 'UPDATE_BATCH')
+            ->where('metadata->batch_id', (int)$id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Determine which voucher type to serve
+        $isDonation = ($batch->acquisition_type === 'Donor' || 
+                       str_contains(strtolower($batch->supplier_status), 'donor') || 
+                       str_contains(strtolower($batch->supplier_status), 'donation'));
+
+        $view = $isDonation ? 'received-items.donation_voucher' : 'received-items.sra';
+
+        return view($view, compact('batch', 'ledgeMap', 'history', 'admin'));
     }
 
     public function destroy($id)

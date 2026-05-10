@@ -121,6 +121,7 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
+                                <th>Category</th>
                                 <th>Item Description</th>
                                 <th>Supplier / Source</th>
                                 <th style="text-align: right;">Quantity</th>
@@ -130,6 +131,11 @@
                             @foreach($recentReceivals as $rec)
                             <tr>
                                 <td data-label="Date" style="white-space: nowrap;">{{ \Carbon\Carbon::parse($rec->entry_date)->format('M d, Y') }}</td>
+                                <td data-label="Category">
+                                    <span style="font-size: 0.7rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-weight: 700;">
+                                        {{ $ledgeMap[$rec->ledge_category] ?? 'Category ' . $rec->ledge_category }}
+                                    </span>
+                                </td>
                                 <td data-label="Item Description" style="font-weight: 600;">{{ $rec->description }}</td>
                                 <td data-label="Supplier / Source">{{ preg_replace('/\s\[.*\]$/', '', $rec->supplier_name ?: 'System') }}</td>
                                 <td data-label="Quantity" style="text-align: right; font-weight: 800; color: #10b981;">{{ $rec->qty }}</td>
@@ -157,6 +163,7 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
+                                <th>Category</th>
                                 <th>Item Description</th>
                                 <th>Beneficiary / Department</th>
                                 <th style="text-align: right;">Quantity</th>
@@ -166,6 +173,11 @@
                             @foreach($recentIssues as $iss)
                             <tr>
                                 <td data-label="Date" style="white-space: nowrap;">{{ \Carbon\Carbon::parse($iss->entry_date)->format('M d, Y') }}</td>
+                                <td data-label="Category">
+                                    <span style="font-size: 0.7rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-weight: 700;">
+                                        {{ $ledgeMap[$iss->ledge_category] ?? 'Category ' . $iss->ledge_category }}
+                                    </span>
+                                </td>
                                 <td data-label="Item Description" style="font-weight: 600;">{{ $iss->description }}</td>
                                 <td data-label="Beneficiary">{{ $iss->beneficiary }}</td>
                                 <td data-label="Quantity" style="text-align: right; font-weight: 800; color: #f59e0b;">{{ $iss->quantity }}</td>
@@ -600,13 +612,13 @@
 During this reporting period (${periodLabel}), the logistics and inventory framework processed significant asset movements crucial to our operational readiness.
 
 RECEIPTS & ACQUISITIONS:
-We successfully recorded the inbound reception of ${totalRec} units distributed across ${recBatches} discrete batches. These acquisitions have been formally logged into the secure ledger, ensuring our reserves remain adequately stocked.
+We successfully recorded the inbound reception of ${totalRec} units distributed across ${recBatches} discrete batches. These acquisitions have been formally logged into the secure Category system, ensuring our reserves remain adequately stocked.
 
 DISBURSEMENTS & ALLOCATIONS:
 In support of ongoing operations and departmental requirements, the logistics division issued a total of ${totalIss} units spanning ${issBatches} distinct disbursement events. All allocations were verified against authorized requisitions to maintain strict supply chain integrity.
 
 OVERALL THEORETICAL STOCK STATUS:
-Factoring in the aggregation of ${totalRec} incoming units against the ${totalIss} allocated units, the facility noted a net functional surplus of ${netMovement} units for ${periodLabel}. This metric solidifies our adherence to conservative inventory retention protocols.
+Factoring in the aggregation of ${totalRec} incoming units against the ${totalIss} allocated units, the facility noted a net functional surplus of ${netMovement} units for ${periodLabel}. This metric solidifies our adherence to conservative Category retention protocols.
 
 CONCLUSION:
 No gross anomalies or unaccounted systemic variances were detected during this reporting window. The inventory ecosystem remains balanced, verifiable, and prepared for subsequent logistical cycles.

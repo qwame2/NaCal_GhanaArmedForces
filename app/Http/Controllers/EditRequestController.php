@@ -147,4 +147,154 @@ class EditRequestController extends Controller
         if (ob_get_length()) ob_clean();
         return response()->json(['allowed' => false, 'status' => $editReq->status]);
     }
+
+
+    public function processSraCreation(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'reason' => 'nullable|string'
+        ]);
+
+        if (!auth()->user()->is_admin) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $editReq = EditRequest::findOrFail($id);
+        $editReq->status = $request->status;
+        $editReq->save();
+
+        $statusText = $request->status === 'approved' ? 'APPROVED & SAVED' : 'REJECTED';
+        $color = $request->status === 'approved' ? '#10b981' : '#dc2626';
+
+        if ($request->status === 'approved') {
+            $data = json_decode($editReq->payload, true);
+            
+            \Illuminate\Support\Facades\DB::beginTransaction();
+            try {
+                // CREATE THE ACTUAL RECORDS
+                $batch = InventoryBatch::create([
+                    'ledge_category' => $data['ledge_category'],
+                    'supplier_name' => $data['supplier_name'],
+                    'supplier_status' => $data['supplier_status'],
+                    'donor_name' => $data['donor_name'] ?? null,
+                    'acquisition_type' => $data['acquisition_type'],
+                    'entry_date' => $data['entry_date'],
+                    'arrival_date' => $data['arrival_date'],
+                    'recorded_by' => $editReq->user_id,
+                    'approval_status' => 'approved',
+                    'approved_by' => auth()->id(),
+                    'approved_at' => now(),
+                ]);
+
+                foreach ($data['items'] as $item) {
+                    $itemData = $item;
+                    unset($itemData['ledge_balance']);
+                    $batch->items()->create($itemData);
+                }
+
+                // Log it
+                \App\Models\SystemLog::create([
+                    'user_id' => $editReq->user_id,
+                    'event_type' => 'INVENTORY',
+                    'action' => 'ADD_INVENTORY',
+                    'description' => "Personnel added items (Approved by Admin).",
+                    'severity' => 'info',
+                    'metadata' => ['batch_id' => $batch->id],
+                    'ip_address' => request()->ip()
+                ]);
+
+                \Illuminate\Support\Facades\DB::commit();
+
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Failed to save: ' . $e->getMessage()]);
+            }
+        }
+
+        // Generate Personnel Notification Content
+        $color = $request->status === 'approved' ? '#10b981' : '#dc2626';
+        $statusHeader = $request->status === 'approved' ? 'SRA AUTHORIZED & COMMITTED' : 'REQUEST HAS BEEN REJECTED';
+        
+        $finalMsg = "<div style='padding: 15px; border: 1px solid {$color}; border-radius: 12px; background: " . ($request->status === 'approved' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(220, 38, 38, 0.05)') . ";'>";
+        $finalMsg .= "<b style='color: {$color}'>{$statusHeader}</b><br>";
+        
+        if ($request->status === 'approved') {
+            $printUrl = route('receiveditems.sra', ['id' => $batch->id]);
+            $finalMsg .= "Your inventory entry has been authorized. You can now download the official voucher.<br><br>";
+            $finalMsg .= "<a href='{$printUrl}' target='_blank' style='display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);'>Download / Print SRA</a>";
+        } else {
+            // Rejection format as requested
+            if ($request->reason) {
+                $finalMsg .= "<div style='margin-top: 5px; line-height: 1.6; color: #b91c1c;'>";
+                $finalMsg .= nl2br(e($request->reason));
+                $finalMsg .= "</div>";
+            } else {
+                $finalMsg .= "Your submission for new inventory items was not authorized by the Administrator.";
+            }
+        }
+        $finalMsg .= "</div>";
+
+        // 1. Update the original "Awaiting" message for the Personnel (Highly Resilient Search)
+        $personnelOriginalMsg = Message::where('receiver_id', $editReq->user_id)
+            ->where(function($q) use ($editReq) {
+                $q->where('edit_request_id', $editReq->id)
+                  ->orWhere('message', 'like', "%<!-- sra_req_id:{$editReq->id} -->%")
+                  ->orWhere('message', 'like', '%Awaiting SRA Approval%');
+            })
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($personnelOriginalMsg) {
+            $personnelOriginalMsg->update([
+                'message' => $finalMsg,
+                'is_automated' => true,
+                'edit_request_id' => $editReq->id // Ensure it's tagged for future
+            ]);
+        } else {
+            // Fallback if not found
+            Message::create([
+                'sender_id' => auth()->id(),
+                'receiver_id' => $editReq->user_id,
+                'message' => $finalMsg,
+                'is_automated' => true,
+                'edit_request_id' => $editReq->id
+            ]);
+        }
+
+        // 2. Update the Admin's message (this view)
+        $adminMsg = Message::where('receiver_id', auth()->id())
+            ->where(function($q) use ($editReq) {
+                $q->where('edit_request_id', $editReq->id)
+                  ->orWhere('message', 'like', "%<!-- sra_req_id:{$editReq->id} -->%")
+                  ->orWhere('message', 'like', "%sra-creation-actions-{$editReq->id}%");
+            })
+            ->first();
+
+        if ($adminMsg) {
+            $statusColor = $request->status === 'approved' ? '#10b981' : '#dc2626';
+            $statusLabel = $request->status === 'approved' ? 'AUTHORIZED & COMMITTED' : 'REJECTED';
+            
+            $printLink = "";
+            if ($request->status === 'approved' && isset($batch)) {
+                $printUrl = route('receiveditems.sra', ['id' => $batch->id]);
+                $printLink = "<br><a href='{$printUrl}' target='_blank' style='display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 800; font-size: 0.75rem; margin-top: 8px;'>Download / Print SRA</a>";
+            }
+            
+            $newMsg = "<div class='sra-approval-msg' style='padding: 15px; border-left: 4px solid {$statusColor}; background: rgba(0,0,0,0.02);'>";
+            $newMsg .= "<b style='color: {$statusColor};'>SRA {$statusLabel}</b><br>";
+            $newMsg .= "Submission by " . ($editReq->user->name ?? 'Personnel') . " has been {$request->status}.";
+            if ($request->status === 'rejected' && $request->reason) {
+                $newMsg .= "<div style='margin-top: 5px; font-size: 0.85rem; color: #666;'>Reason: " . e($request->reason) . "</div>";
+            }
+            $newMsg .= $printLink . "</div>";
+            
+            $adminMsg->update(['message' => $newMsg, 'is_automated' => true]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'batch_id' => $batch->id ?? null
+        ]);
+    }
 }

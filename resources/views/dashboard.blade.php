@@ -833,22 +833,16 @@
                 });
             });
 
-            const supplierStatus = $('#supplierStatusSelect').val(); // Can be Full/Partial or Donor
+            const supplierStatus = $('#supplierStatusSelect').val(); // Can be Full Delivery, Partial Delivery, or Donor
             const acquisitionType = supplierStatus === 'Donor' ? 'Donor' : 'Supplier';
-
-            // Capture both independently. They are different things!
             const donorName = $('#donorNameInput').val() ? $('#donorNameInput').val().trim() : null;
-            const baseSupplier = $('#supplierNameSelect').val() || '';
-
-            // Still append status to supplier name for legacy compatibility if it's not Donor status
-            const supplierName = (supplierStatus && supplierStatus !== 'Donor') ?
-                `${baseSupplier} [${supplierStatus}]` :
-                baseSupplier;
+            const supplierName = $('#supplierNameSelect').val() || '';
 
             const payload = {
                 _token: '{{ csrf_token() }}',
                 ledge_category: ledgeSelect.val(),
                 supplier_name: supplierName || null,
+                supplier_status: supplierStatus,
                 donor_name: donorName,
                 acquisition_type: acquisitionType,
                 entry_date: $('#entryDate').val(),
@@ -866,15 +860,41 @@
                 data: payload,
                 success: function(response) {
                     if (response.success) {
-                        showToast('Success', 'Inventory records saved successfully!', 'success');
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1500);
+                        if (response.is_pending) {
+                            window.closeModal();
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Submission Logged',
+                                text: 'Your entry is currently pending administrative approval. You will receive a notification once the SRA is authorized.',
+                                confirmButtonColor: '#4f46e5',
+                                confirmButtonText: 'Great, Thank you!'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            showToast('Success', 'Inventory records saved successfully!', 'success');
+                            
+                            // Automatically trigger SRA (Invoice) generation
+                            if (response.batch_id) {
+                                const sraUrl = `{{ url('/received-items') }}/${response.batch_id}/sra`;
+                                window.open(sraUrl, '_blank');
+                            }
+
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
+                        }
                     }
                 },
                 error: function(xhr) {
-                    const errorMsg = xhr.responseJSON?.message || 'Something went wrong';
-                    showToast('Action Failed', errorMsg, 'error');
+                    const errorMsg = xhr.responseJSON?.message || 'A security or protocol error occurred. Please refresh and try again.';
+                    window.closeModal();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Submission Failed',
+                        text: errorMsg,
+                        confirmButtonColor: '#ef4444'
+                    });
                     btn.html(originalHtml).prop('disabled', false);
                     lucide.createIcons();
                 }
@@ -1043,9 +1063,9 @@
                     const status = $('#supplierStatusSelect').val();
                     const stockVal = parseFloat($row.find('.row-stock-balance').val()) || 0;
                     
-                    // Auto-sync qty if not a partial delivery
+                    // Auto-sync qty removed as per user request
                     if (status !== 'Partial Delivery' && $(this).hasClass('row-stock-balance')) {
-                        // Removed auto-sync line
+                        // $row.find('.row-qty').val(stockVal); 
                     }
 
                     const qtyVal = parseFloat($row.find('.row-qty').val()) || 0;

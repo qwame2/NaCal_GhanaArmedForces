@@ -13,6 +13,7 @@ class EditRequest extends Model
         'request_type',
         'reason',
         'status',
+        'payload',
     ];
 
     public function user()

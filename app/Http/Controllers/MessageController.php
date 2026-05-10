@@ -14,10 +14,20 @@ class MessageController extends Controller
         $authId = auth()->id();
         
         $messages = Message::where(function($q) use ($authId, $userId) {
-            $q->where('sender_id', $authId)->where('receiver_id', $userId);
-        })->orWhere(function($q) use ($authId, $userId) {
-            $q->where('sender_id', $userId)->where('receiver_id', $authId);
-        })->orderBy('created_at', 'asc')->get();
+            $q->where(function($sq) use ($authId, $userId) {
+                $sq->where('sender_id', $authId)->where('receiver_id', $userId);
+            })->orWhere(function($sq) use ($authId, $userId) {
+                $sq->where('sender_id', $userId)->where('receiver_id', $authId);
+            });
+        });
+
+        // Robustly filter out automated messages from the sender's perspective
+        $messages->where(function($q) use ($authId) {
+            $q->where('is_automated', false)
+              ->orWhere('receiver_id', $authId); // Explicitly show if you are the intended recipient
+        });
+
+        $messages = $messages->orderBy('created_at', 'asc')->get();
 
         return response()->json($messages);
     }

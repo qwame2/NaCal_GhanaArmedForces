@@ -548,6 +548,100 @@
         document.getElementById('filePreview').style.display = 'none';
     }
 
+    // Process SRA Creation Approval logic
+    window.processSraCreationApproval = function(id, status, btnElement) {
+        const msgInput = document.getElementById('msgContent');
+        let reason = msgInput ? msgInput.value.trim() : '';
+
+        if (status === 'rejected' && !reason) {
+            // Robustly extract info from the bubble using regex on HTML
+            const bubbleHtml = bubble.innerHTML;
+            const pMatch = bubbleHtml.match(/Personnel\s+<b>(.*?)<\/b>/i);
+            const personnel = pMatch ? pMatch[1].trim() : 'Personnel';
+            
+            const sMatch = bubbleHtml.match(/batch\s+from\s+<b>(.*?)<\/b>/i);
+            const supplier = sMatch ? sMatch[1].trim() : 'Unknown';
+            
+            const iMatch = bubbleHtml.match(/Items:<\/b>\s*(.*?)(?=<br>|<div|<\/div|$)/i);
+            const items = iMatch ? iMatch[1].trim() : 'Items';
+            
+            const summary = `REJECTION SUMMARY: SRA Request from ${personnel} (has recorded a new batch from ${supplier}) - Items: ${items}.\n\nREASON: `;
+            
+            if (msgInput) {
+                msgInput.value = summary;
+                msgInput.focus();
+                // Move cursor to end
+                msgInput.setSelectionRange(msgInput.value.length, msgInput.value.length);
+            }
+            
+            showToast('Action Required', 'Please complete the rejection summary with your reason.', 'info');
+            return;
+        }
+
+        const actionsDiv = document.getElementById(`sra-creation-actions-${id}`);
+        if (actionsDiv) {
+            const btns = actionsDiv.querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+        }
+        
+        btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        fetch(`{{ url('/sra-creation') }}/${id}/process`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ 
+                status: status,
+                reason: reason
+            })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Server error');
+            return res.json();
+        })
+        .then(data => {
+            if(data.success) {
+                const actionsDiv = document.getElementById(`sra-creation-actions-${id}`);
+                if (actionsDiv) {
+                    const color = status === 'approved' ? '#10b981' : '#dc2626';
+                    const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+                    const text = status === 'approved' ? 'APPROVED & SAVED' : 'REJECTED';
+                    let html = `<div style="padding: 10px 15px; border-radius: 10px; background: ${bgColor}; color: ${color}; font-weight: 800; border: 1px solid ${color}; display: inline-block;">${text}</div>`;
+                    
+                    if (status === 'approved' && data.batch_id) {
+                        const printUrl = `{{ url('/received-items') }}/${data.batch_id}/sra`;
+                        html += `<br><a href="${printUrl}" target="_blank" style="display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 800; font-size: 0.75rem; margin-top: 8px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">Download / Print SRA</a>`;
+                    }
+                    
+                    actionsDiv.innerHTML = html;
+
+                    // Clear the message box if it was a rejection reason
+                    if (status === 'rejected' && msgInput) {
+                        msgInput.value = '';
+                    }
+                    
+                    showToast('Success', `SRA request ${status}.`, 'success');
+                }
+            } else {
+                alert(data.message || 'Error processing request');
+                btnElement.innerText = status === 'approved' ? 'Approve & Save' : 'Reject';
+                btnElement.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('An unexpected error occurred during SRA authorization.');
+            btnElement.innerText = status === 'approved' ? 'Approve & Save' : 'Reject';
+            btnElement.disabled = false;
+        });
+    };
+
+
+
     // Process Edit Request logic
     window.processEditRequest = function(id, status, btnElement) {
         const actionsDiv = document.getElementById(`edit-req-actions-${id}`);
