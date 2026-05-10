@@ -34,6 +34,7 @@
                         <span style="color: var(--primary);">●</span> Command Center
                     </div>
                 </div>
+                <div class="unread-badge" id="badge-{{ $admin->id }}" style="display: none; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 900; min-width: 20px; height: 20px; border-radius: 10px; align-items: center; justify-content: center; padding: 0 6px; position: absolute; top: 18px; right: 20px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); border: 2px solid white; animation: badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">0</div>
             </div>
             @endforeach
 
@@ -56,6 +57,7 @@
                     <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;">{{ $colleague->name }}</div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">{{ $colleague->role ?? 'Personnel' }}</div>
                 </div>
+                <div class="unread-badge" id="badge-{{ $colleague->id }}" style="display: none; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 900; min-width: 20px; height: 20px; border-radius: 10px; align-items: center; justify-content: center; padding: 0 6px; position: absolute; top: 18px; right: 20px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); border: 2px solid white; animation: badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">0</div>
             </div>
             @endforeach
         </div>
@@ -268,7 +270,7 @@
         fetchMessages();
         
         if (pollInterval) clearInterval(pollInterval);
-        pollInterval = setInterval(fetchMessages, 5000);
+        pollInterval = setInterval(fetchMessages, 3000);
 
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
@@ -291,6 +293,28 @@
                     const isMe = msg.sender_id == {{ auth()->id() }};
                     const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     
+                    let processedMessage = msg.message;
+                    
+                    // Pre-check for expiration to prevent UI "blinking"
+                    if (processedMessage && processedMessage.includes('clearance-container')) {
+                        const expiryMatch = processedMessage.match(/data-expires-at='(\d+)'/);
+                        if (expiryMatch) {
+                            const expiresAt = parseInt(expiryMatch[1]);
+                            if (Date.now() >= expiresAt) {
+                                // Session is already expired, modify HTML before rendering
+                                processedMessage = processedMessage.replace(/class='clearance-action-btn'/g, "class='clearance-action-btn expired' style='display: inline-block; background: #94a3b8; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; pointer-events: none;'");
+                                processedMessage = processedMessage.replace(/Open Editor Now/g, "Session Expired");
+                                processedMessage = processedMessage.replace(/Delete Batch Permanently/g, "Session Expired");
+                                processedMessage = processedMessage.replace(/class='clearance-timer-notice' style='[^']*'/g, "class='clearance-timer-notice' style='background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 800; color: #ef4444; margin-bottom: 15px;'");
+                                processedMessage = processedMessage.replace(/⚠️ SECURITY NOTICE: This clearance expires in <span class='timer-seconds'>\d+<\/span>s./g, "❌ SECURITY NOTICE: This clearance has EXPIRED.");
+                            } else {
+                                // Session is active, inject correct remaining time to prevent "restart" flicker
+                                const timeLeft = Math.floor((expiresAt - Date.now()) / 1000);
+                                processedMessage = processedMessage.replace(/<span class='timer-seconds'>\d+<\/span>/, `<span class='timer-seconds'>${timeLeft}</span>`);
+                            }
+                        }
+                    }
+
                     let ticksHtml = '';
                     if (isMe) {
                         const isRead = msg.read_at != null;
@@ -308,7 +332,7 @@
                     html += `
                         <div class="comms-group ${isMe ? 'me' : 'recipient'}">
                             <div class="comms-bubble">
-                                ${msg.message ? `<span style="word-break: break-word;">${msg.message}</span>` : ''}
+                                ${processedMessage ? `<span style="word-break: break-word;">${processedMessage}</span>` : ''}
                                 ${msg.attachment ? `
                                     <a href="{{ asset('storage') }}/${msg.attachment}" target="_blank" class="attachment-pill">
                                         <i data-lucide="file-text" style="width: 16px;"></i>
@@ -324,6 +348,7 @@
                 
                 container.innerHTML = html;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
+                initClearanceTimers();
                 
                 if (wasAtBottom) {
                     container.scrollTop = container.scrollHeight;
@@ -403,6 +428,22 @@
     }
 
     function updateUnreadCounts() {
+        fetch("{{ route('api.unread-counts') }}")
+            .then(res => res.json())
+            .then(counts => {
+                document.querySelectorAll('.unread-badge').forEach(badge => {
+                    const userId = badge.id.replace('badge-', '');
+                    const count = counts[userId] || 0;
+                    
+                    if (count > 0 && userId != activeUserId) {
+                        badge.textContent = count;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                });
+            });
+
         // Sync Online Statuses
         fetch("{{ route('api.online-statuses') }}")
             .then(res => res.json())
@@ -415,7 +456,6 @@
                         dot.style.background = isOnline ? '#10b981' : '#94a3b8';
                     }
                     
-                    // Also update header dot if active
                     if (activeUserId == userId) {
                         const statusDot = document.getElementById('statusDot');
                         if (statusDot) statusDot.style.background = isOnline ? '#10b981' : '#94a3b8';
@@ -424,8 +464,76 @@
             });
     }
 
+    function initClearanceTimers() {
+        if (window.clearanceInterval) clearInterval(window.clearanceInterval);
+        
+        window.clearanceInterval = setInterval(() => {
+            const containers = document.querySelectorAll('.clearance-container');
+            if (containers.length === 0) {
+                clearInterval(window.clearanceInterval);
+                return;
+            }
+
+            containers.forEach(container => {
+                const expiresAt = parseInt(container.getAttribute('data-expires-at'));
+                const now = Date.now();
+                const timeLeft = Math.max(0, Math.floor((expiresAt - now) / 1000));
+                
+                const timerSpan = container.querySelector('.timer-seconds');
+                const actionBtn = container.querySelector('.clearance-action-btn');
+                const notice = container.querySelector('.clearance-timer-notice');
+
+                if (timeLeft <= 0) {
+                    if (timerSpan) timerSpan.innerText = '0';
+                    if (notice) {
+                        notice.style.background = 'rgba(239, 68, 68, 0.1)';
+                        notice.style.color = '#ef4444';
+                        notice.innerHTML = '❌ SECURITY NOTICE: This clearance has EXPIRED.';
+                    }
+                    if (actionBtn && !actionBtn.classList.contains('expired')) {
+                        actionBtn.classList.add('expired');
+                        actionBtn.style.background = '#94a3b8';
+                        actionBtn.style.boxShadow = 'none';
+                        actionBtn.style.pointerEvents = 'none';
+                        actionBtn.innerText = 'Session Expired';
+                        
+                        let link = container.querySelector('.request-again-link');
+                        if (!link) {
+                            link = document.createElement('a');
+                            link.href = "{{ url('/received-items') }}";
+                            link.className = 'request-again-link';
+                            link.style.display = 'block';
+                            link.style.marginTop = '10px';
+                            link.style.fontSize = '0.8rem';
+                            link.style.fontWeight = '800';
+                            link.style.color = 'var(--primary)';
+                            link.style.textDecoration = 'underline';
+                            link.innerText = 'Go to console to request again';
+                            container.appendChild(link);
+                        }
+                    }
+                } else {
+                    if (timerSpan) timerSpan.innerText = timeLeft;
+                }
+            });
+        }, 1000);
+    }
+
     // Initial counts and polling
     updateUnreadCounts();
-    setInterval(updateUnreadCounts, 10000);
+    setInterval(updateUnreadCounts, 3000);
+
+    // Add animation for badges
+    const styleBadge = document.createElement('style');
+    styleBadge.innerHTML = `
+        @keyframes badge-pop {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .network-item.active .unread-badge {
+            display: none !important;
+        }
+    `;
+    document.head.appendChild(styleBadge);
 </script>
 @endsection

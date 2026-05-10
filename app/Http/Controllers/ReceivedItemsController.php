@@ -168,6 +168,25 @@ class ReceivedItemsController extends Controller
 
     public function update(Request $request, $id)
     {
+        if (!auth()->user()->is_admin) {
+            $editReq = \App\Models\EditRequest::where('user_id', auth()->id())
+                ->where('item_id', $id)
+                ->where('item_type', 'batch')
+                ->where('request_type', 'edit')
+                ->where('status', 'approved')
+                ->latest()
+                ->first();
+
+            if (!$editReq) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized: No approved edit request found.'], 403);
+            }
+
+            $approvedAt = $editReq->approved_at ?? $editReq->updated_at;
+            if (now()->diffInSeconds($approvedAt) > 3600) {
+                return response()->json(['success' => false, 'message' => 'Security clearance expired (1-hour limit exceeded).'], 403);
+            }
+        }
+
         $validated = $request->validate([
             'ledge_category' => 'required|string',
             'supplier_name' => 'nullable|string',
@@ -344,6 +363,25 @@ class ReceivedItemsController extends Controller
 
     public function destroy($id)
     {
+        if (!auth()->user()->is_admin) {
+            $editReq = \App\Models\EditRequest::where('user_id', auth()->id())
+                ->where('item_id', $id)
+                ->where('item_type', 'batch')
+                ->where('request_type', 'delete')
+                ->where('status', 'approved')
+                ->latest()
+                ->first();
+
+            if (!$editReq) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized: No approved delete request found.'], 403);
+            }
+
+            $approvedAt = $editReq->approved_at ?? $editReq->updated_at;
+            if (now()->diffInSeconds($approvedAt) > 3600) {
+                return response()->json(['success' => false, 'message' => 'Security clearance expired (1-hour limit exceeded).'], 403);
+            }
+        }
+
         try {
             $batch = InventoryBatch::findOrFail($id);
             $batchId = $batch->id;

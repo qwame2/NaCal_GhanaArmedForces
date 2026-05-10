@@ -11,7 +11,6 @@ $response = $kernel->handle(
 
 try {
     Artisan::call('migrate', [
-        '--path' => 'database/migrations/2026_05_08_221800_add_request_type_to_edit_requests.php',
         '--force' => true
     ]);
     echo "Migration Successful:<br><pre>" . Artisan::output() . "</pre>";

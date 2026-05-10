@@ -443,10 +443,7 @@
                         <i data-lucide="edit-3"></i>
                         Edit Entry
                     </button>
-                    <button onclick="window.open('/received-items/{{ $item->batch_id }}/sra', '_blank')" class="menu-item" style="color: #6366f1;">
-                        <i data-lucide="file-text"></i>
-                        Generate SRA
-                    </button>
+
                     <div style="height: 1px; background: var(--border-color); margin: 4px 10px; opacity: 0.5;"></div>
                     <button onclick="deleteBatch('{{ $item->batch_id }}')" class="menu-item" style="color: #ef4444;">
                         <i data-lucide="trash-2"></i>
@@ -598,9 +595,7 @@
                 <button onclick="printModal()" class="btn-icon" title="Print Details">
                     <i data-lucide="printer" style="width: 18px;"></i>
                 </button>
-                <button id="modalSraBtn" class="btn-icon" title="Generate SRA" style="color: #6366f1;">
-                    <i data-lucide="file-text" style="width: 18px;"></i>
-                </button>
+
                 <button onclick="closeModal()" class="btn-icon danger" title="Close">
                     <i data-lucide="x" style="width: 18px;"></i>
                 </button>
@@ -1835,10 +1830,7 @@
     function openModal(batchId) {
         currentBatchId = batchId;
         const modal = document.getElementById('detailModal');
-        const sraBtn = document.getElementById('modalSraBtn');
-        if (sraBtn) {
-            sraBtn.onclick = () => window.open(`/received-items/${batchId}/sra`, '_blank');
-        }
+
         const modalContent = modal.querySelector('.modal-content');
         const modalBody = document.getElementById('modalBody');
         const modalSubtitle = document.getElementById('modalSubtitle');
@@ -2471,6 +2463,17 @@
             if (!checkData.allowed) {
                 if (checkData.status === 'pending') {
                     Swal.fire('Session Pending', 'A deletion request for this record is currently awaiting administrative authorization.', 'info');
+                    return;
+                } else if (checkData.status === 'expired') {
+                    Swal.fire({
+                        title: 'Clearance Expired',
+                        text: 'Your 62-second security clearance window has closed. You must re-authenticate with the overseer.',
+                        icon: 'error',
+                        showCancelButton: true,
+                        confirmButtonText: 'Request New Clearance'
+                    }).then((result) => {
+                        if (result.isConfirmed) promptActionReason(batchId, 'delete');
+                    });
                     return;
                 } else if (checkData.status === 'canceled') {
                     Swal.fire({
@@ -3114,9 +3117,19 @@ function openEditBatchModal(batchId) {
         .then(data => {
             if (data.allowed) {
                 // Open modal normally
-                _openEditBatchModal(batchId);
+                _openEditBatchModal(batchId, data.expires_in);
             } else if (data.status === 'pending') {
                 Swal.fire('Pending', 'Your request to edit this batch is pending admin approval.', 'info');
+            } else if (data.status === 'expired') {
+                Swal.fire({
+                    title: 'Access Expired',
+                    text: 'Your 62-second editing session has expired. Please request new authorization.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Request Again'
+                }).then((result) => {
+                    if (result.isConfirmed) promptEditReason(batchId);
+                });
             } else if (data.status === 'canceled') {
                 Swal.fire({
                     title: 'Request Canceled',
@@ -3196,8 +3209,15 @@ function promptActionReason(batchId, type = 'edit') {
     });
 }
 
-function _openEditBatchModal(batchId) {
+function _openEditBatchModal(batchId, expiresIn = 62) {
     currentEditBatchId = batchId;
+    
+    // Timer stopped as per user request once editor is accessed
+    const saveBtn = document.getElementById('saveEditBtn');
+    saveBtn.disabled = false;
+    saveBtn.style.background = 'var(--primary)';
+    saveBtn.innerHTML = '<i data-lucide="save" style="width: 18px;"></i> Save Changes';
+
     const modal = document.getElementById('editBatchModal');
     const loader = document.getElementById('editModalLoader');
     const content = document.getElementById('editModalContent');
@@ -3312,6 +3332,15 @@ function _openEditBatchModal(batchId) {
 }
 
 function closeEditBatchModal() {
+    if (currentEditBatchId) {
+        fetch(`{{ url('/edit-requests/complete') }}/${currentEditBatchId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        });
+    }
     document.getElementById('editBatchModal').style.display = 'none';
 }
 
@@ -3497,26 +3526,42 @@ function submitEditBatch() {
 // Auto-open editor if directed from messages
 (function() {
     const params = new URLSearchParams(window.location.search);
-    const batchId = params.get('edit_batch');
-    if (batchId) {
-        // Clear param immediately for clean UX
-        const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-        window.history.replaceState({path:cleanUrl}, '', cleanUrl);
+        const editId = params.get('edit_batch');
+        const deleteId = params.get('delete_batch');
 
-        console.log("Auto-opening edit modal for batch:", batchId);
-        
-        let attempts = 0;
-        const loader = setInterval(() => {
-            if (typeof window.openEditBatchModal === 'function') {
-                clearInterval(loader);
-                window.openEditBatchModal(batchId);
-            } else if (attempts > 50) { // 5 seconds max
-                clearInterval(loader);
-                console.error("Critical: openEditBatchModal function not found.");
+        if (editId || deleteId) {
+            // Clear params immediately for clean UX
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.replaceState({path:cleanUrl}, '', cleanUrl);
+
+            if (editId) {
+                console.log("Auto-opening edit modal for batch:", editId);
+                let attempts = 0;
+                const loader = setInterval(() => {
+                    if (typeof window.openEditBatchModal === 'function') {
+                        clearInterval(loader);
+                        window.openEditBatchModal(editId);
+                    } else if (attempts > 50) {
+                        clearInterval(loader);
+                    }
+                    attempts++;
+                }, 100);
             }
-            attempts++;
-        }, 100);
-    }
+
+            if (deleteId) {
+                console.log("Auto-triggering delete for batch:", deleteId);
+                let attempts = 0;
+                const loader = setInterval(() => {
+                    if (typeof window.deleteBatch === 'function') {
+                        clearInterval(loader);
+                        window.deleteBatch(deleteId);
+                    } else if (attempts > 50) {
+                        clearInterval(loader);
+                    }
+                    attempts++;
+                }, 100);
+            }
+        }
 })();
 </script>
 @endsection

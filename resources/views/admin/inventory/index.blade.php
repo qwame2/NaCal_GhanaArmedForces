@@ -22,12 +22,6 @@
 <div class="animate-slide-up">
     <div class="page-header" style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 0.5rem;">
-                <div style="width: 32px; height: 32px; background: var(--primary-glow); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                    <i data-lucide="package" style="width: 18px;"></i>
-                </div>
-                <span style="font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em;">Master Ledger</span>
-            </div>
             <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-heading); margin: 0;">Operational <span style="color: var(--primary);">Oversight</span></h2>
             <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500; margin-top: 0.5rem;">Unified view of all received, issued, and returned inventory assets.</p>
         </div>
@@ -39,10 +33,6 @@
                 <i data-lucide="filter" style="width: 14px; color: #e11d48;"></i>
             </div>
             @endif
-            <div class="live-status" style="background: white; border: 1px solid #edf2f7; padding: 10px 20px; border-radius: 14px; box-shadow: var(--shadow-luxe);">
-                <div class="pulse-dot"></div>
-                <span style="font-size: 0.75rem; font-weight: 800; color: #10b981;">AUDIT MODE ACTIVE</span>
-            </div>
         </div>
     </div>
 
@@ -73,6 +63,8 @@
                     const from = document.getElementsByName('date_from')[0].value;
                     const to = document.getElementsByName('date_to')[0].value;
                     
+                    const perPage = document.getElementsByName('per_page')[0].value;
+                    
                     const container = document.getElementById('oversight-container');
                     if (!container) return;
 
@@ -85,6 +77,7 @@
                     url.searchParams.set('category', cat);
                     url.searchParams.set('date_from', from);
                     url.searchParams.set('date_to', to);
+                    url.searchParams.set('per_page', perPage);
 
                     fetch(url, {
                         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -239,9 +232,27 @@
                 <button type="submit" class="audit-btn" style="background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 16px rgba(79, 70, 229, 0.2);">
                     <i data-lucide="zap" style="width: 16px;"></i> Audit
                 </button>
-                <a href="{{ route('admin.inventory') }}" style="width: 44px; height: 44px; background: #f8fafc; color: #94a3b8; border: 1px solid #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.3s;" title="Reset Ledger">
+                <a href="{{ route('admin.inventory') }}" style="width: 44px; height: 44px; background: #f8fafc; color: #94a3b8; border: 1px solid #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.3s; margin-right: 8px;" title="Reset Ledger">
                     <i data-lucide="rotate-ccw" style="width: 18px;"></i>
                 </a>
+
+                <!-- Per Page Dropdown -->
+                <div style="display: flex; align-items: center; gap: 10px; border-left: 1px solid #f1f5f9; padding-left: 1.5rem;">
+                    <div class="per-page-capsule" style="display: flex; align-items: center; gap: 6px; background: white; padding: 6px 14px; border-radius: 14px; border: 1.5px solid #eef2ff; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.04); transition: all 0.3s ease;">
+                        <div style="width: 24px; height: 24px; background: #eef2ff; color: #4f46e5; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="layers" style="width: 14px;"></i>
+                        </div>
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-size: 0.55rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1;">Show</span>
+                            <select name="per_page" onchange="performLiveUpdate()" 
+                                style="background: transparent; border: none; font-size: 0.85rem; font-weight: 900; color: #1e293b; outline: none; cursor: pointer; padding: 0 18px 0 0; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%234f46e5%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right center; background-size: 10px;">
+                                @foreach([15, 30, 50, 100] as $cp)
+                                    <option value="{{ $cp }}" {{ request('per_page', 15) == $cp ? 'selected' : '' }}>{{ $cp }} Records</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
@@ -363,6 +374,28 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Pagination Module -->
+            <div style="padding: 1.5rem 2rem; background: #fafcff; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.85rem; color: #64748b; font-weight: 700;">
+                    Showing <span style="color: #0f172a; font-weight: 900;">{{ $receivedItems->firstItem() ?? 0 }}</span> to 
+                    <span style="color: #0f172a; font-weight: 900;">{{ $receivedItems->lastItem() ?? 0 }}</span> of 
+                    <span style="color: #0f172a; font-weight: 900;">{{ $receivedItems->total() }}</span> Records
+                </div>
+                <div class="custom-pagination">
+                    @if ($receivedItems->onFirstPage())
+                        <span class="page-btn disabled">Previous</span>
+                    @else
+                        <a href="{{ $receivedItems->appends(request()->query())->previousPageUrl() }}" class="page-btn">Previous</a>
+                    @endif
+
+                    @if ($receivedItems->hasMorePages())
+                        <a href="{{ $receivedItems->appends(request()->query())->nextPageUrl() }}" class="page-btn">Next</a>
+                    @else
+                        <span class="page-btn disabled">Next</span>
+                    @endif
+                </div>
             </div>
         </div>
 
@@ -522,6 +555,38 @@
     .type-tag.permanent { background: #eef2ff; color: #4f46e5; }
     .type-tag.temporary { background: #fffbeb; color: #f59e0b; }
     .type-tag.consumption { background: #ecfdf5; color: #10b981; }
+
+    /* Custom Pagination Styling */
+    .custom-pagination {
+        display: flex;
+        gap: 8px;
+    }
+    .page-btn {
+        padding: 0.5rem 1.25rem;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        color: var(--primary);
+        font-weight: 800;
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .page-btn:hover:not(.disabled) {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+    .page-btn.disabled {
+        background: #f8fafc;
+        color: #94a3b8;
+        border-color: #e2e8f0;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
 </style>
 
 <script>

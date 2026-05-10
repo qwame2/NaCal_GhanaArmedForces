@@ -13,19 +13,20 @@ use App\Models\ReturnedItem;
 
 class AdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (!auth()->user()->is_admin) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access to Command Center.');
         }
 
-        // Only fetch Standard Personnel for oversight
-        $users = User::where('is_admin', false)->get();
+        $perPage = $request->input('per_page', 10);
+        $users = User::where('is_admin', false)->paginate($perPage);
         $totalUsers = User::where('is_admin', false)->count();
+        $onlineCount = User::where('is_admin', false)->where('is_online', true)->count();
         $allUsers = User::all(); // Keep for calculating global metrics if needed
         $recentLogins = User::where('is_admin', false)->orderBy('last_login_at', 'desc')->limit(100)->get();
         
-        return view('admin.index', compact('users', 'totalUsers', 'allUsers', 'recentLogins'));
+        return view('admin.index', compact('users', 'totalUsers', 'allUsers', 'recentLogins', 'onlineCount'));
     }
 
     public function updateUser(Request $request, $id)
@@ -242,11 +243,11 @@ class AdminController extends Controller
             $query->whereDate('inventory_batches.entry_date', '<=', $request->date_to);
         }
 
-        $receivedItems = $query->orderBy('inventory_batches.entry_date', 'desc')->get();
+        $partialQuery = clone $query;
+        $partialCount = $partialQuery->where('inventory_batches.supplier_name', 'LIKE', '%[Partial Deliv%')->count();
 
-        $partialCount = $receivedItems->filter(function($item) {
-            return preg_match('/\[Partial Deliv/i', $item->supplier_name);
-        })->count();
+        $perPage = $request->input('per_page', 15);
+        $receivedItems = $query->orderBy('inventory_batches.entry_date', 'desc')->paginate($perPage);
 
         // Fetch aggregate totals for item status display (System Health metrics)
         $itemAggregates = InventoryItem::selectRaw('description, SUM(qty) as total_received_qty, SUM(stock_balance) as total_available, SUM(variance) as total_variance')

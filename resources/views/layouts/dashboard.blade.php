@@ -29,7 +29,7 @@
             }
         }
     </style>
-    <title>Narcotics Control Commission | Advanced Inventory System</title>
+    <title>NACOC | Advanced Inventory System</title>
 
     <!-- CSS -->
     <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
@@ -75,7 +75,7 @@
                     onmouseout="this.style.transform='rotateY(-15deg) rotateX(5deg) translateZ(10px)'">
             </div>
             <div>
-                <h1 style="font-size: 1.25rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1.2; max-width: 150px;">Narcotics Control Commission</h1>
+                <h1 style="font-size: 1.25rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1.2; max-width: 150px;">NACOC</h1>
                 <div class="sidebar-branding-subtitle" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; opacity: 0.8;">Inventory Management System</div>
             </div>
         </div>

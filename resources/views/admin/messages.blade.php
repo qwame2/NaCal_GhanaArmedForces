@@ -33,7 +33,7 @@
                     <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;">{{ $user->name }}</div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">{{ $user->role }}</div>
                 </div>
-                <div class="unread-badge" id="badge-{{ $user->id }}" style="display: none; background: var(--primary); color: white; font-size: 0.7rem; font-weight: 900; min-width: 20px; height: 20px; border-radius: 10px; align-items: center; justify-content: center; padding: 0 5px; position: absolute; top: 15px; right: 15px; box-shadow: 0 4px 10px var(--primary-glow);">0</div>
+                <div class="unread-badge" id="badge-{{ $user->id }}" style="display: none; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 900; min-width: 20px; height: 20px; border-radius: 10px; align-items: center; justify-content: center; padding: 0 6px; position: absolute; top: 18px; right: 20px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); border: 2px solid white; animation: badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">0</div>
             </div>
             @empty
             <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
@@ -377,7 +377,7 @@
         fetchMessages();
         
         if (pollInterval) clearInterval(pollInterval);
-        pollInterval = setInterval(fetchMessages, 5000);
+        pollInterval = setInterval(fetchMessages, 3000);
 
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
@@ -397,6 +397,11 @@
                 let html = '';
 
                 data.forEach(msg => {
+                    // Skip messages that are automated OR marked strictly for personnel
+                    if (msg.is_automated || (msg.message && msg.message.includes('personnel-view') && !msg.message.includes('admin-view'))) {
+                        return;
+                    }
+
                     const isMe = msg.sender_id == {{ auth()->id() }};
                     const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     
@@ -433,6 +438,7 @@
                 
                 container.innerHTML = html;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
+                initClearanceTimers();
                 
                 if (wasAtBottom) {
                     container.scrollTop = container.scrollHeight;
@@ -687,8 +693,61 @@
         });
     };
 
+    function initClearanceTimers() {
+        if (window.clearanceInterval) clearInterval(window.clearanceInterval);
+        
+        window.clearanceInterval = setInterval(() => {
+            const containers = document.querySelectorAll('.clearance-container');
+            if (containers.length === 0) {
+                clearInterval(window.clearanceInterval);
+                return;
+            }
+
+            containers.forEach(container => {
+                const expiresAt = parseInt(container.getAttribute('data-expires-at'));
+                const now = Date.now();
+                const timeLeft = Math.max(0, Math.floor((expiresAt - now) / 1000));
+                
+                const timerSpan = container.querySelector('.timer-seconds');
+                const actionBtn = container.querySelector('.clearance-action-btn');
+                const notice = container.querySelector('.clearance-timer-notice');
+
+                if (timeLeft <= 0) {
+                    if (timerSpan) timerSpan.innerText = '0';
+                    if (notice) {
+                        notice.style.background = 'rgba(239, 68, 68, 0.1)';
+                        notice.style.color = '#ef4444';
+                        notice.innerHTML = '❌ SECURITY NOTICE: This clearance has EXPIRED.';
+                    }
+                    if (actionBtn && !actionBtn.classList.contains('expired')) {
+                        actionBtn.classList.add('expired');
+                        actionBtn.style.background = '#94a3b8';
+                        actionBtn.style.boxShadow = 'none';
+                        actionBtn.style.pointerEvents = 'none';
+                        actionBtn.innerText = 'SESSION EXPIRED';
+                    }
+                } else {
+                    if (timerSpan) timerSpan.innerText = timeLeft;
+                }
+            });
+        }, 1000);
+    }
+
     // Initial counts and polling
     updateUnreadCounts();
-    countInterval = setInterval(updateUnreadCounts, 10000);
+    setInterval(updateUnreadCounts, 3000);
+
+    // Add animation for badges
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes badge-pop {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .network-item.active .unread-badge {
+            display: none !important;
+        }
+    `;
+    document.head.appendChild(style);
 </script>
 @endsection

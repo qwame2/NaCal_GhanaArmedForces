@@ -14,10 +14,6 @@
                 <i data-lucide="trash-2" style="width: 18px;"></i>
                 Delete Selected
             </button>
-            <button onclick="window.print()" class="btn-secondary" style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 0.75rem 1.5rem; border-radius: 12px; color: var(--text-main); font-weight: 700; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: var(--transition);">
-                <i data-lucide="printer" style="width: 18px;"></i>
-                Export Logs
-            </button>
         </div>
     </div>
 
@@ -33,24 +29,38 @@
             @if(request('per_page'))
                 <input type="hidden" name="per_page" value="{{ request('per_page') }}">
             @endif
-            <div style="flex: 1; min-width: 200px;">
-                <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Severity Level</label>
-                <select name="severity" onchange="this.form.submit()" style="width: 100%; background: white; border: 1px solid #e2e8f0; padding: 0.85rem 1rem; border-radius: 12px; color: var(--text-main); font-weight: 600; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79,70,229,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'">
-                    <option value="">All Severities</option>
-                    <option value="info" {{ request('severity') == 'info' ? 'selected' : '' }}>Information</option>
-                    <option value="warning" {{ request('severity') == 'warning' ? 'selected' : '' }}>Warning</option>
-                    <option value="danger" {{ request('severity') == 'danger' ? 'selected' : '' }}>Critical</option>
-                </select>
+            <div style="flex: 1; min-width: 240px;">
+                <div style="background: white; border: 1.5px solid #edf2f7; padding: 10px 18px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 8px 20px rgba(79,70,229,0.06)'" onmouseout="this.style.borderColor='#edf2f7'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.02)'">
+                    <div style="width: 36px; height: 36px; background: #fff1f2; color: #ef4444; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="alert-circle" style="width: 18px;"></i>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <label style="font-size: 0.6rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Severity Level</label>
+                        <select name="severity" onchange="this.form.submit()" style="width: 100%; background: transparent; border: none; padding: 0 20px 0 0; color: var(--text-main); font-weight: 800; font-size: 0.95rem; outline: none; cursor: pointer; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right center; background-size: 14px;">
+                            <option value="">All Severities</option>
+                            <option value="info" {{ request('severity') == 'info' ? 'selected' : '' }}>Information</option>
+                            <option value="warning" {{ request('severity') == 'warning' ? 'selected' : '' }}>Warning</option>
+                            <option value="danger" {{ request('severity') == 'danger' ? 'selected' : '' }}>Critical</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-            <div style="flex: 1; min-width: 200px;">
-                <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Event Category</label>
-                <select name="event_type" onchange="this.form.submit()" style="width: 100%; background: white; border: 1px solid #e2e8f0; padding: 0.85rem 1rem; border-radius: 12px; color: var(--text-main); font-weight: 600; outline: none; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 3px rgba(79,70,229,0.1)'" onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'">
-                    <option value="">All Categories</option>
-                    <option value="SECURITY" {{ request('event_type') == 'SECURITY' ? 'selected' : '' }}>Security</option>
-                    <option value="INVENTORY" {{ request('event_type') == 'INVENTORY' ? 'selected' : '' }}>Inventory</option>
-                    <option value="AUTH" {{ request('event_type') == 'AUTH' ? 'selected' : '' }}>Authentication</option>
-                    <option value="SYSTEM" {{ request('event_type') == 'SYSTEM' ? 'selected' : '' }}>System</option>
-                </select>
+            <div style="flex: 1; min-width: 240px;">
+                <div style="background: white; border: 1.5px solid #edf2f7; padding: 10px 18px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 8px 20px rgba(79,70,229,0.06)'" onmouseout="this.style.borderColor='#edf2f7'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.02)'">
+                    <div style="width: 36px; height: 36px; background: #eef2ff; color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="layers" style="width: 18px;"></i>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <label style="font-size: 0.6rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Event Category</label>
+                        <select name="event_type" onchange="this.form.submit()" style="width: 100%; background: transparent; border: none; padding: 0 20px 0 0; color: var(--text-main); font-weight: 800; font-size: 0.95rem; outline: none; cursor: pointer; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right center; background-size: 14px;">
+                            <option value="">All Categories</option>
+                            <option value="SECURITY" {{ request('event_type') == 'SECURITY' ? 'selected' : '' }}>Security</option>
+                            <option value="INVENTORY" {{ request('event_type') == 'INVENTORY' ? 'selected' : '' }}>Inventory</option>
+                            <option value="AUTH" {{ request('event_type') == 'AUTH' ? 'selected' : '' }}>Authentication</option>
+                            <option value="SYSTEM" {{ request('event_type') == 'SYSTEM' ? 'selected' : '' }}>System</option>
+                        </select>
+                    </div>
+                </div>
             </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
                 <button type="submit" class="btn-primary" style="padding: 0.85rem 2rem; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(79,70,229,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(79,70,229,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(79,70,229,0.2)'">

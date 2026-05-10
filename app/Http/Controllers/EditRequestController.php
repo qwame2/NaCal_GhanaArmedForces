@@ -43,15 +43,35 @@ class EditRequestController extends Controller
             $typeLabel = strtoupper($requestType);
             $actionWord = $requestType === 'edit' ? 'edit' : 'PERMANENTLY DELETE';
             
-            $msgContent = "<style>.admin-only { display: none !important; } .admin-view { display: block !important; } .personnel-view { display: none !important; }</style>";
-            $msgContent .= "<div class='edit-req-msg admin-view' style='display:none;'><b>{$typeLabel} REQUEST</b><br>Personnel " . auth()->user()->name . " has requested to {$actionWord} {$displayTitle}.<br><br><b>Reason:</b> {$request->reason}<br><br>";
-            $msgContent .= "<div style='margin-top: 10px; display: flex; gap: 10px;' id='edit-req-actions-{$editReq->id}'>";
-            $msgContent .= "<button onclick='window.processEditRequest({$editReq->id}, \"approved\", this)' style='background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold;'>Approve</button>";
-            $msgContent .= "<button onclick='window.processEditRequest({$editReq->id}, \"canceled\", this)' style='background: #dc2626; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold;'>Cancel</button>";
-            $msgContent .= "</div></div>";
+            $msgContent = "
+                <div class='edit-req-msg admin-view' style='padding: 20px; background: rgba(79, 70, 229, 0.03); border-radius: 16px; border: 1px solid rgba(79, 70, 229, 0.1); font-family: inherit;'>
+                    <div style='display: flex; align-items: center; gap: 8px; margin-bottom: 15px;'>
+                        <div style='width: 8px; height: 8px; background: #4f46e5; border-radius: 50%;'></div>
+                        <b style='font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #4f46e5;'>{$typeLabel} AUTHORIZATION REQUIRED</b>
+                    </div>
+                    
+                    <div style='font-size: 0.9rem; color: #1e293b; line-height: 1.6; margin-bottom: 15px;'>
+                        Personnel <b style='color: #4f46e5;'>{$editReq->user->name}</b> is requesting permission to 
+                        <b style='color: " . ($requestType === 'delete' ? '#ef4444' : '#4f46e5') . ";'>{$actionWord}</b> 
+                        <span style='background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: 700;'>{$displayTitle}</span>
+                    </div>
+
+                    <div style='background: white; padding: 12px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.05); margin-bottom: 20px;'>
+                        <div style='font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 4px;'>Justification</div>
+                        <div style='font-size: 0.85rem; color: #334155; line-height: 1.5;'>" . e($request->reason) . "</div>
+                    </div>
+
+                    <div style='display: flex; gap: 10px;' id='edit-req-actions-{$editReq->id}'>
+                        <button onclick='window.processEditRequest({$editReq->id}, \"approved\", this)' style='flex: 1; background: #10b981; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 800; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: 0.3s;'>Approve</button>
+                        <button onclick='window.processEditRequest({$editReq->id}, \"canceled\", this)' style='background: #f1f5f9; color: #64748b; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 800; transition: 0.3s;'>Decline</button>
+                    </div>
+                </div>";
             
             $personnelLabel = $requestType === 'edit' ? 'EDIT' : 'DELETE';
-            $msgContent .= "<div class='edit-req-msg personnel-view' style='display:none;'><b>{$personnelLabel} REQUEST SUBMITTED</b><br>Waiting for approval from admin to {$actionWord} {$displayTitle}.<br><br><b>Your Reason:</b> {$request->reason}</div>";
+            $msgContent .= "<div class='edit-req-msg personnel-view' style='display:none; padding: 15px; border-radius: 12px; background: rgba(79, 70, 229, 0.05); border: 1px dashed #4f46e5;'>
+                <b style='color: #4f46e5;'>{$personnelLabel} REQUEST LOGGED</b><br>
+                Waiting for strategic authorization from Command to {$actionWord} {$displayTitle}.
+            </div>";
 
             Message::create([
                 'sender_id' => auth()->id(),
@@ -76,9 +96,14 @@ class EditRequestController extends Controller
         }
 
         $editReq->status = $request->status;
+        if ($request->status === 'approved') {
+            $editReq->approved_at = now();
+        }
         $editReq->save();
 
         $requestType = $editReq->request_type ?? 'edit';
+        $typeLabel = strtoupper($requestType);
+        $actionWord = $requestType === 'edit' ? 'edit' : 'PERMANENTLY DELETE';
         $statusText = $request->status === 'approved' ? 'APPROVED' : 'CANCELED';
         $color = $request->status === 'approved' ? '#10b981' : '#dc2626';
 
@@ -90,10 +115,32 @@ class EditRequestController extends Controller
             if ($item && $item->items->count() > 3) $itemNames .= ' etc.';
             
             $batchInfo = $item ? "Batch #{$item->id} ({$itemNames})" : "Batch #{$editReq->item_id}";
-            $typeLabel = strtoupper($requestType);
-            $actionWord = $requestType === 'edit' ? 'edit' : 'PERMANENTLY DELETE';
+            $statusColor = $request->status === 'approved' ? '#10b981' : '#ef4444';
+            $statusBg = $request->status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
             
-            $newContent = "<div class='edit-req-msg admin-view'><b>{$typeLabel} REQUEST</b><br>Personnel " . $editReq->user->name . " requested to {$actionWord} {$batchInfo}.<br><br><b>Reason:</b> {$editReq->reason}<br><br><div style='padding: 8px 12px; border-radius: 8px; background: " . ($request->status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)') . "; color: {$color}; font-weight: 800; border: 1px solid {$color}; display: inline-block;'>Request {$statusText}</div></div>";
+            $newContent = "
+                <div class='edit-req-msg admin-view' style='padding: 20px; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0;'>
+                    <div style='display: flex; align-items: center; gap: 8px; margin-bottom: 12px;'>
+                        <div style='width: 8px; height: 8px; background: #64748b; border-radius: 50%;'></div>
+                        <b style='font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b;'>{$typeLabel} REQUEST LOG</b>
+                    </div>
+                    
+                    <div style='font-size: 0.9rem; color: #475569; line-height: 1.6; margin-bottom: 12px;'>
+                        Personnel <b>{$editReq->user->name}</b>'s request to 
+                        <b style='color: " . ($requestType === 'delete' ? '#ef4444' : '#4f46e5') . ";'>{$actionWord}</b> 
+                        <span style='font-family: monospace; font-weight: 700;'>{$batchInfo}</span>.
+                    </div>
+
+                    <div style='background: white; padding: 10px; border-radius: 8px; border: 1px solid #f1f5f9; margin-bottom: 15px; font-size: 0.85rem; color: #64748b;'>
+                        <b>Reason:</b> " . e($editReq->reason) . "
+                    </div>
+
+                    <div style='padding: 10px 15px; border-radius: 8px; background: {$statusBg}; color: {$statusColor}; font-weight: 800; border: 1px solid {$statusColor}; display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem;'>
+                        <div style='width: 6px; height: 6px; background: {$statusColor}; border-radius: 50%;'></div>
+                        REQUEST " . strtoupper($statusText) . "
+                    </div>
+                </div>";
+            
             $originalMsg->update(['message' => $newContent]);
         }
 
@@ -102,22 +149,54 @@ class EditRequestController extends Controller
         $itemNames = $item ? $item->items->pluck('description')->take(3)->implode(', ') : 'Unknown';
         if ($item && $item->items->count() > 3) $itemNames .= ' etc.';
         $batchInfo = $item ? "Batch #{$item->id} ({$itemNames})" : "Batch #{$editReq->item_id}";
-        $confirmationMsg = "<b style='color: {$color}'>{$statusText}</b><br>Your request to " . ($requestType === 'edit' ? 'edit' : 'DELETE') . " {$batchInfo} has been {$request->status}.";
+        $confirmationMsg = "<div class='personnel-view' style='display: none;'><b style='color: {$color}'>{$statusText}</b><br>Your request to " . ($requestType === 'edit' ? 'edit' : 'DELETE') . " {$batchInfo} has been {$request->status}.</div>";
         
         if ($request->status === 'approved' && $requestType === 'edit') {
             $editUrl = route('receiveditems', ['edit_batch' => $editReq->item_id]);
-            $confirmationMsg .= "<div class='personnel-view' style='display:none;'><br><a href='{$editUrl}' style='display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);'>Open Editor Now</a></div>";
+            $expiry = now()->addSeconds(62)->getTimestampMs();
+            $confirmationMsg = "
+                <div class='clearance-container personnel-view' data-expires-at='{$expiry}' data-req-id='{$editReq->id}' data-type='edit' style='display: none; padding: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid #10b981; border-radius: 16px;'>
+                    <b style='color: #10b981; font-size: 1.1rem;'>APPROVED</b><br>
+                    Your request to <b style='color: #4f46e5;'>EDIT</b> {$batchInfo} has been approved.<br><br>
+                    <div class='clearance-timer-notice' style='background: rgba(245, 158, 11, 0.1); padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 800; color: #d97706; margin-bottom: 15px;'>
+                        ⚠️ SECURITY NOTICE: This clearance expires in <span class='timer-seconds'>62</span>s.
+                    </div>
+                    <a href='{$editUrl}' class='clearance-action-btn' style='display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);'>Open Editor Now</a>
+                </div>";
         } elseif ($request->status === 'approved' && $requestType === 'delete') {
-            $confirmationMsg .= "<br><br><i style='color: #ef4444; font-size: 0.85rem; font-weight: 700;'>You may now proceed to delete this batch from the Received Items console.</i>";
+            $deleteUrl = route('receiveditems', ['delete_batch' => $editReq->item_id]);
+            $expiry = now()->addSeconds(62)->getTimestampMs();
+            $confirmationMsg = "
+                <div class='clearance-container personnel-view' data-expires-at='{$expiry}' data-req-id='{$editReq->id}' data-type='delete' style='display: none; padding: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid #10b981; border-radius: 16px;'>
+                    <b style='color: #10b981; font-size: 1.1rem;'>APPROVED</b><br>
+                    Your request to <b style='color: #ef4444;'>DELETE</b> {$batchInfo} has been approved.<br><br>
+                    You may now proceed to delete this batch from the Received Items console.<br><br>
+                    <div class='clearance-timer-notice' style='background: rgba(245, 158, 11, 0.1); padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 800; color: #d97706; margin-bottom: 15px;'>
+                        ⚠️ SECURITY NOTICE: This clearance expires in <span class='timer-seconds'>62</span>s.
+                    </div>
+                    <a href='{$deleteUrl}' class='clearance-action-btn' style='display: inline-block; background: #ef4444; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);'>Delete Batch Permanently</a>
+                </div>";
         }
 
         Message::create([
             'sender_id' => auth()->id(),
             'receiver_id' => $editReq->user_id,
-            'message' => $confirmationMsg
+            'message' => $confirmationMsg,
+            'is_automated' => true
         ]);
 
         if (ob_get_length()) ob_clean();
+        return response()->json(['success' => true]);
+    }
+
+    public function complete($itemId)
+    {
+        EditRequest::where('user_id', auth()->id())
+            ->where('item_id', $itemId)
+            ->where('item_type', 'batch')
+            ->where('status', 'approved')
+            ->update(['status' => 'completed', 'approved_at' => null]);
+
         return response()->json(['success' => true]);
     }
 
@@ -141,7 +220,22 @@ class EditRequestController extends Controller
         }
 
         if ($editReq->status === 'approved') {
-            return response()->json(['allowed' => true, 'status' => 'approved']);
+            $approvedAt = $editReq->approved_at ?? $editReq->updated_at;
+            $secondsSinceApproval = now()->diffInSeconds($approvedAt);
+            
+            if ($secondsSinceApproval <= 62) {
+                return response()->json([
+                    'allowed' => true, 
+                    'status' => 'approved',
+                    'expires_in' => 62 - $secondsSinceApproval
+                ]);
+            } else {
+                return response()->json([
+                    'allowed' => false, 
+                    'status' => 'expired',
+                    'message' => 'Your 62-second security clearance has expired. Please request a new authorization.'
+                ]);
+            }
         }
 
         if (ob_get_length()) ob_clean();

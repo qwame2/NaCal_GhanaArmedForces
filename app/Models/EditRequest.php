@@ -14,6 +14,7 @@ class EditRequest extends Model
         'reason',
         'status',
         'payload',
+        'approved_at',
     ];
 
     public function user()

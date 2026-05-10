@@ -23,9 +23,6 @@
             </div>
             <div class="metric-data">
                 <span class="m-label">Live Operations</span>
-                @php
-                    $onlineCount = $users->where('is_online', true)->count();
-                @endphp
                 <h3 class="m-value">{{ $onlineCount }}</h3>
                 <div class="m-trend" style="color: #10b981;">
                     <span class="pulse-mini"></span>
@@ -160,6 +157,39 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
+        
+        <!-- Precision Pagination Module -->
+        <div class="registry-pagination" style="padding: 2rem 3rem; background: #fafcff; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="font-size: 0.85rem; color: #64748b; font-weight: 700; display: flex; align-items: center; gap: 1.5rem;">
+                <div>
+                    Showing <span style="color: #0f172a; font-weight: 900;">{{ $users->firstItem() ?? 0 }}</span> to 
+                    <span style="color: #0f172a; font-weight: 900;">{{ $users->lastItem() ?? 0 }}</span> of 
+                    <span style="color: #0f172a; font-weight: 900;">{{ $users->total() }}</span> Personnel
+                </div>
+
+                <form action="{{ route('admin.index') }}" method="GET" style="display: flex; align-items: center; gap: 0.75rem; border-left: 2px solid #e2e8f0; padding-left: 1.5rem;">
+                    <span style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: #94a3b8;">Rows per page:</span>
+                    <select name="per_page" onchange="this.form.submit()" style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.5rem 2rem 0.5rem 1rem; font-size: 0.8rem; font-weight: 900; color: #4f46e5; outline: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.2s; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%234f46e5%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 8px center; background-size: 14px;">
+                        @foreach([10, 25, 50, 100] as $count)
+                            <option value="{{ $count }}" {{ request('per_page') == $count ? 'selected' : '' }}>{{ $count }}</option>
+                        @endforeach
+                    </select>
+                </form>
+            </div>
+            <div class="custom-pagination">
+                @if ($users->onFirstPage())
+                    <span class="page-btn disabled">Previous</span>
+                @else
+                    <a href="{{ $users->appends(request()->query())->previousPageUrl() }}" class="page-btn">Previous</a>
+                @endif
+
+                @if ($users->hasMorePages())
+                    <a href="{{ $users->appends(request()->query())->nextPageUrl() }}" class="page-btn">Next</a>
+                @else
+                    <span class="page-btn disabled">Next</span>
+                @endif
+            </div>
         </div>
     </div>
 </div>
@@ -416,6 +446,38 @@
         box-shadow: 0 4px 10px rgba(239, 68, 68, 0.05);
     }
     .btn-purge:hover { background: #ef4444; color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2); }
+
+    /* Custom Pagination Styling */
+    .custom-pagination {
+        display: flex;
+        gap: 8px;
+    }
+    .page-btn {
+        padding: 0.6rem 1.25rem;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        color: #4f46e5;
+        font-weight: 800;
+        font-size: 0.8rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .page-btn:hover:not(.disabled) {
+        background: #4f46e5;
+        color: white;
+        border-color: #4f46e5;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+    .page-btn.disabled {
+        background: #f8fafc;
+        color: #94a3b8;
+        border-color: #e2e8f0;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
 </style>
 
 <script>

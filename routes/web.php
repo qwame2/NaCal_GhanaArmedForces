@@ -33,12 +33,8 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         }
 
         $existingItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->select('inventory_items.description', 'inventory_batches.ledge_category', 'inventory_items.stock_balance', 'inventory_items.qty', 'inventory_items.variance')
-            ->whereIn('inventory_items.id', function($query) {
-                $query->selectRaw('MAX(id)')
-                    ->from('inventory_items')
-                    ->groupBy('description');
-            })
+            ->selectRaw('inventory_items.description, MAX(inventory_batches.ledge_category) as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as stock_balance, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as qty, SUM(CAST(REPLACE(inventory_items.variance, ",", "") AS DECIMAL(15,2))) as variance')
+            ->groupBy('inventory_items.description')
             ->get();
 
         // Total Inventory: Sum of stock_balance
@@ -442,6 +438,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/sra-creation/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'processSraCreation'])->name('sra-creation.process');
     Route::get('/received-items/{id}/sra', [\App\Http\Controllers\ReceivedItemsController::class, 'sra'])->name('receiveditems.sra');
     Route::get('/edit-requests/status/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'checkStatus'])->name('edit-requests.checkStatus');
+    Route::post('/edit-requests/complete/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'complete'])->name('edit-requests.complete');
 
     // Returns Routes
     Route::post('/returns/purge', [ReturnController::class, 'purge'])->name('returns.purge');

@@ -802,6 +802,7 @@
 
         // Database Items from Backend
         const existingDBItems = JSON.parse(document.getElementById('inventory-data').textContent || '[]');
+        const globalTotalStock = {{ $totalInventory }};
 
         // Initialize Select2
         ledgeSelect.select2({
@@ -874,11 +875,7 @@
                         } else {
                             showToast('Success', 'Inventory records saved successfully!', 'success');
                             
-                            // Automatically trigger SRA (Invoice) generation
-                            if (response.batch_id) {
-                                const sraUrl = `{{ url('/received-items') }}/${response.batch_id}/sra`;
-                                window.open(sraUrl, '_blank');
-                            }
+
 
                             setTimeout(() => {
                                 location.reload();
@@ -995,11 +992,11 @@
 
                             <div class="form-group">
                                 <label class="lbl-stock-balance">Stock Balance</label>
-                                <input type="number" class="row-stock-balance" placeholder="0">
+                                <input type="number" class="row-stock-balance" placeholder="System Total: {{ number_format($totalInventory, 0) }}">
                             </div>
                             <div class="form-group">
                                 <label class="lbl-received-qty">Received Qty</label>
-                                <input type="number" class="row-qty" placeholder="0" style="border-color: var(--primary-light);">
+                                <input type="number" class="row-qty" placeholder="System Total: {{ number_format($totalInventory, 0) }}" style="border-color: var(--primary-light);">
                             </div>
                             <div class="form-group">
                                 <label>Variance Status</label>
@@ -1042,17 +1039,17 @@
                     const varianceInput = $row.find('.row-variance');
 
                     if (prevData) {
-                        stockInput.attr('placeholder', `Prev: ${prevData.stock_balance}`);
-                        qtyInput.attr('placeholder', `Prev: ${prevData.qty}`);
-                        varianceInput.attr('placeholder', `Prev: ${prevData.variance}`);
+                        stockInput.attr('placeholder', `Total System Stock: ${parseFloat(prevData.stock_balance).toLocaleString()}`);
+                        qtyInput.attr('placeholder', `Total Received: ${parseFloat(prevData.qty).toLocaleString()}`);
+                        varianceInput.attr('placeholder', `Total Variance: ${parseFloat(prevData.variance).toLocaleString()}`);
 
                         // Visual cue for existing item
                         if (!$row.find('.existing-indicator').length) {
                             $row.find('.row-badge').append(' <span class="existing-indicator" style="font-size: 0.6rem; opacity: 0.8;">(Restocking)</span>');
                         }
                     } else {
-                        stockInput.attr('placeholder', '0');
-                        qtyInput.attr('placeholder', '0');
+                        stockInput.attr('placeholder', `System Total: ${globalTotalStock.toLocaleString()}`);
+                        qtyInput.attr('placeholder', `System Total: ${globalTotalStock.toLocaleString()}`);
                         varianceInput.attr('placeholder', '0');
                         $row.find('.existing-indicator').remove();
                     }
