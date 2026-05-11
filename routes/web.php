@@ -558,23 +558,30 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                     $msgContent .= "<div style='display: flex; align-items: flex-start; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b; margin-top: 2px;'><i data-lucide='package' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569; line-height: 1.4;'><b style='color: #0f172a;'>Items:</b> {$itemNames}</span></div>";
                     $msgContent .= "</div>";
 
-                    // Preview toggle button
-                    $msgContent .= "<button onclick=\"this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.innerHTML = this.nextElementSibling.style.display === 'none' ? '<i data-lucide=\\'eye\\' style=\\'width:14px;vertical-align:-2px;\\'></i> Preview Changes' : '<i data-lucide=\\'eye-off\\' style=\\'width:14px;vertical-align:-2px;\\'></i> Hide Preview'; if(typeof lucide!==\\'undefined\\') lucide.createIcons();\" style='width: 100%; background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px;'>";
-                    $msgContent .= "<i data-lucide='eye' style='width:14px;'></i> Preview Changes</button>";
-                    
-                    // Preview panel (hidden by default)
-                    $msgContent .= "<div style='display: none; margin-bottom: 12px;'>";
-                    $msgContent .= "<div style='border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;'>";
-                    $msgContent .= "<table style='width: 100%; border-collapse: collapse;'>";
-                    $msgContent .= "<thead><tr style='background: #f8fafc;'>";
-                    $msgContent .= "<th style='padding: 8px 12px; text-align: left; font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;'>Item</th>";
-                    $msgContent .= "<th style='padding: 8px 12px; text-align: center; font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;'>Current</th>";
-                    $msgContent .= "<th style='padding: 8px 12px; text-align: center; font-size: 0.7rem; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em;'>+ Adding</th>";
-                    $msgContent .= "<th style='padding: 8px 12px; text-align: center; font-size: 0.7rem; font-weight: 900; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.05em;'>New Total</th>";
-                    $msgContent .= "<th style='padding: 8px 12px; text-align: center; font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;'>Unit</th>";
-                    $msgContent .= "</tr></thead>";
-                    $msgContent .= "<tbody>{$previewRows}</tbody>";
-                    $msgContent .= "</table></div></div>";
+                    // Build JSON for the preview bottom sheet
+                    $previewJson = htmlspecialchars(json_encode($updates), ENT_QUOTES, 'UTF-8');
+                    $previewItemsJson = [];
+                    foreach ($updates as $u) {
+                        $invItem = \App\Models\InventoryItem::find($u['item_id']);
+                        if (!$invItem) continue;
+                        $previewItemsJson[] = [
+                            'description' => $invItem->description,
+                            'unit'        => $invItem->unit,
+                            'current'     => (float) $invItem->stock_balance,
+                            'adding'      => (float) $u['incoming_qty'],
+                            'projected'   => (float) $invItem->stock_balance + (float) $u['incoming_qty'],
+                        ];
+                    }
+                    $previewAttr = htmlspecialchars(json_encode([
+                        'batchId'    => $batchId,
+                        'personnel'  => auth()->user()->name,
+                        'items'      => $previewItemsJson,
+                    ]), ENT_QUOTES, 'UTF-8');
+
+                    // Preview trigger button (calls global JS function in messages.blade.php)
+                    $msgContent .= "<button onclick='window.showRemainderPreview(this)' data-preview='{$previewAttr}' style='width: 100%; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; margin-bottom: 8px; transition: all 0.2s;'>";
+                    $msgContent .= "<i data-lucide='eye' style='width:15px; flex-shrink:0;'></i> Preview Changes</button>";
+
 
                     // Action buttons
                     $msgContent .= "<div id='sra-creation-actions-{$editReq->id}' style='display: flex; flex-direction: column; gap: 8px;'>";

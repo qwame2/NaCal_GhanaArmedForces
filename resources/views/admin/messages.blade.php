@@ -108,6 +108,57 @@
         </div>
     </div>
 </div>
+<!-- ====== Remainder Preview Bottom Sheet ====== -->
+<div id="remainderPreviewSheet" style="
+    position: fixed; inset: 0; z-index: 9999;
+    display: none; align-items: flex-end; justify-content: center;
+    background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+" onclick="if(event.target===this) window.closeRemainderPreview()">
+    <div id="remainderPreviewContent" style="
+        background: var(--bg-card, #fff);
+        width: 100%; max-width: 680px;
+        border-radius: 28px 28px 0 0;
+        padding: 0;
+        box-shadow: 0 -20px 60px rgba(0,0,0,0.18);
+        transform: translateY(100%);
+        transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+        max-height: 80vh;
+        display: flex; flex-direction: column;
+        overflow: hidden;
+    ">
+        <!-- Handle bar -->
+        <div style="display: flex; justify-content: center; padding: 14px 0 0;">
+            <div style="width: 40px; height: 4px; background: #e2e8f0; border-radius: 99px;"></div>
+        </div>
+
+        <!-- Sheet Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 24px 14px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 38px; height: 38px; background: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+                    <i data-lucide="package-plus" style="width: 18px;"></i>
+                </div>
+                <div>
+                    <div style="font-size: 0.95rem; font-weight: 900; color: var(--text-main, #0f172a); letter-spacing: -0.01em;">Remainder Change Preview</div>
+                    <div id="remainderPreviewMeta" style="font-size: 0.75rem; color: #64748b; font-weight: 600;"></div>
+                </div>
+            </div>
+            <button onclick="window.closeRemainderPreview()" style="width: 36px; height: 36px; border-radius: 10px; background: #f1f5f9; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                <i data-lucide="x" style="width: 16px;"></i>
+            </button>
+        </div>
+
+        <!-- Divider -->
+        <div style="height: 1px; background: linear-gradient(to right, transparent, #e2e8f0, transparent); margin: 0 24px;"></div>
+
+        <!-- Sheet Body (scrollable) -->
+        <div id="remainderPreviewBody" style="padding: 20px 24px 32px; overflow-y: auto; flex: 1;"></div>
+    </div>
+</div>
+
+<style>
+    #remainderPreviewSheet.open { display: flex; }
+    #remainderPreviewSheet.open #remainderPreviewContent { transform: translateY(0); }
+</style>
 
 <style>
     /* Admin view logic */
@@ -791,5 +842,102 @@
         }
     `;
     document.head.appendChild(style);
+
+    // ====== Remainder Preview Bottom Sheet Logic ======
+    window.showRemainderPreview = function(btn) {
+        const raw = btn.getAttribute('data-preview');
+        if (!raw) return;
+
+        let data;
+        try {
+            data = JSON.parse(raw);
+        } catch(e) {
+            console.error('Preview parse error:', e);
+            return;
+        }
+
+        // Populate meta
+        document.getElementById('remainderPreviewMeta').textContent =
+            `Batch #${data.batchId}  •  ${data.personnel}`;
+
+        // Build body
+        const items = data.items || [];
+        let html = '';
+
+        if (items.length === 0) {
+            html = `<div style="text-align:center; padding: 2rem; color: #94a3b8;">No item details available.</div>`;
+        } else {
+            // Summary banner
+            const totalAdding = items.reduce((s, i) => s + i.adding, 0);
+            html += `
+                <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                    <div style="flex:1; background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.2); border-radius: 14px; padding: 14px 18px;">
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #92400e; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Items Affected</div>
+                        <div style="font-size: 1.6rem; font-weight: 900; color: #b45309;">${items.length}</div>
+                    </div>
+                    <div style="flex:1; background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.2); border-radius: 14px; padding: 14px 18px;">
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #065f46; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Total Units Adding</div>
+                        <div style="font-size: 1.6rem; font-weight: 900; color: #10b981;">+${totalAdding}</div>
+                    </div>
+                </div>`;
+
+            // Items table
+            html += `<div style="border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">`;
+            html += `<div style="background: #f8fafc; padding: 10px 16px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 8px; align-items: center;">
+                <span style="font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em;">Item</span>
+                <span style="font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; text-align:center;">Unit</span>
+                <span style="font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; text-align:center;">Current</span>
+                <span style="font-size: 0.7rem; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 0.06em; text-align:center;">+ Adding</span>
+                <span style="font-size: 0.7rem; font-weight: 900; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.06em; text-align:center;">New Total</span>
+            </div>`;
+
+            items.forEach((item, idx) => {
+                const bg = idx % 2 === 0 ? '#fff' : '#fafafa';
+                html += `
+                <div style="background: ${bg}; padding: 14px 16px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 8px; align-items: center; border-top: 1px solid #f1f5f9;">
+                    <div style="font-size: 0.88rem; font-weight: 800; color: #0f172a; line-height: 1.3;">${item.description}</div>
+                    <div style="text-align: center; font-size: 0.78rem; color: #94a3b8; font-weight: 600;">${item.unit}</div>
+                    <div style="text-align: center; font-size: 0.88rem; font-weight: 700; color: #475569;">${item.current}</div>
+                    <div style="text-align: center;">
+                        <span style="background: rgba(16,185,129,0.1); color: #10b981; padding: 4px 10px; border-radius: 8px; font-size: 0.82rem; font-weight: 900;">+${item.adding}</span>
+                    </div>
+                    <div style="text-align: center;">
+                        <span style="background: rgba(79,70,229,0.08); color: #4f46e5; padding: 4px 10px; border-radius: 8px; font-size: 0.82rem; font-weight: 900;">${item.projected}</span>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+
+            // Footer note
+            html += `<div style="margin-top: 16px; padding: 12px 16px; background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15); border-radius: 12px; font-size: 0.78rem; color: #92400e; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="info" style="width: 14px; flex-shrink: 0;"></i>
+                These changes will be applied to inventory only after you approve the request above.
+            </div>`;
+        }
+
+        document.getElementById('remainderPreviewBody').innerHTML = html;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // Show the sheet with animation
+        const sheet = document.getElementById('remainderPreviewSheet');
+        sheet.style.display = 'flex';
+        // Force reflow then add class for transition
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                sheet.classList.add('open');
+            });
+        });
+    };
+
+    window.closeRemainderPreview = function() {
+        const sheet = document.getElementById('remainderPreviewSheet');
+        sheet.classList.remove('open');
+        setTimeout(() => { sheet.style.display = 'none'; }, 400);
+    };
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') window.closeRemainderPreview();
+    });
 </script>
 @endsection
