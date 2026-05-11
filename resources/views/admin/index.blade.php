@@ -481,7 +481,7 @@
 </style>
 
 <script>
-    $(document).ready(function() {
+    jQuery(document).ready(function($) {
         $("#registrySearch").on("keyup", function() {
             var value = $(this).val().toLowerCase();
             $("#registryBody tr").filter(function() {

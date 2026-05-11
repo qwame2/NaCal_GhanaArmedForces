@@ -388,7 +388,7 @@ class EditRequestController extends Controller
 
         return response()->json([
             'success' => true,
-            'batch_id' => $batch->id ?? null
+            'batch_id' => isset($batch) ? $batch->id : null
         ]);
     }
 }

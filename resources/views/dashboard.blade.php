@@ -570,7 +570,7 @@
         variance: @json($varianceSeries)
     };
 
-    $('#btnDaily').on('click', function() {
+    jQuery('#btnDaily').on('click', function() {
         areaChart.updateOptions({
             xaxis: {
                 categories: dailyData.labels
@@ -585,17 +585,17 @@
                 data: dailyData.variance
             }
         ]);
-        $(this).css({
+        jQuery(this).css({
             background: 'var(--primary)',
             color: 'white'
         });
-        $('#btnWeekly, #btnMonthly').css({
+        jQuery('#btnWeekly, #btnMonthly').css({
             background: 'var(--bg-main)',
             color: 'var(--text-main)'
         });
     });
 
-    $('#btnWeekly').on('click', function() {
+    jQuery('#btnWeekly').on('click', function() {
         areaChart.updateOptions({
             xaxis: {
                 categories: weeklyData.labels
@@ -610,17 +610,17 @@
                 data: weeklyData.variance
             }
         ]);
-        $(this).css({
+        jQuery(this).css({
             background: 'var(--primary)',
             color: 'white'
         });
-        $('#btnDaily, #btnMonthly').css({
+        jQuery('#btnDaily, #btnMonthly').css({
             background: 'var(--bg-main)',
             color: 'var(--text-main)'
         });
     });
 
-    $('#btnMonthly').on('click', function() {
+    jQuery('#btnMonthly').on('click', function() {
         areaChart.updateOptions({
             xaxis: {
                 categories: monthlyData.labels
@@ -635,11 +635,11 @@
                 data: monthlyData.variance
             }
         ]);
-        $(this).css({
+        jQuery(this).css({
             background: 'var(--primary)',
             color: 'white'
         });
-        $('#btnDaily, #btnWeekly').css({
+        jQuery('#btnDaily, #btnWeekly').css({
             background: 'var(--bg-main)',
             color: 'var(--text-main)'
         });
@@ -751,7 +751,7 @@
 <script>
     // Global Modal Controls for legacy onclick attributes
     window.openModal = function() {
-            const modal = $('#newEntryModal');
+            const modal = jQuery('#newEntryModal');
             if (modal.length) {
                 modal.css('display', 'flex');
                 
@@ -766,21 +766,21 @@
                 const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
                 // Reset Form
-                $('#newEntryForm')[0].reset();
+                jQuery('#newEntryForm')[0].reset();
 
-                $('#entryDate').val(formattedDate);
-                $('#arrivalDate').val(new Date().toISOString().split('T')[0]);
+                jQuery('#entryDate').val(formattedDate);
+                jQuery('#arrivalDate').val(new Date().toISOString().split('T')[0]);
 
-                $('#ledgeSelect').val('').trigger('change');
-                $('#itemsContainer').empty();
-                $('#itemDetails').hide();
-                $('#qtyControl, #supplierControl, #dateControl').hide().css('opacity', 0);
-                $('#modalFooter').hide();
+                jQuery('#ledgeSelect').val('').trigger('change');
+                jQuery('#itemsContainer').empty();
+                jQuery('#itemDetails').hide();
+                jQuery('#qtyControl, #supplierControl, #dateControl').hide().css('opacity', 0);
+                jQuery('#modalFooter').hide();
             }
         };
 
         window.closeModal = function() {
-            const modal = $('#newEntryModal');
+            const modal = jQuery('#newEntryModal');
             if (modal.length) {
                 const content = modal.find('.modal-content');
                 content.addClass('slide-out');
@@ -793,7 +793,7 @@
     </script>
     <script>
     // New Entry Modal Logic
-    $(document).ready(function() {
+    jQuery(document).ready(function($) {
         const modal = $('#newEntryModal');
         const openBtn = $('#openNewEntry');
         const closeBtn = $('#closeModal');

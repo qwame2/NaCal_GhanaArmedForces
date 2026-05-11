@@ -30,10 +30,12 @@
                     <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $user->is_online ? '#10b981' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
                 </div>
                 <div style="flex: 1; overflow: hidden;">
-                    <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;">{{ $user->name }}</div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                        <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $user->name }}</div>
+                        <div class="unread-badge" id="badge-{{ $user->id }}" style="display: none; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 900; min-width: 18px; height: 18px; border-radius: 9px; align-items: center; justify-content: center; padding: 0 5px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); border: 1.5px solid white; flex-shrink: 0; margin-left: 8px;">0</div>
+                    </div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">{{ $user->role }}</div>
                 </div>
-                <div class="unread-badge" id="badge-{{ $user->id }}" style="display: none; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 900; min-width: 20px; height: 20px; border-radius: 10px; align-items: center; justify-content: center; padding: 0 6px; position: absolute; top: 18px; right: 20px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); border: 2px solid white; animation: badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">0</div>
             </div>
             @empty
             <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
@@ -60,7 +62,10 @@
             <div style="display: flex; align-items: center; gap: 1.25rem;">
                 <div id="activeAvatar"></div>
                 <div>
-                    <h3 id="activeName" style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); margin: 0; letter-spacing: -0.02em;">Name</h3>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <h3 id="activeName" style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); margin: 0; letter-spacing: -0.02em;">Name</h3>
+                        <span id="activeUnreadBadge" style="display: none; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 900; padding: 2px 8px; border-radius: 20px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); border: 2px solid white;">0</span>
+                    </div>
                     <div style="display: flex; align-items: center; gap: 6px;">
                         <span id="statusDot" style="width: 10px; height: 10px; background: #10b981; border-radius: 50%;"></span>
                         <span id="activeRole" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Role</span>
@@ -398,7 +403,12 @@
 
                 data.forEach(msg => {
                     // Skip messages that are automated OR marked strictly for personnel
-                    if (msg.is_automated || (msg.message && msg.message.includes('personnel-view') && !msg.message.includes('admin-view'))) {
+                    // ONLY skip automated messages that are strictly for personnel OR general system noise
+                    const isStrictlyPersonnel = msg.message && msg.message.includes('personnel-view') && !msg.message.includes('admin-view');
+                    const isSraApproval = msg.message && (msg.message.includes('sra-approval-msg') || msg.message.includes('NEW SRA APPROVAL REQUIRED'));
+                    const isEditReq = msg.message && (msg.message.includes('edit-req-msg') || msg.message.includes('AUTHORIZATION REQUIRED'));
+                    
+                    if (msg.is_automated && !isSraApproval && !isEditReq && isStrictlyPersonnel) {
                         return;
                     }
 
@@ -457,17 +467,35 @@
         fetch("{{ route('api.unread-counts') }}")
             .then(res => res.json())
             .then(counts => {
+                let activeCount = 0;
                 document.querySelectorAll('.unread-badge').forEach(badge => {
                     const userId = badge.id.replace('badge-', '');
                     const count = counts[userId] || 0;
                     
-                    if (count > 0 && userId != activeUserId) {
+                    if (count > 0) {
                         badge.textContent = count;
-                        badge.style.display = 'flex';
+                        // Only hide in sidebar if it's the active chat
+                        if (userId == activeUserId) {
+                            badge.style.display = 'none';
+                            activeCount = count;
+                        } else {
+                            badge.style.display = 'flex';
+                        }
                     } else {
                         badge.style.display = 'none';
                     }
                 });
+
+                // Update Header Badge
+                const headerBadge = document.getElementById('activeUnreadBadge');
+                if (headerBadge) {
+                    if (activeCount > 0) {
+                        headerBadge.textContent = activeCount;
+                        headerBadge.style.display = 'inline-block';
+                    } else {
+                        headerBadge.style.display = 'none';
+                    }
+                }
             });
 
         // Sync Online Statuses
@@ -556,34 +584,41 @@
 
     // Process SRA Creation Approval logic
     window.processSraCreationApproval = function(id, status, btnElement) {
-        const msgInput = document.getElementById('msgContent');
-        let reason = msgInput ? msgInput.value.trim() : '';
-
-        if (status === 'rejected' && !reason) {
-            // Robustly extract info from the bubble using regex on HTML
-            const bubbleHtml = bubble.innerHTML;
+        if (status === 'rejected') {
+            const bubble = btnElement.closest('.comms-bubble');
+            const bubbleHtml = bubble ? bubble.innerHTML : '';
             const pMatch = bubbleHtml.match(/Personnel\s+<b>(.*?)<\/b>/i);
-            const personnel = pMatch ? pMatch[1].trim() : 'Personnel';
+            const personnel = (pMatch && pMatch[1]) ? pMatch[1].trim() : 'Personnel';
             
-            const sMatch = bubbleHtml.match(/batch\s+from\s+<b>(.*?)<\/b>/i);
-            const supplier = sMatch ? sMatch[1].trim() : 'Unknown';
-            
-            const iMatch = bubbleHtml.match(/Items:<\/b>\s*(.*?)(?=<br>|<div|<\/div|$)/i);
-            const items = iMatch ? iMatch[1].trim() : 'Items';
-            
-            const summary = `REJECTION SUMMARY: SRA Request from ${personnel} (has recorded a new batch from ${supplier}) - Items: ${items}.\n\nREASON: `;
-            
-            if (msgInput) {
-                msgInput.value = summary;
-                msgInput.focus();
-                // Move cursor to end
-                msgInput.setSelectionRange(msgInput.value.length, msgInput.value.length);
-            }
-            
-            showToast('Action Required', 'Please complete the rejection summary with your reason.', 'info');
-            return;
+            Swal.fire({
+                title: 'Deny SRA Submission',
+                text: `Provide a reason for rejecting the submission from ${personnel}:`,
+                input: 'textarea',
+                inputPlaceholder: 'e.g., Incorrect quantity specified, missing documentation...',
+                inputAttributes: {
+                    'aria-label': 'Type your reason here'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Confirm Rejection',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc2626',
+                preConfirm: (reason) => {
+                    if (!reason) {
+                        Swal.showValidationMessage('A justification is required to reject this request.');
+                    }
+                    return reason;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    executeSraProcess_v2(id, status, result.value, btnElement);
+                }
+            });
+        } else {
+            executeSraProcess_v2(id, status, '', btnElement);
         }
+    };
 
+    function executeSraProcess_v2(id, status, reason, btnElement) {
         const actionsDiv = document.getElementById(`sra-creation-actions-${id}`);
         if (actionsDiv) {
             const btns = actionsDiv.querySelectorAll('button');
@@ -625,22 +660,17 @@
                     
                     actionsDiv.innerHTML = html;
 
-                    // Clear the message box if it was a rejection reason
-                    if (status === 'rejected' && msgInput) {
-                        msgInput.value = '';
-                    }
-                    
                     showToast('Success', `SRA request ${status}.`, 'success');
                 }
             } else {
-                alert(data.message || 'Error processing request');
+                showToast('Action Failed', data.message || 'Error processing request', 'error');
                 btnElement.innerText = status === 'approved' ? 'Approve & Save' : 'Reject';
                 btnElement.disabled = false;
             }
         })
         .catch(err => {
             console.error(err);
-            alert('An unexpected error occurred during SRA authorization.');
+            showToast('System Error', 'An unexpected error occurred during SRA authorization.', 'error');
             btnElement.innerText = status === 'approved' ? 'Approve & Save' : 'Reject';
             btnElement.disabled = false;
         });
@@ -680,14 +710,14 @@
                     actionsDiv.innerHTML = `<div style="padding: 8px 12px; border-radius: 8px; background: ${bgColor}; color: ${color}; font-weight: 800; border: 1px solid ${color}; display: inline-block;">Request ${status.toUpperCase()}</div>`;
                 }
             } else {
-                alert(data.message || 'Error processing request');
+                showToast('Update Failed', data.message || 'Error processing request', 'error');
                 btnElement.innerText = status === 'approved' ? 'Approve' : 'Cancel';
                 btnElement.disabled = false;
             }
         })
         .catch(err => {
             console.error(err);
-            alert('An unexpected error occurred. Please check system logs.');
+            showToast('Connection Error', 'An unexpected error occurred. Please check system logs.', 'error');
             btnElement.innerText = status === 'approved' ? 'Approve' : 'Cancel';
             btnElement.disabled = false;
         });
@@ -745,7 +775,13 @@
             100% { transform: scale(1); opacity: 1; }
         }
         .network-item.active .unread-badge {
-            display: none !important;
+            opacity: 0.5;
+        }
+        .unread-badge[style*="display: flex"] {
+            display: flex !important;
+        }
+        #activeUnreadBadge[style*="display: inline-block"] {
+            display: inline-block !important;
         }
     `;
     document.head.appendChild(style);

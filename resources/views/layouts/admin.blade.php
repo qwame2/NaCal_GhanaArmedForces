@@ -7,24 +7,126 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     <style>
         :root {
             --primary: #4f46e5;
             --primary-glow: rgba(79, 70, 229, 0.1);
+            --primary-hover: #4338ca;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --text-heading: #0f172a;
+            --border-color: #e2e8f0;
+            --shadow-luxe: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius-luxe: 16px;
+        }
+
+        /* Toast System */
+        .toast-container {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 999999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            min-width: 320px;
+            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transform: translateX(120%);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: auto;
+            border: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toast.show { transform: translateX(0); }
+
+        .toast-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast-success { border-left: 4px solid #10b981; }
+        .toast-success .toast-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+        .toast-error { border-left: 4px solid #ef4444; }
+        .toast-error .toast-icon { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+        .toast-warning { border-left: 4px solid #f59e0b; }
+        .toast-warning .toast-icon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+        .toast-content { flex: 1; }
+        .toast-title { display: block; font-weight: 800; font-size: 0.85rem; color: #0f172a; margin-bottom: 2px; }
+        .toast-message { font-size: 0.75rem; color: #64748b; margin: 0; line-height: 1.4; }
+
+        .toast-close {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .toast-close:hover { background: #f1f5f9; color: #64748b; }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: rgba(0,0,0,0.05);
+            width: 100%;
+        }
+
+        .toast-progress-bar {
+            height: 100%;
+            background: currentColor;
+            width: 100%;
+            transform-origin: left;
+            animation: toast-progress linear forwards;
+        }
+
+        @keyframes toast-progress {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        
             --bg-body: #f8fafc;
             --sidebar-bg: #ffffff;
             --text-heading: #0f172a;
             --text-body: #475569;
             --text-muted: #94a3b8;
             --shadow-luxe: 0 10px 40px rgba(0, 0, 0, 0.04), 0 2px 10px rgba(0, 0, 0, 0.02);
-            --shadow-sidebar: 20px 0 60px rgba(0, 0, 0, 0.03);
+            --shadow-sidebar: 10px 0 30px rgba(0, 0, 0, 0.1);
         }
 
         body {
             background-color: var(--bg-body);
             color: var(--text-body);
-            font-family: 'Outfit', sans-serif;
+            font-family: "outfit", serif;
             margin: 0;
             display: flex;
             min-height: 100vh;
@@ -378,9 +480,11 @@
             right: -2px;
             width: 10px;
             height: 10px;
-            background: #ef4444;
             border: 2px solid white;
             border-radius: 50%;
+        }
+        #global-unread-badge[style*="display: block"] {
+            display: block !important;
         }
 
         .pulse-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: shadow-pulse 2s infinite; }
@@ -785,7 +889,58 @@
         });
     });
     tooltipObserver.observe(document.body, { childList: true, subtree: true });
+    // Toast Notification System
+    window.showToast = function(title, message, type = 'success', duration = 5000) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+
+        const icons = {
+            success: 'check-circle',
+            error: 'alert-circle',
+            warning: 'alert-triangle',
+            info: 'info'
+        };
+
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i data-lucide="${icons[type] || 'info'}"></i>
+            </div>
+            <div class="toast-content">
+                <span class="toast-title">${title}</span>
+                <p class="toast-message">${message}</p>
+            </div>
+            <button class="toast-close">
+                <i data-lucide="x" style="width: 14px;"></i>
+            </button>
+            <div class="toast-progress">
+                <div class="toast-progress-bar" style="animation-duration: ${duration}ms; color: ${type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#f59e0b')}"></div>
+            </div>
+        `;
+
+        container.appendChild(toast);
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // Trigger animation
+        setTimeout(() => toast.classList.add('show'), 10);
+
+        // Auto remove
+        const timeout = setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 600);
+        }, duration);
+
+        // Close button
+        toast.querySelector('.toast-close').onclick = () => {
+            clearTimeout(timeout);
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 600);
+        };
+    };
     </script>
+    <div id="toast-container" class="toast-container"></div>
     
     <style>
         .global-premium-tooltip {

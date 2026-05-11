@@ -29,12 +29,14 @@
                     <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $admin->is_online ? '#10b981' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
                 </div>
                 <div style="flex: 1; overflow: hidden;">
-                    <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;">{{ $admin->name }}</div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                        <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $admin->name }}</div>
+                        <div class="unread-badge" id="badge-{{ $admin->id }}" style="display: none; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 900; min-width: 18px; height: 18px; border-radius: 9px; align-items: center; justify-content: center; padding: 0 5px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); border: 1.5px solid white; flex-shrink: 0; margin-left: 8px;">0</div>
+                    </div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; display: flex; align-items: center; gap: 4px;">
                         <span style="color: var(--primary);">●</span> Command Center
                     </div>
                 </div>
-                <div class="unread-badge" id="badge-{{ $admin->id }}" style="display: none; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 900; min-width: 20px; height: 20px; border-radius: 10px; align-items: center; justify-content: center; padding: 0 6px; position: absolute; top: 18px; right: 20px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); border: 2px solid white; animation: badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">0</div>
             </div>
             @endforeach
 
@@ -54,10 +56,12 @@
                     <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $colleague->is_online ? '#10b981' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
                 </div>
                 <div style="flex: 1; overflow: hidden;">
-                    <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;">{{ $colleague->name }}</div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                        <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $colleague->name }}</div>
+                        <div class="unread-badge" id="badge-{{ $colleague->id }}" style="display: none; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 900; min-width: 18px; height: 18px; border-radius: 9px; align-items: center; justify-content: center; padding: 0 5px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); border: 1.5px solid white; flex-shrink: 0; margin-left: 8px;">0</div>
+                    </div>
                     <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">{{ $colleague->role ?? 'Personnel' }}</div>
                 </div>
-                <div class="unread-badge" id="badge-{{ $colleague->id }}" style="display: none; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 900; min-width: 20px; height: 20px; border-radius: 10px; align-items: center; justify-content: center; padding: 0 6px; position: absolute; top: 18px; right: 20px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); border: 2px solid white; animation: badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">0</div>
             </div>
             @endforeach
         </div>
@@ -79,7 +83,10 @@
             <div style="display: flex; align-items: center; gap: 1.25rem;">
                 <div id="activeAvatar"></div>
                 <div>
-                    <h3 id="activeName" style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); margin: 0; letter-spacing: -0.02em;">Name</h3>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <h3 id="activeName" style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); margin: 0; letter-spacing: -0.02em;">Name</h3>
+                        <span id="activeUnreadBadge" style="display: none; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 900; padding: 2px 8px; border-radius: 20px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); border: 2px solid white;">0</span>
+                    </div>
                     <div style="display: flex; align-items: center; gap: 6px;">
                         <span id="statusDot" style="width: 10px; height: 10px; background: #10b981; border-radius: 50%;"></span>
                         <span id="activeRole" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Role</span>
@@ -290,9 +297,23 @@
                 let html = '';
 
                 data.forEach(msg => {
+                    // Skip admin-only messages — not for personnel view
+                    const isDeleteLog = msg.message && (
+                        msg.message.includes('DELETE REQUEST LOG') ||
+                        msg.message.includes('delete-req-msg') ||
+                        msg.message.includes('PERMANENTLY DELETE Batch') ||
+                        msg.message.includes('REQUEST CANCELED') ||
+                        msg.message.includes('EDIT REQUEST LOG') ||
+                        msg.message.includes('edit-req-log') ||
+                        msg.message.includes("request to edit Batch") ||
+                        msg.message.includes('REQUEST APPROVED') ||
+                        msg.message.includes('REQUEST REJECTED')
+                    );
+                    if (isDeleteLog) return;
+
                     const isMe = msg.sender_id == {{ auth()->id() }};
                     const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    
+
                     let processedMessage = msg.message;
                     
                     // Pre-check for expiration to prevent UI "blinking"
@@ -431,17 +452,34 @@
         fetch("{{ route('api.unread-counts') }}")
             .then(res => res.json())
             .then(counts => {
+                let activeCount = 0;
                 document.querySelectorAll('.unread-badge').forEach(badge => {
                     const userId = badge.id.replace('badge-', '');
                     const count = counts[userId] || 0;
                     
-                    if (count > 0 && userId != activeUserId) {
+                    if (count > 0) {
                         badge.textContent = count;
-                        badge.style.display = 'flex';
+                        if (userId == activeUserId) {
+                            badge.style.display = 'none';
+                            activeCount = count;
+                        } else {
+                            badge.style.display = 'flex';
+                        }
                     } else {
                         badge.style.display = 'none';
                     }
                 });
+
+                // Update Header Badge
+                const headerBadge = document.getElementById('activeUnreadBadge');
+                if (headerBadge) {
+                    if (activeCount > 0) {
+                        headerBadge.textContent = activeCount;
+                        headerBadge.style.display = 'inline-block';
+                    } else {
+                        headerBadge.style.display = 'none';
+                    }
+                }
             });
 
         // Sync Online Statuses
@@ -531,7 +569,13 @@
             100% { transform: scale(1); opacity: 1; }
         }
         .network-item.active .unread-badge {
-            display: none !important;
+            opacity: 0.5;
+        }
+        .unread-badge[style*="display: flex"] {
+            display: flex !important;
+        }
+        #activeUnreadBadge[style*="display: inline-block"] {
+            display: inline-block !important;
         }
     `;
     document.head.appendChild(styleBadge);

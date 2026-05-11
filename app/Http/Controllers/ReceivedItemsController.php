@@ -37,7 +37,9 @@ class ReceivedItemsController extends Controller
             'arrival_date' => $data['arrival_date'],
             'approval_status' => 'pending',
             'approved_at' => null,
+            'created_at' => $req->created_at, // Use the request creation date as mock
             'recorded_by_name' => $req->user->name ?? 'Personnel',
+            'recorder' => (object)['name' => $req->user->name ?? 'Personnel'],
             'items' => collect($data['items'])->map(function($i) {
                 $item = (object)$i;
                 $item->ledger_id = $item->ledger_id ?? '-';
