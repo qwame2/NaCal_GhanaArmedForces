@@ -391,23 +391,20 @@
 
                 // Legacy Fallback
                 if ($acqType === 'Supplier' && preg_match('/\[(Donor Action|Donation)\]/', $rawSup)) {
-                $acqType = 'Donor';
-                $dName = preg_replace('/\s\[.*\]$/', '', $rawSup);
+                    $acqType = 'Donor';
+                    $dName = preg_replace('/\s\[.*\]$/', '', $rawSup);
                 }
 
                 $cleanSupDisplay = preg_replace('/\s\[.*\]$/', '', $rawSup);
-                $supStatusDisplay = 'N/A';
+                $supStatusDisplay = $transaction->supplier_status ?? 'N/A';
 
                 if ($acqType === 'Donor') {
-                $supStatusDisplay = 'Donor';
-                $supColor = '#8b5cf6';
+                    $supStatusDisplay = 'Donor';
+                    $supColor = '#8b5cf6';
                 } else {
-                if (preg_match('/\[(.*)\]/', $rawSup, $matches)) {
-                $supStatusDisplay = $matches[1];
-                }
-                $supColor = '#94a3b8';
-                if ($supStatusDisplay === 'Full Delivery') $supColor = '#10b981';
-                elseif ($supStatusDisplay === 'Partial Delivery') $supColor = '#ef4444';
+                    $supColor = '#94a3b8';
+                    if (str_contains(strtolower($supStatusDisplay), 'full delivery')) $supColor = '#10b981';
+                    elseif (str_contains(strtolower($supStatusDisplay), 'partial delivery')) $supColor = '#ef4444';
                 }
                 @endphp
                 <td data-label="Supplier" style="color: var(--text-main);">{{ $cleanSupDisplay ?: '-' }}</td>
@@ -570,7 +567,7 @@
         variance: @json($varianceSeries)
     };
 
-    jQuery('#btnDaily').on('click', function() {
+    document.getElementById('btnDaily').addEventListener('click', function() {
         areaChart.updateOptions({
             xaxis: {
                 categories: dailyData.labels
@@ -585,17 +582,15 @@
                 data: dailyData.variance
             }
         ]);
-        jQuery(this).css({
-            background: 'var(--primary)',
-            color: 'white'
-        });
-        jQuery('#btnWeekly, #btnMonthly').css({
-            background: 'var(--bg-main)',
-            color: 'var(--text-main)'
-        });
+        this.style.background = 'var(--primary)';
+        this.style.color = 'white';
+        document.getElementById('btnWeekly').style.background = 'var(--bg-main)';
+        document.getElementById('btnWeekly').style.color = 'var(--text-main)';
+        document.getElementById('btnMonthly').style.background = 'var(--bg-main)';
+        document.getElementById('btnMonthly').style.color = 'var(--text-main)';
     });
 
-    jQuery('#btnWeekly').on('click', function() {
+    document.getElementById('btnWeekly').addEventListener('click', function() {
         areaChart.updateOptions({
             xaxis: {
                 categories: weeklyData.labels
@@ -610,17 +605,15 @@
                 data: weeklyData.variance
             }
         ]);
-        jQuery(this).css({
-            background: 'var(--primary)',
-            color: 'white'
-        });
-        jQuery('#btnDaily, #btnMonthly').css({
-            background: 'var(--bg-main)',
-            color: 'var(--text-main)'
-        });
+        this.style.background = 'var(--primary)';
+        this.style.color = 'white';
+        document.getElementById('btnDaily').style.background = 'var(--bg-main)';
+        document.getElementById('btnDaily').style.color = 'var(--text-main)';
+        document.getElementById('btnMonthly').style.background = 'var(--bg-main)';
+        document.getElementById('btnMonthly').style.color = 'var(--text-main)';
     });
 
-    jQuery('#btnMonthly').on('click', function() {
+    document.getElementById('btnMonthly').addEventListener('click', function() {
         areaChart.updateOptions({
             xaxis: {
                 categories: monthlyData.labels
@@ -635,14 +628,12 @@
                 data: monthlyData.variance
             }
         ]);
-        jQuery(this).css({
-            background: 'var(--primary)',
-            color: 'white'
-        });
-        jQuery('#btnDaily, #btnWeekly').css({
-            background: 'var(--bg-main)',
-            color: 'var(--text-main)'
-        });
+        this.style.background = 'var(--primary)';
+        this.style.color = 'white';
+        document.getElementById('btnDaily').style.background = 'var(--bg-main)';
+        document.getElementById('btnDaily').style.color = 'var(--text-main)';
+        document.getElementById('btnWeekly').style.background = 'var(--bg-main)';
+        document.getElementById('btnWeekly').style.color = 'var(--text-main)';
     });
 
     // Enhanced Donut Chart

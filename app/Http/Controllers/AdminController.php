@@ -76,6 +76,9 @@ class AdminController extends Controller
         }
 
         $user->is_active = !$user->is_active;
+        if (!$user->is_active) {
+            $user->is_online = false;
+        }
         $user->save();
 
         $actionWord = $user->is_active ? 'reactivated' : 'deactivated';
@@ -217,6 +220,7 @@ class AdminController extends Controller
                 'inventory_batches.arrival_date', 
                 'inventory_batches.ledge_category', 
                 'inventory_batches.supplier_name', 
+                'inventory_batches.supplier_status', 
                 'inventory_batches.donor_name', 
                 'inventory_batches.acquisition_type'
             );
