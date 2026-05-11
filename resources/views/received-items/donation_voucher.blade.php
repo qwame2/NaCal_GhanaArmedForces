@@ -242,7 +242,7 @@
                 <div class="sig-line"></div>
                 <div class="sig-label">STOREKEEPER / VERIFIER</div>
                 <div class="sig-sub">(Inventory Registry)</div>
-                <div style="margin-top: 10px; font-weight: bold;">{{ auth()->user()->name }}</div>
+                <div style="margin-top: 10px; font-weight: bold;">{{ $batch->recorder->name ?? (auth()->user()->name ?? '________________') }}</div>
             </div>
         </div>
 
