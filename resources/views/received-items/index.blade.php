@@ -2048,90 +2048,112 @@
         `;
 
         fetch(`/received-items/${batchId}?json=true`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                return response.json();
+            })
             .then(data => {
-                continueBatchData = data.batch;
-                subtitle.innerText = `Original Transaction: #${continueBatchData.id} • ${new Date(continueBatchData.entry_date).toLocaleDateString()}`;
-                
-                let html = `
-                    <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; margin-bottom: 0.5rem;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div>
-                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 4px;">Logistics Source</div>
-                                <div style="font-weight: 800; color: var(--text-main);">${continueBatchData.supplier_name.replace(/\[.*?\]/g, '').trim()}</div>
-                            </div>
-                            <div>
-                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 4px;">Ledge Category</div>
-                                <div style="font-weight: 800; color: var(--primary);">${ledgeMap[continueBatchData.ledge_category] || continueBatchData.ledge_category}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                let hasPending = false;
-
-                continueBatchData.items.forEach((item, index) => {
-                    const expected = parseFloat(item.stock_balance) - parseFloat(item.variance);
-                    const alreadyBrought = parseFloat(item.stock_balance) || 0;
-                    const outstanding = expected - alreadyBrought;
+                try {
+                    continueBatchData = data.batch;
+                    subtitle.innerText = `Original Transaction: #${continueBatchData.id} • ${new Date(continueBatchData.entry_date).toLocaleDateString()}`;
                     
-                    if (outstanding <= 0) return; // Full quantity has been brought
+                    const sourceName = (continueBatchData.supplier_name || continueBatchData.donor_name || 'Unknown Source').replace(/\[.*?\]/g, '').trim();
                     
-                    hasPending = true;
-                    
-                    html += `
-                    <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div style="font-weight: 800; font-size: 1.1rem; color: var(--text-main);">${item.description}</div>
-                            <div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 800; font-size: 0.8rem;">
-                                ${outstanding} Outstanding
+                    let html = `
+                        <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; margin-bottom: 0.5rem;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 4px;">Logistics Source</div>
+                                    <div style="font-weight: 800; color: var(--text-main);">${sourceName}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 4px;">Ledge Category</div>
+                                    <div style="font-weight: 800; color: var(--primary);">${ledgeMap[continueBatchData.ledge_category] || continueBatchData.ledge_category}</div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; background: rgba(0,0,0,0.02); border-radius: 12px; padding: 1rem;">
-                            <div style="display: flex; flex-direction: column;">
-                                <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Expected</span>
-                                <span style="font-weight: 700; color: var(--text-main); font-size: 1rem;">${expected}</span>
-                            </div>
-                            <div style="display: flex; flex-direction: column;">
-                                <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Already Brought</span>
-                                <span style="font-weight: 900; color: #10b981; font-size: 1rem;">${alreadyBrought}</span>
-                            </div>
-                            <div style="display: flex; flex-direction: column;">
-                                <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Pending Deficit</span>
-                                <span style="font-weight: 900; color: #ef4444; font-size: 1rem;">${outstanding}</span>
-                            </div>
-                        </div>
-                        
-                        <div style="margin-top: 0.5rem;">
-                            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: block;">Newly Arrived Quantity</label>
-                            <input type="number" class="continue-input" data-item-id="${item.id}" max="${outstanding}" min="0" placeholder="Enter additional units received..." 
-                                style="width: 100%; padding: 1.15rem; border-radius: 12px; border: 2px solid var(--border-color); font-size: 1rem; font-weight: 700; background: var(--bg-card); color: var(--text-main); transition: all 0.3s;"
-                                oninput="previewRecalculation(${item.id}, ${expected}, ${item.stock_balance}, ${alreadyBrought}, ${outstanding})">
-                        </div>
-
-                        <div id="recalc_preview_${item.id}" style="display: none; background: rgba(16, 185, 129, 0.05); border-left: 3px solid #10b981; padding: 0.75rem 1rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.85rem;">
-                            <!-- Preview injected here -->
-                        </div>
-                    </div>
-                    `;
-                });
-
-                
-                if (!hasPending) {
-                    html += `
-                        <div style="text-align: center; padding: 3rem 1rem;">
-                            <i data-lucide="check-circle" style="width: 48px; height: 48px; color: #10b981; margin-bottom: 1rem;"></i>
-                            <h3 style="margin: 0 0 0.5rem; font-weight: 900; color: var(--text-main);">Fully Delivered</h3>
-                            <p style="margin: 0; color: var(--text-muted);">There are no outstanding items to receive for this transaction.</p>
                         </div>
                     `;
-                } else {
-                    submitBtn.style.display = 'flex';
+
+                    let hasPending = false;
+
+                    continueBatchData.items.forEach((item, index) => {
+                        const variance = parseFloat(item.variance) || 0;
+                        const outstanding = -variance; // negative variance = shortfall = outstanding
+                        
+                        if (outstanding <= 0) return; // Full quantity has been brought
+                        
+                        hasPending = true;
+                        const stockBalance = parseFloat(item.stock_balance) || 0;
+                        const expected = stockBalance + outstanding;
+                        
+                        html += `
+                        <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="font-weight: 800; font-size: 1.1rem; color: var(--text-main);">${item.description}</div>
+                                <div style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 800; font-size: 0.8rem;">
+                                    ${outstanding} Outstanding
+                                </div>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; background: rgba(0,0,0,0.02); border-radius: 12px; padding: 1rem;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Expected</span>
+                                    <span style="font-weight: 700; color: var(--text-main); font-size: 1rem;">${expected}</span>
+                                </div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Already Brought</span>
+                                    <span style="font-weight: 900; color: #10b981; font-size: 1rem;">${stockBalance}</span>
+                                </div>
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Pending Deficit</span>
+                                    <span style="font-weight: 900; color: #ef4444; font-size: 1rem;">${outstanding}</span>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 0.5rem;">
+                                <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: block;">Newly Arrived Quantity</label>
+                                <input type="number" class="continue-input" data-item-id="${item.id}" max="${outstanding}" min="0" placeholder="Enter additional units received..." 
+                                    style="width: 100%; padding: 1.15rem; border-radius: 12px; border: 2px solid var(--border-color); font-size: 1rem; font-weight: 700; background: var(--bg-card); color: var(--text-main); transition: all 0.3s;"
+                                    oninput="previewRecalculation(${item.id}, ${expected}, ${item.stock_balance}, ${stockBalance}, ${outstanding})">
+                            </div>
+
+                            <div id="recalc_preview_${item.id}" style="display: none; background: rgba(16, 185, 129, 0.05); border-left: 3px solid #10b981; padding: 0.75rem 1rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.85rem;">
+                                <!-- Preview injected here -->
+                            </div>
+                        </div>
+                        `;
+                    });
+
+                    
+                    if (!hasPending) {
+                        html += `
+                            <div style="text-align: center; padding: 3rem 1rem;">
+                                <i data-lucide="check-circle" style="width: 48px; height: 48px; color: #10b981; margin-bottom: 1rem;"></i>
+                                <h3 style="margin: 0 0 0.5rem; font-weight: 900; color: var(--text-main);">Fully Delivered</h3>
+                                <p style="margin: 0; color: var(--text-muted);">There are no outstanding items to receive for this transaction.</p>
+                            </div>
+                        `;
+                    } else {
+                        submitBtn.style.display = 'flex';
+                    }
+
+                    body.innerHTML = html;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                } catch(parseErr) {
+                    console.error('Modal parse error:', parseErr);
+                    body.innerHTML = `<div style="padding: 2rem; text-align: center; color: #ef4444;">
+                        <strong>Error loading batch data.</strong><br>
+                        <small style="color: #94a3b8;">${parseErr.message}</small>
+                    </div>`;
                 }
-
-                body.innerHTML = html;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
+            })
+            .catch(err => {
+                console.error('Fetch error:', err);
+                subtitle.innerText = `Error loading Batch #${batchId}`;
+                body.innerHTML = `<div style="padding: 2rem; text-align: center; color: #ef4444;">
+                    <strong>Failed to retrieve batch data.</strong><br>
+                    <small style="color: #94a3b8;">${err.message}</small>
+                </div>`;
             });
     }
 
@@ -2225,7 +2247,25 @@
             
             if (result.success) {
                 closeContinueDeliveryModal();
-                performSearch(true); // Silent refresh to show updated values on UI
+                if (result.is_pending) {
+                    Swal.fire({
+                        title: 'Submission Logged',
+                        text: result.message || 'Waiting for administrator approval.',
+                        icon: 'info',
+                        confirmButtonColor: '#f59e0b'
+                    });
+                } else {
+                    performSearch(true); // Silent refresh to show updated values on UI
+                    Swal.fire({
+                        title: 'Inventory Updated',
+                        text: 'Remainder items have been added to stock.',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        toast: true,
+                        position: 'top-end'
+                    });
+                }
             } else {
                 alert('Execution Error: ' + (result.message || 'Unknown error occurred.'));
             }

@@ -490,6 +490,126 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/api/inventory/receive-remainder', function (\Illuminate\Http\Request $request) {
         try {
             $updates = $request->input('updates', []);
+            $is_admin = auth()->user()->is_admin;
+
+            if (!$is_admin) {
+                $firstItem = \App\Models\InventoryItem::find($updates[0]['item_id']);
+                $batchId = $firstItem ? $firstItem->batch_id : 0;
+                $batch = \App\Models\InventoryBatch::with('items')->find($batchId);
+                
+                $editReq = \App\Models\EditRequest::create([
+                    'user_id' => auth()->id(),
+                    'item_id' => $batchId,
+                    'item_type' => 'batch',
+                    'request_type' => 'remainder_submission',
+                    'reason' => 'Receiving Pending Remainder Items',
+                    'status' => 'pending',
+                    'payload' => json_encode(['updates' => $updates])
+                ]);
+                $admin = \App\Models\User::where('is_admin', true)->first();
+                if ($admin) {
+                    $itemNames = collect($updates)->map(function($u) {
+                        $item = \App\Models\InventoryItem::find($u['item_id']);
+                        return $item ? $item->description : 'Unknown';
+                    })->take(3)->implode(', ');
+                    if (count($updates) > 3) $itemNames .= ' etc.';
+
+                    // Build full item details for the preview panel
+                    $previewRows = '';
+                    foreach ($updates as $u) {
+                        $invItem = \App\Models\InventoryItem::find($u['item_id']);
+                        if (!$invItem) continue;
+                        $incoming = floatval($u['incoming_qty']);
+                        $currentStock = floatval($invItem->stock_balance);
+                        $projected = $currentStock + $incoming;
+                        $deficit = abs(floatval($invItem->variance));
+                        $previewRows .= "
+                            <tr>
+                                <td style='padding: 10px 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; font-weight: 700; color: #0f172a;'>{$invItem->description}</td>
+                                <td style='padding: 10px 12px; border-bottom: 1px solid #f1f5f9; text-align: center; font-size: 0.85rem; color: #64748b; font-weight: 600;'>{$currentStock}</td>
+                                <td style='padding: 10px 12px; border-bottom: 1px solid #f1f5f9; text-align: center;'>
+                                    <span style='background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 3px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 800;'>+{$incoming}</span>
+                                </td>
+                                <td style='padding: 10px 12px; border-bottom: 1px solid #f1f5f9; text-align: center;'>
+                                    <span style='background: rgba(79, 70, 229, 0.08); color: #4f46e5; padding: 3px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 800;'>{$projected}</span>
+                                </td>
+                                <td style='padding: 10px 12px; border-bottom: 1px solid #f1f5f9; text-align: center;'>
+                                    <span style='font-size: 0.8rem; color: #94a3b8; font-weight: 600;'>{$invItem->unit}</span>
+                                </td>
+                            </tr>
+                        ";
+                    }
+
+                    $msgContent = "<div class='sra-approval-card' style='background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin: 10px 0;'>";
+                    
+                    // Header
+                    $msgContent .= "<div style='display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;'>";
+                    $msgContent .= "<div style='width: 40px; height: 40px; background: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;'>";
+                    $msgContent .= "<i data-lucide='package-plus' style='width: 20px;'></i>";
+                    $msgContent .= "</div><div>";
+                    $msgContent .= "<h4 style='margin: 0; color: #0f172a; font-size: 0.95rem; font-weight: 800; letter-spacing: -0.01em;'>REMAINDER APPROVAL</h4>";
+                    $msgContent .= "<p style='margin: 0; font-size: 0.75rem; color: #64748b; font-weight: 600;'>Pending Partial Delivery Fulfillment</p>";
+                    $msgContent .= "</div></div>";
+                    
+                    // Meta info
+                    $msgContent .= "<div style='display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;'>";
+                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;'><i data-lucide='user' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Personnel:</b> " . auth()->user()->name . "</span></div>";
+                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;'><i data-lucide='hash' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Batch ID:</b> #{$batchId}</span></div>";
+                    $msgContent .= "<div style='display: flex; align-items: flex-start; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b; margin-top: 2px;'><i data-lucide='package' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569; line-height: 1.4;'><b style='color: #0f172a;'>Items:</b> {$itemNames}</span></div>";
+                    $msgContent .= "</div>";
+
+                    // Preview toggle button
+                    $msgContent .= "<button onclick=\"this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'none' ? 'block' : 'none'; this.innerHTML = this.nextElementSibling.style.display === 'none' ? '<i data-lucide=\\'eye\\' style=\\'width:14px;vertical-align:-2px;\\'></i> Preview Changes' : '<i data-lucide=\\'eye-off\\' style=\\'width:14px;vertical-align:-2px;\\'></i> Hide Preview'; if(typeof lucide!==\\'undefined\\') lucide.createIcons();\" style='width: 100%; background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px;'>";
+                    $msgContent .= "<i data-lucide='eye' style='width:14px;'></i> Preview Changes</button>";
+                    
+                    // Preview panel (hidden by default)
+                    $msgContent .= "<div style='display: none; margin-bottom: 12px;'>";
+                    $msgContent .= "<div style='border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;'>";
+                    $msgContent .= "<table style='width: 100%; border-collapse: collapse;'>";
+                    $msgContent .= "<thead><tr style='background: #f8fafc;'>";
+                    $msgContent .= "<th style='padding: 8px 12px; text-align: left; font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;'>Item</th>";
+                    $msgContent .= "<th style='padding: 8px 12px; text-align: center; font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;'>Current</th>";
+                    $msgContent .= "<th style='padding: 8px 12px; text-align: center; font-size: 0.7rem; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em;'>+ Adding</th>";
+                    $msgContent .= "<th style='padding: 8px 12px; text-align: center; font-size: 0.7rem; font-weight: 900; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.05em;'>New Total</th>";
+                    $msgContent .= "<th style='padding: 8px 12px; text-align: center; font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;'>Unit</th>";
+                    $msgContent .= "</tr></thead>";
+                    $msgContent .= "<tbody>{$previewRows}</tbody>";
+                    $msgContent .= "</table></div></div>";
+
+                    // Action buttons
+                    $msgContent .= "<div id='sra-creation-actions-{$editReq->id}' style='display: flex; flex-direction: column; gap: 8px;'>";
+                    $msgContent .= "<button onclick='window.processSraCreationApproval({$editReq->id}, \"approved\", this)' style='background: #10b981; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>";
+                    $msgContent .= "<i data-lucide='check-circle' style='width: 16px;'></i> Approve & Commit</button>";
+                    $msgContent .= "<button onclick='window.processSraCreationApproval({$editReq->id}, \"rejected\", this)' style='background: #ef4444; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>";
+                    $msgContent .= "<i data-lucide='x-circle' style='width: 16px;'></i> Reject</button>";
+                    $msgContent .= "</div></div>";
+
+
+                    \App\Models\Message::create([
+                        'sender_id' => auth()->id(),
+                        'receiver_id' => $admin->id,
+                        'message' => $msgContent,
+                        'is_automated' => true,
+                        'edit_request_id' => $editReq->id
+                    ]);
+
+                    $confirmation = "<div style='padding: 15px; border: 1px solid #f59e0b; border-radius: 16px; background: rgba(245, 158, 11, 0.03); display: flex; align-items: center; gap: 12px;'>";
+                    $confirmation .= "<div style='width: 32px; height: 32px; background: #f59e0b; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;'><i data-lucide='clock' style='width: 16px;'></i></div>";
+                    $confirmation .= "<div><b style='color: #f59e0b; font-size: 0.85rem;'>REMAINDER SUBMITTED</b><br><span style='font-size: 0.75rem; color: #64748b; font-weight: 600;'>Awaiting Admin verification for remainder items.</span></div>";
+                    $confirmation .= "</div>";
+
+                    \App\Models\Message::create([
+                        'sender_id' => $admin->id ?? 1,
+                        'receiver_id' => auth()->id(),
+                        'message' => $confirmation,
+                        'is_automated' => true,
+                        'edit_request_id' => $editReq->id
+                    ]);
+                }
+
+                return response()->json(['success' => true, 'is_pending' => true, 'message' => 'Remainder submission pending admin approval.']);
+            }
+
             $updatedItemsCount = 0;
             $batchIdsToCheck = [];
 
@@ -499,17 +619,10 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                     $incoming = floatval($update['incoming_qty']);
                     if ($incoming <= 0) continue;
 
-                    // Calculate expected amount based on original stock and variance
-                    // This works for both new data (where variance = stock - qty) and old data
                     $expected = floatval($item->stock_balance) - floatval($item->variance);
-                    
                     $item->stock_balance += $incoming;
-                    // Variance is actual physical stock minus the expected invoice quantity
                     $item->variance = $item->stock_balance - $expected;
-                    
-                    // Keep the remarks updated to note the remainder was entered
                     $item->remarks = $item->remarks ? $item->remarks . " | Supplemented with $incoming additional units." : "Supplemented with $incoming additional units.";
-                    
                     $item->save();
                     $updatedItemsCount++;
                     
@@ -519,7 +632,6 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                 }
             }
             
-            // Evaluate batch status logic for Partial -> Full Delivery
             foreach ($batchIdsToCheck as $batchId) {
                 $batch = \App\Models\InventoryBatch::find($batchId);
                 if ($batch && preg_match('/\[Partial Deliv(.*?)\]/i', $batch->supplier_name)) {
@@ -535,7 +647,6 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                     }
                     
                     if ($allDelivered) {
-                        // Update supplier_name to Full Delivery
                         $batch->supplier_name = preg_replace('/\[Partial Deliv(.*?)\]/i', '[Full Delivery]', $batch->supplier_name);
                         $batch->save();
                     }

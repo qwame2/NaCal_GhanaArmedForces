@@ -269,59 +269,113 @@ class EditRequestController extends Controller
 
         if ($request->status === 'approved') {
             $data = json_decode($editReq->payload, true);
+            $requestType = $editReq->request_type;
             
             \Illuminate\Support\Facades\DB::beginTransaction();
             try {
-                // CREATE THE ACTUAL RECORDS
-                $batch = InventoryBatch::create([
-                    'ledge_category' => $data['ledge_category'],
-                    'supplier_name' => $data['supplier_name'],
-                    'supplier_status' => $data['supplier_status'],
-                    'donor_name' => $data['donor_name'] ?? null,
-                    'acquisition_type' => $data['acquisition_type'],
-                    'entry_date' => $data['entry_date'],
-                    'arrival_date' => $data['arrival_date'],
-                    'recorded_by' => $editReq->user_id,
-                    'approval_status' => 'approved',
-                    'approved_by' => auth()->id(),
-                    'approved_at' => now(),
-                ]);
+                if ($requestType === 'remainder_submission') {
+                    $updates = $data['updates'] ?? [];
+                    $batchIdsToCheck = [];
+                    foreach ($updates as $update) {
+                        $item = \App\Models\InventoryItem::find($update['item_id']);
+                        if ($item) {
+                            $incoming = floatval($update['incoming_qty']);
+                            $expected = floatval($item->stock_balance) - floatval($item->variance);
+                            $item->stock_balance += $incoming;
+                            $item->variance = $item->stock_balance - $expected;
+                            $item->remarks = $item->remarks ? $item->remarks . " | Supplemented with $incoming units (Approved)." : "Supplemented with $incoming units (Approved).";
+                            $item->save();
+                            if (!in_array($item->batch_id, $batchIdsToCheck)) $batchIdsToCheck[] = $item->batch_id;
+                        }
+                    }
 
-                foreach ($data['items'] as $item) {
-                    $itemData = $item;
-                    unset($itemData['ledge_balance']);
-                    $batch->items()->create($itemData);
+                    foreach ($batchIdsToCheck as $batchId) {
+                        $batch = \App\Models\InventoryBatch::find($batchId);
+                        if ($batch && preg_match('/\[Partial Deliv(.*?)\]/i', $batch->supplier_name)) {
+                            $allItems = \App\Models\InventoryItem::where('batch_id', $batchId)->get();
+                            $allDelivered = true;
+                            foreach ($allItems as $i) {
+                                $expected = floatval($i->stock_balance) - floatval($i->variance);
+                                if (floatval($i->stock_balance) < $expected) { $allDelivered = false; break; }
+                            }
+                            if ($allDelivered) {
+                                $batch->supplier_name = preg_replace('/\[Partial Deliv(.*?)\]/i', '[Full Delivery]', $batch->supplier_name);
+                                $batch->save();
+                            }
+                        }
+                    }
+                    // Set batch for later use in notifications
+                    $batch = \App\Models\InventoryBatch::find($editReq->item_id);
+
+                    \App\Models\SystemLog::create([
+                        'user_id' => $editReq->user_id,
+                        'event_type' => 'INVENTORY',
+                        'action' => 'SUPPLEMENT_INVENTORY',
+                        'description' => "Personnel added remainder items (Approved by Admin).",
+                        'severity' => 'info',
+                        'metadata' => ['batch_id' => $editReq->item_id],
+                        'ip_address' => request()->ip()
+                    ]);
+
+                } else {
+                    // CREATE THE ACTUAL RECORDS (SRA Creation)
+                    $batch = InventoryBatch::create([
+                        'ledge_category' => $data['ledge_category'],
+                        'supplier_name' => $data['supplier_name'],
+                        'supplier_status' => $data['supplier_status'],
+                        'donor_name' => $data['donor_name'] ?? null,
+                        'acquisition_type' => $data['acquisition_type'],
+                        'entry_date' => $data['entry_date'],
+                        'arrival_date' => $data['arrival_date'],
+                        'recorded_by' => $editReq->user_id,
+                        'approval_status' => 'approved',
+                        'approved_by' => auth()->id(),
+                        'approved_at' => now(),
+                    ]);
+
+                    foreach ($data['items'] as $item) {
+                        $itemData = $item;
+                        unset($itemData['ledge_balance']);
+                        $batch->items()->create($itemData);
+                    }
+
+                    \App\Models\SystemLog::create([
+                        'user_id' => $editReq->user_id,
+                        'event_type' => 'INVENTORY',
+                        'action' => 'ADD_INVENTORY',
+                        'description' => "Personnel added items (Approved by Admin).",
+                        'severity' => 'info',
+                        'metadata' => ['batch_id' => $batch->id],
+                        'ip_address' => request()->ip()
+                    ]);
                 }
-
-                // Log it
-                \App\Models\SystemLog::create([
-                    'user_id' => $editReq->user_id,
-                    'event_type' => 'INVENTORY',
-                    'action' => 'ADD_INVENTORY',
-                    'description' => "Personnel added items (Approved by Admin).",
-                    'severity' => 'info',
-                    'metadata' => ['batch_id' => $batch->id],
-                    'ip_address' => request()->ip()
-                ]);
 
                 \Illuminate\Support\Facades\DB::commit();
 
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\DB::rollBack();
-                return response()->json(['success' => false, 'message' => 'Failed to save: ' . $e->getMessage()]);
+                return response()->json(['success' => false, 'message' => 'Failed to process: ' . $e->getMessage()]);
             }
         }
 
         // Generate Personnel Notification Content
+        $requestType = $editReq->request_type;
         $color = $request->status === 'approved' ? '#10b981' : '#dc2626';
+        
         $statusHeader = $request->status === 'approved' ? 'SRA AUTHORIZED & COMMITTED' : 'REQUEST HAS BEEN REJECTED';
+        if ($requestType === 'remainder_submission' && $request->status === 'approved') {
+            $statusHeader = 'REMAINDER FULFILLMENT AUTHORIZED';
+        }
         
         $finalMsg = "<div style='padding: 15px; border: 1px solid {$color}; border-radius: 12px; background: " . ($request->status === 'approved' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(220, 38, 38, 0.05)') . ";'>";
         $finalMsg .= "<b style='color: {$color}'>{$statusHeader}</b><br>";
         
         if ($request->status === 'approved') {
             $printUrl = route('receiveditems.sra', ['id' => $batch->id]);
-            $finalMsg .= "Your inventory entry has been authorized. You can now download the official voucher.<br><br>";
+            $desc = $requestType === 'remainder_submission' 
+                ? "The remainder items for Batch #{$batch->id} have been authorized and added to stock. You can now download the updated SRA voucher."
+                : "Your inventory entry has been authorized. You can now download the official voucher.";
+            $finalMsg .= "{$desc}<br><br>";
             $finalMsg .= "<a href='{$printUrl}' target='_blank' style='display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);'>Download / Print SRA</a>";
         } else {
             // Rejection format as requested
@@ -340,7 +394,8 @@ class EditRequestController extends Controller
             ->where(function($q) use ($editReq) {
                 $q->where('edit_request_id', $editReq->id)
                   ->orWhere('message', 'like', "%<!-- sra_req_id:{$editReq->id} -->%")
-                  ->orWhere('message', 'like', '%Awaiting SRA Approval%');
+                  ->orWhere('message', 'like', '%Awaiting SRA Approval%')
+                  ->orWhere('message', 'like', '%Awaiting Admin verification for remainder%');
             })
             ->orderBy('created_at', 'desc')
             ->first();
@@ -374,6 +429,7 @@ class EditRequestController extends Controller
         if ($adminMsg) {
             $statusColor = $request->status === 'approved' ? '#10b981' : '#dc2626';
             $statusLabel = $request->status === 'approved' ? 'AUTHORIZED & COMMITTED' : 'REJECTED';
+            $logType = $editReq->request_type === 'remainder_submission' ? 'REMAINDER' : 'SRA';
             
             $printLink = "";
             if ($request->status === 'approved' && isset($batch)) {
@@ -382,7 +438,7 @@ class EditRequestController extends Controller
             }
             
             $newMsg = "<div class='sra-approval-msg' style='padding: 15px; border-left: 4px solid {$statusColor}; background: rgba(0,0,0,0.02);'>";
-            $newMsg .= "<b style='color: {$statusColor};'>SRA {$statusLabel}</b><br>";
+            $newMsg .= "<b style='color: {$statusColor};'>{$logType} {$statusLabel}</b><br>";
             $newMsg .= "Submission by " . ($editReq->user->name ?? 'Personnel') . " has been {$request->status}.";
             if ($request->status === 'rejected' && $request->reason) {
                 $newMsg .= "<div style='margin-top: 5px; font-size: 0.85rem; color: #666;'>Reason: " . e($request->reason) . "</div>";
@@ -392,9 +448,13 @@ class EditRequestController extends Controller
             $adminMsg->update(['message' => $newMsg, 'is_automated' => true]);
         }
 
+        // For remainder submissions, the batch_id is the existing batch; for new SRA it's the newly created batch
+        $returnBatchId = isset($batch) ? $batch->id : ($editReq->item_id ?: null);
+
         return response()->json([
             'success' => true,
-            'batch_id' => isset($batch) ? $batch->id : null
+            'batch_id' => $returnBatchId,
+            'is_remainder' => ($editReq->request_type === 'remainder_submission')
         ]);
     }
 }
