@@ -55,15 +55,30 @@ class InventoryController extends Controller
                     if (count($validated['items']) > 3) $itemNames .= ' etc.';
                     $source = $validated['acquisition_type'] === 'Donor' ? $validated['donor_name'] : $validated['supplier_name'];
                     
-                    $msgContent = "<div class='sra-approval-msg' style='padding: 15px; border-left: 4px solid #4f46e5; background: rgba(79, 70, 229, 0.05);'>";
-                    $msgContent .= "<b style='color: #4f46e5;'>NEW SRA APPROVAL REQUIRED</b><br>";
-                    $msgContent .= "Personnel <b>" . auth()->user()->name . "</b> has recorded a new batch from <b>{$source}</b>.<br>";
-                    $msgContent .= "<b>Items:</b> {$itemNames}<br><br>";
-                    $msgContent .= "<div id='sra-creation-actions-{$editReq->id}'>";
-                    $msgContent .= "<a href='".route('sra.preview', ['id' => $editReq->id])."' target='_blank' style='display: inline-block; background: #6366f1; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);'>Preview Draft SRA</a><br>";
-                    $msgContent .= "<button onclick='window.processSraCreationApproval({$editReq->id}, \"approved\", this)' style='background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);'>Approve & Save</button> ";
-                    $msgContent .= "<button onclick='window.processSraCreationApproval({$editReq->id}, \"rejected\", this)' style='background: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 800; font-size: 0.85rem;'>Reject</button>";
+                    $msgContent = "<div class='sra-approval-card' style='background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin: 10px 0;'>";
+                    $msgContent .= "<div style='display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;'>";
+                    $msgContent .= "<div style='width: 40px; height: 40px; background: #4f46e5; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;'>";
+                    $msgContent .= "<i data-lucide='shield-alert' style='width: 20px;'></i>";
+                    $msgContent .= "</div><div>";
+                    $msgContent .= "<h4 style='margin: 0; color: #0f172a; font-size: 0.95rem; font-weight: 800; letter-spacing: -0.01em;'>SRA APPROVAL REQUIRED</h4>";
+                    $msgContent .= "<p style='margin: 0; font-size: 0.75rem; color: #64748b; font-weight: 600;'>Pending Strategic Entry Verification</p>";
                     $msgContent .= "</div></div>";
+                    
+                    $msgContent .= "<div style='display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;'>";
+                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;'><i data-lucide='user' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Personnel:</b> " . auth()->user()->name . "</span></div>";
+                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;'><i data-lucide='truck' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Source:</b> {$source}</span></div>";
+                    $msgContent .= "<div style='display: flex; align-items: flex-start; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b; margin-top: 2px;'><i data-lucide='package' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569; line-height: 1.4;'><b style='color: #0f172a;'>Items:</b> {$itemNames}</span></div>";
+                    $msgContent .= "</div>";
+                    
+                    $msgContent .= "<div id='sra-creation-actions-{$editReq->id}' style='display: flex; flex-direction: column; gap: 8px;'>";
+                    $msgContent .= "<a href='".route('sra.preview', ['id' => $editReq->id])."' target='_blank' style='display: flex; align-items: center; justify-content: center; gap: 8px; background: #f8fafc; color: #0f172a; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; border: 1px solid #e2e8f0;'>";
+                    $msgContent .= "<i data-lucide='eye' style='width: 16px;'></i> Preview Draft SRA</a>";
+                    $msgContent .= "<div style='display: grid; grid-template-columns: 1fr 1fr; gap: 8px;'>";
+                    $msgContent .= "<button onclick='window.processSraCreationApproval({$editReq->id}, \"approved\", this)' style='background: #10b981; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>";
+                    $msgContent .= "<i data-lucide='check-circle' style='width: 16px;'></i> Approve</button>";
+                    $msgContent .= "<button onclick='window.processSraCreationApproval({$editReq->id}, \"rejected\", this)' style='background: #ef4444; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>";
+                    $msgContent .= "<i data-lucide='x-circle' style='width: 16px;'></i> Reject</button>";
+                    $msgContent .= "</div></div></div>";
 
                     \App\Models\Message::create([
                         'sender_id' => auth()->id(),
@@ -75,10 +90,15 @@ class InventoryController extends Controller
                 }
 
                 // Send confirmation to Personnel
+                $confirmation = "<div style='padding: 15px; border: 1px solid #4f46e5; border-radius: 16px; background: rgba(79, 70, 229, 0.03); display: flex; align-items: center; gap: 12px;'>";
+                $confirmation .= "<div style='width: 32px; height: 32px; background: #4f46e5; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;'><i data-lucide='clock' style='width: 16px;'></i></div>";
+                $confirmation .= "<div><b style='color: #4f46e5; font-size: 0.85rem;'>SRA SUBMISSION LOGGED</b><br><span style='font-size: 0.75rem; color: #64748b; font-weight: 600;'>Awaiting Strategic Authorization from HQ.</span></div>";
+                $confirmation .= "</div>";
+
                 \App\Models\Message::create([
                     'sender_id' => $admin->id ?? 1,
                     'receiver_id' => auth()->id(),
-                    'message' => "<div style='padding: 15px; border: 1px solid #4f46e5; border-radius: 12px; background: rgba(79, 70, 229, 0.05);'><b style='color: #4f46e5'>SRA SUBMISSION LOGGED</b><br>Awaiting SRA Approval from Admin for your recent entry.</div>",
+                    'message' => $confirmation,
                     'is_automated' => true,
                     'edit_request_id' => $editReq->id
                 ]);

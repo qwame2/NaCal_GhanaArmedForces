@@ -405,7 +405,7 @@
                     // Skip messages that are automated OR marked strictly for personnel
                     // ONLY skip automated messages that are strictly for personnel OR general system noise
                     const isStrictlyPersonnel = msg.message && msg.message.includes('personnel-view') && !msg.message.includes('admin-view');
-                    const isSraApproval = msg.message && (msg.message.includes('sra-approval-msg') || msg.message.includes('NEW SRA APPROVAL REQUIRED'));
+                    const isSraApproval = msg.message && (msg.message.includes('sra-approval-msg') || msg.message.includes('sra-approval-card') || msg.message.includes('SRA APPROVAL REQUIRED'));
                     const isEditReq = msg.message && (msg.message.includes('edit-req-msg') || msg.message.includes('AUTHORIZATION REQUIRED'));
                     
                     if (msg.is_automated && !isSraApproval && !isEditReq && isStrictlyPersonnel) {
@@ -651,7 +651,9 @@
                     const color = status === 'approved' ? '#10b981' : '#dc2626';
                     const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
                     const text = status === 'approved' ? 'APPROVED & SAVED' : 'REJECTED';
-                    let html = `<div style="padding: 10px 15px; border-radius: 10px; background: ${bgColor}; color: ${color}; font-weight: 800; border: 1px solid ${color}; display: inline-block;">${text}</div>`;
+                    let html = `<div style="padding: 12px 20px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 900; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; letter-spacing: 0.02em;">
+                        <i data-lucide="${status === 'approved' ? 'check-circle' : 'alert-circle'}" style="width: 16px;"></i> ${text}
+                    </div>`;
                     
                     if (status === 'approved' && data.batch_id) {
                         const printUrl = `{{ url('/received-items') }}/${data.batch_id}/sra`;
