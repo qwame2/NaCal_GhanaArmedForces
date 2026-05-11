@@ -26,6 +26,7 @@ class User extends Authenticatable
         'avatar',
         'role',
         'is_admin',
+        'is_active',
         'is_online',
         'department',
         'phone',
@@ -53,6 +54,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'last_login_at' => 'datetime',
+            'is_active' => 'boolean',
+            'is_online' => 'boolean',
         ];
     }
 
