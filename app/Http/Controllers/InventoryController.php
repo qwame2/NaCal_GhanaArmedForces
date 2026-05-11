@@ -135,15 +135,17 @@ class InventoryController extends Controller
         $query = $request->get('q');
         if (!$query) return response()->json([]);
 
-        $ledgeMap = [
-            'A' => 'Stationary',
-            'B' => 'Cleaning',
-            'C' => 'IT & Acc.',
-            'D' => 'Transport',
-            'E' => 'Safety',
-            'G' => 'Pharmacy',
-            'J' => 'Equipment'
-        ];
+        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
 
         // 1. Check for Category Match (Ledge Name or Code)
         $categoryResults = collect();

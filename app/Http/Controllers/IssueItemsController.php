@@ -29,15 +29,17 @@ class IssueItemsController extends Controller
             ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
             ->get();
 
-        $ledgeMap = [
-            'A' => 'Stationary',
-            'B' => 'Cleaning',
-            'C' => 'IT & Acc.',
-            'D' => 'Transport',
-            'E' => 'Safety',
-            'G' => 'Pharmacy',
-            'J' => 'Equipment'
-        ];
+        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
 
         $adminName = \App\Models\User::where('is_admin', true)->value('name') ?? 'Administrator';
         return view('issue-items.index', compact('items', 'ledgeMap', 'adminName'));

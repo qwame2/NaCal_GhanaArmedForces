@@ -267,16 +267,166 @@ class AdminController extends Controller
 
         $returnedItems = ReturnedItem::with(['issuedItem.issuance'])->orderBy('return_date', 'desc')->get();
 
-        $ledgeMap = [
-            'A' => 'Stationary',
-            'B' => 'Cleaning',
-            'C' => 'IT & Acc.',
-            'D' => 'Transport',
-            'E' => 'Safety',
-            'G' => 'Pharmacy',
-            'J' => 'Equipment'
-        ];
+        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
 
         return view('admin.inventory.index', compact('receivedItems', 'partialCount', 'itemAggregates', 'issuances', 'returnedItems', 'ledgeMap'));
+    }
+
+    public function settings()
+    {
+        if (!auth()->user()->is_admin) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        // We check if the table exists to prevent crash before migration
+        $settings = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::where('group', '!=', 'ui')
+                ->whereNotIn('key', [
+                    'system_maintenance_mode',
+                    'inventory_categories',
+                    'require_issuance_approval',
+                    'inventory_valuation_method',
+                    'allow_negative_stock',
+                    'enable_batch_expiration_alerts',
+                    'notify_on_low_stock'
+                ])
+                ->get()
+                ->groupBy('group') 
+            : collect([]);
+
+        $categories = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [];
+
+        return view('admin.settings', compact('settings', 'categories'));
+    }
+
+    public function updateSettings(\Illuminate\Http\Request $request)
+    {
+        if (!auth()->user()->is_admin) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        $inputs = $request->except('_token');
+
+        foreach ($inputs as $key => $value) {
+            $setting = \App\Models\Setting::where('key', $key)->first();
+            if ($setting) {
+                // If the setting is boolean, handle checkbox uncheck logic
+                if ($setting->type === 'boolean') {
+                    $setting->value = $value ? 'true' : 'false';
+                } else {
+                    $setting->value = $value;
+                }
+                $setting->save();
+            }
+        }
+
+        // Handle unchecked checkboxes which don't send any POST data
+        // Only target settings that are actually visible on this page (not 'ui' group and not in exclusions)
+        $booleanSettings = \App\Models\Setting::where('type', 'boolean')
+            ->where('group', '!=', 'ui')
+            ->whereNotIn('key', [
+                'system_maintenance_mode',
+                'inventory_categories',
+                'require_issuance_approval',
+                'inventory_valuation_method',
+                'allow_negative_stock',
+                'enable_batch_expiration_alerts',
+                'notify_on_low_stock'
+            ])
+            ->get();
+        foreach ($booleanSettings as $boolSetting) {
+            if (!$request->has($boolSetting->key)) {
+                $boolSetting->value = 'false';
+                $boolSetting->save();
+            }
+        }
+
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'UPDATE_SETTINGS',
+            'description' => "Administrator updated the global system settings.",
+            'severity' => 'warning',
+            'ip_address' => request()->ip()
+        ]);
+
+        return back()->with('success', 'Global settings updated successfully.');
+    }
+
+    public function addCategory(\Illuminate\Http\Request $request)
+    {
+        if (!auth()->user()->is_admin) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        $request->validate([
+            'category_code' => 'required|string|max:10',
+            'category_name' => 'required|string|max:100'
+        ]);
+
+        $code = strtoupper($request->category_code);
+        $name = $request->category_name;
+        $existingCategories = \App\Models\Setting::getCategories();
+
+        if (array_key_exists($code, $existingCategories)) {
+            return back()->with('error', "Category Code '{$code}' already exists.");
+        }
+
+        if (in_array(strtolower($name), array_map('strtolower', $existingCategories))) {
+            return back()->with('error', "Category Name '{$name}' is already in use.");
+        }
+
+        \App\Models\Setting::addCategory($code, $name);
+
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'INVENTORY',
+            'action' => 'ADD_CATEGORY',
+            'description' => "Administrator added a new inventory category: {$name} ({$code}).",
+            'severity' => 'info',
+            'ip_address' => request()->ip()
+        ]);
+
+        return back()->with('success', 'New category introduced successfully.');
+    }
+
+    public function deleteCategory($code)
+    {
+        if (!auth()->user()->is_admin) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        $code = strtoupper($code);
+        $categories = \App\Models\Setting::getCategories();
+
+        if (!array_key_exists($code, $categories)) {
+            return back()->with('error', "Category '{$code}' not found.");
+        }
+
+        $name = $categories[$code];
+        \App\Models\Setting::removeCategory($code);
+
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'INVENTORY',
+            'action' => 'DELETE_CATEGORY',
+            'description' => "Administrator deleted inventory category: {$name} ({$code}).",
+            'severity' => 'warning',
+            'ip_address' => request()->ip()
+        ]);
+
+        return back()->with('success', "Category '{$code}' deleted successfully.");
     }
 }

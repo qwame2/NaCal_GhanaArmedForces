@@ -14,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'check_status' => \App\Http\Middleware\CheckUserStatus::class,
         ]);
+        $middleware->web(append: [
+            \App\Http\Middleware\StrictAuditLogging::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

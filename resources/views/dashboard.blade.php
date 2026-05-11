@@ -1291,13 +1291,9 @@
                         <label>Category Section (Search & Select)</label>
                         <select id="ledgeSelect" class="select2-input" style="width: 100%;">
                             <option value=""></option>
-                            <option value="A">Category A - Stationary</option>
-                            <option value="B">Category B - Cleaning</option>
-                            <option value="C">Category C - IT and Accessories</option>
-                            <option value="D">Category D - Transport Items</option>
-                            <option value="E">Category E - Safety and Hygiene</option>
-                            <option value="G">Category G - Test Kits and Pharmaceutical Products</option>
-                            <option value="J">Category J - Furniture, Fixture, Fittings, Tools and Equipment</option>
+                            @foreach($ledgeMap as $code => $name)
+                                <option value="{{ $code }}">Category {{ $code }} - {{ $name }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div id="qtyControl" class="form-group" style="display: none; opacity: 0;">

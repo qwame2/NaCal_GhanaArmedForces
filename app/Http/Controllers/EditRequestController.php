@@ -151,28 +151,31 @@ class EditRequestController extends Controller
         $batchInfo = $item ? "Batch #{$item->id} ({$itemNames})" : "Batch #{$editReq->item_id}";
         $confirmationMsg = "<div class='personnel-view' style='display: none;'><b style='color: {$color}'>{$statusText}</b><br>Your request to " . ($requestType === 'edit' ? 'edit' : 'DELETE') . " {$batchInfo} has been {$request->status}.</div>";
         
+        $timeoutMinutes = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('approval_timeout_minutes', 5) : 5;
+        $timeoutSeconds = $timeoutMinutes * 60;
+
         if ($request->status === 'approved' && $requestType === 'edit') {
             $editUrl = route('receiveditems', ['edit_batch' => $editReq->item_id]);
-            $expiry = now()->addSeconds(62)->getTimestampMs();
+            $expiry = now()->addSeconds($timeoutSeconds)->getTimestampMs();
             $confirmationMsg = "
                 <div class='clearance-container personnel-view' data-expires-at='{$expiry}' data-req-id='{$editReq->id}' data-type='edit' style='display: none; padding: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid #10b981; border-radius: 16px;'>
                     <b style='color: #10b981; font-size: 1.1rem;'>APPROVED</b><br>
                     Your request to <b style='color: #4f46e5;'>EDIT</b> {$batchInfo} has been approved.<br><br>
                     <div class='clearance-timer-notice' style='background: rgba(245, 158, 11, 0.1); padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 800; color: #d97706; margin-bottom: 15px;'>
-                        ⚠️ SECURITY NOTICE: This clearance expires in <span class='timer-seconds'>62</span>s.
+                        ⚠️ SECURITY NOTICE: This clearance expires in <span class='timer-seconds'>{$timeoutSeconds}</span>s.
                     </div>
                     <a href='{$editUrl}' class='clearance-action-btn' style='display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);'>Open Editor Now</a>
                 </div>";
         } elseif ($request->status === 'approved' && $requestType === 'delete') {
             $deleteUrl = route('receiveditems', ['delete_batch' => $editReq->item_id]);
-            $expiry = now()->addSeconds(62)->getTimestampMs();
+            $expiry = now()->addSeconds($timeoutSeconds)->getTimestampMs();
             $confirmationMsg = "
                 <div class='clearance-container personnel-view' data-expires-at='{$expiry}' data-req-id='{$editReq->id}' data-type='delete' style='display: none; padding: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid #10b981; border-radius: 16px;'>
                     <b style='color: #10b981; font-size: 1.1rem;'>APPROVED</b><br>
                     Your request to <b style='color: #ef4444;'>DELETE</b> {$batchInfo} has been approved.<br><br>
                     You may now proceed to delete this batch from the Received Items console.<br><br>
                     <div class='clearance-timer-notice' style='background: rgba(245, 158, 11, 0.1); padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 800; color: #d97706; margin-bottom: 15px;'>
-                        ⚠️ SECURITY NOTICE: This clearance expires in <span class='timer-seconds'>62</span>s.
+                        ⚠️ SECURITY NOTICE: This clearance expires in <span class='timer-seconds'>{$timeoutSeconds}</span>s.
                     </div>
                     <a href='{$deleteUrl}' class='clearance-action-btn' style='display: inline-block; background: #ef4444; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);'>Delete Batch Permanently</a>
                 </div>";
@@ -223,17 +226,20 @@ class EditRequestController extends Controller
             $approvedAt = $editReq->approved_at ?? $editReq->updated_at;
             $secondsSinceApproval = now()->diffInSeconds($approvedAt);
             
-            if ($secondsSinceApproval <= 62) {
+            $timeoutMinutes = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('approval_timeout_minutes', 5) : 5;
+            $timeoutSeconds = $timeoutMinutes * 60;
+
+            if ($secondsSinceApproval <= $timeoutSeconds) {
                 return response()->json([
                     'allowed' => true, 
                     'status' => 'approved',
-                    'expires_in' => 62 - $secondsSinceApproval
+                    'expires_in' => $timeoutSeconds - $secondsSinceApproval
                 ]);
             } else {
                 return response()->json([
                     'allowed' => false, 
                     'status' => 'expired',
-                    'message' => 'Your 62-second security clearance has expired. Please request a new authorization.'
+                    'message' => "Your {$timeoutSeconds}-second security clearance has expired. Please request a new authorization."
                 ]);
             }
         }

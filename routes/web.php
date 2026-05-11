@@ -109,25 +109,32 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         });
 
         // Ledge mapping for display and calculations
-        $ledgeMap = [
-            'A' => 'Stationary',
-            'B' => 'Cleaning',
-            'C' => 'IT & Acc.',
-            'D' => 'Transport',
-            'E' => 'Safety',
-            'G' => 'Pharmacy',
-            'J' => 'Equipment'
-        ];
+        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
 
-        // Low Stock Alerts (Stock < 100) - Grouped by Description to handle duplicates
+        // Dynamic Low Stock Threshold from Settings
+        $threshold = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? (int)\App\Models\Setting::get('low_stock_threshold', 100) 
+            : 100;
+
+        // Low Stock Alerts (Stock < Threshold) - Grouped by Description to handle duplicates
         $lowStockCount = \App\Models\InventoryItem::selectRaw('description, SUM(stock_balance) as total_stock')
             ->groupBy('description')
-            ->havingRaw('SUM(stock_balance) < 100')
+            ->havingRaw('SUM(stock_balance) < ?', [$threshold])
             ->get()
             ->count();
 
         // 50% Threshold Monitoring for Ledge Categories
-        $thresholdLedges = ['A', 'B', 'C', 'D', 'E', 'G', 'J'];
+        $thresholdLedges = array_keys($ledgeMap);
         $lowStockLedges = [];
 
         $categoryStats = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
@@ -141,8 +148,8 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             
             if ($target > 0) {
                 $percentage = round(($avail / $target) * 100);
-                // COMMON SENSE OVERRIDE: Low stock if percentage <= 50% OR absolute qty < 100 units
-                $isOverride = $avail < 100;
+                $threshold = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('low_stock_threshold', 100) : 100;
+                $isOverride = $avail < $threshold;
                 if ($percentage <= 50 || $isOverride) {
                     $lowStockLedges[] = [
                         'code' => $code,
@@ -159,7 +166,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         $lowStockItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.stock_balance) as stock_balance, SUM(inventory_items.qty) as qty')
             ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
-            ->havingRaw('SUM(inventory_items.stock_balance) < 100')
+            ->havingRaw('SUM(inventory_items.stock_balance) < ?', [$threshold])
             ->orderBy('stock_balance', 'asc')
             ->limit(10)
             ->get();
@@ -247,15 +254,17 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             })->unique()->values();
 
         // Ledge mapping for display and calculations (Category standardization)
-        $ledgeMap = [
-            'A' => 'Stationary',
-            'B' => 'Cleaning',
-            'C' => 'IT & Acc.',
-            'D' => 'Transport',
-            'E' => 'Safety',
-            'G' => 'Pharmacy',
-            'J' => 'Equipment'
-        ];
+        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
 
         return view('dashboard', compact(
             'isEmptyDist',
@@ -326,10 +335,12 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             $acknowledged = session()->get('acknowledged_notifications', []);
         }
 
+        $threshold = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('low_stock_threshold', 100) : 100;
+        
         $lowStockItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
             ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
             ->groupBy('description')
-            ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) < 100')
+            ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) < ?', [$threshold])
             ->get();
 
         $expiredItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) as total_qty')
@@ -370,9 +381,13 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/api/notifications/mark-all-read', function() {
         if (!auth()->check()) return response()->json(['success' => false], 401);
 
+        $threshold = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? (int)\App\Models\Setting::get('low_stock_threshold', 100) 
+            : 100;
+
         $lowStockItems = \App\Models\InventoryItem::selectRaw('description')
             ->groupBy('description')
-            ->havingRaw('SUM(stock_balance) < 100')
+            ->havingRaw('SUM(stock_balance) < ?', [$threshold])
             ->pluck('description')
             ->toArray();
 
@@ -430,6 +445,10 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::put('/admin/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
     Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages');
     Route::patch('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
+    Route::get('/admin/settings', [AdminController::class, 'settings'])->name('admin.settings');
+    Route::post('/admin/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
+    Route::post('/admin/settings/category', [AdminController::class, 'addCategory'])->name('admin.settings.category');
+    Route::delete('/admin/settings/category/{code}', [AdminController::class, 'deleteCategory'])->name('admin.settings.category.destroy');
 
     // Edit Request Routes
     Route::post('/edit-requests', [\App\Http\Controllers\EditRequestController::class, 'store'])->name('edit-requests.store');

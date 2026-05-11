@@ -37,11 +37,13 @@
                     $acknowledged = session()->get('acknowledged_notifications', []);
                 }
 
+                $threshold = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('low_stock_threshold', 100) : 100;
+
                 // Fetch low stock items details
                 $lowStockItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                     ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
                     ->groupBy('description')
-                    ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) < 100')
+                    ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) < ?', [$threshold])
                     ->get();
 
                 // Fetch expired items details

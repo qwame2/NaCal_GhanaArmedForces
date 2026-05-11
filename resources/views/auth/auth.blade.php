@@ -276,7 +276,9 @@
                 <!-- Auth Toggle Tabs -->
                 <div class="auth-tabs">
                     <button type="button" class="tab-btn active" id="tab-login" onclick="toggleAuth('login')">Secure Login</button>
+                    @if(\App\Models\Setting::get('allow_personnel_registration', true))
                     <button type="button" class="tab-btn" id="tab-register" onclick="toggleAuth('register')">Personnel Registry</button>
+                    @endif
                 </div>
             </div>
 
@@ -327,6 +329,7 @@
                         </form>
                     </div>
 
+                    @if(\App\Models\Setting::get('allow_personnel_registration', true))
                     <!-- Register Form -->
                     <div id="registerForm" class="auth-form-side">
                         <form action="{{ route('register') }}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 1.1rem;">
@@ -412,6 +415,15 @@
                     </button>
                         </form>
                     </div>
+                    @else
+                    <div id="registerForm" class="auth-form-side" style="text-align: center; padding: 4rem 2rem;">
+                        <div style="width: 80px; height: 80px; background: rgba(239, 68, 68, 0.1); border-radius: 30px; display: flex; align-items: center; justify-content: center; color: #ef4444; margin: 0 auto 1.5rem auto;">
+                            <i data-lucide="shield-off" style="width: 40px; height: 40px;"></i>
+                        </div>
+                        <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem;">Registry Suspended</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; line-height: 1.6;">Strategic Command has temporarily disabled new personnel registration. Please contact your administrator for manual account provisioning.</p>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>

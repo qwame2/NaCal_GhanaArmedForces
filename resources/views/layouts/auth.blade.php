@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{ asset('img/cropped_circle_image.png') }}">
-    <title>NACOC | Security Portal</title>
+    <title>{{ \App\Models\Setting::get('organization_name', 'NACOC') }} | Security Portal</title>
 
     <!-- CSS -->
     <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}">

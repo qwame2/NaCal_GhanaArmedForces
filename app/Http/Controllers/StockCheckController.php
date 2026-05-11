@@ -8,19 +8,24 @@ use Illuminate\Support\Facades\DB;
 
 class StockCheckController extends Controller
 {
-    private $ledgeMap = [
-        'A' => 'Stationary',
-        'B' => 'Cleaning',
-        'C' => 'IT & Acc.',
-        'D' => 'Transport',
-        'E' => 'Safety',
-        'G' => 'Pharmacy',
-        'J' => 'Equipment'
-    ];
+    private function getLedgeMap()
+    {
+        return \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
+    }
 
     public function index(Request $request)
     {
-        $ledgeMap = $this->ledgeMap;
+        $ledgeMap = $this->getLedgeMap();
 
         // Fetch aggregate totals for all items to show a master verification list
         $query = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')

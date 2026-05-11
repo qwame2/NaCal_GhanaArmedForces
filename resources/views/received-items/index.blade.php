@@ -413,10 +413,11 @@
 
                         <td data-label="Available Item Health" style="padding: 1.25rem 1.5rem;">
                             @php
-                            $isItemLow = $totalQty <= 100;
-                                $itemHealthStatus=$isItemLow ? 'LOW STOCK' : 'IN STOCK' ;
-                                $itemHealthColor=$isItemLow ? '#ef4444' : '#10b981' ;
-                                @endphp
+                                $threshold = \App\Models\Setting::get('low_stock_threshold', 100);
+                                $isItemLow = $totalQty <= $threshold;
+                                $itemHealthStatus = $isItemLow ? 'LOW STOCK' : 'IN STOCK';
+                                $itemHealthColor = $isItemLow ? '#ef4444' : '#10b981';
+                            @endphp
                                 <div style="display: flex; align-items: center; gap: 6px;">
                                 <span style="font-size: 0.6rem; font-weight: 900; color: white; background: {{ $itemHealthColor }}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; width: fit-content; text-transform: uppercase;">{{ $itemHealthStatus }}</span>
                                 <i data-lucide="{{ $isItemLow ? 'alert-circle' : 'check-circle' }}" style="width: 14px; color: {{ $itemHealthColor }};"></i>
@@ -3266,7 +3267,8 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
 
             batch.items.forEach((item, index) => {
                 const stock = parseFloat(item.stock_balance);
-                const healthColor = stock <= 0 ? '#ef4444' : (stock <= 100 ? '#f59e0b' : '#10b981');
+                const threshold = {{ \App\Models\Setting::get('low_stock_threshold', 100) }};
+                const healthColor = stock <= 0 ? '#ef4444' : (stock <= threshold ? '#f59e0b' : '#10b981');
                 
                 const itemHtml = `
                     <div class="edit-item-card" data-id="${item.id}" style="background: var(--bg-card); padding: 1.5rem; border: 1.5px solid var(--border-color); border-radius: 24px; position: relative; overflow: hidden; transition: all 0.3s;">

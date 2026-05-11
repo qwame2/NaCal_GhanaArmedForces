@@ -358,7 +358,8 @@
                             </td>
                             <td>
                                 @php
-                                    $isItemLow = $totalQty <= 100;
+                                    $threshold = \App\Models\Setting::get('low_stock_threshold', 100);
+                                    $isItemLow = $totalQty <= $threshold;
                                     $itemHealthColor = $isItemLow ? '#ef4444' : '#10b981';
                                 @endphp
                                 <div style="display: flex; align-items: center; gap: 4px;">

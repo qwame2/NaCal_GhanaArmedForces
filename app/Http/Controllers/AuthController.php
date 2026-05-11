@@ -21,6 +21,14 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        $allowRegistration = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::get('allow_personnel_registration', true) 
+            : true;
+
+        if (!$allowRegistration) {
+            return back()->with('error', 'Strategic Command has temporarily disabled new personnel registration.');
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username',
@@ -83,7 +91,29 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+        $maxAttempts = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? (int) \App\Models\Setting::get('max_login_attempts', 5) 
+            : 5;
+
+        $throttleKey = strtolower($request->input('username')) . '|' . $request->ip();
+
+        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($throttleKey, $maxAttempts)) {
+            $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn($throttleKey);
+            
+            \App\Models\SystemLog::create([
+                'user_id' => null,
+                'event_type' => 'SECURITY',
+                'action' => 'BRUTE_FORCE_PREVENTED',
+                'description' => "Too many failed login attempts for username '{$request->username}'. Lockout engaged for {$seconds} seconds.",
+                'severity' => 'danger',
+                'ip_address' => $request->ip()
+            ]);
+
+            return back()->with('error', "Too many login attempts. Please try again in {$seconds} seconds.")->withInput();
+        }
+
         if (Auth::attempt($credentials, $request->remember)) {
+            \Illuminate\Support\Facades\RateLimiter::clear($throttleKey);
             $user = auth()->user();
 
             // Check if the user's account is deactivated
@@ -139,6 +169,8 @@ class AuthController extends Controller
             // Default fallback based on role
             return $user->is_admin ? redirect()->route('admin.index') : redirect()->route('dashboard');
         }
+
+        \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, 60);
 
         return back()->withErrors([
             'username' => 'The provided credentials do not match our records.',

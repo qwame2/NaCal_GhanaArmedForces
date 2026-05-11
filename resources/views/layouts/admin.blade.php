@@ -496,10 +496,10 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <div class="brand-icon" style="background: transparent; box-shadow: none;">
-                <img src="{{ asset('img/NACOC.png') }}" alt="NACOC Logo" style="width: 100%; height: 100%; object-fit: contain;">
+                <img src="{{ asset('img/NACOC.png') }}" alt="{{ \App\Models\Setting::get('organization_name', 'NACOC') }} Logo" style="width: 100%; height: 100%; object-fit: contain;">
             </div>
             <div class="brand-text">
-                <h1>ADMIN CORE</h1>
+                <h1>{{ \App\Models\Setting::get('organization_name', 'ADMIN CORE') }}</h1>
                 <span>Strategic Access</span>
             </div>
         </div>
@@ -542,7 +542,7 @@
             <span class="nav-label">Parameters</span>
             <ul class="nav-list">
                 <li>
-                    <a href="#" class="nav-link">
+                    <a href="{{ route('admin.settings') }}" class="nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
                         <i data-lucide="settings"></i>
                         <span>Global Settings</span>
                     </a>

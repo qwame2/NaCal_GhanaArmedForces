@@ -10,15 +10,20 @@ use Carbon\Carbon;
 
 class ReceivedItemsController extends Controller
 {
-    private $ledgeMap = [
-        'A' => 'Stationary',
-        'B' => 'Cleaning',
-        'C' => 'IT & Acc.',
-        'D' => 'Transport',
-        'E' => 'Safety',
-        'G' => 'Pharmacy',
-        'J' => 'Equipment'
-    ];
+    private function getLedgeMap()
+    {
+        return \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
+    }
 
     public function preview($id)
     {
@@ -51,7 +56,7 @@ class ReceivedItemsController extends Controller
         ];
 
         $admin = auth()->user();
-        $ledgeMap = $this->ledgeMap;
+        $ledgeMap = $this->getLedgeMap();
         $history = collect(); 
 
         // Redirect to donation voucher if it's a donor
@@ -70,7 +75,7 @@ class ReceivedItemsController extends Controller
             return redirect()->route('admin.inventory')->with('info', 'Strategic Oversight required. Redirecting to Command Center.');
         }
 
-        $ledgeMap = $this->ledgeMap;
+        $ledgeMap = $this->getLedgeMap();
 
         // Shift to querying individual items for a more detailed "Received Items" report
         $query = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
@@ -184,8 +189,11 @@ class ReceivedItemsController extends Controller
             }
 
             $approvedAt = $editReq->approved_at ?? $editReq->updated_at;
-            if (now()->diffInSeconds($approvedAt) > 3600) {
-                return response()->json(['success' => false, 'message' => 'Security clearance expired (1-hour limit exceeded).'], 403);
+            $timeoutMinutes = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('approval_timeout_minutes', 5) : 5;
+            $timeoutSeconds = $timeoutMinutes * 60;
+
+            if (now()->diffInSeconds($approvedAt) > $timeoutSeconds) {
+                return response()->json(['success' => false, 'message' => "Security clearance expired ({$timeoutMinutes}-minute limit exceeded)."], 403);
             }
         }
 
@@ -298,7 +306,7 @@ class ReceivedItemsController extends Controller
 
     public function show(Request $request, $id)
     {
-        $ledgeMap = $this->ledgeMap;
+        $ledgeMap = $this->getLedgeMap();
         $batch = InventoryBatch::with(['items'])->findOrFail($id);
         
         // Fetch history logs for this batch
@@ -319,7 +327,7 @@ class ReceivedItemsController extends Controller
 
     public function print($id)
     {
-        $ledgeMap = $this->ledgeMap;
+        $ledgeMap = $this->getLedgeMap();
         $batch = InventoryBatch::with(['items'])->findOrFail($id);
         
         // Fetch history logs for this batch
@@ -333,7 +341,7 @@ class ReceivedItemsController extends Controller
 
     public function sra($id)
     {
-        $ledgeMap = $this->ledgeMap;
+        $ledgeMap = $this->getLedgeMap();
         $batch = InventoryBatch::with(['items'])->findOrFail($id);
         
         // Fetch the Admin who approved this specific batch
@@ -379,8 +387,11 @@ class ReceivedItemsController extends Controller
             }
 
             $approvedAt = $editReq->approved_at ?? $editReq->updated_at;
-            if (now()->diffInSeconds($approvedAt) > 3600) {
-                return response()->json(['success' => false, 'message' => 'Security clearance expired (1-hour limit exceeded).'], 403);
+            $timeoutMinutes = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('approval_timeout_minutes', 5) : 5;
+            $timeoutSeconds = $timeoutMinutes * 60;
+
+            if (now()->diffInSeconds($approvedAt) > $timeoutSeconds) {
+                return response()->json(['success' => false, 'message' => "Security clearance expired ({$timeoutMinutes}-minute limit exceeded)."], 403);
             }
         }
 

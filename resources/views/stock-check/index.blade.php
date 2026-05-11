@@ -70,11 +70,12 @@
                 <tbody>
                     @forelse($items as $item)
                     @php
+                        $threshold = \App\Models\Setting::get('low_stock_threshold', 100);
                         $stock = (float)$item->total_available;
                         $received = (float)$item->total_received;
                         $variance = (float)$item->total_variance;
-                        $statusColor = $stock <= 100 ? '#ef4444' : ($stock <= 300 ? '#f59e0b' : '#10b981');
-                        $statusText = $stock <= 0 ? 'Out of Stock' : ($stock <= 100 ? 'Low Stock' : 'Stable');
+                        $statusColor = $stock <= $threshold ? '#ef4444' : ($stock <= ($threshold * 3) ? '#f59e0b' : '#10b981');
+                        $statusText = $stock <= 0 ? 'Out of Stock' : ($stock <= $threshold ? 'Low Stock' : 'Stable');
                     @endphp
                     <tr class="activity-row" style="border-top: 1px solid var(--border-color);">
                         <td style="padding: 1.25rem 1.5rem;">
