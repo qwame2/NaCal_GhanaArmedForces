@@ -15,7 +15,8 @@ class EditRequestController extends Controller
         $request->validate([
             'item_id' => 'required|integer',
             'reason' => 'required|string',
-            'request_type' => 'nullable|string|in:edit,delete'
+            'request_type' => 'nullable|string|in:edit,delete,edit_submission',
+            'payload' => 'nullable|string'
         ]);
 
         $item = InventoryBatch::with('items')->find($request->item_id);
@@ -35,35 +36,51 @@ class EditRequestController extends Controller
             'item_id' => $request->item_id,
             'request_type' => $requestType,
             'reason' => $request->reason,
+            'payload' => $request->payload,
             'status' => 'pending'
         ]);
 
         $admins = User::where('is_admin', true)->get();
         if ($admins->count() > 0) {
-            $typeLabel = strtoupper($requestType);
-            $actionWord = $requestType === 'edit' ? 'edit' : 'PERMANENTLY DELETE';
-            
+            $typeLabel = $requestType === 'edit_submission' ? 'ENTRY EDIT' : strtoupper($requestType);
+            $actionWord = ($requestType === 'edit' || $requestType === 'edit_submission') ? 'edit' : 'PERMANENTLY DELETE';
+            $mainText = $requestType === 'edit_submission' 
+                ? "Personnel <b style='color: #4f46e5;'>{$editReq->user->name}</b> has submitted <b>Proposed Changes</b> for"
+                : "Personnel <b style='color: #4f46e5;'>{$editReq->user->name}</b> is requesting permission to <b style='color: " . ($requestType === 'delete' ? '#ef4444' : '#4f46e5') . ";'>{$actionWord}</b>";
+
             $msgContent = "
-                <div class='edit-req-msg admin-view' style='padding: 20px; background: rgba(79, 70, 229, 0.03); border-radius: 16px; border: 1px solid rgba(79, 70, 229, 0.1); font-family: inherit;'>
-                    <div style='display: flex; align-items: center; gap: 8px; margin-bottom: 15px;'>
-                        <div style='width: 8px; height: 8px; background: #4f46e5; border-radius: 50%;'></div>
-                        <b style='font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #4f46e5;'>{$typeLabel} AUTHORIZATION REQUIRED</b>
+                <div class='edit-req-msg admin-view' style='padding: 24px; background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; font-family: inherit; box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.15); position: relative; overflow: hidden;'>
+                    <div style='position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #4f46e5, #818cf8);'></div>
+                    <div style='display: flex; align-items: center; gap: 10px; margin-bottom: 16px;'>
+                        <div style='width: 32px; height: 32px; background: rgba(79, 70, 229, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4f46e5;'>
+                            <svg style='width: 16px; height: 16px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'></path></svg>
+                        </div>
+                        <b style='font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: #4f46e5;'>{$typeLabel} OVERSIGHT REQUIRED</b>
                     </div>
                     
-                    <div style='font-size: 0.9rem; color: #1e293b; line-height: 1.6; margin-bottom: 15px;'>
-                        Personnel <b style='color: #4f46e5;'>{$editReq->user->name}</b> is requesting permission to 
-                        <b style='color: " . ($requestType === 'delete' ? '#ef4444' : '#4f46e5') . ";'>{$actionWord}</b> 
-                        <span style='background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: 700;'>{$displayTitle}</span>
+                    <div style='font-size: 0.95rem; color: #334155; line-height: 1.6; margin-bottom: 20px;'>
+                        {$mainText} 
+                        <span style='background: #f8fafc; padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-family: monospace; font-weight: 700; color: #0f172a;'>{$displayTitle}</span>
+                    </div>";
+
+            if ($requestType === 'edit_submission') {
+                $msgContent .= "
+                    <button data-entry-req-id='{$editReq->id}' class='entry-preview-btn' style='width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: #4f46e5; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: 0.3s; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);' onmouseover='this.style.transform=\"translateY(-2px)\"; this.style.boxShadow=\"0 6px 16px rgba(79, 70, 229, 0.35)\"' onmouseout='this.style.transform=\"translateY(0)\"; this.style.boxShadow=\"0 4px 12px rgba(79, 70, 229, 0.25)\"'>
+                        <svg style='width: 18px; height: 18px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'></path><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'></path></svg> Preview Proposed Changes
+                    </button>";
+            }
+
+            $msgContent .= "
+                    <div style='background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px dashed #cbd5e1; margin-bottom: 20px;'>
+                        <div style='font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;'>
+                            <svg style='width: 14px; height: 14px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'></path></svg> Justification
+                        </div>
+                        <div style='font-size: 0.9rem; color: #334155; line-height: 1.5; font-style: italic;'>" . e($request->reason) . "</div>
                     </div>
 
-                    <div style='background: white; padding: 12px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.05); margin-bottom: 20px;'>
-                        <div style='font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 4px;'>Justification</div>
-                        <div style='font-size: 0.85rem; color: #334155; line-height: 1.5;'>" . e($request->reason) . "</div>
-                    </div>
-
-                    <div style='display: flex; gap: 10px;' id='edit-req-actions-{$editReq->id}'>
-                        <button onclick='window.processEditRequest({$editReq->id}, \"approved\", this)' style='flex: 1; background: #10b981; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 800; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: 0.3s;'>Approve</button>
-                        <button onclick='window.processEditRequest({$editReq->id}, \"canceled\", this)' style='background: #f1f5f9; color: #64748b; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 800; transition: 0.3s;'>Decline</button>
+                    <div style='display: flex; gap: 12px;' id='edit-req-actions-{$editReq->id}'>
+                        <button onclick='window.processEditRequest({$editReq->id}, \"approved\", this)' style='flex: 1; background: #10b981; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 800; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: 0.3s;' onmouseover='this.style.background=\"#059669\"' onmouseout='this.style.background=\"#10b981\"'>Approve</button>
+                        <button onclick='window.processEditRequest({$editReq->id}, \"canceled\", this)' style='flex: 1; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 800; transition: 0.3s;' onmouseover='this.style.background=\"#e2e8f0\"; this.style.color=\"#0f172a\"' onmouseout='this.style.background=\"#f1f5f9\"; this.style.color=\"#64748b\"'>Decline</button>
                     </div>
                 </div>";
             
@@ -91,7 +108,8 @@ class EditRequestController extends Controller
     public function process(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:approved,canceled'
+            'status' => 'required|in:approved,canceled',
+            'decline_reason' => 'nullable|string|max:1000'
         ]);
 
         $editReq = EditRequest::findOrFail($id);
@@ -102,12 +120,17 @@ class EditRequestController extends Controller
         $editReq->status = $request->status;
         if ($request->status === 'approved') {
             $editReq->approved_at = now();
+            
+            // IF this was an 'edit_submission' or 'issue_submission', apply it to the DB now!
+            if (in_array($editReq->request_type, ['edit_submission', 'issue_submission']) && $editReq->payload) {
+                $this->applyPayload($editReq);
+            }
         }
         $editReq->save();
 
         $requestType = $editReq->request_type ?? 'edit';
-        $typeLabel = strtoupper($requestType);
-        $actionWord = $requestType === 'edit' ? 'edit' : 'PERMANENTLY DELETE';
+        $typeLabel = $requestType === 'edit_submission' ? 'ENTRY EDIT' : ($requestType === 'issue_submission' ? 'DISBURSEMENT' : strtoupper($requestType));
+        $actionWord = ($requestType === 'edit' || $requestType === 'edit_submission') ? 'edit' : ($requestType === 'issue_submission' ? 'ISSUE ITEMS' : 'PERMANENTLY DELETE');
         $statusText = $request->status === 'approved' ? 'APPROVED' : 'CANCELED';
         $color = $request->status === 'approved' ? '#10b981' : '#dc2626';
 
@@ -116,11 +139,15 @@ class EditRequestController extends Controller
         $originalMsgs = Message::where('message', 'like', "%edit-req-actions-{$editReq->id}%")->get();
         
         if ($originalMsgs->count() > 0) {
-            $item = InventoryBatch::with('items')->find($editReq->item_id);
-            $itemNames = $item ? $item->items->pluck('description')->take(3)->implode(', ') : 'Unknown';
-            if ($item && $item->items->count() > 3) $itemNames .= ' etc.';
-            
-            $batchInfo = $item ? "Batch #{$item->id} ({$itemNames})" : "Batch #{$editReq->item_id}";
+            if ($requestType === 'issue_submission') {
+                $payloadData = json_decode($editReq->payload, true);
+                $batchInfo = "Disbursement to {$payloadData['beneficiary']}";
+            } else {
+                $item = InventoryBatch::with('items')->find($editReq->item_id);
+                $itemNames = $item ? $item->items->pluck('description')->take(3)->implode(', ') : 'Unknown';
+                if ($item && $item->items->count() > 3) $itemNames .= ' etc.';
+                $batchInfo = $item ? "Batch #{$item->id} ({$itemNames})" : "Batch #{$editReq->item_id}";
+            }
             $statusColor = $request->status === 'approved' ? '#10b981' : '#ef4444';
             $statusBg = $request->status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
             
@@ -153,27 +180,48 @@ class EditRequestController extends Controller
         }
 
         // Send a confirmation message to the Personnel
-        $item = InventoryBatch::with('items')->find($editReq->item_id);
-        $itemNames = $item ? $item->items->pluck('description')->take(3)->implode(', ') : 'Unknown';
-        if ($item && $item->items->count() > 3) $itemNames .= ' etc.';
-        $batchInfo = $item ? "Batch #{$item->id} ({$itemNames})" : "Batch #{$editReq->item_id}";
-        $confirmationMsg = "<div class='personnel-view' style='display: none;'><b style='color: {$color}'>{$statusText}</b><br>Your request to " . ($requestType === 'edit' ? 'edit' : 'DELETE') . " {$batchInfo} has been {$request->status}.</div>";
+        if ($requestType === 'issue_submission') {
+            $payloadData = json_decode($editReq->payload, true);
+            $batchInfo = "Disbursement to {$payloadData['beneficiary']}";
+            $actionVerb = 'DISBURSE ITEMS';
+        } else {
+            $item = InventoryBatch::with('items')->find($editReq->item_id);
+            $itemNames = $item ? $item->items->pluck('description')->take(3)->implode(', ') : 'Unknown';
+            if ($item && $item->items->count() > 3) $itemNames .= ' etc.';
+            $batchInfo = $item ? "Batch #{$item->id} ({$itemNames})" : "Batch #{$editReq->item_id}";
+            $actionVerb = ($requestType === 'edit' || $requestType === 'edit_submission') ? 'edit' : 'DELETE';
+        }
+        $declineReason = $request->input('decline_reason');
+        $declineBlock = '';
+        if ($request->status === 'canceled' && $declineReason) {
+            $declineBlock = "<div style='margin-top: 12px; padding: 10px 14px; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; font-size: 0.85rem; color: #7f1d1d;'><b>Reason:</b> " . e($declineReason) . "</div>";
+        }
+        $confirmationMsg = "<div class='personnel-view' style='display: none;'><b style='color: {$color}'>{$statusText}</b><br>Your request to {$actionVerb} {$batchInfo} has been {$request->status}.{$declineBlock}</div>";
         
         $timeoutMinutes = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('approval_timeout_minutes', 5) : 5;
         $timeoutSeconds = $timeoutMinutes * 60;
 
-        if ($request->status === 'approved' && $requestType === 'edit') {
+        if ($request->status === 'approved' && ($requestType === 'edit' || $requestType === 'edit_submission')) {
             $editUrl = route('receiveditems', ['edit_batch' => $editReq->item_id]);
             $expiry = now()->addSeconds($timeoutSeconds)->getTimestampMs();
-            $confirmationMsg = "
-                <div class='clearance-container personnel-view' data-expires-at='{$expiry}' data-req-id='{$editReq->id}' data-type='edit' style='display: none; padding: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid #10b981; border-radius: 16px;'>
-                    <b style='color: #10b981; font-size: 1.1rem;'>APPROVED</b><br>
-                    Your request to <b style='color: #4f46e5;'>EDIT</b> {$batchInfo} has been approved.<br><br>
-                    <div class='clearance-timer-notice' style='background: rgba(245, 158, 11, 0.1); padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 800; color: #d97706; margin-bottom: 15px;'>
-                        ⚠️ SECURITY NOTICE: This clearance expires in <span class='timer-seconds'>{$timeoutSeconds}</span>s.
-                    </div>
-                    <a href='{$editUrl}' class='clearance-action-btn' style='display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);'>Open Editor Now</a>
-                </div>";
+            
+            if ($requestType === 'edit_submission') {
+                $confirmationMsg = "
+                    <div class='personnel-view' style='display: none; padding: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid #10b981; border-radius: 16px;'>
+                        <b style='color: #10b981; font-size: 1.1rem;'>EDIT APPROVED & SAVED</b><br>
+                        Your proposed changes to <b style='color: #4f46e5;'>{$batchInfo}</b> have been reviewed and committed to the live inventory by the overseer.
+                    </div>";
+            } else {
+                $confirmationMsg = "
+                    <div class='clearance-container personnel-view' data-expires-at='{$expiry}' data-req-id='{$editReq->id}' data-type='edit' style='display: none; padding: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid #10b981; border-radius: 16px;'>
+                        <b style='color: #10b981; font-size: 1.1rem;'>APPROVED</b><br>
+                        Your request to <b style='color: #4f46e5;'>EDIT</b> {$batchInfo} has been approved.<br><br>
+                        <div class='clearance-timer-notice' style='background: rgba(245, 158, 11, 0.1); padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 800; color: #d97706; margin-bottom: 15px;'>
+                            ⚠️ SECURITY NOTICE: This clearance expires in <span class='timer-seconds'>{$timeoutSeconds}</span>s.
+                        </div>
+                        <a href='{$editUrl}' class='clearance-action-btn' style='display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);'>Open Editor Now</a>
+                    </div>";
+            }
         } elseif ($request->status === 'approved' && $requestType === 'delete') {
             $deleteUrl = route('receiveditems', ['delete_batch' => $editReq->item_id]);
             $expiry = now()->addSeconds($timeoutSeconds)->getTimestampMs();
@@ -186,6 +234,12 @@ class EditRequestController extends Controller
                         ⚠️ SECURITY NOTICE: This clearance expires in <span class='timer-seconds'>{$timeoutSeconds}</span>s.
                     </div>
                     <a href='{$deleteUrl}' class='clearance-action-btn' style='display: inline-block; background: #ef4444; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);'>Delete Batch Permanently</a>
+                </div>";
+        } elseif ($request->status === 'approved' && $requestType === 'issue_submission') {
+            $confirmationMsg = "
+                <div class='personnel-view' style='display: none; padding: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid #10b981; border-radius: 16px;'>
+                    <b style='color: #10b981; font-size: 1.1rem;'>DISBURSEMENT APPROVED & EXECUTED</b><br>
+                    Your request for <b style='color: #4f46e5;'>{$batchInfo}</b> has been authorized. The items have been disbursed and the inventory has been automatically updated.
                 </div>";
         }
 
@@ -469,5 +523,113 @@ class EditRequestController extends Controller
             'batch_id' => $returnBatchId,
             'is_remainder' => ($editReq->request_type === 'remainder_submission')
         ]);
+    }
+
+    /**
+     * Apply the payload from an edit_submission to the actual database records.
+     */
+    private function applyPayload(EditRequest $editReq)
+    {
+        $payload = json_decode($editReq->payload, true);
+        if (!$payload) return;
+
+        \DB::transaction(function() use ($editReq, $payload) {
+            if ($editReq->request_type === 'issue_submission') {
+                $issuance = \App\Models\Issuance::create([
+                    'issuance_date' => $payload['issuance_date'],
+                    'beneficiary' => $payload['beneficiary'],
+                    'authority' => $payload['authority'],
+                    'issuance_type' => $payload['issuance_type'],
+                ]);
+
+                foreach ($payload['items'] as $cartItem) {
+                    $qtyToIssue = $cartItem['qty'];
+                    $unit = \App\Models\InventoryItem::where('description', $cartItem['description'])->value('unit');
+
+                    \App\Models\IssuedItem::create([
+                        'issuance_id' => $issuance->id,
+                        'description' => $cartItem['description'],
+                        'ledge_category' => $cartItem['category'],
+                        'quantity' => $qtyToIssue,
+                        'unit' => $unit
+                    ]);
+
+                    $stockItems = \App\Models\InventoryItem::where('description', $cartItem['description'])
+                        ->whereHas('batch', function ($q) use ($cartItem) {
+                            $q->where('ledge_category', $cartItem['category']);
+                        })
+                        ->where('qty', '>', 0)
+                        ->orderBy('created_at', 'asc')
+                        ->orderBy('id', 'asc')
+                        ->get();
+
+                    foreach ($stockItems as $inventoryItem) {
+                        if ($qtyToIssue <= 0) break;
+
+                        $available = floatval($inventoryItem->qty);
+                        $stockBal = floatval($inventoryItem->stock_balance);
+                        $take = min($available, $qtyToIssue);
+
+                        $inventoryItem->qty = $available - $take;
+                        if ($payload['issuance_type'] === 'Permanent') {
+                            $inventoryItem->stock_balance = $stockBal - $take;
+                        }
+                        $inventoryItem->save();
+
+                        $qtyToIssue -= $take;
+                    }
+
+                    if ($qtyToIssue > 0) {
+                        throw new \Exception("Insufficient stock for " . $cartItem['description']);
+                    }
+                }
+
+                \App\Models\SystemLog::create([
+                    'user_id' => $editReq->user_id,
+                    'event_type' => 'INVENTORY',
+                    'action' => 'ISSUE_ITEM',
+                    'description' => "Admin approved disbursement of items to {$payload['beneficiary']} on authority of {$payload['authority']}.",
+                    'severity' => $payload['issuance_type'] === 'Permanent' ? 'warning' : 'info',
+                    'metadata' => [
+                        'beneficiary' => $payload['beneficiary'],
+                        'authority' => $payload['authority'],
+                        'issuance_type' => $payload['issuance_type'],
+                        'items_issued' => $payload['items']
+                    ],
+                    'ip_address' => request()->ip()
+                ]);
+
+            } else {
+                $batch = InventoryBatch::find($editReq->item_id);
+                if (!$batch) return;
+
+                // Update Batch
+                $batch->update([
+                    'arrival_date' => $payload['arrival_date'],
+                    'ledge_category' => $payload['ledge_category'],
+                    'acquisition_type' => $payload['acquisition_type'],
+                    'supplier_name' => $payload['supplier_name'],
+                    'supplier_status' => $payload['supplier_status'],
+                    'donor_name' => $payload['donor_name'] ?? null,
+                ]);
+
+                // Update Items
+                if (isset($payload['items'])) {
+                    foreach ($payload['items'] as $itemData) {
+                        $item = \App\Models\InventoryItem::find($itemData['id']);
+                        if ($item && $item->batch_id == $batch->id) {
+                            $item->update([
+                                'description' => $itemData['description'],
+                                'unit' => $itemData['unit'],
+                                'qty' => $itemData['qty'],
+                                'stock_balance' => $itemData['stock_balance'],
+                                'variance' => $itemData['variance'],
+                                'remarks' => $itemData['remarks'] ?? null,
+                            ]);
+                        }
+                    }
+                }
+            }
+        });
     }
 }

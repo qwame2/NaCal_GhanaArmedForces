@@ -664,20 +664,58 @@
             const personnel = (pMatch && pMatch[1]) ? pMatch[1].trim() : 'Personnel';
             
             Swal.fire({
-                title: 'Reject Stock Entry',
-                text: `Provide a reason for rejecting the submission from ${personnel}:`,
-                input: 'textarea',
-                inputPlaceholder: 'e.g., Incorrect quantity specified, missing documentation...',
-                inputAttributes: {
-                    'aria-label': 'Type your reason here'
-                },
+                html: `
+                    <div style="text-align: left;">
+                        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.06); border-radius: 50%;"></div>
+                            <div style="position: absolute; bottom: -30px; left: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.04); border-radius: 50%;"></div>
+                            <div style="display: flex; align-items: center; gap: 14px; position: relative;">
+                                <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <svg style="width: 26px; height: 26px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 3px;">Admin Action Required</div>
+                                    <div style="font-size: 1.3rem; font-weight: 900; color: white; letter-spacing: -0.02em;">Reject Stock Entry</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6; margin-bottom: 1.25rem; padding: 0 0.25rem;">
+                            Provide a clear reason for rejecting the submission from <b style="color: #0f172a;">${personnel}</b>. This will be sent to the personnel immediately.
+                        </p>
+
+                        <textarea id="swal-reject-reason" placeholder="e.g., Incorrect quantity specified, missing documentation, requires further verification..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
+
+                        <div style="margin-top: 1rem; padding: 10px 14px; background: rgba(245, 158, 11, 0.07); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px;">
+                            <svg style="width: 16px; height: 16px; color: #d97706; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <span style="font-size: 0.78rem; font-weight: 700; color: #92400e;">A reason is mandatory and will be permanently logged in the audit system.</span>
+                        </div>
+                    </div>
+                `,
                 showCancelButton: true,
-                confirmButtonText: 'Confirm Rejection',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#dc2626',
-                preConfirm: (reason) => {
+                confirmButtonText: '&#10005; &nbsp;Confirm Rejection',
+                cancelButtonText: 'Go Back',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                focusConfirm: false,
+                customClass: {
+                    popup: 'swal-decline-popup',
+                    confirmButton: 'swal-decline-confirm-btn',
+                    cancelButton: 'swal-decline-cancel-btn',
+                },
+                didOpen: () => {
+                    if (!document.getElementById('swal-decline-styles')) {
+                        const style = document.createElement('style');
+                        style.id = 'swal-decline-styles';
+                        style.textContent = `.swal-decline-popup { border-radius: 24px !important; overflow: hidden !important; padding: 1.25em !important; } .swal-decline-confirm-btn { border-radius: 10px !important; font-weight: 800 !important; padding: 12px 24px !important; font-size: 0.9rem !important; } .swal-decline-cancel-btn { border-radius: 10px !important; font-weight: 700 !important; padding: 12px 24px !important; font-size: 0.9rem !important; } .swal2-actions { gap: 10px !important; margin-top: 1.5rem !important; }`;
+                        document.head.appendChild(style);
+                    }
+                },
+                preConfirm: () => {
+                    const reason = document.getElementById('swal-reject-reason').value.trim();
                     if (!reason) {
-                        Swal.showValidationMessage('A justification is required to reject this request.');
+                        Swal.showValidationMessage('<span style="font-size:0.85rem;">⚠ A justification is required to reject this entry.</span>');
+                        return false;
                     }
                     return reason;
                 }
@@ -760,6 +798,79 @@
 
     // Process Edit Request logic
     window.processEditRequest = function(id, status, btnElement) {
+        if (status === 'canceled') {
+            Swal.fire({
+                html: `
+                    <div style="text-align: left;">
+                        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.06); border-radius: 50%;"></div>
+                            <div style="position: absolute; bottom: -30px; left: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.04); border-radius: 50%;"></div>
+                            <div style="display: flex; align-items: center; gap: 14px; position: relative;">
+                                <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <svg style="width: 26px; height: 26px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 3px;">Admin Action Required</div>
+                                    <div style="font-size: 1.3rem; font-weight: 900; color: white; letter-spacing: -0.02em;">Decline Disbursement</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6; margin-bottom: 1.25rem; padding: 0 0.25rem;">
+                            Provide a clear reason for declining this request. The personnel will be notified immediately with your justification.
+                        </p>
+
+                        <div style="position: relative;">
+                            <textarea id="swal-decline-reason" placeholder="e.g. Insufficient justification provided, items currently out of stock, request lacks proper authority sign-off..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
+                        </div>
+
+                        <div style="margin-top: 1rem; padding: 10px 14px; background: rgba(245, 158, 11, 0.07); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px;">
+                            <svg style="width: 16px; height: 16px; color: #d97706; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            <span style="font-size: 0.78rem; font-weight: 700; color: #92400e;">A reason is mandatory and will be logged in the system.</span>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '&#10005; &nbsp;Decline Request',
+                cancelButtonText: 'Go Back',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                focusConfirm: false,
+                customClass: {
+                    popup: 'swal-decline-popup',
+                    confirmButton: 'swal-decline-confirm-btn',
+                    cancelButton: 'swal-decline-cancel-btn',
+                },
+                didOpen: () => {
+                    const style = document.createElement('style');
+                    style.id = 'swal-decline-styles';
+                    style.textContent = `
+                        .swal-decline-popup { border-radius: 24px !important; overflow: hidden !important; padding: 1.25em !important; }
+                        .swal-decline-confirm-btn { border-radius: 10px !important; font-weight: 800 !important; padding: 12px 24px !important; font-size: 0.9rem !important; letter-spacing: 0.02em !important; }
+                        .swal-decline-cancel-btn { border-radius: 10px !important; font-weight: 700 !important; padding: 12px 24px !important; font-size: 0.9rem !important; }
+                        .swal2-actions { gap: 10px !important; margin-top: 1.5rem !important; }
+                    `;
+                    if (!document.getElementById('swal-decline-styles')) document.head.appendChild(style);
+                },
+                preConfirm: () => {
+                    const reason = document.getElementById('swal-decline-reason').value.trim();
+                    if (!reason) {
+                        Swal.showValidationMessage('<span style="font-size:0.85rem;">⚠ A reason is required before declining.</span>');
+                        return false;
+                    }
+                    return reason;
+                }
+            }).then(result => {
+                if (result.isConfirmed && result.value) {
+                    _doProcessRequest(id, status, btnElement, result.value);
+                }
+            });
+        } else {
+            _doProcessRequest(id, status, btnElement, null);
+        }
+    };
+
+    function _doProcessRequest(id, status, btnElement, declineReason) {
         const actionsDiv = document.getElementById(`edit-req-actions-${id}`);
         if (actionsDiv) {
             const btns = actionsDiv.querySelectorAll('button');
@@ -775,7 +886,7 @@
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ status: status })
+            body: JSON.stringify({ status: status, decline_reason: declineReason })
         })
         .then(res => {
             if (!res.ok) throw new Error('Server error');
@@ -801,7 +912,7 @@
             btnElement.innerText = status === 'approved' ? 'Approve' : 'Cancel';
             btnElement.disabled = false;
         });
-    };
+    }
 
     function initClearanceTimers() {
         if (window.clearanceInterval) clearInterval(window.clearanceInterval);
@@ -1106,22 +1217,151 @@
             window._entryPreviewLoading = false;
 
             const batch = data.batch;
-            const itemsHtml = batch.items.map(item => {
-                const v = parseFloat(item.variance) || 0;
-                const vColor = v < 0 ? '#ef4444' : (v > 0 ? '#10b981' : '#3b82f6');
-                const vSign = v > 0 ? '+' : '';
-                return `
-                    <tr style="border-bottom: 1px solid #f1f5f9;">
-                        <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a;">${item.description}</td>
-                        <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">${item.unit}</td>
-                        <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0f172a; text-align: right;">${parseFloat(item.qty).toLocaleString()}</td>
-                        <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #4f46e5; text-align: right;">${parseFloat(item.stock_balance).toLocaleString()}</td>
-                        <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 900; color: ${vColor}; text-align: right;">${vSign}${v.toLocaleString()}</td>
-                    </tr>
-                `;
-            }).join('');
+            let content = '';
 
-            const content = `
+            if (data.request_type === 'issue_submission') {
+                const itemsHtml = batch.items.map((item, idx) => {
+                    return `
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem; border-bottom: 1px dashed #e2e8f0; background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; transition: all 0.3s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}'">
+                            <div style="display: flex; align-items: center; gap: 1.25rem;">
+                                <div style="width: 48px; height: 48px; background: rgba(99, 102, 241, 0.1); color: #4f46e5; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; border: 1px solid rgba(99, 102, 241, 0.2);">
+                                    ${idx + 1}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 900; font-size: 1.1rem; color: #0f172a; margin-bottom: 4px;">${item.description}</div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span style="font-size: 0.7rem; font-weight: 800; color: #4f46e5; background: rgba(79, 70, 229, 0.1); padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em;">CATEGORY ${item.category || '-'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align: right; background: white; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                                <div style="font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;">Quantity to Issue</div>
+                                <div style="font-size: 1.5rem; font-weight: 900; color: #f59e0b; display: flex; align-items: baseline; gap: 4px; justify-content: flex-end;">
+                                    ${parseFloat(item.qty).toLocaleString()} 
+                                    <span style="font-size: 0.85rem; color: #64748b; font-weight: 700;">${item.unit || 'Units'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                content = `
+                    <div style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 3.5rem 3rem 2.5rem 3rem; border-bottom: 1px solid #e2e8f0; position: relative;">
+                        <button onclick="window.closeOversightPanel()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 10;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
+                            <i data-lucide="x" style="width: 18px;"></i>
+                        </button>
+
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 2rem;">
+                            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                                <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);">
+                                    <i data-lucide="package-minus" style="width: 32px; height: 32px;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; font-weight: 800; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Disbursement Authorization</div>
+                                    <h2 style="margin: 0; font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -0.03em;">Issuance Details</h2>
+                                    <p style="margin: 6px 0 0; font-size: 0.95rem; color: #64748b; font-weight: 500;">Initiated by <b>${data.recorded_by_name}</b> on ${data.created_at}</p>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 2rem; background: white; padding: 1.25rem 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;">
+                                <div>
+                                    <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">User Department</label>
+                                    <div style="font-size: 1.1rem; font-weight: 900; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></div>
+                                        ${batch.beneficiary}
+                                    </div>
+                                </div>
+                                <div style="width: 1px; height: 40px; background: #e2e8f0; align-self: center;"></div>
+                                <div>
+                                    <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Approving Authority</label>
+                                    <div style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">${batch.authority}</div>
+                                </div>
+                                <div style="width: 1px; height: 40px; background: #e2e8f0; align-self: center;"></div>
+                                <div>
+                                    <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Issuance Type</label>
+                                    <span style="font-size: 0.85rem; font-weight: 900; color: #f59e0b; background: rgba(245, 158, 11, 0.1); padding: 4px 12px; border-radius: 8px; border: 1px dashed rgba(245, 158, 11, 0.3);">${batch.issuance_type}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 2.5rem 3rem; flex: 1; overflow-y: auto; background: #f8fafc;">
+                        <h3 style="font-size: 1rem; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="list-checks" style="width: 20px; color: #4f46e5;"></i> Items to Disburse (${batch.items.length})
+                        </h3>
+                        <div style="background: white; border-radius: 24px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.03); margin-bottom: 2rem;">
+                            ${itemsHtml}
+                        </div>
+                    </div>
+                `;
+            } else {
+                const itemsHtml = batch.items.map(item => {
+                    const v = parseFloat(item.variance) || 0;
+                    const vColor = v < 0 ? '#ef4444' : (v > 0 ? '#10b981' : '#3b82f6');
+                    const vSign = v > 0 ? '+' : '';
+                    return `
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a;">${item.description}</td>
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">${item.unit}</td>
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0f172a; text-align: right;">${parseFloat(item.qty).toLocaleString()}</td>
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #4f46e5; text-align: right;">${parseFloat(item.stock_balance).toLocaleString()}</td>
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 900; color: ${vColor}; text-align: right;">${vSign}${v.toLocaleString()}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                let previousHtml = '';
+                let proposedTitle = '';
+                
+                if (data.request_type === 'edit_submission' && data.previous_batch) {
+                    proposedTitle = `
+                        <h3 style="font-size: 0.95rem; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="edit-3" style="width: 18px;"></i> Proposed Changes
+                        </h3>
+                    `;
+
+                    const prevBatch = data.previous_batch;
+                    const prevItemsHtml = prevBatch.items.map(item => {
+                        const v = parseFloat(item.variance) || 0;
+                        const vColor = v < 0 ? '#ef4444' : (v > 0 ? '#10b981' : '#3b82f6');
+                        const vSign = v > 0 ? '+' : '';
+                        return `
+                            <tr style="border-bottom: 1px solid #fee2e2;">
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #7f1d1d;">${item.description}</td>
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #991b1b;">${item.unit}</td>
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #7f1d1d; text-align: right;">${parseFloat(item.qty).toLocaleString()}</td>
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #7f1d1d; text-align: right;">${parseFloat(item.stock_balance).toLocaleString()}</td>
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 900; color: ${vColor}; text-align: right;">${vSign}${v.toLocaleString()}</td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    previousHtml = `
+                    <div style="margin-bottom: 2.5rem;">
+                        <h3 style="font-size: 0.95rem; font-weight: 900; color: #ef4444; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="history" style="width: 18px;"></i> Original Entry (Before Edit)
+                        </h3>
+                        <div style="background: #fffafa; border-radius: 20px; border: 1px solid #fecaca; overflow: hidden; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.05);">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: #fef2f2; border-bottom: 1px solid #fca5a5;">
+                                    <tr>
+                                        <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Item Description</th>
+                                        <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Unit</th>
+                                        <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Received Qty</th>
+                                        <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Stock Bal.</th>
+                                        <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Variance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${prevItemsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+
+            content = `
                 <div style="background: white; padding: 3.5rem 3rem 2.5rem 3rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: relative;">
                     <button onclick="window.closeOversightPanel()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 10;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
                         <i data-lucide="x" style="width: 18px;"></i>
@@ -1156,6 +1396,8 @@
                 </div>
                 
                 <div style="padding: 2.5rem 3rem; flex: 1; overflow-y: auto;">
+                    ${previousHtml}
+                    ${proposedTitle}
                     <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem;">
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
@@ -1184,6 +1426,7 @@
                     </div>
                 </div>
             `;
+            }
 
             document.getElementById('oversightPanelContent').innerHTML = content;
             document.getElementById('oversightOverlay').style.display = 'block';

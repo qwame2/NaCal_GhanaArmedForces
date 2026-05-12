@@ -455,10 +455,7 @@
                     @endif
                     @endif
 
-                    <button onclick="openModal('{{ $item->batch_id }}')" class="menu-item">
-                        <i data-lucide="eye"></i>
-                        View Details
-                    </button>
+
                     <button onclick="openEditBatchModal('{{ $item->batch_id }}')" class="menu-item" style="color: var(--primary);">
                         <i data-lucide="edit-3"></i>
                         Edit Entry
@@ -603,33 +600,6 @@
 </div>
 </div>
 
-<!-- Advanced Detail Modal -->
-<div id="detailModal" class="modal-backdrop">
-    <div class="modal-content glass-card animate-scale-up">
-        <div class="modal-header">
-            <div>
-                <h3 id="modalTitle" style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.25rem;">Batch Details</h3>
-                <p id="modalSubtitle" style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">#BATCH-0000</p>
-            </div>
-            <div style="display: flex; gap: 0.75rem;">
-                <button onclick="printModal()" class="btn-icon" title="Print Details">
-                    <i data-lucide="printer" style="width: 18px;"></i>
-                </button>
-
-                <button onclick="closeModal()" class="btn-icon danger" title="Close">
-                    <i data-lucide="x" style="width: 18px;"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="modal-body" id="modalBody">
-            <div class="loader-container">
-                <div class="loader"></div>
-                <p>Retrieving transaction data...</p>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Continue Delivery Modal -->
 <div id="continueDeliveryModal" class="modal-backdrop">
@@ -1847,200 +1817,6 @@
 
     let currentBatchId = null;
 
-    function openModal(batchId) {
-        currentBatchId = batchId;
-        const modal = document.getElementById('detailModal');
-
-        const modalContent = modal.querySelector('.modal-content');
-        const modalBody = document.getElementById('modalBody');
-        const modalSubtitle = document.getElementById('modalSubtitle');
-
-        modal.style.display = 'flex';
-        modalContent.classList.remove('slide-out');
-        modalContent.classList.add('slide-in');
-        modalSubtitle.innerText = `#BATCH-${batchId}`;
-
-        // Show loader
-        modalBody.innerHTML = `
-            <div class="loader-container">
-                <div class="loader"></div>
-                <p>Retrieving transaction data...</p>
-            </div>
-        `;
-
-        // Fetch data
-        fetch(`{{ url('/received-items') }}/${batchId}?json=true`)
-            .then(response => response.json())
-            .then(data => {
-                const batch = data.batch;
-                const history = data.history || [];
-                let itemsHtml = '';
-
-                batch.items.forEach((item, index) => {
-                    const expected = (parseFloat(item.stock_balance) - parseFloat(item.variance)).toFixed(0);
-                    const isLast = index === batch.items.length - 1;
-                    const varianceColor = parseFloat(item.variance) < 0 ? '#ef4444' : (parseFloat(item.variance) > 0 ? '#3b82f6' : '#10b981');
-                    const varianceSign = parseFloat(item.variance) > 0 ? '+' : '';
-
-                    // Find changes for this specific item in history
-                    let itemHistoryHtml = '';
-                    history.forEach(log => {
-                        const itemChanges = log.metadata?.item_changes || {};
-                        if (itemChanges[item.id]) {
-                            const changes = itemChanges[item.id];
-                            const timestamp = new Date(log.created_at).toLocaleString();
-                            itemHistoryHtml += `
-                                <div style="margin-top: 10px; padding: 12px; background: rgba(245, 158, 11, 0.05); border: 1.5px dashed rgba(245, 158, 11, 0.3); border-radius: 12px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                        <div style="display: flex; align-items: center; gap: 6px;">
-                                            <i data-lucide="history" style="width: 14px; color: #f59e0b;"></i>
-                                            <span style="font-size: 0.7rem; font-weight: 800; color: #f59e0b; text-transform: uppercase;">Revision Detected</span>
-                                        </div>
-                                        <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700;">${timestamp}</span>
-                                    </div>
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;">
-                                        ${Object.entries(changes).map(([field, vals]) => `
-                                            <div style="background: white; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05);">
-                                                <div style="font-size: 0.6rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800;">${field.replace('_', ' ')}</div>
-                                                <div style="font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 4px;">
-                                                    <span style="color: #ef4444; text-decoration: line-through;">${vals.old}</span>
-                                                    <i data-lucide="arrow-right" style="width: 10px;"></i>
-                                                    <span style="color: #10b981;">${vals.new}</span>
-                                                </div>
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    });
-
-                    itemsHtml += `
-                        <div style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; ${!isLast ? 'border-bottom: 1px solid var(--border-color);' : ''}">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; margin-bottom: 0.25rem;">
-                                    ${item.description} 
-                                    <span style="font-size: 0.7rem; color: var(--primary); font-weight: 800;">(${item.unit || 'Units'})</span>
-                                </div>
-                                ${itemHistoryHtml ? `
-                                    <div style="background: #fef3c7; color: #d97706; font-size: 0.6rem; font-weight: 900; padding: 2px 8px; border-radius: 99px; border: 1px solid #f59e0b; text-transform: uppercase; letter-spacing: 0.5px;">
-                                        Modified Record
-                                    </div>
-                                ` : ''}
-                            </div>
-                            
-                            <div style="background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center;">
-                                <div style="display: flex; flex-direction: column;">
-                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Expected</span>
-                                    <span style="font-weight: 700; color: var(--text-main); font-size: 1rem;">${expected}</span>
-                                </div>
-                                <div style="display: flex; flex-direction: column;">
-                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Brought</span>
-                                    <span style="font-weight: 700; color: var(--text-main); font-size: 1rem;">${item.qty || '0'}</span>
-                                </div>
-                                <div style="display: flex; flex-direction: column;">
-                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Recorded</span>
-                                    <span style="font-weight: 900; color: #10b981; font-size: 1rem;">${item.stock_balance}</span>
-                                </div>
-                                <div style="display: flex; flex-direction: column;">
-                                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Variance</span>
-                                    <span style="font-weight: 900; color: ${varianceColor}; font-size: 1rem;">${varianceSign}${item.variance}</span>
-                                </div>
-                            </div>
-
-                            ${itemHistoryHtml}
-                            
-                            <div style="background: rgba(99, 102, 241, 0.03); padding: 0.75rem 1rem; border-radius: 12px; border-left: 2px solid var(--primary); font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: 8px;">
-                                <i data-lucide="message-circle" style="width: 14px; min-width: 14px; margin-top: 2px;"></i>
-                                <span style="font-style: italic;">${item.remarks ? item.remarks : 'No remarks provided'}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                modalBody.innerHTML = `
-                    <!-- Inset Grouped Style: Batch Info -->
-                    <div style="background: var(--bg-main); border-radius: 20px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 2rem;">
-                        <div style="padding: 1.15rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Logistics Source</span>
-                            <span style="color: var(--text-main); font-weight: 800;">${batch.supplier_name.replace(/\[.*?\]/g, '').trim()}</span>
-                        </div>
-                        <div style="padding: 1.15rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Transaction Date (Auto)</span>
-                            <span style="color: var(--text-main); font-weight: 700;">${new Date(batch.entry_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + new Date(batch.entry_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
-                        <div style="padding: 1.15rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Arrival Date (Manual)</span>
-                            <span style="color: var(--primary); font-weight: 800;">${batch.arrival_date ? new Date(batch.arrival_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '-'}</span>
-                        </div>
-                        <div style="padding: 1.15rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Allocation</span>
-                            <span style="color: var(--primary); font-weight: 900;">${ledgeMap[batch.ledge_category] || 'Category ' + batch.ledge_category}</span>
-                        </div>
-                    </div>
-
-                    <!-- Inset Grouped Style: Items (Collapsible) -->
-                    <details open style="margin-bottom: 2rem; border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; background: var(--bg-main);">
-                        <summary style="padding: 1.25rem 1.5rem; list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border-bottom: 1px solid var(--border-color);">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="background: rgba(99, 102, 241, 0.1); color: var(--primary); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                                    <i data-lucide="list-checks" style="width: 18px;"></i>
-                                </div>
-                                <span style="font-weight: 800; font-size: 1rem; color: var(--text-main);">Associated Items</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 8px; color: var(--text-muted);">
-                                <span style="font-size: 0.75rem; font-weight: 700;">${batch.items.length} Unique Records</span>
-                                <i data-lucide="chevron-down" style="width: 18px;"></i>
-                            </div>
-                        </summary>
-                        <div style="background: var(--bg-main);">
-                            ${itemsHtml}
-                        </div>
-                    </details>
-
-                    <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                        <button onclick="printModal()" style="width: 100%; background: var(--primary); color: white; border: none; padding: 1.15rem; border-radius: 20px; font-weight: 800; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);">
-                            <i data-lucide="printer" style="width: 20px;"></i>
-                            Print Official Voucher
-                        </button>
-                        <div style="text-align: center; color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">
-                            Certified for System Verification • Verified Category Integrity
-                        </div>
-                    </div>
-                `;
-
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            })
-            .catch(error => {
-                modalBody.innerHTML = `
-                    <div class="loader-container">
-                        <i data-lucide="alert-circle" style="width: 48px; color: #ef4444;"></i>
-                        <p style="color: #ef4444;">Failed to load data. Please try again.</p>
-                    </div>
-                `;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            });
-    }
-
-    function closeModal() {
-        const modal = document.getElementById('detailModal');
-        const modalContent = modal.querySelector('.modal-content');
-
-        modalContent.classList.remove('slide-in');
-        modalContent.classList.add('slide-out');
-
-        setTimeout(() => {
-            modal.style.display = 'none';
-            modalContent.classList.remove('slide-out');
-            currentBatchId = null;
-        }, 600);
-    }
-
-    function printModal() {
-        if (currentBatchId) {
-            window.open(`/received-items/${currentBatchId}/print`, '_blank');
-        }
-    }
 
     let continueBatchData = null;
 
@@ -2297,13 +2073,6 @@
         }
     }
 
-    // Close on backdrop click
-    window.onclick = function(event) {
-        const modal = document.getElementById('detailModal');
-        if (event.target == modal) {
-            closeModal();
-        }
-    }
 
     // Real-time Search Logic
     const filterForm = document.getElementById('filterForm');
@@ -3157,7 +2926,7 @@
             <div style="border-top: 1px solid var(--border-color); padding: 1.25rem 2rem; display: flex; justify-content: flex-end; gap: 1rem; background: var(--bg-card); border-radius: 0 0 28px 28px; z-index: 10;">
                 <button type="button" onclick="closeEditBatchModal()" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer;">Cancel</button>
                 <button type="submit" id="saveEditBtn" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: var(--primary); border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);">
-                    <i data-lucide="save" style="width: 18px;"></i> Save Changes
+                    <i data-lucide="{{ auth()->user()->is_admin ? 'save' : 'send' }}" style="width: 18px;"></i> {{ auth()->user()->is_admin ? 'Save Changes' : 'Submit for Approval' }}
                 </button>
             </div>
         </form>
@@ -3168,49 +2937,9 @@
 let currentEditBatchId = null;
 
 function openEditBatchModal(batchId) {
-    // Check permission first
-    fetch(`{{ url('/edit-requests/status', [], false) }}/${batchId}`)
-        .then(res => {
-            if (!res.ok) throw new Error('Server error');
-            return res.json();
-        })
-        .then(data => {
-            if (data.allowed) {
-                // Open modal normally
-                _openEditBatchModal(batchId, data.expires_in);
-            } else if (data.status === 'pending') {
-                Swal.fire('Pending', 'Your request to edit this batch is pending admin approval.', 'info');
-            } else if (data.status === 'expired') {
-                Swal.fire({
-                    title: 'Access Expired',
-                    text: 'Your 62-second editing session has expired. Please request new authorization.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Request Again'
-                }).then((result) => {
-                    if (result.isConfirmed) promptEditReason(batchId);
-                });
-            } else if (data.status === 'canceled') {
-                Swal.fire({
-                    title: 'Request Canceled',
-                    text: 'Your request has been canceled by the admin. Would you like to request again?',
-                    icon: 'error',
-                    showCancelButton: true,
-                    confirmButtonText: 'Request Again'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        promptEditReason(batchId);
-                    }
-                });
-            } else {
-                // status === 'none'
-                promptEditReason(batchId);
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            Swal.fire('Error', 'Could not check edit status. Please ensure the database tables are migrated.', 'error');
-        });
+    // AS PER USER REQUEST: Allow personnel to edit first, then send for approval.
+    // We no longer block the modal opening for personnel.
+    _openEditBatchModal(batchId);
 }
 
 function promptEditReason(batchId) {
@@ -3276,7 +3005,8 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
     const saveBtn = document.getElementById('saveEditBtn');
     saveBtn.disabled = false;
     saveBtn.style.background = 'var(--primary)';
-    saveBtn.innerHTML = '<i data-lucide="save" style="width: 18px;"></i> Save Changes';
+    const isAdmin = {{ auth()->user()->is_admin ? 'true' : 'false' }};
+    saveBtn.innerHTML = isAdmin ? '<i data-lucide="save" style="width: 18px;"></i> Save Changes' : '<i data-lucide="send" style="width: 18px;"></i> Submit for Approval';
 
     const modal = document.getElementById('editBatchModal');
     const loader = document.getElementById('editModalLoader');
@@ -3441,11 +3171,78 @@ function recalcEditVariance(input) {
     }
 }
 
-function submitEditBatch() {
+async function submitEditBatch() {
     const saveBtn = document.getElementById('saveEditBtn');
+    const isAdmin = {{ auth()->user()->is_admin ? 'true' : 'false' }};
+    
+    // IF NOT ADMIN, ASK FOR REASON FIRST
+    let reason = "Direct administrative modification.";
+    if (!isAdmin) {
+        const { value: text, isConfirmed } = await Swal.fire({
+            html: `
+                <div style="text-align: left;">
+                    <div style="background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.06); border-radius: 50%;"></div>
+                        <div style="position: absolute; bottom: -30px; left: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.04); border-radius: 50%;"></div>
+                        <div style="display: flex; align-items: center; gap: 14px; position: relative;">
+                            <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <svg style="width: 26px; height: 26px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 3px;">Oversight Protocol</div>
+                                <div style="font-size: 1.3rem; font-weight: 900; color: white; letter-spacing: -0.02em;">Edit Justification</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6; margin-bottom: 1.25rem; padding: 0 0.25rem;">
+                        Explain why you are modifying this record. Your justification will be reviewed by an administrator before changes take effect.
+                    </p>
+
+                    <textarea id="swal-edit-justification" placeholder="e.g., Correcting a quantity typo, updating supplier info after delivery confirmation..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: all 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#4f46e5'; this.style.boxShadow='0 0 0 4px rgba(79,70,229,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
+
+                    <div style="margin-top: 1rem; padding: 10px 14px; background: rgba(245, 158, 11, 0.07); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px;">
+                        <svg style="width: 16px; height: 16px; color: #d97706; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <span style="font-size: 0.78rem; font-weight: 700; color: #92400e;">This justification is mandatory and will be permanently logged in the audit trail.</span>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: '&#10003; &nbsp;Submit for Oversight',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#4f46e5',
+            cancelButtonColor: '#94a3b8',
+            focusConfirm: false,
+            customClass: {
+                popup: 'swal-decline-popup',
+                confirmButton: 'swal-decline-confirm-btn',
+                cancelButton: 'swal-decline-cancel-btn',
+            },
+            didOpen: () => {
+                if (!document.getElementById('swal-decline-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'swal-decline-styles';
+                    style.textContent = `.swal-decline-popup { border-radius: 24px !important; overflow: hidden !important; padding: 1.25em !important; } .swal-decline-confirm-btn { border-radius: 10px !important; font-weight: 800 !important; padding: 12px 24px !important; font-size: 0.9rem !important; } .swal-decline-cancel-btn { border-radius: 10px !important; font-weight: 700 !important; padding: 12px 24px !important; font-size: 0.9rem !important; } .swal2-actions { gap: 10px !important; margin-top: 1.5rem !important; }`;
+                    document.head.appendChild(style);
+                }
+            },
+            preConfirm: () => {
+                const val = document.getElementById('swal-edit-justification').value.trim();
+                if (!val) {
+                    Swal.showValidationMessage('<span style="font-size:0.85rem;">⚠ Justification is mandatory for audit trails!</span>');
+                    return false;
+                }
+                return val;
+            }
+        });
+        
+        if (!isConfirmed) return;
+        reason = text;
+    }
+
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width: 18px;"></i> Processing...';
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 
     const items = [];
     document.querySelectorAll('.edit-item-card').forEach(row => {
@@ -3475,14 +3272,23 @@ function submitEditBatch() {
         _token: '{{ csrf_token() }}'
     };
 
-    fetch(`{{ url('/received-items', [], false) }}/${currentEditBatchId}`, {
-        method: 'PUT',
+    const url = isAdmin ? `{{ url('/received-items') }}/${currentEditBatchId}` : `{{ url('/edit-requests') }}`;
+    const method = isAdmin ? 'PUT' : 'POST';
+    const finalPayload = isAdmin ? payload : {
+        item_id: currentEditBatchId,
+        request_type: 'edit_submission',
+        reason: reason,
+        payload: JSON.stringify(payload)
+    };
+
+    fetch(url, {
+        method: method,
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(finalPayload)
     })
     .then(res => {
         if (!res.ok) throw new Error('Update failed');
@@ -3490,7 +3296,12 @@ function submitEditBatch() {
     })
     .then(data => {
         if (data.success) {
-            // Real-time DOM update
+            if (!isAdmin) {
+                Swal.fire('Request Logged', 'Your changes have been sent to the overseer for approval.', 'success');
+                closeEditBatchModal();
+                return;
+            }
+            // Real-time DOM update for admins...
             payload.items.forEach(item => {
                 const row = document.querySelector(`tr[data-item-id="${item.id}"]`);
                 if (row) {

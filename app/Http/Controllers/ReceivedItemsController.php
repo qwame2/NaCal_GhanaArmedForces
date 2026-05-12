@@ -68,12 +68,33 @@ class ReceivedItemsController extends Controller
         $data = json_decode($req->payload, true);
         $ledgeMap = $this->getLedgeMap();
         
-        return response()->json([
+        if ($req->request_type === 'issue_submission') {
+            $response = [
+                'batch' => $data,
+                'recorded_by_name' => $req->user->name ?? 'Personnel',
+                'created_at' => $req->created_at->format('d/m/Y H:i'),
+                'request_type' => $req->request_type
+            ];
+            return response()->json($response);
+        }
+
+        $response = [
             'batch' => $data,
             'ledge_name' => $ledgeMap[$data['ledge_category']] ?? $data['ledge_category'],
             'recorded_by_name' => $req->user->name ?? 'Personnel',
-            'created_at' => $req->created_at->format('d/m/Y H:i')
-        ]);
+            'created_at' => $req->created_at->format('d/m/Y H:i'),
+            'request_type' => $req->request_type
+        ];
+
+        if ($req->request_type === 'edit_submission') {
+            $originalBatch = \App\Models\InventoryBatch::with('items')->find($req->item_id);
+            if ($originalBatch) {
+                $response['previous_batch'] = $originalBatch;
+                $response['previous_ledge_name'] = $ledgeMap[$originalBatch->ledge_category] ?? $originalBatch->ledge_category;
+            }
+        }
+        
+        return response()->json($response);
     }
 
     public function index(Request $request)
@@ -109,7 +130,10 @@ class ReceivedItemsController extends Controller
 
         // Status filter (Partial Delivery)
         if ($request->has('status') && $request->status === 'partial') {
-            $query->where('inventory_batches.supplier_name', 'LIKE', '%[Partial Deliv%');
+            $query->where(function($q) {
+                $q->where('inventory_batches.supplier_status', 'LIKE', '%Partial%')
+                  ->orWhere('inventory_batches.supplier_name', 'LIKE', '%[Partial Deliv%');
+            });
         }
 
         // Ledge Category filter

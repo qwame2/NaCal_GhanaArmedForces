@@ -55,102 +55,92 @@ class IssueItemsController extends Controller
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
             'items.*.category' => 'required|string',
+            'items.*.unit' => 'nullable|string',
             'items.*.qty' => 'required|integer|min:1',
         ]);
 
         try {
-            DB::beginTransaction();
+            $itemCount = count($validated['items']);
+            $firstfew = collect($validated['items'])->pluck('description')->take(3)->implode(', ');
+            if ($itemCount > 3) $firstfew .= ' etc.';
 
-            $issuance = Issuance::create([
-                'issuance_date' => $validated['issuance_date'],
-                'beneficiary' => $validated['beneficiary'],
-                'authority' => $validated['authority'],
-                'issuance_type' => $validated['issuance_type'],
+            $editReq = \App\Models\EditRequest::create([
+                'user_id' => auth()->id(),
+                'item_type' => 'issuance',
+                'item_id' => 0, // No specific item ID yet
+                'request_type' => 'issue_submission',
+                'reason' => "Personnel requested to issue {$itemCount} items to {$validated['beneficiary']} on authority of {$validated['authority']}.",
+                'payload' => json_encode($validated),
+                'status' => 'pending'
             ]);
 
-            foreach ($validated['items'] as $cartItem) {
-                $qtyToIssue = $cartItem['qty'];
+            $admins = \App\Models\User::where('is_admin', true)->get();
+            if ($admins->count() > 0) {
+                // Let's create an informative message for the admins to review
+                $msgContent = "
+                <div class='edit-req-msg admin-view' style='padding: 24px; background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.15); position: relative; overflow: hidden;'>
+                    <div style='position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #f59e0b, #fbbf24);'></div>
+                    <div style='display: flex; align-items: center; gap: 10px; margin-bottom: 16px;'>
+                        <div style='width: 32px; height: 32px; background: rgba(245, 158, 11, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #f59e0b;'>
+                            <svg style='width: 16px; height: 16px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4'></path></svg>
+                        </div>
+                        <b style='font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: #f59e0b;'>DISBURSEMENT OVERSIGHT REQUIRED</b>
+                    </div>
+                    
+                    <div style='font-size: 0.95rem; color: #334155; line-height: 1.6; margin-bottom: 20px;'>
+                        Personnel <b style='color: #f59e0b;'>{$editReq->user->name}</b> has submitted a request to <b style='color: #f59e0b;'>ISSUE ITEMS</b> to <span style='font-family: monospace; font-weight: 700; color: #0f172a;'>{$validated['beneficiary']}</span>.
+                        <br><br>
+                        <b>Items requested:</b> {$firstfew}
+                    </div>
 
-                // Find the unit from inventory
-                $unit = InventoryItem::where('description', $cartItem['description'])->value('unit');
+                    <div style='margin-bottom: 15px;'>
+                        <button class='entry-preview-btn' data-entry-req-id='{$editReq->id}' style='width: 100%; background: #e0e7ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 800; transition: 0.3s;' onmouseover='this.style.background=\"#c7d2fe\"' onmouseout='this.style.background=\"#e0e7ff\"'>
+                            <svg style='width: 16px; height: 16px; display: inline; vertical-align: middle; margin-right: 6px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'/><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'/></svg> Preview Disbursement Details
+                        </button>
+                    </div>
 
-                // Record the line item
-                IssuedItem::create([
-                    'issuance_id' => $issuance->id,
-                    'description' => $cartItem['description'],
-                    'ledge_category' => $cartItem['category'],
-                    'quantity' => $qtyToIssue,
-                    'unit' => $unit
-                ]);
+                    <div style='display: flex; gap: 12px;' id='edit-req-actions-{$editReq->id}'>
+                        <button onclick='window.processEditRequest({$editReq->id}, \"approved\", this)' style='flex: 1; background: #10b981; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 800; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: 0.3s;' onmouseover='this.style.background=\"#059669\"' onmouseout='this.style.background=\"#10b981\"'>Approve</button>
+                        <button onclick='window.processEditRequest({$editReq->id}, \"canceled\", this)' style='flex: 1; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 800; transition: 0.3s;' onmouseover='this.style.background=\"#e2e8f0\"; this.style.color=\"#0f172a\"' onmouseout='this.style.background=\"#f1f5f9\"; this.style.color=\"#64748b\"'>Decline</button>
+                    </div>
+                </div>";
 
-                // FIFO Stock Reduction
-                $stockItems = InventoryItem::where('description', $cartItem['description'])
-                    ->whereHas('batch', function ($q) use ($cartItem) {
-                        $q->where('ledge_category', $cartItem['category']);
-                    })
-                    ->where('qty', '>', 0)
-                    ->orderBy('created_at', 'asc')
-                    ->orderBy('id', 'asc')
-                    ->get();
+                $personnelMsg = "<div class='edit-req-msg personnel-view' style='padding: 15px; border-radius: 12px; background: rgba(245, 158, 11, 0.05); border: 1px dashed #f59e0b;'>
+                    <b style='color: #f59e0b;'>DISBURSEMENT REQUEST LOGGED</b><br>
+                    Waiting for strategic authorization from Command to issue items to {$validated['beneficiary']}.
+                </div>";
 
-                foreach ($stockItems as $inventoryItem) {
-                    if ($qtyToIssue <= 0) break;
-
-                    $available = floatval($inventoryItem->qty);
-                    $stockBal = floatval($inventoryItem->stock_balance);
-                    $take = min($available, $qtyToIssue);
-
-                    // Always deduct from available quantity (qty)
-                    $inventoryItem->qty = $available - $take;
-
-                    // If Permanent, also deduct from the system's stock balance
-                    if ($validated['issuance_type'] === 'Permanent') {
-                        $inventoryItem->stock_balance = $stockBal - $take;
-                    }
-
-                    $inventoryItem->save();
-
-                    $qtyToIssue -= $take;
+                // Message for admins
+                foreach ($admins as $admin) {
+                    \App\Models\Message::create([
+                        'sender_id' => auth()->id(),
+                        'receiver_id' => $admin->id,
+                        'message' => $msgContent,
+                        'is_automated' => true,
+                        'edit_request_id' => $editReq->id
+                    ]);
                 }
 
-                if ($qtyToIssue > 0) {
-                    throw new \Exception("Insufficient stock for " . $cartItem['description']);
-                }
-            }
-
-            DB::commit();
-
-            // Log the issuance activity
-            if (auth()->check()) {
-                $user = auth()->user();
-                $itemCount = count($validated['items']);
-                
-                \App\Models\SystemLog::create([
-                    'user_id' => $user->id,
-                    'event_type' => 'INVENTORY',
-                    'action' => 'ISSUE_ITEM',
-                    'description' => "Personnel issued {$itemCount} items to {$validated['beneficiary']} on authority of {$validated['authority']}.",
-                    'severity' => $validated['issuance_type'] === 'Permanent' ? 'warning' : 'info',
-                    'metadata' => [
-                        'beneficiary' => $validated['beneficiary'],
-                        'authority' => $validated['authority'],
-                        'issuance_type' => $validated['issuance_type'],
-                        'items_issued' => $validated['items']
-                    ],
-                    'ip_address' => request()->ip()
+                // Message for personnel
+                \App\Models\Message::create([
+                    'sender_id' => auth()->id(),
+                    'receiver_id' => auth()->id(), // self
+                    'message' => $personnelMsg,
+                    'is_automated' => true,
+                    'edit_request_id' => $editReq->id
                 ]);
             }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Items issued successfully and inventory updated.'
+                'message' => 'Disbursement request submitted. Awaiting administrative approval.',
+                'pending_approval' => true
             ]);
 
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Issuance failed: ' . $e->getMessage()
+                'message' => 'Issuance submission failed: ' . $e->getMessage()
             ], 500);
         }
     }
