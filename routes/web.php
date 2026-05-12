@@ -641,13 +641,14 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             
             foreach ($batchIdsToCheck as $batchId) {
                 $batch = \App\Models\InventoryBatch::find($batchId);
-                if ($batch && preg_match('/\[Partial Deliv(.*?)\]/i', $batch->supplier_name)) {
+                if ($batch) {
+                    // Re-fetch fresh item data after saves
                     $allItems = \App\Models\InventoryItem::where('batch_id', $batchId)->get();
                     $allDelivered = true;
                     
                     foreach ($allItems as $i) {
-                        $expected = floatval($i->stock_balance) - floatval($i->variance);
-                        if (floatval($i->stock_balance) < $expected) {
+                        // Negative variance = items still outstanding (shortfall)
+                        if (floatval($i->variance) < 0) {
                             $allDelivered = false;
                             break;
                         }
@@ -655,6 +656,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                     
                     if ($allDelivered) {
                         $batch->supplier_name = preg_replace('/\[Partial Deliv(.*?)\]/i', '[Full Delivery]', $batch->supplier_name);
+                        $batch->supplier_status = 'Full Delivery';
                         $batch->save();
                     }
                 }

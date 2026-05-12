@@ -290,17 +290,18 @@ class EditRequestController extends Controller
                     }
 
                     foreach ($batchIdsToCheck as $batchId) {
-                        $batch = \App\Models\InventoryBatch::find($batchId);
-                        if ($batch && preg_match('/\[Partial Deliv(.*?)\]/i', $batch->supplier_name)) {
+                        $checkBatch = \App\Models\InventoryBatch::find($batchId);
+                        if ($checkBatch && stripos($checkBatch->supplier_status ?? '', 'partial') !== false) {
                             $allItems = \App\Models\InventoryItem::where('batch_id', $batchId)->get();
                             $allDelivered = true;
                             foreach ($allItems as $i) {
-                                $expected = floatval($i->stock_balance) - floatval($i->variance);
-                                if (floatval($i->stock_balance) < $expected) { $allDelivered = false; break; }
+                                // Negative variance = items still outstanding
+                                if (floatval($i->variance) < 0) { $allDelivered = false; break; }
                             }
                             if ($allDelivered) {
-                                $batch->supplier_name = preg_replace('/\[Partial Deliv(.*?)\]/i', '[Full Delivery]', $batch->supplier_name);
-                                $batch->save();
+                                $checkBatch->supplier_name = preg_replace('/\[Partial Deliv(.*?)\]/i', '', $checkBatch->supplier_name);
+                                $checkBatch->supplier_status = 'Full Delivery';
+                                $checkBatch->save();
                             }
                         }
                     }
