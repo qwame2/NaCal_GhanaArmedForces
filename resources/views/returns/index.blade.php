@@ -1201,7 +1201,7 @@
         document.body.style.overflow = 'hidden';
 
         try {
-            const res = await fetch("{{ route('api.returned-items-history') }}");
+            const res = await fetch("{{ route('api.returned-items-history', [], false) }}");
             historyData = await res.json();
             renderHistory(historyData);
         } catch (e) {

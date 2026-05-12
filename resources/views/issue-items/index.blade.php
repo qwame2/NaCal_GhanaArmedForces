@@ -793,7 +793,7 @@
         btn.innerHTML = 'Processing...';
 
         try {
-            const res = await fetch("{{ route('issueitems.store') }}", {
+            const res = await fetch("{{ route('issueitems.store', [], false) }}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({
@@ -838,7 +838,7 @@
         `;
 
         try {
-            const res = await fetch("{{ route('api.issued-items-history') }}");
+            const res = await fetch("{{ route('api.issued-items-history', [], false) }}");
             fullHistoryData = await res.json();
 
             if (fullHistoryData.length > 0) filters.style.display = 'flex';

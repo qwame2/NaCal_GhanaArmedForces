@@ -2066,7 +2066,7 @@
             </div>
         `;
 
-        fetch(`/received-items/${batchId}?json=true`)
+        fetch(`{{ url('/received-items', [], false) }}/${batchId}?json=true`)
             .then(response => {
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
                 return response.json();
@@ -2252,7 +2252,7 @@
         btn.disabled = true;
 
         try {
-            const response = await fetch('{{ url("/api/inventory/receive-remainder") }}', {
+            const response = await fetch('{{ url("/api/inventory/receive-remainder", [], false) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2517,7 +2517,7 @@
     async function deleteBatch(batchId) {
         // Strict Authorization: Check for administrative approval or role
         try {
-            const checkRes = await fetch(`{{ url('/edit-requests/status') }}/${batchId}?type=delete`);
+            const checkRes = await fetch(`{{ url('/edit-requests/status', [], false) }}/${batchId}?type=delete`);
             const checkData = await checkRes.json();
             
             if (!checkData.allowed) {
@@ -2562,7 +2562,7 @@
         }
 
         try {
-            const response = await fetch(`{{ url('/received-items') }}/${batchId}`, {
+            const response = await fetch(`{{ url('/received-items', [], false) }}/${batchId}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -2653,7 +2653,7 @@
         `;
 
         try {
-            const response = await fetch(`{{ url('/api/item-audit-details') }}?description=${encodeURIComponent(description)}`);
+            const response = await fetch(`{{ url('/api/item-audit-details', [], false) }}?description=${encodeURIComponent(description)}`);
             const data = await response.json();
             
             auditHistoryData = data.batches;
@@ -3169,7 +3169,7 @@ let currentEditBatchId = null;
 
 function openEditBatchModal(batchId) {
     // Check permission first
-    fetch(`{{ url('/edit-requests/status') }}/${batchId}`)
+    fetch(`{{ url('/edit-requests/status', [], false) }}/${batchId}`)
         .then(res => {
             if (!res.ok) throw new Error('Server error');
             return res.json();
@@ -3237,7 +3237,7 @@ function promptActionReason(batchId, type = 'edit') {
     }).then((result) => {
         if (result.isConfirmed) {
             // Submit request
-            fetch('{{ url("/edit-requests") }}', {
+            fetch('{{ url("/edit-requests", [], false) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -3295,7 +3295,7 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
         width: '100%'
     });
 
-    fetch(`{{ url('/received-items') }}/${batchId}?json=1`)
+    fetch(`{{ url('/received-items', [], false) }}/${batchId}?json=1`)
         .then(res => {
             if (!res.ok) throw new Error('Data retrieval failed');
             return res.json();
@@ -3394,7 +3394,7 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
 
 function closeEditBatchModal() {
     if (currentEditBatchId) {
-        fetch(`{{ url('/edit-requests/complete') }}/${currentEditBatchId}`, {
+        fetch(`{{ url('/edit-requests/complete', [], false) }}/${currentEditBatchId}`, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -3475,7 +3475,7 @@ function submitEditBatch() {
         _token: '{{ csrf_token() }}'
     };
 
-    fetch(`{{ url('/received-items') }}/${currentEditBatchId}`, {
+    fetch(`{{ url('/received-items', [], false) }}/${currentEditBatchId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

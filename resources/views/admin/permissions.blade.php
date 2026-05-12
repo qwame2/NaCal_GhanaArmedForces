@@ -418,7 +418,7 @@
         
         row.classList.add('syncing-row');
         
-        fetch('{{ route("admin.permissions.update") }}', {
+        fetch('{{ route("admin.permissions.update", [], false) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

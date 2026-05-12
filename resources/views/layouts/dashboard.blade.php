@@ -405,7 +405,7 @@
                         searchResults.style.display = 'block';
 
                         // Fetch real results from backend using relative route helper
-                        fetch("{{ route('api.search') }}?q=" + encodeURIComponent(query))
+                        fetch("{{ route('api.search', [], false) }}?q=" + encodeURIComponent(query))
                             .then(res => {
                                 if (!res.ok) throw new Error('Network response was not ok');
                                 return res.json();
@@ -502,7 +502,7 @@
 
             // Real-time Notification Refresh Logic
             window.refreshNotifications = function() {
-                fetch("{{ route('api.notifications') }}")
+                fetch("{{ route('api.notifications', [], false) }}")
                     .then(res => res.json())
                     .then(data => {
                         // Update Navbar Bell Badge
@@ -591,7 +591,7 @@
                     }
                 });
 
-                fetch("{{ route('api.notifications.dismiss') }}", {
+                fetch("{{ route('api.notifications.dismiss', [], false) }}", {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -616,7 +616,7 @@
                     return;
                 }
 
-                fetch("{{ route('api.total-unread') }}")
+                fetch("{{ route('api.total-unread', [], false) }}")
                     .then(res => res.json())
                     .then(data => {
                         const badge = document.getElementById('global-unread-badge');

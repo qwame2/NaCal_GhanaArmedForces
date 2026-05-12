@@ -438,7 +438,7 @@
     function fetchMessages() {
         if (!activeUserId) return;
         
-        fetch(`{{ url('/api/messages') }}/${activeUserId}`)
+        fetch(`{{ route('api.messages.fetch', ['userId' => $user->id], false) }}`.replace('{{ $user->id }}', activeUserId))
             .then(res => {
                 if (!res.ok) throw new Error('Secure line interrupted');
                 return res.json();
@@ -507,14 +507,14 @@
             .catch(err => console.error('Comms Error:', err));
             
         // Mark as read
-        fetch(`{{ url('/api/messages') }}/${activeUserId}/read`, {
+        fetch(`{{ route('api.messages.read', ['userId' => $user->id], false) }}`.replace('{{ $user->id }}', activeUserId), {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
         }).then(() => updateUnreadCounts());
     }
 
     function updateUnreadCounts() {
-        fetch("{{ route('api.unread-counts') }}")
+        fetch("{{ route('api.unread-counts', [], false) }}")
             .then(res => res.json())
             .then(counts => {
                 let activeCount = 0;
@@ -549,7 +549,7 @@
             });
 
         // Sync Online Statuses
-        fetch("{{ route('api.online-statuses') }}")
+        fetch("{{ route('api.online-statuses', [], false) }}")
             .then(res => res.json())
             .then(statuses => {
                 onlineStatuses = statuses;
@@ -585,7 +585,7 @@
         sendBtn.disabled = true;
         sendBtn.innerHTML = '<div class="loader-mini"></div>';
         
-        fetch("{{ route('api.messages.send') }}", {
+        fetch("{{ route('api.messages.send', [], false) }}", {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
             body: formData
@@ -678,7 +678,7 @@
         btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
-        fetch(`{{ url('/sra-creation') }}/${id}/process`, {
+        fetch(`{{ url('/sra-creation', [], false) }}/${id}/process`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -744,7 +744,7 @@
         
         btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
 
-        fetch(`{{ url('/edit-requests') }}/${id}/process`, {
+        fetch(`{{ url('/edit-requests', [], false) }}/${id}/process`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

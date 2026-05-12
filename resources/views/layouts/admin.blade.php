@@ -691,7 +691,7 @@
 
         // Real-time Admin Notification Refresh Logic
         window.refreshNotifications = function() {
-            fetch("{{ route('api.notifications') }}")
+            fetch("{{ route('api.notifications', [], false) }}")
                 .then(res => res.json())
                 .then(data => {
                     // Update Navbar Bell Dot
@@ -778,7 +778,7 @@
                 }
             });
 
-            fetch("{{ route('api.notifications.dismiss') }}", {
+            fetch("{{ route('api.notifications.dismiss', [], false) }}", {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',

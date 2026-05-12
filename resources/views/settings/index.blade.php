@@ -487,7 +487,7 @@
         btn.innerHTML = 'Updating Profile...';
 
         try {
-            const res = await fetch("{{ route('settings.update') }}", {
+            const res = await fetch("{{ route('settings.update', [], false) }}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({
@@ -582,7 +582,7 @@
         }
 
         try {
-            const res = await fetch("{{ route('settings.password') }}", {
+            const res = await fetch("{{ route('settings.password', [], false) }}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({
@@ -663,7 +663,7 @@
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
         try {
-            const res = await fetch("{{ route('settings.avatar') }}", {
+            const res = await fetch("{{ route('settings.avatar', [], false) }}", {
                 method: 'POST',
                 headers: { 
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',

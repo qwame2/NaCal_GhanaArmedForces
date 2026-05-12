@@ -294,7 +294,7 @@ function openStockCheckModal(description, ledgeBal, stockBal, prevVar, prevAvail
     document.getElementById('auditPrevAvail').innerText = prevAvail;
     
     // Fetch active loans
-    fetch(`/api/item-audit-details?description=${encodeURIComponent(description)}`)
+    fetch(`{{ url('/api/item-audit-details', [], false) }}?description=${encodeURIComponent(description)}`)
         .then(r => r.json())
         .then(data => {
             document.getElementById('auditActiveLoans').innerText = data.on_loan || 0;

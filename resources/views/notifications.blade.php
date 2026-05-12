@@ -168,7 +168,7 @@
             }, 300);
         }
 
-        fetch("{{ route('api.notifications.mark-all-read') }}", {
+        fetch("{{ route('api.notifications.mark-all-read', [], false) }}", {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
         })
@@ -194,7 +194,7 @@
             }
         });
 
-        fetch("{{ route('api.notifications.dismiss') }}", {
+        fetch("{{ route('api.notifications.dismiss', [], false) }}", {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',

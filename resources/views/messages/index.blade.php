@@ -285,7 +285,7 @@
     function fetchMessages() {
         if (!activeUserId) return;
         
-        fetch(`{{ url('/api/messages') }}/${activeUserId}`)
+        fetch(`{{ url('/api/messages', [], false) }}/${activeUserId}`)
             .then(res => {
                 if (!res.ok) throw new Error('Secure line interrupted');
                 return res.json();
@@ -378,7 +378,7 @@
             .catch(err => console.error('Comms Error:', err));
             
         // Mark as read
-        fetch(`{{ url('/api/messages') }}/${activeUserId}/read`, {
+        fetch(`{{ url('/api/messages', [], false) }}/${activeUserId}/read`, {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
         });
@@ -400,7 +400,7 @@
         sendBtn.disabled = true;
         sendBtn.innerHTML = '<div class="loader-mini"></div>';
         
-        fetch("{{ route('api.messages.send') }}", {
+        fetch("{{ route('api.messages.send', [], false) }}", {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
             body: formData
@@ -449,7 +449,7 @@
     }
 
     function updateUnreadCounts() {
-        fetch("{{ route('api.unread-counts') }}")
+        fetch("{{ route('api.unread-counts', [], false) }}")
             .then(res => res.json())
             .then(counts => {
                 let activeCount = 0;
@@ -483,7 +483,7 @@
             });
 
         // Sync Online Statuses
-        fetch("{{ route('api.online-statuses') }}")
+        fetch("{{ route('api.online-statuses', [], false) }}")
             .then(res => res.json())
             .then(statuses => {
                 onlineStatuses = statuses;

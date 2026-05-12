@@ -891,7 +891,7 @@
             lucide.createIcons();
 
             $.ajax({
-                url: '{{ route("inventory.store") }}',
+                url: '{{ route("inventory.store", [], false) }}',
                 method: 'POST',
                 data: payload,
                 success: function(response) {
