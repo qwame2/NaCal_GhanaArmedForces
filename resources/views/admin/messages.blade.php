@@ -108,56 +108,53 @@
         </div>
     </div>
 </div>
-<!-- ====== Remainder Preview Bottom Sheet ====== -->
+<!-- ====== Remainder Preview Popover ====== -->
 <div id="remainderPreviewSheet" style="
     position: fixed; inset: 0; z-index: 9999;
-    display: none; align-items: flex-end; justify-content: center;
-    background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center;
+    background: rgba(15,23,42,0.5); backdrop-filter: blur(6px);
+    padding: 1.5rem;
 " onclick="if(event.target===this) window.closeRemainderPreview()">
     <div id="remainderPreviewContent" style="
-        background: var(--bg-card, #fff);
-        width: 100%; max-width: 680px;
-        border-radius: 28px 28px 0 0;
+        background: #ffffff;
+        width: 100%; max-width: 620px;
+        border-radius: 24px;
         padding: 0;
-        box-shadow: 0 -20px 60px rgba(0,0,0,0.18);
-        transform: translateY(100%);
-        transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
-        max-height: 80vh;
+        box-shadow: 0 25px 80px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.06);
+        transform: scale(0.92) translateY(-12px);
+        opacity: 0;
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+        max-height: 85vh;
         display: flex; flex-direction: column;
         overflow: hidden;
     ">
-        <!-- Handle bar -->
-        <div style="display: flex; justify-content: center; padding: 14px 0 0;">
-            <div style="width: 40px; height: 4px; background: #e2e8f0; border-radius: 99px;"></div>
-        </div>
-
-        <!-- Sheet Header -->
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 24px 14px;">
+        <!-- Popover Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; border-bottom: 1px solid #f1f5f9;">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 38px; height: 38px; background: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; box-shadow: 0 4px 12px rgba(245,158,11,0.35);">
                     <i data-lucide="package-plus" style="width: 18px;"></i>
                 </div>
                 <div>
-                    <div style="font-size: 0.95rem; font-weight: 900; color: var(--text-main, #0f172a); letter-spacing: -0.01em;">Remainder Change Preview</div>
-                    <div id="remainderPreviewMeta" style="font-size: 0.75rem; color: #64748b; font-weight: 600;"></div>
+                    <div style="font-size: 1rem; font-weight: 900; color: #0f172a; letter-spacing: -0.01em;">Remainder Change Preview</div>
+                    <div id="remainderPreviewMeta" style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-top: 1px;"></div>
                 </div>
             </div>
-            <button onclick="window.closeRemainderPreview()" style="width: 36px; height: 36px; border-radius: 10px; background: #f1f5f9; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
-                <i data-lucide="x" style="width: 16px;"></i>
+            <button onclick="window.closeRemainderPreview()" style="width: 34px; height: 34px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.15s; flex-shrink:0;" onmouseover="this.style.background='#f1f5f9'; this.style.color='#0f172a'" onmouseout="this.style.background='#f8fafc'; this.style.color='#64748b'">
+                <i data-lucide="x" style="width: 15px;"></i>
             </button>
         </div>
 
-        <!-- Divider -->
-        <div style="height: 1px; background: linear-gradient(to right, transparent, #e2e8f0, transparent); margin: 0 24px;"></div>
-
-        <!-- Sheet Body (scrollable) -->
-        <div id="remainderPreviewBody" style="padding: 20px 24px 32px; overflow-y: auto; flex: 1;"></div>
+        <!-- Popover Body (scrollable) -->
+        <div id="remainderPreviewBody" style="padding: 20px 24px 24px; overflow-y: auto; flex: 1;"></div>
     </div>
 </div>
 
 <style>
-    #remainderPreviewSheet.open { display: flex; }
-    #remainderPreviewSheet.open #remainderPreviewContent { transform: translateY(0); }
+    #remainderPreviewSheet.open { display: flex !important; }
+    #remainderPreviewSheet.open #remainderPreviewContent {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
 </style>
 
 <style>
@@ -499,7 +496,9 @@
                 
                 container.innerHTML = html;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
+                _patchRemainderPreviewButtons();
                 initClearanceTimers();
+
                 
                 if (wasAtBottom) {
                     container.scrollTop = container.scrollHeight;
@@ -844,100 +843,219 @@
     document.head.appendChild(style);
 
     // ====== Remainder Preview Bottom Sheet Logic ======
-    window.showRemainderPreview = function(btn) {
-        const raw = btn.getAttribute('data-preview');
-        if (!raw) return;
 
-        let data;
-        try {
-            data = JSON.parse(raw);
-        } catch(e) {
-            console.error('Preview parse error:', e);
-            return;
+    // Patch all existing "Preview Changes" buttons in the DOM after messages render.
+    // Handles old messages that have broken onclicks or no data-req-id.
+    function _patchRemainderPreviewButtons() {
+        document.querySelectorAll('.sra-approval-card').forEach(function(card) {
+            // Find the edit request ID from the actions div inside this card
+            const actionsDiv = card.querySelector('[id^="sra-creation-actions-"]');
+            if (!actionsDiv) return;
+            const reqId = actionsDiv.id.replace('sra-creation-actions-', '');
+            if (!reqId) return;
+
+            // Find any button in this card that looks like a preview button
+            card.querySelectorAll('button').forEach(function(btn) {
+                const text = btn.textContent.trim();
+                if (text.includes('Preview Changes') || text.includes('Preview')) {
+                    // Already patched? Skip.
+                    if (btn.getAttribute('data-req-id') === reqId) return;
+
+                    // Replace with a clean version: remove broken onclick, set data-req-id
+                    btn.removeAttribute('onclick');
+                    btn.setAttribute('data-req-id', reqId);
+                    btn.classList.add('remainder-preview-btn');
+
+                    // Remove any sibling hidden div (old broken preview panel)
+                    const next = btn.nextElementSibling;
+                    if (next && next.tagName === 'DIV' && next.style.display === 'none') {
+                        next.remove();
+                    }
+                }
+            });
+        });
+    }
+
+    // ---- Init: move the sheet to <body> so position:fixed works correctly ----
+    // CSS transforms on parent containers break position:fixed — moving to body escapes this.
+    (function() {
+        const sheet = document.getElementById('remainderPreviewSheet');
+        if (sheet && sheet.parentElement !== document.body) {
+            document.body.appendChild(sheet);
         }
+    })();
 
-        // Populate meta
-        document.getElementById('remainderPreviewMeta').textContent =
-            `Batch #${data.batchId}  •  ${data.personnel}`;
-
-        // Build body
+    // Helper to render the bottom sheet given preview data from the API
+    function _renderRemainderSheet(data) {
         const items = data.items || [];
-        let html = '';
+
+        let bodyHtml = '';
 
         if (items.length === 0) {
-            html = `<div style="text-align:center; padding: 2rem; color: #94a3b8;">No item details available.</div>`;
+            bodyHtml = `<p style="color:#94a3b8; text-align:center; padding: 1.5rem 0;">No item details found.</p>`;
         } else {
-            // Summary banner
             const totalAdding = items.reduce((s, i) => s + i.adding, 0);
-            html += `
-                <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-                    <div style="flex:1; background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.2); border-radius: 14px; padding: 14px 18px;">
-                        <div style="font-size: 0.7rem; font-weight: 800; color: #92400e; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Items Affected</div>
-                        <div style="font-size: 1.6rem; font-weight: 900; color: #b45309;">${items.length}</div>
-                    </div>
-                    <div style="flex:1; background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.2); border-radius: 14px; padding: 14px 18px;">
-                        <div style="font-size: 0.7rem; font-weight: 800; color: #065f46; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Total Units Adding</div>
-                        <div style="font-size: 1.6rem; font-weight: 900; color: #10b981;">+${totalAdding}</div>
-                    </div>
-                </div>`;
+
+            // Summary stats
+            bodyHtml += `
+            <div style="display:flex; gap:10px; margin-bottom:18px;">
+                <div style="flex:1; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:12px; padding:12px 16px;">
+                    <div style="font-size:0.68rem; font-weight:800; color:#92400e; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:3px;">Items Affected</div>
+                    <div style="font-size:1.5rem; font-weight:900; color:#b45309; line-height:1;">${items.length}</div>
+                </div>
+                <div style="flex:1; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:12px; padding:12px 16px;">
+                    <div style="font-size:0.68rem; font-weight:800; color:#065f46; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:3px;">Total Units Adding</div>
+                    <div style="font-size:1.5rem; font-weight:900; color:#10b981; line-height:1;">+${totalAdding}</div>
+                </div>
+            </div>`;
 
             // Items table
-            html += `<div style="border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden;">`;
-            html += `<div style="background: #f8fafc; padding: 10px 16px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 8px; align-items: center;">
-                <span style="font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em;">Item</span>
-                <span style="font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; text-align:center;">Unit</span>
-                <span style="font-size: 0.7rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; text-align:center;">Current</span>
-                <span style="font-size: 0.7rem; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 0.06em; text-align:center;">+ Adding</span>
-                <span style="font-size: 0.7rem; font-weight: 900; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.06em; text-align:center;">New Total</span>
+            bodyHtml += `<div style="border:1px solid #e2e8f0; border-radius:14px; overflow:hidden; margin-bottom:14px;">`;
+            bodyHtml += `<div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; padding:9px 14px; background:#f8fafc;">
+                <span style="font-size:0.68rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:0.06em;">Item</span>
+                <span style="font-size:0.68rem; font-weight:900; color:#64748b; text-transform:uppercase; text-align:center;">Current</span>
+                <span style="font-size:0.68rem; font-weight:900; color:#10b981; text-transform:uppercase; text-align:center;">+ Adding</span>
+                <span style="font-size:0.68rem; font-weight:900; color:#4f46e5; text-transform:uppercase; text-align:center;">New Total</span>
             </div>`;
 
             items.forEach((item, idx) => {
-                const bg = idx % 2 === 0 ? '#fff' : '#fafafa';
-                html += `
-                <div style="background: ${bg}; padding: 14px 16px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 8px; align-items: center; border-top: 1px solid #f1f5f9;">
-                    <div style="font-size: 0.88rem; font-weight: 800; color: #0f172a; line-height: 1.3;">${item.description}</div>
-                    <div style="text-align: center; font-size: 0.78rem; color: #94a3b8; font-weight: 600;">${item.unit}</div>
-                    <div style="text-align: center; font-size: 0.88rem; font-weight: 700; color: #475569;">${item.current}</div>
-                    <div style="text-align: center;">
-                        <span style="background: rgba(16,185,129,0.1); color: #10b981; padding: 4px 10px; border-radius: 8px; font-size: 0.82rem; font-weight: 900;">+${item.adding}</span>
+                bodyHtml += `
+                <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; padding:12px 14px; border-top:1px solid #f1f5f9; background:${idx%2===0?'#fff':'#fafafa'}; align-items:center;">
+                    <div>
+                        <div style="font-size:0.88rem; font-weight:800; color:#0f172a;">${item.description}</div>
+                        <div style="font-size:0.72rem; color:#94a3b8; font-weight:600;">${item.unit}</div>
                     </div>
-                    <div style="text-align: center;">
-                        <span style="background: rgba(79,70,229,0.08); color: #4f46e5; padding: 4px 10px; border-radius: 8px; font-size: 0.82rem; font-weight: 900;">${item.projected}</span>
+                    <div style="text-align:center; font-size:0.88rem; font-weight:700; color:#475569;">${item.current}</div>
+                    <div style="text-align:center;">
+                        <span style="background:rgba(16,185,129,0.1); color:#10b981; padding:3px 10px; border-radius:7px; font-size:0.82rem; font-weight:900;">+${item.adding}</span>
+                    </div>
+                    <div style="text-align:center;">
+                        <span style="background:rgba(79,70,229,0.08); color:#4f46e5; padding:3px 10px; border-radius:7px; font-size:0.82rem; font-weight:900;">${item.projected}</span>
                     </div>
                 </div>`;
             });
-            html += `</div>`;
+            bodyHtml += `</div>`;
 
-            // Footer note
-            html += `<div style="margin-top: 16px; padding: 12px 16px; background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15); border-radius: 12px; font-size: 0.78rem; color: #92400e; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="info" style="width: 14px; flex-shrink: 0;"></i>
-                These changes will be applied to inventory only after you approve the request above.
+            bodyHtml += `<div style="padding:10px 14px; background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.18); border-radius:10px; font-size:0.78rem; color:#92400e; font-weight:600;">
+                ⚠️ &nbsp;These changes will only apply to inventory <strong>after you approve</strong> the request.
             </div>`;
         }
 
-        document.getElementById('remainderPreviewBody').innerHTML = html;
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+        Swal.fire({
+            title: `<div style="display:flex; align-items:center; gap:10px; justify-content:center;">
+                        <div style="width:36px; height:36px; background:linear-gradient(135deg,#f59e0b,#d97706); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 12px rgba(245,158,11,0.3);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m7.5 4.27 9 5.15"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/><circle cx="18.5" cy="15.5" r="2.5"/><path d="M20.27 17.27 22 19"/></svg>
+                        </div>
+                        <div style="text-align:left;">
+                            <div style="font-size:1rem; font-weight:900; color:#0f172a;">Remainder Change Preview</div>
+                            <div style="font-size:0.75rem; color:#64748b; font-weight:600;">Batch #${data.batchId} &nbsp;•&nbsp; ${data.personnel}</div>
+                        </div>
+                    </div>`,
+            html: bodyHtml,
+            showConfirmButton: false,
+            showCloseButton: true,
+            width: 580,
+            padding: '1.25rem',
+            customClass: {
+                popup: 'remainder-preview-popup',
+                title: 'remainder-preview-title',
+                htmlContainer: 'remainder-preview-body',
+                closeButton: 'remainder-preview-close',
+            }
+        });
+    }
 
-        // Show the sheet with animation
-        const sheet = document.getElementById('remainderPreviewSheet');
-        sheet.style.display = 'flex';
-        // Force reflow then add class for transition
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                sheet.classList.add('open');
-            });
+
+    // Called two ways:
+    //  1. Old messages: onclick='window.showRemainderPreview(this)' — receives the button element
+    //  2. New messages: event delegation below passes (reqId, btnEl)
+    window.showRemainderPreview = function(reqIdOrBtn, btnEl) {
+        let reqId, btn;
+
+        if (reqIdOrBtn && typeof reqIdOrBtn === 'object' && reqIdOrBtn.nodeType) {
+            // Old-style call: showRemainderPreview(this) — first arg is the button DOM element
+            btn   = reqIdOrBtn;
+            reqId = btn.getAttribute('data-req-id');
+
+            // If old button doesn't have data-req-id, try to find the edit request ID
+            // from the nearby sra-creation-actions div (id="sra-creation-actions-{reqId}")
+            if (!reqId) {
+                const card = btn.closest('.sra-approval-card');
+                if (card) {
+                    const actionsDiv = card.querySelector('[id^="sra-creation-actions-"]');
+                    if (actionsDiv) {
+                        reqId = actionsDiv.id.replace('sra-creation-actions-', '');
+                    }
+                }
+            }
+        } else {
+            // New-style call: showRemainderPreview(reqId, btn)
+            reqId = reqIdOrBtn;
+            btn   = btnEl || null;
+        }
+
+        if (!reqId) {
+            alert('Could not identify the request. Please try again.');
+            return;
+        }
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<svg style="width:14px;height:14px;animation:spin 1s linear infinite;display:inline;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Loading...`;
+        }
+
+        fetch(`{{ url('/api/edit-requests') }}/${reqId}/remainder-preview`, {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        })
+        .then(r => {
+            if (!r.ok) throw new Error('Server error ' + r.status);
+            return r.json();
+        })
+        .then(data => {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> Preview Changes`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+            _renderRemainderSheet(data);
+        })
+        .catch(err => {
+            console.error('Preview fetch error:', err);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> Preview Changes`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+            alert('Could not load preview: ' + err.message);
         });
     };
 
     window.closeRemainderPreview = function() {
-        const sheet = document.getElementById('remainderPreviewSheet');
-        sheet.classList.remove('open');
-        setTimeout(() => { sheet.style.display = 'none'; }, 400);
+        if (typeof Swal !== 'undefined') Swal.close();
     };
 
-    // Close on Escape key
+    // Event delegation — catches new messages with data-req-id
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('button.remainder-preview-btn, button[data-req-id]');
+        if (!btn) return;
+        const reqId = btn.getAttribute('data-req-id');
+        if (!reqId) return;
+        e.stopPropagation();
+        window.showRemainderPreview(reqId, btn);
+    });
+
+    // Spin keyframe for loading indicator
+    if (!document.getElementById('spin-keyframe')) {
+        const s = document.createElement('style');
+        s.id = 'spin-keyframe';
+        s.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+        document.head.appendChild(s);
+    }
+
+    // Close sheet on Escape
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') window.closeRemainderPreview();
     });
+
 </script>
 @endsection

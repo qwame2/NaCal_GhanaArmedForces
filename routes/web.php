@@ -459,6 +459,42 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::get('/edit-requests/status/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'checkStatus'])->name('edit-requests.checkStatus');
     Route::post('/edit-requests/complete/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'complete'])->name('edit-requests.complete');
 
+    // Remainder Preview API — returns preview data for an edit request
+    Route::get('/api/edit-requests/{id}/remainder-preview', function ($id) {
+        if (!auth()->user()->is_admin) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $editReq = \App\Models\EditRequest::with('user')->findOrFail($id);
+
+        if ($editReq->request_type !== 'remainder_submission') {
+            return response()->json(['error' => 'Not a remainder request'], 400);
+        }
+
+        $data    = json_decode($editReq->payload, true);
+        $updates = $data['updates'] ?? [];
+
+        $items = [];
+        foreach ($updates as $u) {
+            $invItem = \App\Models\InventoryItem::find($u['item_id']);
+            if (!$invItem) continue;
+            $items[] = [
+                'description' => $invItem->description,
+                'unit'        => $invItem->unit,
+                'current'     => (float) $invItem->stock_balance,
+                'adding'      => (float) $u['incoming_qty'],
+                'projected'   => (float) $invItem->stock_balance + (float) $u['incoming_qty'],
+            ];
+        }
+
+        return response()->json([
+            'batchId'   => $editReq->item_id,
+            'personnel' => $editReq->user->name ?? 'Unknown',
+            'status'    => $editReq->status,
+            'items'     => $items,
+        ]);
+    })->name('api.remainder-preview');
+
     // Returns Routes
     Route::post('/returns/purge', [ReturnController::class, 'purge'])->name('returns.purge');
     Route::get('/returns', [ReturnController::class, 'index'])->name('returns.index');
@@ -558,30 +594,9 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                     $msgContent .= "<div style='display: flex; align-items: flex-start; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b; margin-top: 2px;'><i data-lucide='package' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569; line-height: 1.4;'><b style='color: #0f172a;'>Items:</b> {$itemNames}</span></div>";
                     $msgContent .= "</div>";
 
-                    // Build JSON for the preview bottom sheet
-                    $previewJson = htmlspecialchars(json_encode($updates), ENT_QUOTES, 'UTF-8');
-                    $previewItemsJson = [];
-                    foreach ($updates as $u) {
-                        $invItem = \App\Models\InventoryItem::find($u['item_id']);
-                        if (!$invItem) continue;
-                        $previewItemsJson[] = [
-                            'description' => $invItem->description,
-                            'unit'        => $invItem->unit,
-                            'current'     => (float) $invItem->stock_balance,
-                            'adding'      => (float) $u['incoming_qty'],
-                            'projected'   => (float) $invItem->stock_balance + (float) $u['incoming_qty'],
-                        ];
-                    }
-                    $previewAttr = htmlspecialchars(json_encode([
-                        'batchId'    => $batchId,
-                        'personnel'  => auth()->user()->name,
-                        'items'      => $previewItemsJson,
-                    ]), ENT_QUOTES, 'UTF-8');
-
-                    // Preview trigger button (calls global JS function in messages.blade.php)
-                    $msgContent .= "<button onclick='window.showRemainderPreview(this)' data-preview='{$previewAttr}' style='width: 100%; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; margin-bottom: 8px; transition: all 0.2s;'>";
+                    // Preview trigger button — uses data-req-id to fetch preview data via API
+                    $msgContent .= "<button class='remainder-preview-btn' data-req-id='{$editReq->id}' style='width: 100%; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; margin-bottom: 8px; transition: all 0.2s;'>";
                     $msgContent .= "<i data-lucide='eye' style='width:15px; flex-shrink:0;'></i> Preview Changes</button>";
-
 
                     // Action buttons
                     $msgContent .= "<div id='sra-creation-actions-{$editReq->id}' style='display: flex; flex-direction: column; gap: 8px;'>";
@@ -699,3 +714,4 @@ Route::get('/system/migrate', function () {
         return "Migration Failed: " . $e->getMessage();
     }
 });
+
