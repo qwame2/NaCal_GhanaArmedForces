@@ -130,7 +130,7 @@
                         <tbody>
                             @foreach($recentReceivals as $rec)
                             <tr>
-                                <td data-label="Date" style="white-space: nowrap;">{{ \Carbon\Carbon::parse($rec->entry_date)->format('M d, Y') }}</td>
+                                <td data-label="Date" style="white-space: nowrap;">{{ \Carbon\Carbon::parse($rec->entry_date)->format('d/m/y') }}</td>
                                 <td data-label="Category">
                                     <span style="font-size: 0.7rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-weight: 700;">
                                         {{ $ledgeMap[$rec->ledge_category] ?? 'Category ' . $rec->ledge_category }}
@@ -172,7 +172,7 @@
                         <tbody>
                             @foreach($recentIssues as $iss)
                             <tr>
-                                <td data-label="Date" style="white-space: nowrap;">{{ \Carbon\Carbon::parse($iss->entry_date)->format('M d, Y') }}</td>
+                                <td data-label="Date" style="white-space: nowrap;">{{ \Carbon\Carbon::parse($iss->entry_date)->format('d/m/y') }}</td>
                                 <td data-label="Category">
                                     <span style="font-size: 0.7rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-weight: 700;">
                                         {{ $ledgeMap[$iss->ledge_category] ?? 'Category ' . $iss->ledge_category }}
@@ -208,7 +208,7 @@
             </div>
         </div>
         <div style="text-align: center; margin-top: 30px; font-size: 8pt; color: #555;">
-            Generated from NACOC Secure Framework at {{ date('H:i T, d M Y') }}
+            Generated from NACOC Secure Framework at {{ date('H:i T, d/m/y') }}
         </div>
     </div>
 
@@ -605,7 +605,7 @@
         const recBatches = "{{ $totalReceivedBatches }}";
         const issBatches = "{{ $totalIssuedBatches }}";
         const netMovement = "{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }}";
-        const dateStamp = "{{ \Carbon\Carbon::now()->format('F j, Y') }}";
+        const dateStamp = "{{ \Carbon\Carbon::now()->format('d/m/y') }}";
 
         const template = `EXECUTIVE LOGISTICS SUMMARY - ${dateStamp}
 

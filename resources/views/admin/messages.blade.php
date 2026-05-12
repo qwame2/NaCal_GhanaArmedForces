@@ -20,7 +20,12 @@
                 Operational Units
             </div>
             @forelse($users as $user)
-            <div class="network-item" id="user-{{ $user->id }}" style="display: flex; align-items: center; gap: 14px; padding: 1.25rem; border-radius: 18px; cursor: pointer; transition: 0.3s; margin-bottom: 6px; border: 1px solid transparent; position: relative;" onclick="selectChat({{ $user->id }}, '{{ $user->name }}', '{{ $user->role }}', '{{ $user->avatar ? asset('storage/' . $user->avatar) : '' }}')">
+            <div class="network-item" id="user-{{ $user->id }}" 
+                data-user-id="{{ $user->id }}"
+                data-user-name="{{ $user->name }}"
+                data-user-role="{{ $user->role }}"
+                data-user-avatar="{{ $user->avatar ? asset('storage/' . $user->avatar) : '' }}"
+                style="display: flex; align-items: center; gap: 14px; padding: 1.25rem; border-radius: 18px; cursor: pointer; transition: 0.3s; margin-bottom: 6px; border: 1px solid transparent; position: relative;">
                 <div style="position: relative;">
                     @if($user->avatar)
                         <img src="{{ asset('storage/' . $user->avatar) }}" style="width: 48px; height: 48px; border-radius: 14px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
@@ -108,56 +113,56 @@
         </div>
     </div>
 </div>
-<!-- ====== Remainder Preview Popover ====== -->
-<div id="remainderPreviewSheet" style="
-    position: fixed; inset: 0; z-index: 9999;
-    display: none; align-items: center; justify-content: center;
-    background: rgba(15,23,42,0.5); backdrop-filter: blur(6px);
-    padding: 1.5rem;
-" onclick="if(event.target===this) window.closeRemainderPreview()">
-    <div id="remainderPreviewContent" style="
-        background: #ffffff;
-        width: 100%; max-width: 620px;
-        border-radius: 24px;
-        padding: 0;
-        box-shadow: 0 25px 80px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.06);
-        transform: scale(0.92) translateY(-12px);
-        opacity: 0;
-        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
-        max-height: 85vh;
-        display: flex; flex-direction: column;
-        overflow: hidden;
-    ">
-        <!-- Popover Header -->
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px 24px 16px; border-bottom: 1px solid #f1f5f9;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; box-shadow: 0 4px 12px rgba(245,158,11,0.35);">
-                    <i data-lucide="package-plus" style="width: 18px;"></i>
-                </div>
-                <div>
-                    <div style="font-size: 1rem; font-weight: 900; color: #0f172a; letter-spacing: -0.01em;">Remainder Change Preview</div>
-                    <div id="remainderPreviewMeta" style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-top: 1px;"></div>
-                </div>
-            </div>
-            <button onclick="window.closeRemainderPreview()" style="width: 34px; height: 34px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.15s; flex-shrink:0;" onmouseover="this.style.background='#f1f5f9'; this.style.color='#0f172a'" onmouseout="this.style.background='#f8fafc'; this.style.color='#64748b'">
-                <i data-lucide="x" style="width: 15px;"></i>
-            </button>
-        </div>
 
-        <!-- Popover Body (scrollable) -->
-        <div id="remainderPreviewBody" style="padding: 20px 24px 24px; overflow-y: auto; flex: 1;"></div>
+<!-- Strategic Oversight Side Terminal -->
+<div id="oversightOverlay" onclick="window.closeOversightPanel()"></div>
+<div id="oversightSidePanel">
+    <div id="oversightPanelContent" style="height: 100%; display: flex; flex-direction: column;">
+        <!-- Dynamically Populated -->
     </div>
 </div>
 
 <style>
-    #remainderPreviewSheet.open { display: flex !important; }
-    #remainderPreviewSheet.open #remainderPreviewContent {
-        transform: scale(1) translateY(0);
+    /* Strategic Oversight Floating Popover */
+    #oversightSidePanel {
+        position: fixed;
+        top: 52%;
+        left: 50%;
+        width: 95%;
+        max-width: 1240px;
+        height: 85vh;
+        background: #f8fafc;
+        z-index: 10001;
+        box-shadow: 0 30px 100px rgba(15, 23, 42, 0.3), 0 0 0 1px rgba(15, 23, 42, 0.05);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+        border-radius: 28px;
+        transform: translate(-50%, -47%) scale(0.95);
+        opacity: 0;
+        visibility: hidden;
+        overflow: hidden;
+    }
+    #oversightSidePanel.open {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+        visibility: visible;
+    }
+    #oversightOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(12px);
+        z-index: 10000;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    #oversightOverlay.show {
+        display: block;
         opacity: 1;
     }
-</style>
 
-<style>
     /* Admin view logic */
     .admin-view { display: block !important; }
     .personnel-view { display: none !important; }
@@ -383,6 +388,24 @@
         animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Bottom Sheet Style for Previews */
+    .preview-bottom-sheet {
+        align-items: flex-end !important;
+        padding-bottom: 0 !important;
+    }
+    .preview-bottom-sheet-popup {
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        margin-bottom: 0 !important;
+        animation: sheet-slide-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 -20px 60px rgba(0,0,0,0.15) !important;
+    }
+    @keyframes sheet-slide-up {
+        from { transform: translateY(100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
 </style>
 
 <script>
@@ -406,7 +429,7 @@
         });
     }
 
-    function selectChat(userId, name, role, avatar) {
+    window.selectChat = function(userId, name, role, avatar) {
         activeUserId = userId;
         document.getElementById('emptyState').style.display = 'none';
         document.getElementById('sessionHeader').style.display = 'flex';
@@ -438,7 +461,7 @@
     function fetchMessages() {
         if (!activeUserId) return;
         
-        fetch(`{{ route('api.messages.fetch', ['userId' => $user->id], false) }}`.replace('{{ $user->id }}', activeUserId))
+        fetch(`{{ url('/api/messages') }}/${activeUserId}`)
             .then(res => {
                 if (!res.ok) throw new Error('Secure line interrupted');
                 return res.json();
@@ -507,7 +530,7 @@
             .catch(err => console.error('Comms Error:', err));
             
         // Mark as read
-        fetch(`{{ route('api.messages.read', ['userId' => $user->id], false) }}`.replace('{{ $user->id }}', activeUserId), {
+        fetch(`{{ url('/api/messages') }}/${activeUserId}/read`, {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
         }).then(() => updateUnreadCounts());
@@ -641,7 +664,7 @@
             const personnel = (pMatch && pMatch[1]) ? pMatch[1].trim() : 'Personnel';
             
             Swal.fire({
-                title: 'Deny SRA Submission',
+                title: 'Reject Stock Entry',
                 text: `Provide a reason for rejecting the submission from ${personnel}:`,
                 input: 'textarea',
                 inputPlaceholder: 'e.g., Incorrect quantity specified, missing documentation...',
@@ -725,8 +748,9 @@
             }
         })
         .catch(err => {
-            console.error(err);
-            showToast('System Error', 'An unexpected error occurred during SRA authorization.', 'error');
+            console.error('SRA Auth Error:', err);
+            const errMsg = err.message || 'An unexpected error occurred during SRA authorization.';
+            showToast('System Error', errMsg, 'error');
             btnElement.innerText = status === 'approved' ? 'Approve & Save' : 'Reject';
             btnElement.disabled = false;
         });
@@ -847,29 +871,47 @@
     // Patch all existing "Preview Changes" buttons in the DOM after messages render.
     // Handles old messages that have broken onclicks or no data-req-id.
     function _patchRemainderPreviewButtons() {
-        document.querySelectorAll('.sra-approval-card').forEach(function(card) {
-            // Find the edit request ID from the actions div inside this card
-            const actionsDiv = card.querySelector('[id^="sra-creation-actions-"]');
-            if (!actionsDiv) return;
-            const reqId = actionsDiv.id.replace('sra-creation-actions-', '');
+        document.querySelectorAll('.sra-approval-card, [id^="sra-creation-actions-"]').forEach(function(container) {
+            // Find the edit request ID
+            let reqId = '';
+            const actionsDiv = container.id.startsWith('sra-creation-actions-') ? container : container.querySelector('[id^="sra-creation-actions-"]');
+            if (actionsDiv) {
+                reqId = actionsDiv.id.replace('sra-creation-actions-', '');
+            }
             if (!reqId) return;
 
-            // Find any button in this card that looks like a preview button
-            card.querySelectorAll('button').forEach(function(btn) {
-                const text = btn.textContent.trim();
-                if (text.includes('Preview Changes') || text.includes('Preview')) {
-                    // Already patched? Skip.
-                    if (btn.getAttribute('data-req-id') === reqId) return;
-
-                    // Replace with a clean version: remove broken onclick, set data-req-id
-                    btn.removeAttribute('onclick');
-                    btn.setAttribute('data-req-id', reqId);
-                    btn.classList.add('remainder-preview-btn');
-
-                    // Remove any sibling hidden div (old broken preview panel)
-                    const next = btn.nextElementSibling;
-                    if (next && next.tagName === 'DIV' && next.style.display === 'none') {
-                        next.remove();
+            // Patch Links to Buttons
+            container.querySelectorAll('a, button').forEach(function(el) {
+                const text = el.textContent.trim();
+                
+                // Case 1: Entry Preview (New Stock Entry Oversight)
+                if (text.includes('Preview Entry Details')) {
+                    if (el.tagName === 'A') {
+                        // Convert link to button
+                        const btn = document.createElement('button');
+                        btn.className = el.className || 'entry-preview-btn';
+                        btn.setAttribute('style', el.getAttribute('style'));
+                        btn.innerHTML = el.innerHTML;
+                        btn.setAttribute('data-entry-req-id', reqId);
+                        el.parentNode.replaceChild(btn, el);
+                    } else if (!el.getAttribute('data-entry-req-id')) {
+                        el.setAttribute('data-entry-req-id', reqId);
+                        el.classList.add('entry-preview-btn');
+                    }
+                }
+                
+                // Case 2: Remainder Preview (Legacy SRA style)
+                if (text.includes('Preview Changes') || (text.includes('Preview') && !text.includes('Entry Details'))) {
+                    if (el.tagName === 'A') {
+                        const btn = document.createElement('button');
+                        btn.className = el.className || 'remainder-preview-btn';
+                        btn.setAttribute('style', el.getAttribute('style'));
+                        btn.innerHTML = el.innerHTML;
+                        btn.setAttribute('data-req-id', reqId);
+                        el.parentNode.replaceChild(btn, el);
+                    } else if (!el.getAttribute('data-req-id')) {
+                        el.setAttribute('data-req-id', reqId);
+                        el.classList.add('remainder-preview-btn');
                     }
                 }
             });
@@ -1030,18 +1072,177 @@
         });
     };
 
+    window.closeOversightPanel = function() {
+        const panel = document.getElementById('oversightSidePanel');
+        const overlay = document.getElementById('oversightOverlay');
+        if (panel) panel.classList.remove('open');
+        if (overlay) {
+            overlay.classList.remove('show');
+            setTimeout(() => { if(!overlay.classList.contains('show')) overlay.style.display = 'none'; }, 300);
+        }
+    };
+
+    window.showEntryPreview = function(reqId, btn) {
+        if (window._entryPreviewLoading) return;
+        
+        window._entryPreviewLoading = true;
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<svg style="width:14px;height:14px;animation:spin 1s linear infinite;display:inline;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Loading...`;
+        }
+
+        fetch(`{{ url('/api/sra-preview') }}/${reqId}`, {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="eye" style="width:16px;"></i> Preview Entry Details`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+            
+            window._entryPreviewLoading = false;
+
+            const batch = data.batch;
+            const itemsHtml = batch.items.map(item => {
+                const v = parseFloat(item.variance) || 0;
+                const vColor = v < 0 ? '#ef4444' : (v > 0 ? '#10b981' : '#3b82f6');
+                const vSign = v > 0 ? '+' : '';
+                return `
+                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a;">${item.description}</td>
+                        <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">${item.unit}</td>
+                        <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0f172a; text-align: right;">${parseFloat(item.qty).toLocaleString()}</td>
+                        <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #4f46e5; text-align: right;">${parseFloat(item.stock_balance).toLocaleString()}</td>
+                        <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 900; color: ${vColor}; text-align: right;">${vSign}${v.toLocaleString()}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const content = `
+                <div style="background: white; padding: 3.5rem 3rem 2.5rem 3rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: relative;">
+                    <button onclick="window.closeOversightPanel()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 10;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
+                        <i data-lucide="x" style="width: 18px;"></i>
+                    </button>
+
+                    <div style="display: flex; align-items: center; gap: 1.5rem;">
+                        <div style="width: 56px; height: 56px; background: rgba(79, 70, 229, 0.1); color: #4f46e5; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="package-search" style="width: 28px; height: 28px;"></i>
+                        </div>
+                        <div>
+                            <h2 style="margin: 0; font-size: 1.5rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">Stock Entry Details</h2>
+                            <p style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 500;">Personnel: <b>${data.recorded_by_name}</b> &nbsp;&bull;&nbsp; Submission: ${data.created_at}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1.5rem;">
+                        <div style="text-align: right;">
+                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Acquisition</label>
+                            <span style="font-size: 0.95rem; font-weight: 700; color: #1e293b;">${batch.acquisition_type}</span>
+                        </div>
+                        <div style="width: 1px; height: 35px; background: #e2e8f0; align-self: center;"></div>
+                        <div style="text-align: right;">
+                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Source Provider</label>
+                            <span style="font-size: 0.95rem; font-weight: 700; color: #1e293b;">${batch.supplier_name || batch.donor_name || 'N/A'}</span>
+                        </div>
+                        <div style="width: 1px; height: 35px; background: #e2e8f0; align-self: center;"></div>
+                        <div style="text-align: right;">
+                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Registry Category</label>
+                            <span style="font-size: 0.95rem; font-weight: 800; color: #4f46e5; background: rgba(79, 70, 229, 0.1); padding: 2px 10px; border-radius: 6px;">${data.ledge_name}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="padding: 2.5rem 3rem; flex: 1; overflow-y: auto;">
+                    <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                                <tr>
+                                    <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Item Description</th>
+                                    <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Unit</th>
+                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Received Qty</th>
+                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Stock Bal.</th>
+                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Variance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="padding: 1.5rem; background: #fffbeb; border-radius: 16px; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 1.25rem;">
+                        <div style="width: 40px; height: 40px; background: #f59e0b; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="shield-alert" style="width: 20px;"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <span style="display: block; font-size: 0.9rem; font-weight: 800; color: #92400e;">Entry Review in Progress</span>
+                            <span style="font-size: 0.8rem; color: #b45309;">Please check the quantities carefully before you approve this entry.</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('oversightPanelContent').innerHTML = content;
+            document.getElementById('oversightOverlay').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('oversightOverlay').classList.add('show');
+                document.getElementById('oversightSidePanel').classList.add('open');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }, 10);
+        })
+        .catch(err => {
+            window._entryPreviewLoading = false;
+            console.error('Entry preview error:', err);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="eye" style="width:16px;"></i> Preview Entry Details`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+            if (typeof Swal !== 'undefined') Swal.fire('Error', 'Could not load entry details.', 'error');
+            else alert('Could not load entry details.');
+        });
+    };
+
     window.closeRemainderPreview = function() {
         if (typeof Swal !== 'undefined') Swal.close();
     };
 
-    // Event delegation — catches new messages with data-req-id
+    // Event delegation — catches personnel item clicks
     document.addEventListener('click', function(e) {
-        const btn = e.target.closest('button.remainder-preview-btn, button[data-req-id]');
-        if (!btn) return;
-        const reqId = btn.getAttribute('data-req-id');
-        if (!reqId) return;
-        e.stopPropagation();
-        window.showRemainderPreview(reqId, btn);
+        const item = e.target.closest('.network-item');
+        if (item) {
+            const userId = item.getAttribute('data-user-id');
+            const name = item.getAttribute('data-user-name');
+            const role = item.getAttribute('data-user-role');
+            const avatar = item.getAttribute('data-user-avatar');
+            window.selectChat(userId, name, role, avatar);
+            return;
+        }
+
+        const entryBtn = e.target.closest('button.entry-preview-btn, a.entry-preview-btn, button[data-entry-req-id], a[href*="sra-preview"]');
+        if (entryBtn) {
+            e.preventDefault();
+            const reqId = entryBtn.getAttribute('data-entry-req-id') || entryBtn.href?.split('/').pop();
+            if (reqId) {
+                e.stopPropagation();
+                window.showEntryPreview(reqId, entryBtn);
+                return;
+            }
+        }
+
+        const btn = e.target.closest('button.remainder-preview-btn, a.remainder-preview-btn, button[data-req-id], a[href*="remainder-preview"]');
+        if (btn) {
+            e.preventDefault();
+            const reqId = btn.getAttribute('data-req-id') || btn.href?.split('/').pop();
+            if (reqId) {
+                e.stopPropagation();
+                window.showRemainderPreview(reqId, btn);
+                return;
+            }
+        }
     });
 
     // Spin keyframe for loading indicator

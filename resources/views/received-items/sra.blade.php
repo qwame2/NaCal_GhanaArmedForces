@@ -304,7 +304,7 @@
             </div>
             <div class="info-cell">
                 <span class="info-label">DATE</span>
-                <span class="info-value">{{ \Carbon\Carbon::parse($batch->arrival_date ?: $batch->entry_date)->format('d/m/Y') }}</span>
+                <span class="info-value">{{ \Carbon\Carbon::parse($batch->arrival_date ?: $batch->entry_date)->format('d/m/y') }}</span>
             </div>
         </div>
 
@@ -424,7 +424,7 @@
                 <div class="sig-label">Officer-in-Charge</div>
                 <div class="sig-name-date">
                     <div>Name: {{ $batch->approval_status === 'approved' ? ($admin->name ?? '______________________') : '______________________' }}</div>
-                    <div>Date: {{ $batch->approved_at ? \Carbon\Carbon::parse($batch->approved_at)->format('d/m/Y') : '______________________' }}</div>
+                    <div>Date: {{ $batch->approved_at ? \Carbon\Carbon::parse($batch->approved_at)->format('d/m/y') : '______________________' }}</div>
                 </div>
             </div>
             <div class="sig-cell">
@@ -433,7 +433,7 @@
                 <div class="sig-label">Storekeeper/Officer-in-Charge</div>
                 <div class="sig-name-date">
                     <div>Name: {{ $batch->recorder->name ?? ($batch->recorded_by_name ?? '______________________') }}</div>
-                    <div>Date: {{ $batch->created_at ? $batch->created_at->format('d/m/Y') : date('d/m/Y') }}</div>
+                    <div>Date: {{ $batch->created_at ? $batch->created_at->format('d/m/y') : date('d/m/y') }}</div>
                 </div>
             </div>
             <div class="sig-cell">

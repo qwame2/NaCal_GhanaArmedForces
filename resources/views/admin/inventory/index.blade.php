@@ -319,8 +319,8 @@
                         @endphp
                         <tr class="inventory-row" data-is-partial="{{ $isPartial ? 'true' : 'false' }}">
                             <td>
-                                <div style="font-weight: 800; color: #0f172a;">{{ \Carbon\Carbon::parse($item->entry_date)->format('M d, Y') }}</div>
-                                <div style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">Arr: {{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('M d, Y') : 'N/A' }}</div>
+                                <div style="font-weight: 800; color: #0f172a;">{{ \Carbon\Carbon::parse($item->entry_date)->format('d/m/y') }}</div>
+                                <div style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">Arr: {{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('d/m/y') : 'N/A' }}</div>
                             </td>
                             <td>
                                 <div style="font-weight: 700; color: #1e293b;">{{ $item->description }}</div>
@@ -419,8 +419,8 @@
                         @forelse($issuances as $item)
                         <tr>
                             <td>
-                                <div style="font-weight: 800; color: #0f172a;">{{ \Carbon\Carbon::parse($item->issuance_date)->format('M d, Y') }}</div>
-                                <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 600;">{{ \Carbon\Carbon::parse($item->created_at)->format('H:i A') }}</div>
+                                <div style="font-weight: 800; color: #0f172a;">{{ \Carbon\Carbon::parse($item->issuance_date)->format('d/m/y') }}</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 600;">{{ \Carbon\Carbon::parse($item->created_at)->format('H:i') }}</div>
                             </td>
                             <td>
                                 <div style="font-weight: 700; color: #1e293b;">{{ $item->description }}</div>
@@ -466,8 +466,8 @@
                         @forelse($returnedItems as $return)
                         <tr>
                             <td>
-                                <div style="font-weight: 800; color: #0f172a;">{{ \Carbon\Carbon::parse($return->return_date)->format('M d, Y') }}</div>
-                                <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 600;">{{ \Carbon\Carbon::parse($return->created_at)->format('H:i A') }}</div>
+                                <div style="font-weight: 800; color: #0f172a;">{{ \Carbon\Carbon::parse($return->return_date)->format('d/m/y') }}</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 600;">{{ \Carbon\Carbon::parse($return->created_at)->format('H:i') }}</div>
                             </td>
                             <td>
                                 <div style="font-weight: 700; color: #1e293b;">{{ $return->issuedItem->description ?? 'N/A' }}</div>

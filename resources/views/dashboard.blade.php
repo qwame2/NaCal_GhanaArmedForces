@@ -11,7 +11,7 @@
                 <span style="background: var(--bg-main); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">System Live</span>
                 <span style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;">
                     <i data-lucide="calendar" style="width: 14px;"></i>
-                    {{ date('F d, Y') }}
+                    {{ date('d/m/y') }}
                 </span>
             </div>
             <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-main); margin-bottom: 0.25rem;">Dashboard <span style="color: var(--primary);">Overview</span></h2>
@@ -423,8 +423,8 @@
         <tbody>
             @forelse($recentTransactions as $transaction)
             <tr class="activity-row">
-                <td data-label="Entry Date">{{ \Carbon\Carbon::parse($transaction->entry_date)->format('M d, H:i') }}</td>
-                <td data-label="Arrival Date" style="color: var(--primary); font-weight: 700;">{{ $transaction->arrival_date ? \Carbon\Carbon::parse($transaction->arrival_date)->format('M d, Y') : '-' }}</td>
+                <td data-label="Entry Date">{{ \Carbon\Carbon::parse($transaction->entry_date)->format('d/m/y H:i') }}</td>
+                <td data-label="Arrival Date" style="color: var(--primary); font-weight: 700;">{{ $transaction->arrival_date ? \Carbon\Carbon::parse($transaction->arrival_date)->format('d/m/y') : '-' }}</td>
                 <td data-label="Product">{{ $transaction->description }} <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $transaction->unit ?? 'Units' }})</span></td>
                 <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">{{ $ledgeMap[$transaction->ledge_category] ?? "Category " . $transaction->ledge_category }}</span></td>
                 @php
@@ -1014,6 +1014,28 @@
                                     <option value=""></option>
                                     ${filteredItems.map(item => `<option value="${item.description}">${item.description}</option>`).join('')}
                                 </select>
+                                <div class="existing-stats" style="display: none; margin-top: 0.85rem; padding: 1rem; background: var(--bg-main); border-radius: 14px; border: 1px dashed var(--border-color); animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div style="width: 32px; height: 32px; background: rgba(99, 102, 241, 0.15); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.1);">
+                                                <i data-lucide="layers" style="width: 16px;"></i>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Total System Stock</div>
+                                                <div class="stat-stock-balance" style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">0</div>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.15); color: var(--secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);">
+                                                <i data-lucide="package" style="width: 16px;"></i>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Previously Received</div>
+                                                <div class="stat-received-qty" style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">0</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="form-group">
@@ -1027,11 +1049,11 @@
 
                             <div class="form-group">
                                 <label class="lbl-stock-balance">Stock Balance</label>
-                                <input type="number" class="row-stock-balance" placeholder="System Total: {{ number_format($totalInventory, 0) }}">
+                                <input type="number" class="row-stock-balance">
                             </div>
                             <div class="form-group">
                                 <label class="lbl-received-qty">Received Qty</label>
-                                <input type="number" class="row-qty" placeholder="System Total: {{ number_format($totalInventory, 0) }}" style="border-color: var(--primary-light);">
+                                <input type="number" class="row-qty" style="border-color: var(--primary-light);">
                             </div>
                             <div class="form-group">
                                 <label>Variance Status</label>
@@ -1047,6 +1069,11 @@
                 `;
                 const $row = $(rowHtml);
                 container.append($row);
+
+                const stockInput = $row.find('.row-stock-balance');
+                const qtyInput = $row.find('.row-qty');
+                const varianceInput = $row.find('.row-variance');
+                const statsPanel = $row.find('.existing-stats');
 
                 // Initialize Select2 to allow DB items and new items
                 $row.find('.item-select-dynamic').select2({
@@ -1064,27 +1091,38 @@
                     dropdownParent: $('#newEntryModal')
                 });
 
-                // Handle Item Selection to show previous data as placeholders
+                // Handle Item Selection to show previous data explicitly
                 $row.on('change', '.item-select-dynamic', function() {
                     const selectedDesc = $(this).val();
                     const prevData = existingDBItems.find(item => item.description === selectedDesc);
 
-                    const stockInput = $row.find('.row-stock-balance');
-                    const qtyInput = $row.find('.row-qty');
-                    const varianceInput = $row.find('.row-variance');
-
                     if (prevData) {
-                        stockInput.attr('placeholder', `Total System Stock: ${parseFloat(prevData.stock_balance).toLocaleString()}`);
-                        qtyInput.attr('placeholder', `Total Received: ${parseFloat(prevData.qty).toLocaleString()}`);
-                        varianceInput.attr('placeholder', `Total Variance: ${parseFloat(prevData.variance).toLocaleString()}`);
+                        // Update explicitly visible stats panel
+                        $row.find('.stat-stock-balance').text(parseFloat(prevData.stock_balance).toLocaleString() + ' units');
+                        $row.find('.stat-received-qty').text(parseFloat(prevData.qty).toLocaleString() + ' units');
+                        statsPanel.slideDown(300);
+                        lucide.createIcons();
 
+                        // Enforce Read-Only for Existing Items as requested
+                        stockInput.prop('readonly', true).css('background', 'var(--bg-main)');
+                        // Auto-sync initial value if qty exists
+                        if (qtyInput.val()) stockInput.val(qtyInput.val());
+
+                        // Remove placeholders as requested
+                        stockInput.removeAttr('placeholder');
+                        qtyInput.removeAttr('placeholder');
+                        
                         // Visual cue for existing item
                         if (!$row.find('.existing-indicator').length) {
-                            $row.find('.row-badge').append(' <span class="existing-indicator" style="font-size: 0.6rem; opacity: 0.8;">(Restocking)</span>');
+                            $row.find('.row-badge').append(' <span class="existing-indicator" style="font-size: 0.6rem; opacity: 0.8; background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 4px; margin-left: 4px;">(Restocking)</span>');
                         }
                     } else {
-                        stockInput.attr('placeholder', `System Total: ${globalTotalStock.toLocaleString()}`);
-                        qtyInput.attr('placeholder', `System Total: ${globalTotalStock.toLocaleString()}`);
+                        statsPanel.slideUp(300);
+                        // New Item Logic: Editable and defaults to 0
+                        stockInput.prop('readonly', false).css('background', 'var(--bg-card)').val(0);
+                        
+                        stockInput.removeAttr('placeholder');
+                        qtyInput.removeAttr('placeholder');
                         varianceInput.attr('placeholder', '0');
                         $row.find('.existing-indicator').remove();
                     }
@@ -1092,16 +1130,13 @@
 
                 // Auto-Calculation Logic: Variance = Stock Balance - Received Qty
                 $row.on('input', '.row-stock-balance, .row-qty', function() {
-                    const status = $('#supplierStatusSelect').val();
-                    const stockVal = parseFloat($row.find('.row-stock-balance').val()) || 0;
-                    
-                    // Auto-sync qty removed as per user request
-                    if (status !== 'Partial Delivery' && $(this).hasClass('row-stock-balance')) {
-                        // $row.find('.row-qty').val(stockVal); 
+                    // Auto-sync logic for existing items: Stock Balance follows Received Qty
+                    if (stockInput.prop('readonly') && $(this).hasClass('row-qty')) {
+                        stockInput.val($(this).val());
                     }
 
-                    const qtyVal = parseFloat($row.find('.row-qty').val()) || 0;
-                    const varianceInput = $row.find('.row-variance');
+                    const stockVal = parseFloat(stockInput.val()) || 0;
+                    const qtyVal = parseFloat(qtyInput.val()) || 0;
 
                     const result = stockVal - qtyVal;
                     varianceInput.val(result);
@@ -1372,15 +1407,12 @@
                     </div>
 
                     <div id="dateControl" class="form-group full-width" style="display: none; opacity: 0; margin-top: 1rem;">
-                        <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-grid" style="grid-template-columns: 1fr; gap: 1rem;">
                             <div class="form-group">
                                 <label>Arrival Date (Manual)</label>
                                 <input type="date" id="arrivalDate" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit;">
                             </div>
-                            <div class="form-group">
-                                <label>Entry Date (Automatic)</label>
-                                <input type="text" id="entryDate" readonly style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; cursor: not-allowed; opacity: 1;">
-                            </div>
+                            <input type="hidden" id="entryDate">
                         </div>
                     </div>
                 </div>

@@ -38,8 +38,8 @@ class EditRequestController extends Controller
             'status' => 'pending'
         ]);
 
-        $admin = User::where('is_admin', true)->first();
-        if ($admin) {
+        $admins = User::where('is_admin', true)->get();
+        if ($admins->count() > 0) {
             $typeLabel = strtoupper($requestType);
             $actionWord = $requestType === 'edit' ? 'edit' : 'PERMANENTLY DELETE';
             
@@ -73,11 +73,15 @@ class EditRequestController extends Controller
                 Waiting for strategic authorization from Command to {$actionWord} {$displayTitle}.
             </div>";
 
-            Message::create([
-                'sender_id' => auth()->id(),
-                'receiver_id' => $admin->id,
-                'message' => $msgContent
-            ]);
+            foreach ($admins as $admin) {
+                Message::create([
+                    'sender_id' => auth()->id(),
+                    'receiver_id' => $admin->id,
+                    'message' => $msgContent,
+                    'is_automated' => true,
+                    'edit_request_id' => $editReq->id
+                ]);
+            }
         }
 
         if (ob_get_length()) ob_clean();
@@ -108,8 +112,10 @@ class EditRequestController extends Controller
         $color = $request->status === 'approved' ? '#10b981' : '#dc2626';
 
         // Update the original message that triggered this for Admin's persistence
-        $originalMsg = Message::where('message', 'like', "%edit-req-actions-{$editReq->id}%")->first();
-        if ($originalMsg) {
+        // Update all original messages that triggered this for Admin's persistence (sync across multiple admins)
+        $originalMsgs = Message::where('message', 'like', "%edit-req-actions-{$editReq->id}%")->get();
+        
+        if ($originalMsgs->count() > 0) {
             $item = InventoryBatch::with('items')->find($editReq->item_id);
             $itemNames = $item ? $item->items->pluck('description')->take(3)->implode(', ') : 'Unknown';
             if ($item && $item->items->count() > 3) $itemNames .= ' etc.';
@@ -141,7 +147,9 @@ class EditRequestController extends Controller
                     </div>
                 </div>";
             
-            $originalMsg->update(['message' => $newContent]);
+            foreach ($originalMsgs as $originalMsg) {
+                $originalMsg->update(['message' => $newContent]);
+            }
         }
 
         // Send a confirmation message to the Personnel
@@ -271,8 +279,10 @@ class EditRequestController extends Controller
             $data = json_decode($editReq->payload, true);
             $requestType = $editReq->request_type;
             
-            \Illuminate\Support\Facades\DB::beginTransaction();
-            try {
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            if (ob_get_length()) ob_clean();
+
                 if ($requestType === 'remainder_submission') {
                     $updates = $data['updates'] ?? [];
                     $batchIdsToCheck = [];
@@ -371,13 +381,15 @@ class EditRequestController extends Controller
         $finalMsg = "<div style='padding: 15px; border: 1px solid {$color}; border-radius: 12px; background: " . ($request->status === 'approved' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(220, 38, 38, 0.05)') . ";'>";
         $finalMsg .= "<b style='color: {$color}'>{$statusHeader}</b><br>";
         
-        if ($request->status === 'approved') {
+        if ($request->status === 'approved' && isset($batch) && $batch) {
             $printUrl = route('receiveditems.sra', ['id' => $batch->id]);
             $desc = $requestType === 'remainder_submission' 
                 ? "The remainder items for Batch #{$batch->id} have been authorized and added to stock. You can now download the updated SRA voucher."
                 : "Your inventory entry has been authorized. You can now download the official voucher.";
             $finalMsg .= "{$desc}<br><br>";
             $finalMsg .= "<a href='{$printUrl}' target='_blank' style='display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);'>Download / Print SRA</a>";
+        } else if ($request->status === 'approved') {
+            $finalMsg .= "Authorization was granted, but the associated record could not be identified for printing. Please contact the Administrator.";
         } else {
             // Rejection format as requested
             if ($request->reason) {
@@ -419,21 +431,21 @@ class EditRequestController extends Controller
         }
 
         // 2. Update the Admin's message (this view)
-        $adminMsg = Message::where('receiver_id', auth()->id())
+        // 2. Update ALL Admin messages for this request (Collaborative status sync)
+        $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
             ->where(function($q) use ($editReq) {
                 $q->where('edit_request_id', $editReq->id)
-                  ->orWhere('message', 'like', "%<!-- sra_req_id:{$editReq->id} -->%")
                   ->orWhere('message', 'like', "%sra-creation-actions-{$editReq->id}%");
             })
-            ->first();
+            ->get();
 
-        if ($adminMsg) {
+        foreach ($adminMsgs as $adminMsg) {
             $statusColor = $request->status === 'approved' ? '#10b981' : '#dc2626';
             $statusLabel = $request->status === 'approved' ? 'AUTHORIZED & COMMITTED' : 'REJECTED';
             $logType = $editReq->request_type === 'remainder_submission' ? 'REMAINDER' : 'SRA';
             
             $printLink = "";
-            if ($request->status === 'approved' && isset($batch)) {
+            if ($request->status === 'approved' && isset($batch) && $batch) {
                 $printUrl = route('receiveditems.sra', ['id' => $batch->id]);
                 $printLink = "<br><a href='{$printUrl}' target='_blank' style='display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 800; font-size: 0.75rem; margin-top: 8px;'>Download / Print SRA</a>";
             }

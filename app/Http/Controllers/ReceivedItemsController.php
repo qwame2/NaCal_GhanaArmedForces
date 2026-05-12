@@ -59,14 +59,21 @@ class ReceivedItemsController extends Controller
         $ledgeMap = $this->getLedgeMap();
         $history = collect(); 
 
-        // Redirect to donation voucher if it's a donor
-        $isDonation = ($batch->acquisition_type === 'Donor' || str_contains(strtolower($batch->supplier_status), 'donor'));
-        
-        if ($isDonation) {
-            return view('received-items.donation_voucher', compact('batch', 'admin', 'ledgeMap', 'history'));
-        }
+        return view('received-items.preview_details', compact('batch', 'admin', 'ledgeMap', 'history'));
+    }
 
-        return view('received-items.sra', compact('batch', 'admin', 'ledgeMap', 'history'));
+    public function previewApi($id)
+    {
+        $req = \App\Models\EditRequest::with('user')->findOrFail($id);
+        $data = json_decode($req->payload, true);
+        $ledgeMap = $this->getLedgeMap();
+        
+        return response()->json([
+            'batch' => $data,
+            'ledge_name' => $ledgeMap[$data['ledge_category']] ?? $data['ledge_category'],
+            'recorded_by_name' => $req->user->name ?? 'Personnel',
+            'created_at' => $req->created_at->format('d/m/Y H:i')
+        ]);
     }
 
     public function index(Request $request)

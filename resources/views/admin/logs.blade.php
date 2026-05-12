@@ -98,7 +98,7 @@
                         <input type="checkbox" name="log_ids[]" value="{{ $log->id }}" class="log-checkbox" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);">
                     </td>
                     <td style="padding: 1.25rem 2rem;">
-                        <div style="font-weight: 800; color: var(--text-heading); font-size: 0.85rem;">{{ $log->created_at->format('M d, Y') }}</div>
+                        <div style="font-weight: 800; color: var(--text-heading); font-size: 0.85rem;">{{ $log->created_at->format('d/m/y') }}</div>
                         <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-top: 2px;">{{ $log->created_at->format('H:i:s') }}</div>
                     </td>
                     <td style="padding: 1.25rem 2rem;">
@@ -593,11 +593,11 @@
                     </div>
                     <div class="detail-card">
                         <div class="detail-label">Original Issue Date</div>
-                        <div class="detail-value">${dataObj.original_issuance_date ? new Date(dataObj.original_issuance_date).toLocaleDateString() : 'N/A'}</div>
+                        <div class="detail-value">${dataObj.original_issuance_date ? new Date(dataObj.original_issuance_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'N/A'}</div>
                     </div>
                     <div class="detail-card">
                         <div class="detail-label">Return Date</div>
-                        <div class="detail-value">${dataObj.return_date ? new Date(dataObj.return_date).toLocaleDateString() : 'N/A'}</div>
+                        <div class="detail-value">${dataObj.return_date ? new Date(dataObj.return_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'N/A'}</div>
                     </div>
                 </div>`;
                 

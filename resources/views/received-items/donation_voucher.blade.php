@@ -185,7 +185,7 @@
             </div>
             <div class="meta-box">
                 <span class="meta-label">DATE OF RECEIPT</span>
-                <strong>{{ \Carbon\Carbon::parse($batch->arrival_date ?: $batch->entry_date)->format('d F, Y') }}</strong>
+                <strong>{{ \Carbon\Carbon::parse($batch->arrival_date ?: $batch->entry_date)->format('d/m/y') }}</strong>
             </div>
             <div class="meta-box">
                 <span class="meta-label">STATION / REGION</span>
@@ -247,7 +247,7 @@
         </div>
 
         <div style="margin-top: 40px; text-align: center; font-size: 11px; border-top: 1px solid #eee; padding-top: 20px;">
-            OFFICIAL STAMP & DATE OF RECORDING: {{ date('d/m/Y H:i') }}
+            OFFICIAL STAMP & DATE OF RECORDING: {{ date('d/m/y H:i') }}
         </div>
     </div>
 

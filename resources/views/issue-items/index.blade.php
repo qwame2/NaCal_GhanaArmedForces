@@ -915,7 +915,7 @@
 
             data.forEach(item => {
                 const t = new Date(item.created_at);
-                const date = t.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                const date = t.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' });
                 const time = t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
                 let statusBadge = '';

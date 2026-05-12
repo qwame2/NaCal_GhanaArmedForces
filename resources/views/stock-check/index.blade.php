@@ -359,7 +359,7 @@ function generateVerificationReport() {
     const variance = document.getElementById('newAuditVariance').innerText;
     const description = document.getElementById('auditItemName').innerText;
     
-    let report = `STOCK VERIFICATION REPORT - ${new Date().toLocaleDateString()}\n`;
+    let report = `STOCK VERIFICATION REPORT - ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })}\n`;
     report += `--------------------------------------------------\n`;
     report += `ITEM: ${description}\n`;
     report += `SYSTEM BALANCE: ${document.getElementById('auditStockBal').innerText}\n`;

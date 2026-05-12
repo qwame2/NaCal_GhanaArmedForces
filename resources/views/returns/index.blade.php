@@ -1272,8 +1272,8 @@
             const d = new Date(item.created_at);
             const dateStr = d.toLocaleDateString('en-GB', {
                 day: '2-digit',
-                month: 'short',
-                year: 'numeric'
+                month: '2-digit',
+                year: '2-digit'
             });
             const timeStr = d.toLocaleTimeString('en-GB', {
                 hour: '2-digit',
@@ -1283,8 +1283,8 @@
             const issueDate = new Date(item.issuance_date);
             const issueDateStr = issueDate.toLocaleDateString('en-GB', {
                 day: '2-digit',
-                month: 'short',
-                year: 'numeric'
+                month: '2-digit',
+                year: '2-digit'
             });
 
             desktopHtml += `
@@ -1546,8 +1546,8 @@
         const userName = "{{ auth()->user()->name ?? 'System Administrator' }}";
         const now = new Date().toLocaleString('en-GB', {
             day: '2-digit',
-            month: 'long',
-            year: 'numeric',
+            month: '2-digit',
+            year: '2-digit',
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit'
@@ -1595,9 +1595,9 @@
                     <p>
                         This audit confirms the successful recovery and verification of the following assets.
                         ${selectedItems.map((item, index) => {
-                            const issueDate = new Date(item.issuance_date).toLocaleDateString('en-GB');
+                            const issueDate = new Date(item.issuance_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' });
                             const issueTime = new Date(item.issuance_timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-                            const returnDate = new Date(item.created_at).toLocaleDateString('en-GB');
+                            const returnDate = new Date(item.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' });
                             const returnTime = new Date(item.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
                             return `

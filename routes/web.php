@@ -454,6 +454,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/edit-requests', [\App\Http\Controllers\EditRequestController::class, 'store'])->name('edit-requests.store');
     Route::post('/edit-requests/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'process'])->name('edit-requests.process');
     Route::get('/sra-preview/{id}', [\App\Http\Controllers\ReceivedItemsController::class, 'preview'])->name('sra.preview');
+    Route::get('/api/sra-preview/{id}', [\App\Http\Controllers\ReceivedItemsController::class, 'previewApi'])->name('api.sra.preview');
     Route::post('/sra-creation/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'processSraCreation'])->name('sra-creation.process');
     Route::get('/received-items/{id}/sra', [\App\Http\Controllers\ReceivedItemsController::class, 'sra'])->name('receiveditems.sra');
     Route::get('/edit-requests/status/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'checkStatus'])->name('edit-requests.checkStatus');
@@ -542,8 +543,8 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                     'status' => 'pending',
                     'payload' => json_encode(['updates' => $updates])
                 ]);
-                $admin = \App\Models\User::where('is_admin', true)->first();
-                if ($admin) {
+                $admins = \App\Models\User::where('is_admin', true)->get();
+                if ($admins->count() > 0) {
                     $itemNames = collect($updates)->map(function($u) {
                         $item = \App\Models\InventoryItem::find($u['item_id']);
                         return $item ? $item->description : 'Unknown';
@@ -607,13 +608,15 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                     $msgContent .= "</div></div>";
 
 
-                    \App\Models\Message::create([
-                        'sender_id' => auth()->id(),
-                        'receiver_id' => $admin->id,
-                        'message' => $msgContent,
-                        'is_automated' => true,
-                        'edit_request_id' => $editReq->id
-                    ]);
+                    foreach ($admins as $admin) {
+                        \App\Models\Message::create([
+                            'sender_id' => auth()->id(),
+                            'receiver_id' => $admin->id,
+                            'message' => $msgContent,
+                            'is_automated' => true,
+                            'edit_request_id' => $editReq->id
+                        ]);
+                    }
 
                     $confirmation = "<div style='padding: 15px; border: 1px solid #f59e0b; border-radius: 16px; background: rgba(245, 158, 11, 0.03); display: flex; align-items: center; gap: 12px;'>";
                     $confirmation .= "<div style='width: 32px; height: 32px; background: #f59e0b; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;'><i data-lucide='clock' style='width: 16px;'></i></div>";
@@ -621,7 +624,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                     $confirmation .= "</div>";
 
                     \App\Models\Message::create([
-                        'sender_id' => $admin->id ?? 1,
+                        'sender_id' => $admins->first()->id ?? 1,
                         'receiver_id' => auth()->id(),
                         'message' => $confirmation,
                         'is_automated' => true,

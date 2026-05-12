@@ -358,8 +358,8 @@
                         }
                         @endphp
                         <tr class="activity-row" data-item-id="{{ $item->id }}" data-batch-id="{{ $item->batch_id }}" style="border-top: 1px solid var(--border-color);">
-                        <td data-label="Entry Date" style="padding: 1.25rem 1.5rem; color: var(--text-muted);">{{ \Carbon\Carbon::parse($item->entry_date)->format('M d, Y H:i') }}</td>
-                        <td data-label="Arrival Date" style="padding: 1.25rem 1.5rem; color: var(--primary); font-weight: 700;">{{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('M d, Y') : '-' }}</td>
+                        <td data-label="Entry Date" style="padding: 1.25rem 1.5rem; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; font-weight: 700;">{{ \Carbon\Carbon::parse($item->entry_date)->format('d/m/y H:i') }}</td>
+                        <td data-label="Arrival Date" style="padding: 1.25rem 1.5rem; color: var(--primary); font-weight: 700;">{{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('d/m/y') : '-' }}</td>
                         <td data-label="Description" style="padding: 1.25rem 1.5rem;">
                             <div style="font-weight: 700; color: var(--text-main);">{{ $item->description }} <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $item->unit ?? 'Units' }})</span></div>
                             <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Batch #{{ $item->batch_id }}</div>
@@ -1967,11 +1967,11 @@
                         </div>
                         <div style="padding: 1.15rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
                             <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Transaction Date (Auto)</span>
-                            <span style="color: var(--text-main); font-weight: 700;">${new Date(batch.entry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                            <span style="color: var(--text-main); font-weight: 700;">${new Date(batch.entry_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + new Date(batch.entry_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                         <div style="padding: 1.15rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
                             <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Arrival Date (Manual)</span>
-                            <span style="color: var(--primary); font-weight: 800;">${batch.arrival_date ? new Date(batch.arrival_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}</span>
+                            <span style="color: var(--primary); font-weight: 800;">${batch.arrival_date ? new Date(batch.arrival_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '-'}</span>
                         </div>
                         <div style="padding: 1.15rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
                             <span style="color: var(--text-muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Allocation</span>
@@ -2074,7 +2074,7 @@
             .then(data => {
                 try {
                     continueBatchData = data.batch;
-                    subtitle.innerText = `Original Transaction: #${continueBatchData.id} • ${new Date(continueBatchData.entry_date).toLocaleDateString()}`;
+                    subtitle.innerText = `Original Transaction: #${continueBatchData.id} • ${new Date(continueBatchData.entry_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })}`;
                     
                     const sourceName = (continueBatchData.supplier_name || continueBatchData.donor_name || 'Unknown Source').replace(/\[.*?\]/g, '').trim();
                     
@@ -3500,7 +3500,7 @@ function submitEditBatch() {
                         const arrivalDateTd = r.querySelector('td[data-label="Arrival Date"]');
                         if (arrivalDateTd) {
                             const date = new Date(payload.arrival_date);
-                            arrivalDateTd.innerText = date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+                            arrivalDateTd.innerText = date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' });
                         }
                         
                         const supplierTd = r.querySelector('td[data-label="Supplier"]');

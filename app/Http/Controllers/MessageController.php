@@ -12,19 +12,41 @@ class MessageController extends Controller
     public function fetchMessages($userId)
     {
         $authId = auth()->id();
+        $authUser = auth()->user();
         
-        $messages = Message::where(function($q) use ($authId, $userId) {
+        $messages = Message::where(function($q) use ($authId, $userId, $authUser) {
+            // Standard peer-to-peer message query
             $q->where(function($sq) use ($authId, $userId) {
                 $sq->where('sender_id', $authId)->where('receiver_id', $userId);
             })->orWhere(function($sq) use ($authId, $userId) {
                 $sq->where('sender_id', $userId)->where('receiver_id', $authId);
             });
+
+            // ENHANCED COLLABORATION: If viewer is an administrator, also show automated 
+            // messages (SRA/Edit requests) sent from this user to ANY administrator.
+            // This ensures Admin B can see and approve requests originally sent to Admin A.
+            if ($authUser && $authUser->is_admin) {
+                $adminIds = User::where('is_admin', true)->pluck('id')->toArray();
+                
+                $q->orWhere(function($sq) use ($userId, $adminIds) {
+                    $sq->where('sender_id', $userId)
+                       ->where('is_automated', true)
+                       ->whereIn('receiver_id', $adminIds);
+                });
+                
+                // Also show automated responses from ANY admin to this user
+                $q->orWhere(function($sq) use ($userId, $adminIds) {
+                    $sq->where('receiver_id', $userId)
+                       ->where('is_automated', true)
+                       ->whereIn('sender_id', $adminIds);
+                });
+            }
         });
 
         // Robustly filter out automated messages from the sender's perspective
         $messages->where(function($q) use ($authId) {
             $q->where('is_automated', false)
-              ->orWhere('receiver_id', $authId); // Explicitly show if you are the intended recipient
+              ->orWhere('receiver_id', $authId); // Always show if you are the intended recipient
         });
 
         $messages = $messages->orderBy('created_at', 'asc')->get();

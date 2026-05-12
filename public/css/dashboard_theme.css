@@ -996,13 +996,12 @@ button:active {
     background: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(8px);
     display: none;
-    align-items: center;
+    align-items: flex-end; /* Anchored to bottom */
     justify-content: center;
     z-index: 2000;
-    padding: 1.5rem;
+    padding: 0;
     animation: fadeIn 0.3s ease-out;
-    overflow-y: auto;
-    /* Allow overlay scroll if modal too big */
+    overflow-y: hidden; /* Sheet handles its own scroll */
 }
 
 @media (max-width: 768px) {
@@ -1016,48 +1015,43 @@ button:active {
 
 .modal-content {
     background: var(--bg-card);
-    width: 95%;
-    max-width: 950px;
+    width: 100%;
+    max-width: 1300px; /* Increased for a more expansive and professional workspace */
     max-height: 92vh;
-    border-radius: var(--radius-xl);
+    border-radius: 40px 40px 0 0; /* More shape */
     padding: 0;
     position: relative;
-    box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.15);
     border: 1px solid var(--border-color);
-    animation: slideInUp 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    border-bottom: none;
+    animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     overflow-y: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    margin: auto;
+    margin: 0 auto;
+}
+
+.modal-content::before {
+    content: '';
+    position: sticky;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 44px;
+    height: 5px;
+    background: var(--text-muted);
+    opacity: 0.2;
+    border-radius: 10px;
+    z-index: 1000;
+    display: block;
+    margin: 0 auto -5px auto;
 }
 
 @media (max-width: 768px) {
     .modal-content {
-        width: 100% !important;
-        height: auto !important;
-        max-height: 88vh !important;
-        /* Leave gap at top for 'One UI' feel */
-        margin: 0 !important;
+        max-height: 95vh !important;
         border-radius: 32px 32px 0 0 !important;
-        /* Large rounded top */
-        border: none !important;
         box-shadow: 0 -15px 35px rgba(0, 0, 0, 0.1) !important;
-    }
-
-    .modal-content::before {
-        content: '';
-        position: sticky;
-        top: 12px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 44px;
-        height: 5px;
-        background: var(--text-muted);
-        opacity: 0.2;
-        border-radius: 10px;
-        z-index: 1000;
-        display: block;
-        margin: 0 auto -5px auto;
     }
 }
 
@@ -1318,12 +1312,12 @@ button:active {
 @keyframes slideInUp {
     from {
         opacity: 0;
-        transform: translateY(20px) scale(0.95);
+        transform: translateY(100%);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
     }
 }
 
