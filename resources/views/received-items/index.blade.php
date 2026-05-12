@@ -431,11 +431,30 @@
                 </button>
                 <div id="actionMenu-{{ $item->id }}" class="action-menu">
                     @if(($displayStatus === 'PARTIAL DELIVERY' || $displayStatus === 'Partial Delivery') && is_numeric($item->variance) && (float)$item->variance < 0)
+                    @php
+                        $pendingRemainder = \App\Models\EditRequest::where('item_id', $item->batch_id)
+                            ->where('item_type', 'batch')
+                            ->where('request_type', 'remainder_submission')
+                            ->where('status', 'pending')
+                            ->exists();
+                    @endphp
+                    @if($pendingRemainder)
+                    {{-- Locked: remainder already submitted, awaiting admin approval --}}
+                    <div class="menu-item" style="color: #f59e0b; opacity: 0.7; cursor: not-allowed; pointer-events: none; display: flex; align-items: center; gap: 8px; padding: 0.6rem 1rem;">
+                        <i data-lucide="clock" style="width:16px; flex-shrink:0;"></i>
+                        <span>
+                            <span style="display:block; font-size:0.82rem; font-weight:800;">Awaiting Approval</span>
+                            <span style="display:block; font-size:0.7rem; color:#94a3b8; font-weight:600;">Remainder pending admin review</span>
+                        </span>
+                    </div>
+                    @else
                     <button onclick="continueDelivery('{{ $item->batch_id }}')" class="menu-item" style="color: #f59e0b;">
                         <i data-lucide="package-plus"></i>
                         Continue Delivery
                     </button>
                     @endif
+                    @endif
+
                     <button onclick="openModal('{{ $item->batch_id }}')" class="menu-item">
                         <i data-lucide="eye"></i>
                         View Details
