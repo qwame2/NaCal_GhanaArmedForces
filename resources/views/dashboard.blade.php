@@ -292,7 +292,20 @@
     </div>
 
     <style>
+        /* ── Scrollable wrapper on small screens ── */
+        .activity-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
         @media (max-width: 768px) {
+
+            /* Hide the wrapper's horizontal scroll; we go card-style instead */
+            .activity-table-wrap {
+                overflow-x: visible;
+            }
+
             .activity-table thead {
                 display: none;
             }
@@ -307,60 +320,90 @@
 
             .activity-row {
                 margin-bottom: 1rem;
-                border-radius: 12px;
+                border-radius: 14px;
                 background: var(--bg-main) !important;
-                padding: 1rem;
+                padding: 1rem 1.1rem;
                 border: 1px solid var(--border-color);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
             }
 
             .activity-row:hover {
                 transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(99, 102, 241, 0.08);
             }
 
+            /* Every cell: label on left, value on right */
             .activity-row td {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 0.4rem 0 !important;
+                padding: 0.45rem 0 !important;
                 border: none !important;
                 font-size: 0.85rem;
+                gap: 0.5rem;
             }
 
+            /* Left-side label via data-label attribute */
             .activity-row td::before {
                 content: attr(data-label);
+                flex-shrink: 0;
                 font-weight: 800;
                 color: var(--text-muted);
-                font-size: 0.7rem;
+                font-size: 0.68rem;
                 text-transform: uppercase;
-                letter-spacing: 0.5px;
+                letter-spacing: 0.06em;
+                min-width: 110px;
             }
 
-            .activity-row td:first-child {
+            /* ── Column 1 – Entry Date: acts as card header ── */
+            .activity-row td:nth-child(1) {
                 border-bottom: 1px dashed var(--border-color) !important;
                 margin-bottom: 0.5rem;
-                padding-bottom: 0.75rem !important;
+                padding-bottom: 0.8rem !important;
+                font-weight: 700;
+                color: var(--text-main);
             }
 
-            .activity-row td:first-child::before {
-                content: 'Transaction Date';
-            }
-
+            /* ── Column 2 – Arrival Date ── */
             .activity-row td:nth-child(2) {
-                font-size: 1.1rem;
-                font-weight: 900;
+                font-weight: 700;
                 color: var(--primary);
-                display: block;
-                text-align: left;
             }
 
-            .activity-row td:nth-child(2)::before {
-                display: block;
-                margin-bottom: 0.2rem;
+            /* ── Column 3 – Product: prominent ── */
+            .activity-row td:nth-child(3) {
+                font-weight: 700;
+                font-size: 0.9rem;
+                color: var(--text-main);
+            }
+
+            /* ── Column 9 – Qty/Variance: align badge right ── */
+            .activity-row td:nth-child(9) {
+                font-weight: 700;
+            }
+
+            /* ── Column 11 – Stock Balance: bottom divider ── */
+            .activity-row td:nth-child(11) {
+                border-top: 1px dashed var(--border-color) !important;
+                margin-top: 0.4rem;
+                padding-top: 0.7rem !important;
+                font-weight: 800;
+                font-size: 0.9rem;
+                color: var(--text-main);
+            }
+
+            /* Right-side value wraps nicely */
+            .activity-row td > *:last-child,
+            .activity-row td > span:last-child {
+                text-align: right;
+                flex-shrink: 1;
+                word-break: break-word;
             }
         }
     </style>
 
+    <div class="activity-table-wrap">
     <table class="activity-table">
         <thead>
             <tr>
@@ -437,7 +480,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="9" style="padding: 5rem 2rem; text-align: center;">
+                <td colspan="11" style="padding: 5rem 2rem; text-align: center;">
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem;">
                         <div style="background: var(--bg-main); width: 72px; height: 72px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); box-shadow: 0 10px 20px rgba(0,0,0,0.02); border: 1px solid var(--border-color);">
                             <i data-lucide="clipboard-list" style="width: 32px; opacity: 0.5;"></i>
@@ -452,6 +495,7 @@
             @endforelse
         </tbody>
     </table>
+    </div>{{-- /.activity-table-wrap --}}
 </div>
 </div>
 @endsection
