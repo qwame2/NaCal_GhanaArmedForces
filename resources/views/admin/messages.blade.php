@@ -701,7 +701,7 @@
         btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
-        fetch(`{{ url('/sra-creation', [], false) }}/${id}/process`, {
+        fetch(`{{ url('/sra-creation') }}/${id}/process`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -738,7 +738,7 @@
                     actionsDiv.innerHTML = html;
                     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-                    const toastMsg = data.is_remainder ? 'Remainder items committed to stock.' : `SRA request ${status}.`;
+                    const toastMsg = data.is_remainder ? 'Remainder items committed to stock.' : `Stock entry ${status}.`;
                     showToast('Success', toastMsg, 'success');
                 }
             } else {
@@ -768,7 +768,7 @@
         
         btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
 
-        fetch(`{{ url('/edit-requests', [], false) }}/${id}/process`, {
+        fetch(`{{ url('/edit-requests') }}/${id}/process`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
