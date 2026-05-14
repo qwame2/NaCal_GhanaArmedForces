@@ -133,17 +133,10 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                 'J' => 'Equipment'
             ];
 
-        // Dynamic Low Stock Threshold from Settings
-        $threshold = \Illuminate\Support\Facades\Schema::hasTable('settings') 
-            ? (int)\App\Models\Setting::get('low_stock_threshold', 100) 
-            : 100;
-
-        // Low Stock Alerts (Stock < Threshold) - Grouped by Description to handle duplicates
-        $lowStockCount = \App\Models\InventoryItem::selectRaw('description, SUM(stock_balance) as total_stock')
-            ->groupBy('description')
-            ->havingRaw('SUM(stock_balance) < ?', [$threshold])
-            ->get()
-            ->count();
+        // Fetch Item Threshold Rules
+        $thresholdRules = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? json_decode(\App\Models\Setting::where('key', 'item_threshold_rules')->value('value') ?? '{}', true) ?? [] 
+            : [];
 
         // 50% Threshold Monitoring for Ledge Categories
         $thresholdLedges = array_keys($ledgeMap);
@@ -160,9 +153,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             
             if ($target > 0) {
                 $percentage = round(($avail / $target) * 100);
-                $threshold = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('low_stock_threshold', 100) : 100;
-                $isOverride = $avail < $threshold;
-                if ($percentage <= 50 || $isOverride) {
+                if ($percentage <= 50) {
                     $lowStockLedges[] = [
                         'code' => $code,
                         'name' => $ledgeMap[$code] ?? "Category $code",
@@ -175,13 +166,36 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         }
 
         // Individual items below threshold for the alerts container (Grouped by Description)
-        $lowStockItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.stock_balance) as stock_balance, SUM(inventory_items.qty) as qty')
+        $allItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as stock_balance, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as qty')
             ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
-            ->havingRaw('SUM(inventory_items.stock_balance) < ?', [$threshold])
-            ->orderBy('stock_balance', 'asc')
-            ->limit(10)
             ->get();
+
+        $lowStockItems = collect();
+        foreach ($allItems as $item) {
+            $threshold = 0; 
+            $descLower = strtolower(trim($item->description));
+            
+            foreach ($thresholdRules as $kw => $rule) {
+                if (str_contains($descLower, strtolower($kw))) {
+                    $ruleCat = $rule['category'] ?? null;
+                    // If a category was specified in the rule, it must match the item's category
+                    if ($ruleCat && $ruleCat !== $item->ledge_category) {
+                        continue;
+                    }
+                    $threshold = (int)($rule['threshold'] ?? $rule);
+                    break;
+                }
+            }
+            
+            $currentStock = (float)$item->stock_balance;
+            if ($threshold > 0 && $currentStock < $threshold) {
+                $lowStockItems->push($item);
+            }
+        }
+        
+        $lowStockCount = $lowStockItems->count();
+        $lowStockItems = $lowStockItems->sortBy('stock_balance')->take(10);
 
         // Distribution Data (Donut Chart) - Dynamic Categories
         $distData = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
@@ -309,6 +323,13 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         ));
     })->name('dashboard');
 
+    // Public API: serve unit rules as JSON for personnel forms
+    Route::get('/api/unit-rules', function() {
+        $setting = \App\Models\Setting::where('key', 'item_unit_rules')->first();
+        return response()->json(json_decode($setting->value ?? '{}', true) ?? []);
+    })->name('api.unit-rules');
+
+
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     Route::get('/received-items', [ReceivedItemsController::class, 'index'])->name('receiveditems');
     Route::get('/issue-items', [IssueItemsController::class, 'index'])->name('issueitems');
@@ -370,28 +391,29 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         $lowStockNotifications = [];
         foreach ($items as $item) {
             $descLower = strtolower(trim($item->description));
-            $threshold = $globalThreshold;
+            $threshold = 0; // Default: No alert
             
             foreach ($thresholdRules as $kw => $rule) {
-                if (str_contains($descLower, $kw)) {
-                    $threshold = (int)$rule['threshold'];
+                if (str_contains($descLower, strtolower($kw))) {
+                    $threshold = (int)($rule['threshold'] ?? $rule);
                     break;
                 }
             }
-
-            $unit = 'units';
-            foreach ($unitRules as $kw => $rule) {
-                if (str_contains($descLower, $kw)) {
-                    $unit = $rule['unit'];
-                    break;
+ 
+            $currentStock = (float)$item->total_stock;
+            if ($threshold > 0 && $currentStock < $threshold) {
+                $unit = 'units';
+                foreach ($unitRules as $kw => $rule) {
+                    if (str_contains($descLower, strtolower($kw))) {
+                        $unit = $rule['unit'] ?? $rule;
+                        break;
+                    }
                 }
-            }
-
-            if ($item->total_stock < $threshold) {
+ 
                 $lowStockNotifications[] = [
                     'type' => 'warning',
                     'title' => 'Low Stock: ' . $item->description,
-                    'message' => "Stock level (" . number_format($item->total_stock, 0) . " {$unit}) is below threshold (" . $threshold . ").",
+                    'message' => "Stock level (" . number_format($currentStock, 0) . " {$unit}) is below threshold (" . $threshold . ").",
                     'icon' => 'alert-triangle',
                     'route' => auth()->user()->is_admin ? 'admin.index' : 'dashboard'
                 ];
@@ -553,11 +575,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         return back()->with('success', "Unit rule for \"{$keyword}\" removed.");
     })->name('admin.settings.unit-rule.destroy');
 
-    // Public API: serve unit rules as JSON for personnel forms
-    Route::get('/api/unit-rules', function() {
-        $setting = \App\Models\Setting::where('key', 'item_unit_rules')->first();
-        return response()->json(json_decode($setting->value ?? '{}', true) ?? []);
-    })->name('api.unit-rules');
+
 
     // Item Threshold Rules
     Route::post('/admin/settings/threshold-rule', function(\Illuminate\Http\Request $request) {

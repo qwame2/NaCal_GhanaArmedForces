@@ -184,9 +184,17 @@
             </div>
             <div class="stat-info">
                 <span class="stat-label">Low Stock Monitor</span>
-                <div class="stat-trend" style="color: {{ $isLedgeCritical ? '#ef4444' : '#10b981' }}; margin-top: 0.5rem;">
-                    <i data-lucide="{{ $isLedgeCritical ? 'bell' : 'check-circle' }}" style="width: 14px;"></i>
-                    {{ $isLedgeCritical ? $ledgeAlertMsg : 'No critical categories detected' }}
+                <div class="stat-trend" style="color: {{ ($isLedgeCritical || $lowStockCount > 0) ? '#ef4444' : '#10b981' }}; margin-top: 0.5rem;">
+                    <i data-lucide="{{ ($isLedgeCritical || $lowStockCount > 0) ? 'bell' : 'check-circle' }}" style="width: 14px;"></i>
+                    @if($lowStockCount > 0 && $isLedgeCritical)
+                        {{ $lowStockCount }} items & Categories critical
+                    @elseif($lowStockCount > 0)
+                        {{ $lowStockCount }} items below threshold
+                    @elseif($isLedgeCritical)
+                        {{ $ledgeAlertMsg }}
+                    @else
+                        No critical stock detected
+                    @endif
                 </div>
             </div>
 
@@ -213,11 +221,11 @@
 
                     @foreach($lowStockLedges as $l)
                     @php
-                    $isCritical = $l['percentage'] <= 50 || ($l['is_override'] ?? false);
-                        $statusLabel=$isCritical ? 'CRITICAL DEPLETION' : 'WATCHLIST' ;
-                        $statusColor=$isCritical ? '#ef4444' : '#f59e0b' ;
-                        @endphp
-                        <div class="popover-item" style="display: block; padding: 0.75rem 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.03);">
+                        $isCritical = $l['percentage'] <= 50 || ($l['is_override'] ?? false);
+                        $statusLabel = $isCritical ? 'CRITICAL DEPLETION' : 'WATCHLIST';
+                        $statusColor = $isCritical ? '#ef4444' : '#f59e0b';
+                    @endphp
+                    <div class="popover-item" style="display: block; padding: 0.75rem 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.03);">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
                             <div>
                                 <div style="font-weight: 800; color: var(--text-main); font-size: 0.9rem; line-height: 1.2;">Category {{ $l['code'] }}</div>
@@ -232,16 +240,40 @@
                             </div>
                             <span style="font-size: 0.8rem; font-weight: 900; color: {{ $statusColor }}; min-width: 35px; text-align: right;">{{ $l['percentage'] }}%</span>
                         </div>
+                    </div>
+                    @endforeach
                 </div>
-                @endforeach
-            </div>
-            @else
-            <div style="text-align: center; padding: 2.5rem 0; color: var(--text-muted);">
-                <i data-lucide="shield-check" style="width: 32px; height: 32px; margin-bottom: 0.75rem; color: #10b981; opacity: 0.8;"></i>
-                <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">All Categories Healthy</p>
-                <p style="font-size: 0.7rem;">Stock levels are currently safe.</p>
-            </div>
-            @endif
+                @endif
+
+                @if($lowStockCount > 0)
+                <div style="margin-top: 2rem;">
+                    <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; font-weight: 800; display: flex; justify-content: space-between;">
+                        <span>Item Alerts ({{ $lowStockCount }})</span>
+                    </h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        @foreach($lowStockItems as $item)
+                        <div class="popover-item" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: rgba(0,0,0,0.01); border-radius: 12px; border: 1px solid rgba(0,0,0,0.03);">
+                            <div style="overflow: hidden; flex: 1; padding-right: 1rem;">
+                                <div style="font-weight: 800; color: var(--text-main); font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $item->description }}</div>
+                                <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">Category: {{ $item->ledge_category }}</div>
+                            </div>
+                            <div style="text-align: right; flex-shrink: 0;">
+                                <div style="font-weight: 900; color: #ef4444; font-size: 1rem;">{{ number_format($item->stock_balance) }}</div>
+                                <div style="font-size: 0.6rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">Stock Bal</div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                @if(!$isLedgeCritical && $lowStockCount == 0)
+                <div style="text-align: center; padding: 2.5rem 0; color: var(--text-muted);">
+                    <i data-lucide="shield-check" style="width: 32px; height: 32px; margin-bottom: 0.75rem; color: #10b981; opacity: 0.8;"></i>
+                    <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">All Systems Healthy</p>
+                    <p style="font-size: 0.7rem;">Inventory levels meet all administrative thresholds.</p>
+                </div>
+                @endif
 
             <div style="font-size: 0.65rem; color: var(--text-muted); text-align: center; margin-top: 1rem; font-style: italic; border-top: 1px solid rgba(0,0,0,0.02); padding-top: 0.75rem;">Tap anywhere else to close</div>
         </div>

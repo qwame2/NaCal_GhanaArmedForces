@@ -27,7 +27,7 @@
         </div>
 
         <div class="notifications-list">
-            @php
+                @php
                 // Fetch acknowledged notifications from Database or Session
                 try {
                     $acknowledged = \App\Models\NotificationAcknowledgement::where('user_id', auth()->id())
@@ -37,14 +37,48 @@
                     $acknowledged = session()->get('acknowledged_notifications', []);
                 }
 
-                $threshold = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('low_stock_threshold', 100) : 100;
+                $thresholdRules = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+                    ? json_decode(\App\Models\Setting::where('key', 'item_threshold_rules')->value('value') ?? '{}', true) ?? [] 
+                    : [];
+                $unitRules = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+                    ? json_decode(\App\Models\Setting::where('key', 'item_unit_rules')->value('value') ?? '{}', true) ?? [] 
+                    : [];
 
-                // Fetch low stock items details
-                $lowStockItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+                // Fetch all unique items (excluding acknowledged)
+                $items = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                     ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
                     ->groupBy('description')
-                    ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) < ?', [$threshold])
                     ->get();
+
+                $allNotifs = [];
+                foreach ($items as $item) {
+                    $descLower = strtolower(trim($item->description));
+                    $threshold = 0; // Default: No alert
+                    
+                    foreach ($thresholdRules as $kw => $rule) {
+                        if (str_contains($descLower, strtolower($kw))) {
+                            $threshold = (int)($rule['threshold'] ?? $rule);
+                            break;
+                        }
+                    }
+
+                    if ($threshold > 0 && (float)$item->total_stock < $threshold) {
+                        $unit = 'units';
+                        foreach ($unitRules as $kw => $rule) {
+                            if (str_contains($descLower, strtolower($kw))) {
+                                $unit = $rule['unit'] ?? $rule;
+                                break;
+                            }
+                        }
+
+                        $allNotifs[] = [
+                            'type' => 'warning', 
+                            'title' => 'Low Stock: ' . $item->description, 
+                            'message' => "Stock level (" . number_format($item->total_stock, 0) . " {$unit}) is below threshold (" . $threshold . ").", 
+                            'icon' => 'alert-triangle'
+                        ];
+                    }
+                }
 
                 // Fetch expired items details
                 $expiredItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) as total_qty')
@@ -53,14 +87,10 @@
                     ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
                     ->get();
                     
-                $allNotifs = [];
-                foreach($lowStockItems as $item) {
-                    $allNotifs[] = ['type' => 'warning', 'title' => 'Low Stock: ' . $item->description, 'message' => "Critical balance detected: " . number_format($item->total_stock, 0) . " units remaining.", 'icon' => 'alert-triangle'];
-                }
                 foreach($expiredItems as $item) {
                     $allNotifs[] = ['type' => 'danger', 'title' => 'Expired Record: ' . $item->description, 'message' => "Item registry indicates zero balance but exists in inventory records.", 'icon' => 'alert-octagon'];
                 }
-            @endphp
+                @endphp
 
             @forelse($allNotifs as $notif)
             <div class="notification-item" style="display: flex; gap: 1.5rem; padding: 2rem; border-bottom: 1px solid var(--border-color); transition: var(--transition); cursor: pointer;" onmouseover="this.style.background='rgba(99, 102, 241, 0.02)'" onmouseout="this.style.background='transparent'">

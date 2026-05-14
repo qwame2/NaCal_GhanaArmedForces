@@ -103,6 +103,59 @@
         letter-spacing: -0.02em;
     }
 
+    /* ── Select2 Custom Styling ── */
+    .select2-container--default .select2-selection--single {
+        height: 48px !important;
+        background: white !important;
+        border: 2px solid #edf2f7 !important;
+        border-radius: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        transition: 0.2s !important;
+    }
+
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #4f46e5 !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #1e293b !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        padding-left: 12px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 46px !important;
+        right: 10px !important;
+    }
+
+    .select2-dropdown {
+        border: 1px solid #edf2f7 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important;
+        overflow: hidden !important;
+        z-index: 9999 !important;
+    }
+
+    .select2-results__option {
+        padding: 10px 15px !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        color: #475569 !important;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #4f46e5 !important;
+        color: white !important;
+    }
+
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border-radius: 8px !important;
+        border: 1.5px solid #edf2f7 !important;
+        padding: 8px 12px !important;
+    }
+
     .cfg-card-header p {
         font-size: 0.78rem;
         color: #94a3b8;
@@ -458,7 +511,7 @@
                         <div class="cfg-card-body">
                             <div class="cfg-grid">
                                 @foreach($groupSettings as $setting)
-                                    @php if(in_array($setting->key, ['strict_audit_logging','enable_strict_audit_logging','approval_timeout_minutes','item_unit_rules','ledge_categories','reporting_enabled','allow_personnel_registration'])) continue; @endphp
+                                    @php if(in_array($setting->key, ['strict_audit_logging','enable_strict_audit_logging','approval_timeout_minutes','item_unit_rules','ledge_categories','reporting_enabled','allow_personnel_registration','low_stock_threshold','item_threshold_rules'])) continue; @endphp
                                     <div class="cfg-item">
                                         <p class="cfg-item-label">{{ ucwords(str_replace('_', ' ', $setting->key)) }}</p>
 
@@ -697,7 +750,7 @@
                 </div>
                 <div>
                     <h3 style="margin: 0 0 0.25rem 0;">Item Threshold Rules</h3>
-                    <p style="margin: 0;">Define specific low stock thresholds for items. These override the global threshold for matching items.</p>
+                    <p style="margin: 0;">Define specific low stock thresholds for items. Only items matching these rules will trigger alerts.</p>
                 </div>
             </div>
             
@@ -771,7 +824,7 @@
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
                             <div>
                                 <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Target Category</label>
-                                <select name="category" class="cfg-text-input" required style="cursor: pointer;">
+                                <select name="category" id="thresholdCategory" class="cfg-text-input" required style="cursor: pointer;">
                                     <option value="">Select Category...</option>
                                     @foreach($categories ?? [] as $code => $name)
                                         <option value="{{ $code }}">[{{ $code }}] {{ $name }}</option>
@@ -780,7 +833,9 @@
                             </div>
                             <div>
                                 <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Item Keyword</label>
-                                <input type="text" name="keyword" class="cfg-text-input" placeholder="e.g. pen, laptop, book" required>
+                                <select name="keyword" id="thresholdKeyword" class="cfg-text-input select2-threshold" required>
+                                    <option value="">Select Category First...</option>
+                                </select>
                             </div>
                             <div>
                                 <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Stock Threshold</label>
@@ -799,6 +854,8 @@
 </div>
 
 <script>
+    const itemsByCategory = @json($itemsByCategory ?? []);
+
     function filterParameters() {
         const term = document.getElementById('parameterSearch').value.toLowerCase();
         const items = document.querySelectorAll('.cfg-item');
@@ -843,8 +900,34 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    $(document).ready(function() {
         if (window.lucide) lucide.createIcons();
+
+        // Initialize Select2 for thresholds
+        $('.select2-threshold').select2({
+            tags: true,
+            placeholder: 'Select or type a new item...',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#threshold-rules')
+        });
+
+        // Handle category change to update item dropdown
+        $('#thresholdCategory').on('change', function() {
+            const cat = $(this).val();
+            const keywordSelect = $('#thresholdKeyword');
+            keywordSelect.empty().append('<option value="">Select Item...</option>');
+            
+            if (cat && itemsByCategory[cat]) {
+                itemsByCategory[cat].forEach(item => {
+                    keywordSelect.append(new Option(item, item));
+                });
+            } else if (!cat) {
+                keywordSelect.append('<option value="">Select Category First...</option>');
+            }
+            
+            keywordSelect.trigger('change');
+        });
     });
 </script>
 @endsection

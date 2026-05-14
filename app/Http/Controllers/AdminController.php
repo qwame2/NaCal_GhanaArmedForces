@@ -328,7 +328,16 @@ class AdminController extends Controller
             ? \App\Models\Setting::getCategories() 
             : [];
 
-        return view('admin.settings', compact('settings', 'categories'));
+        $itemsByCategory = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->select('inventory_items.description', 'inventory_batches.ledge_category')
+            ->distinct()
+            ->get()
+            ->groupBy('ledge_category')
+            ->map(function($items) {
+                return $items->pluck('description')->unique()->values();
+            });
+
+        return view('admin.settings', compact('settings', 'categories', 'itemsByCategory'));
     }
 
     public function updateSettings(\Illuminate\Http\Request $request)
