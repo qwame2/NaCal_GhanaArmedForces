@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
 
 @section('content')
-<div class="animate-slide-up report-container">
+<div class="animate-slide-up report-container" style="position: relative;">
     <div class="page-header header-mesh" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; padding: 2.5rem; border-radius: 28px; border: 1px solid var(--border-color); box-shadow: 0 10px 40px rgba(0,0,0,0.03); position: relative; overflow: hidden; background: var(--bg-card);">
         <div style="position: absolute; top: -100px; right: -50px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 60%); z-index: 0;"></div>
         <div style="position: relative; z-index: 1;">
@@ -15,10 +15,10 @@
 
         <div style="display: flex; gap: 1rem; position: relative; z-index: 1;">
             <!-- Period Controls -->
-            <div class="period-toggle-group">
-                <a href="{{ route('reports.index', ['period' => 'daily']) }}" class="period-btn {{ $period === 'daily' ? 'active' : '' }}">Daily</a>
-                <a href="{{ route('reports.index', ['period' => 'monthly']) }}" class="period-btn {{ $period === 'monthly' ? 'active' : '' }}">Monthly</a>
-                <a href="{{ route('reports.index', ['period' => 'yearly']) }}" class="period-btn {{ $period === 'yearly' ? 'active' : '' }}">Yearly</a>
+            <div class="period-toggle-group {{ !auth()->user()->can_generate_reports ? 'restricted-btn' : '' }}">
+                <a href="{{ auth()->user()->can_generate_reports ? route('reports.index', ['period' => 'daily']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'daily' ? 'active' : '' }}">Daily</a>
+                <a href="{{ auth()->user()->can_generate_reports ? route('reports.index', ['period' => 'monthly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'monthly' ? 'active' : '' }}">Monthly</a>
+                <a href="{{ auth()->user()->can_generate_reports ? route('reports.index', ['period' => 'yearly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'yearly' ? 'active' : '' }}">Yearly</a>
             </div>
         </div>
     </div>
@@ -39,7 +39,7 @@
 
     <div class="print-actions-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
         <h3 class="print-date-label" style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin: 0;">{{ $dateLabel }}</h3>
-        <button onclick="triggerPrintMode()" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.25);">
+        <button onclick="{{ auth()->user()->can_generate_reports ? 'triggerPrintMode()' : '' }}" class="btn-primary {{ !auth()->user()->can_generate_reports ? 'restricted-btn' : '' }}" style="padding: 0.75rem 1.5rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.25);">
             <i data-lucide="printer" style="width: 18px;"></i> Export or Print
         </button>
     </div>
@@ -91,10 +91,10 @@
                 <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; margin: 4px 0 0;">Add custom contextual remarks to be included in the final print generation.</p>
             </div>
             <div style="display: flex; gap: 0.75rem;">
-                <button type="button" onclick="autoGenerateReport()" class="btn-primary" style="padding: 0.5rem 1rem; border-radius: 12px; border: none; background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <button type="button" onclick="{{ auth()->user()->can_generate_reports ? 'autoGenerateReport()' : '' }}" class="btn-primary {{ !auth()->user()->can_generate_reports ? 'restricted-btn' : '' }}" style="padding: 0.5rem 1rem; border-radius: 12px; border: none; background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
                     <i data-lucide="sparkles" style="width: 16px;"></i> Auto-Generate
                 </button>
-                <button type="button" onclick="clearNarrative()" class="btn-secondary" style="padding: 0.5rem 1.25rem; border-radius: 12px; border: none; background: rgba(239, 68, 68, 0.08); color: #ef4444; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'; this.style.transform='translateY(0)'">
+                <button type="button" onclick="{{ auth()->user()->can_generate_reports ? 'clearNarrative()' : '' }}" class="btn-secondary {{ !auth()->user()->can_generate_reports ? 'restricted-btn' : '' }}" style="padding: 0.5rem 1.25rem; border-radius: 12px; border: none; background: rgba(239, 68, 68, 0.08); color: #ef4444; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'; this.style.transform='translateY(0)'">
                     <i data-lucide="rotate-ccw" style="width: 16px;"></i> Clear Setup
                 </button>
             </div>
@@ -640,8 +640,50 @@ No gross anomalies or unaccounted systemic variances were detected during this r
         document.getElementById('reportNarrative').value = '';
     }
 
+    // Real-Time Analytics Lockdown Engine
+    function syncPermissionState() {
+        fetch('{{ route("api.user.permissions") }}', {
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(response => response.json())
+            .then(data => {
+                const canReport = data.can_generate_reports;
+                
+                if (!canReport) {
+                    console.warn("ADMIN OVERSIGHT: Analytics permission revoked. Disabling buttons.");
+                    // Disable all interaction points and add tooltip
+                    document.querySelectorAll('.period-btn, .btn-primary, .btn-secondary').forEach(btn => {
+                        btn.classList.add('restricted-btn');
+                        btn.setAttribute('title', 'Access Restricted: Administrative clearance required.');
+                        if (btn.tagName === 'BUTTON') btn.disabled = true;
+                        if (btn.tagName === 'A') btn.onclick = (e) => e.preventDefault();
+                    });
+                } else {
+                    document.querySelectorAll('.restricted-btn').forEach(btn => {
+                        btn.classList.remove('restricted-btn');
+                        btn.removeAttribute('title');
+                        if (btn.tagName === 'BUTTON') btn.disabled = false;
+                        if (btn.tagName === 'A') btn.onclick = null;
+                    });
+                }
+            })
+            .catch(err => console.error('Pulse Sync Error:', err));
+    }
+
+    // Run sync pulse every 5 seconds for real-time reactivity
+    setInterval(syncPermissionState, 5000);
+
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
+        syncPermissionState(); // Initial check
     });
 </script>
+
+<style>
+    .restricted-btn {
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+        filter: saturate(0) !important;
+    }
+</style>
 @endsection

@@ -19,6 +19,11 @@ class AdminController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized access to Command Center.');
         }
 
+        // Force synchronization of online status in the registry
+        if (!auth()->user()->is_online) {
+            auth()->user()->update(['is_online' => true]);
+        }
+
         $perPage = $request->input('per_page', 10);
         $users = User::where('is_admin', false)->paginate($perPage);
         $totalUsers = User::where('is_admin', false)->count();

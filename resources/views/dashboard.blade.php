@@ -839,6 +839,13 @@
         const existingDBItems = JSON.parse(document.getElementById('inventory-data').textContent || '[]');
         const globalTotalStock = {{ $totalInventory }};
 
+        // Load admin-defined unit rules for auto-fill
+        window._unitRules = {};
+        fetch('{{ route("api.unit-rules") }}')
+            .then(r => r.json())
+            .then(rules => { window._unitRules = rules; })
+            .catch(() => {});
+
         // Initialize Select2
         ledgeSelect.select2({
             placeholder: 'Search and Select Category',
@@ -1040,11 +1047,7 @@
 
                             <div class="form-group">
                                 <label>Units</label>
-                                <select class="row-unit" style="width: 100%;">
-                                    <option value="Piece(s)">Piece(s)</option>
-                                    <option value="Pack">Pack</option>
-                                    <option value="Boxes">Boxes</option>
-                                </select>
+                                <input type="text" class="row-unit" value="" placeholder="Auto-determined" readonly style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-main); color: var(--text-muted); cursor: not-allowed; font-weight: 700;">
                             </div>
 
                             <div class="form-group">
@@ -1083,28 +1086,53 @@
                     dropdownParent: $('#newEntryModal')
                 });
 
-                // Initialize Units Select2
-                $row.find('.row-unit').select2({
-                    placeholder: "Select or type unit...",
-                    width: '100%',
-                    tags: true, // Allow new units
-                    dropdownParent: $('#newEntryModal')
-                });
 
                 // Handle Item Selection to show previous data explicitly
                 $row.on('change', '.item-select-dynamic', function() {
                     const selectedDesc = $(this).val();
                     const prevData = existingDBItems.find(item => item.description === selectedDesc);
 
+                    // Auto-fill unit based on admin-defined unit rules or existing item data
+                    const $unitInput = $row.find('.row-unit');
+                    if (!selectedDesc) {
+                        $unitInput.val('');
+                    } else if (window._unitRules) {
+                        const descLower = selectedDesc.toLowerCase();
+                        const currentCat = $('#ledgeSelect').val(); // Get current category
+
+                        const matchedUnit = Object.entries(window._unitRules).find(([kw, rule]) => {
+                            if (!descLower.includes(kw)) return false;
+                            
+                            if (typeof rule === 'object' && rule !== null) {
+                                // Must match category if rule specifies one
+                                return rule.category === currentCat;
+                            }
+                            return true; // Fallback for old string rules
+                        });
+
+                        if (matchedUnit) {
+                            const ruleValue = matchedUnit[1];
+                            $unitInput.val(typeof ruleValue === 'object' ? ruleValue.unit : ruleValue);
+                        } else if (prevData && prevData.unit) {
+                            $unitInput.val(prevData.unit);
+                        } else {
+                            $unitInput.val("Piece(s)"); // Default fallback
+                        }
+                    } else if (prevData && prevData.unit) {
+                        $unitInput.val(prevData.unit);
+                    } else {
+                        $unitInput.val("Piece(s)");
+                    }
+
                     if (prevData) {
                         // Update explicitly visible stats panel
-                        $row.find('.stat-stock-balance').text(parseFloat(prevData.stock_balance).toLocaleString() + ' units');
-                        $row.find('.stat-received-qty').text(parseFloat(prevData.qty).toLocaleString() + ' units');
+                        $row.find('.stat-stock-balance').text(parseFloat(prevData.stock_balance).toLocaleString() + ' ' + (prevData.unit || 'units'));
+                        $row.find('.stat-received-qty').text(parseFloat(prevData.qty).toLocaleString() + ' ' + (prevData.unit || 'units'));
                         statsPanel.slideDown(300);
                         lucide.createIcons();
 
-                        // Enforce Read-Only for Existing Items as requested
-                        stockInput.prop('readonly', true).css('background', 'var(--bg-main)');
+                        // Allow Read-Write for Existing Items
+                        stockInput.prop('readonly', false).css('background', 'var(--bg-card)');
                         // Auto-sync initial value if qty exists
                         if (qtyInput.val()) stockInput.val(qtyInput.val());
 

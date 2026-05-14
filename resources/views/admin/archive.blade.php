@@ -22,72 +22,196 @@
         </div>
     </div>
 
-    @if($type === 'messages')
-    <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); border: 1px solid rgba(79, 70, 229, 0.08);">
-        <div style="max-height: 70vh; overflow-y: auto;">
-            <table style="width: 100%; border-collapse: separate; border-spacing: 0; text-align: left;">
-                <thead style="position: sticky; top: 0; z-index: 20; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px); box-shadow: 0 1px 0 var(--border-color);">
+    <!-- Strategic Command Strip (Redesigned Unified Filter) -->
+    <div style="margin-bottom: 3.5rem; display: flex; justify-content: center;">
+        <div style="background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(25px); padding: 0.75rem 1rem; border-radius: 100px; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255,255,255,0.6); display: flex; align-items: center; gap: 0.5rem; width: fit-content; max-width: 95%;">
+            <form action="{{ route('admin.archive') }}" method="GET" style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="hidden" name="type" value="{{ $type }}">
+                
+                <!-- Search Zone -->
+                <div style="display: flex; align-items: center; background: #fff; padding: 0.6rem 1.25rem; border-radius: 100px; border: 1px solid #f1f5f9; box-shadow: 0 2px 5px rgba(0,0,0,0.02); min-width: 280px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#f1f5f9'">
+                    <i data-lucide="search" style="width: 16px; color: var(--primary); margin-right: 12px;"></i>
+                    <input type="text" name="search" id="archiveSearchInput" value="{{ $search }}" placeholder="Search archive records..." oninput="window.debounceSearch()"
+                           style="border: none; outline: none; background: transparent; font-weight: 800; color: var(--text-main); font-size: 0.85rem; width: 100%;" onfocus="this.parentElement.style.boxShadow='0 0 0 4px rgba(79, 70, 229, 0.1)'" onblur="this.parentElement.style.boxShadow='0 2px 5px rgba(0,0,0,0.02)'">
+                </div>
+
+                <div style="width: 1px; height: 24px; background: #e2e8f0; margin: 0 0.5rem;"></div>
+
+                <!-- Date Range Bridge -->
+                <div style="display: flex; align-items: center; gap: 8px; background: rgba(248, 250, 252, 0.8); padding: 0.4rem 1rem; border-radius: 100px; border: 1px solid #f1f5f9;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="calendar" style="width: 14px; color: #94a3b8;"></i>
+                        <input type="date" name="start_date" value="{{ $startDate }}" onchange="this.form.submit()"
+                               style="border: none; outline: none; background: transparent; font-weight: 900; color: var(--text-main); font-size: 0.8rem; cursor: pointer;">
+                    </div>
+                    
+                    <div style="color: #cbd5e1;"><i data-lucide="arrow-right" style="width: 12px;"></i></div>
+                    
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <input type="date" name="end_date" value="{{ $endDate }}" onchange="this.form.submit()"
+                               style="border: none; outline: none; background: transparent; font-weight: 900; color: var(--text-main); font-size: 0.8rem; cursor: pointer;">
+                        <i data-lucide="calendar" style="width: 14px; color: #94a3b8;"></i>
+                    </div>
+                </div>
+
+                <div style="width: 1px; height: 24px; background: #e2e8f0; margin: 0 0.5rem;"></div>
+
+                <!-- Action Hub -->
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="submit" style="background: var(--primary); color: white; border: none; width: 46px; height: 46px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; box-shadow: 0 8px 15px rgba(79, 70, 229, 0.2);" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 12px 20px rgba(79, 70, 229, 0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 15px rgba(79, 70, 229, 0.2)'">
+                        <i data-lucide="arrow-right-circle" style="width: 22px;"></i>
+                    </button>
+
+                    @if($startDate || $endDate || $search)
+                    <a href="{{ route('admin.archive', ['type' => $type]) }}" style="background: #fff; color: #ef4444; border: 1px solid #fee2e2; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.3s;" onmouseover="this.style.background='#fef2f2'; this.style.transform='rotate(90deg)'" onmouseout="this.style.background='#fff'; this.style.transform='rotate(0deg)'">
+                        <i data-lucide="refresh-cw" style="width: 18px;"></i>
+                    </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div style="background: linear-gradient(145deg, #f8fafc 0%, #ffffff 100%); padding: 2.5rem; border-radius: 40px; border: 1px solid rgba(0,0,0,0.03); box-shadow: inset 0 2px 10px rgba(0,0,0,0.02), 0 40px 80px rgba(0,0,0,0.03); margin-bottom: 3rem;">
+        @if($type === 'messages')
+    <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 28px; box-shadow: 0 25px 70px rgba(0,0,0,0.07); border: 1px solid rgba(79, 70, 229, 0.1);">
+        <div style="max-height: 72vh; overflow: auto;" class="custom-scrollbar">
+            <table style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0; text-align: left;">
+                <thead style="position: sticky; top: 0; z-index: 30; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color);">
                     <tr>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Registry</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Message Details</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Status</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Archived At</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Manage</th>
+                        <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;">Communication Flow</th>
+                        <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;">Subject & Context</th>
+                        <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;">Message Type</th>
+                        <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;">Archival Data</th>
+                        <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; text-align: right; white-space: nowrap;">Oversight</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($data as $msg)
-                    <tr style="border-bottom: 1px solid var(--border-color); transition: all 0.3s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-                        <td style="padding: 1.5rem 2rem;">
+                    <tr class="archive-row" style="transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-bottom: 1px solid rgba(0,0,0,0.03);">
+                        <td style="padding: 1.75rem 2rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <!-- Sender -->
+                                <div style="position: relative;" title="Sender: {{ $msg->sender->name ?? 'System' }}">
+                                    @if($msg->sender && $msg->sender->avatar)
+                                        <img src="{{ asset('storage/' . $msg->sender->avatar) }}" style="width: 42px; height: 42px; border-radius: 14px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                    @else
+                                        <div style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, var(--primary) 0%, #312e81 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 900; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">
+                                            {{ $msg->sender ? substr($msg->sender->name, 0, 1) : 'S' }}
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <div style="color: #94a3b8;">
+                                    <i data-lucide="arrow-right" style="width: 14px;"></i>
+                                </div>
+
+                                <!-- Receiver -->
+                                <div style="position: relative;" title="Receiver: {{ $msg->receiver->name ?? 'System' }}">
+                                    @if($msg->receiver && $msg->receiver->avatar)
+                                        <img src="{{ asset('storage/' . $msg->receiver->avatar) }}" style="width: 42px; height: 42px; border-radius: 14px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                    @else
+                                        <div style="width: 42px; height: 42px; border-radius: 14px; background: #f8fafc; color: #64748b; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 900;">
+                                            {{ $msg->receiver ? substr($msg->receiver->name, 0, 1) : 'R' }}
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <div style="display: flex; flex-direction: column; gap: 2px; margin-left: 0.5rem;">
+                                    <span style="font-weight: 900; color: var(--text-main); font-size: 0.85rem; letter-spacing: -0.01em;">{{ $msg->sender->name ?? 'System' }}</span>
+                                    <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">to {{ $msg->receiver->name ?? 'Global' }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding: 1.75rem 2rem; max-width: 400px;">
+                            <div class="message-preview-box" style="background: rgba(248, 250, 252, 0.5); padding: 1rem; border-radius: 16px; border: 1px solid #f1f5f9;">
+                                <div style="font-size: 0.85rem; color: #334155; line-height: 1.6; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;">
+                                    {!! strip_tags($msg->message, '<b><strong><i><em><br>') !!}
+                                </div>
+                                @if($msg->attachment)
+                                <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px; color: var(--primary); font-size: 0.75rem; font-weight: 800; background: white; padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(79, 70, 229, 0.1); width: fit-content;">
+                                    <i data-lucide="paperclip" style="width: 13px;"></i>
+                                    {{ $msg->attachment_name ?: 'Secured Asset' }}
+                                </div>
+                                @endif
+                            </div>
+                        </td>
+                        <td style="padding: 1.75rem 2rem;">
+                            @php
+                                $isSystem = $msg->is_automated;
+                                $msgLower = strtolower($msg->message);
+                                $context = 'General Communication';
+                                $icon = 'message-square';
+                                $color = '#64748b';
+                                $bg = '#f8fafc';
+
+                                if ($isSystem) {
+                                    $context = 'System Protocol';
+                                    $icon = 'cpu';
+                                    $color = '#0369a1';
+                                    $bg = '#e0f2fe';
+
+                                    if (str_contains($msgLower, 'sra')) {
+                                        $context = 'Authorization';
+                                        $icon = 'shield-check';
+                                        $color = '#15803d';
+                                        $bg = '#f0fdf4';
+                                    } elseif (str_contains($msgLower, 'remainder')) {
+                                        $context = 'Remainder Log';
+                                        $icon = 'package-plus';
+                                        $color = '#b45309';
+                                        $bg = '#fffbe3';
+                                    } elseif (str_contains($msgLower, 'recovery')) {
+                                        $context = 'Asset Recovery';
+                                        $icon = 'refresh-cw';
+                                        $color = '#7c3aed';
+                                        $bg = '#f5f3ff';
+                                    }
+                                }
+                            @endphp
+                            <div style="display: flex; align-items: center; gap: 10px; background: {{ $bg }}; color: {{ $color }}; padding: 8px 14px; border-radius: 12px; width: fit-content; border: 1px solid {{ $color }}20;">
+                                <i data-lucide="{{ $icon }}" style="width: 15px;"></i>
+                                <span style="font-size: 0.75rem; font-weight: 850; text-transform: uppercase; letter-spacing: 0.02em;">{{ $context }}</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1.75rem 2rem;">
                             <div style="display: flex; flex-direction: column; gap: 4px;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase;">From:</span>
-                                    <span style="font-weight: 900; color: var(--text-main); font-size: 0.85rem;">{{ $msg->sender->name ?? 'System' }}</span>
+                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8;"></div>
+                                    <span style="font-weight: 900; color: var(--text-main); font-size: 0.85rem;">{{ $msg->updated_at->format('M d, Y') }}</span>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase;">To:</span>
-                                    <span style="font-weight: 900; color: var(--text-main); font-size: 0.85rem;">{{ $msg->receiver->name ?? 'System' }}</span>
-                                </div>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; padding-left: 16px;">
+                                    <i data-lucide="clock" style="width: 11px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i>
+                                    {{ $msg->updated_at->format('H:i:s') }}
+                                </span>
                             </div>
                         </td>
-                        <td style="padding: 1.5rem 2rem; max-width: 450px;">
-                            <div style="font-size: 0.85rem; color: var(--text-main); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; font-weight: 500;">
-                                {!! $msg->message !!}
-                            </div>
-                            @if($msg->attachment)
-                            <div style="margin-top: 8px; display: flex; align-items: center; gap: 6px; color: var(--primary); font-size: 0.7rem; font-weight: 800;">
-                                <i data-lucide="paperclip" style="width: 12px;"></i> {{ $msg->attachment_name ?: 'Attachment Attached' }}
-                            </div>
-                            @endif
-                        </td>
-                        <td style="padding: 1.5rem 2rem;">
-                            @if($msg->is_automated)
-                            <span style="font-size: 0.65rem; font-weight: 900; background: #e0f2fe; color: #0369a1; padding: 5px 12px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.02em;">Automated System</span>
-                            @else
-                            <span style="font-size: 0.65rem; font-weight: 900; background: #f0fdf4; color: #15803d; padding: 5px 12px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.02em;">Personnel Manual</span>
-                            @endif
-                        </td>
-                        <td style="padding: 1.5rem 2rem;">
-                            <div style="font-weight: 800; color: var(--text-main); font-size: 0.85rem;">{{ $msg->updated_at->format('d/m/y') }}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">{{ $msg->updated_at->format('H:i:s') }}</div>
-                        </td>
-                        <td style="padding: 1.5rem 2rem; text-align: right;">
-                            <form action="{{ route('admin.archive.restore.message', $msg->id) }}" method="POST" style="display: inline-block;">
-                                @csrf
-                                <button type="submit" style="background: rgba(16, 185, 129, 0.05); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.6rem 1.25rem; border-radius: 12px; font-weight: 900; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.2)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.05)'; this.style.color='#10b981'; this.style.boxShadow='none'">
-                                    <i data-lucide="rotate-ccw" style="width: 14px;"></i> Restore Message
+                        <td style="padding: 1.75rem 2rem; text-align: right;">
+                            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                <button type="button" 
+                                        onclick="showArchivedMessageDetail(`{!! addslashes($msg->message) !!}`, '{{ $msg->sender->name ?? 'System' }}', '{{ $msg->updated_at->format('M d, Y H:i') }}', '{{ $context }}')"
+                                        style="background: white; color: var(--text-main); border: 1.5px solid #e2e8f0; padding: 0.6rem 1rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;" 
+                                        onmouseover="this.style.borderColor='var(--primary)'; this.style.background='#f8fafc'" 
+                                        onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='white'">
+                                    <i data-lucide="eye" style="width: 15px;"></i> View
                                 </button>
-                            </form>
+                                <form action="{{ route('admin.archive.restore.message', $msg->id) }}" method="POST" style="display: inline-block;">
+                                    @csrf
+                                    <button type="submit" style="background: rgba(16, 185, 129, 0.05); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.6rem 1.25rem; border-radius: 12px; font-weight: 900; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.2)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.05)'; this.style.color='#10b981'; this.style.boxShadow='none'">
+                                        <i data-lucide="rotate-ccw" style="width: 14px;"></i> Restore
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" style="padding: 8rem 2rem; text-align: center; color: var(--text-muted);">
-                            <div style="width: 100px; height: 100px; background: #f8fafc; border-radius: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem auto; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);">
-                                <i data-lucide="inbox" style="width: 48px; height: 48px; color: var(--primary); opacity: 0.2;"></i>
+                        <td colspan="5" style="padding: 10rem 2rem; text-align: center; color: var(--text-muted);">
+                            <div style="width: 110px; height: 110px; background: #f8fafc; border-radius: 35px; display: flex; align-items: center; justify-content: center; margin: 0 auto 2.5rem auto; box-shadow: inset 0 2px 15px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;">
+                                <i data-lucide="inbox" style="width: 54px; height: 54px; color: var(--primary); opacity: 0.25;"></i>
                             </div>
-                            <h4 style="font-weight: 950; color: var(--text-main); font-size: 1.5rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">Message Archive Empty</h4>
-                            <p style="font-weight: 500; font-size: 1.1rem;">Historical communications have not been logged here yet.</p>
+                            <h4 style="font-weight: 950; color: var(--text-main); font-size: 1.75rem; margin-bottom: 0.75rem; letter-spacing: -0.03em;">Registry Pristine</h4>
+                            <p style="font-weight: 600; font-size: 1.1rem; color: #94a3b8; max-width: 400px; margin: 0 auto;">No historical communications have been archived within this terminal vault yet.</p>
                         </td>
                     </tr>
                     @endforelse
@@ -97,15 +221,15 @@
     </div>
     @else
     <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); border: 1px solid rgba(79, 70, 229, 0.08);">
-        <div style="max-height: 70vh; overflow-y: auto;">
-            <table style="width: 100%; border-collapse: separate; border-spacing: 0; text-align: left;">
+        <div style="max-height: 70vh; overflow: auto;" class="custom-scrollbar">
+            <table style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0; text-align: left;">
                 <thead style="position: sticky; top: 0; z-index: 20; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px); box-shadow: 0 1px 0 var(--border-color);">
                     <tr>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Date & Time</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Personnel</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Event Details</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Risk Level</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Manage</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Date & Time</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Personnel</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Event Details</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Risk Level</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right; white-space: nowrap;">Manage</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -190,8 +314,8 @@
                 </tbody>
             </table>
         </div>
-    </div>
     @endif
+    </div>
 
     <div style="margin-top: 4rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
         <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); display: flex; align-items: center; gap: 8px; background: white; padding: 0.5rem 1.25rem; border-radius: 100px; border: 1.5px solid #edf2f7; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
@@ -275,9 +399,41 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
+    /* Premium Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(79, 70, 229, 0.2);
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: var(--primary);
+    }
 </style>
 
 <script>
+    function showArchivedMessageDetail(content, sender, date, context) {
+        document.getElementById('modalMessageSender').textContent = sender;
+        document.getElementById('modalMessageDate').textContent = date;
+        document.getElementById('modalMessageContext').textContent = context;
+        document.getElementById('modalMessageBody').innerHTML = content;
+        
+        document.getElementById('messageDetailModal').style.display = 'flex';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function closeMessageDetail() {
+        document.getElementById('messageDetailModal').style.display = 'none';
+    }
+
     function viewLogDetails(btn) {
         const metadataStr = btn.getAttribute('data-metadata');
         const eventType = btn.getAttribute('data-event');
@@ -336,9 +492,72 @@
 
     // Close on click outside
     window.onclick = function(event) {
-        const modal = document.getElementById('logDetailsModal');
-        if (event.target == modal) closeLogDetails();
+        const logModal = document.getElementById('logDetailsModal');
+        const msgModal = document.getElementById('messageDetailModal');
+        if (event.target == logModal) closeLogDetails();
+        if (event.target == msgModal) closeMessageDetail();
     }
 </script>
+
+<!-- Message Detail Modal -->
+<div id="messageDetailModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+    <div class="glass-card animate-zoom-in" style="width: 100%; max-width: 700px; padding: 0; overflow: hidden; border-radius: 32px; box-shadow: 0 30px 60px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);">
+        <div style="padding: 2.5rem; background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); color: white; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 14px; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="mail-open" style="width: 24px;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.25rem; font-weight: 950; margin: 0; letter-spacing: -0.02em;">Archived Communication</h3>
+                    <div id="modalMessageContext" style="font-size: 0.7rem; font-weight: 800; background: rgba(255,255,255,0.15); padding: 3px 10px; border-radius: 6px; width: fit-content; margin-top: 4px; text-transform: uppercase;">Context</div>
+                </div>
+            </div>
+            <button onclick="closeMessageDetail()" style="background: rgba(255,255,255,0.1); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="x" style="width: 20px;"></i>
+            </button>
+        </div>
+        <div style="padding: 2.5rem; background: white; max-height: 60vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid #f1f5f9;">
+                <div>
+                    <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px;">Originator</div>
+                    <div id="modalMessageSender" style="font-weight: 900; color: #1e293b; font-size: 1.1rem;">-</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px;">Timestamp</div>
+                    <div id="modalMessageDate" style="font-weight: 900; color: #1e293b; font-size: 1.1rem;">-</div>
+                </div>
+            </div>
+            <div id="modalMessageBody" style="font-size: 1rem; line-height: 1.8; color: #334155; font-weight: 500;">
+                <!-- Content -->
+            </div>
+        </div>
+        <div style="padding: 1.5rem; background: #f8fafc; text-align: center; border-top: 1px solid #f1f5f9;">
+            <button onclick="closeMessageDetail()" style="background: #1e293b; color: white; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer;">Close Inspection</button>
+        </div>
+    </div>
+</div>
+</script>
+<script>
+    // Search Debounce Engine
+    let searchTimeout;
+    window.debounceSearch = function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            document.getElementById('archiveSearchInput').form.submit();
+        }, 500); // 500ms delay for high-performance typing
+    };
+
+    // Cursor Persistence logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('archiveSearchInput');
+        if (searchInput && "{{ $search }}") {
+            // Move cursor to end of text
+            const len = searchInput.value.length;
+            searchInput.focus();
+            searchInput.setSelectionRange(len, len);
+        }
+    });
+</script>
+
 @endsection
 

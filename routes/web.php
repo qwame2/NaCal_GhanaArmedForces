@@ -26,6 +26,7 @@ Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::post('/api/user/offline', [AuthController::class, 'markOffline'])->name('api.user.offline');
 
 // Guest Redirection
 Route::get('/', function() {
@@ -44,7 +45,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         }
 
         $existingItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->selectRaw('inventory_items.description, MAX(inventory_batches.ledge_category) as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as stock_balance, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as qty, SUM(CAST(REPLACE(inventory_items.variance, ",", "") AS DECIMAL(15,2))) as variance')
+            ->selectRaw('inventory_items.description, MAX(inventory_items.unit) as unit, MAX(inventory_batches.ledge_category) as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as stock_balance, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as qty, SUM(CAST(REPLACE(inventory_items.variance, ",", "") AS DECIMAL(15,2))) as variance')
             ->groupBy('inventory_items.description')
             ->get();
 
@@ -334,6 +335,13 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::get('/api/unread-counts', [\App\Http\Controllers\MessageController::class, 'getUnreadCounts'])->name('api.unread-counts');
     Route::get('/api/total-unread', [\App\Http\Controllers\MessageController::class, 'getTotalUnreadCount'])->name('api.total-unread');
     Route::get('/api/online-statuses', [\App\Http\Controllers\MessageController::class, 'getOnlineStatuses'])->name('api.online-statuses');
+    Route::get('/api/user/permissions', function() {
+        return response()->json([
+            'can_generate_reports' => (bool)auth()->user()->can_generate_reports,
+            'can_add_inventory' => (bool)auth()->user()->can_add_inventory,
+            'can_operate_logistics' => (bool)auth()->user()->can_operate_logistics,
+        ]);
+    })->name('api.user.permissions');
 
     Route::get('/api/notifications', function() {
         if (!auth()->check()) return response()->json(['error' => 'Unauthenticated'], 401);
@@ -346,13 +354,49 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             $acknowledged = session()->get('acknowledged_notifications', []);
         }
 
-        $threshold = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('low_stock_threshold', 100) : 100;
+        $thresholdRules = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? json_decode(\App\Models\Setting::where('key', 'item_threshold_rules')->value('value') ?? '{}', true) ?? [] 
+            : [];
+        $unitRules = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? json_decode(\App\Models\Setting::where('key', 'item_unit_rules')->value('value') ?? '{}', true) ?? [] 
+            : [];
+        $globalThreshold = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('low_stock_threshold', 100) : 100;
         
-        $lowStockItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+        $items = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
             ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
             ->groupBy('description')
-            ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) < ?', [$threshold])
             ->get();
+
+        $lowStockNotifications = [];
+        foreach ($items as $item) {
+            $descLower = strtolower(trim($item->description));
+            $threshold = $globalThreshold;
+            
+            foreach ($thresholdRules as $kw => $rule) {
+                if (str_contains($descLower, $kw)) {
+                    $threshold = (int)$rule['threshold'];
+                    break;
+                }
+            }
+
+            $unit = 'units';
+            foreach ($unitRules as $kw => $rule) {
+                if (str_contains($descLower, $kw)) {
+                    $unit = $rule['unit'];
+                    break;
+                }
+            }
+
+            if ($item->total_stock < $threshold) {
+                $lowStockNotifications[] = [
+                    'type' => 'warning',
+                    'title' => 'Low Stock: ' . $item->description,
+                    'message' => "Stock level (" . number_format($item->total_stock, 0) . " {$unit}) is below threshold (" . $threshold . ").",
+                    'icon' => 'alert-triangle',
+                    'route' => auth()->user()->is_admin ? 'admin.index' : 'dashboard'
+                ];
+            }
+        }
 
         $expiredItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) as total_qty')
             ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
@@ -360,19 +404,9 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
             ->get();
 
-        $notifications = [];
+        $notifications = $lowStockNotifications;
         $is_admin = auth()->user()->is_admin;
         
-        foreach ($lowStockItems as $item) {
-            $notifications[] = [
-                'type' => 'warning',
-                'title' => 'Low Stock: ' . $item->description,
-                'message' => "Critical balance detected: " . number_format($item->total_stock, 0) . " units remaining.",
-                'icon' => 'alert-triangle',
-                'route' => $is_admin ? 'admin.index' : 'dashboard'
-            ];
-        }
-
         foreach ($expiredItems as $item) {
             $notifications[] = [
                 'type' => 'danger',
@@ -392,19 +426,37 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/api/notifications/mark-all-read', function() {
         if (!auth()->check()) return response()->json(['success' => false], 401);
 
-        $threshold = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+        $thresholdRules = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? json_decode(\App\Models\Setting::where('key', 'item_threshold_rules')->value('value') ?? '{}', true) ?? [] 
+            : [];
+        $globalThreshold = \Illuminate\Support\Facades\Schema::hasTable('settings') 
             ? (int)\App\Models\Setting::get('low_stock_threshold', 100) 
             : 100;
 
-        $lowStockItems = \App\Models\InventoryItem::selectRaw('description')
+        $items = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
             ->groupBy('description')
-            ->havingRaw('SUM(stock_balance) < ?', [$threshold])
-            ->pluck('description')
-            ->toArray();
+            ->get();
+
+        $lowStockItems = [];
+        foreach ($items as $item) {
+            $descLower = strtolower(trim($item->description));
+            $threshold = $globalThreshold;
+            
+            foreach ($thresholdRules as $kw => $rule) {
+                if (str_contains($descLower, $kw)) {
+                    $threshold = (int)$rule['threshold'];
+                    break;
+                }
+            }
+
+            if ($item->total_stock < $threshold) {
+                $lowStockItems[] = $item->description;
+            }
+        }
 
         $expiredItems = \App\Models\InventoryItem::selectRaw('description')
             ->groupBy('description')
-            ->havingRaw('SUM(stock_balance) = 0 AND SUM(qty) >= 1')
+            ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
             ->pluck('description')
             ->toArray();
 
@@ -460,6 +512,88 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/admin/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
     Route::post('/admin/settings/category', [AdminController::class, 'addCategory'])->name('admin.settings.category');
     Route::delete('/admin/settings/category/{code}', [AdminController::class, 'deleteCategory'])->name('admin.settings.category.destroy');
+
+    // Item Unit Rules
+    Route::post('/admin/settings/unit-rule', function(\Illuminate\Http\Request $request) {
+        if (!auth()->user()->is_admin) abort(403);
+        $category = trim($request->input('category'));
+        $keyword = strtolower(trim($request->input('keyword')));
+        $unit    = trim($request->input('unit'));
+        if (!$category || !$keyword || !$unit) return back()->with('error', 'Category, keyword, and unit are required.');
+
+        $setting = \App\Models\Setting::firstOrCreate(
+            ['key' => 'item_unit_rules'],
+            ['value' => '{}', 'type' => 'json', 'group' => 'inventory', 'label' => 'Item Unit Rules', 'description' => 'Keyword-to-unit mapping for auto-filling units in new entries.']
+        );
+        $rules = json_decode($setting->value ?? '{}', true) ?? [];
+        
+        if (isset($rules[$keyword])) {
+            return back()->with('error', "This item and unit already exist in the system.");
+        }
+
+        $rules[$keyword] = [
+            'category' => $category,
+            'unit' => $unit
+        ];
+        $setting->value = json_encode($rules);
+        $setting->save();
+        return back()->with('success', "Unit rule added: [{$category}] \"{$keyword}\" → {$unit}");
+    })->name('admin.settings.unit-rule.store');
+
+    Route::delete('/admin/settings/unit-rule', function(\Illuminate\Http\Request $request) {
+        if (!auth()->user()->is_admin) abort(403);
+        $keyword = strtolower(trim($request->input('keyword')));
+        $setting = \App\Models\Setting::where('key', 'item_unit_rules')->first();
+        if ($setting) {
+            $rules = json_decode($setting->value ?? '{}', true) ?? [];
+            unset($rules[$keyword]);
+            $setting->value = json_encode($rules);
+            $setting->save();
+        }
+        return back()->with('success', "Unit rule for \"{$keyword}\" removed.");
+    })->name('admin.settings.unit-rule.destroy');
+
+    // Public API: serve unit rules as JSON for personnel forms
+    Route::get('/api/unit-rules', function() {
+        $setting = \App\Models\Setting::where('key', 'item_unit_rules')->first();
+        return response()->json(json_decode($setting->value ?? '{}', true) ?? []);
+    })->name('api.unit-rules');
+
+    // Item Threshold Rules
+    Route::post('/admin/settings/threshold-rule', function(\Illuminate\Http\Request $request) {
+        if (!auth()->user()->is_admin) abort(403);
+        $category = trim($request->input('category'));
+        $keyword = strtolower(trim($request->input('keyword')));
+        $threshold = (int)$request->input('threshold');
+        if (!$category || !$keyword || $threshold < 0) return back()->with('error', 'Category, keyword, and a valid threshold are required.');
+
+        $setting = \App\Models\Setting::firstOrCreate(
+            ['key' => 'item_threshold_rules'],
+            ['value' => '{}', 'type' => 'json', 'group' => 'inventory', 'description' => 'Keyword-to-threshold mapping for low stock alerts.']
+        );
+        $rules = json_decode($setting->value ?? '{}', true) ?? [];
+        
+        $rules[$keyword] = [
+            'category' => $category,
+            'threshold' => $threshold
+        ];
+        $setting->value = json_encode($rules);
+        $setting->save();
+        return back()->with('success', "Threshold rule added: [{$category}] \"{$keyword}\" → {$threshold} units");
+    })->name('admin.settings.threshold-rule.store');
+
+    Route::delete('/admin/settings/threshold-rule', function(\Illuminate\Http\Request $request) {
+        if (!auth()->user()->is_admin) abort(403);
+        $keyword = strtolower(trim($request->input('keyword')));
+        $setting = \App\Models\Setting::where('key', 'item_threshold_rules')->first();
+        if ($setting) {
+            $rules = json_decode($setting->value ?? '{}', true) ?? [];
+            unset($rules[$keyword]);
+            $setting->value = json_encode($rules);
+            $setting->save();
+        }
+        return back()->with('success', "Threshold rule for \"{$keyword}\" removed.");
+    })->name('admin.settings.threshold-rule.destroy');
 
     // Edit Request Routes
     Route::post('/edit-requests', [\App\Http\Controllers\EditRequestController::class, 'store'])->name('edit-requests.store');

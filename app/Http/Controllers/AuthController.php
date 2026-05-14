@@ -14,6 +14,12 @@ class AuthController extends Controller
     {
         if (Auth::check()) {
             $user = Auth::user();
+            
+            // Sync online status for authenticated sessions
+            if (!$user->is_online) {
+                $user->update(['is_online' => true]);
+            }
+
             return $user->is_admin ? redirect()->route('admin.index') : redirect()->route('dashboard');
         }
         return view('auth.auth');
@@ -118,7 +124,12 @@ class AuthController extends Controller
             return back()->with('error', "Too many login attempts. Please try again in {$seconds} seconds.")->withInput();
         }
 
-        if (Auth::attempt($credentials, $request->remember)) {
+        // CIA SECURITY ENFORCEMENT: Check user role BEFORE authentication attempt
+        // Administrative accounts are prohibited from using persistent "Remember Me" cookies
+        $targetUser = User::where('username', $request->username)->first();
+        $remember = ($targetUser && $targetUser->is_admin) ? false : $request->remember;
+
+        if (Auth::attempt($credentials, $remember)) {
             \Illuminate\Support\Facades\RateLimiter::clear($throttleKey);
             $user = auth()->user();
 
@@ -134,6 +145,9 @@ class AuthController extends Controller
             
             // SECURITY ENFORCEMENT: Block multiple simultaneous Admin sessions
             if ($user->is_admin) {
+                // If the "remember" flag was somehow bypassed, force it to false for the session
+                $request->session()->put('auth.remember', false);
+                
                 // If any admin is already marked as online (including this account from another session), 
                 // we deny the new login attempt to enforce singular command authority.
                 $anyAdminOnline = User::where('is_admin', true)->where('is_online', true)->exists();
@@ -150,6 +164,9 @@ class AuthController extends Controller
                 'last_login_at' => now(),
                 'is_online' => true,
             ]);
+
+            // CIA SECURITY ENFORCEMENT: Prime the current tab for security lock
+            $request->session()->flash('just_logged_in', true);
             
             $target = $request->target_interface; // 'admin' or 'personnel'
 
@@ -220,5 +237,19 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect()->route('login');
+    }
+
+    /**
+     * CIA SECURITY ENFORCEMENT: Mark user as offline immediately.
+     * This is called via navigator.sendBeacon when the browser tab closes.
+     */
+    public function markOffline(Request $request)
+    {
+        if (Auth::check()) {
+            $user = Auth::user();
+            $user->update(['is_online' => false]);
+            return response()->json(['status' => 'success']);
+        }
+        return response()->json(['status' => 'unauthenticated'], 401);
     }
 }

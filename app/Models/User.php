@@ -56,6 +56,9 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'is_active' => 'boolean',
             'is_online' => 'boolean',
+            'can_add_inventory' => 'boolean',
+            'can_operate_logistics' => 'boolean',
+            'can_generate_reports' => 'boolean',
         ];
     }
 

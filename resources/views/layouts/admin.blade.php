@@ -945,6 +945,18 @@
             setTimeout(() => toast.remove(), 600);
         };
     };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        @if(session('success'))
+            showToast('Success', "{!! addslashes(session('success')) !!}", 'success');
+        @endif
+        @if(session('error'))
+            showToast('Error', "{!! addslashes(session('error')) !!}", 'error');
+        @endif
+        @if(session('warning'))
+            showToast('Warning', "{!! addslashes(session('warning')) !!}", 'warning');
+        @endif
+    });
     </script>
     <div id="toast-container" class="toast-container"></div>
     
@@ -996,6 +1008,50 @@
             /* Removed help cursor as requested */
         }
     </style>
+    <script>
+        // CIA SECURITY ENFORCEMENT: Tab-Scoped Authentication Lock
+        // This ensures that closing a tab effectively logs the user out for that tab.
+        // Opening a new tab with the same URL will force a re-login.
+        (function() {
+            const tabLockKey = 'tab_auth_lock_{{ auth()->id() }}';
+            const isJustLoggedIn = {{ session('just_logged_in') ? 'true' : 'false' }};
+            const logoutUrl = "{{ route('logout') }}";
+
+            if (!sessionStorage.getItem(tabLockKey)) {
+                if (isJustLoggedIn) {
+                    // Initializing the security lock for this tab
+                    sessionStorage.setItem(tabLockKey, 'active');
+                } else {
+                    // Unauthorized tab entry detected (SessionStorage was wiped or never set)
+                    // We must terminate the session to maintain CIA integrity
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = logoutUrl;
+                    const token = document.createElement('input');
+                    token.type = 'hidden';
+                    token.name = '_token';
+                    token.value = "{{ csrf_token() }}";
+                    form.appendChild(token);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            }
+
+            const offlineUrl = "{{ route('api.user.offline') }}";
+            const csrfToken = "{{ csrf_token() }}";
+
+            const handleExit = () => {
+                if (navigator.sendBeacon) {
+                    const formData = new FormData();
+                    formData.append('_token', csrfToken);
+                    navigator.sendBeacon(offlineUrl, formData);
+                }
+            };
+
+            window.addEventListener('pagehide', handleExit);
+            window.addEventListener('beforeunload', handleExit);
+        })();
+    </script>
     @stack('scripts')
 </body>
 </html>

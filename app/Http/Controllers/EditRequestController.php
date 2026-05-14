@@ -427,7 +427,7 @@ class EditRequestController extends Controller
         $requestType = $editReq->request_type;
         $color = $request->status === 'approved' ? '#10b981' : '#dc2626';
         
-        $statusHeader = $request->status === 'approved' ? 'SRA AUTHORIZED & COMMITTED' : 'REQUEST HAS BEEN REJECTED';
+        $statusHeader = $request->status === 'approved' ? 'AUTHORIZED & COMMITTED' : 'REQUEST HAS BEEN REJECTED';
         if ($requestType === 'remainder_submission' && $request->status === 'approved') {
             $statusHeader = 'REMAINDER FULFILLMENT AUTHORIZED';
         }
@@ -461,7 +461,7 @@ class EditRequestController extends Controller
             ->where(function($q) use ($editReq) {
                 $q->where('edit_request_id', $editReq->id)
                   ->orWhere('message', 'like', "%<!-- sra_req_id:{$editReq->id} -->%")
-                  ->orWhere('message', 'like', '%Awaiting SRA Approval%')
+                  ->orWhere('message', 'like', '%Awaiting Authorization%')
                   ->orWhere('message', 'like', '%Awaiting Admin verification for remainder%');
             })
             ->orderBy('created_at', 'desc')
@@ -496,7 +496,7 @@ class EditRequestController extends Controller
         foreach ($adminMsgs as $adminMsg) {
             $statusColor = $request->status === 'approved' ? '#10b981' : '#dc2626';
             $statusLabel = $request->status === 'approved' ? 'AUTHORIZED & COMMITTED' : 'REJECTED';
-            $logType = $editReq->request_type === 'remainder_submission' ? 'REMAINDER' : 'SRA';
+            $logType = $editReq->request_type === 'remainder_submission' ? 'REMAINDER' : 'AUTHORIZATION';
             
             $printLink = "";
             if ($request->status === 'approved' && isset($batch) && $batch) {

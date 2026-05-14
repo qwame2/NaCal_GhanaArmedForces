@@ -16,20 +16,46 @@ class ArchiveController extends Controller
 
         $type = $request->get('type', 'messages');
         $perPage = $request->get('per_page', 15);
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $search = $request->get('search');
 
         if ($type === 'logs') {
-            $data = SystemLog::with('user')
-                ->where('is_archived', true)
-                ->orderBy('created_at', 'desc')
-                ->paginate($perPage);
+            $query = SystemLog::with('user')->where('is_archived', true);
+            if ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('description', 'like', "%{$search}%")
+                      ->orWhere('event_type', 'like', "%{$search}%")
+                      ->orWhereHas('user', function($uq) use ($search) {
+                          $uq->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
         } else {
-            $data = Message::with(['sender', 'receiver'])
-                ->where('is_archived', true)
-                ->orderBy('created_at', 'desc')
-                ->paginate($perPage);
+            $query = Message::with(['sender', 'receiver'])->where('is_archived', true);
+            if ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('message', 'like', "%{$search}%")
+                      ->orWhereHas('sender', function($sq) use ($search) {
+                          $sq->where('name', 'like', "%{$search}%");
+                      })
+                      ->orWhereHas('receiver', function($rq) use ($search) {
+                          $rq->where('name', 'like', "%{$search}%");
+                      });
+                });
+            }
         }
 
-        return view('admin.archive', compact('data', 'type'));
+        if ($startDate) {
+            $query->whereDate('created_at', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('created_at', '<=', $endDate);
+        }
+
+        $data = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        return view('admin.archive', compact('data', 'type', 'startDate', 'endDate', 'search'));
     }
 
     public function archiveMessage(Request $request, $id)
