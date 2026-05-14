@@ -42,7 +42,24 @@ class IssueItemsController extends Controller
             ];
 
         $adminName = \App\Models\User::where('is_admin', true)->value('name') ?? 'Administrator';
-        return view('issue-items.index', compact('items', 'ledgeMap', 'adminName'));
+
+        // Fetch all pending issue submissions to mark items as "Pending Auth"
+        $pendingIssuances = \App\Models\EditRequest::where('request_type', 'issue_submission')
+            ->where('status', 'pending')
+            ->get();
+
+        $pendingItems = [];
+        foreach ($pendingIssuances as $req) {
+            $payload = json_decode($req->payload, true);
+            if (isset($payload['items'])) {
+                foreach ($payload['items'] as $pItem) {
+                    $pendingItems[] = $pItem['description'];
+                }
+            }
+        }
+        $pendingItems = array_unique($pendingItems);
+
+        return view('issue-items.index', compact('items', 'ledgeMap', 'adminName', 'pendingItems'));
     }
 
     public function store(Request $request)
@@ -84,7 +101,7 @@ class IssueItemsController extends Controller
                         <div style='width: 32px; height: 32px; background: rgba(245, 158, 11, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #f59e0b;'>
                             <svg style='width: 16px; height: 16px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4'></path></svg>
                         </div>
-                        <b style='font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: #f59e0b;'>DISBURSEMENT OVERSIGHT REQUIRED</b>
+                        <b style='font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: #f59e0b;'>APPROVAL NEEDED TO ISSUE ITEMS</b>
                     </div>
                     
                     <div style='font-size: 0.95rem; color: #334155; line-height: 1.6; margin-bottom: 20px;'>

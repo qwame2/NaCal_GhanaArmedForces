@@ -358,7 +358,23 @@
         margin-top: 10px;
         text-transform: uppercase;
         letter-spacing: 0.1em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
+    
+    .archive-trigger {
+        cursor: pointer;
+        color: var(--primary);
+        opacity: 0;
+        transition: 0.3s;
+        text-transform: none;
+        letter-spacing: normal;
+        font-weight: 800;
+        font-size: 0.65rem;
+    }
+    .comms-group:hover .archive-trigger { opacity: 0.6; }
+    .archive-trigger:hover { opacity: 1 !important; }
 
     .attachment-pill {
         display: flex;
@@ -512,7 +528,12 @@
                                 ` : ''}
                                 ${ticksHtml ? `<span style="display: inline-block; margin-left: 8px; vertical-align: bottom;">${ticksHtml}</span>` : ''}
                             </div>
-                            <div class="comms-meta">${isMe ? 'YOU' : 'SENDER'} &bull; ${time}</div>
+                            <div class="comms-meta">
+                                <span>${isMe ? 'YOU' : 'SENDER'} &bull; ${time}</span>
+                                <span onclick="window.archiveMessage(${msg.id})" class="archive-trigger">
+                                    <i data-lucide="archive" style="width: 10px; height: 10px; display: inline-block; vertical-align: -1px;"></i> Archive
+                                </span>
+                            </div>
                         </div>
                     `;
                 });
@@ -796,7 +817,235 @@
 
 
 
+    window.archiveMessage = function(id) {
+        Swal.fire({
+            title: 'Move to Archive?',
+            text: 'This message will be transferred to the secure archive and hidden from this active conversation.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--primary)',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Yes, Archive',
+            cancelButtonText: 'Cancel',
+            background: '#ffffff',
+            borderRadius: '24px'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{{ url('/admin/archive/message') }}/${id}`, {
+                    method: 'POST',
+                    headers: { 
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                }).then(res => res.json()).then(data => {
+                    if (data.success) {
+                        if (typeof showToast === 'function') {
+                            showToast('Archived', 'Message successfully moved to archive.', 'success');
+                        }
+                        fetchMessages();
+                    }
+                });
+            }
+        });
+    }
+
     // Process Edit Request logic
+    window.processRecoveryApproval = function(id, status, btnElement) {
+        if (status === 'rejected') {
+            Swal.fire({
+                html: `
+                    <div style="text-align: left;">
+                        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.06); border-radius: 50%;"></div>
+                            <div style="position: absolute; bottom: -30px; left: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.04); border-radius: 50%;"></div>
+                            <div style="display: flex; align-items: center; gap: 14px; position: relative;">
+                                <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <svg style="width: 26px; height: 26px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 3px;">Oversight Action</div>
+                                    <div style="font-size: 1.3rem; font-weight: 900; color: white; letter-spacing: -0.02em;">Reject Recovery</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6; margin-bottom: 1.25rem; padding: 0 0.25rem;">
+                            State the reason for rejecting this asset re-integration. This will be transmitted to the personnel.
+                        </p>
+
+                        <textarea id="swal-recovery-reject-reason" placeholder="e.g., Return quantity discrepancy, incorrect documentation, item not verified..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '&#10005; &nbsp;Confirm Rejection',
+                cancelButtonText: 'Go Back',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                preConfirm: () => {
+                    const reason = document.getElementById('swal-recovery-reject-reason').value.trim();
+                    if (!reason) {
+                        Swal.showValidationMessage('<span style="font-size:0.85rem;">⚠ A justification is required.</span>');
+                        return false;
+                    }
+                    return reason;
+                }
+            }).then(result => {
+                if (result.isConfirmed) {
+                    _doProcessRecovery(id, status, btnElement, result.value);
+                }
+            });
+        } else {
+            _doProcessRecovery(id, status, btnElement, null);
+        }
+    };
+
+    function _doProcessRecovery(id, status, btnElement, reason) {
+        const actionsDiv = document.getElementById(`recovery-actions-${id}`);
+        if (actionsDiv) {
+            const btns = actionsDiv.querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+        }
+        
+        btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        fetch(`{{ url('/recovery') }}/${id}/process`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ status: status, reason: reason })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Server protocol violation');
+            return res.json();
+        })
+        .then(data => {
+            if(data.success) {
+                const actionsDiv = document.getElementById(`recovery-actions-${id}`);
+                if (actionsDiv) {
+                    const color = status === 'approved' ? '#10b981' : '#dc2626';
+                    const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+                    actionsDiv.innerHTML = `<div style="padding: 12px 20px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 900; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
+                        <i data-lucide="${status === 'approved' ? 'check-circle' : 'alert-circle'}" style="width: 16px;"></i> RECOVERY ${status.toUpperCase()}
+                    </div>`;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+                showToast('Registry Updated', `Recovery has been ${status}.`, 'success');
+            } else {
+                showToast('Update Failed', data.message || 'Error processing recovery', 'error');
+                btnElement.innerText = status === 'approved' ? 'Approve Re-integration' : 'Reject Recovery';
+                btnElement.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('System Error', 'Could not complete the re-integration process.', 'error');
+            btnElement.innerText = status === 'approved' ? 'Approve Re-integration' : 'Reject Recovery';
+            btnElement.disabled = false;
+        });
+    }
+
+    function _renderRecoverySheet(data) {
+        const item = data.item;
+        const html = `
+            <div style="background: white; padding: 3rem 2.5rem; border-bottom: 1px solid #e2e8f0; position: relative; border-radius: 28px 28px 0 0;">
+                <button onclick="window.closeOversightPanel()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
+                    <i data-lucide="x" style="width: 18px;"></i>
+                </button>
+                
+                <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2.5rem;">
+                    <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);">
+                        <i data-lucide="refresh-cw" style="width: 32px; height: 32px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; font-weight: 800; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Asset Recovery Oversight</div>
+                        <h2 style="margin: 0; font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -0.03em;">Return Verification</h2>
+                        <p style="margin: 4px 0 0; font-size: 0.95rem; color: #64748b; font-weight: 500;">Submitted by <b>${data.personnel}</b></p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; background: #f8fafc; padding: 2rem; border-radius: 24px; border: 1px solid #f1f5f9;">
+                    <div style="background: white; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Asset Description</span>
+                        <span style="font-size: 1.1rem; font-weight: 900; color: #0f172a; line-height: 1.4;">${item.description}</span>
+                    </div>
+                    <div style="background: white; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Registry Category</span>
+                        <span style="font-size: 1rem; font-weight: 800; color: #4f46e5; background: rgba(79, 70, 229, 0.1); padding: 4px 12px; border-radius: 8px; display: inline-block;">${item.category}</span>
+                    </div>
+                    <div style="background: white; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Beneficiary</span>
+                        <span style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">${item.beneficiary}</span>
+                    </div>
+                    <div style="background: white; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Return Quantity</span>
+                        <div style="display: flex; align-items: baseline; gap: 6px;">
+                            <span style="font-size: 2rem; font-weight: 900; color: #10b981;">${item.return_qty}</span>
+                            <span style="font-size: 0.85rem; font-weight: 700; color: #64748b;">of ${item.issued_qty} units</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding: 1.5rem; background: #fff; border-radius: 20px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="message-square" style="width: 14px;"></i> Personnel Remarks
+                    </div>
+                    <div style="font-size: 0.95rem; color: #475569; font-weight: 500; font-style: italic; line-height: 1.6; border-left: 3px solid #f59e0b; padding-left: 15px;">
+                        ${item.remarks || '-- No specific notes provided --'}
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding: 1.25rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 32px; height: 32px; background: #10b981; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="shield-check" style="width: 18px;"></i>
+                    </div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #065f46;">
+                        Approval will automatically re-integrate ${item.return_qty} units into the registry stock balances.
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('oversightPanelContent').innerHTML = html;
+        document.getElementById('oversightOverlay').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('oversightOverlay').classList.add('show');
+            document.getElementById('oversightSidePanel').classList.add('open');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }, 10);
+    }
+
+    window.showRecoveryPreview = function(reqId, btn) {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Loading...`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        fetch(`{{ url('/api/edit-requests') }}/${reqId}/recovery-preview`)
+            .then(res => res.json())
+            .then(data => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> Preview Recovery Details`;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+                _renderRecoverySheet(data);
+            })
+            .catch(err => {
+                console.error(err);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> Preview Recovery Details`;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+                showToast('Error', 'Could not fetch recovery details.', 'error');
+            });
+    };
+
     window.processEditRequest = function(id, status, btnElement) {
         if (status === 'canceled') {
             Swal.fire({
@@ -982,12 +1231,15 @@
     // Patch all existing "Preview Changes" buttons in the DOM after messages render.
     // Handles old messages that have broken onclicks or no data-req-id.
     function _patchRemainderPreviewButtons() {
-        document.querySelectorAll('.sra-approval-card, [id^="sra-creation-actions-"]').forEach(function(container) {
+        document.querySelectorAll('.sra-approval-card, .recovery-approval-card, [id^="sra-creation-actions-"], [id^="recovery-actions-"]').forEach(function(container) {
             // Find the edit request ID
             let reqId = '';
-            const actionsDiv = container.id.startsWith('sra-creation-actions-') ? container : container.querySelector('[id^="sra-creation-actions-"]');
+            let actionsDiv = container.id.startsWith('sra-creation-actions-') || container.id.startsWith('recovery-actions-') 
+                ? container 
+                : container.querySelector('[id^="sra-creation-actions-"], [id^="recovery-actions-"]');
+            
             if (actionsDiv) {
-                reqId = actionsDiv.id.replace('sra-creation-actions-', '');
+                reqId = actionsDiv.id.replace('sra-creation-actions-', '').replace('recovery-actions-', '');
             }
             if (!reqId) return;
 
@@ -995,8 +1247,8 @@
             container.querySelectorAll('a, button').forEach(function(el) {
                 const text = el.textContent.trim();
                 
-                // Case 1: Entry Preview (New Stock Entry Oversight)
-                if (text.includes('Preview Entry Details')) {
+                // Case 1: Entry Preview (New Stock Entry Oversight / Proposed Changes)
+                if (text.includes('Preview Entry Details') || text.includes('Preview Proposed Changes')) {
                     if (el.tagName === 'A') {
                         // Convert link to button
                         const btn = document.createElement('button');
@@ -1010,9 +1262,22 @@
                         el.classList.add('entry-preview-btn');
                     }
                 }
-                
+                // Case 3: Item Recovery Preview
+                else if (text.includes('Preview Recovery Details') || text.includes('Recovery')) {
+                    if (el.tagName === 'A') {
+                        const btn = document.createElement('button');
+                        btn.className = el.className || 'recovery-preview-btn';
+                        btn.setAttribute('style', el.getAttribute('style'));
+                        btn.innerHTML = el.innerHTML;
+                        btn.setAttribute('data-recovery-req-id', reqId);
+                        el.parentNode.replaceChild(btn, el);
+                    } else if (!el.getAttribute('data-recovery-req-id')) {
+                        el.setAttribute('data-recovery-req-id', reqId);
+                        el.classList.add('recovery-preview-btn');
+                    }
+                }
                 // Case 2: Remainder Preview (Legacy SRA style)
-                if (text.includes('Preview Changes') || (text.includes('Preview') && !text.includes('Entry Details'))) {
+                else if (text.includes('Preview Changes') || (text.includes('Preview') && !text.includes('Entry Details'))) {
                     if (el.tagName === 'A') {
                         const btn = document.createElement('button');
                         btn.className = el.className || 'remainder-preview-btn';
@@ -1483,6 +1748,17 @@
             if (reqId) {
                 e.stopPropagation();
                 window.showRemainderPreview(reqId, btn);
+                return;
+            }
+        }
+
+        const rBtn = e.target.closest('button.recovery-preview-btn, a.recovery-preview-btn, [data-recovery-req-id]');
+        if (rBtn) {
+            e.preventDefault();
+            const reqId = rBtn.getAttribute('data-recovery-req-id');
+            if (reqId) {
+                e.stopPropagation();
+                window.showRecoveryPreview(reqId, rBtn);
                 return;
             }
         }

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Registry Oversight')
+@section('title', 'User Registry')
 
 @section('content')
 <div class="command-center">
@@ -11,7 +11,7 @@
                 <i data-lucide="users"></i>
             </div>
             <div class="metric-data">
-                <span class="m-label">Total Registry</span>
+                <span class="m-label">Total Users</span>
                 <h3 class="m-value">{{ $totalUsers }}</h3>
                 <div class="m-trend"><i data-lucide="database"></i> Records Sync'd</div>
             </div>
@@ -52,14 +52,14 @@
                         <i data-lucide="shield-check"></i>
                     </div>
                     <div class="registry-title-stack">
-                        <h3 class="vault-title">Registry Oversight</h3>
+                        <h3 class="vault-title">User Registry</h3>
                         <div class="status-indicator-pill">
                             <span class="live-pulse"></span>
-                            SECURE & SYNCED
+                            SECURE & UPDATED
                         </div>
                     </div>
                 </div>
-                <p class="vault-subtitle">Managing {{ $totalUsers }} Strategic Personnel Records</p>
+                <p class="vault-subtitle">Managing {{ $totalUsers }} user records</p>
             </div>
             
             <div class="toolbar-actions">

@@ -537,6 +537,12 @@
                         <span>Permissions</span>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('admin.archive') }}" class="nav-link {{ request()->routeIs('admin.archive') ? 'active' : '' }}">
+                        <i data-lucide="archive"></i>
+                        <span>System Archive</span>
+                    </a>
+                </li>
             </ul>
 
             <span class="nav-label">Parameters</span>

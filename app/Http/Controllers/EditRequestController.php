@@ -55,7 +55,7 @@ class EditRequestController extends Controller
                         <div style='width: 32px; height: 32px; background: rgba(79, 70, 229, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #4f46e5;'>
                             <svg style='width: 16px; height: 16px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'></path></svg>
                         </div>
-                        <b style='font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: #4f46e5;'>{$typeLabel} OVERSIGHT REQUIRED</b>
+                        <b style='font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: #4f46e5;'>APPROVAL NEEDED FOR {$typeLabel}</b>
                     </div>
                     
                     <div style='font-size: 0.95rem; color: #334155; line-height: 1.6; margin-bottom: 20px;'>
@@ -432,7 +432,7 @@ class EditRequestController extends Controller
             $statusHeader = 'REMAINDER FULFILLMENT AUTHORIZED';
         }
         
-        $finalMsg = "<div style='padding: 15px; border: 1px solid {$color}; border-radius: 12px; background: " . ($request->status === 'approved' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(220, 38, 38, 0.05)') . ";'>";
+        $finalMsg = "<div class='personnel-view' style='padding: 15px; border: 1px solid {$color}; border-radius: 12px; background: " . ($request->status === 'approved' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(220, 38, 38, 0.05)') . ";'>";
         $finalMsg .= "<b style='color: {$color}'>{$statusHeader}</b><br>";
         
         if ($request->status === 'approved' && isset($batch) && $batch) {
@@ -631,5 +631,156 @@ class EditRequestController extends Controller
                 }
             }
         });
+    }
+
+    public function processRecoveryApproval(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'reason' => 'nullable|string'
+        ]);
+
+        if (!auth()->user()->is_admin) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $editReq = EditRequest::findOrFail($id);
+        $editReq->status = $request->status;
+        $editReq->save();
+
+        $statusHeader = $request->status === 'approved' ? 'RECOVERY AUTHORIZED' : 'RECOVERY REJECTED';
+        $color = $request->status === 'approved' ? '#10b981' : '#dc2626';
+
+        if ($request->status === 'approved') {
+            $payload = json_decode($editReq->payload, true);
+            
+            \Illuminate\Support\Facades\DB::beginTransaction();
+            try {
+                $issuedItem = \App\Models\IssuedItem::findOrFail($editReq->item_id);
+                $qtyToReturn = floatval($payload['return_qty']);
+                
+                // Find all matching inventory items (batches) for this specific asset
+                $inventoryItems = \App\Models\InventoryItem::where('description', $issuedItem->description)
+                    ->whereHas('batch', function($q) use ($issuedItem) {
+                        $q->where('ledge_category', $issuedItem->ledge_category);
+                    })
+                    ->orderBy('created_at', 'desc')
+                    ->orderBy('id', 'desc')
+                    ->get();
+
+                if ($inventoryItems->isEmpty()) {
+                    throw new \Exception("Could not find a valid inventory destination for this item.");
+                }
+
+                $remainingToRefill = $qtyToReturn;
+
+                // Phase 1: Refill depleted batches
+                foreach ($inventoryItems as $invItem) {
+                    if ($remainingToRefill <= 0) break;
+                    $stockLimit = floatval($invItem->stock_balance);
+                    $currentQty = floatval($invItem->qty);
+                    $room = $stockLimit - $currentQty;
+                    if ($room > 0) {
+                        $refill = min($room, $remainingToRefill);
+                        $invItem->qty = $currentQty + $refill;
+                        $invItem->save();
+                        $remainingToRefill -= $refill;
+                    }
+                }
+
+                // Phase 2: Overflow to latest batch
+                if ($remainingToRefill > 0) {
+                    $latestItem = $inventoryItems->last();
+                    $latestItem->qty = floatval($latestItem->qty) + $remainingToRefill;
+                    $latestItem->save();
+                }
+
+                // Update issued item quantity
+                $issuedItem->quantity -= $qtyToReturn;
+                $issuedItem->save();
+
+                // Create record in returned_items
+                \App\Models\ReturnedItem::create([
+                    'issued_item_id' => $issuedItem->id,
+                    'returned_qty' => $qtyToReturn,
+                    'return_date' => $payload['return_date'],
+                    'remarks' => $payload['remarks'] ?? null,
+                ]);
+
+                \App\Models\SystemLog::create([
+                    'user_id' => $editReq->user_id,
+                    'event_type' => 'INVENTORY',
+                    'action' => 'RETURN_ITEM',
+                    'description' => "Personnel logged return of {$qtyToReturn} {$issuedItem->description}(s) (Approved by Admin).",
+                    'severity' => 'info',
+                    'metadata' => [
+                        'item_description' => $issuedItem->description,
+                        'return_qty' => $qtyToReturn,
+                        'return_date' => $payload['return_date']
+                    ],
+                    'ip_address' => request()->ip()
+                ]);
+
+                \Illuminate\Support\Facades\DB::commit();
+
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Failed to process: ' . $e->getMessage()]);
+            }
+        }
+
+        // Notification logic
+        $finalMsg = "<div class='personnel-view' style='padding: 15px; border: 1px solid {$color}; border-radius: 12px; background: " . ($request->status === 'approved' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(220, 38, 38, 0.05)') . ";'>";
+        $finalMsg .= "<b style='color: {$color}'>{$statusHeader}</b><br>";
+        
+        if ($request->status === 'approved') {
+            $finalMsg .= "Your recovery request for the registry assets has been authorized and stock balances updated.";
+        } else {
+            $finalMsg .= "Your recovery request was not authorized.<br>";
+            if ($request->reason) {
+                $finalMsg .= "<div style='margin-top: 5px; color: #b91c1c;'>" . nl2br(e($request->reason)) . "</div>";
+            }
+        }
+        $finalMsg .= "</div>";
+
+        // Update Personnel Message
+        $personnelMsg = Message::where('receiver_id', $editReq->user_id)
+            ->where('edit_request_id', $editReq->id)
+            ->where('message', 'like', '%RECOVERY SUBMITTED%')
+            ->first();
+
+        if ($personnelMsg) {
+            $personnelMsg->update(['message' => $finalMsg, 'is_automated' => true]);
+        } else {
+            Message::create([
+                'sender_id' => auth()->id(),
+                'receiver_id' => $editReq->user_id,
+                'message' => $finalMsg,
+                'is_automated' => true,
+                'edit_request_id' => $editReq->id
+            ]);
+        }
+
+        // Update Admin Messages
+        $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+            ->where(function($q) use ($editReq) {
+                $q->where('edit_request_id', $editReq->id)
+                  ->orWhere('message', 'like', "%recovery-actions-{$editReq->id}%");
+            })
+            ->get();
+
+        foreach ($adminMsgs as $adminMsg) {
+            $statusLabel = $request->status === 'approved' ? 'AUTHORIZED' : 'REJECTED';
+            $newMsg = "<div style='padding: 15px; border-left: 4px solid {$color}; background: rgba(0,0,0,0.02);'>";
+            $newMsg .= "<b style='color: {$color};'>RECOVERY {$statusLabel}</b><br>";
+            $newMsg .= "Submission by " . ($editReq->user->name ?? 'Personnel') . " has been {$request->status}.";
+            if ($request->status === 'rejected' && $request->reason) {
+                $newMsg .= "<div style='margin-top: 5px; font-size: 0.85rem; color: #666;'>Reason: " . e($request->reason) . "</div>";
+            }
+            $newMsg .= "</div>";
+            $adminMsg->update(['message' => $newMsg, 'is_automated' => true]);
+        }
+
+        return response()->json(['success' => true]);
     }
 }

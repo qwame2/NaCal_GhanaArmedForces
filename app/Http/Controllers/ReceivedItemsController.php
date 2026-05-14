@@ -220,7 +220,7 @@ class ReceivedItemsController extends Controller
             }
 
             $approvedAt = $editReq->approved_at ?? $editReq->updated_at;
-            $timeoutMinutes = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('approval_timeout_minutes', 5) : 5;
+            $timeoutMinutes = 60; // Standard security window
             $timeoutSeconds = $timeoutMinutes * 60;
 
             if (now()->diffInSeconds($approvedAt) > $timeoutSeconds) {
@@ -418,7 +418,7 @@ class ReceivedItemsController extends Controller
             }
 
             $approvedAt = $editReq->approved_at ?? $editReq->updated_at;
-            $timeoutMinutes = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('approval_timeout_minutes', 5) : 5;
+            $timeoutMinutes = 60; // Standard security window
             $timeoutSeconds = $timeoutMinutes * 60;
 
             if (now()->diffInSeconds($approvedAt) > $timeoutSeconds) {

@@ -17,11 +17,13 @@ class Message extends Model
         'attachment_name',
         'read_at',
         'is_automated',
-        'edit_request_id'
+        'edit_request_id',
+        'is_archived'
     ];
 
     protected $casts = [
-        'read_at' => 'datetime'
+        'read_at' => 'datetime',
+        'is_archived' => 'boolean'
     ];
 
     public function sender()

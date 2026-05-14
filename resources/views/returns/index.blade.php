@@ -134,7 +134,12 @@
                             </div>
                         </td>
                         <td style="padding: 1.75rem 1.5rem; border-radius: 0 24px 24px 0; text-align: right;">
-                            @if(auth()->user()->can_operate_logistics)
+                            @if($item->pending_recovery)
+                            <button disabled class="recover-btn-premium" style="padding: 1rem 1.5rem; border-radius: 16px; font-weight: 900; background: #6366f1; color: white; border: none; cursor: wait; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); opacity: 0.85;">
+                                <i data-lucide="clock" style="width: 18px;" class="animate-pulse"></i>
+                                <span>Pending Auth</span>
+                            </button>
+                            @elseif(auth()->user()->can_operate_logistics)
                             <button onclick="openReturnModal({{ json_encode($item) }})" class="recover-btn-premium" style="padding: 1rem 1.5rem; border-radius: 16px; font-weight: 900; background: #0f172a; color: white; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);">
                                 <i data-lucide="corner-up-left" style="width: 18px;"></i>
                                 <span>Recovery</span>
@@ -186,7 +191,12 @@
                         <div style="font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Balance</div>
                         <div style="font-size: 1.75rem; font-weight: 950; color: #d97706;">{{ $item->quantity }} <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted);">{{ $item->actual_unit ?: ($item->unit ?: 'Units') }}</span></div>
                     </div>
-                    @if(auth()->user()->can_operate_logistics)
+                    @if($item->pending_recovery)
+                    <button disabled title="Awaiting Administrative Approval" style="width: 120px; height: 56px; border-radius: 18px; background: #6366f1; color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); cursor: wait; opacity: 0.9;">
+                        <i data-lucide="clock" style="width: 20px;" class="animate-pulse"></i>
+                        <span style="font-size: 0.75rem; font-weight: 900; text-transform: uppercase;">Pending</span>
+                    </button>
+                    @elseif(auth()->user()->can_operate_logistics)
                     <button onclick="openReturnModal({{ json_encode($item) }})" class="mobile-recover-btn" style="width: 56px; height: 56px; border-radius: 18px; background: #0f172a; color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                         <i data-lucide="corner-up-left" style="width: 24px;"></i>
                     </button>

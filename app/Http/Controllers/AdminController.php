@@ -43,6 +43,13 @@ class AdminController extends Controller
             'department' => 'nullable|string',
         ]);
 
+        // SECURITY ENFORCEMENT: Only one Admin account allowed
+        if ($request->role === 'Admin' && !$user->is_admin) {
+            if (User::where('is_admin', true)->exists()) {
+                return back()->with('error', 'Strategic Oversight Alert: Only one Administrative account is permitted. Promotion denied.');
+            }
+        }
+
         $user->update([
             'name' => $request->name,
             'role' => $request->role,
@@ -152,10 +159,14 @@ class AdminController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
-        // Enforce strict oversight: Only show logs from Standard Personnel (hide Admin actions)
-        $query = \App\Models\SystemLog::with('user')->whereHas('user', function($q) {
-            $q->where('is_admin', false);
-        });
+        // Enforce strict oversight: Show logs from Standard Personnel and System Auto (hide Admin actions and archived logs)
+        $query = \App\Models\SystemLog::with('user')
+            ->where('is_archived', false)
+            ->where(function($q) {
+                $q->whereHas('user', function($sq) {
+                    $sq->where('is_admin', false);
+                })->orWhereNull('user_id'); // Include automated system logs
+            });
 
         // Optional filtering
         if ($request->has('severity') && $request->severity) {
@@ -168,8 +179,12 @@ class AdminController extends Controller
 
         $perPage = $request->input('per_page', 15);
         $logs = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        // Global Metrics for administrative transparency
+        $activeCount = \App\Models\SystemLog::where('is_archived', false)->count();
+        $archivedCount = \App\Models\SystemLog::where('is_archived', true)->count();
         
-        return view('admin.logs', compact('logs'));
+        return view('admin.logs', compact('logs', 'activeCount', 'archivedCount'));
     }
 
     public function destroyMultipleLogs(Request $request)

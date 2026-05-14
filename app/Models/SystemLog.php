@@ -13,11 +13,13 @@ class SystemLog extends Model
         'description',
         'severity',
         'metadata',
-        'ip_address'
+        'ip_address',
+        'is_archived'
     ];
 
     protected $casts = [
-        'metadata' => 'array'
+        'metadata' => 'array',
+        'is_archived' => 'boolean'
     ];
 
     public function user()

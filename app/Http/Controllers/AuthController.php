@@ -54,6 +54,12 @@ class AuthController extends Controller
             }
 
             $isAdmin = $request->role === 'Admin';
+            
+            // SECURITY ENFORCEMENT: Only one Admin account allowed in the entire system
+            if ($isAdmin && User::where('is_admin', true)->exists()) {
+                return back()->with('error', 'Strategic Oversight Alert: An Administrative account already exists. Multiple Command nodes are prohibited.')->withInput();
+            }
+
             $user = User::create([
                 'name' => $request->name,
                 'username' => $request->username,
@@ -125,6 +131,21 @@ class AuthController extends Controller
             }
 
             $request->session()->regenerate();
+            
+            // SECURITY ENFORCEMENT: Block multiple simultaneous Admin sessions
+            if ($user->is_admin) {
+                // If any admin is already marked as online (including this account from another session), 
+                // we deny the new login attempt to enforce singular command authority.
+                $anyAdminOnline = User::where('is_admin', true)->where('is_online', true)->exists();
+                
+                if ($anyAdminOnline) {
+                    Auth::logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                    return redirect()->route('login')->with('error', 'Strategic Command Alert: An active Administrative session is already established. Concurrent access is prohibited.');
+                }
+            }
+
             $user->update([
                 'last_login_at' => now(),
                 'is_online' => true,

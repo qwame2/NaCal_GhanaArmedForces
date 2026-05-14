@@ -47,7 +47,16 @@ class ReturnController extends Controller
                 'issuances.issuance_type',
                 DB::raw('COALESCE(NULLIF(issued_items.unit, ""), inv_units.unit) as actual_unit')
             )
+            ->addSelect([
+                'pending_recovery' => \App\Models\EditRequest::select('id')
+                    ->whereColumn('item_id', 'issued_items.id')
+                    ->where('item_type', 'issued_item')
+                    ->where('request_type', 'item_recovery')
+                    ->where('status', 'pending')
+                    ->limit(1)
+            ])
             ->where('issuances.issuance_type', 'Temporary')
+            ->where('issued_items.quantity', '>', 0)
             ->orderBy('issuances.issuance_date', 'desc')
             ->get();
 
@@ -76,92 +85,80 @@ class ReturnController extends Controller
                 throw new \Exception("Return quantity cannot exceed issued quantity.");
             }
 
-            // Restore stock to the most recent batch of this item+ledge
-            // In a real system, we might want to return to the specific batches it came from, 
-            // but for simplicity we'll just add it back to the first available batch for that description/category.
-            $qtyToReturn = floatval($validated['return_qty']);
-            
-            // Find all matching inventory items (batches) for this specific asset
-            $inventoryItems = InventoryItem::where('description', $issuedItem->description)
-                ->whereHas('batch', function($q) use ($issuedItem) {
-                    $q->where('ledge_category', $issuedItem->ledge_category);
-                })
-                ->orderBy('created_at', 'desc') // Fill newer/partially-used batches first as requested
-                ->orderBy('id', 'desc')
-                ->get();
-
-            if ($inventoryItems->isEmpty()) {
-                throw new \Exception("Could not find a valid inventory destination for this item in the registry.");
-            }
-
-            $remainingToRefill = $qtyToReturn;
-
-            // Phase 1: Refill depleted batches back to their original stock_balance levels
-            foreach ($inventoryItems as $invItem) {
-                if ($remainingToRefill <= 0) break;
-                
-                $stockLimit = floatval($invItem->stock_balance);
-                $currentQty = floatval($invItem->qty);
-                
-                $room = $stockLimit - $currentQty;
-                
-                if ($room > 0) {
-                    $refill = min($room, $remainingToRefill);
-                    $invItem->qty = $currentQty + $refill;
-                    $invItem->save();
-                    $remainingToRefill -= $refill;
-                }
-            }
-
-            // Phase 2: If there's still quantity left (e.g., returned more than originally issued from these batches),
-            // add the overflow to the most recent batch.
-            if ($remainingToRefill > 0) {
-                $latestItem = $inventoryItems->last();
-                $latestItem->qty = floatval($latestItem->qty) + $remainingToRefill;
-                $latestItem->save();
-            }
-
-            // Update issued item quantity or mark as returned
-            // For now, let's just reduce the issued quantity
-            $issuedItem->quantity -= $validated['return_qty'];
-            $issuedItem->save();
-
-            ReturnedItem::create([
-                'issued_item_id' => $issuedItem->id,
-                'returned_qty' => $validated['return_qty'],
-                'return_date' => $validated['return_date'],
-                'remarks' => $validated['remarks'] ?? null,
+            // Create an EditRequest for Administrative Review
+            $editReq = \App\Models\EditRequest::create([
+                'user_id' => auth()->id(),
+                'item_type' => 'issued_item',
+                'item_id' => $issuedItem->id,
+                'request_type' => 'item_recovery',
+                'reason' => 'Registry Asset Recovery: ' . ($validated['remarks'] ?: 'No additional remarks provided'),
+                'status' => 'pending',
+                'payload' => json_encode($validated)
             ]);
 
-            DB::commit();
+            $admins = \App\Models\User::where('is_admin', true)->get();
+            if ($admins->count() > 0) {
+                $msgContent = "
+                    <div class='recovery-approval-card' style='background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin: 10px 0;'>
+                        <div style='display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;'>
+                            <div style='width: 40px; height: 40px; background: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;'>
+                                <i data-lucide='refresh-cw' style='width: 20px;'></i>
+                            </div>
+                            <div>
+                                <h4 style='margin: 0; color: #0f172a; font-size: 0.95rem; font-weight: 800; letter-spacing: -0.01em;'>RECOVERY APPROVAL</h4>
+                                <p style='margin: 0; font-size: 0.75rem; color: #64748b; font-weight: 600;'>Asset Re-integration Request</p>
+                            </div>
+                        </div>
+                        
+                        <div style='display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;'>
+                            <div style='display: flex; align-items: center; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;'><i data-lucide='user' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Personnel:</b> " . auth()->user()->name . "</span></div>
+                            <div style='display: flex; align-items: flex-start; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b; margin-top: 2px;'><i data-lucide='package' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569; line-height: 1.4;'><b style='color: #0f172a;'>Item:</b> {$issuedItem->description}</span></div>
+                            <div style='display: flex; align-items: center; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;'><i data-lucide='hash' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Qty to Return:</b> {$validated['return_qty']}</span></div>
+                        </div>
 
-            // Log the return
-            if (auth()->check()) {
-                $user = auth()->user();
-                
-                \App\Models\SystemLog::create([
-                    'user_id' => $user->id,
-                    'event_type' => 'INVENTORY',
-                    'action' => 'RETURN_ITEM',
-                    'description' => "Personnel logged return of {$validated['return_qty']} {$issuedItem->description}(s) from {$issuedItem->issuance->beneficiary}.",
-                    'severity' => 'info',
-                    'metadata' => [
-                        'item_description' => $issuedItem->description,
-                        'return_qty' => $validated['return_qty'],
-                        'beneficiary' => $issuedItem->issuance->beneficiary,
-                        'original_issuance_date' => $issuedItem->issuance->issuance_date,
-                        'return_date' => $validated['return_date'],
-                        'remarks' => $validated['remarks'] ?? 'No remarks provided'
-                    ],
-                    'ip_address' => request()->ip()
+                        <button class='recovery-preview-btn' data-recovery-req-id='{$editReq->id}' style='width: 100%; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; margin-bottom: 8px; transition: all 0.2s;'>
+                            <i data-lucide='eye' style='width:15px; flex-shrink:0;'></i> Preview Recovery Details</button>
+
+                        <div id='recovery-actions-{$editReq->id}' style='display: flex; flex-direction: column; gap: 8px;'>
+                            <button onclick='window.processRecoveryApproval({$editReq->id}, \"approved\", this)' style='background: #10b981; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>
+                                <i data-lucide='check-circle' style='width: 16px;'></i> Approve Re-integration</button>
+                            <button onclick='window.processRecoveryApproval({$editReq->id}, \"rejected\", this)' style='background: #ef4444; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>
+                                <i data-lucide='x-circle' style='width: 16px;'></i> Reject Recovery</button>
+                        </div>
+                    </div>";
+
+                foreach ($admins as $admin) {
+                    \App\Models\Message::create([
+                        'sender_id' => auth()->id(),
+                        'receiver_id' => $admin->id,
+                        'message' => $msgContent,
+                        'is_automated' => true,
+                        'edit_request_id' => $editReq->id
+                    ]);
+                }
+
+                $confirmation = "
+                    <div class='personnel-view' style='padding: 15px; border: 1px solid #f59e0b; border-radius: 16px; background: rgba(245, 158, 11, 0.03); display: flex; align-items: center; gap: 12px;'>
+                        <div style='width: 32px; height: 32px; background: #f59e0b; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;'><i data-lucide='clock' style='width: 16px;'></i></div>
+                        <div><b style='color: #f59e0b; font-size: 0.85rem;'>RECOVERY SUBMITTED</b><br><span style='font-size: 0.75rem; color: #64748b; font-weight: 600;'>Awaiting Admin authorization for asset re-integration.</span></div>
+                    </div>";
+
+                \App\Models\Message::create([
+                    'sender_id' => $admins->first()->id ?? 1,
+                    'receiver_id' => auth()->id(),
+                    'message' => $confirmation,
+                    'is_automated' => true,
+                    'edit_request_id' => $editReq->id
                 ]);
             }
 
-            return redirect()->back()->with('success', 'Item returned successfully to inventory.');
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Recovery request submitted for administrative approval.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Return failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Recovery submission failed: ' . $e->getMessage());
         }
     }
 

@@ -48,9 +48,9 @@ class InventoryController extends Controller
                     'payload' => json_encode($validated)
                 ]);
 
-                // Send Approval Request to Admin
-                $admin = \App\Models\User::where('is_admin', true)->first();
-                if ($admin) {
+                // Send Approval Request to all Admins
+                $admins = \App\Models\User::where('is_admin', true)->get();
+                if ($admins->count() > 0) {
                     $itemNames = collect($validated['items'])->pluck('description')->take(3)->implode(', ');
                     if (count($validated['items']) > 3) $itemNames .= ' etc.';
                     $source = $validated['acquisition_type'] === 'Donor' ? $validated['donor_name'] : $validated['supplier_name'];
@@ -80,24 +80,26 @@ class InventoryController extends Controller
                     $msgContent .= "<button onclick='window.processSraCreationApproval({$editReq->id}, \"rejected\", this)' style='background: #ef4444; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>";
                     $msgContent .= "<i data-lucide='x-circle' style='width: 16px;'></i> Reject</button>";
                     $msgContent .= "</div></div></div>";
-
-                    \App\Models\Message::create([
-                        'sender_id' => auth()->id(),
-                        'receiver_id' => $admin->id,
-                        'message' => $msgContent,
-                        'is_automated' => true,
-                        'edit_request_id' => $editReq->id
-                    ]);
+ 
+                    foreach ($admins as $admin) {
+                        \App\Models\Message::create([
+                            'sender_id' => auth()->id(),
+                            'receiver_id' => $admin->id,
+                            'message' => $msgContent,
+                            'is_automated' => true,
+                            'edit_request_id' => $editReq->id
+                        ]);
+                    }
                 }
-
+ 
                 // Send confirmation to Personnel
                 $confirmation = "<div style='padding: 15px; border: 1px solid #4f46e5; border-radius: 16px; background: rgba(79, 70, 229, 0.03); display: flex; align-items: center; gap: 12px;'>";
                 $confirmation .= "<div style='width: 32px; height: 32px; background: #4f46e5; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;'><i data-lucide='clock' style='width: 16px;'></i></div>";
                 $confirmation .= "<div><b style='color: #4f46e5; font-size: 0.85rem;'>ENTRY SUBMISSION LOGGED</b><br><span style='font-size: 0.75rem; color: #64748b; font-weight: 600;'>Awaiting final approval from the Command Hub.</span></div>";
                 $confirmation .= "</div>";
-
+ 
                 \App\Models\Message::create([
-                    'sender_id' => $admin->id ?? 1,
+                    'sender_id' => isset($admins) && $admins->count() > 0 ? $admins->first()->id : 1,
                     'receiver_id' => auth()->id(),
                     'message' => $confirmation,
                     'is_automated' => true,

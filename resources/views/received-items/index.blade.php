@@ -17,10 +17,7 @@
                 <i data-lucide="refresh-cw" style="width: 18px;"></i>
                 Refresh
             </button>
-            <button onclick="window.print()" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--text-main);">
-                <i data-lucide="printer" style="width: 18px;"></i>
-                Export Report
-            </button>
+
         </div>
     </div>
 

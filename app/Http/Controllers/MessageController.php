@@ -14,7 +14,7 @@ class MessageController extends Controller
         $authId = auth()->id();
         $authUser = auth()->user();
         
-        $messages = Message::where(function($q) use ($authId, $userId, $authUser) {
+        $messages = Message::where('is_archived', false)->where(function($q) use ($authId, $userId, $authUser) {
             // Standard peer-to-peer message query
             $q->where(function($sq) use ($authId, $userId) {
                 $sq->where('sender_id', $authId)->where('receiver_id', $userId);
@@ -44,13 +44,19 @@ class MessageController extends Controller
         });
 
         // Robustly filter out automated messages from the sender's perspective
-        $messages->where(function($q) use ($authId) {
+        // ENHANCED: Admins should see ALL automated messages in the thread for collaborative oversight
+        $messages->where(function($q) use ($authId, $authUser) {
             $q->where('is_automated', false)
               ->orWhere('receiver_id', $authId); // Always show if you are the intended recipient
+            
+            if ($authUser && $authUser->is_admin) {
+                $q->orWhere('is_automated', true);
+            }
         });
 
         $messages = $messages->orderBy('created_at', 'asc')->get();
-
+        
+        if (ob_get_length()) ob_clean();
         return response()->json($messages);
     }
 
@@ -106,7 +112,7 @@ class MessageController extends Controller
     public function getUnreadCounts()
     {
         $authId = auth()->id();
-        $counts = Message::where('receiver_id', $authId)
+        $counts = Message::where('is_archived', false)->where('receiver_id', $authId)
             ->whereNull('read_at')
             ->selectRaw('sender_id, count(*) as count')
             ->groupBy('sender_id')
@@ -119,7 +125,7 @@ class MessageController extends Controller
 
     public function getTotalUnreadCount()
     {
-        $count = Message::where('receiver_id', auth()->id())
+        $count = Message::where('is_archived', false)->where('receiver_id', auth()->id())
             ->whereNull('read_at')
             ->count();
 

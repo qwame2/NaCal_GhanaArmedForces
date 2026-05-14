@@ -22,8 +22,8 @@
 <div class="animate-slide-up">
     <div class="page-header" style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
-            <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-heading); margin: 0;">Operational <span style="color: var(--primary);">Oversight</span></h2>
-            <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500; margin-top: 0.5rem;">Unified view of all received, issued, and returned inventory assets.</p>
+            <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-heading); margin: 0;">Inventory <span style="color: var(--primary);">Overview</span></h2>
+            <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500; margin-top: 0.5rem;">See all items that were received, issued, or returned.</p>
         </div>
         <div style="display: flex; gap: 1rem; align-items: center;">
             @if($partialCount > 0)
@@ -230,7 +230,7 @@
             <!-- Segment 4: Actions -->
             <div class="filter-actions" style="padding-left: 1rem; display: flex; gap: 8px;">
                 <button type="submit" class="audit-btn" style="background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 16px rgba(79, 70, 229, 0.2);">
-                    <i data-lucide="zap" style="width: 16px;"></i> Audit
+                    <i data-lucide="filter" style="width: 16px;"></i> Filter
                 </button>
                 <a href="{{ route('admin.inventory') }}" style="width: 44px; height: 44px; background: #f8fafc; color: #94a3b8; border: 1px solid #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.3s; margin-right: 8px;" title="Reset Ledger">
                     <i data-lucide="rotate-ccw" style="width: 18px;"></i>

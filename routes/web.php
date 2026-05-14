@@ -9,6 +9,17 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ArchiveController;
+
+// Archive Routes
+Route::middleware(['auth', 'check_status'])->prefix('admin/archive')->group(function () {
+    Route::get('/', [ArchiveController::class, 'index'])->name('admin.archive');
+    Route::post('/message/{id}', [ArchiveController::class, 'archiveMessage'])->name('admin.archive.message');
+    Route::post('/log/{id}', [ArchiveController::class, 'archiveLog'])->name('admin.archive.log');
+    Route::post('/restore/message/{id}', [ArchiveController::class, 'restoreMessage'])->name('admin.archive.restore.message');
+    Route::post('/restore/log/{id}', [ArchiveController::class, 'restoreLog'])->name('admin.archive.restore.log');
+    Route::post('/bulk/logs', [ArchiveController::class, 'bulkArchiveLogs'])->name('admin.archive.bulk.logs');
+});
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
@@ -456,6 +467,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::get('/sra-preview/{id}', [\App\Http\Controllers\ReceivedItemsController::class, 'preview'])->name('sra.preview');
     Route::get('/api/sra-preview/{id}', [\App\Http\Controllers\ReceivedItemsController::class, 'previewApi'])->name('api.sra.preview');
     Route::post('/sra-creation/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'processSraCreation'])->name('sra-creation.process');
+    Route::post('/recovery/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'processRecoveryApproval'])->name('recovery.process');
     Route::get('/received-items/{id}/sra', [\App\Http\Controllers\ReceivedItemsController::class, 'sra'])->name('receiveditems.sra');
     Route::get('/edit-requests/status/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'checkStatus'])->name('edit-requests.checkStatus');
     Route::post('/edit-requests/complete/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'complete'])->name('edit-requests.complete');
@@ -467,6 +479,26 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         }
 
         $editReq = \App\Models\EditRequest::with('user')->findOrFail($id);
+
+        if ($editReq->request_type === 'item_recovery') {
+            $payload = json_decode($editReq->payload, true);
+            $issuedItem = \App\Models\IssuedItem::with('issuance')->find($editReq->item_id);
+            return response()->json([
+                'personnel' => $editReq->user->name ?? 'Unknown',
+                'item' => [
+                    'description' => $issuedItem->description ?? 'Unknown Item',
+                    'category' => $issuedItem->ledge_category ?? 'N/A',
+                    'beneficiary' => $issuedItem->issuance->beneficiary ?? 'N/A',
+                    'issued_qty' => $issuedItem->qty ?? 0,
+                    'return_qty' => $payload['return_qty'] ?? 0,
+                    'remarks' => $payload['remarks'] ?? ''
+                ]
+            ]);
+        }
+
+        if ($editReq->request_type === 'edit_submission' || $editReq->request_type === 'edit') {
+            return app(\App\Http\Controllers\ReceivedItemsController::class)->previewApi($id);
+        }
 
         if ($editReq->request_type !== 'remainder_submission') {
             return response()->json(['error' => 'Not a remainder request'], 400);
@@ -495,6 +527,41 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             'items'     => $items,
         ]);
     })->name('api.remainder-preview');
+
+    // Recovery Preview API — returns preview data for an item recovery request
+    Route::get('/api/edit-requests/{id}/recovery-preview', function ($id) {
+        if (!auth()->user()->is_admin) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $editReq = \App\Models\EditRequest::with('user')->findOrFail($id);
+
+        if ($editReq->request_type !== 'item_recovery') {
+            return response()->json(['error' => 'Not a recovery request'], 400);
+        }
+
+        $payload = json_decode($editReq->payload, true);
+        $issuedItem = \App\Models\IssuedItem::with('issuance')->find($editReq->item_id);
+
+        if (!$issuedItem) {
+            return response()->json(['error' => 'Issued item not found'], 404);
+        }
+
+        return response()->json([
+            'personnel' => $editReq->user->name ?? 'Unknown',
+            'status'    => $editReq->status,
+            'item'      => [
+                'description' => $issuedItem->description,
+                'beneficiary' => $issuedItem->issuance->beneficiary,
+                'authority'   => $issuedItem->issuance->authority,
+                'issued_qty'  => $issuedItem->quantity + (float)$payload['return_qty'], // original qty before this request
+                'return_qty'  => (float)$payload['return_qty'],
+                'return_date' => $payload['return_date'],
+                'remarks'     => $payload['remarks'],
+                'category'    => $issuedItem->ledge_category
+            ]
+        ]);
+    })->name('api.recovery-preview');
 
     // Returns Routes
     Route::post('/returns/purge', [ReturnController::class, 'purge'])->name('returns.purge');

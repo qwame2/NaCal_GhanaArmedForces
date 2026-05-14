@@ -111,6 +111,10 @@
 
                     @if($isOutOfStock)
                         <button class="add-to-cart-btn" style="opacity: 0.5; cursor: not-allowed;"><i data-lucide="slash" style="width: 18px;"></i> Unavailable</button>
+                    @elseif(in_array($item->description, $pendingItems))
+                        <button class="add-to-cart-btn" disabled style="background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.2); color: var(--primary); cursor: wait;">
+                            <i data-lucide="clock" style="width: 18px;" class="animate-pulse"></i> Pending Auth
+                        </button>
                     @elseif(!auth()->user()->can_operate_logistics)
                         <button class="add-to-cart-btn" disabled title="Unauthorized: Logistics Permission Required" style="background: #cbd5e1; border-color: #cbd5e1; color: white; cursor: not-allowed; box-shadow: none;">
                             <i data-lucide="lock" style="width: 18px;"></i> Locked

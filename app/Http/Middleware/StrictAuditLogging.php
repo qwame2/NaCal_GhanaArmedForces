@@ -16,36 +16,67 @@ class StrictAuditLogging
         // Proceed with the request first to get the response status
         $response = $next($request);
 
-        // Only log if the user is authenticated and the setting is strictly enabled
-        if (auth()->check() && \Illuminate\Support\Facades\Schema::hasTable('settings')) {
-            $isStrictLogEnabled = \App\Models\Setting::get('enable_strict_audit_logging', false);
-
-            if ($isStrictLogEnabled) {
-                // Avoid logging noise like ajax polling, livewire internal requests, or asset fetching if they somehow pass through web middleware
-                if (!$request->ajax() && !$request->is('broadcasting/auth') && !$request->is('admin/logs/stream')) {
-                    
-                    // Determine the severity based on action
+        // Log all personnel activity by default (Always On)
+        if (auth()->check()) {
+            // Avoid logging noise like ajax polling, livewire internal requests, or asset fetching
+            if (!$request->ajax() && !$request->is('broadcasting/auth') && !$request->is('admin/logs/stream')) {
+                
+                // Determine the severity based on action
                     $method = $request->method();
-                    $actionType = 'READ_ACCESS';
+                    $actionType = 'VIEWED PAGE';
                     $severity = 'info';
 
                     if (in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'])) {
-                        $actionType = 'WRITE_OPERATION';
+                        $actionType = 'CHANGED DATA';
                         $severity = 'warning';
                     }
 
                     $path = $request->path();
                     $role = auth()->user()->is_admin ? 'Admin' : 'Personnel';
 
+                    // Human-friendly path mapping
+                    $friendlyPath = '/' . $path;
+                    $mappings = [
+                        'dashboard' => 'the Dashboard',
+                        'admin/logs' => 'System Logs',
+                        'admin/inventory' => 'the Inventory Overview',
+                        'admin/users' => 'the User Registry',
+                        'admin' => 'the Admin Hub',
+                        'received-items' => 'the Received Items list',
+                        'issue-items' => 'the Item Issuance console',
+                        'return-items' => 'the Item Recovery page',
+                        'stock-check' => 'the Stock Verification page',
+                        'api/total-unread' => 'notifications',
+                        'messages' => 'messages',
+                        'profile' => 'profile settings',
+                    ];
+
+                    foreach ($mappings as $slug => $readable) {
+                        if ($path === $slug || str_starts_with($path, $slug . '/')) {
+                            $friendlyPath = $readable;
+                            break;
+                        }
+                    }
+
+                    // Friendly verb mapping
+                    if ($method === 'GET') {
+                        $description = "{$role} " . ($path === 'api/total-unread' ? 'checked for' : 'viewed') . " {$friendlyPath}.";
+                    } else {
+                        $action = 'interacted with';
+                        if ($method === 'POST') $action = 'submitted data to';
+                        if ($method === 'DELETE') $action = 'removed data from';
+                        if ($method === 'PATCH' || $method === 'PUT') $action = 'updated';
+                        $description = "{$role} {$action} {$friendlyPath}.";
+                    }
+
                     \App\Models\SystemLog::create([
                         'user_id' => auth()->id(),
-                        'event_type' => 'AUDIT',
-                        'action' => "STRICT_AUDIT: {$actionType}",
-                        'description' => "{$role} performed a {$method} request on /{$path}.",
+                        'event_type' => 'ACTIVITY',
+                        'action' => $actionType,
+                        'description' => $description,
                         'severity' => $severity,
                         'ip_address' => $request->ip()
                     ]);
-                }
             }
         }
 

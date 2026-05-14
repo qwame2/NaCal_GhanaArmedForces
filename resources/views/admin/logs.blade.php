@@ -7,12 +7,20 @@
     <div class="page-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
         <div>
             <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-main); margin-bottom: 0.25rem;">System <span style="color: var(--primary);">Logs</span></h2>
-            <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500;">Administrative audit trail and system event monitoring.</p>
+            <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500; display: flex; align-items: center; gap: 0.75rem;">
+                View all system activities.
+                <span style="display: inline-flex; align-items: center; gap: 0.4rem; background: #f1f5f9; padding: 0.25rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 800; color: #475569;">
+                    <i data-lucide="activity" style="width: 12px;"></i> {{ number_format($activeCount) }} Active
+                </span>
+                <span style="display: inline-flex; align-items: center; gap: 0.4rem; background: #eef2ff; padding: 0.25rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 800; color: var(--primary);">
+                    <i data-lucide="archive" style="width: 12px;"></i> {{ number_format($archivedCount) }} Archived
+                </span>
+            </p>
         </div>
         <div style="display: flex; gap: 1rem;">
-            <button type="button" onclick="confirmBulkDelete()" style="background: #fef2f2; border: 1px solid #fecdd3; padding: 0.75rem 1.5rem; border-radius: 12px; color: #ef4444; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='#ef4444'; this.style.color='white'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='#fef2f2'; this.style.color='#ef4444'; this.style.boxShadow='none'">
-                <i data-lucide="trash-2" style="width: 18px;"></i>
-                Delete Selected
+            <button type="button" onclick="confirmBulkArchive()" style="background: rgba(79, 70, 229, 0.05); border: 1px solid rgba(79, 70, 229, 0.2); padding: 0.75rem 1.5rem; border-radius: 12px; color: var(--primary); font-weight: 800; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.boxShadow='0 4px 12px rgba(79, 70, 229, 0.2)'" onmouseout="this.style.background='rgba(79, 70, 229, 0.05)'; this.style.color='var(--primary)'; this.style.boxShadow='none'">
+                <i data-lucide="archive" style="width: 18px;"></i>
+                Archive Selected
             </button>
         </div>
     </div>
@@ -23,7 +31,7 @@
             <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(79, 70, 229, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="filter" style="width: 18px;"></i>
             </div>
-            <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0; letter-spacing: -0.01em;">Audit Trail Filters</h3>
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0; letter-spacing: -0.01em;">Search Filters</h3>
         </div>
         <form action="{{ route('admin.logs') }}" method="GET" style="display: flex; gap: 1.5rem; align-items: flex-end; flex-wrap: wrap;">
             @if(request('per_page'))
@@ -37,7 +45,7 @@
                     <div style="flex: 1; display: flex; flex-direction: column;">
                         <label style="font-size: 0.6rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Severity Level</label>
                         <select name="severity" onchange="this.form.submit()" style="width: 100%; background: transparent; border: none; padding: 0 20px 0 0; color: var(--text-main); font-weight: 800; font-size: 0.95rem; outline: none; cursor: pointer; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right center; background-size: 14px;">
-                            <option value="">All Severities</option>
+                            <option value="">All Levels</option>
                             <option value="info" {{ request('severity') == 'info' ? 'selected' : '' }}>Information</option>
                             <option value="warning" {{ request('severity') == 'warning' ? 'selected' : '' }}>Warning</option>
                             <option value="danger" {{ request('severity') == 'danger' ? 'selected' : '' }}>Critical</option>
@@ -86,14 +94,14 @@
                     <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Timestamp</th>
                     <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Event</th>
                     <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">User</th>
-                    <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Description</th>
+                    <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Details</th>
                     <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Severity</th>
                     <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; text-align: right;">Action</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($logs as $log)
-                <tr style="border-bottom: 1px solid var(--border-color); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: default; position: relative; z-index: 1;" onmouseover="this.style.background='#f8fafc'; this.style.transform='scale(1.005)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.03)'; this.style.zIndex='10'" onmouseout="this.style.background='transparent'; this.style.transform='scale(1)'; this.style.boxShadow='none'; this.style.zIndex='1'">
+                <tr id="log-row-{{ $log->id }}" style="border-bottom: 1px solid var(--border-color); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: default; position: relative; z-index: 1;" onmouseover="this.style.background='#f8fafc'; this.style.transform='scale(1.005)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.03)'; this.style.zIndex='10'" onmouseout="this.style.background='transparent'; this.style.transform='scale(1)'; this.style.boxShadow='none'; this.style.zIndex='1'">
                     <td style="padding: 1.25rem 2rem; text-align: center;">
                         <input type="checkbox" name="log_ids[]" value="{{ $log->id }}" class="log-checkbox" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);">
                     </td>
@@ -168,8 +176,8 @@
                             @else
                             <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600; padding: 0.4rem 0.85rem;">No Details</span>
                             @endif
-                            <button type="button" onclick="singleDelete('{{ $log->id }}')" style="background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.4rem 0.65rem; border-radius: 10px; font-weight: 800; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='#ef4444'; this.style.color='white'" onmouseout="this.style.background='rgba(239, 68, 68, 0.05)'; this.style.color='#ef4444'">
-                                <i data-lucide="trash-2" style="width: 14px;"></i>
+                            <button type="button" onclick="archiveLog('{{ $log->id }}')" style="background: rgba(79, 70, 229, 0.05); color: var(--primary); border: 1px solid rgba(79, 70, 229, 0.2); padding: 0.4rem 0.65rem; border-radius: 10px; font-weight: 800; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='rgba(79, 70, 229, 0.05)'; this.style.color='var(--primary)'" title="Archive Log">
+                                <i data-lucide="archive" style="width: 14px;"></i>
                             </button>
                         </div>
                     </td>
@@ -180,7 +188,7 @@
                         <div style="width: 80px; height: 80px; background: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid rgba(79,70,229,0.1);">
                             <i data-lucide="shield-check" style="width: 40px; height: 40px; color: var(--primary); opacity: 0.9;"></i>
                         </div>
-                        <h4 style="font-weight: 900; color: var(--text-heading); font-size: 1.25rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">Audit Category is Clean</h4>
+                        <h4 style="font-weight: 900; color: var(--text-heading); font-size: 1.25rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">No Activities Found</h4>
                         <p style="font-size: 0.95rem; max-width: 400px; margin: 0 auto; line-height: 1.5;">No system events match your current filter criteria. The system is operating securely within normal parameters.</p>
                         @if(request()->hasAny(['severity', 'event_type']))
                         <a href="{{ route('admin.logs') }}" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 1.5rem; background: white; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; text-decoration: none; color: var(--primary); border: 1px solid rgba(79,70,229,0.2); box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='white'; this.style.color='var(--primary)'">
@@ -471,27 +479,99 @@
         });
     });
 
-    function confirmBulkDelete() {
+    function confirmBulkArchive() {
         const checked = document.querySelectorAll('.log-checkbox:checked');
         if (checked.length === 0) {
-            alert('Please select at least one log to delete.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Selection',
+                text: 'Please select at least one log to archive.',
+                confirmButtonColor: 'var(--primary)',
+                borderRadius: '16px'
+            });
             return;
         }
-        if (confirm(`Are you sure you want to permanently delete ${checked.length} system logs?\nThis action will be recorded in the audit ledger.`)) {
-            document.getElementById('deleteLogsForm').submit();
-        }
+        
+        Swal.fire({
+            title: 'Archive Selected Logs?',
+            text: `You are about to move ${checked.length} system logs to the archive. They will be hidden from this active view.`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--primary)',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Yes, Move to Archive',
+            cancelButtonText: 'Cancel',
+            background: '#ffffff',
+            borderRadius: '24px'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('deleteLogsForm');
+                form.action = "{{ route('admin.archive.bulk.logs') }}";
+                form.submit();
+            }
+        });
     }
 
-    function singleDelete(id) {
-        if (confirm('Are you sure you want to permanently delete this log?')) {
-            document.querySelectorAll('.log-checkbox').forEach(cb => cb.checked = false);
-            const targetCb = document.querySelector(`.log-checkbox[value="${id}"]`);
-            if (targetCb) {
-                targetCb.checked = true;
-                document.getElementById('deleteLogsForm').submit();
+    function archiveLog(id) {
+        Swal.fire({
+            title: 'Move to Archive?',
+            text: 'This system activity log will be transferred to the secure archive repository.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: 'var(--primary)',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Yes, Archive',
+            cancelButtonText: 'Wait, Cancel',
+            background: '#ffffff',
+            borderRadius: '24px'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Premium Animation: Immediate visual feedback
+                const row = document.getElementById(`log-row-${id}`);
+                if (row) {
+                    row.style.pointerEvents = 'none';
+                    row.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(50px) scale(0.95)';
+                    row.style.background = 'rgba(79, 70, 229, 0.05)';
+                }
+
+                fetch(`{{ url('/admin/archive/log') }}/${id}`, {
+                    method: 'POST',
+                    headers: { 
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                }).then(res => res.json()).then(data => {
+                    if(data.success) {
+                        setTimeout(() => {
+                            if (row) row.remove();
+                        }, 600);
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Moved to Archive',
+                            text: 'The activity record has been secured in the system archive.',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            borderRadius: '16px'
+                        });
+                    } else {
+                        // Revert if error
+                        if (row) {
+                            row.style.opacity = '1';
+                            row.style.transform = 'translateX(0) scale(1)';
+                            row.style.background = 'transparent';
+                            row.style.pointerEvents = 'auto';
+                        }
+                    }
+                });
             }
-        }
+        });
     }
+
+
 
     function viewLogDetails(btn) {
         const metadataStr = btn.getAttribute('data-metadata');
