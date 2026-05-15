@@ -1,5 +1,9 @@
 @extends('layouts.auth')
 
+@php
+    $adminExists = \App\Models\User::where('is_admin', true)->exists();
+@endphp
+
 @section('content')
     <style>
         body {
@@ -100,16 +104,11 @@
 
         #loginForm { 
             padding-right: 2rem;
-            opacity: 1;
         }
         
         #registerForm { 
             padding-left: 2rem;
-            opacity: 0.3;
         }
-
-        .auth-vault.mode-register #loginForm { opacity: 0.3; }
-        .auth-vault.mode-register #registerForm { opacity: 1; }
 
         .form-grid {
             display: grid;
@@ -273,24 +272,21 @@
                     </div>
                 </div>
 
-                <!-- Auth Toggle Tabs -->
-                <div class="auth-tabs">
-                    <button type="button" class="tab-btn active" id="tab-login" onclick="toggleAuth('login')">Secure Login</button>
-                    @if(\App\Models\Setting::get('allow_personnel_registration', true))
-                    <button type="button" class="tab-btn" id="tab-register" onclick="toggleAuth('register')">Personnel Registry</button>
-                    @endif
+                <!-- Dynamic Auth Tabs Container -->
+                <div class="auth-tabs" id="authTabsContainer" style="margin-top: 1.5rem; margin-inline: auto; display: flex; justify-content: center; transition: all 0.3s ease;">
+                    <!-- Dynamically populated by setInterface -->
                 </div>
             </div>
 
             <!-- Dynamic Form Viewport -->
-            <div class="auth-viewport">
-                <div id="formsSlider">
-                    <!-- Login Form -->
-                    <div id="loginForm" class="auth-form-side">
+            <div class="auth-viewport" style="margin-top: 1.5rem; transition: height 0.5s ease; overflow: hidden;">
+                <div id="formsSlider" style="display: flex; width: 200%; transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);">
+                    <!-- Login Side -->
+                    <div id="loginForm" class="auth-form-side" style="width: 50%; padding: 0 10px; opacity: 1;">
                         <form action="{{ route('login') }}" method="POST" style="display: flex; flex-direction: column; gap: 1.25rem;">
                             @csrf
                             <div class="input-modern-group">
-                                <label>Personnel Callsign</label>
+                                <label id="usernameLabel">Personnel Callsign</label>
                                 <div class="input-wrapper">
                                     <div class="icon-box">
                                         <i data-lucide="user"></i>
@@ -312,11 +308,11 @@
                                 </div>
                             </div>
 
-                            <input type="hidden" name="target_interface" class="interface-hidden-sync" value="user">
+                            <input type="hidden" name="target_interface" id="loginInterfaceSync" value="user">
 
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; gap: 10px; flex-wrap: wrap;">
                                 <label style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
-                                    <input type="checkbox" style="width: 16px; height: 16px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent;">
+                                    <input type="checkbox" name="remember" style="width: 16px; height: 16px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent;">
                                     Persistent Session
                                 </label>
                                 <a href="#" style="font-size: 0.8rem; font-weight: 800; color: var(--primary); text-decoration: none;">Forgot Access?</a>
@@ -329,101 +325,50 @@
                         </form>
                     </div>
 
-                    @if(\App\Models\Setting::get('allow_personnel_registration', true))
-                    <!-- Register Form -->
-                    <div id="registerForm" class="auth-form-side">
-                        <form action="{{ route('register') }}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 1.1rem;">
+                    <!-- Register Side (Admin Only) -->
+                    <div id="registerForm" class="auth-form-side" style="width: 50%; padding: 0 10px; opacity: 0;">
+                        <form action="{{ route('register') }}" method="POST" style="display: flex; flex-direction: column; gap: 1.25rem;">
                             @csrf
-                            <input type="hidden" name="target_interface" class="interface-hidden-sync" value="user">
+                            <input type="hidden" name="role" value="Admin">
                             
-                            <div class="avatar-section">
-                                <div id="avatarPreview" style="width: 64px; height: 64px; background: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); overflow: hidden; flex-shrink: 0; cursor: pointer;" onclick="document.getElementById('avatarInput').click()">
-                                    <i data-lucide="camera" style="width: 20px; color: var(--text-muted);"></i>
-                                </div>
-                                <div style="flex: 1;">
-                                    <label style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase;">Identification</label>
-                                    <input type="file" name="avatar" id="avatarInput" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
-                                    <button type="button" onclick="document.getElementById('avatarInput').click()" style="background: var(--text-main); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.7rem; font-weight: 800; cursor: pointer;">Upload Photo</button>
+                            <div class="input-modern-group">
+                                <label>Full Name</label>
+                                <div class="input-wrapper">
+                                    <div class="icon-box"><i data-lucide="user-plus"></i></div>
+                                    <input type="text" name="name" placeholder="Full Name" required>
                                 </div>
                             </div>
 
-                            <div class="form-grid">
-                                <div class="input-modern-group">
-                                    <label>Personnel Name</label>
-                                    <div class="input-wrapper">
-                                        <div class="icon-box">
-                                            <i data-lucide="user"></i>
-                                        </div>
-                                        <input type="text" name="name" placeholder="John Doe" required>
-                                    </div>
-                                </div>
-                                <div class="input-modern-group">
-                                    <label>Username</label>
-                                    <div class="input-wrapper">
-                                        <div class="icon-box">
-                                            <i data-lucide="hash"></i>
-                                        </div>
-                                        <input type="text" name="username" placeholder="@j_doe" required>
-                                    </div>
-                                </div>
-                                <input type="hidden" name="role" id="regRoleHidden" value="Personnel">
-                            </div>
-
-                            <script>
-                            </script>
-
-                            <div class="form-grid">
-                                <div class="input-modern-group">
-                                    <label>Password</label>
-                                    <div class="input-wrapper" id="pw-wrapper">
-                                        <div class="icon-box">
-                                            <i data-lucide="lock"></i>
-                                        </div>
-                                        <input type="password" name="password" id="reg-password" placeholder="••••••••" required minlength="8" oninput="checkPasswordMatch()">
-                                        <button type="button" class="password-toggle" onclick="togglePassword(this)">
-                                            <i data-lucide="eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="input-modern-group">
-                                    <label>Confirm Password</label>
-                                    <div class="input-wrapper" id="pwc-wrapper">
-                                        <div class="icon-box">
-                                            <i data-lucide="shield-check"></i>
-                                        </div>
-                                        <input type="password" name="password_confirmation" id="reg-password-confirm" placeholder="••••••••" required minlength="8" oninput="checkPasswordMatch()">
-                                        <button type="button" class="password-toggle" onclick="togglePassword(this)">
-                                            <i data-lucide="eye"></i>
-                                        </button>
-                                    </div>
+                            <div class="input-modern-group">
+                                <label>Admin Callsign</label>
+                                <div class="input-wrapper">
+                                    <div class="icon-box"><i data-lucide="at-sign"></i></div>
+                                    <input type="text" name="username" placeholder="Username" required>
                                 </div>
                             </div>
-                            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: -0.5rem; padding-left: 0.5rem;">Requirement: Min. 8 characters with a mix of letters & numbers.</p>
 
-                            <div style="background: rgba(99, 102, 241, 0.05); padding: 0.85rem; border-radius: 18px; border: 1px solid rgba(99, 102, 241, 0.1);">
-                                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
-                                    <input type="checkbox" required style="width: 18px; height: 18px; margin-top: 2px; accent-color: var(--primary);">
-                                    <span style="font-size: 0.7rem; color: var(--text-dark); line-height: 1.4; font-weight: 500;">
-                                        I confirm my <span style="color: var(--primary); font-weight: 900;">participation liability</span> for all inventory updates and activity.
-                                    </span>
-                                </label>
+                            <div class="input-modern-group">
+                                <label>Master Key</label>
+                                <div class="input-wrapper">
+                                    <div class="icon-box"><i data-lucide="shield-lock"></i></div>
+                                    <input type="password" name="password" placeholder="••••••••" required>
+                                </div>
                             </div>
 
-                    <button type="submit" class="auth-btn-primary" style="background: var(--primary); color: white; height: 56px; border-radius: 18px; margin-top: 0.5rem;">
-                        <span>Initialize Registry</span>
-                        <i data-lucide="arrow-right"></i>
-                    </button>
+                            <div class="input-modern-group">
+                                <label>Confirm Master Key</label>
+                                <div class="input-wrapper">
+                                    <div class="icon-box"><i data-lucide="shield-check"></i></div>
+                                    <input type="password" name="password_confirmation" placeholder="••••••••" required>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="auth-btn-primary" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); height: 52px; font-size: 0.95rem; border-radius: 16px; margin-top: 0.5rem;">
+                                <span>Establish Command</span>
+                                <i data-lucide="crown"></i>
+                            </button>
                         </form>
                     </div>
-                    @else
-                    <div id="registerForm" class="auth-form-side" style="text-align: center; padding: 4rem 2rem;">
-                        <div style="width: 80px; height: 80px; background: rgba(239, 68, 68, 0.1); border-radius: 30px; display: flex; align-items: center; justify-content: center; color: #ef4444; margin: 0 auto 1.5rem auto;">
-                            <i data-lucide="shield-off" style="width: 40px; height: 40px;"></i>
-                        </div>
-                        <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem;">Registry Suspended</h3>
-                        <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; line-height: 1.6;">Strategic Command has temporarily disabled new personnel registration. Please contact your administrator for manual account provisioning.</p>
-                    </div>
-                    @endif
                 </div>
             </div>
         </div>
@@ -663,13 +608,12 @@
 
 <script>
     function updateViewportHeight() {
-        const vault = document.querySelector('.auth-vault');
-        const isRegister = vault.classList.contains('mode-register');
+        const slider = document.getElementById('formsSlider');
+        const isRegister = slider.style.transform.includes('translateX(-50%)');
         const activeForm = isRegister ? document.getElementById('registerForm') : document.getElementById('loginForm');
         const viewport = document.querySelector('.auth-viewport');
         
         if (activeForm && viewport) {
-            // Get the actual content height
             const height = activeForm.scrollHeight;
             viewport.style.height = height + 'px';
         }
@@ -677,26 +621,40 @@
 
     function setInterface(val, el) {
         document.getElementById('targetInterfaceInput').value = val;
+        document.getElementById('loginInterfaceSync').value = val;
         
-        // Sync with hidden inputs in all forms
-        document.querySelectorAll('.interface-hidden-sync').forEach(input => {
-            input.value = val;
-        });
-
-        document.querySelectorAll('.interface-pill').forEach(p => p.classList.remove('active'));
-        el.classList.add('active');
-        
-        // Map Interface to Database Roles
-        const roleMap = {
-            'user': 'Personnel',
-            'admin': 'Admin'
-        };
-        
-        const regRoleInput = document.getElementById('regRoleHidden');
-        if (regRoleInput) {
-            regRoleInput.value = roleMap[val];
+        if (el) {
+            document.querySelectorAll('.interface-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
         }
 
+        const tabsContainer = document.getElementById('authTabsContainer');
+        const usernameLabel = document.getElementById('usernameLabel');
+
+        if (val === 'admin') {
+            tabsContainer.innerHTML = `
+                <button type="button" class="tab-btn active" id="tab-login" onclick="toggleAuth('login')">Login</button>
+                <button type="button" class="tab-btn" id="tab-register" onclick="toggleAuth('register')">Registry</button>
+            `;
+            tabsContainer.style.background = 'rgba(0,0,0,0.03)';
+            tabsContainer.style.border = '1px solid rgba(0,0,0,0.05)';
+            tabsContainer.style.padding = '5px';
+            usernameLabel.innerText = 'Admin Callsign';
+        } else {
+            tabsContainer.innerHTML = `
+                <button type="button" class="tab-btn active" style="background: rgba(99, 102, 241, 0.1); color: var(--primary); width: 100%; max-width: 250px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i data-lucide="lock" style="width: 14px;"></i>
+                    Secure Authentication
+                </button>
+            `;
+            tabsContainer.style.background = 'transparent';
+            tabsContainer.style.border = 'none';
+            tabsContainer.style.padding = '0';
+            usernameLabel.innerText = 'Personnel Callsign';
+            toggleAuth('login');
+        }
+        
+        updateViewportHeight();
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
@@ -704,56 +662,26 @@
         const slider = document.getElementById('formsSlider');
         const tabLogin = document.getElementById('tab-login');
         const tabRegister = document.getElementById('tab-register');
-        const vault = document.querySelector('.auth-vault');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
         
         if (mode === 'register') {
             slider.style.transform = 'translateX(-50%)';
-            vault.classList.add('mode-register');
             if (tabLogin) tabLogin.classList.remove('active');
             if (tabRegister) tabRegister.classList.add('active');
+            if (loginForm) loginForm.style.opacity = '0';
+            if (registerForm) registerForm.style.opacity = '1';
         } else {
             slider.style.transform = 'translateX(0)';
-            vault.classList.remove('mode-register');
             if (tabLogin) tabLogin.classList.add('active');
             if (tabRegister) tabRegister.classList.remove('active');
+            if (loginForm) loginForm.style.opacity = '1';
+            if (registerForm) registerForm.style.opacity = '0';
         }
 
-        // Update height immediately and after transition
         updateViewportHeight();
         setTimeout(updateViewportHeight, 300);
-
         if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-
-    function checkPasswordMatch() {
-        const password = document.getElementById('reg-password');
-        const confirm = document.getElementById('reg-password-confirm');
-        const pwWrapper = document.getElementById('pw-wrapper');
-        const pwcWrapper = document.getElementById('pwc-wrapper');
-
-        if (confirm.value.length > 0) {
-            if (password.value !== confirm.value) {
-                pwWrapper.classList.add('error');
-                pwcWrapper.classList.add('error');
-            } else {
-                pwWrapper.classList.remove('error');
-                pwcWrapper.classList.remove('error');
-            }
-        } else {
-            pwWrapper.classList.remove('error');
-            pwcWrapper.classList.remove('error');
-        }
-    }
-
-    function previewAvatar(input) {
-        const preview = document.getElementById('avatarPreview');
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
     }
 
     function togglePassword(button) {
@@ -803,10 +731,13 @@
     window.addEventListener('resize', updateViewportHeight);
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Initialize Default Interface (Personnel)
+        setInterface('user', document.querySelector('.interface-pill.active'));
+        
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
         // Initialize height
-        setTimeout(updateViewportHeight, 200);
+        setTimeout(updateViewportHeight, 400);
 
         // Flash Messages from Session
         @if(session('success'))
@@ -838,13 +769,6 @@
             @foreach($errors->all() as $error)
                 showToast("{{ $error }}", 'error');
             @endforeach
-        @endif
-
-        // Auto-switch to Registration if there are registry-specific errors or old input present
-        @if ($errors->hasAny(['name', 'username', 'password', 'password_confirmation', 'avatar']) && old('name'))
-            toggleAuth('register');
-        @elseif ($errors->hasAny(['name', 'password_confirmation', 'avatar']))
-            toggleAuth('register');
         @endif
     });
 </script>

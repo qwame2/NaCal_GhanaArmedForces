@@ -63,6 +63,10 @@
             </div>
             
             <div class="toolbar-actions">
+                <button type="button" class="btn-tool primary" onclick="openAddPersonnelModal()" style="border-radius: 18px; padding: 12px 24px; font-weight: 800; font-size: 0.85rem; gap: 10px; display: flex; align-items: center; background: #0f172a; color: white; border: none; cursor: pointer; transition: all 0.3s ease;">
+                    <i data-lucide="user-plus" style="width: 18px;"></i>
+                    <span>Register Personnel</span>
+                </button>
                 <div class="command-search">
                     <div class="search-icon-wrap">
                         <i data-lucide="search"></i>
@@ -497,5 +501,163 @@
             }
         });
     });
+
+    function openAddPersonnelModal() {
+        const randomPass = Math.floor(10000 + Math.random() * 90000);
+        
+        Swal.fire({
+            title: '<div style="display: flex; align-items: center; gap: 15px; text-align: left;"><div style="width: 48px; height: 48px; background: #eef2ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #4338ca;"><i data-lucide="user-plus"></i></div><div><div style="font-size: 1.25rem; font-weight: 950; color: #0f172a;">Register Personnel</div><div style="font-size: 0.75rem; color: #64748b; font-weight: 700; margin-top: 2px;">STRATEGIC COMMAND PROVISIONING</div></div></div>',
+            html: `
+                <form id="addPersonnelForm" action="{{ route('admin.users.store') }}" method="POST" style="text-align: left; padding: 1rem 0.5rem;">
+                    @csrf
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="swal-input-group">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Full Name</label>
+                            <input type="text" name="name" class="swal2-input" placeholder="e.g. John Doe" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0;" required>
+                        </div>
+                        <div class="swal-input-group">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Username</label>
+                            <input type="text" name="username" class="swal2-input" placeholder="e.g. j_doe" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0;" required>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                        <div class="swal-input-group">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Sector / Department</label>
+                            <input type="text" name="department" class="swal2-input" placeholder="e.g. Logistics" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0;">
+                        </div>
+                        <div class="swal-input-group">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Operational Role</label>
+                            <select name="role" id="roleSelect2" style="width: 100%;">
+                                <option value="Officer">Officer</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="swal-input-group" style="margin-bottom: 1rem;">
+                        <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Security Access Key (Temporary Password)</label>
+                        <div style="position: relative;">
+                            <input type="password" name="password" id="swal-password" class="swal2-input" value="${randomPass}" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0; padding-right: 50px;" required>
+                            <button type="button" onclick="toggleSwalPassword()" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="eye" id="swal-password-icon" style="width: 20px;"></i>
+                            </button>
+                        </div>
+                        <p style="font-size: 0.65rem; color: #64748b; font-weight: 600; margin-top: 8px; padding-left: 4px;">Personnel will be required to update this key upon first synchronization.</p>
+                    </div>
+                </form>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Initialize Registry',
+            cancelButtonText: 'Abort',
+            confirmButtonColor: '#4f46e5',
+            cancelButtonColor: '#f1f5f9',
+            customClass: {
+                popup: 'glass-monolith-popup',
+                confirmButton: 'premium-swal-btn',
+                cancelButton: 'premium-swal-cancel-btn'
+            },
+            width: '650px',
+            didOpen: () => {
+                lucide.createIcons();
+                $('#roleSelect2').select2({
+                    tags: true,
+                    placeholder: "Select or enter a role",
+                    dropdownParent: $('.swal2-popup'),
+                    width: '100%'
+                });
+            },
+            preConfirm: () => {
+                const form = document.getElementById('addPersonnelForm');
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return false;
+                }
+                return true;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('addPersonnelForm').submit();
+            }
+        });
+    }
+
+    function toggleSwalPassword() {
+        const input = document.getElementById('swal-password');
+        const icon = document.getElementById('swal-password-icon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+            input.type = 'password';
+            icon.setAttribute('data-lucide', 'eye');
+        }
+        lucide.createIcons();
+    }
 </script>
+
+<style>
+    .glass-monolith-popup {
+        border-radius: 35px !important;
+        padding: 2.5rem !important;
+        box-shadow: 0 40px 100px -20px rgba(0,0,0,0.15) !important;
+    }
+    .premium-swal-btn {
+        height: 54px !important;
+        padding: 0 40px !important;
+        border-radius: 18px !important;
+        font-weight: 900 !important;
+        font-size: 0.9rem !important;
+        letter-spacing: 0.02em !important;
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.25) !important;
+    }
+    .premium-swal-cancel-btn {
+        height: 54px !important;
+        padding: 0 30px !important;
+        border-radius: 18px !important;
+        font-weight: 800 !important;
+        font-size: 0.9rem !important;
+        color: #64748b !important;
+    }
+
+    /* Select2 Premium Styling */
+    .select2-container--default .select2-selection--single {
+        height: 50px !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        padding-left: 8px !important;
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        background: white !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 48px !important;
+        right: 12px !important;
+    }
+
+    .select2-dropdown {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.1) !important;
+        overflow: hidden !important;
+        z-index: 999999999 !important;
+    }
+
+    .select2-search__field {
+        border-radius: 8px !important;
+        padding: 8px 12px !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+
+    .select2-results__option {
+        padding: 10px 15px !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+    }
+
+    .select2-results__option--highlighted[aria-selected] {
+        background-color: #4f46e5 !important;
+    }
+</style>
 @endsection

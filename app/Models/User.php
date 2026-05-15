@@ -31,6 +31,7 @@ class User extends Authenticatable
         'department',
         'phone',
         'last_login_at',
+        'must_change_password',
     ];
 
     /**
@@ -59,6 +60,7 @@ class User extends Authenticatable
             'can_add_inventory' => 'boolean',
             'can_operate_logistics' => 'boolean',
             'can_generate_reports' => 'boolean',
+            'must_change_password' => 'boolean',
         ];
     }
 

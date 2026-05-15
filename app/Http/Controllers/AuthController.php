@@ -27,15 +27,8 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        $allowRegistration = \Illuminate\Support\Facades\Schema::hasTable('settings') 
-            ? \App\Models\Setting::get('allow_personnel_registration', true) 
-            : true;
-
-        if (!$allowRegistration) {
-            return back()->with('error', 'Strategic Command has temporarily disabled new personnel registration.');
-        }
-
         $request->validate([
+            'role' => 'required|string',
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username',
             'password' => [
@@ -43,36 +36,25 @@ class AuthController extends Controller
                 'string',
                 'min:8',
                 'confirmed',
-                'regex:/^(?=.*[a-zA-Z])(?=.*[\d\W_]).+$/'
             ],
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-        ], [
-            'username.unique' => 'The personnel callsign "@' . $request->username . '" has already been registered in the database.',
-            'password.regex' => 'The password must contain at least one letter and one number or symbol.',
-            'password.min' => 'The password must be at least 8 characters long.',
-            'password.confirmed' => 'The password confirmation does not match.',
         ]);
 
+        if ($request->role !== 'Admin') {
+            return back()->with('error', 'Strategic Oversight Alert: Personnel registration must be performed by an Administrator through the Command Center.');
+        }
+
+        // SECURITY ENFORCEMENT: Only one Admin account allowed in the entire system
+        if (User::where('is_admin', true)->exists()) {
+            return back()->with('error', 'Strategic Oversight Alert: An Administrative account already exists. Multiple Command nodes are prohibited.')->withInput();
+        }
+
         try {
-            $avatarPath = null;
-            if ($request->hasFile('avatar')) {
-                $avatarPath = $request->file('avatar')->store('avatars', 'public');
-            }
-
-            $isAdmin = $request->role === 'Admin';
-            
-            // SECURITY ENFORCEMENT: Only one Admin account allowed in the entire system
-            if ($isAdmin && User::where('is_admin', true)->exists()) {
-                return back()->with('error', 'Strategic Oversight Alert: An Administrative account already exists. Multiple Command nodes are prohibited.')->withInput();
-            }
-
             $user = User::create([
                 'name' => $request->name,
                 'username' => $request->username,
                 'password' => Hash::make($request->password),
-                'avatar' => $avatarPath,
-                'role' => $request->role ?? 'Personnel',
-                'is_admin' => $isAdmin,
+                'role' => 'Admin',
+                'is_admin' => true,
                 'is_online' => true,
             ]);
 
@@ -84,13 +66,12 @@ class AuthController extends Controller
                 'user_id' => $user->id,
                 'event_type' => 'AUTH',
                 'action' => 'REGISTRATION',
-                'description' => "New personnel registry created for {$user->name} (@{$user->username}).",
+                'description' => "Administrator registry initialized for {$user->name} (@{$user->username}).",
                 'severity' => 'info',
                 'ip_address' => $request->ip()
             ]);
 
-            $redirectRoute = $isAdmin ? 'admin.index' : 'dashboard';
-            return redirect()->route($redirectRoute)->with('success', 'Registry initialized. Welcome, ' . $user->name);
+            return redirect()->route('admin.index')->with('success', 'Command Authority established. Welcome, ' . $user->name);
         } catch (\Exception $e) {
             return back()->with('error', 'Critical System Failure: ' . $e->getMessage())->withInput();
         }
@@ -153,6 +134,11 @@ class AuthController extends Controller
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
                 return redirect()->route('account.deactivated');
+            }
+
+            // FORCE PASSWORD CHANGE: Check if personnel needs to update their temporary key
+            if (!$user->is_admin && $user->must_change_password) {
+                return redirect()->route('password.change')->with('info', 'Security Synchronization required. Please update your temporary access key.');
             }
 
             $request->session()->regenerate();
@@ -282,5 +268,48 @@ class AuthController extends Controller
             return response()->json(['status' => 'success']);
         }
         return response()->json(['status' => 'unauthenticated'], 401);
+    }
+
+    public function showChangePassword()
+    {
+        if (!auth()->user()->must_change_password) {
+            return redirect()->route('dashboard');
+        }
+        return view('auth.change_password');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
+        ]);
+
+        $user = auth()->user();
+        $user->update([
+            'password' => Hash::make($request->password),
+            'must_change_password' => false,
+        ]);
+
+        // Log the security update
+        \App\Models\SystemLog::create([
+            'user_id' => $user->id,
+            'event_type' => 'SECURITY',
+            'action' => 'PASSWORD_SYNCED',
+            'description' => "Personnel @{$user->username} successfully updated temporary security key and was prompted for re-authentication.",
+            'severity' => 'success',
+            'ip_address' => $request->ip()
+        ]);
+
+        // CIA SECURITY ENFORCEMENT: Force re-authentication after credential update
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->with('success', 'Security Synchronized. Please authenticate with your new master key.');
     }
 }

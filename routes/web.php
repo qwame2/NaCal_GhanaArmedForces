@@ -26,6 +26,8 @@ Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/password/change', [AuthController::class, 'showChangePassword'])->name('password.change')->middleware('auth');
+Route::post('/password/change', [AuthController::class, 'updatePassword'])->name('password.update')->middleware('auth');
 Route::post('/api/user/offline', [AuthController::class, 'markOffline'])->name('api.user.offline');
 
 // Guest Redirection
@@ -476,6 +478,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
 
     // Admin Routes
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::post('/admin/users', [AdminController::class, 'storeUser'])->name('admin.users.store');
     Route::get('/admin/logs', [AdminController::class, 'logs'])->name('admin.logs');
     Route::get('/admin/inventory', [AdminController::class, 'viewInventory'])->name('admin.inventory');
     Route::get('/admin/permissions', [AdminController::class, 'permissions'])->name('admin.permissions');

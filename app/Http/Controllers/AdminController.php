@@ -13,6 +13,48 @@ use App\Models\ReturnedItem;
 
 class AdminController extends Controller
 {
+    public function storeUser(Request $request)
+    {
+        if (!auth()->user()->is_admin) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
+            'password' => 'required|string',
+            'department' => 'nullable|string|max:255',
+            'role' => 'required|string',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'username' => $request->username,
+            'password' => Hash::make($request->password),
+            'department' => $request->department,
+            'role' => $request->role,
+            'is_admin' => false,
+            'is_active' => true,
+            'must_change_password' => true,
+        ]);
+
+        // Log the creation
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'CREATE_USER',
+            'description' => "Administrator manually registered new personnel: {$user->name} (@{$user->username}).",
+            'severity' => 'info',
+            'ip_address' => request()->ip()
+        ]);
+
+        $message = $user->role === 'Officer' 
+            ? "Officer {$user->name} has been successfully provisioned into the registry."
+            : "Personnel registry for {$user->name} created successfully.";
+
+        return back()->with('success', $message);
+    }
+
     public function index(Request $request)
     {
         if (!auth()->user()->is_admin) {
