@@ -11,6 +11,12 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ArchiveController;
 
+// Temporary Route
+Route::get('/clear', function() {
+    \Illuminate\Support\Facades\Artisan::call('view:clear');
+    return 'Cleared';
+});
+
 // Archive Routes
 Route::middleware(['auth', 'check_status'])->prefix('admin/archive')->group(function () {
     Route::get('/', [ArchiveController::class, 'index'])->name('admin.archive');

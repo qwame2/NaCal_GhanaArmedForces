@@ -128,6 +128,19 @@ class EditRequestController extends Controller
         }
         $editReq->save();
 
+        if ($request->status === 'approved') {
+            $requestTypeForLog = $editReq->request_type ?? 'edit';
+            $typeLabelForLog = $requestTypeForLog === 'edit_submission' ? 'ENTRY EDIT' : ($requestTypeForLog === 'issue_submission' ? 'DISBURSEMENT' : strtoupper($requestTypeForLog));
+            \App\Models\SystemLog::create([
+                'user_id' => auth()->id(),
+                'event_type' => 'SECURITY',
+                'action' => 'AUTHORIZATION',
+                'description' => "Administrator authorized {$typeLabelForLog} request submitted by {$editReq->user->name}.",
+                'severity' => 'info',
+                'ip_address' => request()->ip()
+            ]);
+        }
+
         $requestType = $editReq->request_type ?? 'edit';
         $typeLabel = $requestType === 'edit_submission' ? 'ENTRY EDIT' : ($requestType === 'issue_submission' ? 'DISBURSEMENT' : strtoupper($requestType));
         $actionWord = ($requestType === 'edit' || $requestType === 'edit_submission') ? 'edit' : ($requestType === 'issue_submission' ? 'ISSUE ITEMS' : 'PERMANENTLY DELETE');
@@ -416,6 +429,19 @@ class EditRequestController extends Controller
                 }
 
                 \Illuminate\Support\Facades\DB::commit();
+
+                $logDesc = $requestType === 'remainder_submission' 
+                    ? "Administrator authorized REMAINDER SUBMISSION submitted by {$editReq->user->name}."
+                    : "Administrator authorized STOCK ENTRY submitted by {$editReq->user->name}.";
+                    
+                \App\Models\SystemLog::create([
+                    'user_id' => auth()->id(),
+                    'event_type' => 'SECURITY',
+                    'action' => 'AUTHORIZATION',
+                    'description' => $logDesc,
+                    'severity' => 'info',
+                    'ip_address' => request()->ip()
+                ]);
 
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\DB::rollBack();
@@ -722,6 +748,15 @@ class EditRequestController extends Controller
                 ]);
 
                 \Illuminate\Support\Facades\DB::commit();
+
+                \App\Models\SystemLog::create([
+                    'user_id' => auth()->id(),
+                    'event_type' => 'SECURITY',
+                    'action' => 'AUTHORIZATION',
+                    'description' => "Administrator authorized ASSET RECOVERY request submitted by {$editReq->user->name}.",
+                    'severity' => 'info',
+                    'ip_address' => request()->ip()
+                ]);
 
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\DB::rollBack();

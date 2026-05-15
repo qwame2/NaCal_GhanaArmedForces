@@ -389,7 +389,7 @@
 
             <div class="info-strip">
                 <i data-lucide="info"></i>
-                <p>Your account was created with a temporary password. Please set a new password (at least 8 characters) to continue.</p>
+                <p>Your account was created with a temporary password. Please set a new password (min 8 chars, including a number, and cannot match your username) to continue.</p>
             </div>
 
             <form action="{{ route('password.update') }}" method="POST">
@@ -405,15 +405,16 @@
                 <div class="field-block">
                     <div class="field-label">
                         <label>New Security Key</label>
-                        <span class="req-badge">MIN 8 CHARS</span>
+                        <span class="req-badge">MIN 8 CHARS + NUMBER</span>
                     </div>
                     <div class="field-input">
                         <div class="field-icon"><i data-lucide="key-round"></i></div>
-                        <input type="password" name="password" id="pass-field" placeholder="Enter new password" required minlength="8" autocomplete="new-password">
+                        <input type="password" name="password" id="pass-field" placeholder="Enter new password" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number" autocomplete="new-password">
                         <button type="button" class="eye-btn" onclick="togglePass('pass-field', this)">
                             <i data-lucide="eye"></i>
                         </button>
                     </div>
+                    <p style="font-size: 0.65rem; color: #64748b; font-weight: 700; margin-top: 6px; padding-left: 4px;">Requirement: Min 8 chars including a number. Cannot match username.</p>
                 </div>
 
                 <div class="field-block">
@@ -423,7 +424,7 @@
                     </div>
                     <div class="field-input">
                         <div class="field-icon"><i data-lucide="shield"></i></div>
-                        <input type="password" name="password_confirmation" id="confirm-field" placeholder="Confirm new password" required minlength="8" autocomplete="new-password">
+                        <input type="password" name="password_confirmation" id="confirm-field" placeholder="Confirm new password" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number" autocomplete="new-password">
                         <button type="button" class="eye-btn" onclick="togglePass('confirm-field', this)">
                             <i data-lucide="eye"></i>
                         </button>

@@ -7,7 +7,7 @@
     <!-- Sidebar: Directory -->
     <div class="glass-card" style="width: 380px; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.04);">
         <div style="padding: 2rem; border-bottom: 1px solid var(--border-color); background: linear-gradient(145deg, var(--bg-card), var(--bg-main));">
-            <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Registry <span style="color: #4f46e5;">Network</span></h3>
+            <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Staff <span style="color: #4f46e5;">Directory</span></h3>
             <div class="search-vault">
                 <i data-lucide="search"></i>
                 <input type="text" id="networkSearch" placeholder="Search personnel..." oninput="filterNetwork()">
@@ -58,8 +58,8 @@
             <div style="width: 120px; height: 120px; background: var(--primary-glow); border-radius: 35px; display: flex; align-items: center; justify-content: center; margin-bottom: 2.5rem; animation: float-bubble 3s ease-in-out infinite;">
                 <i data-lucide="shield-check" style="width: 56px; color: var(--primary);"></i>
             </div>
-            <h2 style="font-size: 1.75rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.03em;">Overseer Command</h2>
-            <p style="color: var(--text-muted); font-size: 1rem; font-weight: 500; text-align: center; max-width: 360px; line-height: 1.6;">Select a personnel node from the network to establish a secure synchronization session.</p>
+            <h2 style="font-size: 1.75rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.03em;">Messaging Hub</h2>
+            <p style="color: var(--text-muted); font-size: 1rem; font-weight: 500; text-align: center; max-width: 360px; line-height: 1.6;">Select a staff member from the directory to start a secure chat session.</p>
         </div>
 
         <!-- Session Header -->
@@ -98,7 +98,7 @@
                         <i data-lucide="paperclip"></i>
                     </button>
                     <div class="msg-input-vault">
-                        <textarea id="msgContent" placeholder="Transmit secure command..." rows="1"></textarea>
+                        <textarea id="msgContent" placeholder="Type your message here..." rows="1"></textarea>
                         <button type="submit" id="sendBtn" class="send-action-btn">
                             <i data-lucide="send" style="width: 18px;"></i>
                         </button>

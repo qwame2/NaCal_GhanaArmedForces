@@ -12,6 +12,8 @@ class AuthController extends Controller
 {
     public function showAuth()
     {
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        
         if (Auth::check()) {
             $user = Auth::user();
             
@@ -36,6 +38,19 @@ class AuthController extends Controller
                 'string',
                 'min:8',
                 'confirmed',
+                'regex:/[0-9]/', // Must contain at least one number
+                function ($attribute, $value, $fail) use ($request) {
+                    $username = strtolower($request->username ?? '');
+                    $fullname = strtolower($request->name ?? '');
+                    $password = strtolower($value);
+                    
+                    if ($username !== '' && str_contains($password, $username)) {
+                        $fail('Strategic Security Alert: Password cannot contain your username.');
+                    }
+                    if ($fullname !== '' && str_contains($password, $fullname)) {
+                        $fail('Strategic Security Alert: Password cannot contain your full name.');
+                    }
+                },
             ],
         ]);
 
@@ -55,11 +70,8 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password),
                 'role' => 'Admin',
                 'is_admin' => true,
-                'is_online' => true,
+                'is_online' => false,
             ]);
-
-            Auth::login($user);
-            $user->update(['last_login_at' => now()]);
 
             // Log the registration
             \App\Models\SystemLog::create([
@@ -71,7 +83,9 @@ class AuthController extends Controller
                 'ip_address' => $request->ip()
             ]);
 
-            return redirect()->route('admin.index')->with('success', 'Command Authority established. Welcome, ' . $user->name);
+            return redirect()->route('login')
+                ->with('success', 'Command Authority established successfully. Please authenticate to continue.')
+                ->with('target_admin', true);
         } catch (\Exception $e) {
             return back()->with('error', 'Critical System Failure: ' . $e->getMessage())->withInput();
         }
@@ -148,15 +162,18 @@ class AuthController extends Controller
                 // If the "remember" flag was somehow bypassed, force it to false for the session
                 $request->session()->put('auth.remember', false);
                 
-                // If any admin is already marked as online (including this account from another session), 
-                // we deny the new login attempt to enforce singular command authority.
-                $anyAdminOnline = User::where('is_admin', true)->where('is_online', true)->exists();
+                // ENFORCEMENT: Block different admin accounts from simultaneous sessions.
+                // We allow the same admin to re-login (handles accidental tab closures).
+                $otherAdminOnline = User::where('is_admin', true)
+                    ->where('is_online', true)
+                    ->where('id', '!=', $user->id)
+                    ->exists();
                 
-                if ($anyAdminOnline) {
+                if ($otherAdminOnline) {
                     Auth::logout();
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
-                    return redirect()->route('login')->with('error', 'Strategic Command Alert: An active Administrative session is already established. Concurrent access is prohibited.');
+                    return redirect()->route('login')->with('error', 'Strategic Command Alert: A different Administrative session is already established. Concurrent Command access is prohibited.');
                 }
             }
 
@@ -184,14 +201,10 @@ class AuthController extends Controller
 
             // SCENARIO 2: User tried to enter PERSONNEL terminal
             if ($target === 'user') {
-                if (!$user->is_admin) {
-                    return redirect()->intended('dashboard');
-                } else {
-                    Auth::logout();
-                    $request->session()->invalidate();
-                    $request->session()->regenerateToken();
-                    return redirect()->route('login')->with('error', 'Access Denied: Administrative accounts must use the Command Center terminal.');
+                if ($user->is_admin) {
+                    return redirect()->route('admin.index');
                 }
+                return redirect()->intended('dashboard');
             }
 
             // Log the login
@@ -286,6 +299,20 @@ class AuthController extends Controller
                 'string',
                 'min:8',
                 'confirmed',
+                'regex:/[0-9]/', // Must contain at least one number
+                function ($attribute, $value, $fail) {
+                    $user = auth()->user();
+                    $username = strtolower($user->username);
+                    $fullname = strtolower($user->name);
+                    $password = strtolower($value);
+                    
+                    if (str_contains($password, $username)) {
+                        $fail('Strategic Security Alert: Password cannot contain your username.');
+                    }
+                    if (str_contains($password, $fullname)) {
+                        $fail('Strategic Security Alert: Password cannot contain your full name.');
+                    }
+                },
             ],
         ]);
 
@@ -343,7 +370,24 @@ class AuthController extends Controller
         $request->validate([
             'username' => 'required|string',
             'otp' => 'required|string',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => [
+                'required', 'string', 'min:8', 'confirmed', 'regex:/[0-9]/',
+                function ($attribute, $value, $fail) use ($request) {
+                    $user = \App\Models\User::where('username', $request->username)->first();
+                    if ($user) {
+                        $username = strtolower($user->username);
+                        $fullname = strtolower($user->name);
+                        $password = strtolower($value);
+                        
+                        if (str_contains($password, $username)) {
+                            $fail('Strategic Security Alert: Password cannot contain your username.');
+                        }
+                        if (str_contains($password, $fullname)) {
+                            $fail('Strategic Security Alert: Password cannot contain your full name.');
+                        }
+                    }
+                }
+            ],
         ]);
 
         $resetReq = \App\Models\PasswordResetRequest::where('username', $request->username)

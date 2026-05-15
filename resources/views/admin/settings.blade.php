@@ -475,7 +475,7 @@
         </div>
         <div>
             <h2 style="font-weight: 950; color: #0f172a; font-size: 1.8rem; letter-spacing: -0.04em; margin: 0;">System Configuration</h2>
-            <p style="color: #94a3b8; font-weight: 600; font-size: 0.9rem; margin: 2px 0 0;">Manage core system parameters, thresholds &amp; inventory classifications.</p>
+            <p style="color: #94a3b8; font-weight: 600; font-size: 0.9rem; margin: 2px 0 0;">Manage system settings, limits, and item categories.</p>
         </div>
     </div>
 </div>
@@ -485,11 +485,7 @@
     {{-- Main Content --}}
     <div class="cfg-main">
 
-        {{-- Search --}}
-        <div class="cfg-search-wrap">
-            <i data-lucide="search"></i>
-            <input type="text" id="parameterSearch" placeholder="Filter parameters..." oninput="filterParameters()">
-        </div>
+
 
         @if($settings->isEmpty())
             <div class="cfg-card" style="padding: 5rem 2rem; text-align: center;">
@@ -521,8 +517,8 @@
                                 <i data-lucide="{{ $meta['icon'] }}"></i>
                             </div>
                             <div>
-                                <h3>{{ ucfirst($group) }} Protocols</h3>
-                                <p>Manage {{ $group }} parameters and operational thresholds.</p>
+                                <h3>{{ ucfirst($group) }} Settings</h3>
+                                <p>Manage {{ $group }} settings and system limits.</p>
                             </div>
                         </div>
                         <div class="cfg-card-body">
@@ -592,7 +588,7 @@
                 <div class="cfg-save-bar">
                     <span><i data-lucide="info"></i> Unsaved changes will be lost on navigation.</span>
                     <button type="submit" class="btn-cfg-save">
-                        <i data-lucide="save"></i> Apply Configuration
+                        <i data-lucide="save"></i> Save Settings
                     </button>
                 </div>
             </form>
@@ -604,8 +600,8 @@
                         <i data-lucide="tags"></i>
                     </div>
                     <div>
-                        <h3>Item Classifications</h3>
-                        <p>Manage ledger category codes used across the inventory system.</p>
+                        <h3>Item Categories</h3>
+                        <p>Manage category codes for the inventory system.</p>
                     </div>
                 </div>
                 <div class="cfg-card-body">
@@ -614,7 +610,7 @@
                         {{-- Existing Categories --}}
                         <div>
                             <p style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 1rem; display: flex; align-items: center; gap: 6px;">
-                                <i data-lucide="list" style="width: 14px;"></i> Registered Codes
+                                <i data-lucide="list" style="width: 14px;"></i> Category Codes
                             </p>
                             <div class="cat-grid">
                                 @forelse($categories ?? [] as $code => $name)
@@ -670,8 +666,8 @@
                     <i data-lucide="ruler"></i>
                 </div>
                 <div>
-                    <h3 style="margin: 0 0 0.25rem 0;">Item Unit Rules</h3>
-                    <p style="margin: 0;">Define default units for item descriptions. Personnel will have units auto-filled in new entries.</p>
+                    <h3 style="margin: 0 0 0.25rem 0;">Default Item Units</h3>
+                    <p style="margin: 0;">Set default units (like Piece or Box) for items to save time during entry.</p>
                 </div>
             </div>
             
@@ -922,15 +918,7 @@
 <script>
     const itemsByCategory = @json($itemsByCategory ?? []);
 
-    function filterParameters() {
-        const term = document.getElementById('parameterSearch').value.toLowerCase();
-        const items = document.querySelectorAll('.cfg-item');
-        items.forEach(item => {
-            const label = item.querySelector('.cfg-item-label')?.textContent.toLowerCase() ?? '';
-            const desc  = item.querySelector('.cfg-item-desc')?.textContent.toLowerCase()  ?? '';
-            item.style.display = (label.includes(term) || desc.includes(term)) ? '' : 'none';
-        });
-    }
+
 
     function filterRules() {
         const term = document.getElementById('ruleSearch').value.toLowerCase();

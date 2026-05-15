@@ -20,19 +20,32 @@ class AdminController extends Controller
         }
 
         $request->validate([
-            'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username',
-            'password' => 'required|string',
+            'password' => [
+                'required', 'string', 'min:8', 'regex:/[0-9]/',
+                function ($attribute, $value, $fail) use ($request) {
+                    $username = strtolower($request->username ?? '');
+                    $fullname = strtolower($request->name ?? $request->username);
+                    $password = strtolower($value);
+                    
+                    if ($username !== '' && str_contains($password, $username)) {
+                        $fail('Security Alert: Password cannot contain the username.');
+                    }
+                    if ($fullname !== '' && str_contains($password, $fullname)) {
+                        $fail('Security Alert: Password cannot contain your name.');
+                    }
+                }
+            ],
             'department' => 'nullable|string|max:255',
-            'role' => 'required|string',
+            'role' => 'nullable|string',
         ]);
 
         $user = User::create([
-            'name' => $request->name,
+            'name' => $request->name ?? $request->username,
             'username' => $request->username,
             'password' => Hash::make($request->password),
             'department' => $request->department,
-            'role' => $request->role,
+            'role' => $request->role ?? 'Officer',
             'is_admin' => false,
             'is_active' => true,
             'must_change_password' => true,
@@ -43,14 +56,14 @@ class AdminController extends Controller
             'user_id' => auth()->id(),
             'event_type' => 'SECURITY',
             'action' => 'CREATE_USER',
-            'description' => "Administrator manually registered new personnel: {$user->name} (@{$user->username}).",
+            'description' => "Administrator registered new staff member: {$user->name} (@{$user->username}).",
             'severity' => 'info',
             'ip_address' => request()->ip()
         ]);
 
         $message = $user->role === 'Officer' 
-            ? "Officer {$user->name} has been successfully provisioned into the registry."
-            : "Personnel registry for {$user->name} created successfully.";
+            ? "Staff member {$user->name} has been successfully added."
+            : "Staff account for {$user->name} created successfully.";
 
         return back()->with('success', $message);
     }
@@ -58,7 +71,7 @@ class AdminController extends Controller
     public function index(Request $request)
     {
         if (!auth()->user()->is_admin) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized access to Command Center.');
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access to Admin Dashboard.');
         }
 
         // Force synchronization of online status in the registry
@@ -111,13 +124,32 @@ class AdminController extends Controller
             'expires_at' => now()->addMinutes($expiryMinutes),
         ]);
 
-        return back()->with('success', "Request for @{$resetReq->username} approved. The OTP is: {$otp}. It expires in {$expiryMinutes} minute(s). Please provide this to the personnel.");
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'AUTHORIZATION',
+            'description' => "Administrator approved password reset for @{$resetReq->username}.",
+            'severity' => 'warning',
+            'ip_address' => $request->ip()
+        ]);
+
+        return back()->with('success', "Request for @{$resetReq->username} approved. The code is: {$otp}. It expires in {$expiryMinutes} minute(s). Please provide this to the staff member.");
     }
 
     public function rejectPasswordRequest(Request $request, $id)
     {
         $resetReq = \App\Models\PasswordResetRequest::findOrFail($id);
         $resetReq->update(['status' => 'rejected']);
+
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'AUTHORIZATION',
+            'description' => "Administrator rejected password reset request for @{$resetReq->username}.",
+            'severity' => 'info',
+            'ip_address' => $request->ip()
+        ]);
+
         return back()->with('success', "Request for @{$resetReq->username} rejected.");
     }
 
@@ -154,7 +186,7 @@ class AdminController extends Controller
             'user_id' => auth()->id(),
             'event_type' => 'SECURITY',
             'action' => 'UPDATE_USER',
-            'description' => "Personnel updated registry for personnel: {$user->name} (@{$user->username}). Role set to {$user->role}.",
+            'description' => "Administrator updated details for staff member: {$user->name} (@{$user->username}). Role set to {$user->role}.",
             'severity' => 'info',
             'ip_address' => request()->ip()
         ]);
@@ -181,7 +213,7 @@ class AdminController extends Controller
             'user_id' => $user->id,
             'event_type' => 'SECURITY',
             'action' => 'SELF_DEACTIVATION',
-            'description' => "Administrator manually deactivated their own account: {$user->name} (@{$user->username}).",
+            'description' => "Administrator deactivated their own account: {$user->name} (@{$user->username}).",
             'severity' => 'critical',
             'ip_address' => request()->ip()
         ]);
@@ -190,7 +222,7 @@ class AdminController extends Controller
         request()->session()->invalidate();
         request()->session()->regenerateToken();
 
-        return redirect('/login')->with('success', 'Your administrative account has been deactivated successfully. Session terminated.');
+        return redirect('/login')->with('success', 'Your administrative account has been deactivated. Session ended.');
     }
 
     public function toggleUserStatus($id)
@@ -202,7 +234,7 @@ class AdminController extends Controller
         $user = User::findOrFail($id);
         
         if ($user->id === auth()->id()) {
-            return back()->with('error', "Self-deactivation of admin session is prohibited.");
+            return back()->with('error', "You cannot deactivate your own account here.");
         }
 
         $user->is_active = !$user->is_active;
@@ -225,12 +257,12 @@ class AdminController extends Controller
             'user_id' => auth()->id(),
             'event_type' => 'SECURITY',
             'action' => 'TOGGLE_USER_STATUS',
-            'description' => "Personnel {$actionWord} registry for: {$user->name} (@{$user->username}).",
+            'description' => "Administrator {$actionWord} account for: {$user->name} (@{$user->username}).",
             'severity' => $user->is_active ? 'info' : 'warning',
             'ip_address' => request()->ip()
         ]);
 
-        return back()->with('success', "Personnel account has been {$actionWord} successfully.");
+        return back()->with('success', "Staff account has been {$actionWord} successfully.");
     }
 
     public function permissions()
@@ -275,7 +307,7 @@ class AdminController extends Controller
             'user_id' => auth()->id(),
             'event_type' => 'SECURITY',
             'action' => 'PERMISSION_CHANGE',
-            'description' => "Administrator {$actionWord} [{$permLabel}] permission for personnel: {$user->name} (@{$user->username}).",
+            'description' => "Administrator {$actionWord} [{$permLabel}] permission for staff member: {$user->name} (@{$user->username}).",
             'severity' => 'warning',
             'ip_address' => $request->ip()
         ]);
@@ -296,7 +328,8 @@ class AdminController extends Controller
                 $q->whereHas('user', function($sq) {
                     $sq->where('is_admin', false);
                 })->orWhereNull('user_id'); // Include automated system logs
-            });
+            })
+            ->where('description', 'NOT LIKE', '%/api/%');
 
         // Optional filtering
         if ($request->has('severity') && $request->severity) {
@@ -332,17 +365,17 @@ class AdminController extends Controller
         $count = \App\Models\SystemLog::whereIn('id', $logIds)->count();
         \App\Models\SystemLog::whereIn('id', $logIds)->delete();
 
-        // Log this destructive action to maintain audit integrity
+        // Log this action to maintain audit integrity
         \App\Models\SystemLog::create([
             'user_id' => auth()->id(),
             'event_type' => 'SECURITY',
             'action' => 'PURGE_SYSTEM_LOGS',
-            'description' => "Personnel permanently purged {$count} system audit logs.",
+            'description' => "Administrator deleted {$count} system logs.",
             'severity' => 'danger',
             'ip_address' => request()->ip()
         ]);
 
-        return back()->with('success', "Successfully purged {$count} system audit logs.");
+        return back()->with('success', "Successfully deleted {$count} system logs.");
     }
 
     public function messages()
@@ -511,7 +544,7 @@ class AdminController extends Controller
             'user_id' => auth()->id(),
             'event_type' => 'SECURITY',
             'action' => 'UPDATE_SETTINGS',
-            'description' => "Administrator updated the global system settings.",
+            'description' => "Administrator updated system settings.",
             'severity' => 'warning',
             'ip_address' => request()->ip()
         ]);
@@ -548,12 +581,12 @@ class AdminController extends Controller
             'user_id' => auth()->id(),
             'event_type' => 'INVENTORY',
             'action' => 'ADD_CATEGORY',
-            'description' => "Administrator added a new inventory category: {$name} ({$code}).",
+            'description' => "Administrator added a new category: {$name} ({$code}).",
             'severity' => 'info',
             'ip_address' => request()->ip()
         ]);
 
-        return back()->with('success', 'New category introduced successfully.');
+        return back()->with('success', 'New category added successfully.');
     }
 
     public function deleteCategory($code)

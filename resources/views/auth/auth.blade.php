@@ -1,8 +1,9 @@
 @extends('layouts.auth')
 
 @php
-    $adminExists = \App\Models\User::where('is_admin', true)->exists();
-    $adminOnline = \App\Models\User::where('is_admin', true)->where('is_online', true)->exists();
+    $adminUser = \App\Models\User::where('is_admin', true)->where('is_active', true)->first();
+    $adminExists = $adminUser ? true : false;
+    $adminOnline = $adminUser && $adminUser->is_online ? true : false;
 @endphp
 
 @section('content')
@@ -300,17 +301,17 @@
                         <form action="{{ route('login') }}" method="POST" style="display: flex; flex-direction: column; gap: 1.25rem;">
                             @csrf
                             <div class="input-modern-group">
-                                <label id="usernameLabel">Personnel Callsign</label>
+                                <label id="usernameLabel">Username <span style="color: #ef4444;">*</span></label>
                                 <div class="input-wrapper">
                                     <div class="icon-box">
                                         <i data-lucide="user"></i>
                                     </div>
-                                    <input type="text" name="username" placeholder="Username" required>
+                                    <input type="text" name="username" id="loginUsername" placeholder="Username" required>
                                 </div>
                             </div>
 
                             <div class="input-modern-group">
-                                <label>Security Key</label>
+                                <label>Password <span style="color: #ef4444;">*</span></label>
                                 <div class="input-wrapper">
                                     <div class="icon-box">
                                         <i data-lucide="key-round"></i>
@@ -332,9 +333,8 @@
                                 <a href="{{ route('password.request') }}" style="font-size: 0.8rem; font-weight: 800; color: var(--primary); text-decoration: none;">Forgot Access?</a>
                             </div>
 
-                            <button type="submit" class="auth-btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%); height: 52px; font-size: 0.95rem; border-radius: 16px; margin-top: 0.5rem;">
-                                <span>Initialize Clearance</span>
-                                <i data-lucide="shield-check"></i>
+                            <button type="submit" class="auth-btn-primary" style="background: var(--primary) !important; height: 56px; font-size: 1rem; border-radius: 20px; margin-top: 1rem; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);">
+                                <span>Login</span>
                             </button>
                         </form>
                     </div>
@@ -346,7 +346,7 @@
                             <input type="hidden" name="role" value="Admin">
                             
                             <div class="input-modern-group">
-                                <label>Full Name</label>
+                                <label>Full Name <span style="color: #ef4444;">*</span></label>
                                 <div class="input-wrapper">
                                     <div class="icon-box"><i data-lucide="user-plus"></i></div>
                                     <input type="text" name="name" placeholder="Full Name" required>
@@ -354,7 +354,7 @@
                             </div>
 
                             <div class="input-modern-group">
-                                <label>Admin Callsign</label>
+                                <label>Username <span style="color: #ef4444;">*</span></label>
                                 <div class="input-wrapper">
                                     <div class="icon-box"><i data-lucide="at-sign"></i></div>
                                     <input type="text" name="username" placeholder="Username" required>
@@ -362,24 +362,30 @@
                             </div>
 
                             <div class="input-modern-group">
-                                <label>Master Key</label>
+                                <label>Password <span style="color: #ef4444;">*</span></label>
                                 <div class="input-wrapper">
-                                    <div class="icon-box"><i data-lucide="shield-lock"></i></div>
-                                    <input type="password" name="password" placeholder="••••••••" required>
+                                    <div class="icon-box"><i data-lucide="key-round"></i></div>
+                                    <input type="password" name="password" placeholder="••••••••" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
+                                    <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                                        <i data-lucide="eye"></i>
+                                    </button>
                                 </div>
+                                <p style="font-size: 0.65rem; color: #64748b; font-weight: 700; margin-top: 6px; padding-left: 4px;">Requirement: Min 8 chars including a number. Cannot match username.</p>
                             </div>
 
                             <div class="input-modern-group">
-                                <label>Confirm Master Key</label>
+                                <label>Confirm Password <span style="color: #ef4444;">*</span></label>
                                 <div class="input-wrapper">
-                                    <div class="icon-box"><i data-lucide="shield-check"></i></div>
-                                    <input type="password" name="password_confirmation" placeholder="••••••••" required>
+                                    <div class="icon-box"><i data-lucide="check-circle-2"></i></div>
+                                    <input type="password" name="password_confirmation" placeholder="••••••••" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
+                                    <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                                        <i data-lucide="eye"></i>
+                                    </button>
                                 </div>
                             </div>
 
-                            <button type="submit" class="auth-btn-primary" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); height: 52px; font-size: 0.95rem; border-radius: 16px; margin-top: 0.5rem;">
-                                <span>Establish Command</span>
-                                <i data-lucide="crown"></i>
+                            <button type="submit" class="auth-btn-primary" style="background: var(--primary) !important; height: 56px; font-size: 1rem; border-radius: 20px; margin-top: 1rem; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);">
+                                <span>Register Account</span>
                             </button>
                         </form>
                     </div>
@@ -634,6 +640,7 @@
     }
 
     function setInterface(val, el) {
+
         document.getElementById('targetInterfaceInput').value = val;
         document.getElementById('loginInterfaceSync').value = val;
         
@@ -644,25 +651,70 @@
 
         const tabsContainer = document.getElementById('authTabsContainer');
         const usernameLabel = document.getElementById('usernameLabel');
+        const usernameInput = document.getElementById('loginUsername');
 
         if (val === 'admin') {
             tabsContainer.innerHTML = `
                 <button type="button" class="tab-btn active" id="tab-login" onclick="toggleAuth('login')">Login</button>
+                @if(!$adminExists)
                 <button type="button" class="tab-btn" id="tab-register" onclick="toggleAuth('register')">Registry</button>
+                @endif
             `;
             tabsContainer.style.background = 'rgba(0,0,0,0.03)';
             tabsContainer.style.border = '1px solid rgba(0,0,0,0.05)';
             tabsContainer.style.padding = '5px';
-            usernameLabel.innerText = 'Admin Callsign';
+            usernameLabel.innerHTML = 'Username <span style="color: #ef4444;">*</span>';
 
-            @if($adminOnline)
-            const overlay = document.getElementById('adminOnlineOverlay');
-            if (overlay) overlay.style.display = 'flex';
-            const slider = document.getElementById('formsSlider');
-            if (slider) {
-                slider.style.pointerEvents = 'none';
-                slider.setAttribute('inert', '');
+            @if($adminExists)
+            if (usernameInput) {
+                usernameInput.value = '';
+                usernameInput.removeAttribute('readonly');
+                usernameInput.style.opacity = '1';
             }
+            toggleAuth('login');
+            @else
+            if (usernameInput) {
+                usernameInput.value = '';
+                usernameInput.removeAttribute('readonly');
+                usernameInput.style.opacity = '1';
+            }
+            @endif
+
+            @if($adminExists)
+                @if($adminOnline)
+                    const overlay = document.getElementById('adminOnlineOverlay');
+                    if (overlay) overlay.style.display = 'flex';
+                    const slider = document.getElementById('formsSlider');
+                    if (slider) {
+                        slider.style.pointerEvents = 'none';
+                        slider.setAttribute('inert', '');
+                    }
+                    
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: '<span style="font-weight: 900; color: #1e293b;">Command Center Locked</span>',
+                            text: "An Administrator is already actively logged into the system. Concurrent Command access is strictly prohibited.",
+                            icon: 'warning',
+                            iconColor: '#ef4444',
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            backdrop: `rgba(0,0,123,0.1)`,
+                            confirmButtonColor: '#4f46e5',
+                            confirmButtonText: 'UNDERSTOOD',
+                            customClass: {
+                                popup: 'glass-monolith',
+                                confirmButton: 'auth-btn-primary'
+                            }
+                        });
+                    }
+                @endif
+            @else
+                const overlay = document.getElementById('adminOnlineOverlay');
+                if (overlay) overlay.style.display = 'none';
+                const slider = document.getElementById('formsSlider');
+                if (slider) {
+                    slider.style.pointerEvents = 'auto';
+                    slider.removeAttribute('inert');
+                }
             @endif
         } else {
             tabsContainer.innerHTML = `
@@ -674,7 +726,14 @@
             tabsContainer.style.background = 'transparent';
             tabsContainer.style.border = 'none';
             tabsContainer.style.padding = '0';
-            usernameLabel.innerText = 'Personnel Callsign';
+            usernameLabel.innerHTML = 'Username <span style="color: #ef4444;">*</span>';
+
+            if (usernameInput) {
+                usernameInput.value = '';
+                usernameInput.removeAttribute('readonly');
+                usernameInput.style.opacity = '1';
+            }
+
             toggleAuth('login');
 
             @if($adminOnline)
@@ -765,8 +824,13 @@
     window.addEventListener('resize', updateViewportHeight);
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Initialize Default Interface (Personnel)
-        setInterface('user', document.querySelector('.interface-pill.active'));
+        // Initialize Default Interface based on session flash
+        @if(session('target_admin'))
+            const adminPill = Array.from(document.querySelectorAll('.interface-pill')).find(el => el.textContent.trim() === 'Command Center');
+            setInterface('admin', adminPill);
+        @else
+            setInterface('user', document.querySelector('.interface-pill.active'));
+        @endif
         
         if (typeof lucide !== 'undefined') lucide.createIcons();
 

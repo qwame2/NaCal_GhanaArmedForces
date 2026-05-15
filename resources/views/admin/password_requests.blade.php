@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Recovery Terminal')
+@section('title', 'Password Resets')
 
 @section('content')
 
@@ -17,7 +17,7 @@
     <div class="rt-flash success" id="rt-flash">
         <div class="rt-flash-icon"><i data-lucide="shield-check"></i></div>
         <div class="rt-flash-body">
-            <span class="rt-flash-title">Command Executed</span>
+            <span class="rt-flash-title">Success</span>
             <p class="rt-flash-msg">{{ session('success') }}</p>
         </div>
         <button onclick="document.getElementById('rt-flash').remove()" class="rt-flash-close"><i data-lucide="x"></i></button>
@@ -71,20 +71,20 @@
                 </div>
                 <div>
                     <div class="rt-brand-heading">
-                        <h3>Recovery Terminal</h3>
+                        <h3>Password Reset Center</h3>
                         @if($pending > 0)
                         <span class="rt-pending-badge">{{ $pending }} PENDING</span>
                         @else
                         <span class="rt-clear-badge">ALL CLEAR</span>
                         @endif
                     </div>
-                    <p class="rt-brand-sub">Manage personnel password reset requests with full audit trail</p>
+                    <p class="rt-brand-sub">Manage staff password reset requests with a clear history</p>
                 </div>
             </div>
 
             <div class="rt-toolbar-status">
                 <div class="rt-live-dot"></div>
-                <span>SECURITY GATE ACTIVE</span>
+                <span>System Active</span>
             </div>
         </div>
 
@@ -93,12 +93,12 @@
             <table class="rt-table">
                 <thead>
                     <tr>
-                        <th>PERSONNEL</th>
-                        <th>CALLSIGN</th>
-                        <th>STATUS</th>
-                        <th>REQUEST DATE</th>
-                        <th>SECURITY CODE</th>
-                        <th style="text-align:right;">OPERATIONS</th>
+                        <th>Staff Member</th>
+                        <th>Username</th>
+                        <th>Status</th>
+                        <th>Request Date</th>
+                        <th>Security Code</th>
+                        <th style="text-align:right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -133,7 +133,7 @@
                             @elseif($req->status === 'approved')
                                 <div class="rt-status indigo">
                                     <div class="rt-status-dot indigo-dot"></div>
-                                    <span>OTP Issued</span>
+                                    <span>Code Issued</span>
                                 </div>
                             @elseif($req->status === 'completed')
                                 <div class="rt-status green">
@@ -152,7 +152,7 @@
                         <td>
                             <div class="rt-date">
                                 <i data-lucide="calendar" style="width:12px; height:12px; color:#94a3b8;"></i>
-                                <span>{{ $req->created_at->format('M d, Y') }}</span>
+                                <span>{{ $req->created_at->format('d/m/y') }}</span>
                             </div>
                             <div class="rt-date" style="margin-top:3px;">
                                 <i data-lucide="clock-3" style="width:12px; height:12px; color:#94a3b8;"></i>
@@ -236,7 +236,7 @@
                 {{ $requests->links('pagination::bootstrap-4') }}
             </div>
 
-            <span>Last checked: {{ now()->format('M d, Y H:i') }}</span>
+            <span>Last checked: {{ now()->format('d/m/y H:i') }}</span>
         </div>
     </div>
 

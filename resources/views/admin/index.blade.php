@@ -93,11 +93,11 @@
             <table class="precision-table">
                 <thead>
                     <tr>
-                        <th class="col-identity">OPERATIONAL IDENTITY</th>
-                        <th class="col-clearance">CLASSIFICATION</th>
-                        <th class="col-sector">SECTOR</th>
-                        <th class="col-sync">LOGIN TIME</th>
-                        <th class="col-sync">LOGOUT TIME</th>
+                        <th class="col-identity">Staff Member</th>
+                        <th class="col-clearance">Role</th>
+                        <th class="col-sector">Department</th>
+                        <th class="col-sync">Login Time</th>
+                        <th class="col-sync">Logout Time</th>
                         <th class="col-ops" style="text-align: center;">OPT</th>
                     </tr>
                 </thead>
@@ -120,28 +120,45 @@
                             @if($user->is_admin)
                                 <div class="clearance-pill admin">
                                     <div class="dot"></div>
-                                    ADMIN-ALPHA
+                                    Administrator
                                 </div>
                             @else
                                 <div class="clearance-pill standard">
                                     <div class="dot"></div>
-                                    PERSONNEL
+                                    Staff Member
                                 </div>
                             @endif
                         </td>
                         <td><span class="sector-badge">{{ $user->department ?? 'UNASSIGNED' }}</span></td>
                         <td>
                             <span class="sync-time" style="color: #10b981; font-weight: 800;">
-                                {{ $user->last_login_at ? $user->last_login_at->format('M d, H:i') : 'NO RECORD' }}
+                                {{ $user->last_login_at ? $user->last_login_at->format('d/m/y H:i') : 'NO RECORD' }}
                             </span>
                         </td>
                         <td>
                             <span class="sync-time" style="color: #64748b; font-weight: 800;">
-                                {{ $user->last_logout_at ? $user->last_logout_at->format('M d, H:i') : 'NO RECORD' }}
+                                {{ $user->last_logout_at ? $user->last_logout_at->format('d/m/y H:i') : 'NO RECORD' }}
                             </span>
                         </td>
                         <td style="text-align: center;">
                             <div class="ops-cluster" style="justify-content: center; display: flex; align-items: center; gap: 10px;">
+                                <button type="button" class="btn-purge" title="Personnel Details" 
+                                    onclick="viewUserDetails({
+                                        name: '{{ addslashes($user->name) }}',
+                                        username: '{{ addslashes($user->username) }}',
+                                        email: '{{ $user->email ?? 'Not Provided' }}',
+                                        phone: '{{ $user->phone ?? 'Not Provided' }}',
+                                        department: '{{ $user->department ?? 'UNASSIGNED' }}',
+                                        role: '{{ $user->role }}',
+                                        last_login: '{{ $user->last_login_at ? $user->last_login_at->format('d/m/y H:i') : 'No record' }}',
+                                        status: '{{ $user->is_active ? 'ACTIVE' : 'DEACTIVATED' }}',
+                                        avatar: '{{ $user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}'
+                                    })"
+                                    style="border: 1px solid #e0e7ff; color: #4f46e5; background: #f5f3ff;"
+                                    onmouseover="this.style.background='#4f46e5'; this.style.color='white'" 
+                                    onmouseout="this.style.background='#f5f3ff'; this.style.color='#4f46e5'">
+                                    <i data-lucide="eye" style="width: 16px;"></i>
+                                </button>
                                 @if(!$user->is_active)
                                 <span style="background: #fef2f2; color: #ef4444; border: 1px solid #fecdd3; padding: 4px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: 900; letter-spacing: 0.05em;">INACTIVE</span>
                                 @endif
@@ -435,10 +452,15 @@
     }
     
     .sync-time { 
-        font-size: 0.85rem; 
-        color: #94a3b8; 
-        font-weight: 700; 
+        font-size: 0.82rem; 
+        color: #64748b; 
+        font-weight: 800; 
         font-family: 'JetBrains Mono', monospace;
+        background: #f1f5f9;
+        padding: 6px 12px;
+        border-radius: 10px;
+        display: inline-block;
+        border: 1px solid #e2e8f0;
     }
 
     .btn-purge { 
@@ -509,44 +531,29 @@
     });
 
     function openAddPersonnelModal() {
-        const randomPass = Math.floor(10000 + Math.random() * 90000);
+        const randomPass = 'Auth' + Math.floor(1000 + Math.random() * 9000);
         
         Swal.fire({
             title: '<div style="display: flex; align-items: center; gap: 15px; text-align: left;"><div style="width: 48px; height: 48px; background: #eef2ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #4338ca;"><i data-lucide="user-plus"></i></div><div><div style="font-size: 1.25rem; font-weight: 950; color: #0f172a;">Register Personnel</div><div style="font-size: 0.75rem; color: #64748b; font-weight: 700; margin-top: 2px;">STRATEGIC COMMAND PROVISIONING</div></div></div>',
             html: `
                 <form id="addPersonnelForm" action="{{ route('admin.users.store') }}" method="POST" style="text-align: left; padding: 1rem 0.5rem;">
                     @csrf
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div style="margin-bottom: 1.5rem;">
                         <div class="swal-input-group">
-                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Full Name</label>
-                            <input type="text" name="name" class="swal2-input" placeholder="e.g. John Doe" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0;" required>
-                        </div>
-                        <div class="swal-input-group">
-                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Username</label>
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Username <span style="color: #ef4444;">*</span></label>
                             <input type="text" name="username" class="swal2-input" placeholder="e.g. j_doe" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0;" required>
                         </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-                        <div class="swal-input-group">
-                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Sector / Department</label>
-                            <input type="text" name="department" class="swal2-input" placeholder="e.g. Logistics" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0;">
-                        </div>
-                        <div class="swal-input-group">
-                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Operational Role</label>
-                            <select name="role" id="roleSelect2" style="width: 100%;">
-                                <option value="Officer">Officer</option>
-                            </select>
-                        </div>
-                    </div>
+
                     <div class="swal-input-group" style="margin-bottom: 1rem;">
                         <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Security Access Key (Temporary Password)</label>
                         <div style="position: relative;">
-                            <input type="password" name="password" id="swal-password" class="swal2-input" value="${randomPass}" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0; padding-right: 50px;" required>
+                            <input type="password" name="password" id="swal-password" class="swal2-input" value="${randomPass}" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0; padding-right: 50px;" required minlength="8" pattern="(?=.*\\d).{8,}" title="Minimum 8 characters, including at least one number">
                             <button type="button" onclick="toggleSwalPassword()" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center;">
                                 <i data-lucide="eye" id="swal-password-icon" style="width: 20px;"></i>
                             </button>
                         </div>
-                        <p style="font-size: 0.65rem; color: #64748b; font-weight: 600; margin-top: 8px; padding-left: 4px;">Personnel will be required to update this key upon first synchronization.</p>
+                        <p style="font-size: 0.65rem; color: #64748b; font-weight: 600; margin-top: 8px; padding-left: 4px;">Minimum 8 characters, including a number. Personnel will be required to update this key upon first synchronization.</p>
                     </div>
                 </form>
             `,
@@ -563,12 +570,6 @@
             width: '650px',
             didOpen: () => {
                 lucide.createIcons();
-                $('#roleSelect2').select2({
-                    tags: true,
-                    placeholder: "Select or enter a role",
-                    dropdownParent: $('.swal2-popup'),
-                    width: '100%'
-                });
             },
             preConfirm: () => {
                 const form = document.getElementById('addPersonnelForm');
@@ -680,7 +681,18 @@
                     <p style="margin: 4px 0 0; font-size: 0.85rem; color: #64748b; font-weight: 600;">Comprehensive audit trail of deactivated administrative accounts.</p>
                 </div>
             </div>
-            <div style="display: flex; gap: 1rem; align-items: center;">
+            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+                <div style="position: relative;">
+                    <i data-lucide="search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: #94a3b8;"></i>
+                    <input type="text" id="legacySearchFilter" onkeyup="filterLegacyLogs()" placeholder="Search logs..." style="padding: 8px 12px 8px 30px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; color: #0f172a; outline: none; width: 200px; background: white;">
+                </div>
+                <select id="legacyTypeFilter" onchange="filterLegacyLogs()" style="padding: 8px 12px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; color: #475569; outline: none; cursor: pointer; background: white;">
+                    <option value="all">All Event Types</option>
+                    <option value="AUTHORIZATION">Approvals & Authorizations</option>
+                    <option value="INVENTORY">Inventory Management</option>
+                    <option value="SECURITY">Security / Users</option>
+                    <option value="AUTH">Logins & Sessions</option>
+                </select>
                 @if(isset($legacyAdmins) && $legacyAdmins->count() > 0)
                 <select id="legacyAdminFilter" onchange="filterLegacyLogs()" style="padding: 8px 12px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; color: #475569; outline: none; cursor: pointer; background: white;">
                     <option value="all">All Previous Admins</option>
@@ -689,13 +701,19 @@
                     @endforeach
                 </select>
                 @endif
-                <button onclick="closeLegacyAuditModal()" style="background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 10px; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <button onclick="closeLegacyAuditModal()" style="background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 10px; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 0.5rem;">
                     <i data-lucide="x" style="width: 18px;"></i>
                 </button>
             </div>
         </div>
         
         <div style="max-height: 60vh; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 16px;">
+            <div style="padding: 1.5rem; background: #fafcff; border-bottom: 1px solid #e2e8f0;">
+                <h4 style="margin: 0; font-size: 0.9rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="list" style="width: 16px;"></i>
+                    Activity Log Audit
+                </h4>
+            </div>
             <table style="width: 100%; border-collapse: collapse;">
                 <thead style="background: #f8fafc; position: sticky; top: 0; z-index: 10;">
                     <tr>
@@ -707,12 +725,12 @@
                 </thead>
                 <tbody>
                     @forelse($legacyAdminLogs ?? [] as $log)
-                    <tr class="legacy-log-row" data-admin-id="{{ $log->user_id }}" style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;">
+                    <tr class="legacy-log-row" data-admin-id="{{ $log->user_id }}" data-action="{{ $log->action }}" data-event="{{ $log->event_type }}" style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;">
                         <td style="padding: 14px 16px; font-size: 0.8rem; font-weight: 600; color: #475569;">
-                            {{ $log->created_at->format('M d, Y H:i:s') }}
+                            {{ $log->created_at->format('d/m/y H:i:s') }}
                         </td>
                         <td style="padding: 14px 16px; font-size: 0.85rem; font-weight: 800; color: #0f172a;">
-                            {{ $log->user->name }}
+                            {{ $log->user->name ?? 'System' }}
                         </td>
                         <td style="padding: 14px 16px; font-size: 0.75rem; font-weight: 800; color: #4f46e5;">
                             {{ $log->action }}
@@ -740,13 +758,125 @@
         document.getElementById('legacyAuditModal').style.display = 'none';
     }
     
+    function viewUserDetails(user) {
+        Swal.fire({
+            title: `
+                <div style="text-align: left; position: relative; margin-bottom: 5px;">
+                    <div style="position: absolute; top: -15px; left: -15px; right: -15px; height: 80px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); opacity: 0.05; border-radius: 24px 24px 0 0;"></div>
+                    <div style="display: flex; align-items: center; gap: 20px; position: relative; z-index: 1; padding: 5px 0;">
+                        <div style="position: relative;">
+                            <img src="${user.avatar}" style="width: 72px; height: 72px; border-radius: 22px; border: 4px solid white; box-shadow: 0 15px 30px rgba(79, 70, 229, 0.15); object-fit: cover;">
+                            <div style="position: absolute; bottom: -5px; right: -5px; width: 22px; height: 22px; border-radius: 50%; border: 3px solid white; background: ${user.status === 'ACTIVE' ? '#10b981' : '#ef4444'}; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 1.4rem; font-weight: 950; color: #0f172a; letter-spacing: -0.03em; line-height: 1.1;">${user.name}</div>
+                            <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                <span style="font-size: 0.75rem; font-weight: 800; color: #4f46e5; background: #eef2ff; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.02em;">@${user.username}</span>
+                                <span style="font-size: 0.75rem; font-weight: 800; color: #64748b; opacity: 0.6;">•</span>
+                                <span style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase;">ID: 00${Math.floor(Math.random() * 900) + 100}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`,
+            html: `
+                <div style="padding: 5px; text-align: left;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <!-- Primary Info Cards -->
+                        <div style="grid-column: span 2; background: #f8fafc; padding: 18px; border-radius: 20px; border: 1px solid #f1f5f9; position: relative; overflow: hidden;">
+                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">
+                                <i data-lucide="mail" style="width: 12px; height: 12px;"></i> Email Address
+                             </label>
+                             <div style="font-size: 0.95rem; font-weight: 800; color: #1e293b; word-break: break-all;">${user.email}</div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 18px; border-radius: 20px; border: 1px solid #f1f5f9;">
+                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">
+                                <i data-lucide="phone" style="width: 12px; height: 12px;"></i> Comms Line
+                             </label>
+                             <div style="font-size: 0.9rem; font-weight: 800; color: #1e293b;">${user.phone}</div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 18px; border-radius: 20px; border: 1px solid #f1f5f9;">
+                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">
+                                <i data-lucide="building" style="width: 12px; height: 12px;"></i> Sector Unit
+                             </label>
+                             <div style="font-size: 0.9rem; font-weight: 800; color: #4f46e5;">${user.department}</div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 18px; border-radius: 20px; border: 1px solid #f1f5f9;">
+                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">
+                                <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i> Access Level
+                             </label>
+                             <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 0.85rem; font-weight: 950; color: ${user.role === 'Admin' ? '#ef4444' : '#10b981'};">
+                                    ${user.role.toUpperCase()}
+                                </span>
+                             </div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 18px; border-radius: 20px; border: 1px solid #f1f5f9;">
+                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">
+                                <i data-lucide="activity" style="width: 12px; height: 12px;"></i> Account Status
+                             </label>
+                             <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 8px; height: 8px; border-radius: 50%; background: ${user.status === 'ACTIVE' ? '#10b981' : '#ef4444'}; box-shadow: 0 0 10px ${user.status === 'ACTIVE' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'};"></div>
+                                <span style="font-size: 0.85rem; font-weight: 950; color: #1e293b;">${user.status}</span>
+                             </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8fafc; padding: 18px 24px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f5f9;">
+                        <div>
+                            <div style="font-size: 0.6rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.08em;">Last Login Time</div>
+                            <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="clock" style="width: 14px; color: #4f46e5;"></i>
+                                ${user.last_login}
+                            </div>
+                        </div>
+                        <div style="width: 40px; height: 40px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #4f46e5; border: 1px solid #f1f5f9;">
+                            <i data-lucide="terminal" style="width: 20px;"></i>
+                        </div>
+                    </div>
+                </div>
+            `,
+            didOpen: () => {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            },
+            showCloseButton: true,
+            showConfirmButton: false,
+            width: '680px',
+            padding: '1.5rem',
+            background: '#ffffff',
+            customClass: {
+                popup: 'glass-monolith',
+            }
+        });
+    }
+
     function filterLegacyLogs() {
-        const filterEl = document.getElementById('legacyAdminFilter');
-        if(!filterEl) return;
-        const adminId = filterEl.value;
+        const adminFilter = document.getElementById('legacyAdminFilter');
+        const adminId = adminFilter ? adminFilter.value : 'all';
+        
+        const typeFilter = document.getElementById('legacyTypeFilter');
+        const typeVal = typeFilter ? typeFilter.value : 'all';
+        
+        const searchFilter = document.getElementById('legacySearchFilter');
+        const searchVal = searchFilter ? searchFilter.value.toLowerCase() : '';
+
         const rows = document.querySelectorAll('.legacy-log-row');
         rows.forEach(row => {
-            if (adminId === 'all' || row.dataset.adminId === adminId) {
+            const rowAdminId = row.dataset.adminId;
+            const rowAction = row.dataset.action;
+            const rowEvent = row.dataset.event;
+            const textContent = row.textContent.toLowerCase();
+
+            let matchAdmin = (adminId === 'all' || rowAdminId === adminId);
+            let matchType = (typeVal === 'all' || rowAction === typeVal || rowEvent === typeVal);
+            let matchSearch = (searchVal === '' || textContent.includes(searchVal));
+
+            if (matchAdmin && matchType && matchSearch) {
                 row.style.display = '';
             } else {
                 row.style.display = 'none';

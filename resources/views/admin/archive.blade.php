@@ -79,11 +79,11 @@
             <table style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0; text-align: left;">
                 <thead style="position: sticky; top: 0; z-index: 30; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color);">
                     <tr>
-                        <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;">Communication Flow</th>
-                        <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;">Subject & Context</th>
+                        <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;">Sender / Receiver</th>
+                        <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;">Message Content</th>
                         <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;">Message Type</th>
-                        <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;">Archival Data</th>
-                        <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; text-align: right; white-space: nowrap;">Oversight</th>
+                        <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;">Archived Date</th>
+                        <th style="padding: 1.75rem 2rem; font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; text-align: right; white-space: nowrap;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -178,7 +178,7 @@
                             <div style="display: flex; flex-direction: column; gap: 4px;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <div style="width: 8px; height: 8px; border-radius: 50%; background: #94a3b8;"></div>
-                                    <span style="font-weight: 900; color: var(--text-main); font-size: 0.85rem;">{{ $msg->updated_at->format('M d, Y') }}</span>
+                                    <span style="font-weight: 900; color: var(--text-main); font-size: 0.85rem;">{{ $msg->updated_at->format('d/m/y') }}</span>
                                 </div>
                                 <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; padding-left: 16px;">
                                     <i data-lucide="clock" style="width: 11px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i>
@@ -189,7 +189,7 @@
                         <td style="padding: 1.75rem 2rem; text-align: right;">
                             <div style="display: flex; gap: 8px; justify-content: flex-end;">
                                 <button type="button" 
-                                        onclick="showArchivedMessageDetail(`{!! addslashes($msg->message) !!}`, '{{ $msg->sender->name ?? 'System' }}', '{{ $msg->updated_at->format('M d, Y H:i') }}', '{{ $context }}')"
+                                        onclick="showArchivedMessageDetail(`{!! addslashes($msg->message) !!}`, '{{ $msg->sender->name ?? 'System' }}', '{{ $msg->updated_at->format('d/m/y H:i') }}', '{{ $context }}')"
                                         style="background: white; color: var(--text-main); border: 1.5px solid #e2e8f0; padding: 0.6rem 1rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;" 
                                         onmouseover="this.style.borderColor='var(--primary)'; this.style.background='#f8fafc'" 
                                         onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='white'">
@@ -225,11 +225,11 @@
             <table style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0; text-align: left;">
                 <thead style="position: sticky; top: 0; z-index: 20; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px); box-shadow: 0 1px 0 var(--border-color);">
                     <tr>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Date & Time</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Personnel</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Event Details</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Risk Level</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right; white-space: nowrap;">Manage</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Activity Date</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Staff Member</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Activity Details</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Severity</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right; white-space: nowrap;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -338,7 +338,7 @@
                     <i data-lucide="file-text" style="width: 28px; height: 28px;"></i>
                 </div>
                 <div>
-                    <h3 id="modalEventTitle" style="font-size: 1.35rem; font-weight: 950; letter-spacing: -0.03em; margin: 0;">Event Payload</h3>
+                    <h3 id="modalEventTitle" style="font-size: 1.35rem; font-weight: 950; letter-spacing: -0.03em; margin: 0;">Activity Details</h3>
                     <div id="modalEventAction" style="font-size: 0.75rem; font-weight: 800; background: rgba(0,0,0,0.2); padding: 3px 10px; border-radius: 6px; width: fit-content; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Unknown Action</div>
                 </div>
             </div>

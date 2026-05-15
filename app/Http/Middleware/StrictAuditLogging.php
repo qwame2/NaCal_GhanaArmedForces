@@ -19,7 +19,10 @@ class StrictAuditLogging
         // Log all personnel activity by default (Always On)
         if (auth()->check()) {
             // Avoid logging noise like ajax polling, livewire internal requests, or asset fetching
-            if (!$request->ajax() && !$request->is('broadcasting/auth') && !$request->is('admin/logs/stream')) {
+            if (!$request->ajax() && 
+                !$request->is('broadcasting/*') && 
+                !$request->is('api/*') &&
+                !$request->is('admin/logs/stream')) {
                 
                 // Determine the severity based on action
                     $method = $request->method();
@@ -32,7 +35,7 @@ class StrictAuditLogging
                     }
 
                     $path = $request->path();
-                    $role = auth()->user()->is_admin ? 'Admin' : 'Personnel';
+                    $role = auth()->user()->is_admin ? 'Admin' : 'Staff Member';
 
                     // Human-friendly path mapping
                     $friendlyPath = '/' . $path;
@@ -58,15 +61,26 @@ class StrictAuditLogging
                         }
                     }
 
-                    // Friendly verb mapping
-                    if ($method === 'GET') {
-                        $description = "{$role} " . ($path === 'api/total-unread' ? 'checked for' : 'viewed') . " {$friendlyPath}.";
+                    // Custom Overrides for Specific System Endpoints
+                    $customDescriptions = [
+                        'api/user/offline' => "{$role} securely severed their active network connection.",
+                        'api/user/online'  => "{$role} synchronized their active network presence.",
+                        'logout'           => "{$role} securely terminated their active session."
+                    ];
+
+                    if (isset($customDescriptions[$path])) {
+                        $description = $customDescriptions[$path];
                     } else {
-                        $action = 'interacted with';
-                        if ($method === 'POST') $action = 'submitted data to';
-                        if ($method === 'DELETE') $action = 'removed data from';
-                        if ($method === 'PATCH' || $method === 'PUT') $action = 'updated';
-                        $description = "{$role} {$action} {$friendlyPath}.";
+                        // Friendly verb mapping
+                        if ($method === 'GET') {
+                            $description = "{$role} " . ($path === 'api/total-unread' ? 'checked for' : 'viewed') . " {$friendlyPath}.";
+                        } else {
+                            $action = 'interacted with';
+                            if ($method === 'POST') $action = 'submitted an update to';
+                            if ($method === 'DELETE') $action = 'removed an entry from';
+                            if ($method === 'PATCH' || $method === 'PUT') $action = 'modified records in';
+                            $description = "{$role} {$action} {$friendlyPath}.";
+                        }
                     }
 
                     \App\Models\SystemLog::create([
