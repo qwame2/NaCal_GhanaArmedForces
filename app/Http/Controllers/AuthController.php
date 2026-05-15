@@ -43,9 +43,9 @@ class AuthController extends Controller
             return back()->with('error', 'Strategic Oversight Alert: Personnel registration must be performed by an Administrator through the Command Center.');
         }
 
-        // SECURITY ENFORCEMENT: Only one Admin account allowed in the entire system
-        if (User::where('is_admin', true)->exists()) {
-            return back()->with('error', 'Strategic Oversight Alert: An Administrative account already exists. Multiple Command nodes are prohibited.')->withInput();
+        // SECURITY ENFORCEMENT: Only one Active Admin account allowed in the entire system
+        if (User::where('is_admin', true)->where('is_active', true)->exists()) {
+            return back()->with('error', 'Strategic Oversight Alert: An active Administrative account already exists. Multiple Command nodes are prohibited.')->withInput();
         }
 
         try {
@@ -311,5 +311,72 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login')->with('success', 'Security Synchronized. Please authenticate with your new master key.');
+    }
+
+    public function showForgotPassword()
+    {
+        return view('auth.forgot_password');
+    }
+
+    public function sendPasswordRequest(Request $request)
+    {
+        $request->validate(['username' => 'required|string']);
+
+        $user = User::where('username', $request->username)->first();
+
+        \App\Models\PasswordResetRequest::create([
+            'user_id' => $user ? $user->id : null,
+            'username' => $request->username,
+            'status' => 'pending',
+        ]);
+
+        return redirect()->route('password.reset.otp')->with('success', 'Your request has been sent to the Admin. Once you receive your OTP, enter it here along with your new password.');
+    }
+
+    public function showResetWithOtp()
+    {
+        return view('auth.reset_password_otp');
+    }
+
+    public function resetWithOtp(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string',
+            'otp' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $resetReq = \App\Models\PasswordResetRequest::where('username', $request->username)
+            ->where('otp', $request->otp)
+            ->where('status', 'approved')
+            ->first();
+
+        if (!$resetReq) {
+            return back()->with('error', 'Invalid OTP or username. Please ensure the Admin has approved your request.');
+        }
+
+        $user = User::where('username', $resetReq->username)->first();
+        if ($user) {
+            $user->update([
+                'password' => Hash::make($request->password),
+                'must_change_password' => false,
+                'is_active' => true, // Reactivate if it was deactivated
+            ]);
+
+            $resetReq->update(['status' => 'completed']);
+
+            \App\Models\SystemLog::create([
+                'user_id' => $user->id,
+                'event_type' => 'SECURITY',
+                'action' => 'PASSWORD_RESET_OTP',
+                'description' => "Personnel @{$user->username} reset password using Admin-provided OTP.",
+                'severity' => 'info',
+                'ip_address' => $request->ip()
+            ]);
+
+            return redirect()->route('login')->with('success', 'Access restored. Please login with your new password.');
+        }
+
+        return back()->with('error', 'System Error: Personnel record not found.');
     }
 }

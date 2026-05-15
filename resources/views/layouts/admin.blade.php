@@ -540,6 +540,12 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('admin.password.requests') }}" class="nav-link {{ request()->routeIs('admin.password.requests') ? 'active' : '' }}">
+                        <i data-lucide="key"></i>
+                        <span>Password Requests</span>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('admin.archive') }}" class="nav-link {{ request()->routeIs('admin.archive') ? 'active' : '' }}">
                         <i data-lucide="archive"></i>
                         <span>System Archive</span>
@@ -555,11 +561,23 @@
                         <span>Global Settings</span>
                     </a>
                 </li>
+                {{-- 
                 <li>
                     <a href="#" class="nav-link">
                         <i data-lucide="database"></i>
                         <span>Data Terminal</span>
                     </a>
+                </li>
+                --}}
+                <li style="margin-top: 2.5rem;">
+                    <a href="#" onclick="confirmSelfDeactivation(event)" class="nav-link" style="color: #ef4444;">
+                        <i data-lucide="power-off"></i>
+                        <span>Deactivate Account</span>
+                    </a>
+                    <form id="selfDeactivateForm" action="{{ route('admin.self_deactivate') }}" method="POST" style="display: none;">
+                        @csrf
+                        <input type="hidden" name="password" id="selfDeactivatePassword">
+                    </form>
                 </li>
             </ul>
         </div>
@@ -1053,6 +1071,43 @@
             window.addEventListener('pagehide', handleExit);
             window.addEventListener('beforeunload', handleExit);
         })();
+    </script>
+    <script>
+        function confirmSelfDeactivation(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: '<span style="font-size: 1.5rem; font-weight: 900; color: #0f172a;">Deactivate Account?</span>',
+                html: '<div style="color: #64748b; font-size: 0.95rem; font-weight: 600; line-height: 1.6; margin-bottom: 10px;">You will be immediately logged out and your account will be disabled.<br><br><span style="color: #ef4444; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Enter your password to confirm this action</span></div>',
+                icon: 'warning',
+                input: 'password',
+                inputPlaceholder: '',
+                inputAttributes: {
+                    autocapitalize: 'off',
+                    autocorrect: 'off',
+                    autocomplete: 'new-password',
+                    style: 'border-radius: 14px; border: 2px solid #e2e8f0; font-weight: 800; text-align: center; font-size: 1.1rem; color: #0f172a; padding: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); outline: none;'
+                },
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#f1f5f9',
+                confirmButtonText: '<span style="font-weight: 800; padding: 6px 16px;">Deactivate</span>',
+                cancelButtonText: '<span style="color: #64748b; font-weight: 800; padding: 6px 16px;">Cancel</span>',
+                background: '#ffffff',
+                backdrop: 'rgba(15, 23, 42, 0.7)',
+                padding: '2rem',
+                preConfirm: (password) => {
+                    if (!password) {
+                        Swal.showValidationMessage('Authorization required: Password cannot be empty.');
+                    }
+                    return password;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('selfDeactivatePassword').value = result.value;
+                    document.getElementById('selfDeactivateForm').submit();
+                }
+            });
+        }
     </script>
     @stack('scripts')
 </body>

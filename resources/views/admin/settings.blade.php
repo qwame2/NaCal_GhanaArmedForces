@@ -450,6 +450,21 @@
 
     .btn-cfg-add:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(16,185,129,0.3); }
     .btn-cfg-add i { width: 18px; }
+
+    /* ── OTP Expiry Block ── */
+    .otp-preset-btn {
+        padding: 5px 12px;
+        border-radius: 999px;
+        border: 1.5px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+        font-size: 0.72rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .otp-preset-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .otp-preset-btn.active { background: #4f46e5; color: white; border-color: #4f46e5; }
 </style>
 
 {{-- Page Header --}}
@@ -513,7 +528,7 @@
                         <div class="cfg-card-body">
                             <div class="cfg-grid">
                                 @foreach($groupSettings as $setting)
-                                    @php if(in_array($setting->key, ['strict_audit_logging','enable_strict_audit_logging','approval_timeout_minutes','item_unit_rules','ledge_categories','reporting_enabled','allow_personnel_registration','low_stock_threshold','item_threshold_rules'])) continue; @endphp
+                                    @php if(in_array($setting->key, ['strict_audit_logging','enable_strict_audit_logging','approval_timeout_minutes','item_unit_rules','ledge_categories','reporting_enabled','allow_personnel_registration','low_stock_threshold','item_threshold_rules','otp_expiry_hours','otp_expiry_minutes'])) continue; @endphp
                                     <div class="cfg-item">
                                         <p class="cfg-item-label">{{ ucwords(str_replace('_', ' ', $setting->key)) }}</p>
 
@@ -544,9 +559,33 @@
                                         @endif
                                     </div>
                                 @endforeach
+
+                                {{-- OTP Expiry — inject inside the grid for Security Protocols --}}
+                                @if($group === 'security')
+                                @php $otpExpiry = \App\Models\Setting::firstOrCreate(
+                                    ['key' => 'otp_expiry_minutes'],
+                                    ['value' => '1440', 'type' => 'integer', 'group' => 'security', 'label' => 'OTP Expiry (Minutes)', 'description' => 'Number of minutes before a generated recovery OTP expires and becomes invalid.']
+                                ); @endphp
+                                <div class="cfg-item" style="grid-column: span 2; max-width: 800px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                        <i data-lucide="timer" style="width: 18px; color: #4f46e5;"></i>
+                                        <p class="cfg-item-label" style="margin: 0;">Recovery OTP Expiration (Minutes)</p>
+                                    </div>
+                                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+                                        <input type="number" name="otp_expiry_minutes" id="setting_otp_expiry_minutes" value="{{ $otpExpiry->value }}" min="3" max="10080" class="cfg-number-input" style="max-width: 120px;" oninput="updateOtpPreview(this.value)">
+                                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                            @foreach([3 => '3 mins', 15 => '15 mins', 30 => '30 mins', 60 => '1 hr', 360 => '6 hrs', 1440 => '24 hrs'] as $val => $label)
+                                            <button type="button" class="otp-preset-btn {{ $otpExpiry->value == $val ? 'active' : '' }}" onclick="setOtpExpiry({{ $val }}, this)">{{ $label }}</button>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <p class="cfg-item-desc" id="otp-preview-text">Set how long an admin-issued OTP remains valid. Currently set to expire <strong>{{ $otpExpiry->value }} minute{{ $otpExpiry->value == 1 ? '' : 's' }}</strong> after it has been generated.</p>
+                                </div>
+                                @endif
+
                             </div>
-                        </div>
-                    </div>
+                        </div>{{-- /cfg-card-body --}}
+                    </div>{{-- /cfg-card --}}
                 @endforeach
 
                 {{-- Sticky Save Bar --}}
@@ -1069,5 +1108,31 @@
             keywordSelect.trigger('change');
         });
     });
+
+    function setOtpExpiry(minutes, btn) {
+        document.getElementById('setting_otp_expiry_minutes').value = minutes;
+        document.querySelectorAll('.otp-preset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        updateOtpPreview(minutes);
+    }
+
+    function updateOtpPreview(minutes) {
+        minutes = parseInt(minutes) || 1;
+        let label = minutes + ' minute' + (minutes === 1 ? '' : 's');
+        if (minutes >= 60) {
+            let hours = Math.floor(minutes / 60);
+            let mins = minutes % 60;
+            label = hours + ' hour' + (hours === 1 ? '' : 's');
+            if (mins > 0) label += ' ' + mins + ' minute' + (mins === 1 ? '' : 's');
+            if (hours === 24 && mins === 0) label += ' (1 day)';
+            if (hours === 48 && mins === 0) label += ' (2 days)';
+        }
+        document.getElementById('otp-preview-text').innerHTML =
+            'Set how long an admin-issued OTP remains valid. Currently set to expire <strong>' + label + '</strong> after it has been generated.';
+        // Sync active preset button
+        document.querySelectorAll('.otp-preset-btn').forEach(b => {
+            b.classList.toggle('active', parseInt(b.textContent) === minutes || b.onclick?.toString().includes('(' + minutes + ','));
+        });
+    }
 </script>
 @endsection

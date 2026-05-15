@@ -315,7 +315,7 @@
                                     <input type="checkbox" name="remember" style="width: 16px; height: 16px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent;">
                                     Persistent Session
                                 </label>
-                                <a href="#" style="font-size: 0.8rem; font-weight: 800; color: var(--primary); text-decoration: none;">Forgot Access?</a>
+                                <a href="{{ route('password.request') }}" style="font-size: 0.8rem; font-weight: 800; color: var(--primary); text-decoration: none;">Forgot Access?</a>
                             </div>
 
                             <button type="submit" class="auth-btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%); height: 52px; font-size: 0.95rem; border-radius: 16px; margin-top: 0.5rem;">

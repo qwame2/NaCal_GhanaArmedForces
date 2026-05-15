@@ -21,6 +21,13 @@ Route::middleware(['auth', 'check_status'])->prefix('admin/archive')->group(func
     Route::post('/bulk/logs', [ArchiveController::class, 'bulkArchiveLogs'])->name('admin.archive.bulk.logs');
 });
 
+// Password Reset Management
+Route::middleware(['auth', 'check_status'])->group(function () {
+    Route::get('/admin/password-requests', [AdminController::class, 'passwordRequests'])->name('admin.password.requests');
+    Route::post('/admin/password-requests/{id}/approve', [AdminController::class, 'approvePasswordRequest'])->name('admin.password.requests.approve');
+    Route::post('/admin/password-requests/{id}/reject', [AdminController::class, 'rejectPasswordRequest'])->name('admin.password.requests.reject');
+});
+
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -28,6 +35,12 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/password/change', [AuthController::class, 'showChangePassword'])->name('password.change')->middleware('auth');
 Route::post('/password/change', [AuthController::class, 'updatePassword'])->name('password.update')->middleware('auth');
+
+// Forgotten Password Workflow
+Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+Route::post('/forgot-password', [AuthController::class, 'sendPasswordRequest'])->name('password.email');
+Route::get('/reset-password', [AuthController::class, 'showResetWithOtp'])->name('password.reset.otp');
+Route::post('/reset-password', [AuthController::class, 'resetWithOtp'])->name('password.update.otp');
 Route::post('/api/user/offline', [AuthController::class, 'markOffline'])->name('api.user.offline');
 
 // Guest Redirection
@@ -487,6 +500,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::put('/admin/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
     Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages');
     Route::patch('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
+    Route::post('/admin/self-deactivate', [AdminController::class, 'deactivateSelf'])->name('admin.self_deactivate');
     Route::get('/admin/settings', [AdminController::class, 'settings'])->name('admin.settings');
     Route::post('/admin/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
     Route::post('/admin/settings/category', [AdminController::class, 'addCategory'])->name('admin.settings.category');

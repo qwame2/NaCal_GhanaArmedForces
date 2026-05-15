@@ -73,7 +73,52 @@ class AdminController extends Controller
         $allUsers = User::all(); // Keep for calculating global metrics if needed
         $recentLogins = User::where('is_admin', false)->orderBy('last_login_at', 'desc')->limit(100)->get();
         
-        return view('admin.index', compact('users', 'totalUsers', 'allUsers', 'recentLogins', 'onlineCount'));
+        // Fetch legacy/previous admin logs for auditing
+        $legacyAdminLogs = \App\Models\SystemLog::with('user')
+            ->whereHas('user', function($q) {
+                $q->where('is_admin', true)->where('id', '!=', auth()->id());
+            })
+            ->orderBy('created_at', 'desc')
+            ->limit(500)
+            ->get();
+
+        $legacyAdmins = User::where('is_admin', true)
+            ->where('id', '!=', auth()->id())
+            ->get();
+
+        return view('admin.index', compact('users', 'totalUsers', 'allUsers', 'recentLogins', 'onlineCount', 'legacyAdminLogs', 'legacyAdmins'));
+    }
+
+    public function passwordRequests()
+    {
+        $requests = \App\Models\PasswordResetRequest::with('user')->orderBy('created_at', 'desc')->paginate(15);
+        return view('admin.password_requests', compact('requests'));
+    }
+
+    public function approvePasswordRequest(Request $request, $id)
+    {
+        $resetReq = \App\Models\PasswordResetRequest::findOrFail($id);
+        
+        // Generate a random 6-digit OTP
+        $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Read expiry window from global settings (default: 1440 minutes = 24 hours)
+        $expiryMinutes = (int) \App\Models\Setting::get('otp_expiry_minutes', 1440);
+        
+        $resetReq->update([
+            'otp' => $otp,
+            'status' => 'approved',
+            'expires_at' => now()->addMinutes($expiryMinutes),
+        ]);
+
+        return back()->with('success', "Request for @{$resetReq->username} approved. The OTP is: {$otp}. It expires in {$expiryMinutes} minute(s). Please provide this to the personnel.");
+    }
+
+    public function rejectPasswordRequest(Request $request, $id)
+    {
+        $resetReq = \App\Models\PasswordResetRequest::findOrFail($id);
+        $resetReq->update(['status' => 'rejected']);
+        return back()->with('success', "Request for @{$resetReq->username} rejected.");
     }
 
     public function updateUser(Request $request, $id)
@@ -90,10 +135,10 @@ class AdminController extends Controller
             'department' => 'nullable|string',
         ]);
 
-        // SECURITY ENFORCEMENT: Only one Admin account allowed
+        // SECURITY ENFORCEMENT: Only one active Admin account allowed
         if ($request->role === 'Admin' && !$user->is_admin) {
-            if (User::where('is_admin', true)->exists()) {
-                return back()->with('error', 'Strategic Oversight Alert: Only one Administrative account is permitted. Promotion denied.');
+            if (User::where('is_admin', true)->where('is_active', true)->exists()) {
+                return back()->with('error', 'Strategic Oversight Alert: Only one active Administrative account is permitted. Promotion denied.');
             }
         }
 
@@ -115,6 +160,37 @@ class AdminController extends Controller
         ]);
 
         return back()->with('success', "Personnel registry for {$user->name} updated successfully.");
+    }
+
+    public function deactivateSelf(\Illuminate\Http\Request $request)
+    {
+        $user = auth()->user();
+        if (!$user->is_admin) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        if (!\Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
+            return back()->with('error', 'Authentication Failure: Incorrect password provided for account deactivation.');
+        }
+
+        $user->is_active = false;
+        $user->is_online = false;
+        $user->save();
+
+        \App\Models\SystemLog::create([
+            'user_id' => $user->id,
+            'event_type' => 'SECURITY',
+            'action' => 'SELF_DEACTIVATION',
+            'description' => "Administrator manually deactivated their own account: {$user->name} (@{$user->username}).",
+            'severity' => 'critical',
+            'ip_address' => request()->ip()
+        ]);
+
+        \Illuminate\Support\Facades\Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        return redirect('/login')->with('success', 'Your administrative account has been deactivated successfully. Session terminated.');
     }
 
     public function toggleUserStatus($id)

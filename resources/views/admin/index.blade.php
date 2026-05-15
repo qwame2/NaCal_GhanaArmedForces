@@ -63,6 +63,12 @@
             </div>
             
             <div class="toolbar-actions">
+                @if(isset($legacyAdminLogs) && $legacyAdminLogs->count() > 0)
+                <button type="button" class="btn-tool" onclick="openLegacyAuditModal()" style="border-radius: 18px; padding: 12px 24px; font-weight: 800; font-size: 0.85rem; gap: 10px; display: flex; align-items: center; background: #fffbeb; color: #d97706; border: 1.5px solid #fde68a; cursor: pointer; transition: all 0.3s ease;">
+                    <i data-lucide="history" style="width: 18px;"></i>
+                    <span>Legacy Audit</span>
+                </button>
+                @endif
                 <button type="button" class="btn-tool primary" onclick="openAddPersonnelModal()" style="border-radius: 18px; padding: 12px 24px; font-weight: 800; font-size: 0.85rem; gap: 10px; display: flex; align-items: center; background: #0f172a; color: white; border: none; cursor: pointer; transition: all 0.3s ease;">
                     <i data-lucide="user-plus" style="width: 18px;"></i>
                     <span>Register Personnel</span>
@@ -660,4 +666,92 @@
         background-color: #4f46e5 !important;
     }
 </style>
+
+<!-- Legacy Admin Audit Modal -->
+<div class="modal-overlay" id="legacyAuditModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); z-index: 99999; justify-content: center; align-items: center;">
+    <div class="modal-container" style="background: white; border-radius: 24px; width: 100%; max-width: 900px; padding: 2.5rem; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div style="width: 48px; height: 48px; border-radius: 14px; background: #fffbeb; color: #d97706; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="history"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 900; color: #0f172a;">Legacy Admin Activity</h3>
+                    <p style="margin: 4px 0 0; font-size: 0.85rem; color: #64748b; font-weight: 600;">Comprehensive audit trail of deactivated administrative accounts.</p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                @if(isset($legacyAdmins) && $legacyAdmins->count() > 0)
+                <select id="legacyAdminFilter" onchange="filterLegacyLogs()" style="padding: 8px 12px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; color: #475569; outline: none; cursor: pointer; background: white;">
+                    <option value="all">All Previous Admins</option>
+                    @foreach($legacyAdmins as $admin)
+                    <option value="{{ $admin->id }}">{{ $admin->name }}</option>
+                    @endforeach
+                </select>
+                @endif
+                <button onclick="closeLegacyAuditModal()" style="background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 10px; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="x" style="width: 18px;"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div style="max-height: 60vh; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 16px;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: #f8fafc; position: sticky; top: 0; z-index: 10;">
+                    <tr>
+                        <th style="padding: 14px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; color: #64748b; font-size: 0.75rem; font-weight: 800;">TIMESTAMP</th>
+                        <th style="padding: 14px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; color: #64748b; font-size: 0.75rem; font-weight: 800;">ADMINISTRATOR</th>
+                        <th style="padding: 14px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; color: #64748b; font-size: 0.75rem; font-weight: 800;">ACTION</th>
+                        <th style="padding: 14px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; color: #64748b; font-size: 0.75rem; font-weight: 800;">DETAILS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($legacyAdminLogs ?? [] as $log)
+                    <tr class="legacy-log-row" data-admin-id="{{ $log->user_id }}" style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;">
+                        <td style="padding: 14px 16px; font-size: 0.8rem; font-weight: 600; color: #475569;">
+                            {{ $log->created_at->format('M d, Y H:i:s') }}
+                        </td>
+                        <td style="padding: 14px 16px; font-size: 0.85rem; font-weight: 800; color: #0f172a;">
+                            {{ $log->user->name }}
+                        </td>
+                        <td style="padding: 14px 16px; font-size: 0.75rem; font-weight: 800; color: #4f46e5;">
+                            {{ $log->action }}
+                        </td>
+                        <td style="padding: 14px 16px; font-size: 0.85rem; color: #64748b; line-height: 1.5;">
+                            {{ $log->description }}
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 3rem; color: #94a3b8; font-weight: 600;">No legacy records found.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openLegacyAuditModal() {
+        document.getElementById('legacyAuditModal').style.display = 'flex';
+    }
+    function closeLegacyAuditModal() {
+        document.getElementById('legacyAuditModal').style.display = 'none';
+    }
+    
+    function filterLegacyLogs() {
+        const filterEl = document.getElementById('legacyAdminFilter');
+        if(!filterEl) return;
+        const adminId = filterEl.value;
+        const rows = document.querySelectorAll('.legacy-log-row');
+        rows.forEach(row => {
+            if (adminId === 'all' || row.dataset.adminId === adminId) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
 @endsection
