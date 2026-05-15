@@ -489,6 +489,8 @@
                 @csrf
 
                 @foreach($settings as $group => $groupSettings)
+                    @php if($group === 'inventory') continue; @endphp
+
                     @php
                         $colorMap = [
                             'security' => ['color' => '#ef4444', 'bg' => 'linear-gradient(135deg,#ef4444,#dc2626)', 'icon' => 'shield-alert'],
@@ -679,13 +681,18 @@
                                                     <div style="font-weight: 800; font-size: 0.82rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $keyword }}">{{ $keyword }}</div>
                                                     <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">→ {{ $unit }}</div>
                                                 </div>
-                                                <form action="{{ route('admin.settings.unit-rule.destroy') }}" method="POST" onsubmit="return confirm('Remove rule for \'{{ $keyword }}\'?');" style="margin: 0;">
-                                                    @csrf @method('DELETE')
-                                                    <input type="hidden" name="keyword" value="{{ $keyword }}">
-                                                    <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">
-                                                        <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                                <div style="display: flex; gap: 4px;">
+                                                    <button type="button" onclick="populateUnitForm('{{ $keyword }}', '{{ $unit }}', '{{ $catCode }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
+                                                        <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
                                                     </button>
-                                                </form>
+                                                    <form action="{{ route('admin.settings.unit-rule.destroy') }}" method="POST" onsubmit="return confirm('Remove rule for \'{{ $keyword }}\'?');" style="margin: 0;">
+                                                        @csrf @method('DELETE')
+                                                        <input type="hidden" name="keyword" value="{{ $keyword }}">
+                                                        <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Rule">
+                                                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         @endforeach
                                     </div>
@@ -704,7 +711,7 @@
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
                             <div>
                                 <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Target Category</label>
-                                <select name="category" class="cfg-text-input" required style="cursor: pointer;">
+                                <select name="category" id="unitCategory" class="cfg-text-input" required style="cursor: pointer;">
                                     <option value="">Select Category...</option>
                                     @foreach($categories ?? [] as $code => $name)
                                         <option value="{{ $code }}">[{{ $code }}] {{ $name }}</option>
@@ -713,7 +720,9 @@
                             </div>
                             <div>
                                 <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Item Keyword</label>
-                                <input type="text" name="keyword" class="cfg-text-input" placeholder="e.g. pen, laptop, book" required>
+                                <select name="keyword" id="unitKeyword" class="cfg-text-input select2-unit" required>
+                                    <option value="">Select Category First...</option>
+                                </select>
                             </div>
                             <div>
                                 <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Default Unit</label>
@@ -730,9 +739,14 @@
                                     <option value="Unit">Unit</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn-cfg-add" style="background: linear-gradient(135deg,#f59e0b,#d97706); box-shadow: 0 6px 16px rgba(245,158,11,0.25);">
-                                <i data-lucide="plus-circle"></i> Add Rule
-                            </button>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" id="unitSubmitBtn" class="btn-cfg-add" style="flex: 1; background: linear-gradient(135deg,#f59e0b,#d97706); box-shadow: 0 6px 16px rgba(245,158,11,0.25);">
+                                    <i data-lucide="plus-circle" id="unitSubmitIcon"></i> <span id="unitSubmitText">Add Rule</span>
+                                </button>
+                                <button type="button" id="unitResetBtn" onclick="resetUnitForm()" style="display: none; padding: 0.75rem 1rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; margin-top: 1rem;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -797,15 +811,23 @@
                                                 </div>
                                                 <div style="flex: 1; min-width: 0;">
                                                     <div style="font-weight: 800; font-size: 0.82rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $keyword }}">{{ $keyword }}</div>
-                                                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">Min: {{ $threshold }} units</div>
+                                                    @php
+                                                        $displayUnit = \App\Models\Setting::getItemUnit($keyword);
+                                                    @endphp
+                                                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">Min: {{ $threshold }} {{ $displayUnit }}</div>
                                                 </div>
-                                                <form action="{{ route('admin.settings.threshold-rule.destroy') }}" method="POST" onsubmit="return confirm('Remove threshold rule for \'{{ $keyword }}\'?');" style="margin: 0;">
-                                                    @csrf @method('DELETE')
-                                                    <input type="hidden" name="keyword" value="{{ $keyword }}">
-                                                    <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">
-                                                        <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                                <div style="display: flex; gap: 4px;">
+                                                    <button type="button" onclick="populateThresholdForm('{{ $keyword }}', {{ $threshold }}, '{{ $catCode }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
+                                                        <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
                                                     </button>
-                                                </form>
+                                                    <form action="{{ route('admin.settings.threshold-rule.destroy') }}" method="POST" onsubmit="return confirm('Remove threshold rule for \'{{ $keyword }}\'?');" style="margin: 0;">
+                                                        @csrf @method('DELETE')
+                                                        <input type="hidden" name="keyword" value="{{ $keyword }}">
+                                                        <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Rule">
+                                                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         @endforeach
                                     </div>
@@ -841,9 +863,14 @@
                                 <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Stock Threshold</label>
                                 <input type="number" name="threshold" class="cfg-text-input" placeholder="e.g. 10" required min="0">
                             </div>
-                            <button type="submit" class="btn-cfg-add" style="background: linear-gradient(135deg,#ef4444,#dc2626); box-shadow: 0 6px 16px rgba(239,68,68,0.25);">
-                                <i data-lucide="plus-circle"></i> Add Threshold Rule
-                            </button>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" id="thresholdSubmitBtn" class="btn-cfg-add" style="flex: 1; background: linear-gradient(135deg,#ef4444,#dc2626); box-shadow: 0 6px 16px rgba(239,68,68,0.25);">
+                                    <i data-lucide="plus-circle" id="thresholdSubmitIcon"></i> <span id="thresholdSubmitText">Add Threshold Rule</span>
+                                </button>
+                                <button type="button" id="thresholdResetBtn" onclick="resetThresholdForm()" style="display: none; padding: 0.75rem 1rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; margin-top: 1rem;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -900,8 +927,104 @@
         });
     }
 
+    function populateUnitForm(keyword, unit, category) {
+        // Set category first to trigger the keyword dropdown update
+        const catSelect = document.getElementById('unitCategory');
+        catSelect.value = category;
+        $(catSelect).trigger('change');
+
+        // Set unit
+        document.querySelector('#unit-rules select[name="unit"]').value = unit;
+
+        // Set keyword (wait for Select2)
+        setTimeout(() => {
+            const keywordSelect = $('#unitKeyword');
+            if (keywordSelect.find("option[value='" + keyword + "']").length) {
+                keywordSelect.val(keyword).trigger('change');
+            } else {
+                var newOption = new Option(keyword, keyword, true, true);
+                keywordSelect.append(newOption).trigger('change');
+            }
+        }, 100);
+
+        // Update button UI
+        document.getElementById('unitSubmitText').innerText = 'Update';
+        document.getElementById('unitSubmitBtn').style.background = 'linear-gradient(135deg, #4f46e5, #3730a3)';
+        document.getElementById('unitResetBtn').style.display = 'block';
+        const icon = document.getElementById('unitSubmitIcon');
+        icon.setAttribute('data-lucide', 'refresh-cw');
+        if (window.lucide) lucide.createIcons();
+
+        // Scroll to form
+        document.getElementById('unit-rules').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetUnitForm() {
+        document.querySelector('#unit-rules form').reset();
+        $('#unitKeyword').val(null).trigger('change');
+        document.getElementById('unitSubmitText').innerText = 'Add Rule';
+        document.getElementById('unitSubmitBtn').style.background = 'linear-gradient(135deg,#f59e0b,#d97706)';
+        document.getElementById('unitResetBtn').style.display = 'none';
+        const icon = document.getElementById('unitSubmitIcon');
+        icon.setAttribute('data-lucide', 'plus-circle');
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function populateThresholdForm(keyword, threshold, category) {
+        // Set category first to trigger the keyword dropdown update
+        const catSelect = document.getElementById('thresholdCategory');
+        catSelect.value = category;
+        $(catSelect).trigger('change');
+
+        // Set threshold
+        document.getElementsByName('threshold')[0].value = threshold;
+
+        // Set keyword (we need to wait for Select2 to be populated)
+        setTimeout(() => {
+            const keywordSelect = $('#thresholdKeyword');
+            if (keywordSelect.find("option[value='" + keyword + "']").length) {
+                keywordSelect.val(keyword).trigger('change');
+            } else {
+                // If tag is allowed, we can add it
+                var newOption = new Option(keyword, keyword, true, true);
+                keywordSelect.append(newOption).trigger('change');
+            }
+        }, 100);
+
+        // Update button UI
+        document.getElementById('thresholdSubmitText').innerText = 'Update';
+        document.getElementById('thresholdSubmitBtn').style.background = 'linear-gradient(135deg, #4f46e5, #3730a3)';
+        document.getElementById('thresholdResetBtn').style.display = 'block';
+        const icon = document.getElementById('thresholdSubmitIcon');
+        icon.setAttribute('data-lucide', 'refresh-cw');
+        if (window.lucide) lucide.createIcons();
+
+        // Scroll to form
+        document.getElementById('threshold-rules').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetThresholdForm() {
+        document.querySelector('#threshold-rules form').reset();
+        $('#thresholdKeyword').val(null).trigger('change');
+        document.getElementById('thresholdSubmitText').innerText = 'Add Threshold Rule';
+        document.getElementById('thresholdSubmitBtn').style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+        document.getElementById('thresholdResetBtn').style.display = 'none';
+        const icon = document.getElementById('thresholdSubmitIcon');
+        icon.setAttribute('data-lucide', 'plus-circle');
+        if (window.lucide) lucide.createIcons();
+    }
+
     $(document).ready(function() {
         if (window.lucide) lucide.createIcons();
+
+        // Initialize Select2 for units
+        $('.select2-unit').select2({
+            tags: true,
+            placeholder: 'Select or type a new item...',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#unit-rules')
+        });
 
         // Initialize Select2 for thresholds
         $('.select2-threshold').select2({
@@ -912,7 +1035,24 @@
             dropdownParent: $('#threshold-rules')
         });
 
-        // Handle category change to update item dropdown
+        // Handle category change to update item dropdown (Units)
+        $('#unitCategory').on('change', function() {
+            const cat = $(this).val();
+            const keywordSelect = $('#unitKeyword');
+            keywordSelect.empty().append('<option value="">Select Item...</option>');
+            
+            if (cat && itemsByCategory[cat]) {
+                itemsByCategory[cat].forEach(item => {
+                    keywordSelect.append(new Option(item, item));
+                });
+            } else if (!cat) {
+                keywordSelect.append('<option value="">Select Category First...</option>');
+            }
+            
+            keywordSelect.trigger('change');
+        });
+
+        // Handle category change to update item dropdown (Thresholds)
         $('#thresholdCategory').on('change', function() {
             const cat = $(this).val();
             const keywordSelect = $('#thresholdKeyword');

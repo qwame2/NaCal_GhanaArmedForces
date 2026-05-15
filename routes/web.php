@@ -148,8 +148,8 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             ->groupBy('ledge_category');
 
         foreach ($categoryStats as $code => $items) {
-            $avail = $items->sum(fn($i) => is_numeric($i->qty) ? (float)$i->qty : 0);
-            $target = $items->sum(fn($i) => is_numeric($i->qty) ? (float)$i->qty : 0);
+            $avail  = $items->sum(fn($i) => is_numeric($i->stock_balance) ? (float)str_replace(',', '', $i->stock_balance) : 0);
+            $target = $items->sum(fn($i) => is_numeric($i->qty) ? (float)str_replace(',', '', $i->qty) : 0);
             
             if ($target > 0) {
                 $percentage = round(($avail / $target) * 100);
@@ -167,26 +167,13 @@ Route::middleware(['auth', 'check_status'])->group(function () {
 
         // Individual items below threshold for the alerts container (Grouped by Description)
         $allItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as stock_balance, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as qty')
-            ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
+            ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as stock_balance, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as qty')
+            ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
             ->get();
 
         $lowStockItems = collect();
         foreach ($allItems as $item) {
-            $threshold = 0; 
-            $descLower = strtolower(trim($item->description));
-            
-            foreach ($thresholdRules as $kw => $rule) {
-                if (str_contains($descLower, strtolower($kw))) {
-                    $ruleCat = $rule['category'] ?? null;
-                    // If a category was specified in the rule, it must match the item's category
-                    if ($ruleCat && $ruleCat !== $item->ledge_category) {
-                        continue;
-                    }
-                    $threshold = (int)($rule['threshold'] ?? $rule);
-                    break;
-                }
-            }
+            $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
             
             $currentStock = (float)$item->stock_balance;
             if ($threshold > 0 && $currentStock < $threshold) {
@@ -375,45 +362,26 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             $acknowledged = session()->get('acknowledged_notifications', []);
         }
 
-        $thresholdRules = \Illuminate\Support\Facades\Schema::hasTable('settings') 
-            ? json_decode(\App\Models\Setting::where('key', 'item_threshold_rules')->value('value') ?? '{}', true) ?? [] 
-            : [];
-        $unitRules = \Illuminate\Support\Facades\Schema::hasTable('settings') 
-            ? json_decode(\App\Models\Setting::where('key', 'item_unit_rules')->value('value') ?? '{}', true) ?? [] 
-            : [];
-        $globalThreshold = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('low_stock_threshold', 100) : 100;
         
-        $items = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
-            ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
-            ->groupBy('description')
+        $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+            ->whereNotIn(\DB::raw('TRIM(inventory_items.description)'), array_map('trim', $acknowledged))
+            ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
             ->get();
 
         $lowStockNotifications = [];
         foreach ($items as $item) {
             $descLower = strtolower(trim($item->description));
-            $threshold = 0; // Default: No alert
-            
-            foreach ($thresholdRules as $kw => $rule) {
-                if (str_contains($descLower, strtolower($kw))) {
-                    $threshold = (int)($rule['threshold'] ?? $rule);
-                    break;
-                }
-            }
+            $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
  
             $currentStock = (float)$item->total_stock;
             if ($threshold > 0 && $currentStock < $threshold) {
-                $unit = 'units';
-                foreach ($unitRules as $kw => $rule) {
-                    if (str_contains($descLower, strtolower($kw))) {
-                        $unit = $rule['unit'] ?? $rule;
-                        break;
-                    }
-                }
+                $unit = \App\Models\Setting::getItemUnit($item->description);
  
-                $lowStockNotifications[] = [
-                    'type' => 'warning',
-                    'title' => 'Low Stock: ' . $item->description,
-                    'message' => "Stock level (" . number_format($currentStock, 0) . " {$unit}) is below threshold (" . $threshold . ").",
+                 $lowStockNotifications[] = [
+                     'type' => 'warning',
+                     'title' => 'Low Stock: ' . $item->description,
+                     'message' => "Stock level (" . number_format($currentStock, 0) . " {$unit}) is below threshold (" . $threshold . ").",
                     'icon' => 'alert-triangle',
                     'route' => auth()->user()->is_admin ? 'admin.index' : 'dashboard'
                 ];
@@ -448,12 +416,6 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/api/notifications/mark-all-read', function() {
         if (!auth()->check()) return response()->json(['success' => false], 401);
 
-        $thresholdRules = \Illuminate\Support\Facades\Schema::hasTable('settings') 
-            ? json_decode(\App\Models\Setting::where('key', 'item_threshold_rules')->value('value') ?? '{}', true) ?? [] 
-            : [];
-        $globalThreshold = \Illuminate\Support\Facades\Schema::hasTable('settings') 
-            ? (int)\App\Models\Setting::get('low_stock_threshold', 100) 
-            : 100;
 
         $items = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
             ->groupBy('description')
@@ -461,15 +423,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
 
         $lowStockItems = [];
         foreach ($items as $item) {
-            $descLower = strtolower(trim($item->description));
-            $threshold = $globalThreshold;
-            
-            foreach ($thresholdRules as $kw => $rule) {
-                if (str_contains($descLower, $kw)) {
-                    $threshold = (int)$rule['threshold'];
-                    break;
-                }
-            }
+            $threshold = \App\Models\Setting::getItemThreshold($item->description);
 
             if ($item->total_stock < $threshold) {
                 $lowStockItems[] = $item->description;
@@ -549,10 +503,6 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         );
         $rules = json_decode($setting->value ?? '{}', true) ?? [];
         
-        if (isset($rules[$keyword])) {
-            return back()->with('error', "This item and unit already exist in the system.");
-        }
-
         $rules[$keyword] = [
             'category' => $category,
             'unit' => $unit

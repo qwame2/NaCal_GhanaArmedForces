@@ -30,14 +30,25 @@ class AppServiceProvider extends ServiceProvider
                     $acknowledged = session()->get('acknowledged_notifications', []);
                 }
 
-                $threshold = \Illuminate\Support\Facades\Schema::hasTable('settings') ? (int)\App\Models\Setting::get('low_stock_threshold', 100) : 100;
-
-                // Fetch low stock items details
-                $lowStockItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+                // Fetch all unique items (excluding acknowledged)
+                $allItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                     ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
                     ->groupBy('description')
-                    ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) < ?', [$threshold])
                     ->get();
+
+                $lowStockNotifications = [];
+                foreach ($allItems as $item) {
+                    $itemThreshold = \App\Models\Setting::getItemThreshold($item->description);
+                    if ($itemThreshold > 0 && (float)$item->total_stock < $itemThreshold) {
+                        $lowStockNotifications[] = [
+                            'type' => 'warning',
+                            'title' => 'Low Stock: ' . $item->description,
+                            'message' => "Critical balance detected: " . number_format($item->total_stock, 0) . " " . \App\Models\Setting::getItemUnit($item->description) . " remaining.",
+                            'icon' => 'alert-triangle',
+                            'route' => auth()->user()->is_admin ? 'admin.index' : 'dashboard'
+                        ];
+                    }
+                }
 
                 // Fetch expired items details
                 $expiredItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) as total_qty')
@@ -46,18 +57,8 @@ class AppServiceProvider extends ServiceProvider
                     ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
                     ->get();
 
-                $notifications = [];
+                $notifications = $lowStockNotifications;
                 $is_admin = auth()->user()->is_admin;
-                
-                foreach ($lowStockItems as $item) {
-                    $notifications[] = [
-                        'type' => 'warning',
-                        'title' => 'Low Stock: ' . $item->description,
-                        'message' => "Critical balance detected: " . number_format($item->total_stock, 0) . " units remaining.",
-                        'icon' => 'alert-triangle',
-                        'route' => $is_admin ? 'admin.index' : 'dashboard'
-                    ];
-                }
 
                 foreach ($expiredItems as $item) {
                     $notifications[] = [

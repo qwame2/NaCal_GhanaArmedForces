@@ -103,30 +103,44 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        $maxAttempts = \Illuminate\Support\Facades\Schema::hasTable('settings') 
-            ? (int) \App\Models\Setting::get('max_login_attempts', 5) 
+        $maxAttemptsRaw = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::get('max_login_attempts', 5) 
             : 5;
+        $maxAttempts = max(1, (int) $maxAttemptsRaw);
 
         $throttleKey = strtolower($request->input('username')) . '|' . $request->ip();
+
+        $targetUser = User::where('username', $request->username)->first();
+
+        // SECURITY ENFORCEMENT: Block already deactivated accounts immediately
+        if ($targetUser && !$targetUser->is_active) {
+            return back()->with('error', 'wrong password or username account has been deactivated see admin to activate your account')->withInput();
+        }
 
         if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($throttleKey, $maxAttempts)) {
             $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn($throttleKey);
             
-            \App\Models\SystemLog::create([
-                'user_id' => null,
-                'event_type' => 'SECURITY',
-                'action' => 'BRUTE_FORCE_PREVENTED',
-                'description' => "Too many failed login attempts for username '{$request->username}'. Lockout engaged for {$seconds} seconds.",
-                'severity' => 'danger',
-                'ip_address' => $request->ip()
-            ]);
+            // If it's a personnel account and they are already being throttled, ensure they are deactivated
+            if ($targetUser && !$targetUser->is_admin) {
+                if ($targetUser->is_active) {
+                    $targetUser->update(['is_active' => false]);
+                    \App\Models\SystemLog::create([
+                        'user_id' => $targetUser->id,
+                        'event_type' => 'SECURITY',
+                        'action' => 'ACCOUNT_AUTO_DEACTIVATED',
+                        'description' => "Personnel @{$targetUser->username} deactivated after triggering rate limit.",
+                        'severity' => 'danger',
+                        'ip_address' => $request->ip()
+                    ]);
+                }
+                return back()->with('error', 'wrong password or username account has been deactivated see admin to activate your account')->withInput();
+            }
 
             return back()->with('error', "Too many login attempts. Please try again in {$seconds} seconds.")->withInput();
         }
 
-        // CIA SECURITY ENFORCEMENT: Check user role BEFORE authentication attempt
         // Administrative accounts are prohibited from using persistent "Remember Me" cookies
-        $targetUser = User::where('username', $request->username)->first();
+
         $remember = ($targetUser && $targetUser->is_admin) ? false : $request->remember;
 
         if (Auth::attempt($credentials, $remember)) {
@@ -208,7 +222,24 @@ class AuthController extends Controller
             return $user->is_admin ? redirect()->route('admin.index') : redirect()->route('dashboard');
         }
 
-        \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, 60);
+        \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, 3600); // Record hit for 1 hour
+        $attempts = \Illuminate\Support\Facades\RateLimiter::attempts($throttleKey);
+
+        // SECURITY ENFORCEMENT: Deactivate personnel accounts exceeding thresholds
+        if ($targetUser && !$targetUser->is_admin && $attempts >= $maxAttempts) {
+            $targetUser->update(['is_active' => false]);
+
+            \App\Models\SystemLog::create([
+                'user_id' => $targetUser->id,
+                'event_type' => 'SECURITY',
+                'action' => 'ACCOUNT_AUTO_DEACTIVATED',
+                'description' => "Personnel registry @{$targetUser->username} auto-deactivated after {$attempts} failed authentication attempts.",
+                'severity' => 'danger',
+                'ip_address' => $request->ip()
+            ]);
+
+            return back()->with('error', 'wrong password or username account has been deactivated see admin to activate your account')->withInput();
+        }
 
         return back()->withErrors([
             'username' => 'The provided credentials do not match our records.',

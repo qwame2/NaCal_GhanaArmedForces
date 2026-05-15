@@ -1,10 +1,7 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
-$app = require_once __DIR__ . '/../bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
-
-$settings = \DB::table('global_settings')->get();
-foreach($settings as $s) {
-    echo "Group: {$s->group} | Key: {$s->key} | Type: {$s->type}\n";
-}
+require 'vendor/autoload.php';
+$app = require_once 'bootstrap/app.php';
+$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
+$val = App\Models\Setting::get('max_login_attempts', 'NOT FOUND');
+echo "Value: " . $val . "\n";
+echo "Type: " . gettype($val) . "\n";

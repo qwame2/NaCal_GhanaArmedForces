@@ -37,12 +37,6 @@
                     $acknowledged = session()->get('acknowledged_notifications', []);
                 }
 
-                $thresholdRules = \Illuminate\Support\Facades\Schema::hasTable('settings') 
-                    ? json_decode(\App\Models\Setting::where('key', 'item_threshold_rules')->value('value') ?? '{}', true) ?? [] 
-                    : [];
-                $unitRules = \Illuminate\Support\Facades\Schema::hasTable('settings') 
-                    ? json_decode(\App\Models\Setting::where('key', 'item_unit_rules')->value('value') ?? '{}', true) ?? [] 
-                    : [];
 
                 // Fetch all unique items (excluding acknowledged)
                 $items = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
@@ -53,23 +47,10 @@
                 $allNotifs = [];
                 foreach ($items as $item) {
                     $descLower = strtolower(trim($item->description));
-                    $threshold = 0; // Default: No alert
-                    
-                    foreach ($thresholdRules as $kw => $rule) {
-                        if (str_contains($descLower, strtolower($kw))) {
-                            $threshold = (int)($rule['threshold'] ?? $rule);
-                            break;
-                        }
-                    }
+                    $threshold = \App\Models\Setting::getItemThreshold($item->description);
 
                     if ($threshold > 0 && (float)$item->total_stock < $threshold) {
-                        $unit = 'units';
-                        foreach ($unitRules as $kw => $rule) {
-                            if (str_contains($descLower, strtolower($kw))) {
-                                $unit = $rule['unit'] ?? $rule;
-                                break;
-                            }
-                        }
+                        $unit = \App\Models\Setting::getItemUnit($item->description);
 
                         $allNotifs[] = [
                             'type' => 'warning', 

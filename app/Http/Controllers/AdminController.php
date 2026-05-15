@@ -90,6 +90,13 @@ class AdminController extends Controller
         $user->is_active = !$user->is_active;
         if (!$user->is_active) {
             $user->is_online = false;
+        } else {
+            // If reactivating, clear their failed login attempts so they start fresh
+            $throttleKey = strtolower($user->username) . '|' . request()->ip();
+            \Illuminate\Support\Facades\RateLimiter::clear($throttleKey);
+            
+            // Also clear for any IP if we want to be thorough, but we only have current IP here.
+            // Usually username is enough if we use a different key format, but AuthController uses username|ip.
         }
         $user->save();
 

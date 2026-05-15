@@ -21,4 +21,16 @@ class IssuedItem extends Model
     {
         return $this->belongsTo(Issuance::class);
     }
+
+    /**
+     * Dynamically override the issued item's unit based on global rules.
+     */
+    public function getUnitAttribute($value)
+    {
+        $dynamicUnit = Setting::getItemUnit($this->description);
+        if ($dynamicUnit !== 'units') {
+            return $dynamicUnit;
+        }
+        return $value ?: 'units';
+    }
 }

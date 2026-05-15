@@ -814,7 +814,24 @@
         @endif
 
         @if(session('error'))
-            showToast("{{ session('error') }}", 'error');
+            @if(session('error') == 'wrong password or username account has been deactivated see admin to activate your account')
+                Swal.fire({
+                    title: '<span style="font-weight: 900; color: #1e293b;">Strategic Command Alert</span>',
+                    text: "{{ session('error') }}",
+                    icon: 'warning',
+                    iconColor: '#ef4444',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdrop: `rgba(0,0,123,0.1)`,
+                    confirmButtonColor: '#4f46e5',
+                    confirmButtonText: 'UNDERSTOOD',
+                    customClass: {
+                        popup: 'glass-monolith',
+                        confirmButton: 'auth-btn-primary'
+                    }
+                });
+            @else
+                showToast("{{ session('error') }}", 'error');
+            @endif
         @endif
 
         @if($errors->any())

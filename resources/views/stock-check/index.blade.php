@@ -70,7 +70,7 @@
                 <tbody>
                     @forelse($items as $item)
                     @php
-                        $threshold = \App\Models\Setting::get('low_stock_threshold', 100);
+                        $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
                         $stock = (float)$item->total_available;
                         $received = (float)$item->total_received;
                         $variance = (float)$item->total_variance;

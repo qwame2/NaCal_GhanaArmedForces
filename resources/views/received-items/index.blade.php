@@ -336,8 +336,8 @@
                     $totalStock = $agg ? (float)$agg->total_available : 0;
 
 
-                    // Calculation: (Received Qty / Stock Balance) * 100
-                    $percentage = ($totalStock > 0) ? ($totalQty / $totalStock) * 100 : 0;
+                    // Calculation: (Stock Balance / Received Qty) * 100
+                    $percentage = ($totalQty > 0) ? ($totalStock / $totalQty) * 100 : 0;
 
                     $hStatus = 'IN STOCK';
                     $hColor = '#10b981';
@@ -410,8 +410,8 @@
 
                         <td data-label="Available Item Health" style="padding: 1.25rem 1.5rem;">
                             @php
-                                $threshold = \App\Models\Setting::get('low_stock_threshold', 100);
-                                $isItemLow = $totalQty <= $threshold;
+                                $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
+                                $isItemLow = $totalStock <= $threshold;
                                 $itemHealthStatus = $isItemLow ? 'LOW STOCK' : 'IN STOCK';
                                 $itemHealthColor = $isItemLow ? '#ef4444' : '#10b981';
                             @endphp
