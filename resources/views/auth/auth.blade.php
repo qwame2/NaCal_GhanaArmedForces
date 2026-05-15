@@ -2,6 +2,7 @@
 
 @php
     $adminExists = \App\Models\User::where('is_admin', true)->exists();
+    $adminOnline = \App\Models\User::where('is_admin', true)->where('is_online', true)->exists();
 @endphp
 
 @section('content')
@@ -279,7 +280,20 @@
             </div>
 
             <!-- Dynamic Form Viewport -->
-            <div class="auth-viewport" style="margin-top: 1.5rem; transition: height 0.5s ease; overflow: hidden;">
+            <div class="auth-viewport" style="margin-top: 1.5rem; transition: height 0.5s ease; overflow: hidden; position: relative;">
+                
+                @if($adminOnline)
+                <div id="adminOnlineOverlay" style="display: none; position: absolute; inset: 0; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(8px); z-index: 50; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-radius: 16px;">
+                    <div style="background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); border: 1px solid rgba(239, 68, 68, 0.2); width: 85%; max-width: 340px;">
+                        <div style="width: 60px; height: 60px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                            <i data-lucide="shield-alert" style="width: 30px; height: 30px;"></i>
+                        </div>
+                        <h3 style="color: #0f172a; font-weight: 900; font-size: 1.1rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">WARNING</h3>
+                        <p style="color: #64748b; font-size: 0.85rem; font-weight: 600; line-height: 1.5; margin: 0;">An Administrator has already logged in. Concurrent Command access is strictly prohibited.</p>
+                    </div>
+                </div>
+                @endif
+
                 <div id="formsSlider" style="display: flex; width: 200%; transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);">
                     <!-- Login Side -->
                     <div id="loginForm" class="auth-form-side" style="width: 50%; padding: 0 10px; opacity: 1;">
@@ -640,6 +654,16 @@
             tabsContainer.style.border = '1px solid rgba(0,0,0,0.05)';
             tabsContainer.style.padding = '5px';
             usernameLabel.innerText = 'Admin Callsign';
+
+            @if($adminOnline)
+            const overlay = document.getElementById('adminOnlineOverlay');
+            if (overlay) overlay.style.display = 'flex';
+            const slider = document.getElementById('formsSlider');
+            if (slider) {
+                slider.style.pointerEvents = 'none';
+                slider.setAttribute('inert', '');
+            }
+            @endif
         } else {
             tabsContainer.innerHTML = `
                 <button type="button" class="tab-btn active" style="background: rgba(99, 102, 241, 0.1); color: var(--primary); width: 100%; max-width: 250px; display: flex; align-items: center; justify-content: center; gap: 8px;">
@@ -652,6 +676,16 @@
             tabsContainer.style.padding = '0';
             usernameLabel.innerText = 'Personnel Callsign';
             toggleAuth('login');
+
+            @if($adminOnline)
+            const overlay = document.getElementById('adminOnlineOverlay');
+            if (overlay) overlay.style.display = 'none';
+            const slider = document.getElementById('formsSlider');
+            if (slider) {
+                slider.style.pointerEvents = 'auto';
+                slider.removeAttribute('inert');
+            }
+            @endif
         }
         
         updateViewportHeight();

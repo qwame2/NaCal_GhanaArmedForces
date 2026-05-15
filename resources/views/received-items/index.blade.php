@@ -458,11 +458,6 @@
                         Edit Entry
                     </button>
 
-                    <div style="height: 1px; background: var(--border-color); margin: 4px 10px; opacity: 0.5;"></div>
-                    <button onclick="deleteBatch('{{ $item->batch_id }}')" class="menu-item" style="color: #ef4444;">
-                        <i data-lucide="trash-2"></i>
-                        Delete Record
-                    </button>
                 </div>
             </div>
         </td>
