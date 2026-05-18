@@ -36,7 +36,7 @@
                 <i data-lucide="shield-check"></i>
             </div>
             <div class="metric-data">
-                <span class="m-label">Admin Clearances</span>
+                <span class="m-label">Head Clearances</span>
                 <h3 class="m-value">{{ $allUsers->where('is_admin', true)->count() }}</h3>
                 <span class="m-status">SECURE</span>
             </div>
@@ -71,7 +71,7 @@
                 @endif
                 <button type="button" class="btn-tool primary" onclick="openAddPersonnelModal()" style="border-radius: 18px; padding: 12px 24px; font-weight: 800; font-size: 0.85rem; gap: 10px; display: flex; align-items: center; background: #0f172a; color: white; border: none; cursor: pointer; transition: all 0.3s ease;">
                     <i data-lucide="user-plus" style="width: 18px;"></i>
-                    <span>Register Personnel</span>
+                    <span>Register Officers</span>
                 </button>
                 <div class="command-search">
                     <div class="search-icon-wrap">
@@ -548,7 +548,7 @@
                     <div class="swal-input-group" style="margin-bottom: 1rem;">
                         <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Security Access Key (Temporary Password)</label>
                         <div style="position: relative;">
-                            <input type="password" name="password" id="swal-password" class="swal2-input" value="${randomPass}" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0; padding-right: 50px;" required minlength="8" pattern="(?=.*\\d).{8,}" title="Minimum 8 characters, including at least one number">
+                            <input type="password" name="password" id="swal-password" class="swal2-input" value="${randomPass}" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0; padding-right: 50px; background-color: #f8fafc; cursor: default;" required readonly>
                             <button type="button" onclick="toggleSwalPassword()" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center;">
                                 <i data-lucide="eye" id="swal-password-icon" style="width: 20px;"></i>
                             </button>
@@ -677,8 +677,8 @@
                     <i data-lucide="history"></i>
                 </div>
                 <div>
-                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 900; color: #0f172a;">Legacy Admin Activity</h3>
-                    <p style="margin: 4px 0 0; font-size: 0.85rem; color: #64748b; font-weight: 600;">Comprehensive audit trail of deactivated administrative accounts.</p>
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 900; color: #0f172a;">Legacy Head Activity</h3>
+                    <p style="margin: 4px 0 0; font-size: 0.85rem; color: #64748b; font-weight: 600;">Comprehensive audit trail of deactivated Head accounts.</p>
                 </div>
             </div>
             <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
@@ -695,7 +695,7 @@
                 </select>
                 @if(isset($legacyAdmins) && $legacyAdmins->count() > 0)
                 <select id="legacyAdminFilter" onchange="filterLegacyLogs()" style="padding: 8px 12px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 0.85rem; font-weight: 600; color: #475569; outline: none; cursor: pointer; background: white;">
-                    <option value="all">All Previous Admins</option>
+                    <option value="all">All Previous Heads</option>
                     @foreach($legacyAdmins as $admin)
                     <option value="{{ $admin->id }}">{{ $admin->name }}</option>
                     @endforeach

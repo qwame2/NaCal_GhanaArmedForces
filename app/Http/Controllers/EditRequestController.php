@@ -818,4 +818,160 @@ class EditRequestController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function processVerificationApproval(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'reason' => 'nullable|string'
+        ]);
+
+        if (!auth()->user()->is_admin) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $editReq = EditRequest::findOrFail($id);
+        $editReq->status = $request->status;
+        $editReq->save();
+
+        $statusHeader = $request->status === 'approved' ? 'VERIFICATION AUTHORIZED & RECONCILED' : 'VERIFICATION REJECTED';
+        $color = $request->status === 'approved' ? '#10b981' : '#dc2626';
+
+        if ($request->status === 'approved') {
+            $payload = json_decode($editReq->payload, true);
+            
+            \Illuminate\Support\Facades\DB::beginTransaction();
+            try {
+                $itemsToProcess = [];
+                if (isset($payload['items'])) {
+                    $itemsToProcess = $payload['items'];
+                } else {
+                    $itemsToProcess[] = $payload;
+                }
+
+                foreach ($itemsToProcess as $itemData) {
+                    $description = $itemData['description'];
+                    $physicalCount = $itemData['physical_count'];
+                    $condition = $itemData['condition'];
+                    $remarks = $itemData['remarks'];
+                    $variance = $itemData['variance'];
+
+                    // Reconcile stock
+                    $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                        ->where('inventory_items.description', $description)
+                        ->select('inventory_items.*')
+                        ->orderBy('inventory_batches.entry_date', 'desc')
+                        ->get();
+
+                    if ($items->isNotEmpty()) {
+                        $remainingAdjustment = $variance;
+
+                        foreach ($items as $item) {
+                            if ($remainingAdjustment === 0) break;
+
+                            if ($remainingAdjustment > 0) {
+                                $item->stock_balance += $remainingAdjustment;
+                                $item->variance = (float)$item->variance + $remainingAdjustment;
+                                $item->save();
+                                $remainingAdjustment = 0;
+                            } else {
+                                $subtraction = min(abs($remainingAdjustment), $item->stock_balance);
+                                $item->stock_balance -= $subtraction;
+                                $item->variance = (float)$item->variance - $subtraction;
+                                $item->save();
+                                $remainingAdjustment += $subtraction;
+                            }
+                        }
+                    }
+
+                    \App\Models\SystemLog::create([
+                        'user_id' => $editReq->user_id,
+                        'event_type' => 'INVENTORY',
+                        'action' => 'STOCK_VERIFICATION',
+                        'description' => "Stock verification & reconciliation approved for item '{$description}'. Physical: {$physicalCount}. Condition: {$condition}. Remarks: {$remarks}.",
+                        'severity' => $variance === 0 ? 'info' : 'warning',
+                        'ip_address' => request()->ip()
+                    ]);
+                }
+
+                \Illuminate\Support\Facades\DB::commit();
+
+                \App\Models\SystemLog::create([
+                    'user_id' => auth()->id(),
+                    'event_type' => 'SECURITY',
+                    'action' => 'AUTHORIZATION',
+                    'description' => "Administrator authorized STOCK RECONCILIATION request submitted by {$editReq->user->name}.",
+                    'severity' => 'info',
+                    'ip_address' => request()->ip()
+                ]);
+
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Failed to process reconciliation: ' . $e->getMessage()]);
+            }
+        }
+
+        // Notification logic
+        $finalMsg = "<div class='personnel-view' style='padding: 15px; border: 1px solid {$color}; border-radius: 12px; background: " . ($request->status === 'approved' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(220, 38, 38, 0.05)') . ";'>";
+        $finalMsg .= "<b style='color: {$color}'>{$statusHeader}</b><br>";
+        
+        if ($request->status === 'approved') {
+            $payload = json_decode($editReq->payload, true);
+            if (isset($payload['items'])) {
+                $finalMsg .= "Your batch stock verification for <b style='color: #4f46e5;'>" . count($payload['items']) . " items</b> has been authorized. Registry balances have been successfully reconciled.";
+            } else {
+                $finalMsg .= "Your physical stock verification for <b style='color: #4f46e5;'>" . e($payload['description']) . "</b> (Physical Count: " . e($payload['physical_count']) . ") has been authorized. Registry balances have been successfully reconciled.";
+            }
+        } else {
+            $finalMsg .= "Your stock verification and reconciliation request was not authorized.<br>";
+            if ($request->reason) {
+                $finalMsg .= "<div style='margin-top: 5px; color: #b91c1c;'>" . nl2br(e($request->reason)) . "</div>";
+            }
+        }
+        $finalMsg .= "</div>";
+
+        // Update Personnel Message
+        $personnelMsg = Message::where('receiver_id', $editReq->user_id)
+            ->where('edit_request_id', $editReq->id)
+            ->where(function($q) {
+                $q->where('message', 'like', '%STOCK RECONCILIATION%')
+                  ->orWhere('message', 'like', '%VERIFICATION%')
+                  ->orWhere('message', 'like', '%BATCH%');
+            })
+            ->first();
+
+        if ($personnelMsg) {
+            $personnelMsg->update(['message' => $finalMsg, 'is_automated' => true]);
+        } else {
+            Message::create([
+                'sender_id' => auth()->id(),
+                'receiver_id' => $editReq->user_id,
+                'message' => $finalMsg,
+                'is_automated' => true,
+                'edit_request_id' => $editReq->id
+            ]);
+        }
+
+        // Update Admin Messages
+        $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+            ->where(function($q) use ($editReq) {
+                $q->where('edit_request_id', $editReq->id)
+                  ->orWhere('message', 'like', "%verification-actions-{$editReq->id}%");
+            })
+            ->get();
+
+        foreach ($adminMsgs as $adminMsg) {
+            $statusLabel = $request->status === 'approved' ? 'AUTHORIZED & RECONCILED' : 'REJECTED';
+            $newMsg = "<div style='padding: 15px; border-left: 4px solid {$color}; background: rgba(0,0,0,0.02);'>";
+            $newMsg .= "<b style='color: {$color};'>VERIFICATION {$statusLabel}</b><br>";
+            $newMsg .= "Submission by " . ($editReq->user->name ?? 'Personnel') . " has been {$request->status}.";
+            if ($request->status === 'rejected' && $request->reason) {
+                $newMsg .= "<div style='margin-top: 5px; font-size: 0.85rem; color: #666;'>Reason: " . e($request->reason) . "</div>";
+            }
+            $newMsg .= "</div>";
+            $adminMsg->update(['message' => $newMsg, 'is_automated' => true]);
+        }
+
+        return response()->json(['success' => true]);
+    }
 }

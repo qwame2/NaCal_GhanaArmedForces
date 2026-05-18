@@ -421,46 +421,32 @@
         </div>
         </td>
 
-        <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right;">
-            <div class="action-dropdown-wrapper">
-                <button type="button" class="glass-btn-sm" title="Actions" onclick="toggleActionMenu('{{ $item->id }}', this, event)" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
-                    <i data-lucide="more-vertical" style="width: 18px;"></i>
-                </button>
-                <div id="actionMenu-{{ $item->id }}" class="action-menu">
-                    @if(($displayStatus === 'PARTIAL DELIVERY' || $displayStatus === 'Partial Delivery') && is_numeric($item->variance) && (float)$item->variance < 0)
-                    @php
-                        $pendingRemainder = \App\Models\EditRequest::where('item_id', $item->batch_id)
-                            ->where('item_type', 'batch')
-                            ->where('request_type', 'remainder_submission')
-                            ->where('status', 'pending')
-                            ->exists();
-                    @endphp
-                    @if($pendingRemainder)
-                    {{-- Locked: remainder already submitted, awaiting admin approval --}}
-                    <div class="menu-item" style="color: #f59e0b; opacity: 0.7; cursor: not-allowed; pointer-events: none; display: flex; align-items: center; gap: 8px; padding: 0.6rem 1rem;">
-                        <i data-lucide="clock" style="width:16px; flex-shrink:0;"></i>
-                        <span>
-                            <span style="display:block; font-size:0.82rem; font-weight:800;">Awaiting Approval</span>
-                            <span style="display:block; font-size:0.7rem; color:#94a3b8; font-weight:600;">Remainder pending admin review</span>
-                        </span>
-                    </div>
-                    @else
-                    <button onclick="continueDelivery('{{ $item->batch_id }}')" class="menu-item" style="color: #f59e0b;">
-                        <i data-lucide="package-plus"></i>
-                        Continue Delivery
-                    </button>
-                    @endif
-                    @endif
+                        <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right;">
+                            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+                                @if(($displayStatus === 'PARTIAL DELIVERY' || $displayStatus === 'Partial Delivery') && is_numeric($item->variance) && (float)$item->variance < 0)
+                                    @php
+                                        $pendingRemainder = \App\Models\EditRequest::where('item_id', $item->batch_id)
+                                            ->where('item_type', 'batch')
+                                            ->where('request_type', 'remainder_submission')
+                                            ->where('status', 'pending')
+                                            ->exists();
+                                    @endphp
+                                    @if($pendingRemainder)
+                                        <div title="Awaiting Approval" style="width: 38px; height: 38px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; opacity: 0.7;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                        </div>
+                                    @else
+                                        <button onclick="continueDelivery('{{ $item->batch_id }}')" class="action-icon-btn" title="Continue Delivery" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.1);">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7"/><circle cx="12" cy="12" r="3"/></svg>
+                                        </button>
+                                    @endif
+                                @endif
 
-
-                    <button onclick="openEditBatchModal('{{ $item->batch_id }}')" class="menu-item" style="color: var(--primary);">
-                        <i data-lucide="edit-3"></i>
-                        Edit Entry
-                    </button>
-
-                </div>
-            </div>
-        </td>
+                                <button onclick="openEditBatchModal('{{ $item->batch_id }}')" class="action-icon-btn" title="Edit Entry" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.1);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                </button>
+                            </div>
+                        </td>
         </tr>
         @empty
         <tr>
@@ -1137,6 +1123,54 @@
         transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
+    .custom-premium-select {
+        width: 100%;
+        padding: 0.85rem 2.5rem 0.85rem 1rem !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        color: #1e293b !important;
+        background-color: #f8fafc !important;
+        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E') !important;
+        background-repeat: no-repeat !important;
+        background-position: right 1rem center !important;
+        background-size: 16px !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+    }
+    .custom-premium-select:hover {
+        border-color: #cbd5e1 !important;
+        background-color: #f1f5f9 !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04) !important;
+    }
+    .custom-premium-select:focus {
+        outline: none !important;
+        border-color: #4f46e5 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    [data-theme='dark'] .custom-premium-select {
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+        background-color: #1e293b !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E') !important;
+    }
+    [data-theme='dark'] .custom-premium-select:hover {
+        border-color: #475569 !important;
+        background-color: #334155 !important;
+    }
+    [data-theme='dark'] .custom-premium-select:focus {
+        border-color: #6366f1 !important;
+        background-color: #0f172a !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2), 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+    }
+
     [data-theme='dark'] .modal-content {
         background: linear-gradient(135deg, #0f172a, #020617) !important;
     }
@@ -1286,6 +1320,23 @@
         border-color: var(--primary);
         transform: translateY(-2px) scale(1.05);
         box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Icon-only action buttons — keep icon dark on hover */
+    .action-icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .action-icon-btn:hover {
+        transform: translateY(-2px) scale(1.08);
+        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.18);
+        color: #111827 !important;
+        background: rgba(99, 102, 241, 0.12) !important;
+        border-color: rgba(99, 102, 241, 0.25) !important;
     }
 
     /* Advanced Pagination */
@@ -2579,18 +2630,68 @@
     }
 
     function submitStockCheck() {
-        const item = document.getElementById('auditItemName').innerText;
-        const count = document.getElementById('physicalCount').value;
-        const reason = document.getElementById('auditReason').value;
-        const notes = document.getElementById('auditNotes').value;
+        const description = document.getElementById('auditItemName').innerText;
+        const physicalCount = document.getElementById('physicalCount').value;
+        const condition = document.getElementById('auditReason').value;
+        const remarks = document.getElementById('auditNotes').value;
 
-        closeStockCheckModal();
+        if (!physicalCount || physicalCount === '') {
+            showToast('Verification Failed', 'Please specify a physical count first.', 'error');
+            return;
+        }
 
-        showToast(
-            'Audit Submitted',
-            `Stock audit for ${item} completed. Variance: ${document.getElementById('newAuditVariance').innerText}`,
-            'success'
-        );
+        if (!condition) {
+            showToast('Verification Failed', 'Please select a verification condition (Status).', 'error');
+            return;
+        }
+
+        const submitBtn = document.querySelector('#stockCheckForm button[type="submit"]');
+        const originalHtml = submitBtn.innerHTML;
+        const isAdmin = {{ auth()->user()->is_admin ? 'true' : 'false' }};
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<div class="loader" style="width: 14px; height: 14px; border-width: 2px; border-color: white;"></div> ${isAdmin ? 'Sealing Record...' : 'Submitting Request...'}`;
+
+        fetch("{{ route('stockcheck.verify') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                description: description,
+                physical_count: physicalCount,
+                condition: condition,
+                remarks: remarks
+            })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Server protocol violation');
+            return res.json();
+        })
+        .then(data => {
+            if (data.success) {
+                closeStockCheckModal();
+                Swal.fire({
+                    title: 'Verification Complete',
+                    text: data.message,
+                    icon: 'success',
+                    confirmButtonColor: 'var(--primary)'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                showToast('Verification Failed', data.message || 'An unexpected error occurred.', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Network Error', 'Could not establish connection to logistics servers.', 'error');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalHtml;
+        });
     }
     async function generateAuditReport() {
         const item = document.getElementById('auditItemName').innerText;
@@ -2832,93 +2933,112 @@
 </script>
 <!-- Edit Batch Modal -->
 <div id="editBatchModal" class="modal-backdrop">
-    <div class="modal-content glass-card animate-scale-up" style="max-width: 1000px; width: 95%;">
-        <div class="modal-header">
+    <div class="modal-content glass-card animate-scale-up" style="max-width: 1000px; width: 95%; padding: 0; overflow: hidden; border: none; background: #ffffff; display: flex; flex-direction: column; max-height: 90vh;">
+        <!-- Premium Modal Header -->
+        <div style="padding: 1.5rem 2.5rem; background: linear-gradient(to right, #4f46e5, #6366f1); display: flex; justify-content: space-between; align-items: center; color: white;">
             <div>
-                <h3 id="editModalTitle" style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.25rem;">Edit Entry Details</h3>
-                <p id="editModalSubtitle" style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">#BATCH-0000</p>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+                    <div style="background: rgba(255, 255, 255, 0.2); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </div>
+                    <h3 id="editModalTitle" style="font-size: 1.25rem; font-weight: 800; margin: 0; color: white; letter-spacing: -0.02em;">Modify Record</h3>
+                </div>
+                <p id="editModalSubtitle" style="color: rgba(255, 255, 255, 0.8); font-size: 0.85rem; font-weight: 600; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">#BATCH-0000</p>
             </div>
-            <button onclick="closeEditBatchModal()" class="btn-icon danger" title="Close">
-                <i data-lucide="x" style="width: 18px;"></i>
+            <button onclick="closeEditBatchModal()" style="background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
         </div>
 
-        <form id="editBatchForm" onsubmit="event.preventDefault(); submitEditBatch();" style="display: flex; flex-direction: column; height: 100%;">
-            <div class="modal-body" id="editModalBody" style="flex: 1; overflow-y: auto; padding: 1.5rem; max-height: 65vh;">
+        <form id="editBatchForm" onsubmit="event.preventDefault(); submitEditBatch();" style="display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden;">
+            <div class="modal-body" id="editModalBody" style="padding: 2.5rem; max-height: 75vh; overflow-y: auto; flex: 1; min-height: 0;">
                 <div class="loader-container" id="editModalLoader">
                     <div class="loader"></div>
-                    <p>Fetching entry data...</p>
+                    <p style="font-weight: 700; color: #475569; margin-top: 1rem;">Decrypting Batch Data...</p>
                 </div>
                 
                 <div id="editModalContent" style="display: none;">
-                    <!-- Batch Metadata -->
                     <div id="editBatchInfo"></div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; background: var(--bg-main); padding: 1.5rem; border-radius: 20px;">
-                        <div>
-                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Arrival Date</label>
-                            <input type="date" name="arrival_date" id="editArrivalDate" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-main);">
+                    <!-- Metadata Section -->
+                    <div style="margin-bottom: 2.5rem;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem;">
+                            <span style="font-size: 0.75rem; font-weight: 900; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.1em;">Record Details</span>
+                            <div style="flex: 1; height: 1px; background: #f1f5f9;"></div>
                         </div>
-                        <div>
-                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Category</label>
-                            <select name="ledge_category" id="editCategory" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-main);">
-                                @foreach($ledgeMap as $code => $name)
-                                <option value="{{ $code }}">Category {{ $code }} ({{ $name }})</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Acquisition Status</label>
-                            <select name="acquisition_status" id="editAcquisitionStatus" required onchange="toggleEditSourceFields()" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-card); color: var(--text-main);">
-                                <option value="Full Delivery">Full Delivery</option>
-                                <option value="Partial Delivery">Partial Delivery</option>
-                                <option value="Donor">Donation (Donor)</option>
-                            </select>
-                        </div>
-                        <div id="editSupplierField">
-                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Supplier Name</label>
-                            <select name="supplier_name" id="editSupplierName" style="width: 100%;" class="select2-edit">
-                                <option value="">Select Supplier...</option>
-                                @foreach($allSuppliers as $supplier)
-                                <option value="{{ $supplier }}">{{ $supplier }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div id="editDonorField" style="display: none;">
-                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Donor Name</label>
-                            <select name="donor_name" id="editDonorName" style="width: 100%;" class="select2-edit">
-                                <option value="">Select Donor...</option>
-                                @foreach($allDonors as $donor)
-                                <option value="{{ $donor }}">{{ $donor }}</option>
-                                @endforeach
-                            </select>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+                            <div class="input-group">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Arrival Date</label>
+                                <div style="position: relative;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                                    <input type="date" name="arrival_date" id="editArrivalDate" required style="width: 100%; padding: 0.85rem 1rem 0.85rem 2.5rem; border: 1.5px solid #e2e8f0; border-radius: 12px; font-weight: 700; color: #1e293b; background: #f8fafc;">
+                                </div>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Asset Category</label>
+                                <select name="ledge_category" id="editCategory" required class="custom-premium-select">
+                                    @foreach($ledgeMap as $code => $name)
+                                    <option value="{{ $code }}">CAT {{ $code }} | {{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Sourcing Method</label>
+                                <select name="acquisition_status" id="editAcquisitionStatus" required onchange="toggleEditSourceFields()" class="custom-premium-select">
+                                    <option value="Full Delivery">Full Delivery</option>
+                                    <option value="Partial Delivery">Partial Delivery</option>
+                                    <option value="Donor">Donor Acquisition</option>
+                                </select>
+                            </div>
+                            
+                            <div id="editSupplierField" class="input-group">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Origin Entity (Supplier)</label>
+                                <select name="supplier_name" id="editSupplierName" style="width: 100%;" class="select2-edit">
+                                    <option value="">Select Origin...</option>
+                                    @foreach($allSuppliers as $supplier)
+                                    <option value="{{ $supplier }}">{{ $supplier }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div id="editDonorField" class="input-group" style="display: none;">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Origin Entity (Donor)</label>
+                                <select name="donor_name" id="editDonorName" style="width: 100%;" class="select2-edit">
+                                    <option value="">Select Donor...</option>
+                                    @foreach($allDonors as $donor)
+                                    <option value="{{ $donor }}">{{ $donor }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Items List (Collapsible) -->
-                    <details open style="margin-bottom: 1rem; border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; background: var(--bg-main);">
-                        <summary style="padding: 1.25rem 1.5rem; list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); border-bottom: 1px solid var(--border-color);">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <div style="background: rgba(99, 102, 241, 0.1); color: var(--primary); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                                    <i data-lucide="list-checks" style="width: 18px;"></i>
-                                </div>
-                                <span style="font-weight: 800; font-size: 1rem; color: var(--text-main);">Associated Items</span>
+                    <!-- Batch Contents Section -->
+                    <div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                                <span style="font-size: 0.75rem; font-weight: 900; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.1em;">Batch Contents</span>
+                                <div style="flex: 1; height: 1px; background: #f1f5f9; margin-right: 1.5rem;"></div>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 8px; color: var(--text-muted);">
-                                <span style="font-size: 0.75rem; font-weight: 700;" id="editItemsCountLabel">0 Items</span>
-                                <i data-lucide="chevron-down" style="width: 18px;"></i>
-                            </div>
-                        </summary>
-                        <div id="editItemsList" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
-                            <!-- Items will be injected here -->
+                            <span id="editItemsCountLabel" style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">0 Items Identified</span>
                         </div>
-                    </details>
+                        
+                        <div id="editItemsList" style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                            <!-- Items injected here via JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div style="border-top: 1px solid var(--border-color); padding: 1.25rem 2rem; display: flex; justify-content: flex-end; gap: 1rem; background: var(--bg-card); border-radius: 0 0 28px 28px; z-index: 10;">
-                <button type="button" onclick="closeEditBatchModal()" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer;">Cancel</button>
-                <button type="submit" id="saveEditBtn" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: var(--primary); border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);">
-                    <i data-lucide="{{ auth()->user()->is_admin ? 'save' : 'send' }}" style="width: 18px;"></i> {{ auth()->user()->is_admin ? 'Save Changes' : 'Submit for Approval' }}
+            <!-- Modal Footer -->
+            <div style="padding: 1.5rem 2.5rem; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" onclick="closeEditBatchModal()" style="padding: 0.85rem 2rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; background: #ffffff; border: 1.5px solid #e2e8f0; color: #475569; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Discard
+                </button>
+                <button type="submit" id="saveEditBtn" style="padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; background: #4f46e5; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2); transition: 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 30px rgba(79, 70, 229, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 20px rgba(79, 70, 229, 0.2)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19 7-7-7-7"/><path d="M5 19l7-7-7-7"/></svg> {{ auth()->user()->is_admin ? 'Commit Changes' : 'Submit for Oversight' }}
                 </button>
             </div>
         </form>
@@ -2927,6 +3047,7 @@
 
 <script>
 let currentEditBatchId = null;
+let originalBatchData = null;
 
 function openEditBatchModal(batchId) {
     // AS PER USER REQUEST: Allow personnel to edit first, then send for approval.
@@ -3024,6 +3145,7 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
         })
         .then(data => {
             const batch = data.batch;
+            originalBatchData = JSON.parse(JSON.stringify(batch));
             document.getElementById('editArrivalDate').value = batch.arrival_date ? batch.arrival_date.split(' ')[0] : '';
             document.getElementById('editCategory').value = batch.ledge_category;
             
@@ -3044,45 +3166,44 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
             const itemsList = document.getElementById('editItemsList');
             itemsList.innerHTML = '';
             
-            document.getElementById('editItemsCountLabel').innerText = `${batch.items.length} Items`;
-
+            document.getElementById('editItemsCountLabel').innerText = `${batch.items.length} Items Identified`;
             batch.items.forEach((item, index) => {
                 const stock = parseFloat(item.stock_balance);
                 const threshold = {{ \App\Models\Setting::get('low_stock_threshold', 100) }};
                 const healthColor = stock <= 0 ? '#ef4444' : (stock <= threshold ? '#f59e0b' : '#10b981');
                 
                 const itemHtml = `
-                    <div class="edit-item-card" data-id="${item.id}" style="background: var(--bg-card); padding: 1.5rem; border: 1.5px solid var(--border-color); border-radius: 24px; position: relative; overflow: hidden; transition: all 0.3s;">
+                    <div class="edit-item-card" data-id="${item.id}" style="background: #ffffff; padding: 1.5rem; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s; position: relative;">
                         <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: ${healthColor};"></div>
                         <input type="hidden" class="item-id" value="${item.id}">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;">
+                            <div style="background: #eff6ff; color: #3b82f6; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900;">${index + 1}</div>
+                            <input type="text" class="item-description" value="${item.description}" placeholder="Asset Description" style="flex: 1; border: none; background: transparent; font-size: 0.95rem; font-weight: 800; color: #1e293b; outline: none; padding: 4px 0; border-bottom: 2px solid transparent; transition: 0.3s;" onfocus="this.style.borderBottomColor='#4f46e5'">
+                        </div>
                         
-                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.25rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
                             <div>
-                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Item Description</label>
-                                <input type="text" class="item-description" value="${item.description}" style="width: 100%; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; font-weight: 800; color: var(--text-main); background: var(--bg-main);">
+                                <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Unit Measure</label>
+                                <input type="text" class="item-unit" value="${item.unit}" style="width: 100%; padding: 0.85rem; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #475569;">
                             </div>
                             <div>
-                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Unit Type</label>
-                                <input type="text" class="item-unit" value="${item.unit}" style="width: 100%; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; font-weight: 700; color: var(--text-main);">
+                                <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Qty Received</label>
+                                <input type="number" class="item-qty" value="${item.qty}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.85rem; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.85rem; font-weight: 900; color: #1e293b;">
                             </div>
                             <div>
-                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Received Qty</label>
-                                <input type="number" class="item-qty" value="${item.qty}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; font-weight: 800; color: var(--text-main);">
-                            </div>
-                            <div>
-                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Stock Balance</label>
-                                <input type="number" class="item-stock-balance" value="${item.stock_balance}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; font-weight: 800; color: var(--primary);">
+                                <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Ledger Balance</label>
+                                <input type="number" class="item-stock-balance" value="${item.stock_balance}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.85rem; border: 1.5px solid #4f46e5; border-radius: 12px; font-size: 0.85rem; font-weight: 900; color: #4f46e5; background: #f5f3ff;">
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 1.5rem; align-items: flex-end;">
+                        <div style="display: grid; grid-template-columns: 100px 1fr; gap: 1rem; align-items: flex-end;">
                             <div>
-                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Calculated Variance</label>
-                                <input type="number" class="item-variance" value="${item.variance}" readonly style="width: 100%; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; font-size: 1.1rem; font-weight: 900; background: rgba(99, 102, 241, 0.05); color: var(--primary);">
+                                <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Variance</label>
+                                <input type="number" class="item-variance" value="${item.variance}" readonly style="width: 100%; padding: 0.85rem; border: none; background: #f8fafc; border-radius: 12px; font-size: 0.85rem; font-weight: 900; color: ${item.variance < 0 ? '#ef4444' : '#10b981'}; text-align: center;">
                             </div>
-                            <div>
-                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Item Remarks / Historical Narrative</label>
-                                <textarea class="item-remarks" placeholder="Add specific details about this item's condition or source..." style="width: 100%; height: 50px; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); color: var(--text-main); font-family: inherit; resize: none; font-size: 0.85rem; font-weight: 500;">${item.remarks || ''}</textarea>
+                            <div style="position: relative;">
+                                <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Registry Remarks</label>
+                                <textarea class="item-remarks" style="width: 100%; height: 42px; padding: 0.85rem; border: 1px solid #e2e8f0; border-radius: 12px; resize: none; font-size: 0.8rem; font-weight: 600; color: #64748b; background: #f8fafc;">${item.remarks || ''}</textarea>
                             </div>
                         </div>
                     </div>
@@ -3163,9 +3284,81 @@ function recalcEditVariance(input) {
     }
 }
 
+function hasModifiedAnything(currentPayload, original) {
+    if (!original) return true;
+
+    // 1. Compare batch level metadata
+    const origArrivalDate = original.arrival_date ? original.arrival_date.split(' ')[0] : '';
+    if (currentPayload.arrival_date !== origArrivalDate) return true;
+    if (currentPayload.ledge_category !== original.ledge_category) return true;
+    if (currentPayload.supplier_status !== (original.supplier_status || 'Full Delivery')) return true;
+    
+    if (currentPayload.supplier_status === 'Donor') {
+        if ((currentPayload.donor_name || '') !== (original.donor_name || '')) return true;
+    } else {
+        if ((currentPayload.supplier_name || '') !== (original.supplier_name || '')) return true;
+    }
+
+    // 2. Compare items length
+    if (currentPayload.items.length !== original.items.length) return true;
+
+    // 3. Compare each item
+    for (let i = 0; i < currentPayload.items.length; i++) {
+        const currItem = currentPayload.items[i];
+        const origItem = original.items.find(item => item.id == currItem.id);
+        if (!origItem) return true; 
+
+        if (currItem.description.trim() !== (origItem.description || '').trim()) return true;
+        if (currItem.unit.trim() !== (origItem.unit || '').trim()) return true;
+        if (parseFloat(currItem.qty) !== parseFloat(origItem.qty || 0)) return true;
+        if (parseFloat(currItem.stock_balance) !== parseFloat(origItem.stock_balance || 0)) return true;
+        if ((currItem.remarks || '').trim() !== (origItem.remarks || '').trim()) return true;
+    }
+
+    return false;
+}
+
 async function submitEditBatch() {
     const saveBtn = document.getElementById('saveEditBtn');
     const isAdmin = {{ auth()->user()->is_admin ? 'true' : 'false' }};
+
+    const items = [];
+    document.querySelectorAll('.edit-item-card').forEach(row => {
+        items.push({
+            id: row.querySelector('.item-id').value,
+            description: row.querySelector('.item-description').value,
+            unit: row.querySelector('.item-unit').value,
+            qty: row.querySelector('.item-qty').value,
+            stock_balance: row.querySelector('.item-stock-balance').value,
+            variance: row.querySelector('.item-variance').value,
+            remarks: row.querySelector('.item-remarks').value
+        });
+    });
+
+    const supplierStatus = document.getElementById('editAcquisitionStatus').value;
+    let acqType = supplierStatus === 'Donor' ? 'Donor' : 'Supplier';
+    let supplierName = $('#editSupplierName').val() || '';
+
+    const payload = {
+        arrival_date: document.getElementById('editArrivalDate').value,
+        ledge_category: document.getElementById('editCategory').value,
+        acquisition_type: acqType,
+        supplier_name: supplierName || null,
+        supplier_status: supplierStatus,
+        donor_name: supplierStatus === 'Donor' ? $('#editDonorName').val() : '',
+        items: items,
+        _token: '{{ csrf_token() }}'
+    };
+
+    if (originalBatchData && !hasModifiedAnything(payload, originalBatchData)) {
+        Swal.fire({
+            title: 'No Changes Detected',
+            text: 'You have not modified anything. Please make at least one change before submitting.',
+            icon: 'warning',
+            confirmButtonColor: '#4f46e5'
+        });
+        return;
+    }
     
     // IF NOT ADMIN, ASK FOR REASON FIRST
     let reason = "Direct administrative modification.";
@@ -3235,34 +3428,6 @@ async function submitEditBatch() {
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width: 18px;"></i> Processing...';
     if (typeof lucide !== 'undefined') lucide.createIcons();
-
-    const items = [];
-    document.querySelectorAll('.edit-item-card').forEach(row => {
-        items.push({
-            id: row.querySelector('.item-id').value,
-            description: row.querySelector('.item-description').value,
-            unit: row.querySelector('.item-unit').value,
-            qty: row.querySelector('.item-qty').value,
-            stock_balance: row.querySelector('.item-stock-balance').value,
-            variance: row.querySelector('.item-variance').value,
-            remarks: row.querySelector('.item-remarks').value
-        });
-    });
-
-    const supplierStatus = document.getElementById('editAcquisitionStatus').value;
-    let acqType = supplierStatus === 'Donor' ? 'Donor' : 'Supplier';
-    let supplierName = $('#editSupplierName').val() || '';
-
-    const payload = {
-        arrival_date: document.getElementById('editArrivalDate').value,
-        ledge_category: document.getElementById('editCategory').value,
-        acquisition_type: acqType,
-        supplier_name: supplierName || null,
-        supplier_status: supplierStatus,
-        donor_name: supplierStatus === 'Donor' ? $('#editDonorName').val() : '',
-        items: items,
-        _token: '{{ csrf_token() }}'
-    };
 
     const url = isAdmin ? `{{ url('/received-items') }}/${currentEditBatchId}` : `{{ url('/edit-requests') }}`;
     const method = isAdmin ? 'PUT' : 'POST';

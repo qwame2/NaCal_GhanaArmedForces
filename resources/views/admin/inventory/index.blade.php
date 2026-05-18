@@ -38,7 +38,7 @@
 
     <!-- Luxury Oversight Pill Bar -->
     <div class="filter-pill" style="margin: -1.5rem 2rem 2.5rem 2rem; background: white; padding: 8px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; display: flex; align-items: center; gap: 8px; position: relative; z-index: 10;">
-        <form action="{{ route('admin.inventory') }}" method="GET" style="display: flex; align-items: center; width: 100%; gap: 4px; flex-wrap: inherit;">
+        <form action="{{ route('admin.inventory') }}" method="GET" onsubmit="event.preventDefault(); performLiveUpdate();" style="display: flex; align-items: center; width: 100%; gap: 4px; flex-wrap: inherit;">
             <!-- Segment 1: Search -->
             <div class="filter-segment" style="flex: 1.2; max-width: 380px; min-width: 0; position: relative; display: flex; align-items: center; padding: 0 1.5rem; border-right: 1px solid #f1f5f9;">
                 <i data-lucide="search" style="width: 18px; color: #94a3b8; margin-right: 12px;"></i>
@@ -109,9 +109,9 @@
                         // Push state to URL
                         window.history.pushState({}, '', url);
 
-                        // If there was a specific tab active, we might need to re-trigger it
-                        // But since we replace the WHOLE container including triggers,
-                        // we need to make sure the triggers reflect the current state.
+                        // Restore and re-trigger active tab state
+                        const currentTab = new URL(window.location.href).searchParams.get('tab') || 'received';
+                        switchTab(currentTab);
                     })
                     .catch(error => {
                         console.error('Live Update Error:', error);
@@ -314,10 +314,10 @@
                                 $hColor = '#f59e0b';
                             }
 
-                            $isPartial = str_contains(strtolower($item->supplier_status), 'partial');
+                            $isPartial = str_contains(strtolower($item->supplier_status), 'partial') || str_contains(strtolower($item->supplier_name), '[partial deliv');
                             $cleanSupplier = $item->supplier_name;
                         @endphp
-                        <tr class="inventory-row" data-is-partial="{{ $isPartial ? 'true' : 'false' }}">
+                        <tr class="item-row inventory-row" data-item-id="{{ $item->id }}" data-batch-id="{{ $item->batch_id }}" data-is-partial="{{ $isPartial ? 'true' : 'false' }}">
                             <td>
                                 <div style="font-weight: 800; color: #0f172a;">{{ \Carbon\Carbon::parse($item->entry_date)->format('d/m/y') }}</div>
                                 <div style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">Arr: {{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('d/m/y') : 'N/A' }}</div>
@@ -588,6 +588,95 @@
         cursor: not-allowed;
         box-shadow: none;
     }
+
+    /* Modal Architecture */
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(2, 6, 23, 0.7);
+        backdrop-filter: blur(12px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 2rem;
+    }
+
+    .modal-content {
+        width: 100%;
+        max-width: 800px;
+        max-height: 90vh;
+        background: #ffffff !important;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4) !important;
+        border-radius: 28px;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .custom-premium-select {
+        width: 100%;
+        padding: 0.85rem 2.5rem 0.85rem 1rem !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        color: #1e293b !important;
+        background-color: #f8fafc !important;
+        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E') !important;
+        background-repeat: no-repeat !important;
+        background-position: right 1rem center !important;
+        background-size: 16px !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+    }
+    .custom-premium-select:hover {
+        border-color: #cbd5e1 !important;
+        background-color: #f1f5f9 !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04) !important;
+    }
+    .custom-premium-select:focus {
+        outline: none !important;
+        border-color: #4f46e5 !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    [data-theme='dark'] .custom-premium-select {
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+        background-color: #1e293b !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E') !important;
+    }
+    [data-theme='dark'] .custom-premium-select:hover {
+        border-color: #475569 !important;
+        background-color: #334155 !important;
+    }
+    [data-theme='dark'] .custom-premium-select:focus {
+        border-color: #6366f1 !important;
+        background-color: #0f172a !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2), 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .modal-body {
+        padding: 2.5rem;
+        overflow-y: auto;
+        flex: 1;
+        scrollbar-width: none;
+    }
+
+    .modal-body::-webkit-scrollbar {
+        display: none;
+    }
 </style>
 
 <script>
@@ -619,16 +708,402 @@
     }
 
     function switchTab(tabId) {
-        // Update triggers
         document.querySelectorAll('.tab-trigger').forEach(btn => btn.classList.remove('active'));
-        document.getElementById('tab-' + tabId).classList.add('active');
-
-        // Update content
         document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        document.getElementById('content-' + tabId).classList.add('active');
         
-        // Re-init icons for dynamic content if needed
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+        const activeBtn = document.getElementById(`tab-${tabId}`);
+        const activeContent = document.getElementById(`content-${tabId}`);
+        
+        if (activeBtn) activeBtn.classList.add('active');
+        if (activeContent) activeContent.classList.add('active');
+        
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', tabId);
+        window.history.replaceState({}, '', url);
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const currentTab = new URL(window.location.href).searchParams.get('tab') || 'received';
+        switchTab(currentTab);
+    });
+</script>
+
+<!-- Edit Batch Modal -->
+<div id="editBatchModal" class="modal-backdrop">
+    <div class="modal-content glass-card animate-scale-up" style="max-width: 1000px; width: 95%; padding: 0; overflow: hidden; border: none; background: #ffffff; display: flex; flex-direction: column; max-height: 90vh;">
+        <!-- Premium Modal Header -->
+        <div style="padding: 1.5rem 2.5rem; background: linear-gradient(to right, #4f46e5, #6366f1); display: flex; justify-content: space-between; align-items: center; color: white;">
+            <div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+                    <div style="background: rgba(255, 255, 255, 0.2); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </div>
+                    <h3 id="editModalTitle" style="font-size: 1.25rem; font-weight: 800; margin: 0; color: white; letter-spacing: -0.02em;">Modify Record</h3>
+                </div>
+                <p id="editModalSubtitle" style="color: rgba(255, 255, 255, 0.8); font-size: 0.85rem; font-weight: 600; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">#BATCH-0000</p>
+            </div>
+            <button onclick="closeEditBatchModal()" style="background: rgba(255, 255, 255, 0.1); border: none; color: white; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+
+        <form id="editBatchForm" onsubmit="event.preventDefault(); submitEditBatch();" style="display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden;">
+            <div class="modal-body" id="editModalBody" style="padding: 2.5rem; max-height: 75vh; overflow-y: auto; flex: 1; min-height: 0;">
+                <div class="loader-container" id="editModalLoader">
+                    <div class="loader"></div>
+                    <p style="font-weight: 700; color: #475569; margin-top: 1rem;">Decrypting Batch Data...</p>
+                </div>
+                
+                <div id="editModalContent" style="display: none;">
+                    <!-- Metadata Section -->
+                    <div style="margin-bottom: 2.5rem;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem;">
+                            <span style="font-size: 0.75rem; font-weight: 900; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.1em;">Record Details</span>
+                            <div style="flex: 1; height: 1px; background: #f1f5f9;"></div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+                            <div class="input-group">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Arrival Date</label>
+                                <div style="position: relative;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+                                    <input type="date" name="arrival_date" id="editArrivalDate" required style="width: 100%; padding: 0.85rem 1rem 0.85rem 2.5rem; border: 1.5px solid #e2e8f0; border-radius: 12px; font-weight: 700; color: #1e293b; background: #f8fafc;">
+                                </div>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Asset Category</label>
+                                <select name="ledge_category" id="editCategory" required class="custom-premium-select">
+                                    @foreach($ledgeMap as $code => $name)
+                                    <option value="{{ $code }}">CAT {{ $code }} | {{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Sourcing Method</label>
+                                <select name="acquisition_status" id="editAcquisitionStatus" required onchange="toggleEditSourceFields()" class="custom-premium-select">
+                                    <option value="Full Delivery">Full Delivery</option>
+                                    <option value="Partial Delivery">Partial Delivery</option>
+                                    <option value="Donor">Donor Acquisition</option>
+                                </select>
+                            </div>
+                            
+                            <div id="editSupplierField" class="input-group">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Origin Entity (Supplier)</label>
+                                <select name="supplier_name" id="editSupplierName" style="width: 100%;" class="select2-edit">
+                                    <option value="">Select Origin...</option>
+                                    @foreach($allSuppliers as $supplier)
+                                    <option value="{{ $supplier }}">{{ $supplier }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div id="editDonorField" class="input-group" style="display: none;">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Origin Entity (Donor)</label>
+                                <select name="donor_name" id="editDonorName" style="width: 100%;" class="select2-edit">
+                                    <option value="">Select Donor...</option>
+                                    @foreach($allDonors as $donor)
+                                    <option value="{{ $donor }}">{{ $donor }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Batch Contents Section -->
+                    <div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                                <span style="font-size: 0.75rem; font-weight: 900; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.1em;">Batch Contents</span>
+                                <div style="flex: 1; height: 1px; background: #f1f5f9; margin-right: 1.5rem;"></div>
+                            </div>
+                            <span id="editItemsCountLabel" style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">0 Items Identified</span>
+                        </div>
+                        
+                        <div id="editItemsList" style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                            <!-- Items injected here via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div style="padding: 1.5rem 2.5rem; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" onclick="closeEditBatchModal()" style="padding: 0.85rem 2rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; background: #ffffff; border: 1.5px solid #e2e8f0; color: #475569; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Discard
+                </button>
+                <button type="submit" id="saveEditBtn" style="padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; background: #4f46e5; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2); transition: 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 30px rgba(79, 70, 229, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 20px rgba(79, 70, 229, 0.2)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> Commit Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Continue Delivery Modal -->
+<div id="continueDeliveryModal" class="modal-backdrop">
+    <div class="modal-content glass-card animate-scale-up" style="max-width: 800px; width: 95%;">
+        <div class="modal-header">
+            <div>
+                <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.25rem;">Resolve Partial Delivery</h3>
+                <p id="continueModalSubtitle" style="color: var(--text-muted); font-size: 0.9rem; margin: 0;">#BATCH-0000</p>
+            </div>
+            <button onclick="closeContinueDeliveryModal()" class="btn-icon danger" title="Close">
+                <i data-lucide="x" style="width: 18px;"></i>
+            </button>
+        </div>
+
+        <div class="modal-body" style="padding: 1.5rem;">
+            <div id="continueModalLoader" class="loader-container">
+                <div class="loader"></div>
+                <p>Loading remainder data...</p>
+            </div>
+            
+            <div id="continueModalContent" style="display: none;">
+                <div style="background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px;">
+                    <i data-lucide="truck" style="color: #10b981; width: 24px;"></i>
+                    <div style="font-size: 0.85rem; color: #1e293b; line-height: 1.5;">
+                        <span style="font-weight: 800; display: block; color: #10b981; text-transform: uppercase; font-size: 0.7rem; margin-bottom: 2px;">Protocol: Remainder Entry</span>
+                        Update the quantities for the remaining items received in this shipment.
+                    </div>
+                </div>
+
+                <div id="continueItemsList" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding: 1.25rem 2rem; display: flex; justify-content: flex-end; gap: 1rem; background: var(--bg-card); border-radius: 0 0 28px 28px;">
+            <button type="button" onclick="closeContinueDeliveryModal()" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer;">Cancel</button>
+            <button type="button" id="submitContinueBtn" onclick="submitContinueDelivery()" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: #10b981; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);">
+                <i data-lucide="check-circle" style="width: 18px;"></i> Complete Delivery
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentEditBatchId = null;
+let currentContinueBatchId = null;
+
+function openEditBatchModal(batchId) {
+    currentEditBatchId = batchId;
+    const modal = document.getElementById('editBatchModal');
+    const loader = document.getElementById('editModalLoader');
+    const content = document.getElementById('editModalContent');
+    const title = document.getElementById('editModalSubtitle');
+    
+    title.innerText = `#BATCH-${batchId.toString().padStart(4, '0')}`;
+    modal.style.display = 'flex';
+    loader.style.display = 'flex';
+    content.style.display = 'none';
+
+    $('.select2-edit').select2({
+        dropdownParent: $('#editBatchModal'),
+        tags: true,
+        width: '100%'
+    });
+
+    fetch(`{{ url('/received-items') }}/${batchId}?json=1`)
+        .then(res => res.json())
+        .then(data => {
+            const batch = data.batch;
+            document.getElementById('editArrivalDate').value = batch.arrival_date ? batch.arrival_date.split(' ')[0] : '';
+            document.getElementById('editCategory').value = batch.ledge_category;
+            document.getElementById('editAcquisitionStatus').value = batch.supplier_status || 'Full Delivery';
+            
+            if (batch.supplier_status === 'Donor') {
+                $('#editDonorName').val(batch.donor_name).trigger('change');
+            } else {
+                $('#editSupplierName').val(batch.supplier_name).trigger('change');
+            }
+            
+            toggleEditSourceFields();
+
+            const itemsList = document.getElementById('editItemsList');
+            itemsList.innerHTML = '';
+            document.getElementById('editItemsCountLabel').innerText = `${batch.items.length} Items`;
+
+            batch.items.forEach((item, index) => {
+                const itemHtml = `
+                    <div class="edit-item-card" data-id="${item.id}" style="background: #ffffff; padding: 1.5rem; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s; position: relative;">
+                        <input type="hidden" class="item-id" value="${item.id}">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;">
+                            <div style="background: #eff6ff; color: #3b82f6; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900;">${index + 1}</div>
+                            <input type="text" class="item-description" value="${item.description}" placeholder="Asset Description" style="flex: 1; border: none; background: transparent; font-size: 0.95rem; font-weight: 800; color: #1e293b; outline: none; padding: 4px 0; border-bottom: 2px solid transparent; transition: 0.3s;" onfocus="this.style.borderBottomColor='#4f46e5'">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Unit Measure</label>
+                                <input type="text" class="item-unit" value="${item.unit}" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: #475569;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Qty Received</label>
+                                <input type="number" class="item-qty" value="${item.qty}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.85rem; font-weight: 900; color: #1e293b;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Ledger Balance</label>
+                                <input type="number" class="item-stock-balance" value="${item.stock_balance}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.75rem; border: 1.5px solid #4f46e5; border-radius: 10px; font-size: 0.85rem; font-weight: 900; color: #4f46e5; background: #f5f3ff;">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 100px 1fr; gap: 1rem; align-items: flex-end;">
+                            <div>
+                                <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Variance</label>
+                                <input type="number" class="item-variance" value="${item.variance}" readonly style="width: 100%; padding: 0.75rem; border: none; background: #f8fafc; border-radius: 10px; font-size: 0.85rem; font-weight: 900; color: ${item.variance < 0 ? '#ef4444' : '#10b981'}; text-align: center;">
+                            </div>
+                            <div style="position: relative;">
+                                <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Registry Remarks</label>
+                                <textarea class="item-remarks" style="width: 100%; height: 42px; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 10px; resize: none; font-size: 0.8rem; font-weight: 600; color: #64748b; background: #f8fafc;">${item.remarks || ''}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                itemsList.insertAdjacentHTML('beforeend', itemHtml);
+            });
+
+            loader.style.display = 'none';
+            content.style.display = 'block';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+}
+
+function closeEditBatchModal() {
+    document.getElementById('editBatchModal').style.display = 'none';
+}
+
+function toggleEditSourceFields() {
+    const status = document.getElementById('editAcquisitionStatus').value;
+    document.getElementById('editSupplierField').style.display = status === 'Donor' ? 'none' : 'block';
+    document.getElementById('editDonorField').style.display = status === 'Donor' ? 'block' : 'none';
+}
+
+function recalcEditVariance(input) {
+    const row = input.closest('.edit-item-card');
+    const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+    const stock = parseFloat(row.querySelector('.item-stock-balance').value) || 0;
+    row.querySelector('.item-variance').value = stock - qty;
+}
+
+function submitEditBatch() {
+    const saveBtn = document.getElementById('saveEditBtn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i data-lucide="loader" class="animate-spin"></i> Processing...';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    const items = [];
+    document.querySelectorAll('.edit-item-card').forEach(row => {
+        items.push({
+            id: row.querySelector('.item-id').value,
+            description: row.querySelector('.item-description').value,
+            unit: row.querySelector('.item-unit').value,
+            qty: row.querySelector('.item-qty').value,
+            stock_balance: row.querySelector('.item-stock-balance').value,
+            variance: row.querySelector('.item-variance').value,
+            remarks: row.querySelector('.item-remarks').value
+        });
+    });
+
+    const payload = {
+        arrival_date: document.getElementById('editArrivalDate').value,
+        ledge_category: document.getElementById('editCategory').value,
+        acquisition_type: document.getElementById('editAcquisitionStatus').value === 'Donor' ? 'Donor' : 'Supplier',
+        supplier_name: $('#editSupplierName').val(),
+        supplier_status: document.getElementById('editAcquisitionStatus').value,
+        donor_name: $('#editDonorName').val(),
+        items: items,
+        _token: '{{ csrf_token() }}'
+    };
+
+    fetch(`{{ url('/received-items') }}/${currentEditBatchId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire('Updated', 'Inventory record has been successfully modified.', 'success').then(() => location.reload());
+        } else {
+            Swal.fire('Error', data.message, 'error');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i data-lucide="save"></i> Save Changes';
+        }
+    });
+}
+
+function continueDelivery(batchId) {
+    currentContinueBatchId = batchId;
+    const modal = document.getElementById('continueDeliveryModal');
+    const loader = document.getElementById('continueModalLoader');
+    const content = document.getElementById('continueModalContent');
+    
+    document.getElementById('continueModalSubtitle').innerText = `#BATCH-${batchId.toString().padStart(4, '0')}`;
+    modal.style.display = 'flex';
+    loader.style.display = 'flex';
+    content.style.display = 'none';
+
+    fetch(`{{ url('/received-items') }}/${batchId}?json=1`)
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById('continueItemsList');
+            list.innerHTML = '';
+            data.batch.items.forEach(item => {
+                const html = `
+                    <div class="continue-item-row" data-id="${item.id}" style="background: var(--bg-main); padding: 1rem; border-radius: 12px; display: grid; grid-template-columns: 1fr 120px 120px; gap: 1rem; align-items: center;">
+                        <div style="font-weight: 700; color: var(--text-main); font-size: 0.9rem;">${item.description}</div>
+                        <div>
+                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Remaining</label>
+                            <input type="number" class="rem-qty" value="0" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 8px; font-weight: 800;">
+                        </div>
+                        <div style="text-align: right;">
+                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">In Stock</label>
+                            <span style="font-weight: 900; color: var(--primary);">${item.stock_balance}</span>
+                        </div>
+                    </div>
+                `;
+                list.insertAdjacentHTML('beforeend', html);
+            });
+            loader.style.display = 'none';
+            content.style.display = 'block';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+}
+
+function closeContinueDeliveryModal() {
+    document.getElementById('continueDeliveryModal').style.display = 'none';
+}
+
+function submitContinueDelivery() {
+    const btn = document.getElementById('submitContinueBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" class="animate-spin"></i> Saving...';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    const updates = [];
+    document.querySelectorAll('.continue-item-row').forEach(row => {
+        updates.push({
+            id: row.getAttribute('data-id'),
+            additional_qty: row.querySelector('.rem-qty').value
+        });
+    });
+
+    fetch('{{ url("/api/inventory/receive-remainder") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ updates })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire('Inventory Updated', 'The remainder quantities have been added to stock.', 'success').then(() => location.reload());
+        } else {
+            Swal.fire('Error', data.message, 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide="check-circle"></i> Complete Delivery';
+        }
+    });
+}
 </script>
 @endsection

@@ -31,6 +31,7 @@ class User extends Authenticatable
         'department',
         'phone',
         'last_login_at',
+        'recovery_secret',
         'must_change_password',
     ];
 

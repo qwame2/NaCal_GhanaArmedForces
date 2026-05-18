@@ -15,19 +15,25 @@
     {{-- Flash messages --}}
     @if(session('success'))
     <div class="rt-flash success" id="rt-flash">
-        <div class="rt-flash-icon"><i data-lucide="shield-check"></i></div>
+        <div class="rt-flash-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
         <div class="rt-flash-body">
             <span class="rt-flash-title">Success</span>
             <p class="rt-flash-msg">{{ session('success') }}</p>
         </div>
-        <button onclick="document.getElementById('rt-flash').remove()" class="rt-flash-close"><i data-lucide="x"></i></button>
+        <button onclick="document.getElementById('rt-flash').remove()" class="rt-flash-close">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
     </div>
     @endif
 
     {{-- Metrics --}}
     <div class="rt-metrics">
         <div class="rt-metric amber">
-            <div class="rt-metric-icon"><i data-lucide="clock"></i></div>
+            <div class="rt-metric-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
             <div class="rt-metric-body">
                 <span class="rt-metric-label">Awaiting Review</span>
                 <span class="rt-metric-val">{{ $pending }}</span>
@@ -35,7 +41,9 @@
             <div class="rt-metric-glow amber-glow"></div>
         </div>
         <div class="rt-metric indigo">
-            <div class="rt-metric-icon"><i data-lucide="send-horizontal"></i></div>
+            <div class="rt-metric-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+            </div>
             <div class="rt-metric-body">
                 <span class="rt-metric-label">Awaiting Completion</span>
                 <span class="rt-metric-val">{{ $approved }}</span>
@@ -43,7 +51,9 @@
             <div class="rt-metric-glow indigo-glow"></div>
         </div>
         <div class="rt-metric green">
-            <div class="rt-metric-icon"><i data-lucide="shield-check"></i></div>
+            <div class="rt-metric-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+            </div>
             <div class="rt-metric-body">
                 <span class="rt-metric-label">Access Restored</span>
                 <span class="rt-metric-val">{{ $completed }}</span>
@@ -51,7 +61,9 @@
             <div class="rt-metric-glow green-glow"></div>
         </div>
         <div class="rt-metric slate">
-            <div class="rt-metric-icon"><i data-lucide="list"></i></div>
+            <div class="rt-metric-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </div>
             <div class="rt-metric-body">
                 <span class="rt-metric-label">Total Requests</span>
                 <span class="rt-metric-val">{{ $requests->count() }}</span>
@@ -67,7 +79,7 @@
         <div class="rt-toolbar">
             <div class="rt-toolbar-brand">
                 <div class="rt-brand-icon">
-                    <i data-lucide="shield-alert"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
                 </div>
                 <div>
                     <div class="rt-brand-heading">
@@ -151,11 +163,11 @@
                         {{-- Date --}}
                         <td>
                             <div class="rt-date">
-                                <i data-lucide="calendar" style="width:12px; height:12px; color:#94a3b8;"></i>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
                                 <span>{{ $req->created_at->format('d/m/y') }}</span>
                             </div>
                             <div class="rt-date" style="margin-top:3px;">
-                                <i data-lucide="clock-3" style="width:12px; height:12px; color:#94a3b8;"></i>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                 <span style="color:#94a3b8;">{{ $req->created_at->format('H:i') }}</span>
                             </div>
                         </td>
@@ -166,12 +178,12 @@
                                 <div class="rt-otp-wrap">
                                     <div class="rt-otp-code" id="otp-{{ $req->id }}" style="{{ $req->expires_at && $req->expires_at->isPast() && $req->status === 'approved' ? 'text-decoration:line-through; opacity:0.5;' : '' }}">{{ $req->otp }}</div>
                                     <button class="rt-copy-btn" onclick="copyOtp('{{ $req->otp }}', this)" title="Copy OTP">
-                                        <i data-lucide="copy" style="width:13px;"></i>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                                     </button>
                                 </div>
                                 @if($req->status === 'approved' && $req->expires_at)
                                 <div class="rt-countdown" data-expires="{{ $req->expires_at->toIso8601String() }}" data-id="{{ $req->id }}">
-                                    <i data-lucide="timer" style="width:12px; height:12px; margin-right:3px;"></i>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px;"><line x1="10" y1="2" x2="14" y2="2"/><line x1="12" y1="14" x2="15" y2="11"/><circle cx="12" cy="14" r="8"/></svg>
                                     <span class="rt-countdown-text">Calculating...</span>
                                 </div>
                                 @endif
@@ -187,14 +199,14 @@
                                 <form action="{{ route('admin.password.requests.approve', $req->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="rt-btn rt-btn-approve">
-                                        <i data-lucide="check"></i>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                                         Approve &amp; Issue OTP
                                     </button>
                                 </form>
                                 <form action="{{ route('admin.password.requests.reject', $req->id) }}" method="POST">
                                     @csrf
                                     <button type="submit" class="rt-btn rt-btn-reject">
-                                        <i data-lucide="x"></i>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                                         Reject
                                     </button>
                                 </form>
@@ -202,9 +214,17 @@
                             @else
                                 <span class="rt-done-tag" id="status-tag-{{ $req->id }}">
                                     @if($req->expires_at && $req->expires_at->isPast() && $req->status === 'approved')
-                                        <i data-lucide="alert-circle" style="width:12px;"></i> Expired
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Expired
                                     @else
-                                        <i data-lucide="{{ $req->status === 'completed' ? 'check-circle-2' : ($req->status === 'approved' ? 'send' : 'ban') }}" style="width:12px;"></i>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;">
+                                            @if($req->status === 'completed')
+                                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                                            @elseif($req->status === 'approved')
+                                                <line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/>
+                                            @else
+                                                <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                                            @endif
+                                        </svg>
                                         {{ ucfirst($req->status) }}
                                     @endif
                                 </span>
@@ -216,7 +236,7 @@
                         <td colspan="6">
                             <div class="rt-empty">
                                 <div class="rt-empty-icon">
-                                    <i data-lucide="shield-check"></i>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
                                 </div>
                                 <h4>All Clear — No Recovery Requests</h4>
                                 <p>There are no pending password reset requests. System security is nominal.</p>
@@ -546,17 +566,15 @@
 function copyOtp(otp, btn) {
     navigator.clipboard.writeText(otp).then(() => {
         const orig = btn.innerHTML;
-        btn.innerHTML = '<i data-lucide="check" style="width:13px;"></i>';
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
         btn.style.background = '#10b981';
         btn.style.color = 'white';
         btn.style.borderColor = '#10b981';
-        if (typeof lucide !== 'undefined') lucide.createIcons();
         setTimeout(() => {
             btn.innerHTML = orig;
             btn.style.background = '';
             btn.style.color = '';
             btn.style.borderColor = '';
-            if (typeof lucide !== 'undefined') lucide.createIcons();
         }, 2000);
     });
 }
@@ -576,12 +594,12 @@ function initCountdowns() {
             if (distance < 0) {
                 // Mark as expired in UI
                 if (!el.classList.contains('expired')) {
-                    el.innerHTML = '<i data-lucide="alert-circle" style="width:12px; height:12px; margin-right:3px;"></i><span>Expired</span>';
+                    el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Expired</span>';
                     el.classList.add('expired');
                     
                     const tag = document.getElementById('status-tag-' + id);
                     if(tag) {
-                        tag.innerHTML = '<i data-lucide="alert-circle" style="width:12px; height:12px;"></i> Expired';
+                        tag.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Expired';
                         tag.style.color = '#ef4444';
                         tag.style.background = '#fef2f2';
                         tag.style.borderColor = '#fecaca';
@@ -592,7 +610,6 @@ function initCountdowns() {
                         otp.style.textDecoration = 'line-through';
                         otp.style.opacity = '0.5';
                     }
-                    if(typeof lucide !== 'undefined') lucide.createIcons();
                 }
             } else {
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));

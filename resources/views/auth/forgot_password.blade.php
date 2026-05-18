@@ -29,7 +29,7 @@
                     Access Recovery
                 </div>
                 <h1 class="hero-title">Forgot <span>Access?</span></h1>
-                <p class="hero-sub">Submit a request to the Admin to reset your security credentials.</p>
+                <p class="hero-sub">Submit a request to the Head to reset your security credentials.</p>
             </div>
         </div>
 

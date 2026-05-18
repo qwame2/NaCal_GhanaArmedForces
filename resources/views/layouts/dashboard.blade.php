@@ -36,11 +36,11 @@
     <link rel="stylesheet" href="{{ asset('css/vendor/select2.min.css') }}" />
 
     <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
     <script src="{{ asset('js/vendor/select2.min.js') }}"></script>
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="{{ asset('js/apexcharts.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/sweetalert2@11.js') }}"></script>
 
     <script>
         // Pre-initialization to prevent flash
@@ -85,34 +85,34 @@
         <ul class="nav-menu">
             <li class="nav-item">
                 <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') || request()->is('/') ? 'active' : '' }}" data-tooltip="Dashboard View">
-                    <i data-lucide="layout-grid"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
                     <span>Dashboard</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="{{ route('receiveditems') }}" class="nav-link {{ request()->routeIs('receiveditems') ? 'active' : '' }}" data-tooltip="Received Items Log">
-                    <i data-lucide="package-plus"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="M12 7H7.5"/><path d="m10 5-2.5 2 2.5 2"/></svg>
                     <span>Received Items</span>
                 </a>
             </li>
 
             <li class="nav-item">
                 <a href="{{ route('issueitems') }}" class="nav-link {{ request()->routeIs('issueitems') ? 'active' : '' }}" data-tooltip="Issue Items Out">
-                    <i data-lucide="package-minus"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="M12 7h4.5"/><path d="m14 5 2.5 2-2.5 2"/></svg>
                     <span>Issue Items</span>
                 </a>
             </li>
 
             <li class="nav-item">
                 <a href="{{ route('returns.index') }}" class="nav-link {{ request()->routeIs('returns.index') ? 'active' : '' }}" data-tooltip="Process Returns">
-                    <i data-lucide="refresh-cw"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
                     <span>Returns</span>
                 </a>
             </li>
 
             <li class="nav-item">
                 <a href="{{ route('stockcheck.index') }}" class="nav-link {{ request()->routeIs('stockcheck.index') ? 'active' : '' }}" data-tooltip="Verify Category & Physical Stock">
-                    <i data-lucide="clipboard-check"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
                     <span>Stock Check</span>
                 </a>
             </li>
@@ -122,25 +122,24 @@
         <ul class="nav-menu">
             <li class="nav-item">
                 <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" data-tooltip="Analytical Reports">
-                    <i data-lucide="file-bar-chart"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/><path d="M12 13v5"/><path d="M16 13v5"/><path d="M8 13v5"/></svg>
                     <span>Reports</span>
                 </a>
             </li>
 
             <li class="nav-item">
                 <a href="{{ route('settings.index') }}" class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" data-tooltip="Manage your profile & security">
-                    <i data-lucide="user-cog"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
                     <span>User Settings</span>
                 </a>
             </li>
 
             <li class="nav-item">
                 <a href="{{ route('notifications.index') }}" class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
-                    <i data-lucide="bell"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                     <span>Notifications</span>
                 </a>
             </li>
-
         </ul>
 
         <div class="sidebar-footer" style="margin-top: auto;">
@@ -159,7 +158,7 @@
                 <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
                     @csrf
                     <button type="submit" style="background: transparent; border: none; cursor: pointer; padding: 0.5rem; border-radius: 8px; transition: var(--transition); display: flex; align-items: center; justify-content: center;" title="Sign Out">
-                        <i data-lucide="log-out" style="width: 18px; color: #94a3b8;"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1-2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     </button>
                 </form>
 
@@ -171,13 +170,13 @@
         <nav class="top-nav">
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <button id="mobile-toggle" style="display: none; background: var(--bg-main); border: none; width: 44px; height: 44px; border-radius: 12px; align-items: center; justify-content: center; cursor: pointer;">
-                    <i data-lucide="menu" style="width: 22px; color: var(--text-main);"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
                 </button>
                 <button id="sidebar-toggle" style="background: var(--bg-main); border: none; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);">
-                    <i data-lucide="panel-left-close" style="width: 20px; color: var(--text-main);"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
                 </button>
                 <div class="search-bar" style="position: relative;">
-                    <i data-lucide="search" style="color: var(--text-muted); width: 18px;"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                     <input type="text" id="global-search-input" placeholder="Search inventory, reports, transactions..." autocomplete="off">
 
                     <!-- Search Results Portal -->
@@ -190,21 +189,21 @@
                 <!-- Zoom Controls -->
                 <div class="zoom-controls" style="display: flex; align-items: center; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 2px; margin-right: 0.5rem; transition: var(--transition);">
                     <button id="zoom-out-btn" class="icon-btn" style="width: 32px; height: 32px; border: none; background: transparent;" title="Zoom Out">
-                        <i data-lucide="minus" style="width: 14px;"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     </button>
                     <span id="zoom-display" style="font-size: 0.7rem; font-weight: 800; min-width: 38px; text-align: center; color: var(--text-muted); cursor: pointer;" title="Reset Zoom">100%</span>
                     <button id="zoom-in-btn" class="icon-btn" style="width: 32px; height: 32px; border: none; background: transparent;" title="Zoom In">
-                        <i data-lucide="plus" style="width: 14px;"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     </button>
                 </div>
 
                 <a href="{{ route('messages.index') }}" class="icon-btn" title="Secure Communication Hub" style="position: relative;">
-                    <i data-lucide="message-square" style="width: 20px;"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     <span id="global-unread-badge" style="display: none; position: absolute; top: -5px; right: -5px; background: var(--primary); color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 99px; border: 2px solid var(--bg-main); transition: var(--transition);">0</span>
                 </a>
                 <div style="height: 32px; width: 1px; background: var(--border-color);"></div>
                 <div class="icon-btn" id="notification-btn" style="position: relative; cursor: pointer; transition: var(--transition);">
-                    <i data-lucide="bell" style="width: 20px;"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                     @if($globalNotificationCount > 0)
                     <span class="badge" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 99px; border: 2px solid var(--bg-main); transition: var(--transition);">{{ $globalNotificationCount }}</span>
                     @endif
@@ -231,7 +230,7 @@
                             </a>
                             @empty
                             <div style="padding: 3rem 1.5rem; text-align: center; color: var(--text-muted);">
-                                <i data-lucide="bell-off" style="width: 32px; height: 32px; margin-bottom: 1rem; opacity: 0.3;"></i>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem; opacity: 0.3;"><path d="M18.4 12c.4 3.8 2.6 5 2.6 5H3s3-2 3-9c0-1.2.3-2.3.9-3.3"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
                                 <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">All caught up!</p>
                                 <p style="font-size: 0.75rem;">No new notifications at this time.</p>
                             </div>
@@ -243,7 +242,7 @@
                     </div>
                 </div>
                 <div class="icon-btn" id="theme-toggle" style="border: none; background: transparent;">
-                    <i data-lucide="moon" style="width: 20px;"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="theme-icon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
                 </div>
             </div>
         </nav>
@@ -299,16 +298,14 @@
             const themeToggle = document.getElementById('theme-toggle');
             if (!themeToggle) return;
 
-            // Lucide replaces the <i> or <svg> so we just empty and add a new <i>
             themeToggle.innerHTML = theme === 'dark' ?
-                '<i data-lucide="sun" style="width: 20px;"></i>' :
-                '<i data-lucide="moon" style="width: 20px;"></i>';
-
-            lucide.createIcons();
+                '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>' :
+                '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
         }
 
         // Initialize on load
         document.addEventListener('DOMContentLoaded', () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             window.applyZoom();
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             updateThemeIcon(currentTheme);
@@ -346,8 +343,7 @@
             if (isSidebarCollapsed && !isMobile) {
                 sidebar.classList.add('collapsed');
                 mainWrapper.classList.add('expanded');
-                if (sidebarToggle) sidebarToggle.innerHTML = '<i data-lucide="panel-left-open" style="width: 20px; color: var(--text-main);"></i>';
-                lucide.createIcons();
+                if (sidebarToggle) sidebarToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>';
             }
 
             // Mobile/Tablet Default: Keep hidden on load to avoid layout shifts
@@ -374,9 +370,8 @@
 
                     // Update Icon
                     sidebarToggle.innerHTML = isNowCollapsed ?
-                        '<i data-lucide="panel-left-open" style="width: 20px; color: var(--text-main);"></i>' :
-                        '<i data-lucide="panel-left-close" style="width: 20px; color: var(--text-main);"></i>';
-                    lucide.createIcons();
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>' :
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>';
                 });
             }
 
@@ -414,7 +409,7 @@
                                 if (data.length === 0) {
                                     searchResults.innerHTML = `
                                         <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
-                                            <i data-lucide="search-x" style="width: 24px; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 0.5rem; opacity: 0.5;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
                                             <p style="font-size: 0.85rem; font-weight: 600;">No matches found for "${query}"</p>
                                         </div>
                                     `;
@@ -424,20 +419,19 @@
                                         html += `
                                             <a href="${item.url}" style="padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; text-decoration: none; border-bottom: 1px solid var(--border-color); transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">
                                                 <div style="width: 36px; height: 36px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                                    <i data-lucide="${item.icon || 'arrow-right'}" style="width: 18px;"></i>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                                                 </div>
                                                 <div style="flex: 1; overflow: hidden;">
                                                     <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</div>
                                                     <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">${item.subtitle}</div>
                                                 </div>
-                                                <i data-lucide="chevron-right" style="width: 14px; color: var(--text-muted); opacity: 0.5;"></i>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted); opacity: 0.5;"><path d="m9 18 6-6-6-6"/></svg>
                                             </a>
                                         `;
                                     });
                                     searchResults.innerHTML = html;
                                 }
                                 searchResults.style.display = 'block';
-                                if (typeof lucide !== 'undefined') lucide.createIcons();
                             })
                             .catch(error => {
                                 console.error('Global search error:', error);

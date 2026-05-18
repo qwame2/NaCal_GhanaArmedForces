@@ -244,7 +244,47 @@
             background: rgba(255,255,255,0.5);
             color: var(--text-main);
         }
+        @@keyframes lockOverlayIn {
+            from { opacity: 0; transform: scale(0.97); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        @@keyframes shieldPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+            50%       { box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
+        }
     </style>
+
+    {{-- Admin Access Lockout Overlay (fixed, full-screen) --}}
+    <div id="adminOnlineOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; text-align: center; animation: lockOverlayIn 0.35s ease;">
+        <div style="background: white; padding: 2.5rem 2rem; border-radius: 28px; box-shadow: 0 30px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(239,68,68,0.12); width: 88%; max-width: 380px;">
+            <!-- Pulsing Shield Icon -->
+            <div style="width: 72px; height: 72px; background: rgba(239, 68, 68, 0.08); color: #ef4444; border-radius: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; animation: shieldPulse 2.5s infinite;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <!-- Badge -->
+            <div style="display: inline-block; background: #fef2f2; color: #dc2626; font-size: 0.6rem; font-weight: 900; letter-spacing: 0.12em; padding: 4px 12px; border-radius: 999px; border: 1px solid #fecaca; margin-bottom: 1rem; text-transform: uppercase;">Command Access Restricted</div>
+            <!-- Title -->
+            <h3 style="color: #0f172a; font-size: 1.25rem; font-weight: 950; letter-spacing: -0.03em; margin: 0 0 0.75rem;">System Locked</h3>
+            <!-- Message -->
+            <p style="color: #64748b; font-size: 0.85rem; font-weight: 600; line-height: 1.65; margin: 0 0 1.75rem;">An Administrator is already actively logged into the system. Concurrent Command Hub access is strictly prohibited for system integrity.</p>
+            <!-- Admin Name Badge -->
+            @if($adminUser)
+            <div style="display: flex; align-items: center; gap: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; text-align: left;">
+                <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #0f172a, #334155); color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.9rem; flex-shrink: 0;">{{ strtoupper(substr($adminUser->name ?? $adminUser->username, 0, 1)) }}</div>
+                <div>
+                    <div style="font-size: 0.8rem; font-weight: 900; color: #0f172a;">{{ $adminUser->name ?? $adminUser->username }}</div>
+                    <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700;">Currently Active &middot; Admin</div>
+                </div>
+                <div style="margin-left: auto; width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 0 3px rgba(16,185,129,0.2);"></div>
+            </div>
+            @endif
+            <!-- Dismiss Button -->
+            <button onclick="dismissAdminOverlay()" style="width: 100%; padding: 0.9rem; border-radius: 16px; border: none; background: linear-gradient(135deg, #0f172a, #1e293b); color: white; font-weight: 900; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 0.04em; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(15,23,42,0.25)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Return to Personnel Access
+            </button>
+        </div>
+    </div>
 
     <!-- Main Auth Container -->
         <div class="auth-vault glass-monolith">
@@ -266,11 +306,11 @@
                     <input type="hidden" name="target_interface" id="targetInterfaceInput" value="user">
                     <div class="interface-pill active" onclick="setInterface('user', this)">
                         <i data-lucide="layout-grid"></i>
-                        <span>Personnel</span>
+                        <span>Officer</span>
                     </div>
                     <div class="interface-pill" onclick="setInterface('admin', this)">
                         <i data-lucide="shield-check"></i>
-                        <span>Admin</span>
+                        <span>Head</span>
                     </div>
                 </div>
 
@@ -283,17 +323,7 @@
             <!-- Dynamic Form Viewport -->
             <div class="auth-viewport" style="margin-top: 1.5rem; transition: height 0.5s ease; overflow: hidden; position: relative;">
                 
-                @if($adminOnline)
-                <div id="adminOnlineOverlay" style="display: none; position: absolute; inset: 0; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(8px); z-index: 50; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-radius: 16px;">
-                    <div style="background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); border: 1px solid rgba(239, 68, 68, 0.2); width: 85%; max-width: 340px;">
-                        <div style="width: 60px; height: 60px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                            <i data-lucide="shield-alert" style="width: 30px; height: 30px;"></i>
-                        </div>
-                        <h3 style="color: #0f172a; font-weight: 900; font-size: 1.1rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">WARNING</h3>
-                        <p style="color: #64748b; font-size: 0.85rem; font-weight: 600; line-height: 1.5; margin: 0;">An Administrator has already logged in. Concurrent Command access is strictly prohibited.</p>
-                    </div>
-                </div>
-                @endif
+
 
                 <div id="formsSlider" style="display: flex; width: 200%; transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);">
                     <!-- Login Side -->
@@ -325,12 +355,8 @@
 
                             <input type="hidden" name="target_interface" id="loginInterfaceSync" value="user">
 
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; gap: 10px; flex-wrap: wrap;">
-                                <label style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); cursor: pointer;">
-                                    <input type="checkbox" name="remember" style="width: 16px; height: 16px; border-radius: 6px; border: 1px solid var(--border-color); background: transparent;">
-                                    Persistent Session
-                                </label>
-                                <a href="{{ route('password.request') }}" style="font-size: 0.8rem; font-weight: 800; color: var(--primary); text-decoration: none;">Forgot Access?</a>
+                            <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 0.25rem; gap: 10px; flex-wrap: wrap;">
+                                <a href="{{ route('password.request') }}" id="forgotLink" style="font-size: 0.8rem; font-weight: 800; color: var(--primary); text-decoration: none;">Forgot Access?</a>
                             </div>
 
                             <button type="submit" class="auth-btn-primary" style="background: var(--primary) !important; height: 56px; font-size: 1rem; border-radius: 20px; margin-top: 1rem; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);">
@@ -383,6 +409,8 @@
                                     </button>
                                 </div>
                             </div>
+
+
 
                             <button type="submit" class="auth-btn-primary" style="background: var(--primary) !important; height: 56px; font-size: 1rem; border-radius: 20px; margin-top: 1rem; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);">
                                 <span>Register Account</span>
@@ -627,6 +655,10 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
+    // Server-side state passed to JS
+    const ADMIN_EXISTS = {{ $adminExists ? 'true' : 'false' }};
+    const ADMIN_ONLINE = {{ $adminOnline ? 'true' : 'false' }};
+
     function updateViewportHeight() {
         const slider = document.getElementById('formsSlider');
         const isRegister = slider.style.transform.includes('translateX(-50%)');
@@ -654,6 +686,7 @@
         const usernameInput = document.getElementById('loginUsername');
 
         if (val === 'admin') {
+            document.getElementById('forgotLink').style.display = 'none';
             tabsContainer.innerHTML = `
                 <button type="button" class="tab-btn active" id="tab-login" onclick="toggleAuth('login')">Login</button>
                 @if(!$adminExists)
@@ -665,61 +698,38 @@
             tabsContainer.style.padding = '5px';
             usernameLabel.innerHTML = 'Username <span style="color: #ef4444;">*</span>';
 
-            @if($adminExists)
             if (usernameInput) {
                 usernameInput.value = '';
                 usernameInput.removeAttribute('readonly');
                 usernameInput.style.opacity = '1';
             }
             toggleAuth('login');
-            @else
-            if (usernameInput) {
-                usernameInput.value = '';
-                usernameInput.removeAttribute('readonly');
-                usernameInput.style.opacity = '1';
-            }
-            @endif
 
-            @if($adminExists)
-                @if($adminOnline)
-                    const overlay = document.getElementById('adminOnlineOverlay');
-                    if (overlay) overlay.style.display = 'flex';
-                    const slider = document.getElementById('formsSlider');
-                    if (slider) {
-                        slider.style.pointerEvents = 'none';
-                        slider.setAttribute('inert', '');
-                    }
-                    
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({
-                            title: '<span style="font-weight: 900; color: #1e293b;">Command Center Locked</span>',
-                            text: "An Administrator is already actively logged into the system. Concurrent Command access is strictly prohibited.",
-                            icon: 'warning',
-                            iconColor: '#ef4444',
-                            background: 'rgba(255, 255, 255, 0.95)',
-                            backdrop: `rgba(0,0,123,0.1)`,
-                            confirmButtonColor: '#4f46e5',
-                            confirmButtonText: 'UNDERSTOOD',
-                            customClass: {
-                                popup: 'glass-monolith',
-                                confirmButton: 'auth-btn-primary'
-                            }
-                        });
-                    }
-                @endif
-            @else
-                const overlay = document.getElementById('adminOnlineOverlay');
-                if (overlay) overlay.style.display = 'none';
-                const slider = document.getElementById('formsSlider');
-                if (slider) {
-                    slider.style.pointerEvents = 'auto';
-                    slider.removeAttribute('inert');
+            // Show lockout overlay if admin is already online
+            if (ADMIN_ONLINE) {
+                const lockOverlay = document.getElementById('adminOnlineOverlay');
+                if (lockOverlay) lockOverlay.style.display = 'flex';
+                const formSlider = document.getElementById('formsSlider');
+                if (formSlider) {
+                    formSlider.style.pointerEvents = 'none';
+                    formSlider.setAttribute('inert', '');
                 }
-            @endif
+            }
         } else {
+            // Switching back to Personnel — always dismiss lockout overlay
+            const overlay = document.getElementById('adminOnlineOverlay');
+            if (overlay) overlay.style.display = 'none';
+            const slider = document.getElementById('formsSlider');
+            if (slider) {
+                slider.style.pointerEvents = 'auto';
+                slider.removeAttribute('inert');
+            }
+
+            document.getElementById('forgotLink').style.display = 'block';
+
             tabsContainer.innerHTML = `
                 <button type="button" class="tab-btn active" style="background: rgba(99, 102, 241, 0.1); color: var(--primary); width: 100%; max-width: 250px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <i data-lucide="lock" style="width: 14px;"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                     Secure Authentication
                 </button>
             `;
@@ -735,20 +745,20 @@
             }
 
             toggleAuth('login');
-
-            @if($adminOnline)
-            const overlay = document.getElementById('adminOnlineOverlay');
-            if (overlay) overlay.style.display = 'none';
-            const slider = document.getElementById('formsSlider');
-            if (slider) {
-                slider.style.pointerEvents = 'auto';
-                slider.removeAttribute('inert');
-            }
-            @endif
         }
         
         updateViewportHeight();
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function dismissAdminOverlay() {
+        // Dismiss the lockout overlay and switch back to Personnel pill
+        const overlay = document.getElementById('adminOnlineOverlay');
+        if (overlay) overlay.style.display = 'none';
+        // Re-activate the Personnel pill
+        const pills = document.querySelectorAll('.interface-pill');
+        pills.forEach(p => p.classList.remove('active'));
+        if (pills[0]) pills[0].classList.add('active');
+        setInterface('user', null);
     }
 
     function toggleAuth(mode) {

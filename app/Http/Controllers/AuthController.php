@@ -134,11 +134,9 @@ class AuthController extends Controller
             return back()->with('error', "Too many login attempts. Please try again in {$seconds} seconds.")->withInput();
         }
 
-        // Administrative accounts are prohibited from using persistent "Remember Me" cookies
+        // Persistent sessions are completely disabled for all accounts
 
-        $remember = ($targetUser && $targetUser->is_admin) ? false : $request->remember;
-
-        if (Auth::attempt($credentials, $remember)) {
+        if (Auth::attempt($credentials, false)) {
             \Illuminate\Support\Facades\RateLimiter::clear($throttleKey);
             $user = auth()->user();
 
@@ -423,4 +421,5 @@ class AuthController extends Controller
 
         return back()->with('error', 'System Error: Personnel record not found.');
     }
+
 }

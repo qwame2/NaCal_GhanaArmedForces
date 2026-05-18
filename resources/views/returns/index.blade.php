@@ -339,6 +339,7 @@
             <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center;">
                 <input type="text" id="historySearchInput" placeholder="Search item or recipient..." oninput="filterHistory()" style="flex: 2; min-width: 200px; padding: 1rem 1.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); outline: none;">
                 <input type="date" id="historyDateFilter" onchange="filterHistory()" style="flex: 1; min-width: 150px; padding: 1rem 1.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); outline: none;">
+                @if(auth()->user()->is_admin)
                 <div id="purgeActions" style="display: none; align-items: center; gap: 1rem;">
                     <button onclick="generatePurgeReport()" class="modern-action-btn" style="background: var(--primary); color: white; border: none; padding: 1rem 1.5rem; border-radius: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
                         <i data-lucide="file-text" style="width: 18px;"></i>
@@ -349,6 +350,7 @@
                         Purge Selected
                     </button>
                 </div>
+                @endif
             </div>
             <div id="historyTableContainer">
                 <div style="padding: 5rem 0; text-align: center;">
@@ -1115,6 +1117,8 @@
 </style>
 
 <script>
+    window.isAdmin = {{ auth()->user()->is_admin ? 'true' : 'false' }};
+
     function openReturnModal(item) {
         document.getElementById('modal_item_id').value = item.id;
         document.getElementById('modal_item_desc').innerText = item.description;
@@ -1256,9 +1260,11 @@
                     <table style="width: 100%; border-collapse: separate; border-spacing: 0 1rem; min-width: 1100px;">
                         <thead>
                             <tr style="text-align: left; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em;">
+                                ${window.isAdmin ? `
                                 <th style="padding: 0 1rem 0.5rem; width: 40px;">
                                     <input type="checkbox" id="selectAllHistory" onchange="toggleSelectAllHistory(this)" style="width: 18px; height: 18px; border-radius: 6px; cursor: pointer;">
                                 </th>
+                                ` : ''}
                                 <th style="padding: 0 1rem 0.5rem;">Return Date</th>
                                 <th style="padding: 0 1rem 0.5rem;">Original Issue Date</th>
                                 <th style="padding: 0 1rem 0.5rem;">Asset Description</th>
@@ -1299,10 +1305,12 @@
 
             desktopHtml += `
                 <tr style="background: var(--bg-card); border-radius: 16px;">
+                    ${window.isAdmin ? `
                     <td style="padding: 1.25rem 1rem; border-radius: 16px 0 0 16px; vertical-align: middle;">
                         <input type="checkbox" class="history-checkbox" value="${item.id}" onchange="updatePurgeSelection()" style="width: 18px; height: 18px; border-radius: 6px; cursor: pointer;">
                     </td>
-                    <td style="padding: 1.25rem 1rem;">
+                    ` : ''}
+                    <td style="padding: 1.25rem 1rem; ${!window.isAdmin ? 'border-radius: 16px 0 0 16px;' : ''}">
                         <div style="font-weight: 800; color: var(--text-main); font-size: 0.95rem;">${dateStr}</div>
                         <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: flex; align-items: center; gap: 4px;"><i data-lucide="clock" style="width: 12px;"></i> ${timeStr}</div>
                     </td>
@@ -1328,10 +1336,12 @@
 
             mobileHtml += `
                 <div class="return-card-mobile" style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 1.75rem; position: relative;">
+                    ${window.isAdmin ? `
                     <div style="position: absolute; top: 1.75rem; right: 1.75rem;">
                         <input type="checkbox" class="history-checkbox" value="${item.id}" onchange="updatePurgeSelection()" style="width: 24px; height: 24px; border-radius: 8px; cursor: pointer;">
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; padding-right: 3rem;">
+                    ` : ''}
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; ${window.isAdmin ? 'padding-right: 3rem;' : ''}">
                         <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900;">CATEGORY ${item.ledge_category}</span>
                         <div style="text-align: right;">
                             <div style="color: var(--text-main); font-size: 0.75rem; font-weight: 800;">${dateStr}</div>
@@ -1527,28 +1537,34 @@
     let reportGenerated = false;
 
     function toggleSelectAllHistory(el) {
+        if (!window.isAdmin) return;
         const checkboxes = document.querySelectorAll('.history-checkbox');
         checkboxes.forEach(cb => cb.checked = el.checked);
         updatePurgeSelection();
     }
 
     function updatePurgeSelection() {
+        if (!window.isAdmin) return;
         const checkboxes = document.querySelectorAll('.history-checkbox:checked');
         selectedHistoryIds = Array.from(checkboxes).map(cb => cb.value);
 
         const actions = document.getElementById('purgeActions');
         if (selectedHistoryIds.length > 0) {
-            actions.style.display = 'flex';
+            if (actions) actions.style.display = 'flex';
         } else {
-            actions.style.display = 'none';
+            if (actions) actions.style.display = 'none';
             reportGenerated = false;
-            document.getElementById('finalizePurgeBtn').disabled = true;
-            document.getElementById('finalizePurgeBtn').style.opacity = '0.5';
-            document.getElementById('finalizePurgeBtn').style.cursor = 'not-allowed';
+            const finalizeBtn = document.getElementById('finalizePurgeBtn');
+            if (finalizeBtn) {
+                finalizeBtn.disabled = true;
+                finalizeBtn.style.opacity = '0.5';
+                finalizeBtn.style.cursor = 'not-allowed';
+            }
         }
     }
 
     function generatePurgeReport() {
+        if (!window.isAdmin) return;
         const logoUrl = "{{ asset('img/NACOC.png') }}";
         if (selectedHistoryIds.length === 0) return;
 
@@ -1778,6 +1794,7 @@
     }
 
     function confirmPurge() {
+        if (!window.isAdmin) return;
         if (!reportGenerated) {
             Swal.fire('Authorization Required', 'You must generate and save the official audit report before purging records.', 'error');
             return;

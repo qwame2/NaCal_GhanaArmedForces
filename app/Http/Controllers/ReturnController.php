@@ -196,6 +196,11 @@ class ReturnController extends Controller
 
     public function purge(Request $request)
     {
+        // Force strict administrator authorization check
+        if (!auth()->check() || !auth()->user()->is_admin) {
+            return redirect()->back()->with('error', 'Unauthorized Action: Purging return history is restricted to Administrators only.');
+        }
+
         try {
             $ids = $request->input('ids');
             
@@ -216,7 +221,7 @@ class ReturnController extends Controller
                     'user_id' => $user->id,
                     'event_type' => 'SECURITY',
                     'action' => 'PURGE_RECORDS',
-                    'description' => "Personnel purged {$count} recovery logs from the active database.",
+                    'description' => "Administrator purged {$count} recovery logs from the active database.",
                     'severity' => 'danger',
                     'ip_address' => request()->ip()
                 ]);

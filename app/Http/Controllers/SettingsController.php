@@ -68,6 +68,8 @@ class SettingsController extends Controller
         ]);
     }
 
+
+
     public function updateAvatar(Request $request)
     {
         $request->validate([
@@ -94,6 +96,12 @@ class SettingsController extends Controller
     }
     public function messages()
     {
+        // Self-heal: Mark all unread messages for the logged-in user as read when they visit the Comms Hub
+        // to prevent any phantom badges or database mismatch issues.
+        \App\Models\Message::where('receiver_id', auth()->id())
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+
         $admins = \App\Models\User::where('is_admin', true)->get();
         $colleagues = \App\Models\User::where('is_admin', false)->where('id', '!=', auth()->id())->get();
         return view('messages.index', compact('admins', 'colleagues'));

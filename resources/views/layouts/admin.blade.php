@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | Strategic Registry</title>
+    <title>Head Panel | Strategic Registry</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -511,43 +511,43 @@
             <ul class="nav-list">
                 <li>
                     <a href="{{ route('admin.index') }}" class="nav-link {{ request()->routeIs('admin.index') ? 'active' : '' }}">
-                        <i data-lucide="users"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                         <span>Personnel Registry</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('admin.logs') }}" class="nav-link {{ request()->routeIs('admin.logs') ? 'active' : '' }}">
-                        <i data-lucide="shield-check"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
                         <span>System Logs</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('admin.inventory') }}" class="nav-link {{ request()->routeIs('admin.inventory') ? 'active' : '' }}">
-                        <i data-lucide="package"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.27 6.96 8.73 5.05 8.73-5.05"/><path d="M12 22.08V12"/></svg>
                         <span>Inventory Oversight</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('notifications.index') }}" class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
-                        <i data-lucide="bell"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                         <span>System Alerts</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('admin.permissions') }}" class="nav-link {{ request()->routeIs('admin.permissions') ? 'active' : '' }}">
-                        <i data-lucide="lock"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         <span>Permissions</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('admin.password.requests') }}" class="nav-link {{ request()->routeIs('admin.password.requests') ? 'active' : '' }}">
-                        <i data-lucide="key"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4.1"/><path d="m10.5 12.5 2.8 2.8a1 1 0 0 0 1.4 0l2.8-2.8"/><circle cx="7" cy="17" r="5"/></svg>
                         <span>Password Requests</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('admin.archive') }}" class="nav-link {{ request()->routeIs('admin.archive') ? 'active' : '' }}">
-                        <i data-lucide="archive"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>
                         <span>System Archive</span>
                     </a>
                 </li>
@@ -557,21 +557,13 @@
             <ul class="nav-list">
                 <li>
                     <a href="{{ route('admin.settings') }}" class="nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
-                        <i data-lucide="settings"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
                         <span>Global Settings</span>
                     </a>
                 </li>
-                {{-- 
-                <li>
-                    <a href="#" class="nav-link">
-                        <i data-lucide="database"></i>
-                        <span>Data Terminal</span>
-                    </a>
-                </li>
-                --}}
                 <li style="margin-top: 2.5rem;">
                     <a href="#" onclick="confirmSelfDeactivation(event)" class="nav-link" style="color: #ef4444;">
-                        <i data-lucide="power-off"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="12" x="3" y="10" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
                         <span>Deactivate Account</span>
                     </a>
                     <form id="selfDeactivateForm" action="{{ route('admin.self_deactivate') }}" method="POST" style="display: none;">
@@ -594,7 +586,7 @@
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="exit-btn">
-                        <i data-lucide="power" style="width: 14px;"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
                     </button>
                 </form>
             </div>
@@ -605,12 +597,12 @@
         <header class="view-header">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="mobile-nav-toggle" id="mobile-toggle">
-                    <i data-lucide="menu"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
                 </button>
                 <div class="title-group">
                     <div class="title-capsule">
                         <div class="capsule-prefix">
-                            <i data-lucide="shield"></i>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
                         </div>
                         <h2>@yield('title')</h2>
                         <span class="capsule-tag">ADMIN</span>
@@ -619,12 +611,12 @@
             </div>
             <div class="header-actions">
                 <a href="{{ route('admin.messages') }}" class="nav-icon-btn" id="admin-message-btn" title="Internal Communications" style="position: relative;">
-                    <i data-lucide="message-square"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     <span id="global-unread-badge" style="display: none; position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.6rem; font-weight: 800; padding: 2px 6px; border-radius: 99px; border: 2px solid white; transition: 0.3s;">0</span>
                 </a>
                 <div style="position: relative;" id="admin-notification-wrapper">
                     <button class="nav-icon-btn" id="admin-notification-btn" title="System Notifications">
-                        <i data-lucide="bell"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                         @if($globalNotificationCount > 0)
                         <span class="alert-dot"></span>
                         @endif
@@ -656,7 +648,7 @@
                             </a>
                             @empty
                             <div style="padding: 3.5rem 2rem; text-align: center; color: #94a3b8;">
-                                <i data-lucide="bell-off" style="width: 36px; height: 36px; margin-bottom: 1rem; opacity: 0.3;"></i>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem; opacity: 0.3;"><path d="M18.4 12c.4 3.8 2.6 5 2.6 5H3s3-2 3-9c0-1.2.3-2.3.9-3.3"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
                                 <p style="font-size: 0.85rem; font-weight: 700; color: #475569;">No system alerts</p>
                                 <p style="font-size: 0.7rem;">System is running within normal parameters.</p>
                             </div>
@@ -1027,6 +1019,49 @@
         [data-tooltip] {
             /* Removed help cursor as requested */
         }
+
+        /* Premium SweetAlert Button Engine */
+        .premium-swal-btn {
+            height: 54px !important;
+            padding: 0 35px !important;
+            border-radius: 18px !important;
+            font-weight: 900 !important;
+            font-size: 0.9rem !important;
+            letter-spacing: 0.02em !important;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            box-shadow: 0 10px 25px rgba(67, 56, 202, 0.25) !important;
+        }
+        .premium-swal-btn:hover {
+            transform: translateY(-2px) scale(1.02) !important;
+            box-shadow: 0 15px 35px rgba(67, 56, 202, 0.35) !important;
+        }
+        .premium-swal-cancel-btn {
+            height: 54px !important;
+            padding: 0 30px !important;
+            border-radius: 18px !important;
+            font-weight: 800 !important;
+            font-size: 0.9rem !important;
+            color: #64748b !important;
+            background: #f1f5f9 !important;
+            transition: all 0.3s !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+        .premium-swal-cancel-btn:hover {
+            background: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+        
+        .glass-monolith-popup {
+            border-radius: 35px !important;
+            padding: 2.5rem !important;
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.15) !important;
+            border: 1px solid rgba(255,255,255,0.8) !important;
+        }
     </style>
     <script>
         // CIA SECURITY ENFORCEMENT: Tab-Scoped Authentication Lock
@@ -1077,7 +1112,12 @@
             e.preventDefault();
             Swal.fire({
                 title: '<span style="font-size: 1.5rem; font-weight: 900; color: #0f172a;">Deactivate Account?</span>',
-                html: '<div style="color: #64748b; font-size: 0.95rem; font-weight: 600; line-height: 1.6; margin-bottom: 10px;">You will be immediately logged out and your account will be disabled.<br><br><span style="color: #ef4444; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Enter your password to confirm this action</span></div>',
+                html: `
+                    <div style="color: #64748b; font-size: 0.95rem; font-weight: 600; line-height: 1.6; margin-bottom: 20px;">
+                        You will be immediately logged out and your account will be disabled.<br><br>
+                        <span style="color: #ef4444; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Enter your password to confirm this action</span>
+                    </div>
+                `,
                 icon: 'warning',
                 input: 'password',
                 inputPlaceholder: '',
@@ -1108,6 +1148,8 @@
                 }
             });
         }
+
+
     </script>
     @stack('scripts')
 </body>

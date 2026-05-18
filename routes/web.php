@@ -47,6 +47,9 @@ Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->n
 Route::post('/forgot-password', [AuthController::class, 'sendPasswordRequest'])->name('password.email');
 Route::get('/reset-password', [AuthController::class, 'showResetWithOtp'])->name('password.reset.otp');
 Route::post('/reset-password', [AuthController::class, 'resetWithOtp'])->name('password.update.otp');
+
+
+
 Route::post('/api/user/offline', [AuthController::class, 'markOffline'])->name('api.user.offline');
 
 // Guest Redirection
@@ -351,6 +354,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings/update', [SettingsController::class, 'update'])->name('settings.update');
     Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
+
     Route::post('/settings/avatar', [SettingsController::class, 'updateAvatar'])->name('settings.avatar');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/stock-check', [\App\Http\Controllers\StockCheckController::class, 'index'])->name('stockcheck.index');
@@ -415,11 +419,17 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
             ->get();
 
-        $notifications = $lowStockNotifications;
+        $notifications = [];
         $is_admin = auth()->user()->is_admin;
-        
+
+        foreach ($lowStockNotifications as $notif) {
+            $notif['category'] = 'alert';
+            $notifications[] = $notif;
+        }
+
         foreach ($expiredItems as $item) {
             $notifications[] = [
+                'category' => 'alert',
                 'type' => 'danger',
                 'title' => 'Expired Record: ' . $item->description,
                 'message' => "Item registry indicates zero balance but exists in inventory records.",
@@ -428,9 +438,33 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             ];
         }
 
+        // Fetch recent system logs as System notifications
+        $systemLogs = \App\Models\SystemLog::orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get();
+
+        foreach ($systemLogs as $log) {
+            $notifications[] = [
+                'category' => 'system',
+                'type' => 'info',
+                'title' => $log->action ?? 'System Event',
+                'message' => $log->description,
+                'icon' => $log->severity === 'danger' || $log->severity === 'critical' ? 'shield-alert' : 'activity',
+                'route' => $is_admin ? 'admin.logs' : 'dashboard',
+                'created_at' => $log->created_at->diffForHumans()
+            ];
+        }
+
+        $alertCount = 0;
+        foreach ($notifications as $n) {
+            if ($n['category'] === 'alert') {
+                $alertCount++;
+            }
+        }
+
         return response()->json([
             'notifications' => $notifications,
-            'count' => count($notifications)
+            'count' => $alertCount
         ]);
     })->name('api.notifications');
 
@@ -507,6 +541,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages');
     Route::patch('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
     Route::post('/admin/self-deactivate', [AdminController::class, 'deactivateSelf'])->name('admin.self_deactivate');
+
     Route::get('/admin/settings', [AdminController::class, 'settings'])->name('admin.settings');
     Route::post('/admin/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
     Route::post('/admin/settings/category', [AdminController::class, 'addCategory'])->name('admin.settings.category');
@@ -593,6 +628,9 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::get('/api/sra-preview/{id}', [\App\Http\Controllers\ReceivedItemsController::class, 'previewApi'])->name('api.sra.preview');
     Route::post('/sra-creation/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'processSraCreation'])->name('sra-creation.process');
     Route::post('/recovery/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'processRecoveryApproval'])->name('recovery.process');
+    Route::post('/verification/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'processVerificationApproval'])->name('verification.process');
+    Route::post('/api/stock-verify', [\App\Http\Controllers\StockCheckController::class, 'verify'])->name('stockcheck.verify');
+    Route::post('/api/stock-verify-batch', [\App\Http\Controllers\StockCheckController::class, 'verifyBatch'])->name('stockcheck.verify-batch');
     Route::get('/received-items/{id}/sra', [\App\Http\Controllers\ReceivedItemsController::class, 'sra'])->name('receiveditems.sra');
     Route::get('/edit-requests/status/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'checkStatus'])->name('edit-requests.checkStatus');
     Route::post('/edit-requests/complete/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'complete'])->name('edit-requests.complete');

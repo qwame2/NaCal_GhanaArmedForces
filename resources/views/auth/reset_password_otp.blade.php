@@ -29,7 +29,7 @@
                     Identity Verified
                 </div>
                 <h1 class="hero-title">Reset <span>Credentials</span></h1>
-                <p class="hero-sub">Enter your Admin-provided OTP and choose a new master key.</p>
+                <p class="hero-sub">Enter your Head-provided OTP and choose a new master key.</p>
             </div>
         </div>
 

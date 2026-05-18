@@ -22,7 +22,7 @@
                 
                 <div style="display: flex; gap: 2rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9;">
                     <div>
-                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Acquisition Type</span>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Sourcing Method</span>
                         <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $batch->acquisition_type }}</span>
                     </div>
                     <div>

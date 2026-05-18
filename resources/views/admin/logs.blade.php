@@ -608,7 +608,7 @@
                         <div class="detail-value">Category ${dataObj.ledge_category || 'N/A'}</div>
                     </div>
                     <div class="detail-card">
-                        <div class="detail-label">Acquisition Type</div>
+                        <div class="detail-label">Sourcing Method</div>
                         <div class="detail-value">${dataObj.acquisition_type || 'N/A'}</div>
                     </div>
                     <div class="detail-card">

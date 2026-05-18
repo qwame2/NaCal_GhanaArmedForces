@@ -225,6 +225,8 @@ class AdminController extends Controller
         return redirect('/login')->with('success', 'Your administrative account has been deactivated. Session ended.');
     }
 
+
+
     public function toggleUserStatus($id)
     {
         if (!auth()->user()->is_admin) {
@@ -437,13 +439,67 @@ class AdminController extends Controller
             ->get()
             ->keyBy('description');
 
-        $issuances = IssuedItem::with('issuance')
+        // Fetch and filter Issuances in real time
+        $issuancesQuery = IssuedItem::with('issuance')
             ->join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-            ->select('issued_items.*', 'issuances.issuance_date', 'issuances.beneficiary', 'issuances.authority', 'issuances.issuance_type', 'issuances.created_at')
-            ->orderBy('issuances.created_at', 'desc')
-            ->get();
+            ->select('issued_items.*', 'issuances.issuance_date', 'issuances.beneficiary', 'issuances.authority', 'issuances.issuance_type', 'issuances.created_at');
 
-        $returnedItems = ReturnedItem::with(['issuedItem.issuance'])->orderBy('return_date', 'desc')->get();
+        if ($request->has('search') && $request->search) {
+            $searchTerm = $request->search;
+            $issuancesQuery->where(function($q) use ($searchTerm) {
+                $q->where('issued_items.description', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('issued_items.issuance_id', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('issuances.beneficiary', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('issuances.authority', 'LIKE', '%' . $searchTerm . '%');
+            });
+        }
+
+        if ($request->has('category') && $request->category) {
+            $issuancesQuery->where('issued_items.ledge_category', $request->category);
+        }
+
+        if ($request->has('date_from') && $request->date_from) {
+            $issuancesQuery->whereDate('issuances.issuance_date', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $issuancesQuery->whereDate('issuances.issuance_date', '<=', $request->date_to);
+        }
+
+        $issuances = $issuancesQuery->orderBy('issuances.created_at', 'desc')->get();
+
+        // Fetch and filter Returns Registry in real time
+        $returnedQuery = ReturnedItem::with(['issuedItem.issuance']);
+
+        if ($request->has('search') && $request->search) {
+            $searchTerm = $request->search;
+            $returnedQuery->where(function($q) use ($searchTerm) {
+                $q->where('remarks', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhereHas('issuedItem', function($sq) use ($searchTerm) {
+                      $sq->where('description', 'LIKE', '%' . $searchTerm . '%')
+                        ->orWhereHas('issuance', function($ssq) use ($searchTerm) {
+                            $ssq->where('beneficiary', 'LIKE', '%' . $searchTerm . '%')
+                              ->orWhere('authority', 'LIKE', '%' . $searchTerm . '%');
+                        });
+                  });
+            });
+        }
+
+        if ($request->has('category') && $request->category) {
+            $returnedQuery->whereHas('issuedItem', function($q) use ($request) {
+                $q->where('ledge_category', $request->category);
+            });
+        }
+
+        if ($request->has('date_from') && $request->date_from) {
+            $returnedQuery->whereDate('return_date', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $returnedQuery->whereDate('return_date', '<=', $request->date_to);
+        }
+
+        $returnedItems = \Illuminate\Support\Facades\Schema::hasTable('returned_items')
+            ? $returnedQuery->orderBy('return_date', 'desc')->get()
+            : collect();
 
         $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
             ? \App\Models\Setting::getCategories() 
@@ -457,7 +513,10 @@ class AdminController extends Controller
                 'J' => 'Equipment'
             ];
 
-        return view('admin.inventory.index', compact('receivedItems', 'partialCount', 'itemAggregates', 'issuances', 'returnedItems', 'ledgeMap'));
+        $allSuppliers = InventoryBatch::whereNotNull('supplier_name')->where('supplier_name', '!=', '')->distinct()->pluck('supplier_name');
+        $allDonors = InventoryBatch::whereNotNull('donor_name')->where('donor_name', '!=', '')->distinct()->pluck('donor_name');
+
+        return view('admin.inventory.index', compact('receivedItems', 'partialCount', 'itemAggregates', 'issuances', 'returnedItems', 'ledgeMap', 'allSuppliers', 'allDonors'));
     }
 
     public function settings()

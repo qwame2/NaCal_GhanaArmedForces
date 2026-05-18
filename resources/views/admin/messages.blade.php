@@ -494,8 +494,9 @@
                     const isStrictlyPersonnel = msg.message && msg.message.includes('personnel-view') && !msg.message.includes('admin-view');
                     const isSraApproval = msg.message && (msg.message.includes('sra-approval-msg') || msg.message.includes('sra-approval-card') || msg.message.includes('SRA APPROVAL REQUIRED'));
                     const isEditReq = msg.message && (msg.message.includes('edit-req-msg') || msg.message.includes('AUTHORIZATION REQUIRED'));
+                    const isSubmissionStatus = msg.message && (msg.message.includes('ENTRY SUBMISSION LOGGED') || msg.message.includes('RECOVERY SUBMITTED') || msg.message.includes('DISBURSEMENT REQUEST LOGGED'));
                     
-                    if (msg.is_automated && !isSraApproval && !isEditReq && isStrictlyPersonnel) {
+                    if (msg.is_automated && !isSraApproval && !isEditReq && (isStrictlyPersonnel || isSubmissionStatus)) {
                         return;
                     }
 
@@ -944,6 +945,104 @@
             console.error(err);
             showToast('System Error', 'Could not complete the re-integration process.', 'error');
             btnElement.innerText = status === 'approved' ? 'Approve Re-integration' : 'Reject Recovery';
+            btnElement.disabled = false;
+        });
+    }
+
+    window.processVerificationApproval = function(id, status, btnElement) {
+        if (status === 'rejected') {
+            Swal.fire({
+                html: `
+                    <div style="text-align: left;">
+                        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.06); border-radius: 50%;"></div>
+                            <div style="position: absolute; bottom: -30px; left: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.04); border-radius: 50%;"></div>
+                            <div style="display: flex; align-items: center; gap: 14px; position: relative;">
+                                <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <svg style="width: 26px; height: 26px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 3px;">Oversight Action</div>
+                                    <div style="font-size: 1.3rem; font-weight: 900; color: white; letter-spacing: -0.02em;">Reject Verification</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6; margin-bottom: 1.25rem; padding: 0 0.25rem;">
+                            State the reason for rejecting this stock verification and reconciliation. This will be transmitted to the personnel.
+                        </p>
+
+                        <textarea id="swal-verification-reject-reason" placeholder="e.g., Physical count does not match batch checks, verification requires double sign-off..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '&#10005; &nbsp;Confirm Rejection',
+                cancelButtonText: 'Go Back',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                preConfirm: () => {
+                    const reason = document.getElementById('swal-verification-reject-reason').value.trim();
+                    if (!reason) {
+                        Swal.showValidationMessage('<span style="font-size:0.85rem;">⚠ A justification is required.</span>');
+                        return false;
+                    }
+                    return reason;
+                }
+            }).then(result => {
+                if (result.isConfirmed) {
+                    _doProcessVerification(id, status, btnElement, result.value);
+                }
+            });
+        } else {
+            _doProcessVerification(id, status, btnElement, null);
+        }
+    };
+
+    function _doProcessVerification(id, status, btnElement, reason) {
+        const actionsDiv = document.getElementById(`verification-actions-${id}`);
+        if (actionsDiv) {
+            const btns = actionsDiv.querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+        }
+        
+        btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        fetch(`{{ url('/verification') }}/${id}/process`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ status: status, reason: reason })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Server protocol violation');
+            return res.json();
+        })
+        .then(data => {
+            if(data.success) {
+                const actionsDiv = document.getElementById(`verification-actions-${id}`);
+                if (actionsDiv) {
+                    const color = status === 'approved' ? '#10b981' : '#dc2626';
+                    const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+                    actionsDiv.innerHTML = `<div style="padding: 12px 20px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 900; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
+                        <i data-lucide="${status === 'approved' ? 'check-circle' : 'alert-circle'}" style="width: 16px;"></i> VERIFICATION ${status.toUpperCase()}
+                    </div>`;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+                showToast('Registry Reconciled', `Stock verification has been ${status}.`, 'success');
+            } else {
+                showToast('Update Failed', data.message || 'Error processing verification', 'error');
+                btnElement.innerText = status === 'approved' ? 'Approve' : 'Reject';
+                btnElement.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('System Error', 'Could not complete the verification process.', 'error');
+            btnElement.innerText = status === 'approved' ? 'Approve' : 'Reject';
             btnElement.disabled = false;
         });
     }

@@ -112,9 +112,29 @@ class MessageController extends Controller
     public function getUnreadCounts()
     {
         $authId = auth()->id();
-        $counts = Message::where('is_archived', false)->where('receiver_id', $authId)
-            ->whereNull('read_at')
-            ->selectRaw('sender_id, count(*) as count')
+        $query = Message::where('is_archived', false)->where('receiver_id', $authId)
+            ->whereNull('read_at');
+
+        // If the user is not an administrator, exclude skipped administrative logs
+        if (auth()->check() && !auth()->user()->is_admin) {
+            $query->where(function($q) {
+                $q->where('is_automated', false)
+                  ->orWhere(function($sq) {
+                      $sq->where('is_automated', true)
+                         ->where('message', 'not like', '%DELETE REQUEST LOG%')
+                         ->where('message', 'not like', '%delete-req-msg%')
+                         ->where('message', 'not like', '%PERMANENTLY DELETE Batch%')
+                         ->where('message', 'not like', '%REQUEST CANCELED%')
+                         ->where('message', 'not like', '%EDIT REQUEST LOG%')
+                         ->where('message', 'not like', '%edit-req-log%')
+                         ->where('message', 'not like', '%request to edit Batch%')
+                         ->where('message', 'not like', '%REQUEST APPROVED%')
+                         ->where('message', 'not like', '%REQUEST REJECTED%');
+                  });
+            });
+        }
+
+        $counts = $query->selectRaw('sender_id, count(*) as count')
             ->groupBy('sender_id')
             ->get()
             ->pluck('count', 'sender_id');
@@ -125,9 +145,29 @@ class MessageController extends Controller
 
     public function getTotalUnreadCount()
     {
-        $count = Message::where('is_archived', false)->where('receiver_id', auth()->id())
-            ->whereNull('read_at')
-            ->count();
+        $query = Message::where('is_archived', false)->where('receiver_id', auth()->id())
+            ->whereNull('read_at');
+
+        // If the user is not an administrator, exclude skipped administrative logs
+        if (auth()->check() && !auth()->user()->is_admin) {
+            $query->where(function($q) {
+                $q->where('is_automated', false)
+                  ->orWhere(function($sq) {
+                      $sq->where('is_automated', true)
+                         ->where('message', 'not like', '%DELETE REQUEST LOG%')
+                         ->where('message', 'not like', '%delete-req-msg%')
+                         ->where('message', 'not like', '%PERMANENTLY DELETE Batch%')
+                         ->where('message', 'not like', '%REQUEST CANCELED%')
+                         ->where('message', 'not like', '%EDIT REQUEST LOG%')
+                         ->where('message', 'not like', '%edit-req-log%')
+                         ->where('message', 'not like', '%request to edit Batch%')
+                         ->where('message', 'not like', '%REQUEST APPROVED%')
+                         ->where('message', 'not like', '%REQUEST REJECTED%');
+                  });
+            });
+        }
+
+        $count = $query->count();
 
         if (ob_get_length()) ob_clean();
         return response()->json(['count' => $count]);

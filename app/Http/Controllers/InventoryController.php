@@ -92,20 +92,6 @@ class InventoryController extends Controller
                     }
                 }
  
-                // Send confirmation to Personnel
-                $confirmation = "<div style='padding: 15px; border: 1px solid #4f46e5; border-radius: 16px; background: rgba(79, 70, 229, 0.03); display: flex; align-items: center; gap: 12px;'>";
-                $confirmation .= "<div style='width: 32px; height: 32px; background: #4f46e5; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;'><i data-lucide='clock' style='width: 16px;'></i></div>";
-                $confirmation .= "<div><b style='color: #4f46e5; font-size: 0.85rem;'>ENTRY SUBMISSION LOGGED</b><br><span style='font-size: 0.75rem; color: #64748b; font-weight: 600;'>Awaiting final approval from the Command Hub.</span></div>";
-                $confirmation .= "</div>";
- 
-                \App\Models\Message::create([
-                    'sender_id' => isset($admins) && $admins->count() > 0 ? $admins->first()->id : 1,
-                    'receiver_id' => auth()->id(),
-                    'message' => $confirmation,
-                    'is_automated' => true,
-                    'edit_request_id' => $editReq->id
-                ]);
-
                 DB::commit();
 
                 return response()->json([

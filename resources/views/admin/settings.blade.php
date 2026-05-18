@@ -584,6 +584,8 @@
                     </div>{{-- /cfg-card --}}
                 @endforeach
 
+
+
                 {{-- Sticky Save Bar --}}
                 <div class="cfg-save-bar">
                     <span><i data-lucide="info"></i> Unsaved changes will be lost on navigation.</span>
@@ -1122,5 +1124,7 @@
             b.classList.toggle('active', parseInt(b.textContent) === minutes || b.onclick?.toString().includes('(' + minutes + ','));
         });
     }
+
+
 </script>
 @endsection
