@@ -232,7 +232,7 @@
                 <button type="submit" class="audit-btn" style="background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 16px rgba(79, 70, 229, 0.2);">
                     <i data-lucide="filter" style="width: 16px;"></i> Filter
                 </button>
-                <a href="{{ route('admin.inventory') }}" style="width: 44px; height: 44px; background: #f8fafc; color: #94a3b8; border: 1px solid #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.3s; margin-right: 8px;" title="Reset Ledger">
+                <a href="{{ route('admin.inventory') }}" style="width: 44px; height: 44px; background: #f8fafc; color: #94a3b8; border: 1px solid #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.3s; margin-right: 8px;" title="Reset Category">
                     <i data-lucide="rotate-ccw" style="width: 18px;"></i>
                 </a>
 
@@ -370,7 +370,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="11" style="padding: 4rem; text-align: center; color: #94a3b8;">No inventory records discovered in the master ledger.</td>
+                            <td colspan="11" style="padding: 4rem; text-align: center; color: #94a3b8;">No inventory records discovered in the master category.</td>
                         </tr>
                         @endforelse
                     </tbody>

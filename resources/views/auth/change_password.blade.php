@@ -420,7 +420,7 @@
                 <div class="field-block">
                     <div class="field-label">
                         <label>Confirm Key</label>
-                        <span class="req-badge">MUST MATCH</span>
+                        <span class="req-badge match-badge" style="transition: all 0.3s ease;">MUST MATCH</span>
                     </div>
                     <div class="field-input">
                         <div class="field-icon"><i data-lucide="shield"></i></div>
@@ -462,6 +462,31 @@
         btn.innerHTML = `<i data-lucide="${isPass ? 'eye-off' : 'eye'}"></i>`;
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const pass = document.getElementById('pass-field');
+        const confirm = document.getElementById('confirm-field');
+        const badge = document.querySelector('.match-badge');
+
+        function checkMatch() {
+            const p = pass.value;
+            const c = confirm.value;
+            
+            if (p && c && p === c) {
+                badge.style.background = '#ecfdf5';
+                badge.style.color = '#10b981';
+            } else {
+                badge.style.background = '#fef2f2';
+                badge.style.color = '#ef4444';
+            }
+        }
+
+        pass.addEventListener('input', checkMatch);
+        confirm.addEventListener('input', checkMatch);
+        
+        // Initial state
+        checkMatch();
+    });
 </script>
 
 @endsection
