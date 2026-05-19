@@ -1591,8 +1591,11 @@
                                 </select>
                                 <div style="margin-top: 0.75rem; display: flex; align-items: center; justify-content: space-between; background: var(--bg-main); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: 12px; transition: all 0.3s ease;">
                                     <div style="display: flex; flex-direction: column; gap: 2px;">
-                                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main);">Mark as Donor</span>
-                                        <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: none; font-weight: 600;">Check if this is a donation</span>
+                                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                                            <i data-lucide="gift" style="width: 12px; color: var(--primary);"></i>
+                                            Mark as Donor
+                                        </span>
+                                        <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: none; font-weight: 600; padding-left: 18px;">Check if this is a donation</span>
                                     </div>
                                     <label class="premium-switch" style="position: relative; display: inline-block; width: 44px; height: 24px; margin-bottom: 0; cursor: pointer; user-select: none;">
                                         <input type="checkbox" id="isDonorCheckbox" style="opacity: 0; width: 0; height: 0;">
