@@ -430,13 +430,13 @@
                 color: var(--text-main);
             }
 
-            /* ── Column 9 – Qty/Variance: align badge right ── */
-            .activity-row td:nth-child(9) {
+            /* ── Column 8 – Qty/Variance: align badge right ── */
+            .activity-row td:nth-child(8) {
                 font-weight: 700;
             }
 
-            /* ── Column 11 – Stock Balance: bottom divider ── */
-            .activity-row td:nth-child(11) {
+            /* ── Column 10 – Stock Balance: bottom divider ── */
+            .activity-row td:nth-child(10) {
                 border-top: 1px dashed var(--border-color) !important;
                 margin-top: 0.4rem;
                 padding-top: 0.7rem !important;
@@ -463,9 +463,8 @@
                 <th>Received Date</th>
                 <th>Product</th>
                 <th>Category</th>
-                <th>Supplier</th>
-                <th>Donor Name</th>
-                <th>S. Status</th>
+                <th>Supplier / Donor</th>
+                <th>Delivery Status</th>
                 <th>Qty Received</th>
                 <th>Qty (Var)</th>
                 <th>Type</th>
@@ -502,9 +501,14 @@
                     elseif (str_contains(strtolower($supStatusDisplay), 'partial delivery')) $supColor = '#ef4444';
                 }
                 @endphp
-                <td data-label="Supplier" style="color: var(--text-main);">{{ $cleanSupDisplay ?: '-' }}</td>
-                <td data-label="Donor Name" style="color: var(--text-main); font-weight: {{ $acqType === 'Donor' ? '800' : '400' }};">{{ $dName }}</td>
-                <td data-label="Supp. Status">
+                <td data-label="Supplier / Donor" style="color: var(--text-main);">
+                    @if($acqType === 'Donor')
+                        <div style="font-weight: 800; color: #8b5cf6;">{{ $dName }}</div>
+                    @else
+                        <div>{{ $cleanSupDisplay ?: '-' }}</div>
+                    @endif
+                </td>
+                <td data-label="Delivery Status">
                     <span style="font-size: 0.65rem; font-weight: 800; color: white; background: {{ $supColor }}; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase;">
                         {{ $supStatusDisplay }}
                     </span>
@@ -1006,8 +1010,8 @@
                             window.closeModal();
                             Swal.fire({
                                 icon: 'info',
-                                title: 'Submission Logged',
-                                text: 'Your entry is currently pending administrative approval. You will receive a notification once the SRA is authorized.',
+                                title: 'REQUEST SUBMITTED',
+                                text: 'Your entry is currently pending administrative approval. You will receive a notification once the request is authorized.',
                                 confirmButtonColor: '#4f46e5',
                                 confirmButtonText: 'Great, Thank you!'
                             }).then(() => {
@@ -1073,14 +1077,7 @@
                     });
 
                     $select.html(optionsHtml);
-                    if (currentVal) {
-                        // If the previous value exists in the new list, keep it, otherwise clear
-                        if (filtered.some(i => i.description === currentVal)) {
-                            $select.val(currentVal).trigger('change.select2');
-                        } else {
-                            $select.val(null).trigger('change.select2');
-                        }
-                    }
+                    $select.val(null).trigger('change.select2').trigger('change');
                 });
 
                 if ($('#itemsContainer').children().length === 0) {
@@ -1107,7 +1104,7 @@
                 const itemIdx = currentRows + 1;
                 const rowHtml = `
                     <div class="item-entry-row" style="margin-bottom: 2rem; padding: 2rem 1.5rem 1.5rem 1.5rem; border: 1px solid var(--border-color); border-radius: 16px; background: var(--bg-card); position: relative;">
-                        <div class="row-badge" style="position: absolute; top: -12px; left: 1rem; background: var(--primary); color: white; padding: 2px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800;">ITEM #${itemIdx}</div>
+                        <div class="row-badge" style="position: absolute; top: -12px; left: 1rem; background: var(--primary); color: white; padding: 2px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800;">ITEM TYPE #${itemIdx}</div>
 
                         <button type="button" class="remove-row-btn" style="position: absolute; top: 1.25rem; right: 1.25rem; background: rgba(239, 68, 68, 0.1); color: var(--danger); border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition);">
                             <i data-lucide="trash-2" style="width: 16px;"></i>
@@ -1115,7 +1112,10 @@
 
                         <div class="form-grid">
                             <div class="form-group full-width">
-                                 <label>Item Description (Search & Select)</label>
+                                 <label style="display: flex; align-items: center; gap: 6px;">
+                                     <i data-lucide="search" style="width: 12px; color: var(--primary);"></i>
+                                     Item Description (Search & Select)
+                                 </label>
                                  <select class="item-select-dynamic" style="width: 100%;">
                                      <option value=""></option>
                                      ${filteredItems.map(item => `<option value="${item.description}">${item.description}</option>`).join('')}
@@ -1146,7 +1146,7 @@
                                             </div>
                                             <div>
                                                 <div class="lbl-dynamic-stock-balance" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Stock Balance</div>
-                                                <div class="stat-dynamic-stock-balance" style="font-size: 0.95rem; font-weight: 800; color: #3b82f6;">0 UNITS</div>
+                                                <div class="stat-dynamic-stock-balance" style="font-size: 0.95rem; font-weight: 800; color: #3b82f6;">0</div>
                                             </div>
                                         </div>
                                     </div>
@@ -1154,25 +1154,35 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Units</label>
-                                <input type="text" class="row-unit" value="" placeholder="Auto-determined" readonly style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-main); color: var(--text-muted); cursor: not-allowed; font-weight: 700;">
+                                <label style="display: flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="tag" style="width: 12px; color: var(--primary);"></i>
+                                    Units
+                                </label>
+                                <div class="unit-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
+                                    <input type="text" class="row-unit" value="" placeholder="Auto-determined" readonly style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid var(--border-color); border-radius: 12px; background: rgba(99, 102, 241, 0.03); color: var(--text-main); cursor: not-allowed; font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                    <div style="position: absolute; left: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); opacity: 0.8; pointer-events: none;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg>
+                                    </div>
+                                </div>
                             </div>
 
                             <input type="hidden" class="row-stock-balance" value="0">
 
                             <div class="form-group">
-                                <label class="lbl-received-qty">Received Qty</label>
+                                <label class="lbl-received-qty" style="display: flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="plus-circle" style="width: 12px; color: var(--primary);"></i>
+                                    <span class="lbl-text">Received Qty</span>
+                                </label>
                                 <input type="number" class="row-qty" style="border-color: var(--primary-light);">
                             </div>
-                            <div class="form-group">
-                                <label>Variance Status</label>
-                                <input type="text" class="row-variance" value="0" readonly style="color: var(--danger); font-weight: 700; background: var(--bg-main);">
-                            </div>
-                            </div>ound: var(--bg-main);">
-                            </div>
+
+                            <input type="hidden" class="row-variance" value="0">
 
                             <div class="form-group full-width">
-                                <label>Situation Remarks / Notes</label>
+                                <label style="display: flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="message-square" style="width: 12px; color: var(--primary);"></i>
+                                    Situation Remarks / Notes
+                                </label>
                                 <input type="text" class="row-remarks" placeholder="Briefly describe the current situation or condition...">
                             </div>
                         </div>
@@ -1216,12 +1226,13 @@
                     
                     const resetUnitStyle = () => {
                         $unitInput.css({
-                            'color': 'var(--text-muted)',
+                            'color': 'var(--text-main)',
                             'border-color': 'var(--border-color)',
-                            'background': 'var(--bg-main)',
-                            'box-shadow': 'none',
+                            'background': 'rgba(99, 102, 241, 0.03)',
+                            'box-shadow': 'inset 0 2px 4px rgba(0,0,0,0.02)',
                             'font-style': 'normal',
-                            'font-size': '0.95rem'
+                            'font-size': '0.95rem',
+                            'letter-spacing': '0.05em'
                         });
                     };
 
@@ -1232,7 +1243,8 @@
                             'background': 'rgba(239, 68, 68, 0.06)',
                             'box-shadow': '0 0 0 3px rgba(239, 68, 68, 0.15)',
                             'font-style': 'italic',
-                            'font-size': '0.82rem'
+                            'font-size': '0.82rem',
+                            'letter-spacing': 'normal'
                         });
                     };
 
@@ -1280,7 +1292,7 @@
                         if (prevData) {
                             $row.find('.stat-stock-balance').text(parseFloat(prevData.stock_balance).toLocaleString() + ' ' + finalUnit);
                             $row.find('.stat-received-qty').text(parseFloat(prevData.qty).toLocaleString() + ' ' + finalUnit);
-                            $row.find('.stat-dynamic-stock-balance').text((parseFloat(stockInput.val()) || 0).toLocaleString() + ' ' + finalUnit);
+                            $row.find('.stat-dynamic-stock-balance').text(parseFloat(prevData.stock_balance).toLocaleString());
                             statsPanel.slideDown(300);
                             
                             // Visual cue for existing item
@@ -1290,7 +1302,7 @@
                         } else if (selectedDesc) {
                             $row.find('.stat-stock-balance').text('0 ' + finalUnit);
                             $row.find('.stat-received-qty').text('0 ' + finalUnit);
-                            $row.find('.stat-dynamic-stock-balance').text((parseFloat(stockInput.val()) || 0).toLocaleString() + ' ' + finalUnit);
+                            $row.find('.stat-dynamic-stock-balance').text('0');
                             statsPanel.slideDown(300);
                             $row.find('.existing-indicator').remove();
                         } else {
@@ -1301,7 +1313,7 @@
 
                     if (selectedDesc) {
                         // Sync initial values and clear placeholders
-                        if (qtyInput.val()) stockInput.val(qtyInput.val());
+                        stockInput.val(qtyInput.val() || 0);
                         qtyInput.removeAttr('placeholder');
                         varianceInput.attr('placeholder', '0');
                         updateStatsPanel();
@@ -1319,12 +1331,6 @@
                     const result = stockVal - qtyVal;
                     varianceInput.val(result);
 
-                    // Dynamically update stats panel stock balance value
-                    const unitLabel = ($row.find('.row-unit').val() || '').toUpperCase();
-                    const isUnitValid = unitLabel && !unitLabel.includes('CONFRONT ADMIN');
-                    const finalUnit = isUnitValid ? unitLabel : 'UNITS';
-                    $row.find('.stat-dynamic-stock-balance').text(stockVal.toLocaleString() + ' ' + finalUnit);
-
                     if (result > 0) {
                         varianceInput.css('color', '#10b981'); // Green for positive (Surplus)
                     } else if (result < 0) {
@@ -1338,11 +1344,11 @@
                 const initStatus = $('#supplierStatusSelect').val();
                 if (initStatus === 'Partial Delivery') {
                     $row.find('.lbl-dynamic-stock-balance').text('Physically Received');
-                    $row.find('.lbl-received-qty').text('Expected / Invoice Qty');
+                    $row.find('.lbl-received-qty .lbl-text').text('Expected / Invoice Qty');
                     $row.find('.row-qty').css('border-color', '#f59e0b');
                 } else {
                     $row.find('.lbl-dynamic-stock-balance').text('Stock Balance');
-                    $row.find('.lbl-received-qty').text('Received Qty');
+                    $row.find('.lbl-received-qty .lbl-text').text('Received Qty');
                     $row.find('.row-qty').css('border-color', 'var(--primary-light)');
                     if (initStatus === 'Full Delivery' || initStatus === 'Donor') {
                         $row.find('.row-qty').prop('readonly', true).css('background', 'var(--bg-main)');
@@ -1387,15 +1393,14 @@
             if (status === 'Partial Delivery') {
                 $('.item-entry-row').each(function() {
                     $(this).find('.lbl-dynamic-stock-balance').text('Physically Received');
-                    $(this).find('.lbl-received-qty').text('Expected / Invoice Qty');
+                    $(this).find('.lbl-received-qty .lbl-text').text('Expected / Invoice Qty');
                     $(this).find('.row-qty').css({'border-color': '#f59e0b', 'background': 'var(--bg-card)'}).prop('readonly', false);
                 });
             } else {
-                const isDonor = $('#isDonorCheckbox').is(':checked');
                 $('.item-entry-row').each(function() {
                     $(this).find('.lbl-dynamic-stock-balance').text('Stock Balance');
-                    $(this).find('.lbl-received-qty').text('Received Qty');
-                    $(this).find('.row-qty').css({'border-color': 'var(--primary-light)', 'background': 'var(--bg-main)'}).prop('readonly', isDonor || status === 'Full Delivery');
+                    $(this).find('.lbl-received-qty .lbl-text').text('Received Qty');
+                    $(this).find('.row-qty').css({'border-color': 'var(--primary-light)', 'background': 'var(--bg-main)'}).prop('readonly', false);
                 });
             }
         });
@@ -1429,7 +1434,7 @@
                 multiQtyInput.val(currentCount);
                 // Re-index all badges correctly
                 $('#itemsContainer .item-entry-row').each(function(index) {
-                    $(this).find('.row-badge').text('ITEM #' + (index + 1));
+                    $(this).find('.row-badge').text('ITEM TYPE #' + (index + 1));
                 });
             });
         });
@@ -1553,7 +1558,10 @@
             <div class="modal-controls-sticky">
                 <div class="form-grid">
                     <div id="ledgeContainer" class="form-group full-width">
-                        <label>Category Section (Search & Select)</label>
+                        <label style="display: flex; align-items: center; gap: 6px;">
+                            <i data-lucide="layers" style="width: 12px; color: var(--primary);"></i>
+                            Category Section (Search & Select)
+                        </label>
                         <select id="ledgeSelect" class="select2-input" style="width: 100%;">
                             <option value=""></option>
                             @foreach($ledgeMap as $code => $name)
@@ -1562,13 +1570,19 @@
                         </select>
                     </div>
                     <div id="qtyControl" class="form-group" style="display: none; opacity: 0;">
-                        <label>Number of different items</label>
+                        <label style="display: flex; align-items: center; gap: 6px;">
+                            <i data-lucide="hash" style="width: 12px; color: var(--primary);"></i>
+                            Number of different items
+                        </label>
                         <input type="number" id="multiQty" min="1" value="1" placeholder="Qty">
                     </div>
                     <div id="supplierControl" class="form-group full-width" style="display: none; opacity: 0; margin-top: 0.75rem;">
                         <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div>
-                                <label>Supplier/Donor Name (Search or Type)</label>
+                                <label style="display: flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="truck" style="width: 12px; color: var(--primary);"></i>
+                                    Supplier/Donor Name (Search or Type)
+                                </label>
                                 <select id="supplierNameSelect" style="width: 100%;">
                                     <option value=""></option>
                                     @foreach($allSuppliers as $supplier)
@@ -1587,7 +1601,10 @@
                                 </div>
                             </div>
                             <div id="deliveryStatusGroup">
-                                <label>Delivery Status</label>
+                                <label style="display: flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="activity" style="width: 12px; color: var(--primary);"></i>
+                                    Delivery Status
+                                </label>
                                 <select id="supplierStatusSelect" style="width: 100%;">
                                     <option value="">Select Status</option>
                                     <option value="Full Delivery" data-icon="check-circle" data-color="#10b981">Full Delivery</option>
@@ -1600,7 +1617,10 @@
                     <div id="dateControl" class="form-group full-width" style="display: none; opacity: 0; margin-top: 1rem;">
                         <div class="form-grid" style="grid-template-columns: 1fr; gap: 1rem;">
                             <div class="form-group">
-                                <label>Received Date (Manual)</label>
+                                <label style="display: flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="calendar" style="width: 12px; color: var(--primary);"></i>
+                                    Received Date (Manual)
+                                </label>
                                 <input type="date" id="arrivalDate" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit;">
                             </div>
                             <input type="hidden" id="entryDate">
@@ -1623,7 +1643,7 @@
                 <div class="form-group full-width">
                     <button type="submit" class="btn-primary" style="width: 100%; padding: 1.15rem; border: none; border-radius: 14px; cursor: pointer; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; gap: 0.75rem; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);">
                         <i data-lucide="save" style="width: 20px;"></i>
-                        Submit All Records
+                        Submit for approval
                     </button>
                 </div>
             </div>

@@ -317,9 +317,8 @@
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Received Date</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Description</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Supplier</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Donor</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Status</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Supplier / Donor</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Delivery Status</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Received Qty</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Balance</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
@@ -384,9 +383,14 @@
                             $displayStatus = 'PARTIAL DELIVERY';
                         }
                         @endphp
-                        <td data-label="Supplier" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 500;">{{ $cleanSupplier ?: '-' }}</td>
-                        <td data-label="Donor" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: {{ $acquisitionType === 'Donor' ? '800' : '400' }};">{{ $donorName }}</td>
-                        <td data-label="Status" style="padding: 1.25rem 1.5rem;">
+                        <td data-label="Supplier / Donor" style="padding: 1.25rem 1.5rem; color: var(--text-main);">
+                            @if($acquisitionType === 'Donor')
+                                <div style="font-weight: 800; color: #8b5cf6;">{{ $donorName }}</div>
+                            @else
+                                <div>{{ $cleanSupplier ?: '-' }}</div>
+                            @endif
+                        </td>
+                        <td data-label="Delivery Status" style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.7rem; font-weight: 900; color: white; background: {{ $statusColor }}; padding: 0.35rem 0.8rem; border-radius: 8px; text-transform: uppercase; box-shadow: 0 4px 10px {{ $statusColor }}30; letter-spacing: 0.5px;">
                                 {{ $displayStatus }}
                             </span>
@@ -450,7 +454,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="13" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
+            <td colspan="12" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; margin: 0 auto;">
                     <div style="background: rgba(99, 102, 241, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(99, 102, 241, 0.2); animation: pulse 2s infinite;">
                         <i data-lucide="package-search" style="width: 44px; stroke-width: 1.5px;"></i>
@@ -3471,19 +3475,22 @@ async function submitEditBatch() {
                             arrivalDateTd.innerText = date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' });
                         }
                         
-                        const supplierTd = r.querySelector('td[data-label="Supplier"]');
-                        if (supplierTd) {
-                            let cleanSupplier = payload.acquisition_type === 'Supplier' ? payload.supplier_name : '-';
-                            if (cleanSupplier !== '-') {
-                                cleanSupplier = cleanSupplier.replace(/\s*\[.*\]\s*$/, '');
+                        const supplierDonorTd = r.querySelector('td[data-label="Supplier / Donor"]');
+                        if (supplierDonorTd) {
+                            if (payload.acquisition_type === 'Donor') {
+                                supplierDonorTd.innerHTML = `
+                                    <div style="font-weight: 800; color: #8b5cf6;">${payload.donor_name || '-'}</div>
+                                `;
+                            } else {
+                                let cleanSupplier = payload.supplier_name || '-';
+                                if (cleanSupplier !== '-') {
+                                    cleanSupplier = cleanSupplier.replace(/\s*\[.*\]\s*$/, '');
+                                }
+                                supplierDonorTd.innerHTML = `<div>${cleanSupplier}</div>`;
                             }
-                            supplierTd.innerText = cleanSupplier;
                         }
-                        
-                        const donorTd = r.querySelector('td[data-label="Donor"]');
-                        if (donorTd) donorTd.innerText = payload.acquisition_type === 'Donor' ? payload.donor_name : '-';
 
-                        const statusTd = r.querySelector('td[data-label="Status"] span');
+                        const statusTd = r.querySelector('td[data-label="Delivery Status"] span');
                         if (statusTd) {
                             let status = 'FULL DELIVERY';
                             let color = '#10b981';
