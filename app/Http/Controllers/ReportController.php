@@ -38,6 +38,7 @@ class ReportController extends Controller
 
         // Received Metrics
         $receivedQuery = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->whereBetween('inventory_batches.entry_date', [$startDate, $endDate]);
 
         $totalReceivedBatches = $receivedQuery->count();
@@ -52,6 +53,7 @@ class ReportController extends Controller
         
         // Let's get combined recent activity list
         $recentReceivals = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->whereBetween('inventory_batches.entry_date', [$startDate, $endDate])
             ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.supplier_name', 'inventory_batches.ledge_category', \DB::raw("'Received' as transaction_type"))
             ->orderBy('inventory_batches.entry_date', 'desc')

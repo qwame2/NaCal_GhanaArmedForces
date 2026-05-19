@@ -314,7 +314,7 @@
                 <thead>
                     <tr style="background: rgba(0,0,0,0.02); text-align: left;">
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Entry Date</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Arrival Date</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Received Date</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Description</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Supplier</th>
@@ -356,7 +356,7 @@
                         @endphp
                         <tr class="activity-row" data-item-id="{{ $item->id }}" data-batch-id="{{ $item->batch_id }}" style="border-top: 1px solid var(--border-color);">
                         <td data-label="Entry Date" style="padding: 1.25rem 1.5rem; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; font-weight: 700;">{{ \Carbon\Carbon::parse($item->entry_date)->format('d/m/y H:i') }}</td>
-                        <td data-label="Arrival Date" style="padding: 1.25rem 1.5rem; color: var(--primary); font-weight: 700;">{{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('d/m/y') : '-' }}</td>
+                        <td data-label="Received Date" style="padding: 1.25rem 1.5rem; color: var(--primary); font-weight: 700;">{{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('d/m/y') : '-' }}</td>
                         <td data-label="Description" style="padding: 1.25rem 1.5rem;">
                             <div style="font-weight: 700; color: var(--text-main);">{{ $item->description }} <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $item->unit ?? 'Units' }})</span></div>
                             <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Batch #{{ $item->batch_id }}</div>
@@ -2968,7 +2968,7 @@
                         
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
                             <div class="input-group">
-                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Arrival Date</label>
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Received Date</label>
                                 <div style="position: relative;">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
                                     <input type="date" name="arrival_date" id="editArrivalDate" required style="width: 100%; padding: 0.85rem 1rem 0.85rem 2.5rem; border: 1.5px solid #e2e8f0; border-radius: 12px; font-weight: 700; color: #1e293b; background: #f8fafc;">
@@ -3465,7 +3465,7 @@ async function submitEditBatch() {
                     // Update Batch level fields in all rows of this batch
                     const allBatchRows = document.querySelectorAll(`tr[data-batch-id="${currentEditBatchId}"]`);
                     allBatchRows.forEach(r => {
-                        const arrivalDateTd = r.querySelector('td[data-label="Arrival Date"]');
+                        const arrivalDateTd = r.querySelector('td[data-label="Received Date"]');
                         if (arrivalDateTd) {
                             const date = new Date(payload.arrival_date);
                             arrivalDateTd.innerText = date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' });

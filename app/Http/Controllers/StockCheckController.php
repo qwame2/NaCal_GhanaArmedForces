@@ -33,6 +33,7 @@ class StockCheckController extends Controller
 
         // Fetch aggregate totals for all items to show a master verification list
         $query = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->selectRaw('
                 inventory_items.description, 
                 inventory_batches.ledge_category,

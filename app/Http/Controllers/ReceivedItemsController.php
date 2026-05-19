@@ -107,6 +107,7 @@ class ReceivedItemsController extends Controller
 
         // Shift to querying individual items for a more detailed "Received Items" report
         $query = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.arrival_date', 'inventory_batches.ledge_category', 'inventory_batches.supplier_name', 'inventory_batches.supplier_status', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type');
 
         // Date filter
@@ -164,13 +165,16 @@ class ReceivedItemsController extends Controller
         $receivedItems = $query->orderBy('inventory_batches.entry_date', 'desc')->paginate($perPage);
 
         // Fetch aggregate totals for item status display in the table
-        $itemAggregates = InventoryItem::selectRaw('description, SUM(qty) as total_received_qty, SUM(stock_balance) as total_available, SUM(variance) as total_variance')
-            ->groupBy('description')
+        $itemAggregates = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->selectRaw('inventory_items.description, SUM(inventory_items.qty) as total_received_qty, SUM(inventory_items.stock_balance) as total_available, SUM(inventory_items.variance) as total_variance')
+            ->groupBy('inventory_items.description')
             ->get()
             ->keyBy('description');
 
         // Fetch unique suppliers and donors for the dropdowns
         $allSuppliers = InventoryBatch::where('acquisition_type', 'Supplier')
+            ->where('supplier_status', '!=', 'System Draft')
             ->select('supplier_name')
             ->distinct()
             ->pluck('supplier_name')
@@ -179,15 +183,18 @@ class ReceivedItemsController extends Controller
             })->unique()->values();
 
         $allDonors = InventoryBatch::where('acquisition_type', 'Donor')
+            ->where('supplier_status', '!=', 'System Draft')
             ->select('donor_name')
             ->distinct()
             ->pluck('donor_name')
             ->unique()->values();
 
         // Statistics
-        $totalReceived = InventoryBatch::count();
-        $totalItemsCount = InventoryItem::count();
-        $recentReceived = InventoryBatch::whereDate('created_at', '>=', Carbon::now()->subDays(7))->count();
+        $totalReceived = InventoryBatch::where('supplier_status', '!=', 'System Draft')->count();
+        $totalItemsCount = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->count();
+        $recentReceived = InventoryBatch::where('supplier_status', '!=', 'System Draft')->whereDate('created_at', '>=', Carbon::now()->subDays(7))->count();
 
         return view('received-items.index', compact(
             'receivedItems',

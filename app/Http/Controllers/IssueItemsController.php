@@ -23,8 +23,9 @@ class IssueItemsController extends Controller
             });
         }
 
-        // Get unique items by description and sum up their available qty
+        // Get unique items by description and sum up their available qty, excluding System Draft
         $items = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->selectRaw('inventory_items.description, inventory_batches.ledge_category, MAX(inventory_items.unit) as unit, SUM(inventory_items.qty) as total_stock')
             ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
             ->get();

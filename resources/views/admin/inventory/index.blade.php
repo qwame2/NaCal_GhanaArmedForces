@@ -280,7 +280,7 @@
                 <table class="audit-table" style="min-width: 1400px;">
                     <thead>
                         <tr>
-                            <th>Entry / Arrival</th>
+                            <th>Entry / Received</th>
                             <th>Description</th>
                             <th>Category</th>
                             <th>Supplier</th>
@@ -320,7 +320,7 @@
                         <tr class="item-row inventory-row" data-item-id="{{ $item->id }}" data-batch-id="{{ $item->batch_id }}" data-is-partial="{{ $isPartial ? 'true' : 'false' }}">
                             <td>
                                 <div style="font-weight: 800; color: #0f172a;">{{ \Carbon\Carbon::parse($item->entry_date)->format('d/m/y') }}</div>
-                                <div style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">Arr: {{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('d/m/y') : 'N/A' }}</div>
+                                <div style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">Rec'd: {{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('d/m/y') : 'N/A' }}</div>
                             </td>
                             <td>
                                 <div style="font-weight: 700; color: #1e293b;">{{ $item->description }}</div>
@@ -764,7 +764,7 @@
                         
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
                             <div class="input-group">
-                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Arrival Date</label>
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Received Date</label>
                                 <div style="position: relative;">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
                                     <input type="date" name="arrival_date" id="editArrivalDate" required style="width: 100%; padding: 0.85rem 1rem 0.85rem 2.5rem; border: 1.5px solid #e2e8f0; border-radius: 12px; font-weight: 700; color: #1e293b; background: #f8fafc;">

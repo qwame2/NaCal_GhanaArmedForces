@@ -394,6 +394,7 @@ class AdminController extends Controller
     {
         // Query builder for Received Items
         $query = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->select(
                 'inventory_items.*', 
                 'inventory_batches.entry_date', 
@@ -434,8 +435,10 @@ class AdminController extends Controller
         $receivedItems = $query->orderBy('inventory_batches.entry_date', 'desc')->paginate($perPage);
 
         // Fetch aggregate totals for item status display (System Health metrics)
-        $itemAggregates = InventoryItem::selectRaw('description, SUM(qty) as total_received_qty, SUM(stock_balance) as total_available, SUM(variance) as total_variance')
-            ->groupBy('description')
+        $itemAggregates = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->selectRaw('inventory_items.description, SUM(inventory_items.qty) as total_received_qty, SUM(inventory_items.stock_balance) as total_available, SUM(inventory_items.variance) as total_variance')
+            ->groupBy('inventory_items.description')
             ->get()
             ->keyBy('description');
 

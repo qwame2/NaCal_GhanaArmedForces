@@ -106,6 +106,26 @@
                 background: rgba(0, 0, 0, 0.05) !important;
             }
         }
+
+        /* Premium iOS-style Toggle Switch */
+        .premium-switch input:checked + .slider {
+            background-color: var(--primary) !important;
+        }
+        .premium-switch .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+        .premium-switch input:checked + .slider:before {
+            transform: translateX(20px);
+        }
     </style>
 
     <!-- Stats Grid -->
@@ -397,7 +417,7 @@
                 color: var(--text-main);
             }
 
-            /* ── Column 2 – Arrival Date ── */
+            /* ── Column 2 – Received Date ── */
             .activity-row td:nth-child(2) {
                 font-weight: 700;
                 color: var(--primary);
@@ -440,7 +460,7 @@
         <thead>
             <tr>
                 <th>Entry Date</th>
-                <th>Arrival Date</th>
+                <th>Received Date</th>
                 <th>Product</th>
                 <th>Category</th>
                 <th>Supplier</th>
@@ -456,7 +476,7 @@
             @forelse($recentTransactions as $transaction)
             <tr class="activity-row">
                 <td data-label="Entry Date">{{ \Carbon\Carbon::parse($transaction->entry_date)->format('d/m/y H:i') }}</td>
-                <td data-label="Arrival Date" style="color: var(--primary); font-weight: 700;">{{ $transaction->arrival_date ? \Carbon\Carbon::parse($transaction->arrival_date)->format('d/m/y') : '-' }}</td>
+                <td data-label="Received Date" style="color: var(--primary); font-weight: 700;">{{ $transaction->arrival_date ? \Carbon\Carbon::parse($transaction->arrival_date)->format('d/m/y') : '-' }}</td>
                 <td data-label="Product">{{ $transaction->description }} <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $transaction->unit ?? 'Units' }})</span></td>
                 <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">{{ $ledgeMap[$transaction->ledge_category] ?? "Category " . $transaction->ledge_category }}</span></td>
                 @php
@@ -839,6 +859,10 @@
                 jQuery('#arrivalDate').val(new Date().toISOString().split('T')[0]);
 
                 jQuery('#ledgeSelect').val('').trigger('change');
+                jQuery('#supplierNameSelect').val('').trigger('change');
+                jQuery('#supplierStatusSelect').val('').trigger('change');
+                jQuery('#isDonorCheckbox').prop('checked', false);
+                jQuery('#deliveryStatusGroup').show();
                 jQuery('#itemsContainer').empty();
                 jQuery('#itemDetails').hide();
                 jQuery('#qtyControl, #supplierControl, #dateControl').hide().css('opacity', 0);
@@ -867,15 +891,35 @@
         const ledgeSelect = $('#ledgeSelect');
         const itemDetails = $('#itemDetails');
 
-        // Database Items from Backend
-        const existingDBItems = JSON.parse(document.getElementById('inventory-data').textContent || '[]');
+        // Database Items from Backend (All item descriptions and units mapped to UPPERCASE)
+        const existingDBItems = JSON.parse(document.getElementById('inventory-data').textContent || '[]').map(item => {
+            return {
+                ...item,
+                description: (item.description || '').toUpperCase(),
+                unit: (item.unit || '').toUpperCase()
+            };
+        });
         const globalTotalStock = {{ $totalInventory }};
 
         // Load admin-defined unit rules for auto-fill
         window._unitRules = {};
         fetch('{{ route("api.unit-rules") }}')
             .then(r => r.json())
-            .then(rules => { window._unitRules = rules; })
+            .then(rules => {
+                const upperRules = {};
+                Object.entries(rules || {}).forEach(([keyword, rule]) => {
+                    const upperKeyword = keyword.toUpperCase();
+                    if (typeof rule === 'object' && rule !== null) {
+                        upperRules[upperKeyword] = {
+                            category: rule.category,
+                            unit: (rule.unit || '').toUpperCase()
+                        };
+                    } else {
+                        upperRules[upperKeyword] = (rule || '').toUpperCase();
+                    }
+                });
+                window._unitRules = upperRules;
+            })
             .catch(() => {});
 
         // Initialize Select2
@@ -895,12 +939,23 @@
             const btn = $(this).find('button[type="submit"]');
             const originalHtml = btn.html();
 
-            // Gather Items
+            // Gather Items & Validate Unit Rules
             const items = [];
+            let validationFailed = false;
+            let invalidItemName = '';
+
             $('.item-entry-row').each(function() {
+                const desc = ($(this).find('.item-select-dynamic').val() || '').trim();
+                const unit = ($(this).find('.row-unit').val() || '').trim();
+                
+                if (unit.indexOf("Confront Admin") !== -1 || !unit) {
+                    validationFailed = true;
+                    invalidItemName = desc || 'Unnamed Item';
+                }
+
                 items.push({
-                    description: $(this).find('.item-select-dynamic').val(),
-                    unit: $(this).find('.row-unit').val(),
+                    description: desc,
+                    unit: unit,
                     stock_balance: $(this).find('.row-stock-balance').val(),
                     qty: $(this).find('.row-qty').val(),
                     variance: $(this).find('.row-variance').val() || '0',
@@ -908,17 +963,29 @@
                 });
             });
 
-            const supplierStatus = $('#supplierStatusSelect').val(); // Can be Full Delivery, Partial Delivery, or Donor
-            const acquisitionType = supplierStatus === 'Donor' ? 'Donor' : 'Supplier';
-            const donorName = $('#donorNameInput').val() ? $('#donorNameInput').val().trim() : null;
-            const supplierName = $('#supplierNameSelect').val() || '';
+            if (validationFailed) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Unit Not Assigned',
+                    text: `The item "${invalidItemName}" does not have a unit assigned by the administrator yet. Please confront admin.`,
+                    confirmButtonColor: '#ef4444'
+                });
+                return;
+            }
+
+            const isDonor = $('#isDonorCheckbox').is(':checked');
+            const supplierStatus = isDonor ? 'Donor' : $('#supplierStatusSelect').val();
+            const acquisitionType = isDonor ? 'Donor' : 'Supplier';
+            const supplierOrDonorName = ($('#supplierNameSelect').val() || '').trim();
+            const donorName = isDonor ? supplierOrDonorName : null;
+            const supplierName = isDonor ? null : supplierOrDonorName;
 
             const payload = {
                 _token: '{{ csrf_token() }}',
                 ledge_category: ledgeSelect.val(),
                 supplier_name: supplierName || null,
                 supplier_status: supplierStatus,
-                donor_name: donorName,
+                donor_name: donorName || null,
                 acquisition_type: acquisitionType,
                 entry_date: $('#entryDate').val(),
                 arrival_date: $('#arrivalDate').val(),
@@ -1048,29 +1115,38 @@
 
                         <div class="form-grid">
                             <div class="form-group full-width">
-                                <label>Item Description (Search & Select)</label>
-                                <select class="item-select-dynamic" style="width: 100%;">
-                                    <option value=""></option>
-                                    ${filteredItems.map(item => `<option value="${item.description}">${item.description}</option>`).join('')}
-                                </select>
+                                 <label>Item Description (Search & Select)</label>
+                                 <select class="item-select-dynamic" style="width: 100%;">
+                                     <option value=""></option>
+                                     ${filteredItems.map(item => `<option value="${item.description}">${item.description}</option>`).join('')}
+                                 </select>
                                 <div class="existing-stats" style="display: none; margin-top: 0.85rem; padding: 1rem; background: var(--bg-main); border-radius: 14px; border: 1px dashed var(--border-color); animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
                                         <div style="display: flex; align-items: center; gap: 10px;">
-                                            <div style="width: 32px; height: 32px; background: rgba(99, 102, 241, 0.15); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.1);">
+                                            <div style="width: 32px; height: 32px; background: rgba(99, 102, 241, 0.15); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.15);">
                                                 <i data-lucide="layers" style="width: 16px;"></i>
                                             </div>
                                             <div>
-                                                <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Total System Stock</div>
+                                                <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Total items</div>
                                                 <div class="stat-stock-balance" style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">0</div>
                                             </div>
                                         </div>
                                         <div style="display: flex; align-items: center; gap: 10px;">
-                                            <div style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.15); color: var(--secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);">
+                                            <div style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.15); color: var(--secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.15);">
                                                 <i data-lucide="package" style="width: 16px;"></i>
                                             </div>
                                             <div>
                                                 <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Previously Received</div>
                                                 <div class="stat-received-qty" style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">0</div>
+                                            </div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div style="width: 32px; height: 32px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);">
+                                                <i data-lucide="plus-circle" style="width: 16px;"></i>
+                                            </div>
+                                            <div>
+                                                <div class="lbl-dynamic-stock-balance" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Stock Balance</div>
+                                                <div class="stat-dynamic-stock-balance" style="font-size: 0.95rem; font-weight: 800; color: #3b82f6;">0 UNITS</div>
                                             </div>
                                         </div>
                                     </div>
@@ -1082,10 +1158,8 @@
                                 <input type="text" class="row-unit" value="" placeholder="Auto-determined" readonly style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-main); color: var(--text-muted); cursor: not-allowed; font-weight: 700;">
                             </div>
 
-                            <div class="form-group">
-                                <label class="lbl-stock-balance">Stock Balance</label>
-                                <input type="number" class="row-stock-balance">
-                            </div>
+                            <input type="hidden" class="row-stock-balance" value="0">
+
                             <div class="form-group">
                                 <label class="lbl-received-qty">Received Qty</label>
                                 <input type="number" class="row-qty" style="border-color: var(--primary-light);">
@@ -1093,6 +1167,8 @@
                             <div class="form-group">
                                 <label>Variance Status</label>
                                 <input type="text" class="row-variance" value="0" readonly style="color: var(--danger); font-weight: 700; background: var(--bg-main);">
+                            </div>
+                            </div>ound: var(--bg-main);">
                             </div>
 
                             <div class="form-group full-width">
@@ -1110,24 +1186,59 @@
                 const varianceInput = $row.find('.row-variance');
                 const statsPanel = $row.find('.existing-stats');
 
-                // Initialize Select2 to allow DB items and new items
+                // Initialize Select2 to allow DB items and new items with auto-capitalized tags
                 $row.find('.item-select-dynamic').select2({
                     placeholder: "Search, select, or type new item...",
                     width: '100%',
                     tags: true, // Allow new tags
-                    dropdownParent: $('#newEntryModal')
+                    dropdownParent: $('#newEntryModal'),
+                    createTag: function (params) {
+                        var term = $.trim(params.term).toUpperCase();
+                        if (term === '') {
+                            return null;
+                        }
+                        return {
+                            id: term,
+                            text: term,
+                            newTag: true
+                        };
+                    }
                 });
 
 
                 // Handle Item Selection to show previous data explicitly
                 $row.on('change', '.item-select-dynamic', function() {
-                    const selectedDesc = $(this).val();
+                    const selectedDesc = ($(this).val() || '').trim().toUpperCase();
                     const prevData = existingDBItems.find(item => item.description === selectedDesc);
 
                     // Auto-fill unit based on admin-defined unit rules or existing item data
                     const $unitInput = $row.find('.row-unit');
+                    
+                    const resetUnitStyle = () => {
+                        $unitInput.css({
+                            'color': 'var(--text-muted)',
+                            'border-color': 'var(--border-color)',
+                            'background': 'var(--bg-main)',
+                            'box-shadow': 'none',
+                            'font-style': 'normal',
+                            'font-size': '0.95rem'
+                        });
+                    };
+
+                    const setErrorUnitStyle = () => {
+                        $unitInput.css({
+                            'color': '#ef4444',
+                            'border-color': '#fca5a5',
+                            'background': 'rgba(239, 68, 68, 0.06)',
+                            'box-shadow': '0 0 0 3px rgba(239, 68, 68, 0.15)',
+                            'font-style': 'italic',
+                            'font-size': '0.82rem'
+                        });
+                    };
+
                     if (!selectedDesc) {
                         $unitInput.val('');
+                        resetUnitStyle();
                     } else if (window._unitRules) {
                         const descLower = selectedDesc.toLowerCase();
                         const currentCat = $('#ledgeSelect').val(); // Get current category
@@ -1145,61 +1256,74 @@
                         if (matchedUnit) {
                             const ruleValue = matchedUnit[1];
                             $unitInput.val(typeof ruleValue === 'object' ? ruleValue.unit : ruleValue);
+                            resetUnitStyle();
                         } else if (prevData && prevData.unit) {
                             $unitInput.val(prevData.unit);
+                            resetUnitStyle();
                         } else {
-                            $unitInput.val("Piece(s)"); // Default fallback
+                            $unitInput.val("Unit not assigned. Confront Admin!");
+                            setErrorUnitStyle();
                         }
                     } else if (prevData && prevData.unit) {
                         $unitInput.val(prevData.unit);
+                        resetUnitStyle();
                     } else {
-                        $unitInput.val("Piece(s)");
+                        $unitInput.val("Unit not assigned. Confront Admin!");
+                        setErrorUnitStyle();
                     }
 
-                    if (prevData) {
-                        // Update explicitly visible stats panel
-                        $row.find('.stat-stock-balance').text(parseFloat(prevData.stock_balance).toLocaleString() + ' ' + (prevData.unit || 'units'));
-                        $row.find('.stat-received-qty').text(parseFloat(prevData.qty).toLocaleString() + ' ' + (prevData.unit || 'units'));
-                        statsPanel.slideDown(300);
-                        lucide.createIcons();
+                    const updateStatsPanel = () => {
+                        const unitLabel = ($unitInput.val() || '').toUpperCase();
+                        const isUnitValid = unitLabel && !unitLabel.includes('CONFRONT ADMIN');
+                        const finalUnit = isUnitValid ? unitLabel : 'UNITS';
 
-                        // Allow Read-Write for Existing Items
-                        stockInput.prop('readonly', false).css('background', 'var(--bg-card)');
-                        // Auto-sync initial value if qty exists
-                        if (qtyInput.val()) stockInput.val(qtyInput.val());
-
-                        // Remove placeholders as requested
-                        stockInput.removeAttr('placeholder');
-                        qtyInput.removeAttr('placeholder');
-                        
-                        // Visual cue for existing item
-                        if (!$row.find('.existing-indicator').length) {
-                            $row.find('.row-badge').append(' <span class="existing-indicator" style="font-size: 0.6rem; opacity: 0.8; background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 4px; margin-left: 4px;">(Restocking)</span>');
+                        if (prevData) {
+                            $row.find('.stat-stock-balance').text(parseFloat(prevData.stock_balance).toLocaleString() + ' ' + finalUnit);
+                            $row.find('.stat-received-qty').text(parseFloat(prevData.qty).toLocaleString() + ' ' + finalUnit);
+                            $row.find('.stat-dynamic-stock-balance').text((parseFloat(stockInput.val()) || 0).toLocaleString() + ' ' + finalUnit);
+                            statsPanel.slideDown(300);
+                            
+                            // Visual cue for existing item
+                            if (!$row.find('.existing-indicator').length) {
+                                $row.find('.row-badge').append(' <span class="existing-indicator" style="font-size: 0.6rem; opacity: 0.8; background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 4px; margin-left: 4px;">(Restocking)</span>');
+                            }
+                        } else if (selectedDesc) {
+                            $row.find('.stat-stock-balance').text('0 ' + finalUnit);
+                            $row.find('.stat-received-qty').text('0 ' + finalUnit);
+                            $row.find('.stat-dynamic-stock-balance').text((parseFloat(stockInput.val()) || 0).toLocaleString() + ' ' + finalUnit);
+                            statsPanel.slideDown(300);
+                            $row.find('.existing-indicator').remove();
+                        } else {
+                            statsPanel.slideUp(300);
                         }
-                    } else {
-                        statsPanel.slideUp(300);
-                        // New Item Logic: Editable and defaults to 0
-                        stockInput.prop('readonly', false).css('background', 'var(--bg-card)').val(0);
-                        
-                        stockInput.removeAttr('placeholder');
+                        lucide.createIcons();
+                    };
+
+                    if (selectedDesc) {
+                        // Sync initial values and clear placeholders
+                        if (qtyInput.val()) stockInput.val(qtyInput.val());
                         qtyInput.removeAttr('placeholder');
                         varianceInput.attr('placeholder', '0');
-                        $row.find('.existing-indicator').remove();
+                        updateStatsPanel();
+                    } else {
+                        statsPanel.slideUp(300);
                     }
                 });
 
-                // Auto-Calculation Logic: Variance = Stock Balance - Received Qty
-                $row.on('input', '.row-stock-balance, .row-qty', function() {
-                    // Auto-sync logic for existing items: Stock Balance follows Received Qty
-                    if (stockInput.prop('readonly') && $(this).hasClass('row-qty')) {
-                        stockInput.val($(this).val());
-                    }
+                // Auto-Calculation Logic: Sync Stock Balance to follow Received Qty
+                $row.on('input', '.row-qty', function() {
+                    const qtyVal = parseFloat(qtyInput.val()) || 0;
+                    stockInput.val(qtyVal);
 
                     const stockVal = parseFloat(stockInput.val()) || 0;
-                    const qtyVal = parseFloat(qtyInput.val()) || 0;
-
                     const result = stockVal - qtyVal;
                     varianceInput.val(result);
+
+                    // Dynamically update stats panel stock balance value
+                    const unitLabel = ($row.find('.row-unit').val() || '').toUpperCase();
+                    const isUnitValid = unitLabel && !unitLabel.includes('CONFRONT ADMIN');
+                    const finalUnit = isUnitValid ? unitLabel : 'UNITS';
+                    $row.find('.stat-dynamic-stock-balance').text(stockVal.toLocaleString() + ' ' + finalUnit);
 
                     if (result > 0) {
                         varianceInput.css('color', '#10b981'); // Green for positive (Surplus)
@@ -1213,15 +1337,13 @@
                 // Apply initial labels based on current status
                 const initStatus = $('#supplierStatusSelect').val();
                 if (initStatus === 'Partial Delivery') {
-                    $row.find('.lbl-stock-balance').text('Physically Received');
+                    $row.find('.lbl-dynamic-stock-balance').text('Physically Received');
                     $row.find('.lbl-received-qty').text('Expected / Invoice Qty');
                     $row.find('.row-qty').css('border-color', '#f59e0b');
                 } else {
-                    $row.find('.lbl-stock-balance').text('Stock Balance');
+                    $row.find('.lbl-dynamic-stock-balance').text('Stock Balance');
                     $row.find('.lbl-received-qty').text('Received Qty');
                     $row.find('.row-qty').css('border-color', 'var(--primary-light)');
-                    // Auto-hide the received qty if it's full delivery to reduce confusion? 
-                    // No, keeping it visible but read-only or auto-synced is better.
                     if (initStatus === 'Full Delivery' || initStatus === 'Donor') {
                         $row.find('.row-qty').prop('readonly', true).css('background', 'var(--bg-main)');
                     }
@@ -1252,35 +1374,35 @@
             dropdownParent: $('#newEntryModal')
         });
 
-        // Toggle Donor Name Input and Update Labels
+        // Toggle Donor Acquisition state
+        $('#isDonorCheckbox').on('change', function() {
+            $('#supplierStatusSelect').trigger('change');
+        });
+
+        // Toggle Delivery Status and Update Labels
         $('#supplierStatusSelect').on('change', function() {
             const status = $(this).val();
             
-            if (status === 'Donor') {
-                $('#donorNameWrapper').slideDown(300);
+            // Update Labels & Fields for Partial Delivery UI
+            if (status === 'Partial Delivery') {
+                $('.item-entry-row').each(function() {
+                    $(this).find('.lbl-dynamic-stock-balance').text('Physically Received');
+                    $(this).find('.lbl-received-qty').text('Expected / Invoice Qty');
+                    $(this).find('.row-qty').css({'border-color': '#f59e0b', 'background': 'var(--bg-card)'}).prop('readonly', false);
+                });
             } else {
-                $('#donorNameWrapper').slideUp(300);
+                const isDonor = $('#isDonorCheckbox').is(':checked');
+                $('.item-entry-row').each(function() {
+                    $(this).find('.lbl-dynamic-stock-balance').text('Stock Balance');
+                    $(this).find('.lbl-received-qty').text('Received Qty');
+                    $(this).find('.row-qty').css({'border-color': 'var(--primary-light)', 'background': 'var(--bg-main)'}).prop('readonly', isDonor || status === 'Full Delivery');
+                });
             }
-
-                    // Update Labels & Fields for Partial Delivery UI
-                    if (status === 'Partial Delivery') {
-                        $('.item-entry-row').each(function() {
-                            $(this).find('.lbl-stock-balance').text('Physically Received');
-                            $(this).find('.lbl-received-qty').text('Expected / Invoice Qty');
-                            $(this).find('.row-qty').css({'border-color': '#f59e0b', 'background': 'var(--bg-card)'}).prop('readonly', false);
-                        });
-                    } else {
-                        $('.item-entry-row').each(function() {
-                            $(this).find('.lbl-stock-balance').text('Stock Balance');
-                            $(this).find('.lbl-received-qty').text('Received Qty');
-                            $(this).find('.row-qty').css({'border-color': 'var(--primary-light)', 'background': 'var(--bg-main)'}).prop('readonly', false); // Allow entry even if full
-                        });
-                    }
         });
 
         // Initialize Supplier Name Search/Type
         $('#supplierNameSelect').select2({
-            placeholder: "Search or type new supplier...",
+            placeholder: "Search or type new supplier/donor...",
             width: '100%',
             tags: true,
             dropdownParent: $('#newEntryModal')
@@ -1341,14 +1463,18 @@
                         // Set Ledge
                         ledgeSelect.val(batch.ledge_category).trigger('change');
 
-                        // Set Supplier (clean name)
-                        const rawSupplier = batch.supplier_name;
-                        const cleanSupplier = rawSupplier.replace(/\s\[.*\]$/, '');
+                        // Set Supplier/Donor (clean name)
+                        const isDonor = batch.acquisition_type === 'Donor';
+                        const rawSupplier = isDonor ? batch.donor_name : batch.supplier_name;
+                        const cleanSupplier = rawSupplier ? rawSupplier.replace(/\s\[.*\]$/, '') : '';
 
                         // We need to wait for Select2 to be ready or just set values if they exist
                         setTimeout(() => {
+                            $('#isDonorCheckbox').prop('checked', isDonor).trigger('change');
                             $('#supplierNameSelect').val(cleanSupplier).trigger('change');
-                            $('#supplierStatusSelect').val('Full Delivery').trigger('change');
+                            if (!isDonor) {
+                                $('#supplierStatusSelect').val(batch.supplier_status || 'Full Delivery').trigger('change');
+                            }
 
                             // Render Rows for items
                             if (batch.items && batch.items.length > 0) {
@@ -1362,7 +1488,7 @@
 
                                     $row.find('.item-select-dynamic').val(item.description).trigger('change');
 
-                                    $row.find('.row-stock-balance').focus();
+                                    $row.find('.row-qty').focus();
                                 });
                             }
                         }, 500);
@@ -1436,40 +1562,45 @@
                         </select>
                     </div>
                     <div id="qtyControl" class="form-group" style="display: none; opacity: 0;">
-                        <label>Items to record?</label>
+                        <label>Number of different items</label>
                         <input type="number" id="multiQty" min="1" value="1" placeholder="Qty">
                     </div>
                     <div id="supplierControl" class="form-group full-width" style="display: none; opacity: 0; margin-top: 0.75rem;">
                         <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div>
-                                <label>Supplier Name (Search or Type)</label>
+                                <label>Supplier/Donor Name (Search or Type)</label>
                                 <select id="supplierNameSelect" style="width: 100%;">
                                     <option value=""></option>
                                     @foreach($allSuppliers as $supplier)
                                     <option value="{{ $supplier }}">{{ $supplier }}</option>
                                     @endforeach
                                 </select>
+                                <div style="margin-top: 0.75rem; display: flex; align-items: center; justify-content: space-between; background: var(--bg-main); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: 12px; transition: all 0.3s ease;">
+                                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main);">Mark as Donor</span>
+                                        <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: none; font-weight: 600;">Check if this is a donation</span>
+                                    </div>
+                                    <label class="premium-switch" style="position: relative; display: inline-block; width: 44px; height: 24px; margin-bottom: 0; cursor: pointer; user-select: none;">
+                                        <input type="checkbox" id="isDonorCheckbox" style="opacity: 0; width: 0; height: 0;">
+                                        <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 24px;"></span>
+                                    </label>
+                                </div>
                             </div>
-                            <div>
+                            <div id="deliveryStatusGroup">
                                 <label>Delivery Status</label>
                                 <select id="supplierStatusSelect" style="width: 100%;">
                                     <option value="">Select Status</option>
-                                    <option value="Donor" data-icon="heart" data-color="#8b5cf6">Donation</option>
                                     <option value="Full Delivery" data-icon="check-circle" data-color="#10b981">Full Delivery</option>
                                     <option value="Partial Delivery" data-icon="alert-circle" data-color="#f59e0b">Partial Delivery</option>
                                 </select>
                             </div>
-                        </div>
-                        <div id="donorNameWrapper" style="display: none; margin-top: 1rem;">
-                            <label>Donor's Name *</label>
-                            <input type="text" id="donorNameInput" placeholder="Enter the donor's full name..." style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit;">
                         </div>
                     </div>
 
                     <div id="dateControl" class="form-group full-width" style="display: none; opacity: 0; margin-top: 1rem;">
                         <div class="form-grid" style="grid-template-columns: 1fr; gap: 1rem;">
                             <div class="form-group">
-                                <label>Arrival Date (Manual)</label>
+                                <label>Received Date (Manual)</label>
                                 <input type="date" id="arrivalDate" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit;">
                             </div>
                             <input type="hidden" id="entryDate">

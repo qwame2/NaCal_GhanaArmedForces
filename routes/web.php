@@ -69,14 +69,16 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         }
 
         $existingItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->selectRaw('inventory_items.description, MAX(inventory_items.unit) as unit, MAX(inventory_batches.ledge_category) as ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as stock_balance, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as qty, SUM(CAST(REPLACE(inventory_items.variance, ",", "") AS DECIMAL(15,2))) as variance')
+            ->selectRaw('inventory_items.description, MAX(inventory_items.unit) as unit, MAX(inventory_batches.ledge_category) as ledge_category, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2)) END) as stock_balance, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2)) END) as qty, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.variance, ",", "") AS DECIMAL(15,2)) END) as variance')
             ->groupBy('inventory_items.description')
             ->get();
 
-        // Total Inventory: Sum of stock_balance
-        $totalInventory = \App\Models\InventoryItem::get()->sum(function ($item) {
-            return is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0;
-        });
+        // Total Inventory: Sum of stock_balance excluding System Draft
+        $totalInventory = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->get()->sum(function ($item) {
+                return is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0;
+            });
 
         // Trend calculation (Month-over-month additions)
         $currentMonthStart = now()->startOfMonth();
@@ -84,12 +86,14 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         $lastMonthEnd = now()->subMonth()->endOfMonth();
 
         $currentMonthInvValue = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->where('inventory_batches.entry_date', '>=', $currentMonthStart)
             ->get()->sum(function ($i) {
                 return is_numeric($i->stock_balance) ? (float)$i->stock_balance : 0;
             });
 
         $lastMonthInvValue = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->whereBetween('inventory_batches.entry_date', [$lastMonthStart, $lastMonthEnd])
             ->get()->sum(function ($i) {
                 return is_numeric($i->stock_balance) ? (float)$i->stock_balance : 0;
@@ -102,8 +106,9 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             $trendValue = 100;
         }
 
-        // Daily "Issuance" (Mocked as items added today)
+        // Daily "Issuance" (Mocked as items added today) excluding System Draft
         $dailyIssuance = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->whereDate('inventory_batches.entry_date', now())
             ->count();
 
@@ -282,13 +287,21 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             ->limit(4)
             ->get();
 
-        // Fetch unique suppliers for the dropdown
-        $allSuppliers = \App\Models\InventoryBatch::select('supplier_name')
+        // Fetch unique suppliers and donors for the dropdown
+        $dbSuppliers = \App\Models\InventoryBatch::select('supplier_name')
+            ->whereNotNull('supplier_name')
             ->distinct()
             ->pluck('supplier_name')
+            ->toArray();
+        $dbDonors = \App\Models\InventoryBatch::select('donor_name')
+            ->whereNotNull('donor_name')
+            ->distinct()
+            ->pluck('donor_name')
+            ->toArray();
+        $allSuppliers = collect(array_merge($dbSuppliers, $dbDonors))
             ->map(function($name) {
                 return preg_replace('/\s\[.*\]$/', '', $name);
-            })->unique()->values();
+            })->unique()->filter()->values();
 
         // Ledge mapping for display and calculations (Category standardization)
         $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
@@ -551,8 +564,8 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/admin/settings/unit-rule', function(\Illuminate\Http\Request $request) {
         if (!auth()->user()->is_admin) abort(403);
         $category = trim($request->input('category'));
-        $keyword = strtolower(trim($request->input('keyword')));
-        $unit    = trim($request->input('unit'));
+        $keyword = strtoupper(trim($request->input('keyword')));
+        $unit    = strtoupper(trim($request->input('unit')));
         if (!$category || !$keyword || !$unit) return back()->with('error', 'Category, keyword, and unit are required.');
 
         $setting = \App\Models\Setting::firstOrCreate(
@@ -567,19 +580,69 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         ];
         $setting->value = json_encode($rules);
         $setting->save();
+
+        // Automatically store this item in the database as a System Draft batch item
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function() use ($category, $keyword, $unit) {
+                $systemBatch = \App\Models\InventoryBatch::firstOrCreate(
+                    [
+                        'ledge_category' => $category,
+                        'supplier_status' => 'System Draft'
+                    ],
+                    [
+                        'supplier_name' => 'System',
+                        'acquisition_type' => 'Supplier',
+                        'entry_date' => now(),
+                        'arrival_date' => now(),
+                        'recorded_by' => auth()->id() ?? 1,
+                        'approval_status' => 'approved'
+                    ]
+                );
+
+                \App\Models\InventoryItem::updateOrCreate(
+                    [
+                        'description' => $keyword,
+                        'batch_id' => $systemBatch->id
+                    ],
+                    [
+                        'unit' => $unit,
+                        'stock_balance' => 0,
+                        'qty' => 0,
+                        'variance' => 0,
+                        'remarks' => 'Auto-generated unit rule placeholder'
+                    ]
+                );
+            });
+        } catch (\Exception $e) {
+            // Log or ignore to not break main settings flow
+        }
+
         return back()->with('success', "Unit rule added: [{$category}] \"{$keyword}\" → {$unit}");
     })->name('admin.settings.unit-rule.store');
 
     Route::delete('/admin/settings/unit-rule', function(\Illuminate\Http\Request $request) {
         if (!auth()->user()->is_admin) abort(403);
-        $keyword = strtolower(trim($request->input('keyword')));
+        $keyword = strtoupper(trim($request->input('keyword')));
         $setting = \App\Models\Setting::where('key', 'item_unit_rules')->first();
         if ($setting) {
             $rules = json_decode($setting->value ?? '{}', true) ?? [];
-            unset($rules[$keyword]);
-            $setting->value = json_encode($rules);
-            $setting->save();
+            if (isset($rules[$keyword])) {
+                unset($rules[$keyword]);
+                $setting->value = json_encode($rules);
+                $setting->save();
+            }
         }
+
+        // Also delete placeholder item from database
+        try {
+            \App\Models\InventoryItem::where('description', $keyword)
+                ->whereHas('batch', function($q) {
+                    $q->where('supplier_status', 'System Draft');
+                })->delete();
+        } catch (\Exception $e) {
+            // ignore
+        }
+
         return back()->with('success', "Unit rule for \"{$keyword}\" removed.");
     })->name('admin.settings.unit-rule.destroy');
 

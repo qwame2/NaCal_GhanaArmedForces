@@ -266,7 +266,7 @@
                 <span class="info-value">{{ \Carbon\Carbon::parse($batch->entry_date)->format('d/m/y') }}</span>
             </div>
             <div class="info-line">
-                <span class="info-label">Arrival Date (Manual)</span>
+                <span class="info-label">Received Date (Manual)</span>
                 <span class="info-value">{{ $batch->arrival_date ? \Carbon\Carbon::parse($batch->arrival_date)->format('d/m/y') : 'N/A' }}</span>
             </div>
 
