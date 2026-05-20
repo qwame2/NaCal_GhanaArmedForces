@@ -581,6 +581,49 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         return response()->json(['success' => true]);
     })->name('api.notifications.dismiss');
 
+    // Admin API Routes
+    Route::get('/api/admin/sidebar-counts', function() {
+        if (!auth()->check() || !auth()->user()->is_admin) return response()->json(['error' => 'Unauthorized'], 401);
+
+        $messages = \App\Models\Message::where('receiver_id', auth()->id())->whereNull('read_at')->where('is_archived', false)->count();
+        $passwordRequests = \App\Models\PasswordResetRequest::where('status', 'pending')->count();
+        
+        try {
+            $acknowledged = \App\Models\NotificationAcknowledgement::where('user_id', auth()->id())
+                ->pluck('item_description')->toArray();
+        } catch (\Exception $e) {
+            $acknowledged = session()->get('acknowledged_notifications', []);
+        }
+
+        $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+            ->whereNotIn(\DB::raw('TRIM(inventory_items.description)'), array_map('trim', $acknowledged))
+            ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
+            ->get();
+
+        $alertCount = 0;
+        foreach ($items as $item) {
+            $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
+            if ($threshold > 0 && (float)$item->total_stock < $threshold) {
+                $alertCount++;
+            }
+        }
+
+        $expiredCount = \App\Models\InventoryItem::selectRaw('description')
+            ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
+            ->groupBy('description')
+            ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
+            ->get()->count();
+
+        $alertCount += $expiredCount;
+
+        return response()->json([
+            'messages' => $messages,
+            'password_requests' => $passwordRequests,
+            'alerts' => $alertCount
+        ]);
+    })->name('api.admin.sidebar-counts');
+
     // Admin Routes
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
     Route::post('/admin/users', [AdminController::class, 'storeUser'])->name('admin.users.store');

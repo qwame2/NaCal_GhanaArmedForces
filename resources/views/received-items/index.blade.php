@@ -297,7 +297,7 @@
                 <div style="text-align: right;">
                     <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 800; margin-bottom: 0.25rem;">Total System Sum</div>
                     <div style="font-size: 2rem; font-weight: 900; color: var(--text-main); line-height: 1;">
-                        <span style="color: var(--primary);">{{ number_format((float)($searchQtySum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Qty</span>
+                        <span style="color: var(--primary);">{{ number_format((float)($searchQtySum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Total</span>
                         <span style="color: rgba(0,0,0,0.1); margin: 0 0.5rem;">|</span>
                         <span>{{ number_format((float)($searchSum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Stock</span>
                     </div>
@@ -3266,7 +3266,15 @@ function toggleEditSourceFields() {
 function recalcEditVariance(input) {
     const row = input.closest('.edit-item-card');
     const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-    const stock = parseFloat(row.querySelector('.item-stock-balance').value) || 0;
+    
+    // We update both the variance and the hidden stock balance 
+    // because usually an edit to an entry is to correct the actual quantity received
+    const stockInput = row.querySelector('.item-stock-balance');
+    if (stockInput) {
+        stockInput.value = qty;
+    }
+    
+    const stock = parseFloat(stockInput.value) || 0;
     const variance = stock - qty;
 
     const varInput = row.querySelector('.item-variance');
@@ -3280,7 +3288,7 @@ function recalcEditVariance(input) {
         varInput.style.color = '#ef4444'; // Red for shortage
         varInput.style.background = 'rgba(239, 68, 68, 0.1)';
     } else {
-        varInput.style.color = 'var(--primary)';
+        varInput.style.color = '#4f46e5';
         varInput.style.background = 'rgba(99, 102, 241, 0.05)';
     }
 }
@@ -3324,13 +3332,18 @@ async function submitEditBatch() {
     const isAdmin = {{ auth()->user()->is_admin ? 'true' : 'false' }};
 
     const items = [];
-    document.querySelectorAll('.edit-item-card').forEach(row => {
+    const itemsContainer = document.getElementById('editItemsList');
+    itemsContainer.querySelectorAll('.edit-item-card').forEach(row => {
+        const itemId = row.querySelector('.item-id').value;
+        const itemQty = row.querySelector('.item-qty').value;
+        const itemStock = row.querySelector('.item-stock-balance')?.value || itemQty;
+        
         items.push({
-            id: row.querySelector('.item-id').value,
+            id: itemId,
             description: row.querySelector('.item-description').value,
             unit: row.querySelector('.item-unit').value,
-            qty: row.querySelector('.item-qty').value,
-            stock_balance: row.querySelector('.item-stock-balance') ? row.querySelector('.item-stock-balance').value : row.querySelector('.item-variance')?.dataset?.stock || '0',
+            qty: itemQty,
+            stock_balance: itemStock,
             variance: row.querySelector('.item-variance').value,
             remarks: row.querySelector('.item-remarks').value
         });

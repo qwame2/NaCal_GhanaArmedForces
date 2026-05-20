@@ -1796,12 +1796,28 @@
                     </div>
                 `;
                 } else {
+                    const prevBatch = data.previous_batch || null;
                     const itemsHtml = batch.items.map(item => {
+                        let isQtyChanged = false;
+                        let isStockChanged = false;
+                        let isDescChanged = false;
+                        let isRemarksChanged = false;
+
+                        if (prevBatch && prevBatch.items) {
+                            const prevItem = prevBatch.items.find(i => i.id == item.id);
+                            if (prevItem) {
+                                if (parseFloat(item.qty || 0) !== parseFloat(prevItem.qty || 0)) isQtyChanged = true;
+                                if (parseFloat(item.stock_balance || 0) !== parseFloat(prevItem.stock_balance || 0)) isStockChanged = true;
+                                if ((item.description || '').trim() !== (prevItem.description || '').trim()) isDescChanged = true;
+                                if ((item.remarks || '').trim() !== (prevItem.remarks || '').trim()) isRemarksChanged = true;
+                            }
+                        }
+
                         return `
                         <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a;">
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a; ${isDescChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10b981;' : ''}">
                                 ${item.description}
-
+                                ${isDescChanged ? '<div style="font-size: 0.65rem; color: #10b981; margin-top: 4px;">Modified</div>' : ''}
                             </td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">
                                 ${item.unit || 'Package Types'}
@@ -1812,10 +1828,10 @@
                                     </div>
                                 ` : ''}
                             </td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0f172a; text-align: right;">${parseFloat(item.qty).toLocaleString()}</td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #4f46e5; text-align: right;">${parseFloat(item.stock_balance).toLocaleString()}</td>
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: ${isQtyChanged ? '#10b981' : '#0f172a'}; text-align: right; ${isQtyChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 2px solid #10b981;' : ''}">${(parseFloat(item.qty) || 0).toLocaleString()}</td>
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: ${isStockChanged ? '#10b981' : '#4f46e5'}; text-align: right; ${isStockChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 2px solid #10b981;' : ''}">${(parseFloat(item.stock_balance) || 0).toLocaleString()}</td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0284c7; text-align: right;">${(parseFloat(item.total_in_system) || 0).toLocaleString()}</td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #64748b; font-style: italic; max-width: 200px; word-break: break-word;">${item.remarks || '-- No specific notes --'}</td>
+                            <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #64748b; font-style: italic; max-width: 200px; word-break: break-word; ${isRemarksChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 2px solid #10b981;' : ''}">${item.remarks || '-- No specific notes --'}</td>
                         </tr>
                     `;
                     }).join('');
@@ -1882,17 +1898,24 @@
                     }
 
                     let footerHtml = '';
+                    const isEditSubmission = data.request_type === 'edit_submission';
                     if (data.status === 'pending') {
+                        const rejectFn = isEditSubmission
+                            ? `window.processEditRequest(${reqId}, 'canceled', this)`
+                            : `window.processSraCreationApproval(${reqId}, 'rejected', this)`;
+                        const approveFn = isEditSubmission
+                            ? `window.processEditRequest(${reqId}, 'approved', this)`
+                            : `window.processSraCreationApproval(${reqId}, 'approved', this)`;
                         footerHtml = `
                     <div id="oversight-actions-${reqId}" style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0;">
                         <button onclick="typeof window.rollbackEntry === 'function' ? window.rollbackEntry(${reqId}) : alert('Rollback functionality pending implementation')" style="margin-right: auto; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
                             <i data-lucide="rotate-ccw" style="width: 18px;"></i> Rollback
                         </button>
-                        <button onclick="window.processSraCreationApproval(${reqId}, 'rejected', this)" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                        <button onclick="${rejectFn}" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
                             <i data-lucide="x-circle" style="width: 18px;"></i> Reject
                         </button>
-                        <button onclick="window.processSraCreationApproval(${reqId}, 'approved', this)" style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
-                            <i data-lucide="check-circle" style="width: 18px;"></i> Approve Entry
+                        <button onclick="${approveFn}" style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                            <i data-lucide="check-circle" style="width: 18px;"></i> ${isEditSubmission ? 'Approve Changes' : 'Approve Entry'}
                         </button>
                     </div>
                 `;

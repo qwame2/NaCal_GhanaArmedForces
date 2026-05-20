@@ -672,7 +672,7 @@
                     <p style="margin: 0;">Set default units (like Piece or Box) for items to save time during entry.</p>
                 </div>
             </div>
-            
+
             <div class="cfg-search-wrap" style="margin: 0 3.5rem 0 0; width: 260px; position: relative;">
                 <i data-lucide="search" style="width: 14px; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
                 <input type="text" id="ruleSearch" placeholder="Search rules..." oninput="filterRules()" style="width: 100%; padding: 0.5rem 1rem 0.5rem 2.2rem; font-size: 0.8rem; height: 38px; border: 2px solid #edf2f7; border-radius: 10px; outline: none; transition: 0.2s; background: white;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#edf2f7'">
@@ -709,7 +709,7 @@
                             @foreach($groupedRules as $catCode => $rulesGroup)
                                 <div class="unit-rule-group">
                                     <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
-                                        <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span> 
+                                        <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
                                         {{ $categories[$catCode] ?? 'Uncategorized' }}
                                     </h6>
                                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem;">
@@ -842,7 +842,7 @@
                     <p style="margin: 0;">Define specific low stock thresholds for items. Only items matching these rules will trigger alerts.</p>
                 </div>
             </div>
-            
+
             <div class="cfg-search-wrap" style="margin: 0 3.5rem 0 0; width: 260px; position: relative;">
                 <i data-lucide="search" style="width: 14px; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
                 <input type="text" id="thresholdSearch" placeholder="Search thresholds..." oninput="filterThresholds()" style="width: 100%; padding: 0.5rem 1rem 0.5rem 2.2rem; font-size: 0.8rem; height: 38px; border: 2px solid #edf2f7; border-radius: 10px; outline: none; transition: 0.2s; background: white;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#edf2f7'">
@@ -875,7 +875,7 @@
                             @foreach($groupedThresholds as $catCode => $thresholdsGroup)
                                 <div class="threshold-rule-group">
                                     <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
-                                        <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span> 
+                                        <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
                                         {{ $categories[$catCode] ?? 'Uncategorized' }}
                                     </h6>
                                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem;">
@@ -954,7 +954,7 @@
         </div>
     </div>
 
-    {{-- Suppliers Registry --}}
+    {{-- Suppliers Info --}}
     <div class="cfg-card" id="suppliers-registry" style="margin-top: 2rem;">
         <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
@@ -962,7 +962,7 @@
                     <i data-lucide="truck"></i>
                 </div>
                 <div>
-                    <h3 style="margin: 0 0 0.25rem 0;">Suppliers Registry</h3>
+                    <h3 style="margin: 0 0 0.25rem 0;">Suppliers Info</h3>
                     <p style="margin: 0;">Register pre-defined suppliers and their contact details for users to easily select.</p>
                 </div>
             </div>
@@ -1024,7 +1024,7 @@
                                             {{ $details['desc'] }}
                                         </div>
                                     @endif
-                                    
+
                                     {{-- Edit Button --}}
                                     <button type="button" onclick="populateSupplierForm('{{ addslashes($name) }}', '{{ addslashes($details['delivery_person'] ?? '') }}', '{{ addslashes($details['phone'] ?? '') }}', '{{ addslashes($details['email'] ?? '') }}', '{{ addslashes($details['address'] ?? '') }}', '{{ addslashes($details['desc'] ?? '') }}')" style="position: absolute; right: 45px; top: 1.25rem; width: 28px; height: 28px; border-radius: 8px; background: #f1f5f9; border: none; color: #64748b; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
                                         <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
@@ -1274,7 +1274,7 @@
             const cat = $(this).val();
             const keywordSelect = $('#unitKeyword');
             keywordSelect.empty().append('<option value="">Select Item...</option>');
-            
+
             if (cat && itemsByCategory[cat]) {
                 itemsByCategory[cat].forEach(item => {
                     keywordSelect.append(new Option(item, item));
@@ -1282,7 +1282,7 @@
             } else if (!cat) {
                 keywordSelect.append('<option value="">Select Category First...</option>');
             }
-            
+
             keywordSelect.trigger('change');
         });
 
@@ -1291,7 +1291,7 @@
             const cat = $(this).val();
             const keywordSelect = $('#thresholdKeyword');
             keywordSelect.empty().append('<option value="">Select Item...</option>');
-            
+
             if (cat && itemsByCategory[cat]) {
                 itemsByCategory[cat].forEach(item => {
                     keywordSelect.append(new Option(item, item));
@@ -1299,7 +1299,7 @@
             } else if (!cat) {
                 keywordSelect.append('<option value="">Select Category First...</option>');
             }
-            
+
             keywordSelect.trigger('change');
         });
     });
@@ -1335,21 +1335,21 @@
         document.getElementById('supplierNameInput').value = name;
         document.getElementById('supplierNameInput').readOnly = true;
         document.getElementById('supplierNameInput').style.background = '#f8fafc';
-        
+
         document.getElementById('supplierDeliveryPersonInput').value = delivery_person;
         document.getElementById('supplierPhoneInput').value = phone;
         document.getElementById('supplierEmailInput').value = email;
         document.getElementById('supplierAddressInput').value = address;
         document.getElementById('supplierDescInput').value = desc;
-        
+
         document.getElementById('supplierSubmitText').innerText = 'Update';
         document.getElementById('supplierSubmitBtn').style.background = 'linear-gradient(135deg, #4f46e5, #3730a3)';
         document.getElementById('supplierResetBtn').style.display = 'block';
-        
+
         const icon = document.getElementById('supplierSubmitIcon');
         icon.setAttribute('data-lucide', 'refresh-cw');
         if (window.lucide) lucide.createIcons();
-        
+
         document.getElementById('suppliers-registry').scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -1358,11 +1358,11 @@
         document.getElementById('supplierForm').reset();
         document.getElementById('supplierNameInput').readOnly = false;
         document.getElementById('supplierNameInput').style.background = '';
-        
+
         document.getElementById('supplierSubmitText').innerText = 'Register Supplier';
         document.getElementById('supplierSubmitBtn').style.background = 'linear-gradient(135deg, #10b981, #059669)';
         document.getElementById('supplierResetBtn').style.display = 'none';
-        
+
         const icon = document.getElementById('supplierSubmitIcon');
         icon.setAttribute('data-lucide', 'plus-circle');
         if (window.lucide) lucide.createIcons();

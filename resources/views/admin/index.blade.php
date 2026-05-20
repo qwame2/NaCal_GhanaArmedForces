@@ -224,10 +224,24 @@
 <style>
     /* Precision Metrics Styles */
     .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 3.5rem; }
+    
+    @media (max-width: 1024px) {
+        .metrics-row { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+    }
+    
+    @media (max-width: 768px) {
+        .metrics-row { grid-template-columns: 1fr; }
+        .vault-toolbar { flex-direction: column !important; align-items: flex-start !important; gap: 1rem; padding: 1.5rem !important; }
+        .toolbar-actions { width: 100%; flex-wrap: wrap; }
+        .command-search { min-width: 100% !important; }
+        .command-search input { width: 100%; }
+        .registry-vault { border-radius: 20px !important; }
+    }
+
     .metric-module { background: white; padding: 2.25rem; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 1.75rem; border: 1px solid rgba(0,0,0,0.01); transition: all 0.3s ease; }
     .metric-module:hover { transform: translateY(-8px); box-shadow: 0 20px 60px rgba(0,0,0,0.06); }
 
-    .metric-visual { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .metric-visual { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
     .metric-visual.primary { background: #eef2ff; color: #4f46e5; }
     .metric-visual.success { background: #ecfdf5; color: #10b981; }
     .metric-visual.warning { background: #fffbeb; color: #f59e0b; }

@@ -4,14 +4,18 @@ $app = require_once __DIR__.'/bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Artisan;
+use App\Models\EditRequest;
 
-echo "<h3>Migration status:</h3><pre>";
-Artisan::call('migrate:status');
-echo Artisan::output();
-echo "</pre>";
-
-echo "<h3>Columns on edit_requests:</h3><pre>";
-print_r(Schema::getColumnListing('edit_requests'));
-echo "</pre>";
+$reqs = EditRequest::all();
+echo "Total Edit Requests: " . $reqs->count() . "\n\n";
+foreach ($reqs as $r) {
+    echo "ID: " . $r->id . "\n";
+    echo "User ID: " . $r->user_id . "\n";
+    echo "Item ID: " . $r->item_id . "\n";
+    echo "Request Type: " . $r->request_type . "\n";
+    echo "Status: " . $r->status . "\n";
+    echo "Reason: " . $r->reason . "\n";
+    echo "Payload: " . $r->payload . "\n";
+    echo "Original Payload: " . $r->original_payload . "\n";
+    echo "-----------------------------------------\n\n";
+}

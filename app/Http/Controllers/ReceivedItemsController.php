@@ -73,10 +73,11 @@ class ReceivedItemsController extends Controller
         
         if ($req->request_type === 'issue_submission') {
             if (isset($data['items']) && is_array($data['items'])) {
-                foreach ($data['items'] as &$item) {
-                    $item['total_in_system'] = \App\Models\InventoryItem::where('description', $item['description'] ?? '')
+                foreach ($data['items'] as &$issueItem) {
+                    $issueItem['total_in_system'] = \App\Models\InventoryItem::where('description', $issueItem['description'] ?? '')
                         ->sum('stock_balance');
                 }
+                unset($issueItem);
             }
             $response = [
                 'id' => $req->id,
@@ -103,10 +104,11 @@ class ReceivedItemsController extends Controller
 
         // Add total_in_system to items
         if (isset($data['items']) && is_array($data['items'])) {
-            foreach ($data['items'] as &$item) {
-                $item['total_in_system'] = \App\Models\InventoryItem::where('description', $item['description'] ?? '')
+            foreach ($data['items'] as &$propItem) {
+                $propItem['total_in_system'] = \App\Models\InventoryItem::where('description', $propItem['description'] ?? '')
                     ->sum('stock_balance');
             }
+            unset($propItem);
         }
 
         $response = [
@@ -134,8 +136,8 @@ class ReceivedItemsController extends Controller
                 }
                 $originalBatch->delivery_person = $origDelivery;
 
-                foreach ($originalBatch->items as $item) {
-                    $item->total_in_system = \App\Models\InventoryItem::where('description', $item->description)
+                foreach ($originalBatch->items as $origItem) {
+                    $origItem->total_in_system = \App\Models\InventoryItem::where('description', $origItem->description)
                         ->sum('stock_balance');
                 }
 

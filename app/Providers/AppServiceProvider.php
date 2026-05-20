@@ -100,6 +100,21 @@ class AppServiceProvider extends ServiceProvider
 
                 $view->with('globalNotifications', $notifications);
                 $view->with('globalNotificationCount', count($notifications));
+                
+                // Fetch Unread Messages Count
+                $unreadMessagesCount = \App\Models\Message::where('receiver_id', auth()->id())
+                    ->whereNull('read_at')
+                    ->where('is_archived', false)
+                    ->count();
+                $view->with('unreadMessagesCount', $unreadMessagesCount);
+                
+                // Fetch Pending Password Requests Count (for Admin)
+                if (auth()->user()->is_admin) {
+                    $pendingPasswordRequests = \App\Models\PasswordResetRequest::where('status', 'pending')->count();
+                    $view->with('pendingPasswordRequests', $pendingPasswordRequests);
+                } else {
+                    $view->with('pendingPasswordRequests', 0);
+                }
             }
         });
     }

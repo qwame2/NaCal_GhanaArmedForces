@@ -115,7 +115,9 @@
         @keyframes toast-progress {
             from { transform: scaleX(1); }
             to { transform: scaleX(0); }
+        }
 
+        :root {
             --bg-body: #f8fafc;
             --sidebar-bg: #ffffff;
             --text-heading: #0f172a;
@@ -141,6 +143,8 @@
             display: flex;
             flex-direction: column;
             position: fixed;
+            top: 0;
+            left: 0;
             height: 100vh;
             z-index: 1000;
             box-shadow: var(--shadow-sidebar);
@@ -152,6 +156,23 @@
             display: flex;
             align-items: center;
             gap: 14px;
+            position: relative;
+        }
+
+        .mobile-sidebar-close {
+            display: none;
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: #f1f5f9;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            cursor: pointer;
         }
 
         .brand-icon {
@@ -186,6 +207,22 @@
         .nav-scroller {
             flex: 1;
             padding: 0 1rem;
+            overflow-y: auto;
+        }
+        
+        /* Custom Scrollbar for nav-scroller */
+        .nav-scroller::-webkit-scrollbar {
+            width: 4px;
+        }
+        .nav-scroller::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .nav-scroller::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 4px;
+        }
+        .nav-scroller:hover::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
         }
 
         .nav-label {
@@ -323,6 +360,9 @@
                 padding: 0 1.5rem 2rem 1.5rem;
             }
             .mobile-nav-toggle {
+                display: flex;
+            }
+            .mobile-sidebar-close {
                 display: flex;
             }
             .view-header {
@@ -504,6 +544,9 @@
                 <h1>{{ \App\Models\Setting::get('organization_name', 'ADMIN CORE') }}</h1>
                 <span>Strategic Access</span>
             </div>
+            <button class="mobile-sidebar-close" id="mobile-sidebar-close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
         </div>
 
         <div class="nav-scroller">
@@ -531,6 +574,9 @@
                     <a href="{{ route('notifications.index') }}" class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                         <span>System Alerts</span>
+                        <span id="sidebar-badge-alerts" style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($globalNotificationCount) || $globalNotificationCount <= 0) ? 'display: none;' : '' }}">
+                            {{ $globalNotificationCount ?? 0 }}
+                        </span>
                     </a>
                 </li>
                 <li>
@@ -543,6 +589,9 @@
                     <a href="{{ route('admin.password.requests') }}" class="nav-link {{ request()->routeIs('admin.password.requests') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4.1"/><path d="m10.5 12.5 2.8 2.8a1 1 0 0 0 1.4 0l2.8-2.8"/><circle cx="7" cy="17" r="5"/></svg>
                         <span>Password Requests</span>
+                        <span id="sidebar-badge-password" style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingPasswordRequests) || $pendingPasswordRequests <= 0) ? 'display: none;' : '' }}">
+                            {{ $pendingPasswordRequests ?? 0 }}
+                        </span>
                     </a>
                 </li>
                 <li>
@@ -555,6 +604,9 @@
                     <a href="{{ route('admin.messages') }}" class="nav-link {{ request()->routeIs('admin.messages') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         <span>Staff Communication</span>
+                        <span id="sidebar-badge-messages" style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($unreadMessagesCount) || $unreadMessagesCount <= 0) ? 'display: none;' : '' }}">
+                            {{ $unreadMessagesCount ?? 0 }}
+                        </span>
                     </a>
                 </li>
                 <li>
@@ -688,6 +740,7 @@
         const mobileToggle = document.getElementById('mobile-toggle');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
+        const mobileClose = document.getElementById('mobile-sidebar-close');
 
         if (mobileToggle && sidebar && overlay) {
             mobileToggle.addEventListener('click', () => {
@@ -699,6 +752,13 @@
                 sidebar.classList.remove('active');
                 overlay.classList.remove('active');
             });
+            
+            if (mobileClose) {
+                mobileClose.addEventListener('click', () => {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            }
         }
 
         // Admin Notification Toggle
@@ -1117,6 +1177,55 @@
 
             window.addEventListener('pagehide', handleExit);
             window.addEventListener('beforeunload', handleExit);
+        })();
+
+        // Polling for Sidebar Badges Update
+        (function() {
+            function updateBadge(id, count) {
+                const badge = document.getElementById(id);
+                if (!badge) return;
+                
+                if (count > 0) {
+                    if (badge.style.display === 'none' || badge.textContent.trim() !== count.toString()) {
+                        badge.style.display = 'inline-block';
+                        badge.textContent = count;
+                    }
+                } else {
+                    badge.style.display = 'none';
+                    badge.textContent = '0';
+                }
+            }
+
+            function pollSidebarCounts() {
+                fetch("{{ route('api.admin.sidebar-counts', [], false) }}", {
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) return; // Unauthorized or something else
+                    updateBadge('sidebar-badge-messages', data.messages);
+                    updateBadge('sidebar-badge-password', data.password_requests);
+                    updateBadge('sidebar-badge-alerts', data.alerts);
+                    
+                    // Also update the global header message badge if it exists
+                    const globalUnreadBadge = document.getElementById('global-unread-badge');
+                    if (globalUnreadBadge) {
+                        if (data.messages > 0) {
+                            globalUnreadBadge.style.display = 'block';
+                            globalUnreadBadge.textContent = data.messages;
+                        } else {
+                            globalUnreadBadge.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(err => console.error("Error polling sidebar counts:", err));
+            }
+
+            // Start polling every 15 seconds
+            setInterval(pollSidebarCounts, 15000);
+            
+            // Wait a few seconds to do the first poll
+            setTimeout(pollSidebarCounts, 3000);
         })();
     </script>
     <script>

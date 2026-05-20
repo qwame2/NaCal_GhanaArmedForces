@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class StoreRequisition extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'requester_name',
+        'department',
+        'rank_or_title',
+        'requested_by',
+        'purpose',
+        'priority',
+        'status',
+        'admin_notes',
+        'processed_by',
+        'processed_at',
+    ];
+
+    protected $casts = [
+        'processed_at' => 'datetime',
+    ];
+
+    public function items()
+    {
+        return $this->hasMany(StoreRequisitionItem::class, 'requisition_id');
+    }
+
+    public function requester()
+    {
+        return $this->belongsTo(User::class, 'requested_by');
+    }
+
+    public function processor()
+    {
+        return $this->belongsTo(User::class, 'processed_by');
+    }
+
+    public function getPriorityBadgeAttribute(): array
+    {
+        return match($this->priority) {
+            'urgent' => ['label' => 'URGENT', 'color' => '#dc2626', 'bg' => 'rgba(220,38,38,0.1)'],
+            'low'    => ['label' => 'LOW',    'color' => '#64748b', 'bg' => 'rgba(100,116,139,0.1)'],
+            default  => ['label' => 'NORMAL', 'color' => '#4f46e5', 'bg' => 'rgba(79,70,229,0.1)'],
+        };
+    }
+
+    public function getStatusBadgeAttribute(): array
+    {
+        return match($this->status) {
+            'approved'           => ['label' => 'Approved',           'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.1)'],
+            'partially_approved' => ['label' => 'Partial Approval',   'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'],
+            'declined'           => ['label' => 'Declined',           'color' => '#ef4444', 'bg' => 'rgba(239,68,68,0.1)'],
+            default              => ['label' => 'Pending Review',     'color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'],
+        };
+    }
+}

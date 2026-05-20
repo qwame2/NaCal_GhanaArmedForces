@@ -428,6 +428,21 @@ class EditRequestController extends Controller
                         'ip_address' => request()->ip()
                     ]);
 
+                } elseif ($requestType === 'edit_submission') {
+                    // UPDATE EXISTING BATCH — do NOT create a new one
+                    $this->applyPayload($editReq);
+                    $batch = InventoryBatch::find($editReq->item_id);
+
+                    \App\Models\SystemLog::create([
+                        'user_id' => $editReq->user_id,
+                        'event_type' => 'INVENTORY',
+                        'action' => 'EDIT_INVENTORY',
+                        'description' => "Personnel edited inventory batch (Approved by Admin).",
+                        'severity' => 'info',
+                        'metadata' => ['batch_id' => $editReq->item_id],
+                        'ip_address' => request()->ip()
+                    ]);
+
                 } else {
                     // CREATE THE ACTUAL RECORDS (SRA Creation)
                     $batch = InventoryBatch::create([
@@ -436,7 +451,7 @@ class EditRequestController extends Controller
                         'supplier_status' => $data['supplier_status'],
                         'donor_name' => $data['donor_name'] ?? null,
                         'acquisition_type' => $data['acquisition_type'],
-                        'entry_date' => $data['entry_date'],
+                        'entry_date' => $data['entry_date'] ?? now(),
                         'arrival_date' => $data['arrival_date'],
                         'recorded_by' => $editReq->user_id,
                         'approval_status' => 'approved',
@@ -465,7 +480,9 @@ class EditRequestController extends Controller
 
                 $logDesc = $requestType === 'remainder_submission' 
                     ? "Administrator authorized REMAINDER SUBMISSION submitted by {$editReq->user->name}."
-                    : "Administrator authorized STOCK ENTRY submitted by {$editReq->user->name}.";
+                    : ($requestType === 'edit_submission'
+                        ? "Administrator authorized ENTRY EDIT submitted by {$editReq->user->name}."
+                        : "Administrator authorized STOCK ENTRY submitted by {$editReq->user->name}.");
                     
                 \App\Models\SystemLog::create([
                     'user_id' => auth()->id(),
