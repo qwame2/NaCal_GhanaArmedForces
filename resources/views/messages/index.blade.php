@@ -336,6 +336,11 @@
                         }
                     }
 
+                 // Pre-process rollback notifications — strip display:none so they show
+                    if (processedMessage && processedMessage.includes('rollback-notification')) {
+                        processedMessage = processedMessage.replace(/style='display: none;/g, "style='display: block;");
+                    }
+
                     let ticksHtml = '';
                     if (isMe) {
                         const isRead = msg.read_at != null;
@@ -349,10 +354,14 @@
                             ticksHtml = '<i data-lucide="check" style="color: #94a3b8; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
                         }
                     }
-                    
+
+                    // Rollback cards: transparent bubble so the styled card is the full content
+                    const isRollback = processedMessage && processedMessage.includes('rollback-notification');
+                    const bubbleStyle = isRollback ? 'padding: 0; background: transparent; border: none; box-shadow: none; overflow: visible;' : '';
+
                     html += `
                         <div class="comms-group ${isMe ? 'me' : 'recipient'}">
-                            <div class="comms-bubble">
+                            <div class="comms-bubble" style="${bubbleStyle}">
                                 ${processedMessage ? `<span style="word-break: break-word;">${processedMessage}</span>` : ''}
                                 ${msg.attachment ? `
                                     <a href="{{ asset('storage') }}/${msg.attachment}" target="_blank" class="attachment-pill">

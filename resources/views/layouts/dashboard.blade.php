@@ -28,6 +28,11 @@
                 display: none !important;
             }
         }
+
+        /* Ensure SweetAlert2 appears in front of modal-overlay (z-index 2000) */
+        .swal2-container {
+            z-index: 999999 !important;
+        }
     </style>
     <title>{{ \App\Models\Setting::get('organization_name', 'NACOC') }} | Advanced Inventory System</title>
 

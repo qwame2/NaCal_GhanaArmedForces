@@ -205,7 +205,7 @@
                 <tr>
                     <th style="width: 60px;">NO.</th>
                     <th>DESCRIPTION OF GIFTED ASSETS</th>
-                    <th style="width: 100px;">UNIT</th>
+                    <th style="width: 100px;">PACKAGE TYPE</th>
                     <th style="width: 120px;">QUANTITY</th>
                 </tr>
             </thead>

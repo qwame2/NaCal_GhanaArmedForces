@@ -1,0 +1,152 @@
+{
+    "pending_edit_requests": [
+        {
+            "id": 9,
+            "request_type": "edit_submission",
+            "status": "pending",
+            "payload": {
+                "arrival_date": "2026-05-19",
+                "ledge_category": "A",
+                "acquisition_type": "Donor",
+                "supplier_name": "mtn",
+                "supplier_status": "Donor",
+                "donor_name": "Adomako",
+                "items": [
+                    {
+                        "id": "4",
+                        "description": "PIN",
+                        "unit": "Pack",
+                        "qty": "45",
+                        "stock_balance": "45",
+                        "variance": "0",
+                        "remarks": ""
+                    }
+                ],
+                "_token": "GdKNgLKIBOqKGMarP8Cb2icLvaZ6bBRVa27Hssb5"
+            }
+        },
+        {
+            "id": 10,
+            "request_type": "edit_submission",
+            "status": "pending",
+            "payload": {
+                "arrival_date": "2026-05-19",
+                "ledge_category": "A",
+                "acquisition_type": "Donor",
+                "supplier_name": null,
+                "supplier_status": "Donor",
+                "donor_name": "Adomako",
+                "items": [
+                    {
+                        "id": "6",
+                        "description": "BOOKS",
+                        "unit": "BOXES",
+                        "qty": "34",
+                        "stock_balance": "34",
+                        "variance": "0",
+                        "remarks": ""
+                    }
+                ],
+                "_token": "GdKNgLKIBOqKGMarP8Cb2icLvaZ6bBRVa27Hssb5"
+            }
+        },
+        {
+            "id": 11,
+            "request_type": "edit_submission",
+            "status": "pending",
+            "payload": {
+                "arrival_date": "2026-05-19",
+                "ledge_category": "A",
+                "acquisition_type": "Donor",
+                "supplier_name": null,
+                "supplier_status": "Donor",
+                "donor_name": "",
+                "items": [
+                    {
+                        "id": "7",
+                        "description": "PIN",
+                        "unit": "Pack",
+                        "qty": "56",
+                        "stock_balance": "56",
+                        "variance": "0",
+                        "remarks": ""
+                    }
+                ],
+                "_token": "GdKNgLKIBOqKGMarP8Cb2icLvaZ6bBRVa27Hssb5"
+            }
+        },
+        {
+            "id": 18,
+            "request_type": "sra_creation",
+            "status": "pending",
+            "payload": {
+                "ledge_category": "A",
+                "supplier_name": null,
+                "supplier_status": "Full Delivery",
+                "donor_name": null,
+                "acquisition_type": "Supplier",
+                "entry_date": "2026-05-19 18:36:41",
+                "arrival_date": "2026-05-19",
+                "items": [
+                    {
+                        "description": "BOOKS",
+                        "unit": "BOXES",
+                        "stock_balance": "4",
+                        "qty": "4",
+                        "variance": "0",
+                        "remarks": null,
+                        "location": "STATIONERY STORE"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 27,
+            "request_type": "edit_submission",
+            "status": "pending",
+            "payload": {
+                "arrival_date": "2026-05-14",
+                "ledge_category": "A",
+                "acquisition_type": "Donor",
+                "supplier_name": null,
+                "supplier_status": "Donor",
+                "donor_name": "MTN",
+                "items": [
+                    {
+                        "id": "14",
+                        "description": "PEN",
+                        "unit": "PIECE(S)",
+                        "qty": "71",
+                        "stock_balance": "78",
+                        "variance": "7",
+                        "remarks": ""
+                    }
+                ],
+                "_token": "GdKNgLKIBOqKGMarP8Cb2icLvaZ6bBRVa27Hssb5"
+            }
+        }
+    ],
+    "suppliers_table_exists": true,
+    "suppliers": [
+        {
+            "id": 2,
+            "name": "MTN",
+            "delivery_person": "ADOMAKO",
+            "phone": "+233243010964",
+            "email": "",
+            "address": "HOUSE NO.1 AYAWASU",
+            "desc": "",
+            "created_at": "2026-05-19T21:00:35.000000Z",
+            "updated_at": "2026-05-19T21:00:35.000000Z"
+        }
+    ],
+    "suppliers_registry": {
+        "MTN": {
+            "delivery_person": "ADOMAKO",
+            "phone": "+233243010964",
+            "email": "",
+            "address": "HOUSE NO.1 AYAWASU",
+            "desc": ""
+        }
+    }
+}

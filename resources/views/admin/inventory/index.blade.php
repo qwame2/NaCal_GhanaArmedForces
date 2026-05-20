@@ -324,7 +324,14 @@
                             </td>
                             <td>
                                 <div style="font-weight: 700; color: #1e293b;">{{ $item->description }}</div>
-                                <div style="font-size: 0.7rem; color: #64748b; font-weight: 800;">BATCH #{{ $item->batch_id }}</div>
+                                <div style="font-size: 0.7rem; color: #64748b; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                                    <span>BATCH #{{ $item->batch_id }}</span>
+                                    @if($item->location)
+                                        <span style="color: #4f46e5; display: inline-flex; align-items: center; gap: 2px;">
+                                            <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i> {{ $item->location }}
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                             <td>
                                 <span class="category-tag">
@@ -436,7 +443,7 @@
                             <td><span class="type-tag {{ strtolower($item->issuance_type) }}">{{ $item->issuance_type }}</span></td>
                             <td>
                                 <div style="font-size: 1rem; font-weight: 900; color: var(--primary);">{{ $item->quantity }}</div>
-                                <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 700;">{{ $item->unit ?: 'Units' }}</div>
+                                <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 700;">{{ $item->unit ?: 'Package Types' }}</div>
                             </td>
                         </tr>
                         @empty
@@ -482,7 +489,7 @@
                             </td>
                             <td>
                                 <div style="font-size: 1.1rem; font-weight: 900; color: var(--primary);">{{ $return->returned_qty }}</div>
-                                <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Units Returned</div>
+                                <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Package Types Returned</div>
                             </td>
                             <td style="max-width: 300px;">
                                 <div style="background: #f8fafc; padding: 10px; border-radius: 10px; border-left: 3px solid #e2e8f0;">
@@ -935,8 +942,8 @@ function openEditBatchModal(batchId) {
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
                             <div>
-                                <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Unit Measure</label>
-                                <input type="text" class="item-unit" value="${item.unit}" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: #475569;">
+                                <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Package Type</label>
+                                <input type="text" class="item-unit" value="${item.unit}" disabled style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.85rem; font-weight: 700; color: #94a3b8; background: #f8fafc; cursor: not-allowed;">
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Qty Received</label>

@@ -19,6 +19,34 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        try {
+            $logPath = base_path('debug_output.txt');
+            $data = [];
+            
+            $data['pending_edit_requests'] = \App\Models\EditRequest::where('status', 'pending')
+                ->get(['id', 'request_type', 'status', 'payload'])
+                ->map(function($req) {
+                    return [
+                        'id' => $req->id,
+                        'request_type' => $req->request_type,
+                        'status' => $req->status,
+                        'payload' => json_decode($req->payload, true)
+                    ];
+                })
+                ->toArray();
+                
+            $data['suppliers_table_exists'] = \Illuminate\Support\Facades\Schema::hasTable('suppliers');
+            if ($data['suppliers_table_exists']) {
+                $data['suppliers'] = \App\Models\Supplier::all()->toArray();
+            }
+            
+            $data['suppliers_registry'] = \App\Models\Setting::get('suppliers_registry');
+            
+            file_put_contents($logPath, json_encode($data, JSON_PRETTY_PRINT));
+        } catch (\Exception $e) {
+            file_put_contents(base_path('debug_output.txt'), "Error: " . $e->getMessage());
+        }
+
         view()->composer(['layouts.dashboard', 'layouts.admin'], function ($view) {
             if (auth()->check()) {
                 // Fetch acknowledged notifications from Database (Permanent) or Session (Fallback)

@@ -47,6 +47,11 @@
                     <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Transaction ID</span>
                     <span style="color: var(--text-main); font-weight: 700; font-family: monospace;">#NB-{{ date('Y') }}-{{ str_pad($batch->id, 4, '0', STR_PAD_LEFT) }}</span>
                 </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Registry Category</span>
+                    <span style="color: var(--text-main); font-weight: 700;">{{ $ledgeMap[$batch->ledge_category] ?? $batch->ledge_category }}</span>
+                </div>
             </div>
         </div>
 
@@ -57,10 +62,38 @@
                 </div>
                 <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0;">Source Details</h3>
             </div>
+            @php
+                $acqType = $batch->acquisition_type ?? 'Supplier';
+                $supplierNameStr = $batch->supplier_name ?? '';
+                $isDonor = ($acqType === 'Donor' || str_contains($supplierNameStr, '[Donor Action]') || str_contains($supplierNameStr, '[Donation]'));
+                $provider = $isDonor ? ($batch->donor_name ?: trim(preg_replace('/\[.*?\]/', '', $supplierNameStr))) : trim(preg_replace('/\[.*?\]/', '', $supplierNameStr));
+                
+                $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
+                $deliveryPerson = '';
+                foreach ($suppliersRegistry as $k => $v) {
+                    if (strcasecmp(trim($k), trim($provider)) === 0 || ($batch->supplier_name && strcasecmp(trim($k), trim($batch->supplier_name)) === 0)) {
+                        $provider = $k;
+                        $deliveryPerson = $v['delivery_person'] ?? '';
+                        break;
+                    }
+                }
+            @endphp
             <div style="display: grid; gap: 1.25rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Logistics Source</span>
-                    <span style="color: var(--text-main); font-weight: 700;">{{ trim(preg_replace('/\[.*?\]/', '', $batch->supplier_name)) }}</span>
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Sourcing Method</span>
+                    <span style="color: var(--text-main); font-weight: 700;">{{ $acqType }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">{{ $isDonor ? 'Donor Name' : 'Supplier Name' }}</span>
+                    <span style="color: var(--text-main); font-weight: 700;">{{ $provider }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Delivery Person</span>
+                    <span style="color: var(--text-main); font-weight: 700;">{{ $deliveryPerson ?: 'N/A' }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Supply Status</span>
+                    <span style="color: var(--primary); font-weight: 800; font-size: 0.9rem;">{{ $batch->supplier_status ?: 'Full Delivery' }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Total Line Items</span>
@@ -84,11 +117,12 @@
                 <thead>
                     <tr style="background: rgba(0,0,0,0.02); text-align: left;">
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Description</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Received Qty</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Record Status</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Stock Balance</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Package Type</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Received Qty</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Stock Bal.</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Variance</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Remarks</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Record Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -96,23 +130,34 @@
                     <tr style="border-top: 1px solid var(--border-color);">
                         <td style="padding: 1.25rem 1.5rem;">
                             <div style="font-weight: 700; color: var(--text-main);">{{ $item->description }}</div>
-                        </td>
-                        <td style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ $item->qty ?? '0' }}</td>
-                        <td style="padding: 1.25rem 1.5rem;">
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">{{ $ledgeMap[$batch->ledge_category] ?? $batch->ledge_category }}</span>
+                            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Registry ID: {{ $item->ledger_id ?? '-' }}</div>
                         </td>
                         <td style="padding: 1.25rem 1.5rem;">
+                            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main);">{{ $item->unit ?? 'Package Types' }}</span>
+                            @if($item->location)
+                                <div style="font-size: 0.7rem; font-weight: 600; color: #4f46e5; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                                    <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i> {{ $item->location }}
+                                </div>
+                            @endif
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right; font-weight: 700; color: var(--text-main);">{{ number_format($item->qty) }}</td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right; color: var(--text-main); font-weight: 700;">{{ number_format($item->stock_balance) }}</td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
                             <span style="font-weight: 800; color: {{ (float)$item->variance > 0 ? '#10b981' : ((float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">
-                                {{ (float)$item->variance > 0 ? '+' : '' }}{{ $item->variance }}
+                                {{ (float)$item->variance > 0 ? '+' : '' }}{{ number_format($item->variance) }}
                             </span>
                         </td>
                         <td style="padding: 1.25rem 1.5rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #10b981; font-weight: 600; font-size: 0.85rem;">
+                            <div style="font-size: 0.8rem; color: var(--text-muted); font-style: italic; max-width: 250px; line-height: 1.4; word-break: break-word;">
+                                {{ $item->remarks ?: '-- No specific notes --' }}
+                            </div>
+                        </td>
+                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                            <div style="display: inline-flex; align-items: center; gap: 0.5rem; color: #10b981; font-weight: 600; font-size: 0.85rem;">
                                 <i data-lucide="check-circle-2" style="width: 14px;"></i>
                                 Recorded
                             </div>
                         </td>
-                        <td style="padding: 1.25rem 1.5rem; text-align: right; color: var(--text-main); font-weight: 700;">{{ $item->stock_balance }}</td>
                     </tr>
                     @endforeach
                 </tbody>

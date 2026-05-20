@@ -106,7 +106,7 @@ class IssueItemsController extends Controller
                     </div>
                     
                     <div style='font-size: 0.95rem; color: #334155; line-height: 1.6; margin-bottom: 20px;'>
-                        Personnel <b style='color: #f59e0b;'>{$editReq->user->name}</b> has submitted a request to <b style='color: #f59e0b;'>ISSUE ITEMS</b> to <span style='font-family: monospace; font-weight: 700; color: #0f172a;'>{$validated['beneficiary']}</span>.
+                        <b style='color: #f59e0b;'>{$editReq->user->name}</b> has submitted a request to <b style='color: #f59e0b;'>ISSUE ITEMS</b> to <span style='font-family: monospace; font-weight: 700; color: #0f172a;'>{$validated['beneficiary']}</span>.
                         <br><br>
                         <b>Items requested:</b> {$firstfew}
                     </div>

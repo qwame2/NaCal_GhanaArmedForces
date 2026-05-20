@@ -51,6 +51,8 @@ class ReceivedItemsController extends Controller
                 $item->remarks = $item->remarks ?? '';
                 $item->stock_balance = $item->stock_balance ?? 0;
                 $item->variance = $item->variance ?? 0;
+                $item->total_in_system = \App\Models\InventoryItem::where('description', $item->description ?? '')
+                    ->sum('stock_balance');
                 return $item;
             })
         ];
@@ -67,9 +69,18 @@ class ReceivedItemsController extends Controller
         $req = \App\Models\EditRequest::with('user')->findOrFail($id);
         $data = json_decode($req->payload, true);
         $ledgeMap = $this->getLedgeMap();
+        $suppliersRegistry = \App\Models\Supplier::all();
         
         if ($req->request_type === 'issue_submission') {
+            if (isset($data['items']) && is_array($data['items'])) {
+                foreach ($data['items'] as &$item) {
+                    $item['total_in_system'] = \App\Models\InventoryItem::where('description', $item['description'] ?? '')
+                        ->sum('stock_balance');
+                }
+            }
             $response = [
+                'id' => $req->id,
+                'status' => $req->status,
                 'batch' => $data,
                 'recorded_by_name' => $req->user->name ?? 'Personnel',
                 'created_at' => $req->created_at->format('d/m/Y H:i'),
@@ -78,7 +89,29 @@ class ReceivedItemsController extends Controller
             return response()->json($response);
         }
 
+        // Attach delivery person to proposed batch
+        $cleanSupplier = trim(preg_replace('/\[.*?\]/', '', $data['supplier_name'] ?? ''));
+        $deliveryPerson = '';
+        foreach ($suppliersRegistry as $supplier) {
+            if (strcasecmp(trim($supplier->name), $cleanSupplier) === 0 || (isset($data['supplier_name']) && strcasecmp(trim($supplier->name), trim($data['supplier_name'])) === 0)) {
+                $data['supplier_name'] = $supplier->name;
+                $deliveryPerson = $supplier->delivery_person ?? '';
+                break;
+            }
+        }
+        $data['delivery_person'] = $deliveryPerson;
+
+        // Add total_in_system to items
+        if (isset($data['items']) && is_array($data['items'])) {
+            foreach ($data['items'] as &$item) {
+                $item['total_in_system'] = \App\Models\InventoryItem::where('description', $item['description'] ?? '')
+                    ->sum('stock_balance');
+            }
+        }
+
         $response = [
+            'id' => $req->id,
+            'status' => $req->status,
             'batch' => $data,
             'ledge_name' => $ledgeMap[$data['ledge_category']] ?? $data['ledge_category'],
             'recorded_by_name' => $req->user->name ?? 'Personnel',
@@ -89,6 +122,23 @@ class ReceivedItemsController extends Controller
         if ($req->request_type === 'edit_submission') {
             $originalBatch = \App\Models\InventoryBatch::with('items')->find($req->item_id);
             if ($originalBatch) {
+                // Attach delivery person to previous batch
+                $origClean = trim(preg_replace('/\[.*?\]/', '', $originalBatch->supplier_name ?? ''));
+                $origDelivery = '';
+                foreach ($suppliersRegistry as $supplier) {
+                    if (strcasecmp(trim($supplier->name), $origClean) === 0 || strcasecmp(trim($supplier->name), trim($originalBatch->supplier_name)) === 0) {
+                        $originalBatch->supplier_name = $supplier->name;
+                        $origDelivery = $supplier->delivery_person ?? '';
+                        break;
+                    }
+                }
+                $originalBatch->delivery_person = $origDelivery;
+
+                foreach ($originalBatch->items as $item) {
+                    $item->total_in_system = \App\Models\InventoryItem::where('description', $item->description)
+                        ->sum('stock_balance');
+                }
+
                 $response['previous_batch'] = $originalBatch;
                 $response['previous_ledge_name'] = $ledgeMap[$originalBatch->ledge_category] ?? $originalBatch->ledge_category;
             }
@@ -135,6 +185,13 @@ class ReceivedItemsController extends Controller
                 $q->where('inventory_batches.supplier_status', 'LIKE', '%Partial%')
                   ->orWhere('inventory_batches.supplier_name', 'LIKE', '%[Partial Deliv%');
             });
+        } elseif ($request->has('status') && $request->status === 'pending_approval') {
+            $query->whereIn('inventory_batches.id', function($q) {
+                $q->select('item_id')
+                  ->from('edit_requests')
+                  ->where('item_type', 'batch')
+                  ->where('status', 'pending');
+            });
         }
 
         // Ledge Category filter
@@ -161,8 +218,63 @@ class ReceivedItemsController extends Controller
             $searchQtySum = $sumQuery->sum('inventory_items.qty');
         }
 
+        $mockedItems = collect();
+        if ($request->has('status') && $request->status === 'pending_approval') {
+            $pendingCreations = \App\Models\EditRequest::where('item_type', 'batch_creation')
+                ->where('status', 'pending')
+                ->get();
+                
+            foreach ($pendingCreations as $req) {
+                $payload = json_decode($req->payload, true);
+                if (!$payload) continue;
+                
+                $items = $payload['items'] ?? [];
+                foreach ($items as $index => $itemData) {
+                    $mockItem = new \App\Models\InventoryItem();
+                    $mockItem->id = 'pending-' . $req->id . '-' . $index;
+                    $mockItem->batch_id = 'Pending Approval';
+                    $mockItem->description = $itemData['description'] ?? '';
+                    $mockItem->unit = $itemData['unit'] ?? '';
+                    $mockItem->qty = $itemData['qty'] ?? 0;
+                    $mockItem->stock_balance = $itemData['stock_balance'] ?? 0;
+                    $mockItem->variance = $itemData['variance'] ?? 0;
+                    $mockItem->remarks = $itemData['remarks'] ?? 'Awaiting Admin Approval';
+                    
+                    $mockItem->entry_date = $payload['entry_date'] ?? $req->created_at;
+                    $mockItem->arrival_date = $payload['arrival_date'] ?? $req->created_at;
+                    $mockItem->ledge_category = $payload['ledge_category'] ?? '';
+                    $mockItem->supplier_name = $payload['supplier_name'] ?? '';
+                    $mockItem->supplier_status = 'Pending Approval';
+                    $mockItem->donor_name = $payload['donor_name'] ?? null;
+                    $mockItem->acquisition_type = $payload['acquisition_type'] ?? '';
+                    
+                    $mockItem->is_pending_creation = true;
+                    $mockItem->edit_request_id = $req->id;
+                    
+                    $mockedItems->push($mockItem);
+                }
+            }
+        }
+
         $perPage = $request->input('per_page', 10);
-        $receivedItems = $query->orderBy('inventory_batches.entry_date', 'desc')->paginate($perPage);
+        if ($request->has('status') && $request->status === 'pending_approval') {
+            $dbItems = $query->orderBy('inventory_batches.entry_date', 'desc')->get();
+            $combined = $mockedItems->merge($dbItems);
+            
+            $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+            $currentItems = $combined->slice(($currentPage - 1) * $perPage, $perPage)->all();
+            
+            $receivedItems = new \Illuminate\Pagination\LengthAwarePaginator(
+                $currentItems,
+                $combined->count(),
+                $perPage,
+                $currentPage,
+                ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+            );
+            $receivedItems->appends($request->all());
+        } else {
+            $receivedItems = $query->orderBy('inventory_batches.entry_date', 'desc')->paginate($perPage);
+        }
 
         // Fetch aggregate totals for item status display in the table
         $itemAggregates = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
@@ -173,21 +285,40 @@ class ReceivedItemsController extends Controller
             ->keyBy('description');
 
         // Fetch unique suppliers and donors for the dropdowns
-        $allSuppliers = InventoryBatch::where('acquisition_type', 'Supplier')
+        $registryData = \App\Models\Setting::get('suppliers_registry', []);
+        if (is_string($registryData)) {
+            $registryData = json_decode($registryData, true) ?? [];
+        }
+        $registrySuppliers = is_array($registryData) ? array_keys($registryData) : [];
+        $dbSuppliers = InventoryBatch::where('acquisition_type', 'Supplier')
             ->where('supplier_status', '!=', 'System Draft')
             ->select('supplier_name')
             ->distinct()
             ->pluck('supplier_name')
             ->map(function($name) {
                 return preg_replace('/\s\[.*\]$/', '', $name);
-            })->unique()->values();
+            })->toArray();
+        $allSuppliers = collect(array_merge($registrySuppliers, $dbSuppliers))
+            ->filter()
+            ->unique()
+            ->values();
 
-        $allDonors = InventoryBatch::where('acquisition_type', 'Donor')
+        $donorNames1 = InventoryBatch::where('acquisition_type', 'Donor')
             ->where('supplier_status', '!=', 'System Draft')
             ->select('donor_name')
             ->distinct()
-            ->pluck('donor_name')
-            ->unique()->values();
+            ->pluck('donor_name');
+
+        $donorNames2 = InventoryBatch::where('acquisition_type', 'Donor')
+            ->where('supplier_status', '!=', 'System Draft')
+            ->select('supplier_name')
+            ->distinct()
+            ->pluck('supplier_name');
+
+        $allDonors = $donorNames1->concat($donorNames2)
+            ->filter()
+            ->unique()
+            ->values();
 
         // Statistics
         $totalReceived = InventoryBatch::where('supplier_status', '!=', 'System Draft')->count();
@@ -263,6 +394,46 @@ class ReceivedItemsController extends Controller
                 return [$item->id => $item->only(['description', 'unit', 'qty', 'stock_balance', 'variance', 'remarks'])];
             });
 
+            $origPayloadArray = [
+                'arrival_date' => $batch->arrival_date ? explode(' ', $batch->arrival_date)[0] : '',
+                'ledge_category' => $batch->ledge_category,
+                'acquisition_type' => $batch->acquisition_type,
+                'supplier_name' => $batch->supplier_name,
+                'supplier_status' => $batch->supplier_status ?? 'Full Delivery',
+                'donor_name' => $batch->donor_name,
+                'items' => $batch->items->map(function($i) {
+                    return [
+                        'id' => $i->id,
+                        'description' => $i->description,
+                        'unit' => $i->unit,
+                        'qty' => $i->qty,
+                        'stock_balance' => $i->stock_balance,
+                        'variance' => $i->variance,
+                        'remarks' => $i->remarks
+                    ];
+                })->toArray()
+            ];
+
+            $newPayloadArray = [
+                'arrival_date' => $validated['arrival_date'],
+                'ledge_category' => $validated['ledge_category'],
+                'acquisition_type' => $validated['acquisition_type'],
+                'supplier_name' => $validated['supplier_name'],
+                'supplier_status' => $validated['supplier_status'],
+                'donor_name' => $validated['donor_name'],
+                'items' => collect($validated['items'])->map(function($i) {
+                    return [
+                        'id' => $i['id'],
+                        'description' => $i['description'],
+                        'unit' => $i['unit'],
+                        'qty' => $i['qty'],
+                        'stock_balance' => $i['stock_balance'],
+                        'variance' => $i['variance'],
+                        'remarks' => $i['remarks'] ?? null
+                    ];
+                })->toArray()
+            ];
+
             $batch->update([
                 'ledge_category' => $validated['ledge_category'],
                 'supplier_name' => $validated['supplier_name'],
@@ -301,14 +472,38 @@ class ReceivedItemsController extends Controller
                 $item->update($new);
             }
 
-            DB::commit();
+            if (!auth()->user()->is_admin) {
+                // For personnel, find the approved request and update it
+                $editReq = \App\Models\EditRequest::where('user_id', auth()->id())
+                    ->where('item_id', $id)
+                    ->where('item_type', 'batch')
+                    ->where('status', 'approved')
+                    ->latest()
+                    ->first();
+                if ($editReq) {
+                    $editReq->update([
+                        'original_payload' => json_encode($origPayloadArray),
+                        'payload' => json_encode($newPayloadArray),
+                        'request_type' => 'edit_submission',
+                        'status' => 'completed'
+                    ]);
+                }
+            } else {
+                // For admin, create a completed EditRequest
+                \App\Models\EditRequest::create([
+                    'user_id' => auth()->id(),
+                    'item_type' => 'batch',
+                    'item_id' => $id,
+                    'request_type' => 'edit_submission',
+                    'reason' => 'Direct administrative modification.',
+                    'status' => 'completed',
+                    'original_payload' => json_encode($origPayloadArray),
+                    'payload' => json_encode($newPayloadArray),
+                    'approved_at' => now()
+                ]);
+            }
 
-            // Reset Edit Request status after successful update to lock it again
-            \App\Models\EditRequest::where('user_id', auth()->id())
-                ->where('item_id', $id)
-                ->where('item_type', 'batch')
-                ->where('status', 'approved')
-                ->update(['status' => 'completed']);
+            DB::commit();
 
             // Log the activity with Detailed Metadata
             if (auth()->check()) {
@@ -464,5 +659,38 @@ class ReceivedItemsController extends Controller
                 'message' => 'Purge failed: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function getSupplierStats($name)
+    {
+        $cleanName = trim(preg_replace('/\[.*?\]/', '', $name));
+        $supplier = \App\Models\Supplier::where('name', $cleanName)->first();
+        
+        if (!$supplier) {
+            return response()->json(['error' => 'Supplier not found'], 404);
+        }
+
+        // Calculate stats
+        $totalDeliveries = \App\Models\InventoryBatch::where('supplier_name', $name)
+            ->where('supplier_status', '!=', 'System Draft')
+            ->count();
+
+        $totalItemsSupplied = \App\Models\InventoryItem::whereHas('batch', function($q) use ($name) {
+            $q->where('supplier_name', $name)->where('supplier_status', '!=', 'System Draft');
+        })->sum('qty');
+
+        $lastDelivery = \App\Models\InventoryBatch::where('supplier_name', $name)
+            ->where('supplier_status', '!=', 'System Draft')
+            ->orderBy('arrival_date', 'desc')
+            ->first();
+
+        return response()->json([
+            'supplier' => $supplier,
+            'stats' => [
+                'total_deliveries' => $totalDeliveries,
+                'total_items' => $totalItemsSupplied,
+                'last_delivery' => $lastDelivery ? \Carbon\Carbon::parse($lastDelivery->arrival_date)->format('M d, Y') : 'N/A'
+            ]
+        ]);
     }
 }

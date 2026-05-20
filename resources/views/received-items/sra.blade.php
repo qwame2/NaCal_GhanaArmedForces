@@ -320,8 +320,8 @@
                     <span>-</span>
                 </div>
                 <div class="order-line">
-                    <span class="order-label">Supplier:</span>
-                    <span>{{ $batch->supplier_name ?: ($batch->donor_name ?: 'N/A') }}</span>
+                    <span class="order-label">{{ $batch->acquisition_type === 'Donor' ? 'Donor:' : 'Supplier:' }}</span>
+                    <span>{{ trim(preg_replace('/\[.*?\]/', '', ($batch->acquisition_type === 'Donor' ? ($batch->donor_name ?: $batch->supplier_name) : $batch->supplier_name) ?? 'N/A')) }}</span>
                 </div>
                 <div class="order-line" style="border: none;">
                     <span class="order-label">Address:</span>

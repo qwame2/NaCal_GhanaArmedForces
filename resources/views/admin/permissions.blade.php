@@ -9,7 +9,7 @@
         <div style="flex: 1; min-width: 300px;">
             <div class="title-group">
                 <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500; margin-top: 0.5rem; max-width: 600px;">
-                    Configure granular operational permissions and security clearances for system personnel.
+                    Configure granular operational permissions and security clearances for system users.
                 </p>
             </div>
         </div>
@@ -17,7 +17,7 @@
         <div style="flex: 0 1 450px;">
             <div class="search-vault">
                 <i data-lucide="search"></i>
-                <input type="text" id="personnelSearch" placeholder="Filter personnel by name or identity..." oninput="filterPersonnel()">
+                <input type="text" id="personnelSearch" placeholder="Filter users by name or identity..." oninput="filterPersonnel()">
                 <div class="search-kicker">⌘ K</div>
             </div>
         </div>

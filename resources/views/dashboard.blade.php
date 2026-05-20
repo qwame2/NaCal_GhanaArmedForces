@@ -23,13 +23,13 @@
                 <i data-lucide="refresh-cw" style="width: 18px;"></i>
                 Refresh
             </button>
-            <button id="openNewEntry" 
+            <button id="openNewEntry"
                 @if(auth()->user()->can_add_inventory)
-                onclick="openModal()" 
+                onclick="openModal()"
                 @else
                 disabled title="Unauthorized: Permission Required"
                 @endif
-                class="btn-primary" 
+                class="btn-primary"
                 style="padding: 0.85rem 1.75rem; border-radius: 12px; border: none; background: {{ auth()->user()->can_add_inventory ? 'var(--primary)' : '#cbd5e1' }}; color: white; display: flex; align-items: center; gap: 0.75rem; cursor: {{ auth()->user()->can_add_inventory ? 'pointer' : 'not-allowed' }}; transition: var(--transition); box-shadow: {{ auth()->user()->can_add_inventory ? '0 10px 20px -5px rgba(99, 102, 241, 0.3)' : 'none' }};">
                 <i data-lucide="plus" style="width: 20px;"></i>
                 New Entry
@@ -476,7 +476,7 @@
             <tr class="activity-row">
                 <td data-label="Entry Date">{{ \Carbon\Carbon::parse($transaction->entry_date)->format('d/m/y H:i') }}</td>
                 <td data-label="Received Date" style="color: var(--primary); font-weight: 700;">{{ $transaction->arrival_date ? \Carbon\Carbon::parse($transaction->arrival_date)->format('d/m/y') : '-' }}</td>
-                <td data-label="Product">{{ $transaction->description }} <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $transaction->unit ?? 'Units' }})</span></td>
+                <td data-label="Product">{{ $transaction->description }} <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $transaction->unit ?? 'Package Types' }})</span></td>
                 <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">{{ $ledgeMap[$transaction->ledge_category] ?? "Category " . $transaction->ledge_category }}</span></td>
                 @php
                 $rawSup = $transaction->supplier_name;
@@ -805,7 +805,7 @@
                         show: true,
                         total: {
                             show: true,
-                            label: @json($isEmptyDist) ? 'Awaiting Records' : 'Total Units',
+                            label: @json($isEmptyDist) ? 'Awaiting Records' : 'Total Package Types',
                             fontSize: '14px',
                             fontWeight: 600,
                             color: '#64748b',
@@ -845,7 +845,7 @@
             const modal = jQuery('#newEntryModal');
             if (modal.length) {
                 modal.css('display', 'flex');
-                
+
                 // Set current date/time to MySQL format (YYYY-MM-DD HH:MM:SS)
                 const now = new Date();
                 const year = now.getFullYear();
@@ -889,6 +889,86 @@
     <script>
     // New Entry Modal Logic
     jQuery(document).ready(function($) {
+        window.originalRollbackPayload = null;
+
+        function hasRollbackChanges(newPayload, origPayload) {
+            if (!origPayload) return true;
+
+            function normalizeName(name) {
+                if (!name) return '';
+                return name.replace(/\s\[.*\]$/, '').trim().toLowerCase();
+            }
+
+            if (newPayload.ledge_category !== origPayload.ledge_category) {
+                console.log('Rollback change: ledge_category', newPayload.ledge_category, origPayload.ledge_category);
+                return true;
+            }
+
+            if (normalizeName(newPayload.supplier_name) !== normalizeName(origPayload.supplier_name)) {
+                console.log('Rollback change: supplier_name', newPayload.supplier_name, origPayload.supplier_name);
+                return true;
+            }
+
+            if (normalizeName(newPayload.donor_name) !== normalizeName(origPayload.donor_name)) {
+                console.log('Rollback change: donor_name', newPayload.donor_name, origPayload.donor_name);
+                return true;
+            }
+
+            if (newPayload.supplier_status !== origPayload.supplier_status) {
+                console.log('Rollback change: supplier_status', newPayload.supplier_status, origPayload.supplier_status);
+                return true;
+            }
+
+            if (newPayload.acquisition_type !== origPayload.acquisition_type) {
+                console.log('Rollback change: acquisition_type', newPayload.acquisition_type, origPayload.acquisition_type);
+                return true;
+            }
+
+            if (newPayload.arrival_date !== origPayload.arrival_date) {
+                console.log('Rollback change: arrival_date', newPayload.arrival_date, origPayload.arrival_date);
+                return true;
+            }
+
+            const newItems = newPayload.items || [];
+            const origItems = origPayload.items || [];
+            if (newItems.length !== origItems.length) {
+                console.log('Rollback change: items count', newItems.length, origItems.length);
+                return true;
+            }
+
+            for (let i = 0; i < newItems.length; i++) {
+                const ni = newItems[i];
+                const oi = origItems[i] || {};
+                
+                if ((ni.description || '').trim().toUpperCase() !== (oi.description || '').trim().toUpperCase()) {
+                    console.log(`Rollback change: item[${i}].description`, ni.description, oi.description);
+                    return true;
+                }
+                if ((ni.unit || '').trim().toUpperCase() !== (oi.unit || '').trim().toUpperCase()) {
+                    console.log(`Rollback change: item[${i}].unit`, ni.unit, oi.unit);
+                    return true;
+                }
+                if ((ni.location || '').trim().toUpperCase() !== (oi.location || '').trim().toUpperCase()) {
+                    console.log(`Rollback change: item[${i}].location`, ni.location, oi.location);
+                    return true;
+                }
+                if (parseFloat(ni.qty || 0) !== parseFloat(oi.qty || 0)) {
+                    console.log(`Rollback change: item[${i}].qty`, ni.qty, oi.qty);
+                    return true;
+                }
+                if (parseFloat(ni.stock_balance || 0) !== parseFloat(oi.stock_balance || 0)) {
+                    console.log(`Rollback change: item[${i}].stock_balance`, ni.stock_balance, oi.stock_balance);
+                    return true;
+                }
+                if ((ni.remarks || '').trim().toUpperCase() !== (oi.remarks || '').trim().toUpperCase()) {
+                    console.log(`Rollback change: item[${i}].remarks`, ni.remarks, oi.remarks);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         const modal = $('#newEntryModal');
         const openBtn = $('#openNewEntry');
         const closeBtn = $('#closeModal');
@@ -900,7 +980,8 @@
             return {
                 ...item,
                 description: (item.description || '').toUpperCase(),
-                unit: (item.unit || '').toUpperCase()
+                unit: (item.unit || '').toUpperCase(),
+                location: (item.location || '').toUpperCase()
             };
         });
         const globalTotalStock = {{ $totalInventory }};
@@ -916,10 +997,14 @@
                     if (typeof rule === 'object' && rule !== null) {
                         upperRules[upperKeyword] = {
                             category: rule.category,
-                            unit: (rule.unit || '').toUpperCase()
+                            unit: (rule.unit || '').toUpperCase(),
+                            location: (rule.location || 'Not Specified').toUpperCase()
                         };
                     } else {
-                        upperRules[upperKeyword] = (rule || '').toUpperCase();
+                        upperRules[upperKeyword] = {
+                            unit: (rule || '').toUpperCase(),
+                            location: 'NOT SPECIFIED'
+                        };
                     }
                 });
                 window._unitRules = upperRules;
@@ -943,7 +1028,7 @@
             const btn = $(this).find('button[type="submit"]');
             const originalHtml = btn.html();
 
-            // Gather Items & Validate Unit Rules
+            // Gather Items & Validate Package Type Rules
             const items = [];
             let validationFailed = false;
             let invalidItemName = '';
@@ -951,7 +1036,8 @@
             $('.item-entry-row').each(function() {
                 const desc = ($(this).find('.item-select-dynamic').val() || '').trim();
                 const unit = ($(this).find('.row-unit').val() || '').trim();
-                
+                const location = ($(this).find('.row-location').val() || '').trim();
+
                 if (unit.indexOf("Confront Admin") !== -1 || !unit) {
                     validationFailed = true;
                     invalidItemName = desc || 'Unnamed Item';
@@ -963,14 +1049,15 @@
                     stock_balance: $(this).find('.row-stock-balance').val(),
                     qty: $(this).find('.row-qty').val(),
                     variance: $(this).find('.row-variance').val() || '0',
-                    remarks: $(this).find('.row-remarks').val()
+                    remarks: $(this).find('.row-remarks').val(),
+                    location: location
                 });
             });
 
             if (validationFailed) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Unit Not Assigned',
+                    title: 'Package Type Not Assigned',
                     text: `The item "${invalidItemName}" does not have a unit assigned by the administrator yet. Please confront admin.`,
                     confirmButtonColor: '#ef4444'
                 });
@@ -996,6 +1083,18 @@
                 items: items
             };
 
+            if (window.originalRollbackPayload) {
+                if (!hasRollbackChanges(payload, window.originalRollbackPayload)) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Corrections Made',
+                        text: 'You have not made any changes to the flagged fields. Please update the incorrect information before resubmitting.',
+                        confirmButtonColor: '#b91c1c'
+                    });
+                    return;
+                }
+            }
+
             // Loading State
             btn.html('<i class="animate-spin" data-lucide="loader-2"></i> Saving...').prop('disabled', true);
             lucide.createIcons();
@@ -1019,7 +1118,7 @@
                             });
                         } else {
                             showToast('Success', 'Inventory records saved successfully!', 'success');
-                            
+
 
 
                             setTimeout(() => {
@@ -1154,26 +1253,51 @@
                             </div>
 
                             <div class="form-group">
-                                <label style="display: flex; align-items: center; gap: 6px;">
-                                    <i data-lucide="tag" style="width: 12px; color: var(--primary);"></i>
-                                    Units
-                                </label>
-                                <div class="unit-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
-                                    <input type="text" class="row-unit" value="" placeholder="Auto-determined" readonly style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid var(--border-color); border-radius: 12px; background: rgba(99, 102, 241, 0.03); color: var(--text-main); cursor: not-allowed; font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                                    <div style="position: absolute; left: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); opacity: 0.8; pointer-events: none;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <div>
+                                        <label style="display: flex; align-items: center; gap: 6px;">
+                                            <i data-lucide="tag" style="width: 12px; color: var(--primary);"></i>
+                                            Package Types
+                                        </label>
+                                        <div class="unit-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
+                                            <input type="text" class="row-unit" value="" placeholder="Auto-determined" readonly style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid var(--border-color); border-radius: 12px; background: rgba(99, 102, 241, 0.03); color: var(--text-main); cursor: not-allowed; font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                            <div style="position: absolute; left: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); opacity: 0.8; pointer-events: none;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label style="display: flex; align-items: center; gap: 6px;">
+                                            <i data-lucide="map-pin" style="width: 12px; color: var(--primary);"></i>
+                                            Store Location
+                                        </label>
+                                        <div class="location-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
+                                            <input type="text" class="row-location" value="" placeholder="Auto-determined" readonly style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid var(--border-color); border-radius: 12px; background: rgba(99, 102, 241, 0.03); color: var(--text-main); cursor: not-allowed; font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                            <div style="position: absolute; left: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); opacity: 0.8; pointer-events: none;">
+                                                <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <input type="hidden" class="row-stock-balance" value="0">
-
                             <div class="form-group">
-                                <label class="lbl-received-qty" style="display: flex; align-items: center; gap: 6px;">
-                                    <i data-lucide="plus-circle" style="width: 12px; color: var(--primary);"></i>
-                                    <span class="lbl-text">Received Qty</span>
-                                </label>
-                                <input type="number" class="row-qty" style="border-color: var(--primary-light);">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <div>
+                                        <label class="lbl-received-qty" style="display: flex; align-items: center; gap: 6px;">
+                                            <i data-lucide="plus-circle" style="width: 12px; color: var(--primary);"></i>
+                                            <span class="lbl-text">Received Qty</span>
+                                        </label>
+                                        <input type="number" class="row-qty" style="border-color: var(--primary-light); width: 100%;">
+                                    </div>
+                                    <div class="actual-qty-group" style="display: none;">
+                                        <label style="display: flex; align-items: center; gap: 6px;">
+                                            <i data-lucide="check-circle" style="width: 12px; color: #10b981;"></i>
+                                            <span style="color: #10b981; font-weight: 800;">Physically Received Qty</span>
+                                        </label>
+                                        <input type="number" class="row-stock-balance" value="0" style="border-color: #10b981; width: 100%;">
+                                    </div>
+                                </div>
                             </div>
 
                             <input type="hidden" class="row-variance" value="0">
@@ -1221,11 +1345,21 @@
                     const selectedDesc = ($(this).val() || '').trim().toUpperCase();
                     const prevData = existingDBItems.find(item => item.description === selectedDesc);
 
-                    // Auto-fill unit based on admin-defined unit rules or existing item data
+                    // Auto-fill unit and location based on admin-defined unit rules or existing item data
                     const $unitInput = $row.find('.row-unit');
-                    
+                    const $locationInput = $row.find('.row-location');
+
                     const resetUnitStyle = () => {
                         $unitInput.css({
+                            'color': 'var(--text-main)',
+                            'border-color': 'var(--border-color)',
+                            'background': 'rgba(99, 102, 241, 0.03)',
+                            'box-shadow': 'inset 0 2px 4px rgba(0,0,0,0.02)',
+                            'font-style': 'normal',
+                            'font-size': '0.95rem',
+                            'letter-spacing': '0.05em'
+                        });
+                        $locationInput.css({
                             'color': 'var(--text-main)',
                             'border-color': 'var(--border-color)',
                             'background': 'rgba(99, 102, 241, 0.03)',
@@ -1246,10 +1380,20 @@
                             'font-size': '0.82rem',
                             'letter-spacing': 'normal'
                         });
+                        $locationInput.css({
+                            'color': '#ef4444',
+                            'border-color': '#fca5a5',
+                            'background': 'rgba(239, 68, 68, 0.06)',
+                            'box-shadow': '0 0 0 3px rgba(239, 68, 68, 0.15)',
+                            'font-style': 'italic',
+                            'font-size': '0.82rem',
+                            'letter-spacing': 'normal'
+                        });
                     };
 
                     if (!selectedDesc) {
                         $unitInput.val('');
+                        $locationInput.val('');
                         resetUnitStyle();
                     } else if (window._unitRules) {
                         const descLower = selectedDesc.toLowerCase();
@@ -1257,7 +1401,7 @@
 
                         const matchedUnit = Object.entries(window._unitRules).find(([kw, rule]) => {
                             if (!descLower.includes(kw)) return false;
-                            
+
                             if (typeof rule === 'object' && rule !== null) {
                                 // Must match category if rule specifies one
                                 return rule.category === currentCat;
@@ -1268,33 +1412,38 @@
                         if (matchedUnit) {
                             const ruleValue = matchedUnit[1];
                             $unitInput.val(typeof ruleValue === 'object' ? ruleValue.unit : ruleValue);
+                            $locationInput.val(typeof ruleValue === 'object' ? (ruleValue.location || 'Not Specified') : 'Not Specified');
                             resetUnitStyle();
                         } else if (prevData && prevData.unit) {
                             $unitInput.val(prevData.unit);
+                            $locationInput.val(prevData.location || 'Not Specified');
                             resetUnitStyle();
                         } else {
-                            $unitInput.val("Unit not assigned. Confront Admin!");
+                            $unitInput.val("Package type not assigned. Confront Admin!");
+                            $locationInput.val("Confront Admin!");
                             setErrorUnitStyle();
                         }
                     } else if (prevData && prevData.unit) {
                         $unitInput.val(prevData.unit);
+                        $locationInput.val(prevData.location || 'Not Specified');
                         resetUnitStyle();
                     } else {
-                        $unitInput.val("Unit not assigned. Confront Admin!");
+                        $unitInput.val("Package type not assigned. Confront Admin!");
+                        $locationInput.val("Confront Admin!");
                         setErrorUnitStyle();
                     }
 
                     const updateStatsPanel = () => {
                         const unitLabel = ($unitInput.val() || '').toUpperCase();
                         const isUnitValid = unitLabel && !unitLabel.includes('CONFRONT ADMIN');
-                        const finalUnit = isUnitValid ? unitLabel : 'UNITS';
+                        const finalUnit = isUnitValid ? unitLabel : 'PACKAGE TYPES';
 
                         if (prevData) {
                             $row.find('.stat-stock-balance').text(parseFloat(prevData.stock_balance).toLocaleString() + ' ' + finalUnit);
                             $row.find('.stat-received-qty').text(parseFloat(prevData.qty).toLocaleString() + ' ' + finalUnit);
                             $row.find('.stat-dynamic-stock-balance').text(parseFloat(prevData.stock_balance).toLocaleString());
                             statsPanel.slideDown(300);
-                            
+
                             // Visual cue for existing item
                             if (!$row.find('.existing-indicator').length) {
                                 $row.find('.row-badge').append(' <span class="existing-indicator" style="font-size: 0.6rem; opacity: 0.8; background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 4px; margin-left: 4px;">(Restocking)</span>');
@@ -1323,9 +1472,13 @@
                 });
 
                 // Auto-Calculation Logic: Sync Stock Balance to follow Received Qty
-                $row.on('input', '.row-qty', function() {
+                $row.on('input', '.row-qty, .row-stock-balance', function() {
+                    const status = $('#supplierStatusSelect').val();
                     const qtyVal = parseFloat(qtyInput.val()) || 0;
-                    stockInput.val(qtyVal);
+                    
+                    if (status !== 'Partial Delivery') {
+                        stockInput.val(qtyVal);
+                    }
 
                     const stockVal = parseFloat(stockInput.val()) || 0;
                     const result = stockVal - qtyVal;
@@ -1343,13 +1496,13 @@
                 // Apply initial labels based on current status
                 const initStatus = $('#supplierStatusSelect').val();
                 if (initStatus === 'Partial Delivery') {
-                    $row.find('.lbl-dynamic-stock-balance').text('Physically Received');
                     $row.find('.lbl-received-qty .lbl-text').text('Expected / Invoice Qty');
                     $row.find('.row-qty').css('border-color', '#f59e0b');
+                    $row.find('.actual-qty-group').show();
                 } else {
-                    $row.find('.lbl-dynamic-stock-balance').text('Stock Balance');
                     $row.find('.lbl-received-qty .lbl-text').text('Received Qty');
                     $row.find('.row-qty').css('border-color', 'var(--primary-light)');
+                    $row.find('.actual-qty-group').hide();
                     if (initStatus === 'Full Delivery' || initStatus === 'Donor') {
                         $row.find('.row-qty').prop('readonly', true).css('background', 'var(--bg-main)');
                     }
@@ -1380,27 +1533,56 @@
             dropdownParent: $('#newEntryModal')
         });
 
+        const suppliersList = @json($allSuppliers ?? []);
+        const donorsList = @json($allDonors ?? []);
+
         // Toggle Donor Acquisition state
         $('#isDonorCheckbox').on('change', function() {
+            const isDonor = $(this).is(':checked');
+            const list = isDonor ? donorsList : suppliersList;
+            
+            const select = $('#supplierNameSelect');
+            const currentVal = select.val();
+            
+            select.empty();
+            select.append('<option value=""></option>');
+            list.forEach(name => {
+                select.append(new Option(name, name));
+            });
+            
+            if (currentVal && !list.includes(currentVal)) {
+                select.append(new Option(currentVal, currentVal));
+                select.val(currentVal).trigger('change');
+            } else if (list.includes(currentVal)) {
+                select.val(currentVal).trigger('change');
+            } else {
+                select.val(null).trigger('change');
+            }
+
             $('#supplierStatusSelect').trigger('change');
         });
 
         // Toggle Delivery Status and Update Labels
         $('#supplierStatusSelect').on('change', function() {
             const status = $(this).val();
-            
+
             // Update Labels & Fields for Partial Delivery UI
             if (status === 'Partial Delivery') {
                 $('.item-entry-row').each(function() {
-                    $(this).find('.lbl-dynamic-stock-balance').text('Physically Received');
                     $(this).find('.lbl-received-qty .lbl-text').text('Expected / Invoice Qty');
                     $(this).find('.row-qty').css({'border-color': '#f59e0b', 'background': 'var(--bg-card)'}).prop('readonly', false);
+                    $(this).find('.actual-qty-group').slideDown(300);
                 });
             } else {
                 $('.item-entry-row').each(function() {
-                    $(this).find('.lbl-dynamic-stock-balance').text('Stock Balance');
                     $(this).find('.lbl-received-qty .lbl-text').text('Received Qty');
                     $(this).find('.row-qty').css({'border-color': 'var(--primary-light)', 'background': 'var(--bg-main)'}).prop('readonly', false);
+                    $(this).find('.actual-qty-group').slideUp(300);
+                    
+                    // Sync stock back to expected qty
+                    const qtyVal = parseFloat($(this).find('.row-qty').val()) || 0;
+                    $(this).find('.row-stock-balance').val(qtyVal);
+                    $(this).find('.row-variance').val(0);
                 });
             }
         });
@@ -1411,6 +1593,38 @@
             width: '100%',
             tags: true,
             dropdownParent: $('#newEntryModal')
+        });
+
+        // Dynamic Supplier Details display
+        const suppliersRegistry = @json(\App\Models\Setting::get('suppliers_registry', []));
+        $('#supplierNameSelect').on('change', function() {
+            const name = $(this).val();
+            const detailsDiv = $('#selectedSupplierDetails');
+            const contentDiv = $('#supplierDetailsContent');
+            
+            let details = null;
+            if (name) {
+                const searchKey = name.toLowerCase().trim();
+                for (const key in suppliersRegistry) {
+                    if (key.toLowerCase().trim() === searchKey) {
+                        details = suppliersRegistry[key];
+                        break;
+                    }
+                }
+            }
+            
+            if (details) {
+                let html = '';
+                if (details.delivery_person) {
+                    html += `<div style="display: flex; align-items: center; gap: 6px;"><i data-lucide="user" style="width: 12px; color: var(--text-muted);"></i> <strong>Delivery Person:</strong> ${details.delivery_person}</div>`;
+                }
+                
+                contentDiv.html(html);
+                if (window.lucide) lucide.createIcons();
+                detailsDiv.slideDown(250);
+            } else {
+                detailsDiv.slideUp(200);
+            }
         });
 
         const multiQtyInput = $('#multiQty');
@@ -1505,6 +1719,172 @@
                 }
             });
         }
+
+        // ─────────────────────────────────────────────────────────────
+        // Rollback Pre-Fill: ?rollback={edit_request_id}
+        // Opens the form pre-filled with the original submission data
+        // and highlights admin-flagged fields with red borders + hints
+        // ─────────────────────────────────────────────────────────────
+        const rollbackId = urlParams.get('rollback');
+
+        if (rollbackId) {
+            fetch(`/api/sra-rollback/${rollbackId}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Could not load rollback data');
+                    return res.json();
+                })
+                .then(data => {
+                    const payload       = data.payload || {};
+                    const flaggedFields = data.flagged_fields || {};
+                    const generalNote   = data.general_note || '';
+
+                    if (!payload || Object.keys(payload).length === 0) return;
+                    window.originalRollbackPayload = JSON.parse(JSON.stringify(payload));
+
+                    // Open Modal
+                    modal.css('display', 'flex');
+
+                    // Add a red alert banner above the form controls
+                    const bannerHtml = `
+                        <div id="rollback-alert-banner" style="margin-bottom: 1rem; border-radius: 14px; overflow: hidden; border: 2px solid #fca5a5; box-shadow: 0 4px 16px rgba(239,68,68,0.1);">
+                            <div style="background: linear-gradient(135deg, #ef4444, #dc2626); padding: 0.85rem 1.1rem; display: flex; align-items: center; gap: 10px;">
+                                <svg style="width: 18px; height: 18px; color: white; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <span style="font-size: 0.82rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 0.06em;">Correction Required — Admin Rollback</span>
+                            </div>
+                            <div style="background: #fff5f5; padding: 0.75rem 1.1rem; font-size: 0.82rem; color: #7f1d1d; line-height: 1.6;">
+                                Fields highlighted in <b style="color:#ef4444;">red</b> need to be corrected per the Admin's instructions.
+                                ${generalNote ? `<div style="margin-top: 6px; padding: 8px 12px; background: white; border-radius: 8px; border: 1px solid #fecaca;"><b>Admin Note:</b> ${generalNote}</div>` : ''}
+                            </div>
+                        </div>`;
+
+                    const controlsArea = document.querySelector('.modal-controls-sticky .form-grid');
+                    if (controlsArea && !document.getElementById('rollback-alert-banner')) {
+                        controlsArea.insertAdjacentHTML('beforebegin', bannerHtml);
+                    }
+
+                    // Set timestamp
+                    const now = new Date();
+                    const formattedDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+                    $('#entryDate').val(formattedDate);
+
+                    if (payload.arrival_date) {
+                        $('#arrivalDate').val(payload.arrival_date);
+                    }
+
+                    // Set ledge/category
+                    if (payload.ledge_category) {
+                        ledgeSelect.val(payload.ledge_category).trigger('change');
+                    }
+
+                    setTimeout(() => {
+                        // Set supplier/donor
+                        const isDonor    = payload.acquisition_type === 'Donor';
+                        const supplierVal = isDonor ? (payload.donor_name || '') : (payload.supplier_name || '');
+                        const cleanVal   = supplierVal.replace(/\s\[.*\]$/, '');
+
+                        $('#isDonorCheckbox').prop('checked', isDonor).trigger('change');
+
+                        if (cleanVal && $('#supplierNameSelect option[value="' + cleanVal + '"]').length === 0) {
+                            $('#supplierNameSelect').append(new Option(cleanVal, cleanVal, true, true));
+                        }
+                        $('#supplierNameSelect').val(cleanVal).trigger('change');
+
+                        if (!isDonor && payload.supplier_status) {
+                            $('#supplierStatusSelect').val(payload.supplier_status).trigger('change');
+                        }
+
+                        // Render item rows from payload.items
+                        const items = payload.items || [];
+                        if (items.length > 0) {
+                            $('#multiQty').val(items.length);
+                            renderItemRows(items.length);
+
+                            setTimeout(() => {
+                                $('.item-entry-row').each(function(idx) {
+                                    const itm  = items[idx];
+                                    const $row = $(this);
+                                    if (!itm) return;
+
+                                    const descSel = $row.find('.item-select-dynamic');
+                                    if (descSel.find('option[value="' + itm.description + '"]').length === 0) {
+                                        descSel.append(new Option(itm.description, itm.description, true, true));
+                                    }
+                                    descSel.val(itm.description).trigger('change');
+                                    $row.find('.row-qty').val(itm.qty || '');
+                                    $row.find('.row-stock-balance').val(itm.stock_balance || '');
+                                    $row.find('.row-variance').val(itm.variance || 0);
+                                    $row.find('.row-remarks').val(itm.remarks || '');
+                                });
+
+                                _applyRollbackHighlights(flaggedFields);
+                            }, 300);
+                        } else {
+                            setTimeout(() => _applyRollbackHighlights(flaggedFields), 300);
+                        }
+
+                    }, 500);
+
+                    // Clean URL after loading
+                    window.history.replaceState({}, '', window.location.protocol + '//' + window.location.host + window.location.pathname);
+                })
+                .catch(err => {
+                    console.error('Rollback load error:', err);
+                    if (typeof showToast === 'function') {
+                        showToast('Error', 'Could not load your previous submission data.', 'error');
+                    }
+                });
+        }
+
+        /**
+         * Highlight admin-flagged fields with a red border and a correction hint.
+         * @param {Object} flaggedFields  { field_key: "admin note" }
+         */
+        function _applyRollbackHighlights(flaggedFields) {
+            if (!flaggedFields || Object.keys(flaggedFields).length === 0) return;
+
+            const RED_BORDER = '2px solid #b91c1c';
+            const RED_SHADOW = '0 0 0 4px rgba(185,28,28,0.15)';
+
+            // Maps field keys → functions that return jQuery elements to highlight
+            const FIELD_MAP = {
+                supplier_name:    () => [$('#supplierNameSelect').parent().find('.select2-selection').length ? $('#supplierNameSelect').parent().find('.select2-selection') : $('#supplierNameSelect').closest('.select2-container')],
+                supplier_status:  () => [$('#supplierStatusSelect').parent().find('.select2-selection').length ? $('#supplierStatusSelect').parent().find('.select2-selection') : $('#supplierStatusSelect')],
+                arrival_date:     () => [$('#arrivalDate')],
+                entry_date:       () => [$('#arrivalDate')], // entry_date maps to same visible input
+                ledge_category:   () => [$('#ledgeSelect').parent().find('.select2-selection').length ? $('#ledgeSelect').parent().find('.select2-selection') : $('#ledgeSelect').closest('.select2-container')],
+                acquisition_type: () => [$('#isDonorCheckbox').closest('label')],
+                item_description: () => $('.item-select-dynamic').closest('.select2-container').toArray().map(el => $(el)),
+                item_qty:         () => $('.row-qty').toArray().map(el => $(el)),
+                item_unit:        () => $('.row-unit').toArray().map(el => $(el)),
+                item_remarks:     () => $('.row-remarks').toArray().map(el => $(el)),
+            };
+
+            Object.keys(flaggedFields).forEach(key => {
+                const note   = flaggedFields[key];
+                const getEls = FIELD_MAP[key];
+                if (!getEls) return;
+
+                const els = getEls();
+                els.forEach(($el, i) => {
+                    if (!$el || !$el.length) return;
+
+                    // Apply red border
+                    $el.css({ 'border': RED_BORDER, 'box-shadow': RED_SHADOW, 'border-radius': '8px', 'transition': 'all 0.3s' });
+
+                    // Inject hint below — avoid duplicates per element
+                    const hintClass = 'rb-hint-' + key;
+                    const parentContainer = $el.closest('.form-group, .select2-container, div').parent();
+                    if (parentContainer.find('.' + hintClass).length === 0) {
+                        const hintHtml = `<div class="${hintClass}" style="margin-top:5px; font-size:0.76rem; font-weight:700; color:#ef4444; display:flex; align-items:flex-start; gap:5px; line-height:1.4;">
+                            <svg style="width:12px;height:12px;flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
+                            <span><b>Admin:</b> ${$('<div>').text(note).html()}</span>
+                        </div>`;
+                        $el.parent().after(hintHtml);
+                    }
+                });
+            });
+        }
+
     });
 
     // Listen for theme changes to update charts
@@ -1589,6 +1969,13 @@
                                     <option value="{{ $supplier }}">{{ $supplier }}</option>
                                     @endforeach
                                 </select>
+                                <div id="selectedSupplierDetails" style="display: none; margin-top: 0.75rem; background: var(--bg-main); border: 1.5px solid var(--border-color); padding: 0.85rem 1.1rem; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
+                                    <div style="font-size: 0.72rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
+                                        <i data-lucide="info" style="width: 12px; height: 12px;"></i> Supplier Details
+                                    </div>
+                                    <div id="supplierDetailsContent" style="display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; font-weight: 600; color: var(--text-main);">
+                                    </div>
+                                </div>
                                 <div style="margin-top: 0.75rem; display: flex; align-items: center; justify-content: space-between; background: var(--bg-main); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: 12px; transition: all 0.3s ease;">
                                     <div style="display: flex; flex-direction: column; gap: 2px;">
                                         <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
@@ -1613,20 +2000,16 @@
                                     <option value="Full Delivery" data-icon="check-circle" data-color="#10b981">Full Delivery</option>
                                     <option value="Partial Delivery" data-icon="alert-circle" data-color="#f59e0b">Partial Delivery</option>
                                 </select>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div id="dateControl" class="form-group full-width" style="display: none; opacity: 0; margin-top: 1rem;">
-                        <div class="form-grid" style="grid-template-columns: 1fr; gap: 1rem;">
-                            <div class="form-group">
-                                <label style="display: flex; align-items: center; gap: 6px;">
-                                    <i data-lucide="calendar" style="width: 12px; color: var(--primary);"></i>
-                                    Received Date (Manual)
-                                </label>
-                                <input type="date" id="arrivalDate" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit;">
+                                <div id="dateControl" class="form-group" style="display: none; opacity: 0; margin-top: 0.75rem;">
+                                    <label style="display: flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="calendar" style="width: 12px; color: var(--primary);"></i>
+                                        Received Date (Manual)
+                                    </label>
+                                    <input type="date" id="arrivalDate" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit;">
+                                    <input type="hidden" id="entryDate">
+                                </div>
                             </div>
-                            <input type="hidden" id="entryDate">
                         </div>
                     </div>
                 </div>

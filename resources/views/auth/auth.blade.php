@@ -104,11 +104,11 @@
             transition: opacity 0.4s ease;
         }
 
-        #loginForm { 
+        #loginForm {
             padding-right: 2rem;
         }
-        
-        #registerForm { 
+
+        #registerForm {
             padding-left: 2rem;
         }
 
@@ -281,14 +281,14 @@
             <!-- Dismiss Button -->
             <button onclick="dismissAdminOverlay()" style="width: 100%; padding: 0.9rem; border-radius: 16px; border: none; background: linear-gradient(135deg, #0f172a, #1e293b); color: white; font-weight: 900; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 0.04em; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(15,23,42,0.25)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                Return to Personnel Access
+                Return to User Access
             </button>
         </div>
     </div>
 
     <!-- Main Auth Container -->
         <div class="auth-vault glass-monolith">
-            
+
             <!-- Background Accents -->
             <div style="position: absolute; top: -100px; left: -100px; width: 250px; height: 250px; background: var(--primary); opacity: 0.08; filter: blur(80px); border-radius: 50%;"></div>
             <div style="position: absolute; bottom: -100px; right: -100px; width: 250px; height: 250px; background: #6366f1; opacity: 0.08; filter: blur(80px); border-radius: 50%;"></div>
@@ -300,13 +300,13 @@
                 </div>
                 <h2 style="color: var(--text-main); font-size: 1.6rem; font-weight: 950; letter-spacing: -0.04em; margin-bottom: 0.15rem;">NACOC</h2>
                 <p style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Inventory Management System</p>
-                
+
                 <!-- Target Interface Selector -->
                 <div class="interface-selector" style="margin-top: 1.5rem; width: 100%; max-width: 300px; margin-inline: auto;">
                     <input type="hidden" name="target_interface" id="targetInterfaceInput" value="user">
                     <div class="interface-pill active" onclick="setInterface('user', this)">
                         <i data-lucide="layout-grid"></i>
-                        <span>Officer</span>
+                        <span>User</span>
                     </div>
                     <div class="interface-pill" onclick="setInterface('admin', this)">
                         <i data-lucide="shield-check"></i>
@@ -322,7 +322,7 @@
 
             <!-- Dynamic Form Viewport -->
             <div class="auth-viewport" style="margin-top: 1.5rem; transition: height 0.5s ease; overflow: hidden; position: relative;">
-                
+
 
 
                 <div id="formsSlider" style="display: flex; width: 200%; transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);">
@@ -370,7 +370,7 @@
                         <form action="{{ route('register') }}" method="POST" style="display: flex; flex-direction: column; gap: 1.25rem;">
                             @csrf
                             <input type="hidden" name="role" value="Admin">
-                            
+
                             <div class="input-modern-group">
                                 <label>Full Name <span style="color: #ef4444;">*</span></label>
                                 <div class="input-wrapper">
@@ -439,7 +439,7 @@
         align-items: center;
         border: 1px solid var(--border-color);
         border-radius: 20px;
-        background: var(--bg-main); 
+        background: var(--bg-main);
         transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         overflow: hidden;
     }
@@ -664,7 +664,7 @@
         const isRegister = slider.style.transform.includes('translateX(-50%)');
         const activeForm = isRegister ? document.getElementById('registerForm') : document.getElementById('loginForm');
         const viewport = document.querySelector('.auth-viewport');
-        
+
         if (activeForm && viewport) {
             const height = activeForm.scrollHeight;
             viewport.style.height = height + 'px';
@@ -675,7 +675,7 @@
 
         document.getElementById('targetInterfaceInput').value = val;
         document.getElementById('loginInterfaceSync').value = val;
-        
+
         if (el) {
             document.querySelectorAll('.interface-pill').forEach(p => p.classList.remove('active'));
             el.classList.add('active');
@@ -746,7 +746,7 @@
 
             toggleAuth('login');
         }
-        
+
         updateViewportHeight();
     }
 
@@ -767,7 +767,7 @@
         const tabRegister = document.getElementById('tab-register');
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
-        
+
         if (mode === 'register') {
             slider.style.transform = 'translateX(-50%)';
             if (tabLogin) tabLogin.classList.remove('active');
@@ -789,7 +789,7 @@
 
     function togglePassword(button) {
         const input = button.parentElement.querySelector('input');
-        
+
         if (input.type === 'password') {
             input.type = 'text';
             button.innerHTML = '<i data-lucide="eye-off"></i>';
@@ -797,7 +797,7 @@
             input.type = 'password';
             button.innerHTML = '<i data-lucide="eye"></i>';
         }
-        
+
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
@@ -805,7 +805,7 @@
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
         const icon = type === 'success' ? 'check-circle' : 'alert-circle';
-        
+
         toast.className = `toast toast-${type}`;
         toast.innerHTML = `
             <div style="background: ${type === 'success' ? 'rgba(99, 102, 241, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: ${type === 'success' ? 'var(--primary)' : '#ef4444'};">
@@ -816,7 +816,7 @@
                 <p style="font-weight: 600; font-size: 0.85rem; color: var(--text-muted); margin: 0;">${message}</p>
             </div>
         `;
-        
+
         container.appendChild(toast);
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
@@ -841,7 +841,7 @@
         @else
             setInterface('user', document.querySelector('.interface-pill.active'));
         @endif
-        
+
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
         // Initialize height

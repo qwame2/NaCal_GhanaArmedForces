@@ -14,6 +14,7 @@ class EditRequest extends Model
         'reason',
         'status',
         'payload',
+        'original_payload',
         'approved_at',
     ];
 

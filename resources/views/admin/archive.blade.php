@@ -454,7 +454,7 @@
                 <div class="detail-card" style="display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem; background: #f8fafc; border: 1px solid var(--border-color); box-shadow: none;">
                     ${userAvatar ? `<img src="${userAvatar}" style="width: 54px; height: 54px; border-radius: 16px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">` : `<div style="width: 54px; height: 54px; border-radius: 16px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 900; box-shadow: 0 4px 10px rgba(79,70,229,0.2);">${userName.charAt(0)}</div>`}
                     <div>
-                        <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px; letter-spacing: 0.05em;">Originating Personnel</div>
+                        <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px; letter-spacing: 0.05em;">Originating User</div>
                         <div style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">${userName}</div>
                     </div>
                 </div>

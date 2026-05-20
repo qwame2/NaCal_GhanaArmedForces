@@ -129,7 +129,7 @@
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <div style="padding: 0.75rem 1.25rem; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 16px;">
                                     <span style="font-weight: 950; font-size: 1.4rem; color: #d97706;">{{ $item->quantity }}</span>
-                                    <span style="color: #f59e0b; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; margin-left: 4px;">{{ $item->actual_unit ?: ($item->unit ?: 'Units') }}</span>
+                                    <span style="color: #f59e0b; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; margin-left: 4px;">{{ $item->actual_unit ?: ($item->unit ?: 'Package Types') }}</span>
                                 </div>
                             </div>
                         </td>
@@ -189,7 +189,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px dashed var(--border-color);">
                     <div>
                         <div style="font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Balance</div>
-                        <div style="font-size: 1.75rem; font-weight: 950; color: #d97706;">{{ $item->quantity }} <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted);">{{ $item->actual_unit ?: ($item->unit ?: 'Units') }}</span></div>
+                        <div style="font-size: 1.75rem; font-weight: 950; color: #d97706;">{{ $item->quantity }} <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted);">{{ $item->actual_unit ?: ($item->unit ?: 'Package Types') }}</span></div>
                     </div>
                     @if($item->pending_recovery)
                     <button disabled title="Awaiting Administrative Approval" style="width: 120px; height: 56px; border-radius: 18px; background: #6366f1; color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); cursor: wait; opacity: 0.9;">
@@ -1126,7 +1126,7 @@
         document.getElementById('modal_item_authority').innerText = 'Approval: ' + (item.authority ? item.authority : 'N/A');
         document.getElementById('modal_return_qty').value = item.quantity;
         document.getElementById('modal_return_qty').max = item.quantity;
-        document.getElementById('modal_max_qty').innerText = item.quantity + ' ' + (item.actual_unit || item.unit || 'Units');
+        document.getElementById('modal_max_qty').innerText = item.quantity + ' ' + (item.actual_unit || item.unit || 'Package Types');
 
         const modal = document.getElementById('returnModal');
         modal.classList.add('active');
@@ -1321,12 +1321,12 @@
                     </td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.beneficiary}</td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.authority || '-'}</td>
-                    <td style="padding: 1.25rem 1rem; font-weight: 900; font-size: 1.2rem; color: #10b981;">${item.returned_qty} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.actual_unit || item.unit || 'Units'}</span></td>
+                    <td style="padding: 1.25rem 1rem; font-weight: 900; font-size: 1.2rem; color: #10b981;">${item.returned_qty} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.actual_unit || item.unit || 'Package Types'}</span></td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; max-width: 200px;">
                         <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.remarks || 'No remarks'}">${item.remarks || '-'}</div>
                     </td>
                     <td style="padding: 1.25rem 1rem; border-radius: 0 16px 16px 0; font-weight: 900; font-size: 1.1rem; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'};">
-                        ${item.current_balance} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.actual_unit || item.unit || 'Units'}</span>
+                        ${item.current_balance} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.actual_unit || item.unit || 'Package Types'}</span>
                         <div style="font-size: 0.6rem; font-weight: 950; text-transform: uppercase; margin-top: 4px; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'}; opacity: 0.8;">
                             ${item.current_balance > 0 ? 'Pending' : 'Cleared'}
                         </div>
@@ -1358,11 +1358,11 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
                         <div>
                             <div style="font-size: 0.6rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase;">Returned</div>
-                            <div style="font-size: 1.35rem; font-weight: 950; color: #10b981;">${item.returned_qty} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.actual_unit || item.unit || 'Units'}</span></div>
+                            <div style="font-size: 1.35rem; font-weight: 950; color: #10b981;">${item.returned_qty} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.actual_unit || item.unit || 'Package Types'}</span></div>
                         </div>
                         <div style="text-align: right;">
                             <div style="font-size: 0.6rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase;">Current Balance</div>
-                            <div style="font-size: 1.35rem; font-weight: 950; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'};">${item.current_balance} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.actual_unit || item.unit || 'Units'}</span></div>
+                            <div style="font-size: 1.35rem; font-weight: 950; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'};">${item.current_balance} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.actual_unit || item.unit || 'Package Types'}</span></div>
                         </div>
                     </div>
                     <div style="margin-top: 0.75rem; text-align: center; font-size: 0.65rem; font-weight: 900; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'}; text-transform: uppercase; letter-spacing: 0.05em;">
@@ -1631,7 +1631,7 @@
                                 categorized under <strong>LEDGE ${item.ledge_category}</strong>, was officially recovered from 
                                 <strong>${item.beneficiary}${item.authority ? ' (Approval: ' + item.authority + ')' : ''}</strong>. 
                                 Upon recovery, the asset was documented in the following state: <em>"${item.remarks || 'No specific condition noted'}"</em>.
-                                This asset, originally issued on <strong>${issueDate} at ${issueTime}</strong>, involved the return of <strong>${item.returned_qty} unit(s)</strong> 
+                                This asset, originally issued on <strong>${issueDate} at ${issueTime}</strong>, involved the return of <strong>${item.returned_qty} package type(s)</strong> 
                                 to the central registry. The recovery process was formally completed and verified on 
                                 <strong>${returnDate} at ${returnTime}</strong>. ${index < selectedItems.length - 1 ? '<br><br>' : ''}
                             `;
@@ -1639,7 +1639,7 @@
                     </p>
 
                     <div style="margin-top: 3rem; padding: 1.5rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 800; text-align: center;">
-                        TOTAL AGGREGATE QUANTITY RECOVERED: ${totalQuantity} UNITS
+                        TOTAL AGGREGATE QUANTITY RECOVERED: ${totalQuantity} PACKAGE TYPES
                     </div>
                 </div>
 

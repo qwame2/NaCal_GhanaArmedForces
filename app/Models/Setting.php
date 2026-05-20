@@ -25,6 +25,20 @@ class Setting extends Model
      */
     public static function get($key, $default = null)
     {
+        if ($key === 'suppliers_registry') {
+            if (\Illuminate\Support\Facades\Schema::hasTable('suppliers')) {
+                return \App\Models\Supplier::all()->keyBy('name')->map(function($supplier) {
+                    return [
+                        'delivery_person' => $supplier->delivery_person,
+                        'phone' => $supplier->phone,
+                        'email' => $supplier->email,
+                        'address' => $supplier->address,
+                        'desc' => $supplier->desc
+                    ];
+                })->toArray();
+            }
+        }
+
         if (array_key_exists($key, self::$cachedSettings)) {
             return self::$cachedSettings[$key];
         }

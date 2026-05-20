@@ -115,7 +115,7 @@
         @keyframes toast-progress {
             from { transform: scaleX(1); }
             to { transform: scaleX(0); }
-        
+
             --bg-body: #f8fafc;
             --sidebar-bg: #ffffff;
             --text-heading: #0f172a;
@@ -512,7 +512,7 @@
                 <li>
                     <a href="{{ route('admin.index') }}" class="nav-link {{ request()->routeIs('admin.index') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        <span>Personnel Registry</span>
+                        <span>User Info</span>
                     </a>
                 </li>
                 <li>
@@ -549,6 +549,18 @@
                     <a href="{{ route('admin.archive') }}" class="nav-link {{ request()->routeIs('admin.archive') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>
                         <span>System Archive</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.messages') }}" class="nav-link {{ request()->routeIs('admin.messages') ? 'active' : '' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        <span>Staff Communication</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.history') }}" class="nav-link {{ request()->routeIs('admin.history') ? 'active' : '' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+                        <span>History</span>
                     </a>
                 </li>
             </ul>
@@ -767,7 +779,7 @@
                             }
                             if (typeof lucide !== 'undefined') lucide.createIcons();
                         }
-                        
+
                         const headerBadge = dropdown.querySelector('span[style*="background: #fef2f2"]');
                         if (headerBadge) {
                             headerBadge.innerText = data.count + ' ACTIVE';
@@ -798,9 +810,9 @@
 
             fetch("{{ route('api.notifications.dismiss', [], false) }}", {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({ description: description })
             })
@@ -857,7 +869,7 @@
 
     // Tooltip Interaction Logic
     let tooltipTimeout;
-    
+
     document.addEventListener('mouseover', (e) => {
         const target = e.target.closest('[data-tooltip]');
         if (target) {
@@ -866,26 +878,26 @@
 
             tooltipEl.textContent = text;
             tooltipEl.classList.add('visible');
-            
+
             // Position calculation
             const rect = target.getBoundingClientRect();
             const tooltipRect = tooltipEl.getBoundingClientRect();
-            
+
             let top = rect.top - tooltipRect.height - 12;
             let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
-            
+
             // Boundary checks
             tooltipEl.classList.remove('place-bottom');
             if (top < 10) {
                 top = rect.bottom + 12;
                 tooltipEl.classList.add('place-bottom');
             }
-            
+
             if (left < 10) left = 10;
             if (left + tooltipRect.width > window.innerWidth - 10) {
                 left = window.innerWidth - tooltipRect.width - 10;
             }
-            
+
             tooltipEl.style.top = top + 'px';
             tooltipEl.style.left = left + 'px';
         }
@@ -899,7 +911,7 @@
 
     // Initialize on load
     document.addEventListener('DOMContentLoaded', initTooltips);
-    
+
     // Watch for dynamic DOM changes
     const tooltipObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
@@ -971,7 +983,7 @@
     });
     </script>
     <div id="toast-container" class="toast-container"></div>
-    
+
     <style>
         .global-premium-tooltip {
             position: fixed;
@@ -1055,7 +1067,7 @@
             background: #e2e8f0 !important;
             color: #0f172a !important;
         }
-        
+
         .glass-monolith-popup {
             border-radius: 35px !important;
             padding: 2.5rem !important;

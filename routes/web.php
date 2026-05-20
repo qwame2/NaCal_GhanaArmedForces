@@ -11,6 +11,15 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ArchiveController;
 
+// Self-healing auto-migration schema update
+try {
+    if (!\Illuminate\Support\Facades\Schema::hasColumn('inventory_items', 'location')) {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    }
+} catch (\Exception $e) {
+    // Ignore to prevent boot failures
+}
+
 // Temporary Route
 Route::get('/clear', function() {
     \Illuminate\Support\Facades\Artisan::call('view:clear');
@@ -69,7 +78,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         }
 
         $existingItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->selectRaw('inventory_items.description, MAX(inventory_items.unit) as unit, MAX(inventory_batches.ledge_category) as ledge_category, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2)) END) as stock_balance, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2)) END) as qty, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.variance, ",", "") AS DECIMAL(15,2)) END) as variance')
+            ->selectRaw('inventory_items.description, MAX(inventory_items.unit) as unit, MAX(inventory_items.location) as location, MAX(inventory_batches.ledge_category) as ledge_category, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2)) END) as stock_balance, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2)) END) as qty, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.variance, ",", "") AS DECIMAL(15,2)) END) as variance')
             ->groupBy('inventory_items.description')
             ->get();
 
@@ -289,20 +298,48 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             ->get();
 
         // Fetch unique suppliers and donors for the dropdown
-        $dbSuppliers = \App\Models\InventoryBatch::select('supplier_name')
+        $registryData = \App\Models\Setting::get('suppliers_registry', []);
+        if (is_string($registryData)) {
+            $registryData = json_decode($registryData, true) ?? [];
+        }
+        $registrySuppliers = is_array($registryData) ? array_keys($registryData) : [];
+        $dbSuppliers = \App\Models\InventoryBatch::where('acquisition_type', 'Supplier')
             ->whereNotNull('supplier_name')
             ->distinct()
             ->pluck('supplier_name')
-            ->toArray();
-        $dbDonors = \App\Models\InventoryBatch::select('donor_name')
+            ->map(function($name) use ($registrySuppliers) {
+                $clean = preg_replace('/\s\[.*\]$/', '', $name);
+                foreach ($registrySuppliers as $regName) {
+                    if (strcasecmp($regName, $clean) === 0) {
+                        return $regName;
+                    }
+                }
+                return $clean;
+            })->toArray();
+        $allSuppliers = collect(array_merge($registrySuppliers, $dbSuppliers))
+            ->filter()
+            ->unique(function ($item) {
+                return strtolower(trim($item));
+            })
+            ->values();
+
+        $donorNames1 = \App\Models\InventoryBatch::where('acquisition_type', 'Donor')
             ->whereNotNull('donor_name')
             ->distinct()
-            ->pluck('donor_name')
-            ->toArray();
-        $allSuppliers = collect(array_merge($dbSuppliers, $dbDonors))
+            ->pluck('donor_name');
+
+        $donorNames2 = \App\Models\InventoryBatch::where('acquisition_type', 'Donor')
+            ->whereNotNull('supplier_name')
+            ->distinct()
+            ->pluck('supplier_name');
+
+        $allDonors = $donorNames1->concat($donorNames2)
             ->map(function($name) {
                 return preg_replace('/\s\[.*\]$/', '', $name);
-            })->unique()->filter()->values();
+            })
+            ->filter()
+            ->unique()
+            ->values();
 
         // Ledge mapping for display and calculations (Category standardization)
         $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
@@ -320,6 +357,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         return view('dashboard', compact(
             'isEmptyDist',
             'allSuppliers',
+            'allDonors',
             'existingItems',
             'totalInventory',
             'trendValue',
@@ -553,6 +591,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/admin/logs/delete-multiple', [AdminController::class, 'destroyMultipleLogs'])->name('admin.logs.delete_multiple');
     Route::put('/admin/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
     Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages');
+    Route::get('/admin/history', [AdminController::class, 'history'])->name('admin.history');
     Route::patch('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
     Route::post('/admin/self-deactivate', [AdminController::class, 'deactivateSelf'])->name('admin.self_deactivate');
 
@@ -567,6 +606,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         $category = trim($request->input('category'));
         $keyword = strtoupper(trim($request->input('keyword')));
         $unit    = strtoupper(trim($request->input('unit')));
+        $location = trim($request->input('location')) ?: 'Not Specified';
         if (!$category || !$keyword || !$unit) return back()->with('error', 'Category, keyword, and unit are required.');
 
         $setting = \App\Models\Setting::firstOrCreate(
@@ -577,14 +617,15 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         
         $rules[$keyword] = [
             'category' => $category,
-            'unit' => $unit
+            'unit' => $unit,
+            'location' => $location
         ];
         $setting->value = json_encode($rules);
         $setting->save();
 
         // Automatically store this item in the database as a System Draft batch item
         try {
-            \Illuminate\Support\Facades\DB::transaction(function() use ($category, $keyword, $unit) {
+            \Illuminate\Support\Facades\DB::transaction(function() use ($category, $keyword, $unit, $location) {
                 $systemBatch = \App\Models\InventoryBatch::firstOrCreate(
                     [
                         'ledge_category' => $category,
@@ -610,7 +651,8 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                         'stock_balance' => 0,
                         'qty' => 0,
                         'variance' => 0,
-                        'remarks' => 'Auto-generated unit rule placeholder'
+                        'remarks' => 'Auto-generated unit rule placeholder',
+                        'location' => $location
                     ]
                 );
             });
@@ -618,7 +660,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             // Log or ignore to not break main settings flow
         }
 
-        return back()->with('success', "Unit rule added: [{$category}] \"{$keyword}\" → {$unit}");
+        return back()->with('success', "Unit rule added: [{$category}] \"{$keyword}\" → {$unit} ({$location})");
     })->name('admin.settings.unit-rule.store');
 
     Route::delete('/admin/settings/unit-rule', function(\Illuminate\Http\Request $request) {
@@ -685,12 +727,70 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         return back()->with('success', "Threshold rule for \"{$keyword}\" removed.");
     })->name('admin.settings.threshold-rule.destroy');
 
+    // Supplier Registry
+    Route::post('/admin/settings/supplier-registry', function(\Illuminate\Http\Request $request) {
+        if (!auth()->user()->is_admin) abort(403);
+        $name = trim($request->input('name'));
+        $delivery_person = trim($request->input('delivery_person'));
+        $phone = trim($request->input('phone'));
+        $email = trim($request->input('email'));
+        $address = trim($request->input('address'));
+        $desc = trim($request->input('desc'));
+
+        if (!$name) return back()->with('error', 'Supplier name is required.');
+
+        $supplier = \App\Models\Supplier::updateOrCreate(
+            ['name' => $name],
+            [
+                'delivery_person' => $delivery_person,
+                'phone' => $phone,
+                'email' => $email,
+                'address' => $address,
+                'desc' => $desc
+            ]
+        );
+        $isUpdate = !$supplier->wasRecentlyCreated;
+
+        $actionMsg = $isUpdate ? 'updated' : 'registered';
+        return back()->with('success', "Supplier \"{$name}\" successfully {$actionMsg} in the registry.");
+    })->name('admin.settings.supplier.store');
+
+    Route::delete('/admin/settings/supplier-registry', function(\Illuminate\Http\Request $request) {
+        if (!auth()->user()->is_admin) abort(403);
+        $name = trim($request->input('name'));
+        if (!$name) return back()->with('error', 'Supplier name is required.');
+
+        $supplier = \App\Models\Supplier::where('name', $name)->first();
+        if ($supplier) {
+            $supplier->delete();
+            return back()->with('success', "Supplier \"{$name}\" successfully removed from the registry.");
+        }
+        return back()->with('error', 'Supplier not found.');
+    })->name('admin.settings.supplier.destroy');
+
     // Edit Request Routes
     Route::post('/edit-requests', [\App\Http\Controllers\EditRequestController::class, 'store'])->name('edit-requests.store');
     Route::post('/edit-requests/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'process'])->name('edit-requests.process');
     Route::get('/sra-preview/{id}', [\App\Http\Controllers\ReceivedItemsController::class, 'preview'])->name('sra.preview');
     Route::get('/api/sra-preview/{id}', [\App\Http\Controllers\ReceivedItemsController::class, 'previewApi'])->name('api.sra.preview');
     Route::post('/sra-creation/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'processSraCreation'])->name('sra-creation.process');
+    Route::post('/sra-creation/{id}/rollback', [\App\Http\Controllers\EditRequestController::class, 'rollbackSraEntry'])->name('sra-creation.rollback');
+    Route::get('/api/sra-rollback/{id}', function ($id) {
+        $editReq = \App\Models\EditRequest::findOrFail($id);
+        // Only the owner or an admin can access this
+        if (auth()->id() !== $editReq->user_id && !auth()->user()->is_admin) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        $rollbackData = json_decode($editReq->rollback_fields ?? '{}', true) ?? [];
+        $payload      = json_decode($editReq->payload ?? '{}', true) ?? [];
+        return response()->json([
+            'edit_request_id' => $editReq->id,
+            'status'          => $editReq->status,
+            'payload'         => $payload,
+            'flagged_fields'  => $rollbackData['flagged'] ?? [],
+            'general_note'    => $rollbackData['note'] ?? '',
+        ]);
+    })->name('api.sra-rollback');
     Route::post('/recovery/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'processRecoveryApproval'])->name('recovery.process');
     Route::post('/verification/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'processVerificationApproval'])->name('verification.process');
     Route::post('/api/stock-verify', [\App\Http\Controllers\StockCheckController::class, 'verify'])->name('stockcheck.verify');
@@ -881,24 +981,9 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                     $msgContent .= "<h4 style='margin: 0; color: #0f172a; font-size: 0.95rem; font-weight: 800; letter-spacing: -0.01em;'>REMAINDER APPROVAL</h4>";
                     $msgContent .= "<p style='margin: 0; font-size: 0.75rem; color: #64748b; font-weight: 600;'>Pending Partial Delivery Fulfillment</p>";
                     $msgContent .= "</div></div>";
-                    
-                    // Meta info
-                    $msgContent .= "<div style='display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;'>";
-                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;'><i data-lucide='user' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Personnel:</b> " . auth()->user()->name . "</span></div>";
-                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;'><i data-lucide='hash' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Batch ID:</b> #{$batchId}</span></div>";
-                    $msgContent .= "<div style='display: flex; align-items: flex-start; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b; margin-top: 2px;'><i data-lucide='package' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569; line-height: 1.4;'><b style='color: #0f172a;'>Items:</b> {$itemNames}</span></div>";
-                    $msgContent .= "</div>";
-
-                    // Preview trigger button — uses data-req-id to fetch preview data via API
-                    $msgContent .= "<button class='remainder-preview-btn' data-req-id='{$editReq->id}' style='width: 100%; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; margin-bottom: 8px; transition: all 0.2s;'>";
-                    $msgContent .= "<i data-lucide='eye' style='width:15px; flex-shrink:0;'></i> Preview Changes</button>";
-
-                    // Action buttons
                     $msgContent .= "<div id='sra-creation-actions-{$editReq->id}' style='display: flex; flex-direction: column; gap: 8px;'>";
-                    $msgContent .= "<button onclick='window.processSraCreationApproval({$editReq->id}, \"approved\", this)' style='background: #10b981; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>";
-                    $msgContent .= "<i data-lucide='check-circle' style='width: 16px;'></i> Approve & Commit</button>";
-                    $msgContent .= "<button onclick='window.processSraCreationApproval({$editReq->id}, \"rejected\", this)' style='background: #ef4444; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>";
-                    $msgContent .= "<i data-lucide='x-circle' style='width: 16px;'></i> Reject</button>";
+                    $msgContent .= "<button class='remainder-preview-btn' data-req-id='{$editReq->id}' style='width: 100%; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;'>";
+                    $msgContent .= "<i data-lucide='eye' style='width:16px; flex-shrink:0;'></i> Preview Changes</button>";
                     $msgContent .= "</div></div>";
 
 
@@ -979,6 +1064,9 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     })->name('api.inventory.receive-remainder');
+    
+    // Supplier API
+    Route::get('/api/supplier-stats/{name}', [\App\Http\Controllers\ReceivedItemsController::class, 'getSupplierStats'])->name('api.supplier-stats');
 });
 Route::get('/system/migrate', function () {
     try {
@@ -1011,4 +1099,3 @@ Route::get('/system/migrate', function () {
         return "Migration Failed: " . $e->getMessage();
     }
 });
-

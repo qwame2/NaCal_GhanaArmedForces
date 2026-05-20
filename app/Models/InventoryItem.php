@@ -16,8 +16,10 @@ class InventoryItem extends Model
         'stock_balance',
         'qty',
         'variance',
-        'remarks'
+        'remarks',
+        'location'
     ];
+
 
     public function batch()
     {

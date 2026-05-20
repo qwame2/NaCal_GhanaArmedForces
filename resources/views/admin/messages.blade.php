@@ -10,17 +10,17 @@
             <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Staff <span style="color: #4f46e5;">Directory</span></h3>
             <div class="search-vault">
                 <i data-lucide="search"></i>
-                <input type="text" id="networkSearch" placeholder="Search personnel..." oninput="filterNetwork()">
+                <input type="text" id="networkSearch" placeholder="Search users..." oninput="filterNetwork()">
             </div>
         </div>
-        
+
         <div style="flex: 1; overflow-y: auto; padding: 1.25rem;">
             <div style="font-size: 0.75rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 0.15em; padding: 0 1rem 1rem 1rem; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="users" style="width: 14px;"></i>
                 Operational Units
             </div>
             @forelse($users as $user)
-            <div class="network-item" id="user-{{ $user->id }}" 
+            <div class="network-item" id="user-{{ $user->id }}"
                 data-user-id="{{ $user->id }}"
                 data-user-name="{{ $user->name }}"
                 data-user-role="{{ $user->role }}"
@@ -28,9 +28,9 @@
                 style="display: flex; align-items: center; gap: 14px; padding: 1.25rem; border-radius: 18px; cursor: pointer; transition: 0.3s; margin-bottom: 6px; border: 1px solid transparent; position: relative;">
                 <div style="position: relative;">
                     @if($user->avatar)
-                        <img src="{{ asset('storage/' . $user->avatar) }}" style="width: 48px; height: 48px; border-radius: 14px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    <img src="{{ asset('storage/' . $user->avatar) }}" style="width: 48px; height: 48px; border-radius: 14px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                     @else
-                        <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);">{{ substr($user->name, 0, 1) }}</div>
+                    <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);">{{ substr($user->name, 0, 1) }}</div>
                     @endif
                     <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $user->is_online ? '#10b981' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
                 </div>
@@ -45,7 +45,7 @@
             @empty
             <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
                 <i data-lucide="users-2" style="width: 32px; opacity: 0.2; margin-bottom: 1rem;"></i>
-                <p style="font-size: 0.85rem; font-weight: 700;">No Personnel Records</p>
+                <p style="font-size: 0.85rem; font-weight: 700;">No User Records</p>
             </div>
             @endforelse
         </div>
@@ -143,11 +143,13 @@
         visibility: hidden;
         overflow: hidden;
     }
+
     #oversightSidePanel.open {
         transform: translate(-50%, -50%) scale(1);
         opacity: 1;
         visibility: visible;
     }
+
     #oversightOverlay {
         position: fixed;
         inset: 0;
@@ -158,14 +160,20 @@
         opacity: 0;
         transition: opacity 0.3s ease;
     }
+
     #oversightOverlay.show {
         display: block;
         opacity: 1;
     }
 
     /* Admin view logic */
-    .admin-view { display: block !important; }
-    .personnel-view { display: none !important; }
+    .admin-view {
+        display: block !important;
+    }
+
+    .personnel-view {
+        display: none !important;
+    }
 
     /* Search Vault Styling */
     .search-vault {
@@ -262,7 +270,7 @@
         transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         flex-shrink: 0;
     }
-    
+
     .send-action-btn:hover {
         transform: scale(1.08);
         box-shadow: 0 10px 20px rgba(79, 70, 229, 0.4);
@@ -272,11 +280,12 @@
         background: var(--bg-main);
         transform: translateX(8px);
     }
+
     .network-item.active {
         background: var(--primary-glow);
         border: 1px solid var(--primary-glow);
     }
-    
+
     .comms-btn {
         width: 44px;
         height: 44px;
@@ -290,13 +299,17 @@
         cursor: pointer;
         transition: 0.3s;
     }
+
     .comms-btn:hover {
         background: var(--primary-glow);
         color: var(--primary);
         border-color: var(--primary-glow);
         transform: translateY(-2px);
     }
-    .comms-btn i { width: 20px; }
+
+    .comms-btn i {
+        width: 20px;
+    }
 
     .comms-group {
         display: flex;
@@ -304,45 +317,48 @@
         margin-bottom: 1.5rem;
         max-width: 80%;
     }
+
     .comms-group.me {
         align-self: flex-end;
         align-items: flex-end;
     }
+
     .comms-group.recipient {
         align-self: flex-start;
         align-items: flex-start;
     }
+
     .comms-group.system {
         align-self: center;
         align-items: center;
         opacity: 0.6;
         margin-bottom: 2rem;
     }
-    
+
     .comms-bubble {
         padding: 1.1rem 1.4rem;
         border-radius: 20px;
         font-size: 0.95rem;
         font-weight: 600;
         line-height: 1.5;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
         word-break: break-word;
     }
-    
+
     .me .comms-bubble {
         background: var(--primary);
         color: white;
         border-bottom-right-radius: 6px;
         box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
     }
-    
+
     .recipient .comms-bubble {
         background: var(--bg-card);
         color: var(--text-main);
         border-bottom-left-radius: 6px;
         border: 1px solid var(--border-color);
     }
-    
+
     .system .comms-bubble {
         background: transparent;
         color: var(--text-muted);
@@ -350,7 +366,7 @@
         font-size: 0.85rem;
         padding: 0.75rem 1.25rem;
     }
-    
+
     .comms-meta {
         font-size: 0.7rem;
         font-weight: 900;
@@ -362,7 +378,7 @@
         align-items: center;
         gap: 8px;
     }
-    
+
     .archive-trigger {
         cursor: pointer;
         color: var(--primary);
@@ -373,14 +389,20 @@
         font-weight: 800;
         font-size: 0.65rem;
     }
-    .comms-group:hover .archive-trigger { opacity: 0.6; }
-    .archive-trigger:hover { opacity: 1 !important; }
+
+    .comms-group:hover .archive-trigger {
+        opacity: 0.6;
+    }
+
+    .archive-trigger:hover {
+        opacity: 1 !important;
+    }
 
     .attachment-pill {
         display: flex;
         align-items: center;
         gap: 8px;
-        background: rgba(255,255,255,0.1);
+        background: rgba(255, 255, 255, 0.1);
         padding: 10px 14px;
         border-radius: 12px;
         margin-top: 10px;
@@ -388,39 +410,63 @@
         color: inherit;
         font-size: 0.85rem;
     }
-    .recipient .attachment-pill { background: var(--bg-main); }
+
+    .recipient .attachment-pill {
+        background: var(--bg-main);
+    }
 
     @keyframes float-bubble {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-15px); }
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-15px);
+        }
     }
 
     .loader-mini {
         width: 18px;
         height: 18px;
-        border: 2px solid rgba(255,255,255,0.3);
+        border: 2px solid rgba(255, 255, 255, 0.3);
         border-top-color: white;
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
 
     /* Bottom Sheet Style for Previews */
     .preview-bottom-sheet {
         align-items: flex-end !important;
         padding-bottom: 0 !important;
     }
+
     .preview-bottom-sheet-popup {
         border-bottom-left-radius: 0 !important;
         border-bottom-right-radius: 0 !important;
         margin-bottom: 0 !important;
         animation: sheet-slide-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        border-top: 1px solid rgba(255,255,255,0.1);
-        box-shadow: 0 -20px 60px rgba(0,0,0,0.15) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.15) !important;
     }
+
     @keyframes sheet-slide-up {
-        from { transform: translateY(100%); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
     }
 </style>
 
@@ -433,7 +479,7 @@
     function filterNetwork() {
         const term = document.getElementById('networkSearch').value.toLowerCase();
         const items = document.querySelectorAll('.network-item');
-        
+
         items.forEach(item => {
             const name = item.querySelector('div[style*="font-weight: 800"]').textContent.toLowerCase();
             const role = item.querySelector('div[style*="font-size: 0.75rem"]').textContent.toLowerCase();
@@ -454,7 +500,7 @@
 
         document.getElementById('activeName').textContent = name;
         document.getElementById('activeRole').textContent = role;
-        
+
         const avatarDiv = document.getElementById('activeAvatar');
         if (avatar) {
             avatarDiv.innerHTML = `<img src="${avatar}" style="width: 52px; height: 52px; border-radius: 16px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">`;
@@ -467,7 +513,7 @@
         if (activeEl) activeEl.classList.add('active');
 
         fetchMessages();
-        
+
         if (pollInterval) clearInterval(pollInterval);
         pollInterval = setInterval(fetchMessages, 3000);
 
@@ -476,7 +522,7 @@
 
     function fetchMessages() {
         if (!activeUserId) return;
-        
+
         fetch(`{{ url('/api/messages') }}/${activeUserId}`)
             .then(res => {
                 if (!res.ok) throw new Error('Secure line interrupted');
@@ -485,7 +531,7 @@
             .then(data => {
                 const container = document.getElementById('terminalOutput');
                 const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
-                
+
                 let html = '';
 
                 data.forEach(msg => {
@@ -495,19 +541,60 @@
                     const isSraApproval = msg.message && (msg.message.includes('sra-approval-msg') || msg.message.includes('sra-approval-card') || msg.message.includes('SRA APPROVAL REQUIRED'));
                     const isEditReq = msg.message && (msg.message.includes('edit-req-msg') || msg.message.includes('AUTHORIZATION REQUIRED'));
                     const isSubmissionStatus = msg.message && (msg.message.includes('ENTRY SUBMISSION LOGGED') || msg.message.includes('RECOVERY SUBMITTED') || msg.message.includes('DISBURSEMENT REQUEST LOGGED'));
-                    
+
                     if (msg.is_automated && !isSraApproval && !isEditReq && (isStrictlyPersonnel || isSubmissionStatus)) {
                         return;
                     }
 
+                    // Dynamically simplify SRA/Remainder approval cards for previous legacy messages in the database
+                    if (isSraApproval && msg.message) {
+                        try {
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = msg.message;
+
+                            // Remove metadata details section (excluding the actions div)
+                            tempDiv.querySelectorAll('.sra-approval-card > div[style*="flex-direction: column"]').forEach(div => {
+                                if (!div.id.startsWith('sra-creation-actions-')) {
+                                    div.remove();
+                                }
+                            });
+
+                            // Handle sra-creation-actions cleanups
+                            const actionsDiv = tempDiv.querySelector('[id^="sra-creation-actions-"]');
+                            if (actionsDiv) {
+                                const previewBtn = tempDiv.querySelector('.entry-preview-btn, .remainder-preview-btn');
+
+                                // Check if this card has already been approved/rejected (has status badges)
+                                const hasStatusBadge = actionsDiv.querySelector('div[style*="font-weight: 950"], div[style*="font-weight: 900"], a[href*="sra"]');
+                                if (!hasStatusBadge) {
+                                    // If not approved/rejected, empty the actionsDiv and put the preview button inside it
+                                    actionsDiv.innerHTML = '';
+                                    if (previewBtn) {
+                                        previewBtn.style.marginBottom = '0';
+                                        actionsDiv.appendChild(previewBtn);
+                                    }
+                                } else {
+                                    // If already approved/rejected, keep the badge, but remove any preview buttons outside it
+                                    if (previewBtn) previewBtn.remove();
+                                }
+                            }
+                            msg.message = tempDiv.innerHTML;
+                        } catch (e) {
+                            console.error('Failed to simplify SRA message html dynamically', e);
+                        }
+                    }
+
                     const isMe = msg.sender_id == {{ auth()->id() }};
-                    const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    
+                    const time = new Date(msg.created_at).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
                     let ticksHtml = '';
                     if (isMe) {
                         const isRead = msg.read_at != null;
                         const isRecipientOnline = onlineStatuses[activeUserId];
-                        
+
                         if (isRead) {
                             ticksHtml = '<i data-lucide="check-check" style="color: #10b981; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
                         } else if (isRecipientOnline) {
@@ -516,7 +603,7 @@
                             ticksHtml = '<i data-lucide="check" style="color: #94a3b8; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
                         }
                     }
-                    
+
                     html += `
                         <div class="comms-group ${isMe ? 'me' : 'recipient'}">
                             <div class="comms-bubble">
@@ -538,23 +625,25 @@
                         </div>
                     `;
                 });
-                
+
                 container.innerHTML = html;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
                 _patchRemainderPreviewButtons();
                 initClearanceTimers();
 
-                
+
                 if (wasAtBottom) {
                     container.scrollTop = container.scrollHeight;
                 }
             })
             .catch(err => console.error('Comms Error:', err));
-            
+
         // Mark as read
         fetch(`{{ url('/api/messages') }}/${activeUserId}/read`, {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
         }).then(() => updateUnreadCounts());
     }
 
@@ -566,7 +655,7 @@
                 document.querySelectorAll('.unread-badge').forEach(badge => {
                     const userId = badge.id.replace('badge-', '');
                     const count = counts[userId] || 0;
-                    
+
                     if (count > 0) {
                         badge.textContent = count;
                         // Only hide in sidebar if it's the active chat
@@ -604,7 +693,7 @@
                     if (dot) {
                         dot.style.background = isOnline ? '#10b981' : '#94a3b8';
                     }
-                    
+
                     // Also update header dot if active
                     if (activeUserId == userId) {
                         const statusDot = document.getElementById('statusDot');
@@ -618,50 +707,52 @@
         e.preventDefault();
         const content = document.getElementById('msgContent').value;
         const file = document.getElementById('attachment').files[0];
-        
+
         if (!content && !file) return;
-        
+
         const formData = new FormData();
         formData.append('receiver_id', activeUserId);
         formData.append('message', content);
         if (file) formData.append('attachment', file);
-        
+
         const sendBtn = document.getElementById('sendBtn');
         sendBtn.disabled = true;
         sendBtn.innerHTML = '<div class="loader-mini"></div>';
-        
-        fetch("{{ route('api.messages.send', [], false) }}", {
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-            body: formData
-        })
-        .then(async res => {
-            const isJson = res.headers.get('content-type')?.includes('application/json');
-            const data = isJson ? await res.json() : null;
 
-            if (!res.ok) {
-                throw new Error(data?.message || `Terminal Error: ${res.status}`);
-            }
-            return data;
-        })
-        .then(data => {
-            if (data.success) {
-                document.getElementById('msgContent').value = '';
-                clearFile();
-                fetchMessages();
-            } else {
-                alert('Transmission failed: ' + (data.message || 'Unknown protocol violation'));
-            }
-        })
-        .catch(err => {
-            console.error('Transmission Error:', err);
-            alert('Security Alert: ' + err.message);
-        })
-        .finally(() => {
-            sendBtn.disabled = false;
-            sendBtn.innerHTML = '<i data-lucide="send" style="width: 20px;"></i>';
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        });
+        fetch("{{ route('api.messages.send', [], false) }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: formData
+            })
+            .then(async res => {
+                const isJson = res.headers.get('content-type')?.includes('application/json');
+                const data = isJson ? await res.json() : null;
+
+                if (!res.ok) {
+                    throw new Error(data?.message || `Terminal Error: ${res.status}`);
+                }
+                return data;
+            })
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('msgContent').value = '';
+                    clearFile();
+                    fetchMessages();
+                } else {
+                    alert('Transmission failed: ' + (data.message || 'Unknown protocol violation'));
+                }
+            })
+            .catch(err => {
+                console.error('Transmission Error:', err);
+                alert('Security Alert: ' + err.message);
+            })
+            .finally(() => {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i data-lucide="send" style="width: 20px;"></i>';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
     }
 
     function handleFileSelect(input) {
@@ -680,11 +771,17 @@
     // Process SRA Creation Approval logic
     window.processSraCreationApproval = function(id, status, btnElement) {
         if (status === 'rejected') {
-            const bubble = btnElement.closest('.comms-bubble');
-            const bubbleHtml = bubble ? bubble.innerHTML : '';
-            const pMatch = bubbleHtml.match(/Personnel\s+<b>(.*?)<\/b>/i);
-            const personnel = (pMatch && pMatch[1]) ? pMatch[1].trim() : 'Personnel';
-            
+            let personnel = 'User';
+            const userB = document.querySelector('#oversightPanelContent p b');
+            if (userB) {
+                personnel = userB.textContent.trim();
+            } else {
+                const bubble = btnElement ? btnElement.closest('.comms-bubble') : null;
+                const bubbleHtml = bubble ? bubble.innerHTML : '';
+                const pMatch = bubbleHtml.match(/(?:Personnel|User)\s+<b>(.*?)<\/b>/i);
+                personnel = (pMatch && pMatch[1]) ? pMatch[1].trim() : 'User';
+            }
+
             Swal.fire({
                 html: `
                     <div style="text-align: left;">
@@ -703,7 +800,7 @@
                         </div>
 
                         <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6; margin-bottom: 1.25rem; padding: 0 0.25rem;">
-                            Provide a clear reason for rejecting the submission from <b style="color: #0f172a;">${personnel}</b>. This will be sent to the personnel immediately.
+                            Provide a clear reason for rejecting the submission from <b style="color: #0f172a;">${personnel}</b>. This will be sent to the user immediately.
                         </p>
 
                         <textarea id="swal-reject-reason" placeholder="e.g., Incorrect quantity specified, missing documentation, requires further verification..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
@@ -757,63 +854,86 @@
             const btns = actionsDiv.querySelectorAll('button');
             btns.forEach(b => b.disabled = true);
         }
-        
+        const sideActionsDiv = document.getElementById(`oversight-actions-${id}`);
+        if (sideActionsDiv) {
+            const btns = sideActionsDiv.querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+        }
+
         btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
         fetch(`{{ url('/sra-creation') }}/${id}/process`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ 
-                status: status,
-                reason: reason
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: status,
+                    reason: reason
+                })
             })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('Server error');
-            return res.json();
-        })
-        .then(data => {
-            if(data.success) {
-                const actionsDiv = document.getElementById(`sra-creation-actions-${id}`);
-                if (actionsDiv) {
+            .then(res => {
+                if (!res.ok) throw new Error('Server error');
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
                     const color = status === 'approved' ? '#10b981' : '#dc2626';
                     const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
-                    const text = status === 'approved' 
-                        ? (data.is_remainder ? 'REMAINDER COMMITTED' : 'APPROVED & SAVED') 
-                        : 'REJECTED';
+                    const text = status === 'approved' ?
+                        (data.is_remainder ? 'REMAINDER COMMITTED' : 'APPROVED & SAVED') :
+                        'REJECTED';
+
                     let html = `<div style="padding: 12px 20px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 900; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; letter-spacing: 0.02em;">
-                        <i data-lucide="${status === 'approved' ? 'check-circle' : 'alert-circle'}" style="width: 16px;"></i> ${text}
-                    </div>`;
-                    
+                    <i data-lucide="${status === 'approved' ? 'check-circle' : 'alert-circle'}" style="width: 16px;"></i> ${text}
+                </div>`;
+
                     if (status === 'approved' && data.batch_id) {
                         const printUrl = `{{ url('/received-items') }}/${data.batch_id}/sra`;
                         html += `<br><a href="${printUrl}" target="_blank" style="display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 800; font-size: 0.75rem; margin-top: 8px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">Download / Print SRA</a>`;
                     }
-                    
-                    actionsDiv.innerHTML = html;
+
+                    if (actionsDiv) {
+                        actionsDiv.innerHTML = html;
+                    }
+
+                    if (sideActionsDiv) {
+                        sideActionsDiv.innerHTML = html;
+                    }
+
                     if (typeof lucide !== 'undefined') lucide.createIcons();
 
                     const toastMsg = data.is_remainder ? 'Remainder items committed to stock.' : `Stock entry ${status}.`;
                     showToast('Success', toastMsg, 'success');
+
+                    if (sideActionsDiv) {
+                        setTimeout(() => {
+                            window.closeOversightPanel();
+                        }, 1200);
+                    }
+                } else {
+                    showToast('Action Failed', data.message || 'Error processing request', 'error');
+                    if (actionsDiv) {
+                        const btns = actionsDiv.querySelectorAll('button');
+                        btns.forEach(b => b.disabled = false);
+                    }
+                    if (sideActionsDiv) {
+                        const btns = sideActionsDiv.querySelectorAll('button');
+                        btns.forEach(b => b.disabled = false);
+                    }
+                    btnElement.innerText = status === 'approved' ? 'Approve' : 'Reject';
                 }
-            } else {
-                showToast('Action Failed', data.message || 'Error processing request', 'error');
+            })
+            .catch(err => {
+                console.error('SRA Auth Error:', err);
+                const errMsg = err.message || 'An unexpected error occurred during SRA authorization.';
+                showToast('System Error', errMsg, 'error');
                 btnElement.innerText = status === 'approved' ? 'Approve & Save' : 'Reject';
                 btnElement.disabled = false;
-            }
-        })
-        .catch(err => {
-            console.error('SRA Auth Error:', err);
-            const errMsg = err.message || 'An unexpected error occurred during SRA authorization.';
-            showToast('System Error', errMsg, 'error');
-            btnElement.innerText = status === 'approved' ? 'Approve & Save' : 'Reject';
-            btnElement.disabled = false;
-        });
+            });
     };
 
 
@@ -834,7 +954,7 @@
             if (result.isConfirmed) {
                 fetch(`{{ url('/admin/archive/message') }}/${id}`, {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Content-Type': 'application/json'
                     }
@@ -871,7 +991,7 @@
                         </div>
 
                         <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6; margin-bottom: 1.25rem; padding: 0 0.25rem;">
-                            State the reason for rejecting this asset re-integration. This will be transmitted to the personnel.
+                            State the reason for rejecting this asset re-integration. This will be transmitted to the user.
                         </p>
 
                         <textarea id="swal-recovery-reject-reason" placeholder="e.g., Return quantity discrepancy, incorrect documentation, item not verified..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
@@ -906,47 +1026,50 @@
             const btns = actionsDiv.querySelectorAll('button');
             btns.forEach(b => b.disabled = true);
         }
-        
+
         btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
         fetch(`{{ url('/recovery') }}/${id}/process`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ status: status, reason: reason })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('Server protocol violation');
-            return res.json();
-        })
-        .then(data => {
-            if(data.success) {
-                const actionsDiv = document.getElementById(`recovery-actions-${id}`);
-                if (actionsDiv) {
-                    const color = status === 'approved' ? '#10b981' : '#dc2626';
-                    const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
-                    actionsDiv.innerHTML = `<div style="padding: 12px 20px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 900; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: status,
+                    reason: reason
+                })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Server protocol violation');
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const actionsDiv = document.getElementById(`recovery-actions-${id}`);
+                    if (actionsDiv) {
+                        const color = status === 'approved' ? '#10b981' : '#dc2626';
+                        const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+                        actionsDiv.innerHTML = `<div style="padding: 12px 20px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 900; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
                         <i data-lucide="${status === 'approved' ? 'check-circle' : 'alert-circle'}" style="width: 16px;"></i> RECOVERY ${status.toUpperCase()}
                     </div>`;
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    }
+                    showToast('Registry Updated', `Recovery has been ${status}.`, 'success');
+                } else {
+                    showToast('Update Failed', data.message || 'Error processing recovery', 'error');
+                    btnElement.innerText = status === 'approved' ? 'Approve Re-integration' : 'Reject Recovery';
+                    btnElement.disabled = false;
                 }
-                showToast('Registry Updated', `Recovery has been ${status}.`, 'success');
-            } else {
-                showToast('Update Failed', data.message || 'Error processing recovery', 'error');
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('System Error', 'Could not complete the re-integration process.', 'error');
                 btnElement.innerText = status === 'approved' ? 'Approve Re-integration' : 'Reject Recovery';
                 btnElement.disabled = false;
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            showToast('System Error', 'Could not complete the re-integration process.', 'error');
-            btnElement.innerText = status === 'approved' ? 'Approve Re-integration' : 'Reject Recovery';
-            btnElement.disabled = false;
-        });
+            });
     }
 
     window.processVerificationApproval = function(id, status, btnElement) {
@@ -969,7 +1092,7 @@
                         </div>
 
                         <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6; margin-bottom: 1.25rem; padding: 0 0.25rem;">
-                            State the reason for rejecting this stock verification and reconciliation. This will be transmitted to the personnel.
+                            State the reason for rejecting this stock verification and reconciliation. This will be transmitted to the user.
                         </p>
 
                         <textarea id="swal-verification-reject-reason" placeholder="e.g., Physical count does not match batch checks, verification requires double sign-off..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
@@ -1004,47 +1127,50 @@
             const btns = actionsDiv.querySelectorAll('button');
             btns.forEach(b => b.disabled = true);
         }
-        
+
         btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
         fetch(`{{ url('/verification') }}/${id}/process`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ status: status, reason: reason })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('Server protocol violation');
-            return res.json();
-        })
-        .then(data => {
-            if(data.success) {
-                const actionsDiv = document.getElementById(`verification-actions-${id}`);
-                if (actionsDiv) {
-                    const color = status === 'approved' ? '#10b981' : '#dc2626';
-                    const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
-                    actionsDiv.innerHTML = `<div style="padding: 12px 20px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 900; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: status,
+                    reason: reason
+                })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Server protocol violation');
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const actionsDiv = document.getElementById(`verification-actions-${id}`);
+                    if (actionsDiv) {
+                        const color = status === 'approved' ? '#10b981' : '#dc2626';
+                        const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+                        actionsDiv.innerHTML = `<div style="padding: 12px 20px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 900; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
                         <i data-lucide="${status === 'approved' ? 'check-circle' : 'alert-circle'}" style="width: 16px;"></i> VERIFICATION ${status.toUpperCase()}
                     </div>`;
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    }
+                    showToast('Registry Reconciled', `Stock verification has been ${status}.`, 'success');
+                } else {
+                    showToast('Update Failed', data.message || 'Error processing verification', 'error');
+                    btnElement.innerText = status === 'approved' ? 'Approve' : 'Reject';
+                    btnElement.disabled = false;
                 }
-                showToast('Registry Reconciled', `Stock verification has been ${status}.`, 'success');
-            } else {
-                showToast('Update Failed', data.message || 'Error processing verification', 'error');
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('System Error', 'Could not complete the verification process.', 'error');
                 btnElement.innerText = status === 'approved' ? 'Approve' : 'Reject';
                 btnElement.disabled = false;
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            showToast('System Error', 'Could not complete the verification process.', 'error');
-            btnElement.innerText = status === 'approved' ? 'Approve' : 'Reject';
-            btnElement.disabled = false;
-        });
+            });
     }
 
     function _renderRecoverySheet(data) {
@@ -1054,7 +1180,7 @@
                 <button onclick="window.closeOversightPanel()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
                     <i data-lucide="x" style="width: 18px;"></i>
                 </button>
-                
+
                 <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2.5rem;">
                     <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);">
                         <i data-lucide="refresh-cw" style="width: 32px; height: 32px;"></i>
@@ -1090,7 +1216,7 @@
 
                 <div style="margin-top: 2rem; padding: 1.5rem; background: #fff; border-radius: 20px; border: 1px solid #e2e8f0;">
                     <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-                        <i data-lucide="message-square" style="width: 14px;"></i> Personnel Remarks
+                        <i data-lucide="message-square" style="width: 14px;"></i> User Remarks
                     </div>
                     <div style="font-size: 0.95rem; color: #475569; font-weight: 500; font-style: italic; line-height: 1.6; border-left: 3px solid #f59e0b; padding-left: 15px;">
                         ${item.remarks || '-- No specific notes provided --'}
@@ -1165,7 +1291,7 @@
                         </div>
 
                         <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6; margin-bottom: 1.25rem; padding: 0 0.25rem;">
-                            Provide a clear reason for declining this request. The personnel will be notified immediately with your justification.
+                            Provide a clear reason for declining this request. The user will be notified immediately with your justification.
                         </p>
 
                         <div style="position: relative;">
@@ -1224,47 +1350,50 @@
             const btns = actionsDiv.querySelectorAll('button');
             btns.forEach(b => b.disabled = true);
         }
-        
+
         btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
 
         fetch(`{{ url('/edit-requests') }}/${id}/process`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ status: status, decline_reason: declineReason })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('Server error');
-            return res.json();
-        })
-        .then(data => {
-            if(data.success) {
-                const actionsDiv = document.getElementById(`edit-req-actions-${id}`);
-                if (actionsDiv) {
-                    const color = status === 'approved' ? '#10b981' : '#dc2626';
-                    const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
-                    actionsDiv.innerHTML = `<div style="padding: 8px 12px; border-radius: 8px; background: ${bgColor}; color: ${color}; font-weight: 800; border: 1px solid ${color}; display: inline-block;">Request ${status.toUpperCase()}</div>`;
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: status,
+                    decline_reason: declineReason
+                })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Server error');
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const actionsDiv = document.getElementById(`edit-req-actions-${id}`);
+                    if (actionsDiv) {
+                        const color = status === 'approved' ? '#10b981' : '#dc2626';
+                        const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+                        actionsDiv.innerHTML = `<div style="padding: 8px 12px; border-radius: 8px; background: ${bgColor}; color: ${color}; font-weight: 800; border: 1px solid ${color}; display: inline-block;">Request ${status.toUpperCase()}</div>`;
+                    }
+                } else {
+                    showToast('Update Failed', data.message || 'Error processing request', 'error');
+                    btnElement.innerText = status === 'approved' ? 'Approve' : 'Cancel';
+                    btnElement.disabled = false;
                 }
-            } else {
-                showToast('Update Failed', data.message || 'Error processing request', 'error');
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Connection Error', 'An unexpected error occurred. Please check system logs.', 'error');
                 btnElement.innerText = status === 'approved' ? 'Approve' : 'Cancel';
                 btnElement.disabled = false;
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            showToast('Connection Error', 'An unexpected error occurred. Please check system logs.', 'error');
-            btnElement.innerText = status === 'approved' ? 'Approve' : 'Cancel';
-            btnElement.disabled = false;
-        });
+            });
     }
 
     function initClearanceTimers() {
         if (window.clearanceInterval) clearInterval(window.clearanceInterval);
-        
+
         window.clearanceInterval = setInterval(() => {
             const containers = document.querySelectorAll('.clearance-container');
             if (containers.length === 0) {
@@ -1276,7 +1405,7 @@
                 const expiresAt = parseInt(container.getAttribute('data-expires-at'));
                 const now = Date.now();
                 const timeLeft = Math.max(0, Math.floor((expiresAt - now) / 1000));
-                
+
                 const timerSpan = container.querySelector('.timer-seconds');
                 const actionBtn = container.querySelector('.clearance-action-btn');
                 const notice = container.querySelector('.clearance-timer-notice');
@@ -1333,10 +1462,10 @@
         document.querySelectorAll('.sra-approval-card, .recovery-approval-card, [id^="sra-creation-actions-"], [id^="recovery-actions-"]').forEach(function(container) {
             // Find the edit request ID
             let reqId = '';
-            let actionsDiv = container.id.startsWith('sra-creation-actions-') || container.id.startsWith('recovery-actions-') 
-                ? container 
-                : container.querySelector('[id^="sra-creation-actions-"], [id^="recovery-actions-"]');
-            
+            let actionsDiv = container.id.startsWith('sra-creation-actions-') || container.id.startsWith('recovery-actions-') ?
+                container :
+                container.querySelector('[id^="sra-creation-actions-"], [id^="recovery-actions-"]');
+
             if (actionsDiv) {
                 reqId = actionsDiv.id.replace('sra-creation-actions-', '').replace('recovery-actions-', '');
             }
@@ -1345,7 +1474,7 @@
             // Patch Links to Buttons
             container.querySelectorAll('a, button').forEach(function(el) {
                 const text = el.textContent.trim();
-                
+
                 // Case 1: Entry Preview (New Stock Entry Oversight / Proposed Changes)
                 if (text.includes('Preview Entry Details') || text.includes('Preview Proposed Changes')) {
                     if (el.tagName === 'A') {
@@ -1421,7 +1550,7 @@
                     <div style="font-size:1.5rem; font-weight:900; color:#b45309; line-height:1;">${items.length}</div>
                 </div>
                 <div style="flex:1; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:12px; padding:12px 16px;">
-                    <div style="font-size:0.68rem; font-weight:800; color:#065f46; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:3px;">Total Units Adding</div>
+                    <div style="font-size:0.68rem; font-weight:800; color:#065f46; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:3px;">Total Package Types Adding</div>
                     <div style="font-size:1.5rem; font-weight:900; color:#10b981; line-height:1;">+${totalAdding}</div>
                 </div>
             </div>`;
@@ -1491,7 +1620,7 @@
 
         if (reqIdOrBtn && typeof reqIdOrBtn === 'object' && reqIdOrBtn.nodeType) {
             // Old-style call: showRemainderPreview(this) — first arg is the button DOM element
-            btn   = reqIdOrBtn;
+            btn = reqIdOrBtn;
             reqId = btn.getAttribute('data-req-id');
 
             // If old button doesn't have data-req-id, try to find the edit request ID
@@ -1508,7 +1637,7 @@
         } else {
             // New-style call: showRemainderPreview(reqId, btn)
             reqId = reqIdOrBtn;
-            btn   = btnEl || null;
+            btn = btnEl || null;
         }
 
         if (!reqId) {
@@ -1522,29 +1651,32 @@
         }
 
         fetch(`{{ url('/api/edit-requests') }}/${reqId}/remainder-preview`, {
-            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-        })
-        .then(r => {
-            if (!r.ok) throw new Error('Server error ' + r.status);
-            return r.json();
-        })
-        .then(data => {
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> Preview Changes`;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            }
-            _renderRemainderSheet(data);
-        })
-        .catch(err => {
-            console.error('Preview fetch error:', err);
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> Preview Changes`;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            }
-            alert('Could not load preview: ' + err.message);
-        });
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('Server error ' + r.status);
+                return r.json();
+            })
+            .then(data => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> Preview Changes`;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+                _renderRemainderSheet(data);
+            })
+            .catch(err => {
+                console.error('Preview fetch error:', err);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> Preview Changes`;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+                alert('Could not load preview: ' + err.message);
+            });
     };
 
     window.closeOversightPanel = function() {
@@ -1553,13 +1685,15 @@
         if (panel) panel.classList.remove('open');
         if (overlay) {
             overlay.classList.remove('show');
-            setTimeout(() => { if(!overlay.classList.contains('show')) overlay.style.display = 'none'; }, 300);
+            setTimeout(() => {
+                if (!overlay.classList.contains('show')) overlay.style.display = 'none';
+            }, 300);
         }
     };
 
     window.showEntryPreview = function(reqId, btn) {
         if (window._entryPreviewLoading) return;
-        
+
         window._entryPreviewLoading = true;
 
         if (btn) {
@@ -1568,24 +1702,27 @@
         }
 
         fetch(`{{ url('/api/sra-preview') }}/${reqId}`, {
-            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="eye" style="width:16px;"></i> Preview Entry Details`;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            }
-            
-            window._entryPreviewLoading = false;
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i data-lucide="eye" style="width:16px;"></i> Preview Entry Details`;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
 
-            const batch = data.batch;
-            let content = '';
+                window._entryPreviewLoading = false;
 
-            if (data.request_type === 'issue_submission') {
-                const itemsHtml = batch.items.map((item, idx) => {
-                    return `
+                const batch = data.batch;
+                let content = '';
+
+                if (data.request_type === 'issue_submission') {
+                    const itemsHtml = batch.items.map((item, idx) => {
+                        return `
                         <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem; border-bottom: 1px dashed #e2e8f0; background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; transition: all 0.3s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}'">
                             <div style="display: flex; align-items: center; gap: 1.25rem;">
                                 <div style="width: 48px; height: 48px; background: rgba(99, 102, 241, 0.1); color: #4f46e5; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; border: 1px solid rgba(99, 102, 241, 0.2);">
@@ -1601,15 +1738,15 @@
                             <div style="text-align: right; background: white; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
                                 <div style="font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;">Quantity to Issue</div>
                                 <div style="font-size: 1.5rem; font-weight: 900; color: #f59e0b; display: flex; align-items: baseline; gap: 4px; justify-content: flex-end;">
-                                    ${parseFloat(item.qty).toLocaleString()} 
-                                    <span style="font-size: 0.85rem; color: #64748b; font-weight: 700;">${item.unit || 'Units'}</span>
+                                    ${parseFloat(item.qty).toLocaleString()}
+                                    <span style="font-size: 0.85rem; color: #64748b; font-weight: 700;">${item.unit || 'Package Types'}</span>
                                 </div>
                             </div>
                         </div>
                     `;
-                }).join('');
+                    }).join('');
 
-                content = `
+                    content = `
                     <div style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 3.5rem 3rem 2.5rem 3rem; border-bottom: 1px solid #e2e8f0; position: relative;">
                         <button onclick="window.closeOversightPanel()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 10;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
                             <i data-lucide="x" style="width: 18px;"></i>
@@ -1626,7 +1763,7 @@
                                     <p style="margin: 6px 0 0; font-size: 0.95rem; color: #64748b; font-weight: 500;">Initiated by <b>${data.recorded_by_name}</b> on ${data.created_at}</p>
                                 </div>
                             </div>
-                            
+
                             <div style="display: flex; gap: 2rem; background: white; padding: 1.25rem 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;">
                                 <div>
                                     <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">User Department</label>
@@ -1648,7 +1785,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div style="padding: 2.5rem 3rem; flex: 1; overflow-y: auto; background: #f8fafc;">
                         <h3 style="font-size: 1rem; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
                             <i data-lucide="list-checks" style="width: 20px; color: #4f46e5;"></i> Items to Disburse (${batch.items.length})
@@ -1658,49 +1795,67 @@
                         </div>
                     </div>
                 `;
-            } else {
-                const itemsHtml = batch.items.map(item => {
-                    const v = parseFloat(item.variance) || 0;
-                    const vColor = v < 0 ? '#ef4444' : (v > 0 ? '#10b981' : '#3b82f6');
-                    const vSign = v > 0 ? '+' : '';
-                    return `
+                } else {
+                    const itemsHtml = batch.items.map(item => {
+                        return `
                         <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a;">${item.description}</td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">${item.unit}</td>
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a;">
+                                ${item.description}
+
+                            </td>
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">
+                                ${item.unit || 'Package Types'}
+                                ${item.location ? `
+                                    <div style="font-size: 0.7rem; font-weight: 600; color: #4f46e5; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin" style="color: #4f46e5;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                        ${item.location}
+                                    </div>
+                                ` : ''}
+                            </td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0f172a; text-align: right;">${parseFloat(item.qty).toLocaleString()}</td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #4f46e5; text-align: right;">${parseFloat(item.stock_balance).toLocaleString()}</td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 900; color: ${vColor}; text-align: right;">${vSign}${v.toLocaleString()}</td>
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0284c7; text-align: right;">${(parseFloat(item.total_in_system) || 0).toLocaleString()}</td>
+                            <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #64748b; font-style: italic; max-width: 200px; word-break: break-word;">${item.remarks || '-- No specific notes --'}</td>
                         </tr>
                     `;
-                }).join('');
+                    }).join('');
 
-                let previousHtml = '';
-                let proposedTitle = '';
-                
-                if (data.request_type === 'edit_submission' && data.previous_batch) {
-                    proposedTitle = `
+                    let previousHtml = '';
+                    let proposedTitle = '';
+
+                    if (data.request_type === 'edit_submission' && data.previous_batch) {
+                        proposedTitle = `
                         <h3 style="font-size: 0.95rem; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
                             <i data-lucide="edit-3" style="width: 18px;"></i> Proposed Changes
                         </h3>
                     `;
 
-                    const prevBatch = data.previous_batch;
-                    const prevItemsHtml = prevBatch.items.map(item => {
-                        const v = parseFloat(item.variance) || 0;
-                        const vColor = v < 0 ? '#ef4444' : (v > 0 ? '#10b981' : '#3b82f6');
-                        const vSign = v > 0 ? '+' : '';
-                        return `
+                        const prevBatch = data.previous_batch;
+                        const prevItemsHtml = prevBatch.items.map(item => {
+                            return `
                             <tr style="border-bottom: 1px solid #fee2e2;">
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #7f1d1d;">${item.description}</td>
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #991b1b;">${item.unit}</td>
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #7f1d1d;">
+                                    ${item.description}
+
+                                </td>
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #991b1b;">
+                                    ${item.unit || 'Package Types'}
+                                    ${item.location ? `
+                                        <div style="font-size: 0.7rem; font-weight: 600; color: #7f1d1d; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin" style="color: #7f1d1d;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                                            ${item.location}
+                                        </div>
+                                    ` : ''}
+                                </td>
                                 <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #7f1d1d; text-align: right;">${parseFloat(item.qty).toLocaleString()}</td>
                                 <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #7f1d1d; text-align: right;">${parseFloat(item.stock_balance).toLocaleString()}</td>
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 900; color: ${vColor}; text-align: right;">${vSign}${v.toLocaleString()}</td>
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #7f1d1d; text-align: right;">${(parseFloat(item.total_in_system) || 0).toLocaleString()}</td>
+                                <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #991b1b; font-style: italic; max-width: 200px; word-break: break-word;">${item.remarks || '-- No specific notes --'}</td>
                             </tr>
                         `;
-                    }).join('');
+                        }).join('');
 
-                    previousHtml = `
+                        previousHtml = `
                     <div style="margin-bottom: 2.5rem;">
                         <h3 style="font-size: 0.95rem; font-weight: 900; color: #ef4444; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
                             <i data-lucide="history" style="width: 18px;"></i> Original Entry (Before Edit)
@@ -1710,10 +1865,11 @@
                                 <thead style="background: #fef2f2; border-bottom: 1px solid #fca5a5;">
                                     <tr>
                                         <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Item Description</th>
-                                        <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Unit</th>
+                                        <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
                                         <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Received Qty</th>
                                         <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Stock Bal.</th>
-                                        <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Variance</th>
+                                        <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Total in System</th>
+                                        <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Remarks</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1723,9 +1879,41 @@
                         </div>
                     </div>
                 `;
-            }
+                    }
 
-            content = `
+                    let footerHtml = '';
+                    if (data.status === 'pending') {
+                        footerHtml = `
+                    <div id="oversight-actions-${reqId}" style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0;">
+                        <button onclick="typeof window.rollbackEntry === 'function' ? window.rollbackEntry(${reqId}) : alert('Rollback functionality pending implementation')" style="margin-right: auto; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                            <i data-lucide="rotate-ccw" style="width: 18px;"></i> Rollback
+                        </button>
+                        <button onclick="window.processSraCreationApproval(${reqId}, 'rejected', this)" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                            <i data-lucide="x-circle" style="width: 18px;"></i> Reject
+                        </button>
+                        <button onclick="window.processSraCreationApproval(${reqId}, 'approved', this)" style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                            <i data-lucide="check-circle" style="width: 18px;"></i> Approve Entry
+                        </button>
+                    </div>
+                `;
+                    } else {
+                        const isApproved = data.status === 'approved';
+                        const color = isApproved ? '#10b981' : '#dc2626';
+                        const bgColor = isApproved ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+                        const labelText = isApproved ? 'APPROVED & SAVED' : 'REJECTED';
+                        footerHtml = `
+                    <div style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: center; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0; position: relative;">
+                        <button onclick="typeof window.rollbackEntry === 'function' ? window.rollbackEntry(${reqId}) : alert('Rollback functionality pending implementation')" style="position: absolute; left: 3rem; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                            <i data-lucide="rotate-ccw" style="width: 18px;"></i> Rollback
+                        </button>
+                        <div style="padding: 12px 24px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 950; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                            <i data-lucide="${isApproved ? 'check-circle' : 'alert-circle'}" style="width: 18px;"></i> ${labelText}
+                        </div>
+                    </div>
+                `;
+                    }
+
+                    content = `
                 <div style="background: white; padding: 3.5rem 3rem 2.5rem 3rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: relative;">
                     <button onclick="window.closeOversightPanel()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 10;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
                         <i data-lucide="x" style="width: 18px;"></i>
@@ -1737,29 +1925,25 @@
                         </div>
                         <div>
                             <h2 style="margin: 0; font-size: 1.5rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">Stock Entry Details</h2>
-                            <p style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 500;">Personnel: <b>${data.recorded_by_name}</b> &nbsp;&bull;&nbsp; Submission: ${data.created_at}</p>
+                            <p style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 500;">User: <b>${data.recorded_by_name}</b> &nbsp;&bull;&nbsp; Submission: ${data.created_at}</p>
                         </div>
                     </div>
-                    
-                    <div style="display: flex; gap: 1.5rem;">
+
+                    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
                         <div style="text-align: right;">
-                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Acquisition</label>
-                            <span style="font-size: 0.95rem; font-weight: 700; color: #1e293b;">${batch.acquisition_type}</span>
+                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Supply Status</label>
+                            <span style="font-size: 0.95rem; font-weight: 700; color: #1e293b;">${batch.supplier_status || 'Full Delivery'}</span>
                         </div>
                         <div style="width: 1px; height: 35px; background: #e2e8f0; align-self: center;"></div>
                         <div style="text-align: right;">
-                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Source Provider</label>
-                            <span style="font-size: 0.95rem; font-weight: 700; color: #1e293b;">${batch.supplier_name || batch.donor_name || 'N/A'}</span>
-                        </div>
-                        <div style="width: 1px; height: 35px; background: #e2e8f0; align-self: center;"></div>
-                        <div style="text-align: right;">
-                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Registry Category</label>
+                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Category</label>
                             <span style="font-size: 0.95rem; font-weight: 800; color: #4f46e5; background: rgba(79, 70, 229, 0.1); padding: 2px 10px; border-radius: 6px;">${data.ledge_name}</span>
                         </div>
                     </div>
                 </div>
-                
+
                 <div style="padding: 2.5rem 3rem; flex: 1; overflow-y: auto;">
+                    <div id="supplier-stats-inline-${reqId}"></div>
                     ${previousHtml}
                     ${proposedTitle}
                     <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem;">
@@ -1767,18 +1951,34 @@
                             <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
                                 <tr>
                                     <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Item Description</th>
-                                    <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Unit</th>
+                                    <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
                                     <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Received Qty</th>
                                     <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Stock Bal.</th>
-                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Variance</th>
+                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em;">Total in System</th>
+                                    <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Remarks</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${itemsHtml}
                             </tbody>
+                            <tfoot style="background: #f8fafc; border-top: 2px solid #e2e8f0;">
+                                <tr>
+                                    <td colspan="2" style="padding: 1rem 1.5rem; font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
+                                        Total Items in This Entry
+                                    </td>
+                                    <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #4f46e5;">
+                                        ${batch.items.reduce((sum, i) => sum + (parseFloat(i.qty) || 0), 0).toLocaleString()}
+                                    </td>
+                                    <td style="padding: 1rem 1.5rem; text-align: right; font-size: 0.85rem; font-weight: 800; color: #94a3b8;">
+                                        ${batch.items.reduce((sum, i) => sum + (parseFloat(i.stock_balance) || 0), 0).toLocaleString()} <span style="font-size: 0.7rem; font-weight: 600;">total bal.</span>
+                                    </td>
+                                    <td style="padding: 1rem 1.5rem;"></td>
+                                    <td style="padding: 1rem 1.5rem;"></td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
-                    
+
                     <div style="padding: 1.5rem; background: #fffbeb; border-radius: 16px; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 1.25rem;">
                         <div style="width: 40px; height: 40px; background: #f59e0b; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                             <i data-lucide="shield-alert" style="width: 20px;"></i>
@@ -1789,32 +1989,232 @@
                         </div>
                     </div>
                 </div>
+                ${footerHtml}
             `;
-            }
+                }
 
-            document.getElementById('oversightPanelContent').innerHTML = content;
-            document.getElementById('oversightOverlay').style.display = 'block';
-            setTimeout(() => {
-                document.getElementById('oversightOverlay').classList.add('show');
-                document.getElementById('oversightSidePanel').classList.add('open');
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            }, 10);
-        })
-        .catch(err => {
-            window._entryPreviewLoading = false;
-            console.error('Entry preview error:', err);
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="eye" style="width:16px;"></i> Preview Entry Details`;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            }
-            if (typeof Swal !== 'undefined') Swal.fire('Error', 'Could not load entry details.', 'error');
-            else alert('Could not load entry details.');
-        });
+                document.getElementById('oversightPanelContent').innerHTML = content;
+                document.getElementById('oversightOverlay').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('oversightOverlay').classList.add('show');
+                    document.getElementById('oversightSidePanel').classList.add('open');
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }, 10);
+
+                const providerName = batch ? ((batch.acquisition_type === 'Donor' ? (batch.donor_name || batch.supplier_name) : batch.supplier_name) || '') : '';
+                const cleanProviderName = providerName.replace(/\s\[.*\]$/, '').trim();
+
+                if (cleanProviderName && cleanProviderName !== 'N/A') {
+                    fetch(`/api/supplier-stats/${encodeURIComponent(cleanProviderName)}`)
+                        .then(r => r.json())
+                        .then(sData => {
+                            const inlineDiv = document.getElementById(`supplier-stats-inline-${reqId}`);
+                            if (!sData.error && inlineDiv) {
+                                const s = sData.supplier;
+                                const stats = sData.stats;
+                                inlineDiv.innerHTML = `
+                                    <div style="margin-bottom: 2rem; background: #f8fafc; border-radius: 18px; border: 1px solid #e2e8f0; overflow: hidden;">
+
+                                        <!-- Top: Avatar + Name + Stats row -->
+                                        <div style="display: flex; align-items: stretch; gap: 0;">
+
+                                            <!-- Avatar Block -->
+                                            <div style="background: linear-gradient(170deg, #f0f9ff 0%, #e0f2fe 100%); padding: 1.5rem 1.25rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-width: 130px; flex-shrink: 0; border-right: 1px solid #bae6fd; position: relative; overflow: hidden;">
+                                                <!-- Decorative ring -->
+                                                <div style="position: absolute; top: -18px; right: -18px; width: 80px; height: 80px; border-radius: 50%; background: rgba(14, 165, 233, 0.08);"></div>
+                                                <div style="position: absolute; bottom: -10px; left: -10px; width: 50px; height: 50px; border-radius: 50%; background: rgba(14, 165, 233, 0.06);"></div>
+
+                                                <!-- Icon -->
+                                                <div style="width: 52px; height: 52px; border-radius: 50%; background: white; border: 3px solid #7dd3fc; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(14, 165, 233, 0.2); position: relative; z-index: 1;">
+                                                    <i data-lucide="building-2" style="width: 24px; height: 24px; color: #0284c7;"></i>
+                                                </div>
+                                                <!-- Initial badge -->
+                                                <div style="background: #0284c7; color: white; font-size: 0.75rem; font-weight: 900; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: absolute; top: 50%; right: calc(50% - 38px); transform: translateY(-32px); border: 2px solid white; box-shadow: 0 2px 6px rgba(2,132,199,0.3); z-index: 2;">
+                                                    ${s.name ? s.name.charAt(0).toUpperCase() : '?'}
+                                                </div>
+                                                <!-- Label -->
+                                                <div style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1; font-size: 0.6rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.1em; position: relative; z-index: 1;">${batch.acquisition_type === 'Donor' ? 'Donor' : 'Supplier'}</div>
+                                            </div>
+
+                                            <!-- Name + Contact Info -->
+                                            <div style="flex: 1; background: white; padding: 1.25rem 1.75rem; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; gap: 0.85rem;">
+                                                <div>
+                                                    <div style="font-size: 0.6rem; font-weight: 800; color: #06b6d4; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 3px;">${batch.acquisition_type === 'Donor' ? 'Donor Name' : 'Company Name'}</div>
+                                                    <div style="font-size: 1.15rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">${s.name}</div>
+                                                </div>
+                                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 1.5rem;">
+                                                    <div>
+                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person</div>
+                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${s.delivery_person || 'N/A'}</div>
+                                                    </div>
+                                                    <div>
+                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Phone</div>
+                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${s.phone || 'N/A'}</div>
+                                                    </div>
+                                                    <div>
+                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Email</div>
+                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${s.email || 'N/A'}</div>
+                                                    </div>
+                                                    <div>
+                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Address</div>
+                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${s.address || 'N/A'}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Stats Panel -->
+                                            <div style="background: #f0fdf4; padding: 1.25rem 1.5rem; display: flex; flex-direction: column; justify-content: center; gap: 1rem; min-width: 140px; flex-shrink: 0;">
+                                                <div style="text-align: center;">
+                                                    <div style="font-size: 2rem; font-weight: 900; color: #16a34a; line-height: 1;">${stats.total_deliveries.toLocaleString()}</div>
+                                                    <div style="font-size: 0.6rem; font-weight: 800; color: #4ade80; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;">Total Deliveries</div>
+                                                </div>
+                                                <div style="height: 1px; background: #bbf7d0;"></div>
+                                                <div style="text-align: center;">
+                                                    <div style="font-size: 0.85rem; font-weight: 800; color: #15803d; line-height: 1.2;">${stats.last_delivery}</div>
+                                                    <div style="font-size: 0.6rem; font-weight: 800; color: #4ade80; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;">Last Delivery</div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <!-- Notes Footer -->
+                                        ${s.desc ? `
+                                        <div style="padding: 0.9rem 1.75rem; border-top: 1px solid #e2e8f0; display: flex; align-items: flex-start; gap: 10px; background: white;">
+                                            <i data-lucide="info" style="width: 14px; height: 14px; color: #94a3b8; flex-shrink: 0; margin-top: 2px;"></i>
+                                            <p style="margin: 0; font-size: 0.83rem; color: #64748b; line-height: 1.55;">${s.desc}</p>
+                                        </div>` : ''}
+
+                                    </div>
+                                `;
+                                if (typeof lucide !== 'undefined') lucide.createIcons();
+                            }
+                        })
+                        .catch(e => console.error('Failed to load supplier stats inline:', e));
+                }
+            })
+            .catch(err => {
+                window._entryPreviewLoading = false;
+                console.error('Entry preview error:', err);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i data-lucide="eye" style="width:16px;"></i> Preview Entry Details`;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+                if (typeof Swal !== 'undefined') Swal.fire('Error', 'Could not load entry details.', 'error');
+                else alert('Could not load entry details.');
+            });
     };
 
     window.closeRemainderPreview = function() {
         if (typeof Swal !== 'undefined') Swal.close();
+    };
+
+    window.showSupplierDetails = function(supplierName) {
+        if (typeof Swal === 'undefined') return;
+
+        Swal.fire({
+            title: 'Loading Supplier Details...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        fetch(`/api/supplier-stats/${encodeURIComponent(supplierName)}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+
+                const s = data.supplier;
+                const stats = data.stats;
+
+                const html = `
+                    <div style="text-align: left; padding: 10px;">
+                        <div style="display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;">
+                            <div style="width: 50px; height: 50px; background: rgba(79, 70, 229, 0.1); color: #4f46e5; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i data-lucide="building-2" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #0f172a;">${s.name}</h3>
+                                <p style="margin: 4px 0 0; font-size: 0.85rem; color: #64748b;">Supplier / Partner</p>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                                <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Total Deliveries</div>
+                                <div style="font-size: 1.5rem; font-weight: 900; color: #4f46e5;">${stats.total_deliveries.toLocaleString()}</div>
+                            </div>
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                                <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Total Items Supplied</div>
+                                <div style="font-size: 1.5rem; font-weight: 900; color: #10b981;">${stats.total_items.toLocaleString()}</div>
+                            </div>
+                        </div>
+
+                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px;">
+                            <h4 style="margin: 0 0 15px 0; font-size: 0.85rem; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.05em;">Contact Information</h4>
+
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                    <i data-lucide="user" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
+                                    <div>
+                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Delivery Person</div>
+                                        <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.delivery_person || 'N/A'}</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                    <i data-lucide="phone" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
+                                    <div>
+                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Phone</div>
+                                        <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.phone || 'N/A'}</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                    <i data-lucide="mail" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
+                                    <div>
+                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Email</div>
+                                        <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.email || 'N/A'}</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                    <i data-lucide="map-pin" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
+                                    <div>
+                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Address</div>
+                                        <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.address || 'N/A'}</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                    <i data-lucide="calendar" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
+                                    <div>
+                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Last Delivery</div>
+                                        <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${stats.last_delivery}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                Swal.fire({
+                    html: html,
+                    showConfirmButton: true,
+                    confirmButtonText: 'Close',
+                    confirmButtonColor: '#4f46e5',
+                    width: 500,
+                    customClass: {
+                        popup: 'rounded-xl shadow-2xl border border-slate-100',
+                        confirmButton: 'px-6 py-2.5 rounded-lg font-bold shadow-md'
+                    },
+                    didOpen: () => {
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    }
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Error', 'Could not load supplier details.', 'error');
+            });
     };
 
     // Event delegation — catches personnel item clicks
@@ -1876,5 +2276,174 @@
         if (e.key === 'Escape') window.closeRemainderPreview();
     });
 
+    // ─────────────────────────────────────────────
+    // Admin: Rollback Entry with Field-Level Notes
+    // ─────────────────────────────────────────────
+    window.rollbackEntry = function(reqId) {
+        if (typeof Swal === 'undefined') { alert('Cannot open rollback dialog.'); return; }
+
+        const FIELDS = [
+            { key: 'supplier_status',  label: 'Delivery Status' },
+            { key: 'arrival_date',     label: 'Received Date (Manual)' },
+            { key: 'item_qty',         label: 'Received Qty' },
+            { key: 'supplier_name',    label: 'Donor Name' },
+        ];
+
+        const fieldsHtml = FIELDS.map(f => `
+            <div class="rb-field-row" style="display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; transition: background 0.2s;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" class="rb-field-check" data-key="${f.key}"
+                           style="width: 16px; height: 16px; accent-color: #ef4444; cursor: pointer; flex-shrink: 0;"
+                           onchange="this.closest('.rb-field-row').querySelector('.rb-note-wrap').style.display = this.checked ? 'block' : 'none'; this.closest('.rb-field-row').style.background = this.checked ? '#fff5f5' : '#f8fafc'; this.closest('.rb-field-row').style.borderColor = this.checked ? '#fca5a5' : '#e2e8f0';">
+                    <span style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${f.label}</span>
+                </label>
+                <div class="rb-note-wrap" style="display: none; padding-left: 24px;">
+                    <input type="text" class="rb-field-note" data-key="${f.key}"
+                           placeholder="Correction note for this field (e.g. 'Use XYZ Ltd instead')..."
+                           style="width: 100%; font-size: 0.82rem; border: 1.5px solid #fca5a5; border-radius: 8px; padding: 7px 10px; font-family: inherit; color: #1e293b; background: white; outline: none; box-sizing: border-box;"
+                           onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 3px rgba(239,68,68,0.12)'"
+                           onblur="this.style.borderColor='#fca5a5'; this.style.boxShadow='none'">
+                </div>
+            </div>
+        `).join('');
+
+        Swal.fire({
+            html: `
+                <div style="text-align: left;">
+                    <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.07); border-radius: 50%;"></div>
+                        <div style="display: flex; align-items: center; gap: 14px; position: relative;">
+                            <div style="width: 46px; height: 46px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <svg style="width: 24px; height: 24px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.68rem; font-weight: 800; color: rgba(255,255,255,0.75); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 2px;">Admin Action</div>
+                                <div style="font-size: 1.25rem; font-weight: 900; color: white; letter-spacing: -0.02em;">Rollback & Request Corrections</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p style="font-size: 0.88rem; color: #64748b; line-height: 1.6; margin-bottom: 1.25rem;">
+                        Select the fields that need to be corrected and provide a brief note for each. The user will see these highlighted in <b style="color: #ef4444;">red</b> on their form.
+                    </p>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding-right: 4px; margin-bottom: 1.25rem;">
+                        ${fieldsHtml}
+                    </div>
+
+                    <div style="margin-bottom: 0.25rem;">
+                        <label style="font-size: 0.78rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 6px;">General Note (Optional)</label>
+                        <textarea id="rb-general-note" placeholder="Overall feedback or instructions for the user..." rows="3"
+                            style="width: 100%; font-size: 0.88rem; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; font-family: inherit; color: #1e293b; background: #f8fafc; outline: none; resize: vertical; box-sizing: border-box;"
+                            onfocus="this.style.borderColor='#f59e0b'; this.style.boxShadow='0 0 0 4px rgba(245,158,11,0.1)'; this.style.background='white'"
+                            onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'; this.style.background='#f8fafc'"></textarea>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: '&#8630;&nbsp; Send Back for Correction',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#f59e0b',
+            cancelButtonColor: '#94a3b8',
+            width: 600,
+            customClass: {
+                popup: 'swal-rollback-popup',
+                confirmButton: 'swal-rollback-confirm-btn',
+            },
+            didOpen: () => {
+                if (!document.getElementById('swal-rollback-styles')) {
+                    const st = document.createElement('style');
+                    st.id = 'swal-rollback-styles';
+                    st.textContent = `
+                        .swal2-container {
+                            z-index: 100000 !important;
+                            backdrop-filter: blur(8px) !important;
+                            -webkit-backdrop-filter: blur(8px) !important;
+                            background-color: rgba(15, 23, 42, 0.4) !important;
+                        }
+                        .swal-rollback-popup {
+                            border-radius: 24px !important;
+                            overflow: hidden !important;
+                            padding: 1.25em !important;
+                        }
+                        .swal-rollback-confirm-btn {
+                            border-radius: 10px !important;
+                            font-weight: 800 !important;
+                            padding: 12px 24px !important;
+                            font-size: 0.9rem !important;
+                        }
+                    `;
+                    document.head.appendChild(st);
+                }
+            },
+            preConfirm: () => {
+                const flaggedFields = {};
+                document.querySelectorAll('.rb-field-check:checked').forEach(cb => {
+                    const key  = cb.getAttribute('data-key');
+                    const note = cb.closest('.rb-field-row').querySelector('.rb-field-note').value.trim();
+                    flaggedFields[key] = note || 'Please review and correct this field.';
+                });
+                const generalNote = document.getElementById('rb-general-note').value.trim();
+                if (Object.keys(flaggedFields).length === 0 && !generalNote) {
+                    Swal.showValidationMessage('<span style="font-size:0.85rem;">⚠ Please select at least one field to flag or provide a general note.</span>');
+                    return false;
+                }
+                return { flaggedFields, generalNote };
+            }
+        }).then(result => {
+            if (!result.isConfirmed) return;
+
+            const { flaggedFields, generalNote } = result.value;
+
+            // Find and disable the rollback button that triggered this
+            const rollbackBtns = document.querySelectorAll(`button[onclick*="rollbackEntry(${reqId})"]`);
+            rollbackBtns.forEach(b => { b.disabled = true; b.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Rolling back...'; });
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+
+            fetch(`{{ url('/sra-creation') }}/${reqId}/rollback`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    flagged_fields: flaggedFields,
+                    general_note: generalNote,
+                })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Server error');
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Close oversight panel
+                    if (typeof window.closeOversightPanel === 'function') window.closeOversightPanel();
+
+                    // Update the action area in chat bubble
+                    const actionsDiv = document.getElementById(`sra-creation-actions-${reqId}`);
+                    if (actionsDiv) {
+                        actionsDiv.innerHTML = `<div style="padding: 12px 20px; border-radius: 12px; background: rgba(245,158,11,0.1); color: #d97706; font-weight: 900; border: 1.5px solid #f59e0b; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
+                            <i data-lucide="rotate-ccw" style="width: 16px;"></i> ROLLED BACK — AWAITING CORRECTION
+                        </div>`;
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    }
+
+                    showToast('Rolled Back', 'Entry sent back to user for correction.', 'success');
+                } else {
+                    showToast('Rollback Failed', data.message || 'Error processing rollback.', 'error');
+                    rollbackBtns.forEach(b => { b.disabled = false; b.innerHTML = '<i data-lucide="rotate-ccw" style="width:18px;"></i> Rollback'; });
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+            })
+            .catch(err => {
+                console.error('Rollback error:', err);
+                showToast('System Error', 'Could not complete rollback.', 'error');
+                rollbackBtns.forEach(b => { b.disabled = false; b.innerHTML = '<i data-lucide="rotate-ccw" style="width:18px;"></i> Rollback'; });
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
+        });
+    };
 </script>
 @endsection

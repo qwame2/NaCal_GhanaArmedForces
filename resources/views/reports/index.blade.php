@@ -52,7 +52,7 @@
             </div>
             <div style="flex: 1;">
                 <div class="stat-label">Total Received Vol.</div>
-                <div class="stat-value">{{ number_format((float)$totalReceivedQty) }} <span class="stat-unit">Units</span></div>
+                <div class="stat-value">{{ number_format((float)$totalReceivedQty) }} <span class="stat-unit">Package Types</span></div>
                 <div class="stat-subtitle">Across {{ $totalReceivedBatches }} Registered Batches</div>
             </div>
         </div>
@@ -63,7 +63,7 @@
             </div>
             <div style="flex: 1;">
                 <div class="stat-label">Total Issued Vol.</div>
-                <div class="stat-value">{{ number_format((float)$totalIssuedQty) }} <span class="stat-unit">Units</span></div>
+                <div class="stat-value">{{ number_format((float)$totalIssuedQty) }} <span class="stat-unit">Package Types</span></div>
                 <div class="stat-subtitle">Across {{ $totalIssuedBatches }} Disbursement Records</div>
             </div>
         </div>
@@ -74,7 +74,7 @@
             </div>
             <div style="flex: 1;">
                 <div class="stat-label">Net Movement</div>
-                <div class="stat-value" style="color: var(--primary);">{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }} <span class="stat-unit">Units</span></div>
+                <div class="stat-value" style="color: var(--primary);">{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }} <span class="stat-unit">Package Types</span></div>
                 <div class="stat-subtitle">Theoretical Surplus in Period</div>
             </div>
         </div>
@@ -612,13 +612,13 @@
 During this reporting period (${periodLabel}), the logistics and inventory framework processed significant asset movements crucial to our operational readiness.
 
 RECEIPTS & ACQUISITIONS:
-We successfully recorded the inbound reception of ${totalRec} units distributed across ${recBatches} discrete batches. These acquisitions have been formally logged into the secure Category system, ensuring our reserves remain adequately stocked.
+We successfully recorded the inbound reception of ${totalRec} package types distributed across ${recBatches} discrete batches. These acquisitions have been formally logged into the secure Category system, ensuring our reserves remain adequately stocked.
 
 DISBURSEMENTS & ALLOCATIONS:
-In support of ongoing operations and departmental requirements, the logistics division issued a total of ${totalIss} units spanning ${issBatches} distinct disbursement events. All allocations were verified against authorized requisitions to maintain strict supply chain integrity.
+In support of ongoing operations and departmental requirements, the logistics division issued a total of ${totalIss} package types spanning ${issBatches} distinct disbursement events. All allocations were verified against authorized requisitions to maintain strict supply chain integrity.
 
 OVERALL THEORETICAL STOCK STATUS:
-Factoring in the aggregation of ${totalRec} incoming units against the ${totalIss} allocated units, the facility noted a net functional surplus of ${netMovement} units for ${periodLabel}. This metric solidifies our adherence to conservative Category retention protocols.
+Factoring in the aggregation of ${totalRec} incoming package types against the ${totalIss} allocated package types, the facility noted a net functional surplus of ${netMovement} package types for ${periodLabel}. This metric solidifies our adherence to conservative Category retention protocols.
 
 CONCLUSION:
 No gross anomalies or unaccounted systemic variances were detected during this reporting window. The inventory ecosystem remains balanced, verifiable, and prepared for subsequent logistical cycles.

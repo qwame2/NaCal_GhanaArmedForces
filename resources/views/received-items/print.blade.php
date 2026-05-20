@@ -277,24 +277,43 @@
                 $acqType = $batch->acquisition_type ?? 'Supplier';
                 $donorName = $batch->donor_name;
                 $supplierName = $batch->supplier_name;
+                $supplierNameStr = $supplierName ?? '';
                 
                 // Legacy Fallback
-                $isDonor = ($acqType === 'Donor' || str_contains($supplierName, '[Donor Action]') || str_contains($supplierName, '[Donation]'));
+                $isDonor = ($acqType === 'Donor' || str_contains($supplierNameStr, '[Donor Action]') || str_contains($supplierNameStr, '[Donation]'));
                 
                 if ($isDonor && !$donorName) {
-                    $donorName = trim(preg_replace('/\[.*?\]/', '', $supplierName));
+                    $donorName = trim(preg_replace('/\[.*?\]/', '', $supplierNameStr));
                 }
                 
-                $entityDisplay = $isDonor ? $donorName : trim(preg_replace('/\[.*?\]/', '', $supplierName));
+                $entityDisplay = $isDonor ? $donorName : trim(preg_replace('/\[.*?\]/', '', $supplierNameStr));
+
+                $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
+                $deliveryPerson = '';
+                foreach ($suppliersRegistry as $k => $v) {
+                    if (strcasecmp(trim($k), trim($entityDisplay)) === 0 || ($supplierName && strcasecmp(trim($k), trim($supplierName)) === 0)) {
+                        $entityDisplay = $k;
+                        $deliveryPerson = $v['delivery_person'] ?? '';
+                        break;
+                    }
+                }
             @endphp
 
             <div class="info-line">
-                <span class="info-label">{{ $isDonor ? 'Donor / Organization' : 'Logistics Source' }}</span>
+                <span class="info-label">{{ $isDonor ? 'Donor Name' : 'Supplier Name' }}</span>
                 <span class="info-value" style="font-size: 15px;">{{ $entityDisplay }}</span>
+            </div>
+            <div class="info-line">
+                <span class="info-label">Delivery Person</span>
+                <span class="info-value">{{ $deliveryPerson ?: 'N/A' }}</span>
             </div>
             <div class="info-line">
                 <span class="info-label">Transaction Type</span>
                 <span class="info-value">{{ $isDonor ? 'Gift / Donation' : 'Standard Delivery' }}</span>
+            </div>
+            <div class="info-line">
+                <span class="info-label">Supply Status</span>
+                <span class="info-value">{{ $batch->supplier_status ?: 'Full Delivery' }}</span>
             </div>
             <div class="info-line">
                 <span class="info-label">Verification ID</span>
@@ -322,12 +341,12 @@
         @endphp
         <div style="margin-bottom: 25px; padding: 20px; background: #f8fafc; border: 1px solid var(--print-border); border-radius: 12px; page-break-inside: avoid;">
             <div style="font-weight: 900; font-size: 14px; margin-bottom: 12px; color: var(--print-primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
-                Scope {{ $index + 1 }} &bull; {{ strtoupper($item->description) }} ({{ $item->unit ?? 'Units' }})
+                Scope {{ $index + 1 }} &bull; {{ strtoupper($item->description) }} ({{ $item->unit ?? 'Package Types' }})
             </div>
             <p style="margin: 0 0 15px; font-size: 13px; color: #334155; line-height: 1.8; text-align: justify;">
-                The logistics personnel formally presented <strong>{{ $item->qty ?? '0' }} units</strong> for reception. 
-                A rigorous count conducted on the floor yielded <strong>{{ $item->stock_balance }} units</strong> formally registered into the active stock baseline in verified condition.
-                This operation culminated in <strong>{{ $varText }}</strong> units when matched against the authorized delivered quantity.
+                The logistics personnel formally presented <strong>{{ $item->qty ?? '0' }} package types</strong> for reception. 
+                A rigorous count conducted on the floor yielded <strong>{{ $item->stock_balance }} package types</strong> formally registered into the active stock baseline in verified condition.
+                This operation culminated in <strong>{{ $varText }}</strong> package types when matched against the authorized delivered quantity.
             </p>
             <div style="background: rgba(99, 102, 241, 0.05); padding: 12px 15px; border-radius: 8px; border-left: 3px solid var(--print-accent); font-size: 12px; color: #475569; font-style: italic;">
                 <strong>Verification Field Note:</strong> {{ $remarks }}

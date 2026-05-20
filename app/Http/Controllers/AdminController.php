@@ -516,8 +516,45 @@ class AdminController extends Controller
                 'J' => 'Equipment'
             ];
 
-        $allSuppliers = InventoryBatch::whereNotNull('supplier_name')->where('supplier_name', '!=', '')->distinct()->pluck('supplier_name');
-        $allDonors = InventoryBatch::whereNotNull('donor_name')->where('donor_name', '!=', '')->distinct()->pluck('donor_name');
+        $registryData = \App\Models\Setting::get('suppliers_registry', []);
+        if (is_string($registryData)) {
+            $registryData = json_decode($registryData, true) ?? [];
+        }
+        $registrySuppliers = is_array($registryData) ? array_keys($registryData) : [];
+        $dbSuppliers = InventoryBatch::where('acquisition_type', 'Supplier')
+            ->whereNotNull('supplier_name')
+            ->where('supplier_name', '!=', '')
+            ->distinct()
+            ->pluck('supplier_name')
+            ->map(function($name) use ($registrySuppliers) {
+                $clean = preg_replace('/\s\[.*\]$/', '', $name);
+                foreach ($registrySuppliers as $regName) {
+                    if (strcasecmp($regName, $clean) === 0) {
+                        return $regName;
+                    }
+                }
+                return $clean;
+            })->toArray();
+        $allSuppliers = collect(array_merge($registrySuppliers, $dbSuppliers))
+            ->filter()
+            ->unique(function ($item) {
+                return strtolower(trim($item));
+            })
+            ->values();
+
+        $donorNames1 = InventoryBatch::where('acquisition_type', 'Donor')
+            ->whereNotNull('donor_name')
+            ->where('donor_name', '!=', '')
+            ->distinct()
+            ->pluck('donor_name');
+
+        $donorNames2 = InventoryBatch::where('acquisition_type', 'Donor')
+            ->whereNotNull('supplier_name')
+            ->where('supplier_name', '!=', '')
+            ->distinct()
+            ->pluck('supplier_name');
+
+        $allDonors = $donorNames1->concat($donorNames2)->filter()->unique()->values();
 
         return view('admin.inventory.index', compact('receivedItems', 'partialCount', 'itemAggregates', 'issuances', 'returnedItems', 'ledgeMap', 'allSuppliers', 'allDonors'));
     }
@@ -677,5 +714,48 @@ class AdminController extends Controller
         ]);
 
         return back()->with('success', "Category '{$code}' deleted successfully.");
+    }
+
+    public function history(Request $request)
+    {
+        if (!auth()->user()->is_admin) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        $query = \App\Models\EditRequest::with('user')
+            ->where('request_type', 'edit_submission')
+            ->whereIn('status', ['approved', 'completed']);
+
+        if ($request->has('user_id') && $request->user_id) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        if ($request->has('date_from') && $request->date_from) {
+            $query->whereDate('updated_at', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $query->whereDate('updated_at', '<=', $request->date_to);
+        }
+
+        if ($request->has('search') && $request->search) {
+            $query->where('item_id', 'LIKE', '%' . $request->search . '%');
+        }
+
+        $history = $query->orderBy('updated_at', 'desc')->paginate(10);
+        $users = User::all();
+        
+        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
+
+        return view('admin.history', compact('history', 'users', 'ledgeMap'));
     }
 }

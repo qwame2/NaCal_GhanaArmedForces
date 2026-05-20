@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'User Registry')
+@section('title', 'User Info')
 
 @section('content')
 <div class="command-center">
@@ -52,7 +52,7 @@
                         <i data-lucide="shield-check"></i>
                     </div>
                     <div class="registry-title-stack">
-                        <h3 class="vault-title">User Registry</h3>
+                        <h3 class="vault-title">User Info</h3>
                         <div class="status-indicator-pill">
                             <span class="live-pulse"></span>
                             SECURE & UPDATED
@@ -61,7 +61,7 @@
                 </div>
                 <p class="vault-subtitle">Managing {{ $totalUsers }} user records</p>
             </div>
-            
+
             <div class="toolbar-actions">
                 @if(isset($legacyAdminLogs) && $legacyAdminLogs->count() > 0)
                 <button type="button" class="btn-tool" onclick="openLegacyAuditModal()" style="border-radius: 18px; padding: 12px 24px; font-weight: 800; font-size: 0.85rem; gap: 10px; display: flex; align-items: center; background: #fffbeb; color: #d97706; border: 1.5px solid #fde68a; cursor: pointer; transition: all 0.3s ease;">
@@ -71,7 +71,7 @@
                 @endif
                 <button type="button" class="btn-tool primary" onclick="openAddPersonnelModal()" style="border-radius: 18px; padding: 12px 24px; font-weight: 800; font-size: 0.85rem; gap: 10px; display: flex; align-items: center; background: #0f172a; color: white; border: none; cursor: pointer; transition: all 0.3s ease;">
                     <i data-lucide="user-plus" style="width: 18px;"></i>
-                    <span>Register Officers</span>
+                    <span>Register Users</span>
                 </button>
                 <div class="command-search">
                     <div class="search-icon-wrap">
@@ -142,7 +142,7 @@
                         </td>
                         <td style="text-align: center;">
                             <div class="ops-cluster" style="justify-content: center; display: flex; align-items: center; gap: 10px;">
-                                <button type="button" class="btn-purge" title="Personnel Details" 
+                                <button type="button" class="btn-purge" title="User Details"
                                     onclick="viewUserDetails({
                                         name: '{{ addslashes($user->name) }}',
                                         username: '{{ addslashes($user->username) }}',
@@ -155,14 +155,14 @@
                                         avatar: '{{ $user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}'
                                     })"
                                     style="border: 1px solid #e0e7ff; color: #4f46e5; background: #f5f3ff;"
-                                    onmouseover="this.style.background='#4f46e5'; this.style.color='white'" 
+                                    onmouseover="this.style.background='#4f46e5'; this.style.color='white'"
                                     onmouseout="this.style.background='#f5f3ff'; this.style.color='#4f46e5'">
                                     <i data-lucide="eye" style="width: 16px;"></i>
                                 </button>
                                 @if(!$user->is_active)
                                 <span style="background: #fef2f2; color: #ef4444; border: 1px solid #fecdd3; padding: 4px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: 900; letter-spacing: 0.05em;">INACTIVE</span>
                                 @endif
-                                
+
                                 @if($user->id !== auth()->id())
                                 <form action="{{ route('admin.users.toggle_status', $user->id) }}" method="POST" style="display: inline;">
                                     @csrf
@@ -185,14 +185,14 @@
                 </tbody>
             </table>
         </div>
-        
+
         <!-- Precision Pagination Module -->
         <div class="registry-pagination" style="padding: 2rem 3rem; background: #fafcff; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <div style="font-size: 0.85rem; color: #64748b; font-weight: 700; display: flex; align-items: center; gap: 1.5rem;">
                 <div>
-                    Showing <span style="color: #0f172a; font-weight: 900;">{{ $users->firstItem() ?? 0 }}</span> to 
-                    <span style="color: #0f172a; font-weight: 900;">{{ $users->lastItem() ?? 0 }}</span> of 
-                    <span style="color: #0f172a; font-weight: 900;">{{ $users->total() }}</span> Personnel
+                    Showing <span style="color: #0f172a; font-weight: 900;">{{ $users->firstItem() ?? 0 }}</span> to
+                    <span style="color: #0f172a; font-weight: 900;">{{ $users->lastItem() ?? 0 }}</span> of
+                    <span style="color: #0f172a; font-weight: 900;">{{ $users->total() }}</span> Users
                 </div>
 
                 <form action="{{ route('admin.index') }}" method="GET" style="display: flex; align-items: center; gap: 0.75rem; border-left: 2px solid #e2e8f0; padding-left: 1.5rem;">
@@ -226,12 +226,12 @@
     .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 3.5rem; }
     .metric-module { background: white; padding: 2.25rem; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); display: flex; align-items: center; gap: 1.75rem; border: 1px solid rgba(0,0,0,0.01); transition: all 0.3s ease; }
     .metric-module:hover { transform: translateY(-8px); box-shadow: 0 20px 60px rgba(0,0,0,0.06); }
-    
+
     .metric-visual { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
     .metric-visual.primary { background: #eef2ff; color: #4f46e5; }
     .metric-visual.success { background: #ecfdf5; color: #10b981; }
     .metric-visual.warning { background: #fffbeb; color: #f59e0b; }
-    
+
     .m-label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 4px; }
     .m-value { font-size: 2rem; font-weight: 950; color: #0f172a; margin: 0; letter-spacing: -0.04em; }
     .m-trend { font-size: 0.75rem; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 4px; margin-top: 6px; }
@@ -258,85 +258,85 @@
     .registry-vault { background: white; border-radius: 40px; box-shadow: 0 30px 80px rgba(0,0,0,0.04); overflow: hidden; border: 1px solid rgba(0,0,0,0.01); }
     .vault-toolbar { padding: 2.5rem 3rem; background: #fafcff; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
     .registry-label-group { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
-    .registry-icon-box { 
-        width: 48px; 
-        height: 48px; 
-        background: #eef2ff; 
-        color: #4338ca; 
-        border-radius: 14px; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
+    .registry-icon-box {
+        width: 48px;
+        height: 48px;
+        background: #eef2ff;
+        color: #4338ca;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         box-shadow: inset 0 0 12px rgba(67, 56, 202, 0.05);
     }
     .registry-icon-box i { width: 24px; height: 24px; }
-    
+
     .registry-title-stack { display: flex; align-items: center; gap: 12px; }
     .vault-title { font-size: 1.5rem; font-weight: 900; color: #0f172a; letter-spacing: -0.04em; }
-    
-    .status-indicator-pill { 
-        background: #ecfdf5; 
-        color: #059669; 
-        padding: 4px 10px; 
-        border-radius: 20px; 
-        font-size: 0.65rem; 
-        font-weight: 900; 
-        letter-spacing: 0.05em; 
-        display: flex; 
-        align-items: center; 
-        gap: 6px; 
+
+    .status-indicator-pill {
+        background: #ecfdf5;
+        color: #059669;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
         border: 1px solid #d1fae5;
     }
-    .live-pulse { 
-        width: 6px; 
-        height: 6px; 
-        background: #10b981; 
-        border-radius: 50%; 
-        animation: status-glow 2s infinite; 
+    .live-pulse {
+        width: 6px;
+        height: 6px;
+        background: #10b981;
+        border-radius: 50%;
+        animation: status-glow 2s infinite;
     }
-    @keyframes status-glow { 
-        0% { transform: scale(0.95); opacity: 0.5; } 
-        50% { transform: scale(1.2); opacity: 1; } 
-        100% { transform: scale(0.95); opacity: 0.5; } 
+    @keyframes status-glow {
+        0% { transform: scale(0.95); opacity: 0.5; }
+        50% { transform: scale(1.2); opacity: 1; }
+        100% { transform: scale(0.95); opacity: 0.5; }
     }
 
     .vault-subtitle { color: #64748b; font-size: 0.85rem; font-weight: 700; padding-left: 64px; }
-    
+
     .toolbar-actions { display: flex; align-items: center; gap: 1rem; }
     .command-search { position: relative; display: flex; align-items: center; min-width: 340px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .search-icon-wrap { position: absolute; left: 16px; color: #94a3b8; display: flex; align-items: center; pointer-events: none; transition: 0.3s; }
     .search-icon-wrap i { width: 18px; height: 18px; }
-    
-    .command-search input { 
-        background: #f1f5f9; 
-        border: 1px solid transparent; 
-        padding: 12px 100px 12px 48px; 
-        border-radius: 18px; 
-        font-size: 0.95rem; 
-        font-weight: 700; 
-        color: #0f172a; 
-        width: 100%; 
-        outline: none; 
+
+    .command-search input {
+        background: #f1f5f9;
+        border: 1px solid transparent;
+        padding: 12px 100px 12px 48px;
+        border-radius: 18px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #0f172a;
+        width: 100%;
+        outline: none;
         transition: all 0.3s ease;
     }
-    
-    .command-search input:focus { 
-        background: white; 
-        border-color: #4f46e5; 
-        box-shadow: 0 12px 30px rgba(79, 70, 229, 0.08); 
+
+    .command-search input:focus {
+        background: white;
+        border-color: #4f46e5;
+        box-shadow: 0 12px 30px rgba(79, 70, 229, 0.08);
     }
 
     .command-search input:focus + .shortcut-hint { opacity: 0; transform: translateX(10px); }
     .command-search input:focus ~ .search-icon-wrap { color: #4f46e5; transform: scale(1.1); }
 
-    .shortcut-hint { 
-        position: absolute; 
-        right: 12px; 
-        display: flex; 
+    .shortcut-hint {
+        position: absolute;
+        right: 12px;
+        display: flex;
         align-items: center;
-        gap: 6px; 
-        pointer-events: none; 
-        transition: 0.3s ease; 
+        gap: 6px;
+        pointer-events: none;
+        transition: 0.3s ease;
     }
     .key-group {
         display: flex;
@@ -347,20 +347,20 @@
         gap: 2px;
         border: 1px solid #e2e8f0;
     }
-    .shortcut-hint .key { 
-        background: white; 
-        border: 1px solid #e2e8f0; 
-        border-bottom-width: 2px; 
-        padding: 3px 6px; 
-        border-radius: 6px; 
-        font-size: 0.65rem; 
-        font-weight: 900; 
-        color: #64748b; 
+    .shortcut-hint .key {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-bottom-width: 2px;
+        padding: 3px 6px;
+        border-radius: 6px;
+        font-size: 0.65rem;
+        font-weight: 900;
+        color: #64748b;
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         min-width: 18px;
         text-align: center;
     }
-    
+
     .btn-tool { border: none; padding: 12px; border-radius: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
     .btn-tool.primary { background: #0f172a; color: white; padding: 12px 24px; font-weight: 800; font-size: 0.85rem; gap: 10px; }
     .btn-tool.primary:hover { background: #4f46e5; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2); }
@@ -370,15 +370,15 @@
     /* Table precision Styles */
     .table-container { padding: 0.5rem 0; overflow-x: auto; }
     .precision-table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1000px; }
-    
-    .precision-table th { 
-        text-align: left; 
-        padding: 1.75rem 3rem; 
-        font-size: 0.75rem; 
-        font-weight: 900; 
-        color: #94a3b8; 
-        text-transform: uppercase; 
-        letter-spacing: 0.15em; 
+
+    .precision-table th {
+        text-align: left;
+        padding: 1.75rem 3rem;
+        font-size: 0.75rem;
+        font-weight: 900;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
         border-bottom: 1px solid #f1f5f9;
         background: #fafcff;
     }
@@ -389,24 +389,24 @@
     .col-sector { width: 15%; }
     .col-sync { width: 15%; }
     .col-ops { width: 10%; }
-    
+
     .registry-row { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-bottom: 1px solid #f8fafc; }
     .registry-row:hover { background: #f8fbff; }
     .registry-row td { padding: 1.5rem 3rem; vertical-align: middle; }
 
     .identity-cell { display: flex; align-items: center; gap: 20px; }
-    .avatar-capsule { 
-        width: 52px; 
-        height: 52px; 
-        border-radius: 16px; 
-        overflow: visible; 
-        border: 4px solid white; 
-        box-shadow: 0 8px 20px rgba(0,0,0,0.06); 
+    .avatar-capsule {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        overflow: visible;
+        border: 4px solid white;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
         flex-shrink: 0;
         position: relative;
     }
     .avatar-capsule img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
-    
+
     .status-dot-mini {
         position: absolute;
         bottom: -2px;
@@ -419,20 +419,20 @@
     }
     .status-dot-mini.online { background: #10b981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.6); }
     .status-dot-mini.offline { background: #cbd5e1; }
-    
+
     .id-meta { display: flex; flex-direction: column; gap: 4px; }
     .full-name { font-weight: 850; color: #0f172a; font-size: 1.05rem; letter-spacing: -0.02em; }
     .callsign { font-size: 0.75rem; color: #4f46e5; font-weight: 800; font-family: 'JetBrains Mono', monospace; opacity: 0.8; }
 
-    .clearance-pill { 
-        display: inline-flex; 
-        align-items: center; 
-        gap: 10px; 
-        padding: 8px 16px; 
-        border-radius: 12px; 
-        font-size: 0.7rem; 
-        font-weight: 900; 
-        letter-spacing: 0.05em; 
+    .clearance-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 900;
+        letter-spacing: 0.05em;
         white-space: nowrap;
     }
     .clearance-pill.admin { background: #eef2ff; color: #4f46e5; border: 1px solid rgba(79, 70, 229, 0.1); }
@@ -441,20 +441,20 @@
     .clearance-pill.admin .dot { background: #4f46e5; box-shadow: 0 0 10px rgba(79, 70, 229, 0.4); }
     .clearance-pill.standard .dot { background: #cbd5e1; }
 
-    .sector-badge { 
-        font-weight: 800; 
-        color: #1e293b; 
-        font-size: 0.9rem; 
-        background: #f1f5f9; 
-        padding: 6px 12px; 
-        border-radius: 10px; 
+    .sector-badge {
+        font-weight: 800;
+        color: #1e293b;
+        font-size: 0.9rem;
+        background: #f1f5f9;
+        padding: 6px 12px;
+        border-radius: 10px;
         display: inline-block;
     }
-    
-    .sync-time { 
-        font-size: 0.82rem; 
-        color: #64748b; 
-        font-weight: 800; 
+
+    .sync-time {
+        font-size: 0.82rem;
+        color: #64748b;
+        font-weight: 800;
         font-family: 'JetBrains Mono', monospace;
         background: #f1f5f9;
         padding: 6px 12px;
@@ -463,18 +463,18 @@
         border: 1px solid #e2e8f0;
     }
 
-    .btn-purge { 
-        width: 44px; 
-        height: 44px; 
-        border-radius: 14px; 
-        border: 1px solid #fee2e2; 
-        background: white; 
-        color: #ef4444; 
-        cursor: pointer; 
-        transition: all 0.3s; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
+    .btn-purge {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        border: 1px solid #fee2e2;
+        background: white;
+        color: #ef4444;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         box-shadow: 0 4px 10px rgba(239, 68, 68, 0.05);
     }
     .btn-purge:hover { background: #ef4444; color: white; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2); }
@@ -532,9 +532,9 @@
 
     function openAddPersonnelModal() {
         const randomPass = 'Auth' + Math.floor(1000 + Math.random() * 9000);
-        
+
         Swal.fire({
-            title: '<div style="display: flex; align-items: center; gap: 15px; text-align: left;"><div style="width: 48px; height: 48px; background: #eef2ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #4338ca;"><i data-lucide="user-plus"></i></div><div><div style="font-size: 1.25rem; font-weight: 950; color: #0f172a;">Register Personnel</div><div style="font-size: 0.75rem; color: #64748b; font-weight: 700; margin-top: 2px;">STRATEGIC COMMAND PROVISIONING</div></div></div>',
+            title: '<div style="display: flex; align-items: center; gap: 15px; text-align: left;"><div style="width: 48px; height: 48px; background: #eef2ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #4338ca;"><i data-lucide="user-plus"></i></div><div><div style="font-size: 1.25rem; font-weight: 950; color: #0f172a;">Register User</div><div style="font-size: 0.75rem; color: #64748b; font-weight: 700; margin-top: 2px;">STRATEGIC COMMAND PROVISIONING</div></div></div>',
             html: `
                 <form id="addPersonnelForm" action="{{ route('admin.users.store') }}" method="POST" style="text-align: left; padding: 1rem 0.5rem;">
                     @csrf
@@ -553,7 +553,7 @@
                                 <i data-lucide="eye" id="swal-password-icon" style="width: 20px;"></i>
                             </button>
                         </div>
-                        <p style="font-size: 0.65rem; color: #64748b; font-weight: 600; margin-top: 8px; padding-left: 4px;">Minimum 8 characters, including a number. Personnel will be required to update this key upon first synchronization.</p>
+                        <p style="font-size: 0.65rem; color: #64748b; font-weight: 600; margin-top: 8px; padding-left: 4px;">Minimum 8 characters, including a number. Users will be required to update this key upon first synchronization.</p>
                     </div>
                 </form>
             `,
@@ -706,7 +706,7 @@
                 </button>
             </div>
         </div>
-        
+
         <div style="max-height: 60vh; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 16px;">
             <div style="padding: 1.5rem; background: #fafcff; border-bottom: 1px solid #e2e8f0;">
                 <h4 style="margin: 0; font-size: 0.9rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
@@ -757,7 +757,7 @@
     function closeLegacyAuditModal() {
         document.getElementById('legacyAuditModal').style.display = 'none';
     }
-    
+
     function viewUserDetails(user) {
         Swal.fire({
             title: `
@@ -824,7 +824,7 @@
                              </div>
                         </div>
                     </div>
-                    
+
                     <div style="background: #f8fafc; padding: 18px 24px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f5f9;">
                         <div>
                             <div style="font-size: 0.6rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.08em;">Last Login Time</div>
@@ -858,10 +858,10 @@
     function filterLegacyLogs() {
         const adminFilter = document.getElementById('legacyAdminFilter');
         const adminId = adminFilter ? adminFilter.value : 'all';
-        
+
         const typeFilter = document.getElementById('legacyTypeFilter');
         const typeVal = typeFilter ? typeFilter.value : 'all';
-        
+
         const searchFilter = document.getElementById('legacySearchFilter');
         const searchVal = searchFilter ? searchFilter.value.toLowerCase() : '';
 

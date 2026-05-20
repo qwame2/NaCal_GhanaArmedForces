@@ -12,6 +12,10 @@ class EditRequestController extends Controller
 {
     public function store(Request $request)
     {
+        $requestType = $request->get('request_type', 'edit');
+        if (!auth()->user()->is_admin && !auth()->user()->can_add_inventory && in_array($requestType, ['edit', 'edit_submission', 'delete'])) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: You do not have permission to modify inventory records.'], 403);
+        }
         $request->validate([
             'item_id' => 'required|integer',
             'reason' => 'required|string',
@@ -30,6 +34,29 @@ class EditRequestController extends Controller
 
         $requestType = $request->get('request_type', 'edit');
 
+        $originalPayload = null;
+        if ($item) {
+            $originalPayload = json_encode([
+                'arrival_date' => $item->arrival_date ? explode(' ', $item->arrival_date)[0] : '',
+                'ledge_category' => $item->ledge_category,
+                'acquisition_type' => $item->acquisition_type,
+                'supplier_name' => $item->supplier_name,
+                'supplier_status' => $item->supplier_status ?? 'Full Delivery',
+                'donor_name' => $item->donor_name,
+                'items' => $item->items->map(function ($i) {
+                    return [
+                        'id' => $i->id,
+                        'description' => $i->description,
+                        'unit' => $i->unit,
+                        'qty' => $i->qty,
+                        'stock_balance' => $i->stock_balance,
+                        'variance' => $i->variance,
+                        'remarks' => $i->remarks,
+                    ];
+                })->toArray()
+            ]);
+        }
+
         $editReq = EditRequest::create([
             'user_id' => auth()->id(),
             'item_type' => 'batch',
@@ -37,6 +64,7 @@ class EditRequestController extends Controller
             'request_type' => $requestType,
             'reason' => $request->reason,
             'payload' => $request->payload,
+            'original_payload' => $originalPayload,
             'status' => 'pending'
         ]);
 
@@ -45,8 +73,8 @@ class EditRequestController extends Controller
             $typeLabel = $requestType === 'edit_submission' ? 'ENTRY EDIT' : strtoupper($requestType);
             $actionWord = ($requestType === 'edit' || $requestType === 'edit_submission') ? 'edit' : 'PERMANENTLY DELETE';
             $mainText = $requestType === 'edit_submission' 
-                ? "Personnel <b style='color: #4f46e5;'>{$editReq->user->name}</b> has submitted <b>Proposed Changes</b> for"
-                : "Personnel <b style='color: #4f46e5;'>{$editReq->user->name}</b> is requesting permission to <b style='color: " . ($requestType === 'delete' ? '#ef4444' : '#4f46e5') . ";'>{$actionWord}</b>";
+                ? "<b style='color: #4f46e5;'>{$editReq->user->name}</b> has submitted <b>Proposed Changes</b> for"
+                : "<b style='color: #4f46e5;'>{$editReq->user->name}</b> is requesting permission to <b style='color: " . ($requestType === 'delete' ? '#ef4444' : '#4f46e5') . ";'>{$actionWord}</b>";
 
             $msgContent = "
                 <div class='edit-req-msg admin-view' style='padding: 24px; background: #ffffff; border-radius: 20px; border: 1px solid #e2e8f0; font-family: inherit; box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.15); position: relative; overflow: hidden;'>
@@ -76,12 +104,17 @@ class EditRequestController extends Controller
                             <svg style='width: 14px; height: 14px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'></path></svg> Justification
                         </div>
                         <div style='font-size: 0.9rem; color: #334155; line-height: 1.5; font-style: italic;'>" . e($request->reason) . "</div>
-                    </div>
+                    </div>";
 
+            if ($requestType !== 'edit_submission') {
+                $msgContent .= "
                     <div style='display: flex; gap: 12px;' id='edit-req-actions-{$editReq->id}'>
                         <button onclick='window.processEditRequest({$editReq->id}, \"approved\", this)' style='flex: 1; background: #10b981; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 800; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: 0.3s;' onmouseover='this.style.background=\"#059669\"' onmouseout='this.style.background=\"#10b981\"'>Approve</button>
                         <button onclick='window.processEditRequest({$editReq->id}, \"canceled\", this)' style='flex: 1; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 800; transition: 0.3s;' onmouseover='this.style.background=\"#e2e8f0\"; this.style.color=\"#0f172a\"' onmouseout='this.style.background=\"#f1f5f9\"; this.style.color=\"#64748b\"'>Decline</button>
-                    </div>
+                    </div>";
+            }
+            
+            $msgContent .= "
                 </div>";
             
             $personnelLabel = $requestType === 'edit' ? 'EDIT' : 'DELETE';
@@ -172,7 +205,7 @@ class EditRequestController extends Controller
                     </div>
                     
                     <div style='font-size: 0.9rem; color: #475569; line-height: 1.6; margin-bottom: 12px;'>
-                        Personnel <b>{$editReq->user->name}</b>'s request to 
+                        <b>{$editReq->user->name}</b>'s request to 
                         <b style='color: " . ($requestType === 'delete' ? '#ef4444' : '#4f46e5') . ";'>{$actionWord}</b> 
                         <span style='font-family: monospace; font-weight: 700;'>{$batchInfo}</span>.
                     </div>
@@ -972,6 +1005,155 @@ class EditRequestController extends Controller
             $adminMsg->update(['message' => $newMsg, 'is_automated' => true]);
         }
 
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Admin rolls back a pending SRA entry with field-level correction hints.
+     * Marks the edit_request as 'rollback', stores flagged fields, and notifies the user.
+     */
+    public function rollbackSraEntry(Request $request, $id)
+    {
+        $request->validate([
+            'flagged_fields' => 'nullable|array',
+            'general_note'   => 'nullable|string|max:1000',
+        ]);
+
+        if (!auth()->user()->is_admin) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $editReq = EditRequest::findOrFail($id);
+        $editReq->status         = 'rollback';
+        $editReq->rollback_fields = json_encode([
+            'flagged' => $request->input('flagged_fields', []),
+            'note'    => $request->input('general_note', ''),
+        ]);
+        $editReq->save();
+
+        // Build field list summary for the message
+        $flaggedFields = $request->input('flagged_fields', []);
+        $generalNote   = trim($request->input('general_note', ''));
+        $fieldListHtml = '';
+        if (!empty($flaggedFields)) {
+            $fieldListHtml .= "<ul style='margin: 8px 0 0 0; padding-left: 18px; font-size: 0.85rem; color: #7f1d1d; line-height: 1.8;'>";
+            foreach ($flaggedFields as $field => $note) {
+                $fieldListHtml .= "<li><b>" . e(ucwords(str_replace('_', ' ', $field))) . ":</b> " . e($note) . "</li>";
+            }
+            $fieldListHtml .= "</ul>";
+        }
+
+        $dashboardRollbackUrl = url('/dashboard') . '?rollback=' . $editReq->id;
+
+        $userMsg = "
+            <div class='rollback-notification personnel-view' data-req-id='{$editReq->id}' style='display: none; padding: 0; border-radius: 20px; overflow: hidden; border: 2px solid #fca5a5; box-shadow: 0 8px 24px rgba(239,68,68,0.1); font-family: inherit;'>
+                <!-- Header -->
+                <div style='background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 1.5rem 1.75rem; position: relative; overflow: hidden;'>
+                    <div style='position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.07); border-radius: 50%;'></div>
+                    <div style='position: absolute; bottom: -30px; left: -10px; width: 70px; height: 70px; background: rgba(255,255,255,0.05); border-radius: 50%;'></div>
+                    <div style='display: flex; align-items: center; gap: 14px; position: relative;'>
+                        <div style='width: 44px; height: 44px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;'>
+                            <svg style='width: 22px; height: 22px; color: white;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'/></svg>
+                        </div>
+                        <div>
+                            <div style='font-size: 0.68rem; font-weight: 800; color: rgba(255,255,255,0.75); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 2px;'>Admin Action Required</div>
+                            <div style='font-size: 1.15rem; font-weight: 900; color: white; letter-spacing: -0.02em;'>Entry Requires Correction</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Body -->
+                <div style='background: #fff5f5; padding: 1.5rem 1.75rem;'>
+                    <p style='font-size: 0.9rem; color: #334155; line-height: 1.65; margin: 0 0 1rem 0;'>
+                        The Admin has reviewed your inventory submission and is requesting corrections before it can be authorized.
+                    </p>
+
+                    " . (!empty($flaggedFields) ? "
+                    <div style='background: white; border: 1.5px solid #fecaca; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 1rem;'>
+                        <div style='font-size: 0.7rem; font-weight: 900; color: #ef4444; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;'>
+                            <svg style='width: 14px; height: 14px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'/></svg>
+                            Fields Requiring Correction
+                        </div>
+                        {$fieldListHtml}
+                    </div>
+                    " : "") . "
+
+                    " . ($generalNote ? "
+                    <div style='background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 0.9rem 1.1rem; margin-bottom: 1rem; display: flex; gap: 10px;'>
+                        <svg style='width: 16px; height: 16px; color: #f59e0b; flex-shrink: 0; margin-top: 2px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z'/></svg>
+                        <div style='font-size: 0.85rem; color: #92400e; line-height: 1.6;'><b style='display: block; margin-bottom: 2px;'>Admin Note:</b>" . e($generalNote) . "</div>
+                    </div>
+                    " : "") . "
+
+                    <!-- Resume Edit Button -->
+                    <a href='{$dashboardRollbackUrl}'
+                       class='rollback-resume-btn'
+                       style='display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 14px 20px; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); color: white; text-decoration: none; border-radius: 14px; font-weight: 800; font-size: 0.95rem; box-shadow: 0 6px 16px rgba(79,70,229,0.3); transition: all 0.2s; box-sizing: border-box;'
+                       onmouseover=\"this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 24px rgba(79,70,229,0.4)'\"
+                       onmouseout=\"this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 16px rgba(79,70,229,0.3)'\">
+                        <svg style='width: 18px; height: 18px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'/></svg>
+                        Resume &amp; Correct Entry
+                    </a>
+
+                    <p style='font-size: 0.72rem; color: #94a3b8; text-align: center; margin: 10px 0 0 0; font-weight: 600;'>
+                        Your original data will be pre-filled. Highlighted fields need to be corrected.
+                    </p>
+                </div>
+            </div>";
+
+        // 1. Update the original "Awaiting" message for the user
+        $personnelOriginalMsg = Message::where('receiver_id', $editReq->user_id)
+            ->where(function($q) use ($editReq) {
+                $q->where('edit_request_id', $editReq->id)
+                  ->orWhere('message', 'like', "%<!-- sra_req_id:{$editReq->id} -->%")
+                  ->orWhere('message', 'like', '%Awaiting Authorization%');
+            })
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($personnelOriginalMsg) {
+            $personnelOriginalMsg->update([
+                'message'         => $userMsg,
+                'is_automated'    => true,
+                'edit_request_id' => $editReq->id,
+            ]);
+        } else {
+            Message::create([
+                'sender_id'       => auth()->id(),
+                'receiver_id'     => $editReq->user_id,
+                'message'         => $userMsg,
+                'is_automated'    => true,
+                'edit_request_id' => $editReq->id,
+            ]);
+        }
+
+        // 2. Update the Admin's own oversight message to show "Rolled Back" status
+        $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+            ->where(function($q) use ($editReq) {
+                $q->where('edit_request_id', $editReq->id)
+                  ->orWhere('message', 'like', "%sra-creation-actions-{$editReq->id}%");
+            })
+            ->get();
+
+        foreach ($adminMsgs as $adminMsg) {
+            $newMsg = "<div class='sra-approval-msg' style='padding: 15px; border-left: 4px solid #f59e0b; background: rgba(245,158,11,0.04);'>"
+                    . "<b style='color: #d97706;'>ENTRY ROLLED BACK</b><br>"
+                    . "Submission by " . ($editReq->user->name ?? 'Personnel') . " has been sent back for correction."
+                    . ($generalNote ? "<div style='margin-top: 5px; font-size: 0.85rem; color: #92400e;'>Note: " . e($generalNote) . "</div>" : "")
+                    . "</div>";
+            $adminMsg->update(['message' => $newMsg, 'is_automated' => true]);
+        }
+
+        \App\Models\SystemLog::create([
+            'user_id'    => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action'     => 'ROLLBACK',
+            'description'=> "Administrator rolled back SRA entry #{$id} submitted by {$editReq->user->name} for corrections.",
+            'severity'   => 'warning',
+            'ip_address' => request()->ip(),
+        ]);
+
+        if (ob_get_length()) ob_clean();
         return response()->json(['success' => true]);
     }
 }

@@ -660,7 +660,7 @@
         @endif
     </div>
 
-    {{-- Item Unit Rules --}}
+    {{-- Item Package Type Rules --}}
     <div class="cfg-card" id="unit-rules" style="margin-top: 2rem;">
         <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
@@ -668,7 +668,7 @@
                     <i data-lucide="ruler"></i>
                 </div>
                 <div>
-                    <h3 style="margin: 0 0 0.25rem 0;">Default Item Units</h3>
+                    <h3 style="margin: 0 0 0.25rem 0;">Default Package Types</h3>
                     <p style="margin: 0;">Set default units (like Piece or Box) for items to save time during entry.</p>
                 </div>
             </div>
@@ -684,7 +684,7 @@
                 {{-- Existing Rules --}}
                 <div>
                     <p style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 1rem; display: flex; align-items: center; gap: 6px;">
-                        <i data-lucide="list" style="width: 14px;"></i> Active Unit Rules
+                        <i data-lucide="list" style="width: 14px;"></i> Active Package Type Rules
                     </p>
                     @php
                         $unitRules = json_decode(\App\Models\Setting::where('key','item_unit_rules')->value('value') ?? '{}', true) ?? [];
@@ -692,7 +692,11 @@
                         foreach ($unitRules as $keyword => $data) {
                             $cat = is_array($data) ? $data['category'] : 'Uncategorized';
                             $unit = is_array($data) ? $data['unit'] : $data;
-                            $groupedRules[$cat][$keyword] = $unit;
+                            $loc = is_array($data) ? ($data['location'] ?? 'Not Specified') : 'Not Specified';
+                            $groupedRules[$cat][$keyword] = [
+                                'unit' => $unit,
+                                'location' => $loc
+                            ];
                         }
                     @endphp
                     @if(empty($groupedRules))
@@ -709,7 +713,11 @@
                                         {{ $categories[$catCode] ?? 'Uncategorized' }}
                                     </h6>
                                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem;">
-                                        @foreach($rulesGroup as $keyword => $unit)
+                                        @foreach($rulesGroup as $keyword => $ruleData)
+                                            @php
+                                                $unit = $ruleData['unit'];
+                                                $loc = $ruleData['location'];
+                                            @endphp
                                             <div class="unit-rule-card" data-keyword="{{ strtolower($keyword) }}" style="display: flex; align-items: center; gap: 10px; padding: 0.75rem 1rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s;">
                                                 <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#f59e0b,#d97706); color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
                                                     {{ strtoupper(substr($keyword, 0, 2)) }}
@@ -717,9 +725,12 @@
                                                 <div style="flex: 1; min-width: 0;">
                                                     <div style="font-weight: 800; font-size: 0.82rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $keyword }}">{{ $keyword }}</div>
                                                     <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">→ {{ $unit }}</div>
+                                                    <div style="font-size: 0.65rem; font-weight: 600; color: #4f46e5; margin-top: 2px; display: flex; align-items: center; gap: 4px;">
+                                                        <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i> {{ $loc }}
+                                                    </div>
                                                 </div>
                                                 <div style="display: flex; gap: 4px;">
-                                                    <button type="button" onclick="populateUnitForm('{{ $keyword }}', '{{ $unit }}', '{{ $catCode }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
+                                                    <button type="button" onclick="populateUnitForm('{{ $keyword }}', '{{ $unit }}', '{{ $catCode }}', '{{ $loc }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
                                                         <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
                                                     </button>
                                                     <form action="{{ route('admin.settings.unit-rule.destroy') }}" method="POST" onsubmit="return confirm('Remove rule for \'{{ $keyword }}\'?');" style="margin: 0;">
@@ -741,7 +752,7 @@
 
                 {{-- Add New Rule --}}
                 <div class="cat-form-card">
-                    <h5>Add Unit Rule</h5>
+                    <h5>Add Package Type Rule</h5>
                     <p>Type a keyword (e.g. "pen") and set its default unit (e.g. "Boxes"). Matching is case-insensitive.</p>
                     <form action="{{ route('admin.settings.unit-rule.store') }}" method="POST">
                         @csrf
@@ -762,8 +773,9 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Default Unit</label>
-                                <select name="unit" class="cfg-text-input" required style="cursor: pointer;">
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Default Package Type</label>
+                                <select name="unit" class="cfg-text-input select2-package" required style="cursor: pointer;">
+                                    <option value=""></option>
                                     <option value="Piece(s)">Piece(s)</option>
                                     <option value="Pack">Pack</option>
                                     <option value="Boxes">Boxes</option>
@@ -773,7 +785,33 @@
                                     <option value="Set">Set</option>
                                     <option value="Ream">Ream</option>
                                     <option value="Bottle">Bottle</option>
-                                    <option value="Unit">Unit</option>
+                                    <option value="Package Type">Package Type</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Store Location</label>
+                                @php
+                                    $defaultLocations = [
+                                        'Main Store',
+                                        'Pharmacy Store',
+                                        'Stationery Store',
+                                        'Cleaning Store',
+                                        'IT & Equipment Store',
+                                        'Safety Store'
+                                    ];
+                                    $dbLocations = \App\Models\InventoryItem::whereNotNull('location')
+                                        ->where('location', '!=', '')
+                                        ->where('location', '!=', 'Not Specified')
+                                        ->distinct()
+                                        ->pluck('location')
+                                        ->toArray();
+                                    $allLocations = array_unique(array_merge($defaultLocations, $dbLocations));
+                                @endphp
+                                <select name="location" id="unitLocation" class="cfg-text-input select2-location" required style="cursor: pointer;">
+                                    <option value=""></option>
+                                    @foreach($allLocations as $loc)
+                                        <option value="{{ $loc }}">{{ $loc }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div style="display: flex; gap: 10px;">
@@ -915,6 +953,134 @@
             </div>
         </div>
     </div>
+
+    {{-- Suppliers Registry --}}
+    <div class="cfg-card" id="suppliers-registry" style="margin-top: 2rem;">
+        <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <div class="cfg-icon-box" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <i data-lucide="truck"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0 0 0.25rem 0;">Suppliers Registry</h3>
+                    <p style="margin: 0;">Register pre-defined suppliers and their contact details for users to easily select.</p>
+                </div>
+            </div>
+        </div>
+        <div class="cfg-card-body">
+            <div style="display: grid; grid-template-columns: 1fr 360px; gap: 2rem; align-items: start;">
+
+                {{-- Existing Suppliers List --}}
+                <div>
+                    <p style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 1rem; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="list" style="width: 14px;"></i> Registered Suppliers
+                    </p>
+                    @php
+                        $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
+                    @endphp
+                    @if(empty($suppliersRegistry))
+                        <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
+                            <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
+                            <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No suppliers registered yet. Register suppliers on the right.</p>
+                        </div>
+                    @else
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;" id="suppliersRegistryContainer">
+                            @foreach($suppliersRegistry as $name => $details)
+                                <div class="supplier-card" data-name="{{ strtolower($name) }}" style="padding: 1.25rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 0.75rem; position: relative;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+                                        <div style="font-weight: 900; font-size: 0.95rem; color: #0f172a; line-height: 1.2;">{{ $name }}</div>
+                                        <form action="{{ route('admin.settings.supplier.destroy') }}" method="POST" onsubmit="return confirm('Remove {{ $name }} from the registry?');" style="margin: 0;">
+                                            @csrf @method('DELETE')
+                                            <input type="hidden" name="name" value="{{ $name }}">
+                                            <button type="submit" style="width: 28px; height: 28px; border-radius: 8px; background: #fff1f2; border: none; color: #f43f5e; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'">
+                                                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; font-weight: 600; color: #475569;">
+                                        @if(!empty($details['delivery_person']))
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <i data-lucide="user" style="width: 12px; color: #94a3b8;"></i> <strong>Delivery:</strong> {{ $details['delivery_person'] }}
+                                            </div>
+                                        @endif
+                                        @if(!empty($details['phone']))
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <i data-lucide="phone" style="width: 12px; color: #94a3b8;"></i> <strong>Phone:</strong> {{ $details['phone'] }}
+                                            </div>
+                                        @endif
+                                        @if(!empty($details['email']))
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <i data-lucide="mail" style="width: 12px; color: #94a3b8;"></i> <strong>Email:</strong> {{ $details['email'] }}
+                                            </div>
+                                        @endif
+                                        @if(!empty($details['address']))
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <i data-lucide="map-pin" style="width: 12px; color: #94a3b8;"></i> <strong>Address:</strong> {{ $details['address'] }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                    @if(!empty($details['desc']))
+                                        <div style="font-size: 0.72rem; font-weight: 500; color: #64748b; background: #f8fafc; padding: 6px 10px; border-radius: 8px; line-height: 1.4;">
+                                            {{ $details['desc'] }}
+                                        </div>
+                                    @endif
+                                    
+                                    {{-- Edit Button --}}
+                                    <button type="button" onclick="populateSupplierForm('{{ addslashes($name) }}', '{{ addslashes($details['delivery_person'] ?? '') }}', '{{ addslashes($details['phone'] ?? '') }}', '{{ addslashes($details['email'] ?? '') }}', '{{ addslashes($details['address'] ?? '') }}', '{{ addslashes($details['desc'] ?? '') }}')" style="position: absolute; right: 45px; top: 1.25rem; width: 28px; height: 28px; border-radius: 8px; background: #f1f5f9; border: none; color: #64748b; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                                        <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+                                    </button>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Add/Edit Form --}}
+                <div style="background: #fafbff; border-radius: 20px; border: 1.5px solid #edf2f7; padding: 1.5rem;">
+                    <h5 style="font-weight: 900; font-size: 0.95rem; color: #0f172a; margin: 0 0 0.25rem 0;" id="supplierFormTitle">Add Supplier</h5>
+                    <p style="font-size: 0.75rem; color: #64748b; margin: 0 0 1.25rem 0;">Register new supplier or update contact details.</p>
+                    <form action="{{ route('admin.settings.supplier.store') }}" method="POST" id="supplierForm">
+                        @csrf
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Supplier Name (Company)</label>
+                                <input type="text" name="name" id="supplierNameInput" class="cfg-text-input" placeholder="e.g. Acme Corp" required>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Delivery Person Name</label>
+                                <input type="text" name="delivery_person" id="supplierDeliveryPersonInput" class="cfg-text-input" placeholder="e.g. John Doe">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Contact Phone Number</label>
+                                <input type="text" name="phone" id="supplierPhoneInput" class="cfg-text-input" placeholder="e.g. +233 2400000">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Email Address</label>
+                                <input type="email" name="email" id="supplierEmailInput" class="cfg-text-input" placeholder="e.g. orders@acme.com">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Physical Address</label>
+                                <input type="text" name="address" id="supplierAddressInput" class="cfg-text-input" placeholder="e.g. Cantonments, Accra">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Description / Notes</label>
+                                <textarea name="desc" id="supplierDescInput" class="cfg-text-input" placeholder="e.g. Lead distributor for stationery items" style="min-height: 80px; font-family: inherit; resize: vertical; padding: 0.75rem 1rem; border-radius: 12px;"></textarea>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" id="supplierSubmitBtn" class="btn-cfg-add" style="flex: 1; background: linear-gradient(135deg, #10b981, #059669); margin-top: 0.5rem;">
+                                    <i data-lucide="plus-circle" id="supplierSubmitIcon"></i> <span id="supplierSubmitText">Register Supplier</span>
+                                </button>
+                                <button type="button" id="supplierResetBtn" onclick="resetSupplierForm()" style="display: none; padding: 0.75rem 1rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; margin-top: 0.5rem;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -956,14 +1122,33 @@
         });
     }
 
-    function populateUnitForm(keyword, unit, category) {
+    function populateUnitForm(keyword, unit, category, location) {
         // Set category first to trigger the keyword dropdown update
         const catSelect = document.getElementById('unitCategory');
         catSelect.value = category;
         $(catSelect).trigger('change');
 
-        // Set unit
-        document.querySelector('#unit-rules select[name="unit"]').value = unit;
+        // Set unit (wait for Select2)
+        setTimeout(() => {
+            const pkgSelect = $('.select2-package');
+            if (pkgSelect.find("option[value='" + unit + "']").length) {
+                pkgSelect.val(unit).trigger('change');
+            } else {
+                var newOption = new Option(unit, unit, true, true);
+                pkgSelect.append(newOption).trigger('change');
+            }
+        }, 100);
+
+        // Set location (wait for Select2)
+        setTimeout(() => {
+            const locSelect = $('#unitLocation');
+            if (locSelect.find("option[value='" + location + "']").length) {
+                locSelect.val(location).trigger('change');
+            } else {
+                var newOption = new Option(location, location, true, true);
+                locSelect.append(newOption).trigger('change');
+            }
+        }, 100);
 
         // Set keyword (wait for Select2)
         setTimeout(() => {
@@ -991,6 +1176,8 @@
     function resetUnitForm() {
         document.querySelector('#unit-rules form').reset();
         $('#unitKeyword').val(null).trigger('change');
+        $('.select2-package').val(null).trigger('change');
+        $('#unitLocation').val(null).trigger('change');
         document.getElementById('unitSubmitText').innerText = 'Add Rule';
         document.getElementById('unitSubmitBtn').style.background = 'linear-gradient(135deg,#f59e0b,#d97706)';
         document.getElementById('unitResetBtn').style.display = 'none';
@@ -1055,6 +1242,24 @@
             dropdownParent: $('#unit-rules')
         });
 
+        // Initialize Select2 for location
+        $('.select2-location').select2({
+            tags: true,
+            placeholder: 'Select or type a store location...',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#unit-rules')
+        });
+
+        // Initialize Select2 for package type
+        $('.select2-package').select2({
+            tags: true,
+            placeholder: 'Select or type a package type...',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#unit-rules')
+        });
+
         // Initialize Select2 for thresholds
         $('.select2-threshold').select2({
             tags: true,
@@ -1064,7 +1269,7 @@
             dropdownParent: $('#threshold-rules')
         });
 
-        // Handle category change to update item dropdown (Units)
+        // Handle category change to update item dropdown (Package Types)
         $('#unitCategory').on('change', function() {
             const cat = $(this).val();
             const keywordSelect = $('#unitKeyword');
@@ -1125,6 +1330,42 @@
         });
     }
 
+    function populateSupplierForm(name, delivery_person, phone, email, address, desc) {
+        document.getElementById('supplierFormTitle').innerText = 'Update Supplier';
+        document.getElementById('supplierNameInput').value = name;
+        document.getElementById('supplierNameInput').readOnly = true;
+        document.getElementById('supplierNameInput').style.background = '#f8fafc';
+        
+        document.getElementById('supplierDeliveryPersonInput').value = delivery_person;
+        document.getElementById('supplierPhoneInput').value = phone;
+        document.getElementById('supplierEmailInput').value = email;
+        document.getElementById('supplierAddressInput').value = address;
+        document.getElementById('supplierDescInput').value = desc;
+        
+        document.getElementById('supplierSubmitText').innerText = 'Update';
+        document.getElementById('supplierSubmitBtn').style.background = 'linear-gradient(135deg, #4f46e5, #3730a3)';
+        document.getElementById('supplierResetBtn').style.display = 'block';
+        
+        const icon = document.getElementById('supplierSubmitIcon');
+        icon.setAttribute('data-lucide', 'refresh-cw');
+        if (window.lucide) lucide.createIcons();
+        
+        document.getElementById('suppliers-registry').scrollIntoView({ behavior: 'smooth' });
+    }
 
+    function resetSupplierForm() {
+        document.getElementById('supplierFormTitle').innerText = 'Add Supplier';
+        document.getElementById('supplierForm').reset();
+        document.getElementById('supplierNameInput').readOnly = false;
+        document.getElementById('supplierNameInput').style.background = '';
+        
+        document.getElementById('supplierSubmitText').innerText = 'Register Supplier';
+        document.getElementById('supplierSubmitBtn').style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        document.getElementById('supplierResetBtn').style.display = 'none';
+        
+        const icon = document.getElementById('supplierSubmitIcon');
+        icon.setAttribute('data-lucide', 'plus-circle');
+        if (window.lucide) lucide.createIcons();
+    }
 </script>
 @endsection

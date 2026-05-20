@@ -3,6 +3,21 @@
 @section('title', 'Entry Oversight')
 
 @section('content')
+@php
+    $acqType = $batch->acquisition_type ?? 'Supplier';
+    $isDonor = ($acqType === 'Donor' || str_contains($batch->supplier_name ?? '', '[Donor Action]') || str_contains($batch->supplier_name ?? '', '[Donation]'));
+    $provider = $isDonor ? ($batch->donor_name ?: trim(preg_replace('/\[.*?\]/', '', $batch->supplier_name ?? ''))) : trim(preg_replace('/\[.*?\]/', '', $batch->supplier_name ?? ''));
+    
+    $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
+    $deliveryPerson = '';
+    foreach ($suppliersRegistry as $k => $v) {
+        if (strcasecmp(trim($k), trim($provider)) === 0 || (!empty($batch->supplier_name) && strcasecmp(trim($k), trim($batch->supplier_name)) === 0)) {
+            $provider = $k;
+            $deliveryPerson = $v['delivery_person'] ?? '';
+            break;
+        }
+    }
+@endphp
 <div class="preview-container" style="max-width: 1200px; margin: 0 auto; animation: fadeIn 0.5s ease-out;">
     <!-- Strategic Header -->
     <div class="preview-header" style="background: white; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-luxe); margin-bottom: 2rem; position: relative; overflow: hidden;">
@@ -20,14 +35,22 @@
                 <h1 style="font-size: 1.75rem; font-weight: 900; color: #0f172a; margin: 0 0 0.5rem 0; letter-spacing: -0.02em;">New Stock Entry Verification</h1>
                 <p style="color: var(--text-muted); font-size: 1rem; font-weight: 500; margin: 0;">Personnel <b>{{ $batch->recorded_by_name }}</b> is proposing a new inventory batch entry for strategic oversight.</p>
                 
-                <div style="display: flex; gap: 2rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9;">
+                <div style="display: flex; gap: 2rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9; flex-wrap: wrap;">
                     <div>
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Sourcing Method</span>
                         <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $batch->acquisition_type }}</span>
                     </div>
                     <div>
-                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Source Provider</span>
-                        <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $batch->supplier_name ?? $batch->donor_name ?? 'N/A' }}</span>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">{{ $isDonor ? 'Donor Name' : 'Supplier Name' }}</span>
+                        <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $provider ?: 'N/A' }}</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Delivery Person</span>
+                        <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $deliveryPerson ?: 'N/A' }}</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Supply Status</span>
+                        <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $batch->supplier_status ?: 'Full Delivery' }}</span>
                     </div>
                     <div>
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Received Date</span>
@@ -54,10 +77,10 @@
                 <thead>
                     <tr style="border-bottom: 1px solid #f1f5f9;">
                         <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Description</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Unit</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Received Qty</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Stock Bal.</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Variance</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Total in System</th>
                         <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Remarks</th>
                     </tr>
                 </thead>
@@ -70,6 +93,11 @@
                         </td>
                         <td style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.85rem; font-weight: 600; color: #475569;">{{ $item->unit }}</span>
+                            @if($item->location)
+                                <div style="font-size: 0.65rem; font-weight: 600; color: #4f46e5; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                                    <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i> {{ $item->location }}
+                                </div>
+                            @endif
                         </td>
                         <td style="padding: 1.25rem 1.5rem; text-align: right;">
                             <span style="font-size: 0.95rem; font-weight: 800; color: #0f172a;">{{ number_format($item->qty) }}</span>
@@ -78,9 +106,8 @@
                             <span style="font-size: 0.95rem; font-weight: 800; color: var(--primary);">{{ number_format($item->stock_balance) }}</span>
                         </td>
                         <td style="padding: 1.25rem 1.5rem; text-align: right;">
-                            @php $v = (float)$item->variance; @endphp
-                            <span style="font-size: 0.9rem; font-weight: 900; color: {{ $v < 0 ? '#ef4444' : ($v > 0 ? '#10b981' : '#3b82f6') }}">
-                                {{ $v > 0 ? '+' : '' }}{{ number_format($v) }}
+                            <span style="font-size: 0.95rem; font-weight: 800; color: #0284c7;">
+                                {{ number_format($item->total_in_system ?? 0) }}
                             </span>
                         </td>
                         <td style="padding: 1.25rem 2rem;">

@@ -28,6 +28,7 @@ class InventoryController extends Controller
             'items.*.variance' => 'required|string',
 
             'items.*.remarks' => 'nullable|string',
+            'items.*.location' => 'nullable|string',
         ]);
 
         try {
@@ -64,22 +65,10 @@ class InventoryController extends Controller
                     $msgContent .= "<p style='margin: 0; font-size: 0.75rem; color: #64748b; font-weight: 600;'>Pending Strategic Entry Verification</p>";
                     $msgContent .= "</div></div>";
                     
-                    $msgContent .= "<div style='display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;'>";
-                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;'><i data-lucide='user' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Personnel:</b> " . auth()->user()->name . "</span></div>";
-                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;'><i data-lucide='truck' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Source:</b> {$source}</span></div>";
-                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;'><i data-lucide='bookmark' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Registry Category:</b> {$validated['ledge_category']}</span></div>";
-                    $msgContent .= "<div style='display: flex; align-items: flex-start; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b; margin-top: 2px;'><i data-lucide='package' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569; line-height: 1.4;'><b style='color: #0f172a;'>Items:</b> {$itemNames}</span></div>";
-                    $msgContent .= "</div>";
-                    
                     $msgContent .= "<div id='sra-creation-actions-{$editReq->id}' style='display: flex; flex-direction: column; gap: 8px;'>";
                     $msgContent .= "<button data-entry-req-id='{$editReq->id}' class='entry-preview-btn' style='display: flex; align-items: center; justify-content: center; gap: 8px; background: #f8fafc; color: #0f172a; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.3s;'>";
                     $msgContent .= "<i data-lucide='eye' style='width: 16px;'></i> Preview Entry Details</button>";
-                    $msgContent .= "<div style='display: grid; grid-template-columns: 1fr 1fr; gap: 8px;'>";
-                    $msgContent .= "<button onclick='window.processSraCreationApproval({$editReq->id}, \"approved\", this)' style='background: #10b981; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>";
-                    $msgContent .= "<i data-lucide='check-circle' style='width: 16px;'></i> Approve</button>";
-                    $msgContent .= "<button onclick='window.processSraCreationApproval({$editReq->id}, \"rejected\", this)' style='background: #ef4444; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>";
-                    $msgContent .= "<i data-lucide='x-circle' style='width: 16px;'></i> Reject</button>";
-                    $msgContent .= "</div></div></div>";
+                    $msgContent .= "</div></div>";
  
                     foreach ($admins as $admin) {
                         \App\Models\Message::create([
@@ -91,7 +80,29 @@ class InventoryController extends Controller
                         ]);
                     }
                 }
- 
+
+                // Send confirmation back to the user
+                $firstAdmin = \App\Models\User::where('is_admin', true)->first();
+                if ($firstAdmin) {
+                    $confirmMsg = "<!-- sra_req_id:{$editReq->id} -->"
+                        . "<div class='sra-awaiting-msg personnel-view' style='padding: 15px 18px; border: 1.5px solid #c7d2fe; border-radius: 16px; background: rgba(99,102,241,0.04); display: flex; align-items: center; gap: 12px;'>"
+                        . "<div style='width: 36px; height: 36px; background: #6366f1; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;'>"
+                        . "<svg style='width:18px;height:18px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'/></svg>"
+                        . "</div>"
+                        . "<div>"
+                        . "<b style='color: #4f46e5; font-size: 0.88rem; display: block; margin-bottom: 2px;'>ENTRY SUBMITTED FOR AUTHORIZATION</b>"
+                        . "<span style='font-size: 0.78rem; color: #64748b; font-weight: 600;'>Awaiting Authorization — Your submission is pending review by the Admin.</span>"
+                        . "</div></div>";
+
+                    \App\Models\Message::create([
+                        'sender_id'       => $firstAdmin->id,
+                        'receiver_id'     => auth()->id(),
+                        'message'         => $confirmMsg,
+                        'is_automated'    => true,
+                        'edit_request_id' => $editReq->id,
+                    ]);
+                }
+
                 DB::commit();
 
                 return response()->json([

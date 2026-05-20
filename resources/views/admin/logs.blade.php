@@ -594,7 +594,7 @@
                 <div class="detail-card" style="display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem; background: rgba(0,0,0,0.015); border: 1px solid var(--border-color); box-shadow: none;">
                     ${userAvatar ? `<img src="${userAvatar}" style="width: 48px; height: 48px; border-radius: 14px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">` : `<div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 900; box-shadow: 0 4px 10px rgba(79,70,229,0.2);">${userName.charAt(0)}</div>`}
                     <div>
-                        <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; letter-spacing: 0.05em;">Action Initiated By Personnel</div>
+                        <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; letter-spacing: 0.05em;">Action Initiated By User</div>
                         <div style="font-size: 1.15rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">${userName}</div>
                     </div>
                 </div>
@@ -619,7 +619,7 @@
                 
                 if (dataObj.items_added && Array.isArray(dataObj.items_added)) {
                     html += '<h4 style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase;">Items Processed in this Event</h4>';
-                    html += '<table class="items-table"><thead><tr><th>Description</th><th>Unit</th><th>Stock Bal.</th><th>Rec. Qty</th><th>Variance</th></tr></thead><tbody>';
+                    html += '<table class="items-table"><thead><tr><th>Description</th><th>Package Type</th><th>Stock Bal.</th><th>Rec. Qty</th><th>Variance</th></tr></thead><tbody>';
                     dataObj.items_added.forEach(item => {
                         const variance = parseFloat(item.variance || 0);
                         const varColor = variance > 0 ? '#10b981' : (variance < 0 ? '#ef4444' : 'inherit');

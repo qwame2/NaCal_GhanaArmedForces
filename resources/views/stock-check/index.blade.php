@@ -62,7 +62,7 @@
                         </th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Description</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
-                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Unit</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Package Type</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Total Received</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Current Balance</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
@@ -82,7 +82,7 @@
                     @endphp
                     <tr class="activity-row" style="border-top: 1px solid var(--border-color);">
                         <td style="padding: 1.25rem 1.5rem; text-align: center; vertical-align: middle;">
-                            <input type="checkbox" class="item-checkbox" data-description="{{ $item->description }}" data-stock="{{ $stock }}" data-received="{{ $received }}" data-variance="{{ $variance }}" data-unit="{{ $item->unit ?: 'Units' }}" onchange="updateBatchSelection()" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; border-radius: 4px;">
+                            <input type="checkbox" class="item-checkbox" data-description="{{ $item->description }}" data-stock="{{ $stock }}" data-received="{{ $received }}" data-variance="{{ $variance }}" data-unit="{{ $item->unit ?: 'Package Types' }}" onchange="updateBatchSelection()" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; border-radius: 4px;">
                         </td>
                         <td style="padding: 1.25rem 1.5rem;">
                             <div style="font-weight: 700; color: var(--text-main); font-size: 1.05rem;">{{ $item->description }}</div>
@@ -92,7 +92,7 @@
                                 {{ $ledgeMap[$item->ledge_category] ?? "Category " . $item->ledge_category }}
                             </span>
                         </td>
-                        <td style="padding: 1.25rem 1.5rem; color: var(--text-muted); font-weight: 600;">{{ $item->unit ?: 'Units' }}</td>
+                        <td style="padding: 1.25rem 1.5rem; color: var(--text-muted); font-weight: 600;">{{ $item->unit ?: 'Package Types' }}</td>
                         <td style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ number_format($received) }}</td>
                         <td style="padding: 1.25rem 1.5rem; font-weight: 800; color: var(--text-main); font-size: 1.1rem;">{{ number_format($stock) }}</td>
                         <td style="padding: 1.25rem 1.5rem;">
@@ -398,7 +398,7 @@ function calculateAuditVariance() {
     if (variance === 0) {
         insight.innerHTML = '<i data-lucide="check-circle"></i> <span>Physical stock matches system records perfectly.</span>';
     } else if (variance > 0) {
-        insight.innerHTML = '<i data-lucide="plus-circle"></i> <span>Surplus detected. You found additional units.</span>';
+        insight.innerHTML = '<i data-lucide="plus-circle"></i> <span>Surplus detected. You found additional package types.</span>';
     } else {
         insight.innerHTML = '<i data-lucide="alert-triangle"></i> <span>Discrepancy detected. Stock is missing or damaged.</span>';
     }

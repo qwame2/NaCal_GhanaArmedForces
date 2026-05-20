@@ -105,7 +105,7 @@
                         <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Stock</span>
                         <div style="text-align: right;">
                             <span style="font-size: 1.15rem; font-weight: 900; color: {{ $isOutOfStock ? '#ef4444' : '#10b981' }};">{{ number_format($item->total_stock) }}</span>
-                            <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-left: 2px;">{{ $item->unit ?: 'Units' }}</span>
+                            <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-left: 2px;">{{ $item->unit ?: 'Package Types' }}</span>
                         </div>
                     </div>
 
@@ -944,7 +944,7 @@
                         <td data-label="Category" style="padding: 1.75rem 1.5rem; white-space: nowrap;">
                             <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.7rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1); letter-spacing: 0.03em;">CATEGORY ${item.ledge_category}</span>
                         </td>
-                        <td data-label="Qty" style="padding: 1.75rem 1.5rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main);">${item.quantity} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.unit || 'Units'}</span></td>
+                        <td data-label="Qty" style="padding: 1.75rem 1.5rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main);">${item.quantity} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.unit || 'Package Types'}</span></td>
                         <td data-label="Status" style="padding: 1.75rem 1.5rem; border-radius: 0 20px 20px 0;">
                             ${statusBadge}
                         </td>
