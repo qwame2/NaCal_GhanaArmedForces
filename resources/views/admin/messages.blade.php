@@ -523,7 +523,8 @@
     function fetchMessages() {
         if (!activeUserId) return;
 
-        fetch(`{{ url('/api/messages') }}/${activeUserId}`)
+        const fetchUrl = `{{ route('api.messages.fetch', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId);
+        fetch(fetchUrl)
             .then(res => {
                 if (!res.ok) throw new Error('Secure line interrupted');
                 return res.json();
@@ -639,7 +640,8 @@
             .catch(err => console.error('Comms Error:', err));
 
         // Mark as read
-        fetch(`{{ url('/api/messages') }}/${activeUserId}/read`, {
+        const readUrl = `{{ route('api.messages.read', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId);
+        fetch(readUrl, {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
