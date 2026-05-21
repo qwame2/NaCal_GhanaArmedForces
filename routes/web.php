@@ -77,6 +77,11 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             return redirect()->route('admin.index')->with('warning', 'Strategic Oversight required. Redirecting to Command Center.');
         }
 
+        // Redirect Requisitioners to their designated page
+        if (auth()->user()->role === 'Requisitioner') {
+            return redirect()->route('requisitions.index');
+        }
+
         $existingItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->selectRaw('inventory_items.description, MAX(inventory_items.unit) as unit, MAX(inventory_items.location) as location, MAX(inventory_batches.ledge_category) as ledge_category, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2)) END) as stock_balance, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2)) END) as qty, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.variance, ",", "") AS DECIMAL(15,2)) END) as variance')
             ->groupBy('inventory_items.description')
@@ -398,6 +403,11 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::get('/issue-items', [IssueItemsController::class, 'index'])->name('issueitems');
     Route::post('/issue-items/store', [IssueItemsController::class, 'store'])->name('issueitems.store');
     Route::get('/api/issued-items-history', [IssueItemsController::class, 'history'])->name('api.issued-items-history');
+
+    // Personnel Requisition Routes
+    Route::get('/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'index'])->name('requisitions.index');
+    Route::post('/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'store'])->name('requisitions.store');
+    Route::get('/api/my-requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'myRequisitions'])->name('requisitions.my');
     Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
     Route::put('/received-items/{id}', [ReceivedItemsController::class, 'update'])->name('receiveditems.update');
     Route::get('/received-items/{id}/print', [ReceivedItemsController::class, 'print'])->name('receiveditems.print');
@@ -629,6 +639,11 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/admin/users', [AdminController::class, 'storeUser'])->name('admin.users.store');
     Route::get('/admin/logs', [AdminController::class, 'logs'])->name('admin.logs');
     Route::get('/admin/inventory', [AdminController::class, 'viewInventory'])->name('admin.inventory');
+
+    // Admin Requisition Routes
+    Route::get('/admin/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'adminIndex'])->name('admin.requisitions');
+    Route::get('/admin/requisitions/{id}/show', [\App\Http\Controllers\StoreRequisitionController::class, 'adminShow'])->name('admin.requisitions.show');
+    Route::post('/admin/requisitions/{id}/process', [\App\Http\Controllers\StoreRequisitionController::class, 'adminProcess'])->name('admin.requisitions.process');
     Route::get('/admin/permissions', [AdminController::class, 'permissions'])->name('admin.permissions');
     Route::post('/admin/permissions/update', [AdminController::class, 'updatePermission'])->name('admin.permissions.update');
     Route::post('/admin/logs/delete-multiple', [AdminController::class, 'destroyMultipleLogs'])->name('admin.logs.delete_multiple');

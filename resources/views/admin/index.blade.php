@@ -552,10 +552,28 @@
             html: `
                 <form id="addPersonnelForm" action="{{ route('admin.users.store') }}" method="POST" style="text-align: left; padding: 1rem 0.5rem;">
                     @csrf
-                    <div style="margin-bottom: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div class="swal-input-group">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Full Name</label>
+                            <input type="text" name="name" class="swal2-input" placeholder="e.g. John Doe" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0;">
+                        </div>
                         <div class="swal-input-group">
                             <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Username <span style="color: #ef4444;">*</span></label>
                             <input type="text" name="username" class="swal2-input" placeholder="e.g. j_doe" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0;" required>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div class="swal-input-group">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Role <span style="color: #ef4444;">*</span></label>
+                            <select name="role" class="swal2-input" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0; background: white;" required>
+                                <option value="Officer">Officer</option>
+                                <option value="Requisitioner">Requisitioner (Store Requests)</option>
+                            </select>
+                        </div>
+                        <div class="swal-input-group">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Department</label>
+                            <input type="text" name="department" class="swal2-input" placeholder="e.g. IT, HR" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0;">
                         </div>
                     </div>
 

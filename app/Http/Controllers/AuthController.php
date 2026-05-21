@@ -202,6 +202,9 @@ class AuthController extends Controller
                 if ($user->is_admin) {
                     return redirect()->route('admin.index');
                 }
+                if ($user->role === 'Requisitioner') {
+                    return redirect()->intended(route('requisitions.index', [], false));
+                }
                 return redirect()->intended('dashboard');
             }
 
@@ -216,7 +219,13 @@ class AuthController extends Controller
             ]);
 
             // Default fallback based on role
-            return $user->is_admin ? redirect()->route('admin.index') : redirect()->route('dashboard');
+            if ($user->is_admin) {
+                return redirect()->route('admin.index');
+            } elseif ($user->role === 'Requisitioner') {
+                return redirect()->route('requisitions.index');
+            } else {
+                return redirect()->route('dashboard');
+            }
         }
 
         \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, 3600); // Record hit for 1 hour
