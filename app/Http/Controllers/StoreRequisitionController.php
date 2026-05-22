@@ -39,6 +39,15 @@ class StoreRequisitionController extends Controller
     }
 
     /**
+     * Personnel: Show the checkout page.
+     */
+    public function checkout(Request $request)
+    {
+        $ledgeMap = Setting::getCategories();
+        return view('requisitions.checkout', compact('ledgeMap'));
+    }
+
+    /**
      * Personnel: Submit a new requisition.
      */
     public function store(Request $request)
@@ -94,7 +103,7 @@ class StoreRequisitionController extends Controller
         foreach ($admins as $admin) {
             $priorityLabel = strtoupper($request->priority);
             $itemCount = count($request->items);
-            $msg  = "<div class='personnel-view' style='padding:15px;border:1px solid #6366f1;border-radius:12px;background:rgba(99,102,241,0.05);'>";
+            $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #6366f1;border-radius:12px;background:rgba(99,102,241,0.05);'>";
             $msg .= "<b style='color:#4f46e5;'>📋 NEW STORE REQUISITION — {$priorityLabel} PRIORITY</b><br><br>";
             $msg .= "Department <b>{$request->department}</b> has submitted a store requisition with <b>{$itemCount} item(s)</b>.<br><br>";
             $msg .= "<b>Requested by:</b> {$request->requester_name}<br>";
@@ -263,6 +272,9 @@ class StoreRequisitionController extends Controller
                 $reqItem = $req->items->firstWhere('id', $itemData['id']);
                 if ($reqItem) {
                     $reqItem->quantity_approved = $itemData['quantity_approved'];
+                    if (!empty($itemData['remarks'])) {
+                        $reqItem->remarks = $itemData['remarks'];
+                    }
                     $reqItem->save();
                 }
             }
@@ -293,7 +305,7 @@ class StoreRequisitionController extends Controller
                 'declined'           => ['label' => 'DECLINED',  'color' => '#ef4444'],
             ];
             $sl = $statusLabels[$request->status];
-            $msg  = "<div class='personnel-view' style='padding:15px;border:1px solid {$sl['color']};border-radius:12px;background:rgba(0,0,0,0.02);'>";
+            $msg  = "<div class='personnel-view requisition-status-msg' style='padding:15px;border:1px solid {$sl['color']};border-radius:12px;background:rgba(0,0,0,0.02);'>";
             $msg .= "<b style='color:{$sl['color']};'>📋 REQUISITION {$sl['label']}</b><br><br>";
             $msg .= "Your store requisition (Ref: #{$req->id}) from <b>{$req->department}</b> has been <b>{$sl['label']}</b> by the Store Officer.<br><br>";
             if ($request->admin_notes) {
