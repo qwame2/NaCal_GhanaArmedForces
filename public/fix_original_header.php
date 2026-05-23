@@ -1,1 +1,1 @@
-// Cleaned
+<?php header('Location: /'); exit;

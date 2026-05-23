@@ -25,7 +25,7 @@ class StoreRequisitionController extends Controller
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
             ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
-            ->orderBy('inventory_items.description')
+            ->orderByRaw('TRIM(inventory_items.description)')
             ->get()
             ->map(function ($item) {
                 $physicalStock = (float) $item->total_stock;
@@ -398,7 +398,7 @@ class StoreRequisitionController extends Controller
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, inventory_batches.ledge_category as category')
             ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
-            ->orderBy('inventory_items.description')
+            ->orderByRaw('TRIM(inventory_items.description)')
             ->get()
             ->map(function($item) {
                 $physicalStock = (float) $item->total_stock;
