@@ -49,6 +49,12 @@ Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/logout', function () {
+    auth()->logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect()->route('login');
+});
 Route::get('/password/change', [AuthController::class, 'showChangePassword'])->name('password.change')->middleware('auth');
 Route::post('/password/change', [AuthController::class, 'updatePassword'])->name('password.update')->middleware('auth');
 
