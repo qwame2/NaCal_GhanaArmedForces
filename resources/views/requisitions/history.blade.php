@@ -908,6 +908,9 @@
                                 </div>
                             </div>
                             <div class="history-status-pills">
+                                <span class="status-pill" style="background:${req.usage_type_badge.bg}; color:${req.usage_type_badge.color}; border: 1px solid rgba(0,0,0,0.02);">
+                                    ${req.usage_type_badge.label}
+                                </span>
                                 <span class="status-pill" style="background:${req.status_badge.bg}; color:${req.status_badge.color};">
                                     ● ${req.status_badge.label}
                                 </span>
@@ -951,18 +954,37 @@
                         </div>
 
                         <div class="history-items-grid">
-                            ${req.items.map(item => `
-                                <div class="history-item-tag">
-                                    <b>${item.description}</b> 
-                                    <span style="color:var(--store-orange)">—</span> ${parseFloat(item.quantity_requested).toLocaleString()} ${item.unit}
-                                    ${item.quantity_approved !== null ? `
-                                        <span style="color:var(--success-color); font-weight:800; margin-left:4px;">
-                                            (Approved: ${parseFloat(item.quantity_approved).toLocaleString()})
-                                        </span>
-                                    ` : ''}
+                            ${req.items.map(item => {
+                                const approved = item.quantity_approved !== null ? parseFloat(item.quantity_approved) : 0;
+                                const altApproved = item.alternative_quantity_approved !== null ? parseFloat(item.alternative_quantity_approved) : 0;
+                                return `
+                                <div class="history-item-tag" style="${item.alternative_description ? 'grid-column: 1 / -1; max-width: 100%;' : ''}">
+                                    ${item.alternative_description ? `
+                                        <div style="font-weight: 700;">
+                                            Original requested: <b>${item.description}</b>
+                                            <span style="color:var(--store-orange)">—</span> Requested: ${parseFloat(item.quantity_requested).toLocaleString()} ${item.unit}
+                                            <span style="color:var(--success-color); font-weight:800; margin-left:4px;">
+                                                (Approved: ${approved.toLocaleString()} ${item.unit})
+                                            </span>
+                                        </div>
+                                        <div style="font-size:0.8rem; font-weight:800; color:var(--store-orange); display:flex; align-items:center; gap:4px; margin-top:6px;">
+                                            <i data-lucide="shuffle" style="width:14px;height:14px;"></i>Alternative: ${item.alternative_description}
+                                            <span style="font-size:0.78rem; font-weight:800; color:var(--success-color);">
+                                                (Approved: ${altApproved.toLocaleString()} ${item.unit})
+                                            </span>
+                                        </div>
+                                    ` : `
+                                        <b>${item.description}</b> 
+                                        <span style="color:var(--store-orange)">—</span> ${parseFloat(item.quantity_requested).toLocaleString()} ${item.unit}
+                                        ${item.quantity_approved !== null ? `
+                                            <span style="color:var(--success-color); font-weight:800; margin-left:4px;">
+                                                (Approved: ${approved.toLocaleString()} ${item.unit})
+                                            </span>
+                                        ` : ''}
+                                    `}
                                     ${item.remarks ? `<br><small style="color:var(--text-muted); font-style:italic;">Note: ${item.remarks}</small>` : ''}
                                 </div>
-                            `).join('')}
+                            `; }).join('')}
                         </div>
 
                         ${req.admin_notes ? `

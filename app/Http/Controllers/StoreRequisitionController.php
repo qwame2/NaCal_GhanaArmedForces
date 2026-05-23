@@ -58,6 +58,7 @@ class StoreRequisitionController extends Controller
             'rank_or_title'   => 'nullable|string|max:255',
             'purpose'         => 'required|string|max:1000',
             'priority'        => 'required|in:low,normal,urgent',
+            'usage_type'      => 'required|in:permanent,temporary',
             'items'           => 'required|array|min:1',
             'items.*.description'        => 'required|string|max:255',
             'items.*.category'           => 'nullable|string|max:10',
@@ -74,6 +75,7 @@ class StoreRequisitionController extends Controller
             'purpose'        => $request->purpose,
             'priority'       => $request->priority,
             'status'         => 'pending',
+            'usage_type'     => $request->usage_type,
         ]);
 
         foreach ($request->items as $item) {
@@ -152,6 +154,8 @@ class StoreRequisitionController extends Controller
                     'priority_badge' => $req->priority_badge,
                     'status'         => $req->status,
                     'status_badge'   => $req->status_badge,
+                    'usage_type'     => $req->usage_type,
+                    'usage_type_badge' => $req->usage_type_badge,
                     'admin_notes'    => $req->admin_notes,
                     'created_at'     => $req->created_at->format('d/m/Y H:i'),
                     'processed_at'   => $req->processed_at?->format('d/m/Y H:i'),
@@ -331,17 +335,34 @@ class StoreRequisitionController extends Controller
                 ->value('total_stock') ?? 0;
 
             return [
-                'id'                 => $item->id,
-                'description'        => $item->description,
-                'category'           => $item->category,
-                'unit'               => $item->unit,
-                'quantity_requested' => $item->quantity_requested,
-                'quantity_approved'  => $item->quantity_approved,
-                'remarks'            => $item->remarks,
-                'current_stock'      => (float) $stock,
-                'stock_sufficient'   => (float) $stock >= (float) $item->quantity_requested,
+                'id'                            => $item->id,
+                'description'                   => $item->description,
+                'alternative_description'       => $item->alternative_description,
+                'alternative_quantity_approved' => $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : null,
+                'category'                      => $item->category,
+                'unit'                          => $item->unit,
+                'quantity_requested'            => $item->quantity_requested,
+                'quantity_approved'             => $item->quantity_approved !== null ? (float)$item->quantity_approved : null,
+                'remarks'                       => $item->remarks,
+                'current_stock'                 => (float) $stock,
+                'stock_sufficient'              => (float) $stock >= (float) $item->quantity_requested,
             ];
         });
+
+        // Query unique in-stock inventory items for alternatives
+        $alternatives = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, inventory_batches.ledge_category as category')
+            ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
+            ->havingRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) > 0')
+            ->orderBy('inventory_items.description')
+            ->get()
+            ->map(fn($item) => [
+                'description' => $item->description,
+                'unit'        => $item->unit,
+                'total_stock' => (float)$item->total_stock,
+                'category'    => $item->category,
+            ]);
 
         return response()->json([
             'id'             => $req->id,
@@ -353,6 +374,8 @@ class StoreRequisitionController extends Controller
             'priority_badge' => $req->priority_badge,
             'status'         => $req->status,
             'status_badge'   => $req->status_badge,
+            'usage_type'     => $req->usage_type,
+            'usage_type_badge' => $req->usage_type_badge,
             'admin_notes'    => $req->admin_notes,
             'created_at'     => $req->created_at->format('d M Y, H:i'),
             'processed_at'   => $req->processed_at?->format('d M Y, H:i'),
@@ -360,6 +383,7 @@ class StoreRequisitionController extends Controller
             'collected_at'   => $req->collected_at?->format('d M Y, H:i'),
             'collected_by_name' => $req->collector?->name,
             'items'          => $items,
+            'alternatives'   => $alternatives,
         ]);
     }
 
@@ -374,8 +398,10 @@ class StoreRequisitionController extends Controller
             'status'      => 'required|in:approved,partially_approved,declined',
             'admin_notes' => 'nullable|string|max:1000',
             'items'       => 'nullable|array',
-            'items.*.id'                => 'required|integer',
-            'items.*.quantity_approved' => 'required|numeric|min:0',
+            'items.*.id'                             => 'required|integer',
+            'items.*.quantity_approved'              => 'required|numeric|min:0',
+            'items.*.alternative_description'        => 'nullable|string|max:255',
+            'items.*.alternative_quantity_approved' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -390,55 +416,113 @@ class StoreRequisitionController extends Controller
                         if ($reqItem) {
                             $approvedQty = floatval($itemData['quantity_approved']);
                             $reqItem->quantity_approved = $approvedQty;
+                            
+                            $altApprovedQty = isset($itemData['alternative_quantity_approved']) ? floatval($itemData['alternative_quantity_approved']) : 0;
+                            
                             if (!empty($itemData['remarks'])) {
                                 $reqItem->remarks = $itemData['remarks'];
                             }
+                            if (!empty($itemData['alternative_description']) && $altApprovedQty > 0) {
+                                $reqItem->alternative_description = $itemData['alternative_description'];
+                                $reqItem->alternative_quantity_approved = $altApprovedQty;
+                            } else {
+                                $reqItem->alternative_description = null;
+                                $reqItem->alternative_quantity_approved = null;
+                            }
                             $reqItem->save();
 
-                            // Deduct from inventory if transitioning to approved/partially_approved and approvedQty > 0
-                            if ($isPending && in_array($targetStatus, ['approved', 'partially_approved']) && $approvedQty > 0) {
-                                // Validate stock availability
-                                $totalStock = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-                                    ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                                    ->where(\DB::raw('TRIM(inventory_items.description)'), trim($reqItem->description))
-                                    ->selectRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
-                                    ->value('total_stock') ?? 0;
+                            // Deduct from inventory if transitioning to approved/partially_approved
+                            if ($isPending && in_array($targetStatus, ['approved', 'partially_approved'])) {
+                                // 1. Original Item FIFO Deduction
+                                if ($approvedQty > 0) {
+                                    $origItemName = $reqItem->description;
+                                    $totalStock = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                                        ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                                        ->where(\DB::raw('TRIM(inventory_items.description)'), trim($origItemName))
+                                        ->selectRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+                                        ->value('total_stock') ?? 0;
 
-                                if ($approvedQty > $totalStock) {
-                                    throw new \Exception("Cannot approve {$approvedQty} for '{$reqItem->description}'. Only {$totalStock} is available in stock.");
+                                    if ($approvedQty > $totalStock) {
+                                        throw new \Exception("Cannot approve {$approvedQty} for '{$origItemName}'. Only {$totalStock} is available in stock.");
+                                    }
+
+                                    $qtyToDeduct = $approvedQty;
+                                    $stockItems = InventoryItem::where(\DB::raw('TRIM(description)'), trim($origItemName))
+                                        ->whereHas('batch', function ($q) use ($reqItem) {
+                                            $q->where('supplier_status', '!=', 'System Draft');
+                                            if ($reqItem->category) {
+                                                $q->where('ledge_category', $reqItem->category);
+                                            }
+                                        })
+                                        ->where(function($query) {
+                                            $query->where('qty', '>', 0)
+                                                ->orWhere('stock_balance', '>', 0);
+                                        })
+                                        ->orderBy('created_at', 'asc')
+                                        ->orderBy('id', 'asc')
+                                        ->get();
+
+                                    foreach ($stockItems as $inventoryItem) {
+                                        if ($qtyToDeduct <= 0) break;
+
+                                        $availableQty = floatval(str_replace(',', '', $inventoryItem->qty));
+                                        $availableStock = floatval(str_replace(',', '', $inventoryItem->stock_balance));
+                                        
+                                        $takeQty = min($availableQty, $qtyToDeduct);
+                                        $takeStock = min($availableStock, $qtyToDeduct);
+
+                                        $inventoryItem->qty = max(0, $availableQty - $takeQty);
+                                        $inventoryItem->stock_balance = max(0, $availableStock - $takeStock);
+                                        $inventoryItem->save();
+
+                                        $qtyToDeduct -= max($takeQty, $takeStock);
+                                    }
                                 }
 
-                                // Deduct from inventory items using FIFO
-                                $qtyToDeduct = $approvedQty;
-                                $stockItems = InventoryItem::where(\DB::raw('TRIM(description)'), trim($reqItem->description))
-                                    ->whereHas('batch', function ($q) use ($reqItem) {
-                                        $q->where('supplier_status', '!=', 'System Draft');
-                                        if ($reqItem->category) {
-                                            $q->where('ledge_category', $reqItem->category);
-                                        }
-                                    })
-                                    ->where(function($query) {
-                                        $query->where('qty', '>', 0)
-                                            ->orWhere('stock_balance', '>', 0);
-                                    })
-                                    ->orderBy('created_at', 'asc')
-                                    ->orderBy('id', 'asc')
-                                    ->get();
+                                // 2. Alternative Item FIFO Deduction
+                                if ($altApprovedQty > 0 && !empty($reqItem->alternative_description)) {
+                                    $altItemName = $reqItem->alternative_description;
+                                    $totalAltStock = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                                        ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                                        ->where(\DB::raw('TRIM(inventory_items.description)'), trim($altItemName))
+                                        ->selectRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+                                        ->value('total_stock') ?? 0;
 
-                                foreach ($stockItems as $inventoryItem) {
-                                    if ($qtyToDeduct <= 0) break;
+                                    if ($altApprovedQty > $totalAltStock) {
+                                        throw new \Exception("Cannot approve alternative {$altApprovedQty} for '{$altItemName}'. Only {$totalAltStock} is available in stock.");
+                                    }
 
-                                    $availableQty = floatval(str_replace(',', '', $inventoryItem->qty));
-                                    $availableStock = floatval(str_replace(',', '', $inventoryItem->stock_balance));
-                                    
-                                    $takeQty = min($availableQty, $qtyToDeduct);
-                                    $takeStock = min($availableStock, $qtyToDeduct);
+                                    $qtyToDeduct = $altApprovedQty;
+                                    $stockItems = InventoryItem::where(\DB::raw('TRIM(description)'), trim($altItemName))
+                                        ->whereHas('batch', function ($q) use ($reqItem) {
+                                            $q->where('supplier_status', '!=', 'System Draft');
+                                            if ($reqItem->category) {
+                                                $q->where('ledge_category', $reqItem->category);
+                                            }
+                                        })
+                                        ->where(function($query) {
+                                            $query->where('qty', '>', 0)
+                                                ->orWhere('stock_balance', '>', 0);
+                                        })
+                                        ->orderBy('created_at', 'asc')
+                                        ->orderBy('id', 'asc')
+                                        ->get();
 
-                                    $inventoryItem->qty = max(0, $availableQty - $takeQty);
-                                    $inventoryItem->stock_balance = max(0, $availableStock - $takeStock);
-                                    $inventoryItem->save();
+                                    foreach ($stockItems as $inventoryItem) {
+                                        if ($qtyToDeduct <= 0) break;
 
-                                    $qtyToDeduct -= max($takeQty, $takeStock);
+                                        $availableQty = floatval(str_replace(',', '', $inventoryItem->qty));
+                                        $availableStock = floatval(str_replace(',', '', $inventoryItem->stock_balance));
+                                        
+                                        $takeQty = min($availableQty, $qtyToDeduct);
+                                        $takeStock = min($availableStock, $qtyToDeduct);
+
+                                        $inventoryItem->qty = max(0, $availableQty - $takeQty);
+                                        $inventoryItem->stock_balance = max(0, $availableStock - $takeStock);
+                                        $inventoryItem->save();
+
+                                        $qtyToDeduct -= max($takeQty, $takeStock);
+                                    }
                                 }
                             }
                         }

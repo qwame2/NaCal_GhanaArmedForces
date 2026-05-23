@@ -20,6 +20,26 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         try {
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'usage_type')) {
+                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('usage_type')->default('permanent');
+                });
+            }
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisition_items', 'alternative_description')) {
+                \Illuminate\Support\Facades\Schema::table('store_requisition_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('alternative_description')->nullable();
+                });
+            }
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisition_items', 'alternative_quantity_approved')) {
+                \Illuminate\Support\Facades\Schema::table('store_requisition_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->decimal('alternative_quantity_approved', 15, 2)->nullable();
+                });
+            }
+        } catch (\Exception $e) {
+            // Ignore
+        }
+
+        try {
             $logPath = base_path('debug_output.txt');
             $data = [];
             
@@ -112,8 +132,11 @@ class AppServiceProvider extends ServiceProvider
                 if (auth()->user()->is_admin) {
                     $pendingPasswordRequests = \App\Models\PasswordResetRequest::where('status', 'pending')->count();
                     $view->with('pendingPasswordRequests', $pendingPasswordRequests);
+                    $pendingRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')->count();
+                    $view->with('pendingRequisitionsCount', $pendingRequisitionsCount);
                 } else {
                     $view->with('pendingPasswordRequests', 0);
+                    $view->with('pendingRequisitionsCount', 0);
                 }
             }
         });

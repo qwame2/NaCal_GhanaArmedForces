@@ -13,7 +13,7 @@
 
     <!-- CSS Assets -->
     <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
-    
+
     <!-- Scripts -->
     <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
     <script src="{{ asset('js/lucide.min.js') }}"></script>
@@ -23,24 +23,24 @@
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
     </script>
-    
+
     <style>
         :root {
             --font-display: 'Outfit', sans-serif;
             --font-sans: 'Plus Jakarta Sans', sans-serif;
-            
+
             --store-orange: #f97316;
             --store-orange-hover: #ea580c;
             --store-orange-light: rgba(249, 115, 22, 0.08);
-            
+
             --store-indigo: #6366f1;
             --store-indigo-hover: #4f46e5;
             --store-indigo-light: rgba(99, 102, 241, 0.08);
-            
+
             --success-color: #10b981;
             --warning-color: #f59e0b;
             --danger-color: #ef4444;
-            
+
             --bg-main: #f8fafc;
             --bg-card: #ffffff;
             --text-main: #0f172a;
@@ -422,6 +422,55 @@
             transform: none;
         }
 
+        /* Premium Usage Type Pill Selector */
+        .usage-type-pills {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 1.25rem;
+        }
+
+        .usage-pill-label {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--bg-main);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            color: var(--text-muted);
+        }
+
+        .usage-pill-label:hover {
+            border-color: var(--store-orange);
+            color: var(--store-orange);
+            background: var(--store-orange-light);
+            transform: translateY(-1px);
+        }
+
+        .usage-pill-label.active {
+            border-color: var(--store-orange);
+            color: var(--store-orange);
+            background: var(--store-orange-light);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.1);
+        }
+
+        .usage-pill-label .pill-icon {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.2s;
+        }
+
+        .usage-pill-label.active .pill-icon {
+            transform: scale(1.1);
+        }
+
         @media (max-width: 900px) {
             .checkout-layout {
                 grid-template-columns: 1fr;
@@ -464,7 +513,7 @@
 
     <!-- --- MAIN LAYOUT --- -->
     <main class="checkout-layout" id="main-layout">
-        
+
         <!-- --- COLUMN 1: ITEMS IN BAG --- -->
         <section class="checkout-card">
             <h3 class="checkout-title">
@@ -493,7 +542,7 @@
                     <label class="form-label">Full Name *</label>
                     <input type="text" id="requesterName" class="form-input" value="{{ auth()->user()->name }}" required placeholder="Your full name...">
                 </div>
-                
+
                 <div>
                     <label class="form-label">Rank / Title</label>
                     <input type="text" id="rankTitle" class="form-input" placeholder="e.g. Sergeant, Staff Officer...">
@@ -511,6 +560,22 @@
                         <option value="urgent">Urgent Processing</option>
                         <option value="low">Low Priority</option>
                     </select>
+                </div>
+
+                <div>
+                    <label class="form-label">Usage Type *</label>
+                    <div class="usage-type-pills">
+                        <label class="usage-pill-label active" data-value="permanent">
+                            <input type="radio" name="usage_type" value="permanent" checked style="display: none;">
+                            <i data-lucide="package-check" class="pill-icon"></i>
+                            <span>Permanent</span>
+                        </label>
+                        <label class="usage-pill-label" data-value="temporary">
+                            <input type="radio" name="usage_type" value="temporary" style="display: none;">
+                            <i data-lucide="calendar" class="pill-icon"></i>
+                            <span>Temporary</span>
+                        </label>
+                    </div>
                 </div>
 
                 <div>
@@ -569,29 +634,29 @@
                         <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom: 0.75rem;">
                             Unit of Issue: <b>${item.unit}</b>
                         </div>
-                        
+
                         <div style="display:flex; align-items:center; gap: 8px;">
                             <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">Quantity:</span>
                             <div class="qty-controls">
                                 <button class="qty-btn" type="button" onclick="adjustQty(${idx}, -1)">
                                     <i data-lucide="minus" style="width: 12px;"></i>
                                 </button>
-                                <input type="number" 
-                                       class="qty-val" 
-                                       value="${item.quantity_requested}" 
-                                       min="0.1" 
+                                <input type="number"
+                                       class="qty-val"
+                                       value="${item.quantity_requested}"
+                                       min="0.1"
                                        step="any"
-                                       max="${item.total_stock}" 
+                                       max="${item.total_stock}"
                                        onchange="changeQty(${idx}, this.value)">
                                 <button class="qty-btn" type="button" onclick="adjustQty(${idx}, 1)">
                                     <i data-lucide="plus" style="width: 12px;"></i>
                                 </button>
                             </div>
-                            <span style="font-size:0.7rem; color:var(--text-muted);">Max stock: ${item.total_stock}</span>
+                           
                         </div>
 
-                        <textarea class="cart-item-remarks" 
-                                  placeholder="Specify remarks, dimensions, color preferences..." 
+                        <textarea class="cart-item-remarks"
+                                  placeholder="Specify remarks, dimensions, color preferences..."
                                   rows="2"
                                   onchange="updateRemarks(${idx}, this.value)">${item.remarks || ''}</textarea>
                     </div>
@@ -608,7 +673,7 @@
         function adjustQty(idx, amt) {
             let current = parseFloat(cart[idx].quantity_requested) || 1;
             const maxVal = parseFloat(cart[idx].total_stock) || 999;
-            
+
             current += amt;
             if (current < 1) current = 1;
             if (current > maxVal) {
@@ -677,6 +742,7 @@
                 rank_or_title:  document.getElementById('rankTitle').value,
                 purpose:        document.getElementById('purpose').value,
                 priority:       document.getElementById('priority').value,
+                usage_type:     document.querySelector('input[name="usage_type"]:checked').value,
                 items:          cart.map(i => ({
                     description: i.description,
                     category:    i.category || '',
@@ -740,6 +806,15 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadCart();
             lucide.createIcons();
+
+            // Setup Usage Type pill interactivity
+            document.querySelectorAll('.usage-pill-label').forEach(label => {
+                label.addEventListener('click', function() {
+                    document.querySelectorAll('.usage-pill-label').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    this.querySelector('input[type="radio"]').checked = true;
+                });
+            });
         });
     </script>
 </body>

@@ -14,6 +14,8 @@ class StoreRequisitionItem extends Model
         'quantity_requested',
         'quantity_approved',
         'remarks',
+        'alternative_description',
+        'alternative_quantity_approved',
     ];
 
     public function requisition()

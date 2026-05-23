@@ -22,6 +22,7 @@ class StoreRequisition extends Model
         'processed_at',
         'collected_at',
         'collected_by',
+        'usage_type',
     ];
 
     protected $casts = [
@@ -65,6 +66,14 @@ class StoreRequisition extends Model
             'partially_approved' => ['label' => 'Partial Approval',   'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'],
             'declined'           => ['label' => 'Declined',           'color' => '#ef4444', 'bg' => 'rgba(239,68,68,0.1)'],
             default              => ['label' => 'Pending Review',     'color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'],
+        };
+    }
+
+    public function getUsageTypeBadgeAttribute(): array
+    {
+        return match($this->usage_type) {
+            'temporary' => ['label' => 'Temporary', 'color' => '#ea580c', 'bg' => 'rgba(234,88,12,0.1)'],
+            default     => ['label' => 'Permanent', 'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.1)'],
         };
     }
 }

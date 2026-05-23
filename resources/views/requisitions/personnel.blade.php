@@ -363,7 +363,11 @@
         <tr class="req-table-row">
           <td style="padding:1rem 1.5rem;font-size:.8rem;font-weight:700;color:var(--text-muted);">#{{ $req->id }}</td>
           <td style="padding:1rem 1.5rem;">
-            <div style="font-size:.9rem;font-weight:800;color:var(--text-main);">{{ $req->department }}</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="font-size:.9rem;font-weight:800;color:var(--text-main);">{{ $req->department }}</div>
+              @php $utb = $req->usage_type_badge; @endphp
+              <span class="pill" style="background:{{ $utb['bg'] }}; color:{{ $utb['color'] }}; font-size: 0.6rem; padding: 2px 6px; border-radius: 6px; font-weight:800; text-transform:none; letter-spacing:0;">{{ $utb['label'] }}</span>
+            </div>
             <div style="font-size:.75rem;color:var(--text-muted);font-weight:600;">{{ $req->requester_name }}{{ $req->rank_or_title ? ' · '.$req->rank_or_title : '' }}</div>
           </td>
           <td style="padding:1rem 1.5rem;">
@@ -500,6 +504,7 @@ async function openRequisitionModal(id) {
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-size:.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Requisition Intention & Purpose</span>
                 <div class="stat-pill-group">
+                    <span class="stat-pill" style="background:${data.usage_type_badge.bg}; color:${data.usage_type_badge.color}; border-color:rgba(0,0,0,0.05); font-weight:800;"><i data-lucide="${data.usage_type === 'temporary' ? 'calendar' : 'package-check'}" style="width:12px;"></i> ${data.usage_type_badge.label}</span>
                     <span class="stat-pill"><i data-lucide="layers" style="width:12px;"></i> ${totalItemsCount} ${totalItemsCount === 1 ? 'Item Type' : 'Item Types'}</span>
                     <span class="stat-pill"><i data-lucide="hash" style="width:12px;"></i> Total Qty: ${totalQtyRequested.toLocaleString()}</span>
                 </div>
@@ -515,14 +520,16 @@ async function openRequisitionModal(id) {
     const rows = data.items.map(item => {
         const requested = parseFloat(item.quantity_requested) || 0;
         const approved = item.quantity_approved !== null ? parseFloat(item.quantity_approved) : 0;
-        const pct = requested > 0 ? Math.min(Math.round((approved / requested) * 100), 100) : 0;
+        const altApproved = item.alternative_quantity_approved !== null ? parseFloat(item.alternative_quantity_approved) : 0;
+        const totalApproved = approved + altApproved;
+        const pct = requested > 0 ? Math.min(Math.round((totalApproved / requested) * 100), 100) : 0;
         
         let fulfillBadgeClass = 'fulfill-ratio-badge';
         let fulfillLabel = `${pct}% Fulfill`;
-        if (approved === 0) {
+        if (totalApproved === 0) {
             fulfillBadgeClass += ' declined';
             fulfillLabel = 'Declined';
-        } else if (approved < requested) {
+        } else if (totalApproved < requested) {
             fulfillBadgeClass += ' reduced';
             fulfillLabel = `${pct}% Reduced`;
         }
@@ -532,11 +539,22 @@ async function openRequisitionModal(id) {
             : `<span style="color:#ef4444;font-size:.7rem;font-weight:700;">⚠ Short Stock</span>`;
 
         return `
-        <div class="item-decision-card ${approved === 0 ? 'declined-row' : 'approved-row'}">
+        <div class="item-decision-card ${totalApproved === 0 ? 'declined-row' : 'approved-row'}">
             <div class="item-card-header">
                 <div class="item-card-header-left">
                     <div>
-                        <div style="font-size:.95rem;font-weight:800;color:var(--text-main);">${item.description}</div>
+                        ${item.alternative_description ? `
+                            <div style="font-size:.95rem;font-weight:800;color:var(--text-main); display:flex; align-items:center; gap:6px;">
+                                <span>${item.description}</span>
+                                <span style="font-size:0.75rem; font-weight:800; color:var(--success-color);">(Approved: ${approved.toLocaleString()} ${item.unit})</span>
+                            </div>
+                            <div style="font-size:.92rem;font-weight:800;color:var(--store-orange); display:flex; align-items:center; gap:6px; margin-top:4px;">
+                                <i data-lucide="shuffle" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:2px;"></i>Alternative: ${item.alternative_description}
+                                <span style="font-size:0.75rem; font-weight:800;">(Approved: ${altApproved.toLocaleString()} ${item.unit})</span>
+                            </div>
+                        ` : `
+                            <div style="font-size:.95rem;font-weight:800;color:var(--text-main);">${item.description}</div>
+                        `}
                         <div style="font-size:.75rem;color:var(--text-muted);font-weight:600;margin-top:4px;">
                             Unit: ${item.unit} · Stock: ${parseFloat(item.current_stock).toLocaleString()} (${stockInfo})
                         </div>
@@ -554,8 +572,8 @@ async function openRequisitionModal(id) {
                 </div>
 
                 <div style="flex:1; min-width:80px;">
-                    <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;">Approved</div>
-                    <div style="font-size:1.15rem;font-weight:900;color:${approved === 0 ? '#ef4444' : '#10b981'};margin-top:2px;">${approved.toLocaleString()}</div>
+                    <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;">Total Approved</div>
+                    <div style="font-size:1.15rem;font-weight:900;color:${totalApproved === 0 ? '#ef4444' : '#10b981'};margin-top:2px;">${totalApproved.toLocaleString()}</div>
                 </div>
 
                 <div style="flex:2; min-width:180px;">

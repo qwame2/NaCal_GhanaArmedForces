@@ -633,10 +633,13 @@ Route::middleware(['auth', 'check_status'])->group(function () {
 
         $alertCount += $expiredCount;
 
+        $pendingRequisitions = \App\Models\StoreRequisition::where('status', 'pending')->count();
+
         return response()->json([
             'messages' => $messages,
             'password_requests' => $passwordRequests,
-            'alerts' => $alertCount
+            'alerts' => $alertCount,
+            'pending_requisitions' => $pendingRequisitions,
         ]);
     })->name('api.admin.sidebar-counts');
 

@@ -713,6 +713,20 @@
         display: inline-block;
         margin-right: 4px;
     }
+
+    /* Alternative item select styling */
+    .alternative-item-select {
+        transition: all 0.25s ease !important;
+    }
+    .alternative-item-select:hover {
+        border-color: var(--store-orange) !important;
+        background: var(--bg-card) !important;
+    }
+    .alternative-item-select:focus {
+        border-color: var(--store-orange) !important;
+        background: var(--bg-card) !important;
+        box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12) !important;
+    }
 </style>
 
 <div style="padding:2rem;">
@@ -807,7 +821,11 @@
                 <tr class="req-table-row">
                     <td style="padding:1rem 1.5rem;font-size:.8rem;font-weight:700;color:var(--text-muted);">#{{ $req->id }}</td>
                     <td style="padding:1rem 1.5rem;">
-                        <div style="font-size:.9rem;font-weight:800;color:var(--text-main);">{{ $req->department }}</div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="font-size:.9rem;font-weight:800;color:var(--text-main);">{{ $req->department }}</div>
+                            @php $utb = $req->usage_type_badge; @endphp
+                            <span class="pill" style="background:{{ $utb['bg'] }}; color:{{ $utb['color'] }}; font-size: 0.6rem; padding: 2px 6px; border-radius: 6px; font-weight:800; text-transform:none; letter-spacing:0;">{{ $utb['label'] }}</span>
+                        </div>
                         <div style="font-size:.75rem;color:var(--text-muted);font-weight:600;">{{ $req->requester_name }}{{ $req->rank_or_title ? ' · '.$req->rank_or_title : '' }}</div>
                     </td>
                     <td style="padding:1rem 1.5rem;">
@@ -946,6 +964,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-size:.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Requisition Intention & Purpose</span>
                 <div class="stat-pill-group">
+                    <span class="stat-pill" style="background:${data.usage_type_badge.bg}; color:${data.usage_type_badge.color}; border-color:rgba(0,0,0,0.05); font-weight:800;"><i data-lucide="${data.usage_type === 'temporary' ? 'calendar' : 'package-check'}" style="width:12px;"></i> ${data.usage_type_badge.label}</span>
                     <span class="stat-pill"><i data-lucide="layers" style="width:12px;"></i> ${totalItemsCount} ${totalItemsCount === 1 ? 'Item Type' : 'Item Types'}</span>
                     <span class="stat-pill"><i data-lucide="hash" style="width:12px;"></i> Total Qty: ${totalQtyRequested.toLocaleString()}</span>
                 </div>
@@ -957,10 +976,20 @@
     </div>
     `;
 
-        // ── 3. Item rows ──────────────────────────────────────────────
         let itemRowsHtml = '';
         if (isPending) {
             data.items.forEach((item, i) => {
+                const itemCategory = item.category ? item.category.trim().toLowerCase() : '';
+                let alternativeOptions = `<option value="">-- Select Alternative Item --</option>`;
+                if (data.alternatives && data.alternatives.length > 0) {
+                    data.alternatives.forEach(alt => {
+                        const altCategory = alt.category ? alt.category.trim().toLowerCase() : '';
+                        if (altCategory === itemCategory) {
+                            alternativeOptions += `<option value="${alt.description}" data-unit="${alt.unit}" data-stock="${alt.total_stock}">${alt.description} (Stock: ${alt.total_stock} ${alt.unit})</option>`;
+                        }
+                    });
+                }
+
                 const stockInfo = item.stock_sufficient ?
                     `<span style="color:#10b981;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="check-circle-2" style="width:12px;height:12px;"></i> Sufficient Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>` :
                     `<span style="color:#f59e0b;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-triangle" style="width:12px;height:12px;"></i> Critical Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>`;
@@ -978,7 +1007,7 @@
                             <label for="chk-${i}" class="switch-label" title="Toggle item approval"></label>
                         </div>
                         <div>
-                            <div style="font-size:.95rem;font-weight:800;color:var(--text-main);">${item.description}</div>
+                            <div style="font-size:.95rem;font-weight:800;color:var(--text-main);" id="item-desc-text-${i}">${item.description}</div>
                             <div style="margin-top:4px;">${stockInfo}</div>
                         </div>
                     </div>
@@ -993,7 +1022,7 @@
                 </div>
 
                 <!-- Bottom Panel: Spinner controls & Remarks quick-tags -->
-                <div class="item-card-panel">
+                <div class="item-card-panel" style="flex-wrap: wrap;">
                     <div class="item-card-spinner-box">
                         <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.02em;">Approved Allocation</span>
                         <div class="qty-spinner">
@@ -1026,8 +1055,36 @@
 
                             <div id="quick-tags-${i}" style="display:none;">
                                 <span class="quick-tag" onclick="fillQuickReason(${i}, 'Reduce Allocation')">Reduce Allocation</span>
-                                <span class="quick-tag" onclick="fillQuickReason(${i}, 'Alternative Available')">Alternative Available</span>
+                                <span class="quick-tag" onclick="showAlternativeDropdown(${i})">Alternative Available</span>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Alternative Item Selector -->
+                    <div class="alternative-selector-box" id="alt-selector-box-${i}" style="display:none; flex-basis:100%; width:100%; margin-top:12px; padding-top:12px; border-top:1px dashed var(--border-color);">
+                        <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:6px;">Specify Alternative Item</span>
+                        <div style="position:relative; display:inline-block; width:100%; max-width:400px; margin-bottom:8px;">
+                            <i data-lucide="shuffle" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--store-orange); pointer-events:none; z-index:10;"></i>
+                            <select class="alternative-item-select" id="alt-select-${i}" onchange="selectAlternative(${i}, this.value)" style="margin-bottom:0; padding:10px 12px 10px 36px; height:auto; border-radius:12px; width:100%; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-main); color:var(--text-main); outline:none; transition:all 0.25s ease; cursor:pointer;-webkit-appearance:none;-moz-appearance:none;appearance:none; background-image:url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"%2364748b\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"6 9 12 15 18 9\"></polyline></svg>'); background-repeat:no-repeat; background-position:right 12px center; background-size:16px; padding-right:36px;">
+                                ${alternativeOptions}
+                            </select>
+                        </div>
+                        <div id="alt-stock-info-${i}" style="font-size:0.75rem; font-weight:800; color:var(--store-orange); margin-top:4px; margin-bottom:8px; display:none; background:rgba(249, 115, 22, 0.04); border:1px solid rgba(249, 115, 22, 0.12); padding:6px 12px; border-radius:8px; align-items:center; gap:6px;"></div>
+                        
+                        <!-- Alternative Quantity Spinner -->
+                        <div class="alt-qty-container" id="alt-qty-container-${i}" style="display:none; align-items:center; gap:10px; margin-top:8px;">
+                            <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.02em;">Alternative Allocation</span>
+                            <div class="qty-spinner" style="border-color:var(--store-orange);">
+                                <button type="button" class="qty-btn" style="color:var(--store-orange);" onclick="adjustAltQty(${i}, -1)">−</button>
+                                <input type="number" class="alt-approved-qty-input"
+                                    id="alt-qty-${i}"
+                                    data-index="${i}"
+                                    value="0"
+                                    min="0" step="0.01"
+                                    oninput="onAltQtyChange(${i})">
+                                <button type="button" class="qty-btn" style="color:var(--store-orange);" onclick="adjustAltQty(${i}, 1)">+</button>
+                            </div>
+                            <span style="font-size:.78rem;color:var(--text-muted);font-weight:700;" id="alt-unit-lbl-${i}">${item.unit}</span>
                         </div>
                     </div>
                 </div>
@@ -1038,14 +1095,16 @@
             const rows = data.items.map(item => {
                 const requested = parseFloat(item.quantity_requested) || 0;
                 const approved = item.quantity_approved !== null ? parseFloat(item.quantity_approved) : 0;
-                const pct = requested > 0 ? Math.min(Math.round((approved / requested) * 100), 100) : 0;
+                const altApproved = item.alternative_quantity_approved !== null ? parseFloat(item.alternative_quantity_approved) : 0;
+                const totalApproved = approved + altApproved;
+                const pct = requested > 0 ? Math.min(Math.round((totalApproved / requested) * 100), 100) : 0;
 
                 let fulfillBadgeClass = 'fulfill-ratio-badge';
                 let fulfillLabel = `${pct}% Fulfill`;
-                if (approved === 0) {
+                if (totalApproved === 0) {
                     fulfillBadgeClass += ' declined';
                     fulfillLabel = 'Declined';
-                } else if (approved < requested) {
+                } else if (totalApproved < requested) {
                     fulfillBadgeClass += ' reduced';
                     fulfillLabel = `${pct}% Reduced`;
                 }
@@ -1055,12 +1114,23 @@
                     `<span style="color:#ef4444;font-size:.7rem;font-weight:700;">⚠ Short Stock</span>`;
 
                 return `
-            <div class="item-decision-card ${approved === 0 ? 'declined-row' : 'approved-row'}">
+            <div class="item-decision-card ${totalApproved === 0 ? 'declined-row' : 'approved-row'}">
                 <!-- Top Row: Description & Fulfillment status badge -->
                 <div class="item-card-header">
                     <div class="item-card-header-left">
                         <div>
-                            <div style="font-size:.95rem;font-weight:800;color:var(--text-main);">${item.description}</div>
+                            ${item.alternative_description ? `
+                                <div style="font-size:.95rem;font-weight:800;color:var(--text-main); display:flex; align-items:center; gap:6px;">
+                                    <span>${item.description}</span>
+                                    <span style="font-size:0.75rem; font-weight:800; color:var(--success-color);">(Approved: ${approved.toLocaleString()} ${item.unit})</span>
+                                </div>
+                                <div style="font-size:.92rem;font-weight:800;color:var(--store-orange); display:flex; align-items:center; gap:6px; margin-top:4px;">
+                                    <i data-lucide="shuffle" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:2px;"></i>Alternative: ${item.alternative_description}
+                                    <span style="font-size:0.75rem; font-weight:800;">(Approved: ${altApproved.toLocaleString()} ${item.unit})</span>
+                                </div>
+                            ` : `
+                                <div style="font-size:.95rem;font-weight:800;color:var(--text-main);">${item.description}</div>
+                            `}
                             <div style="font-size:.75rem;color:var(--text-muted);font-weight:600;margin-top:4px;">
                                 Unit: ${item.unit} · Stock: ${parseFloat(item.current_stock).toLocaleString()} (${stockInfo})
                             </div>
@@ -1081,15 +1151,15 @@
 
                     <!-- Approved -->
                     <div style="flex:1; min-width:80px;">
-                        <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;">Approved</div>
-                        <div style="font-size:1.15rem;font-weight:900;color:${approved === 0 ? '#ef4444' : '#10b981'};margin-top:2px;">${approved.toLocaleString()}</div>
+                        <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;">Total Approved</div>
+                        <div style="font-size:1.15rem;font-weight:900;color:${totalApproved === 0 ? '#ef4444' : '#10b981'};margin-top:2px;">${totalApproved.toLocaleString()}</div>
                     </div>
 
                     <!-- Fulfillment Progress -->
                     <div style="flex:2; min-width:180px;">
                         <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:6px;">Fulfillment Progress</div>
                         <div class="fulfill-progress-container" style="margin-top:0;">
-                            <div class="fulfill-progress-bar" style="width: ${pct}%; background:${approved === 0 ? '#ef4444' : (approved < requested ? '#f59e0b' : 'linear-gradient(90deg, #4f46e5 0%, #10b981 100%)')}"></div>
+                            <div class="fulfill-progress-bar" style="width: ${pct}%; background:${totalApproved === 0 ? '#ef4444' : (totalApproved < requested ? '#f59e0b' : 'linear-gradient(90deg, #4f46e5 0%, #10b981 100%)')}"></div>
                         </div>
                     </div>
                 </div>
@@ -1269,6 +1339,122 @@
         if (reasonInput) {
             reasonInput.value = text;
         }
+        // Reset alternative selector if any other reason is selected
+        const altBox = document.getElementById(`alt-selector-box-${idx}`);
+        if (altBox) {
+            altBox.style.display = 'none';
+            const altSelect = document.getElementById(`alt-select-${idx}`);
+            if (altSelect) {
+                altSelect.value = '';
+                const qtyInput = document.getElementById(`qty-${idx}`);
+                const altQtyInput = document.getElementById(`alt-qty-${idx}`);
+                const altQtyContainer = document.getElementById(`alt-qty-container-${idx}`);
+                const descText = document.getElementById(`item-desc-text-${idx}`);
+                const origDesc = currentReqData.items[idx].description;
+                document.getElementById(`alt-stock-info-${idx}`).style.display = 'none';
+                if (altQtyContainer) altQtyContainer.style.display = 'none';
+                if (altQtyInput) {
+                    altQtyInput.value = 0;
+                    altQtyInput.removeAttribute('max');
+                }
+                qtyInput.value = qtyInput.dataset.requested;
+                descText.innerHTML = origDesc;
+            }
+        }
+    }
+
+    function showAlternativeDropdown(idx) {
+        const altBox = document.getElementById(`alt-selector-box-${idx}`);
+        const reasonInput = document.getElementById(`reason-${idx}`);
+        if (altBox) {
+            altBox.style.display = 'block';
+        }
+        if (reasonInput) {
+            reasonInput.value = 'Alternative item approved: ';
+            reasonInput.style.display = 'block';
+        }
+        const quickTags = document.getElementById(`quick-tags-${idx}`);
+        if (quickTags) {
+            quickTags.style.display = 'block';
+        }
+        const reasonOk = document.getElementById(`reason-ok-${idx}`);
+        if (reasonOk) {
+            reasonOk.style.display = 'none';
+        }
+        updateStatusBar();
+    }
+
+    function selectAlternative(idx, val) {
+        const altSelect = document.getElementById(`alt-select-${idx}`);
+        const reasonInput = document.getElementById(`reason-${idx}`);
+        const stockInfo = document.getElementById(`alt-stock-info-${idx}`);
+        const qtyInput = document.getElementById(`qty-${idx}`);
+        const altQtyInput = document.getElementById(`alt-qty-${idx}`);
+        const altQtyContainer = document.getElementById(`alt-qty-container-${idx}`);
+        const altUnitLbl = document.getElementById(`alt-unit-lbl-${idx}`);
+        const descText = document.getElementById(`item-desc-text-${idx}`);
+        const origDesc = currentReqData.items[idx].description;
+        const requested = parseFloat(qtyInput.dataset.requested) || 0;
+        
+        if (val) {
+            const selectedOpt = altSelect.options[altSelect.selectedIndex];
+            const stock = parseFloat(selectedOpt.dataset.stock) || 0;
+            const unit = selectedOpt.dataset.unit || 'units';
+            
+            // Show stock info
+            stockInfo.style.display = 'inline-flex';
+            stockInfo.innerHTML = `<i data-lucide="info" style="width:14px;height:14px;flex-shrink:0;"></i>Alternative Stock: <b>${stock.toLocaleString()} ${unit}</b> available`;
+            
+            // Show alternative qty spinner
+            if (altQtyContainer) altQtyContainer.style.display = 'flex';
+            if (altUnitLbl) altUnitLbl.textContent = unit;
+            
+            // Set max approved limit for alternative quantity
+            if (altQtyInput) {
+                altQtyInput.max = stock;
+                // Default alternative quantity to: Math.max(0, requested - original_approved) capped by alternative stock
+                const originalApproved = parseFloat(qtyInput.value) || 0;
+                const defaultAltQty = Math.max(0, requested - originalApproved);
+                altQtyInput.value = parseFloat(Math.min(defaultAltQty, stock).toFixed(2));
+            }
+            
+            // Set remark automatically
+            reasonInput.value = `Alternative Approved: ${val}`;
+            reasonInput.style.display = 'block';
+            
+            // Update description display
+            descText.innerHTML = `<span>${origDesc}</span> <span style="color:var(--store-orange); font-weight:800; margin-left:6px;"><i data-lucide="shuffle" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px;"></i>Alternative: ${val}</span>`;
+        } else {
+            stockInfo.style.display = 'none';
+            if (altQtyContainer) altQtyContainer.style.display = 'none';
+            if (altQtyInput) {
+                altQtyInput.value = 0;
+                altQtyInput.removeAttribute('max');
+            }
+            reasonInput.value = '';
+            descText.innerHTML = origDesc;
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        updateStatusBar();
+    }
+
+    function adjustAltQty(idx, dir) {
+        const qtyInput = document.getElementById(`alt-qty-${idx}`);
+        if (!qtyInput || qtyInput.disabled) return;
+        let currentVal = parseFloat(qtyInput.value) || 0;
+        let newVal = currentVal + dir;
+        if (newVal < 0) newVal = 0;
+        qtyInput.value = parseFloat(newVal.toFixed(2));
+        onAltQtyChange(idx);
+    }
+
+    function onAltQtyChange(idx) {
+        const qtyInput = document.getElementById(`alt-qty-${idx}`);
+        const maxVal = parseFloat(qtyInput.max);
+        if (!isNaN(maxVal) && parseFloat(qtyInput.value) > maxVal) {
+            qtyInput.value = maxVal;
+        }
+        updateStatusBar();
     }
 
     // Toggle item approval on checkbox/switch change
@@ -1341,8 +1527,9 @@
 
         checkboxes.forEach((chk, i) => {
             const qtyEl = document.getElementById(`qty-${i}`);
+            const altQtyEl = document.getElementById(`alt-qty-${i}`);
             const requested = parseFloat(qtyEl?.dataset.requested || 0);
-            const approved = parseFloat(qtyEl?.value || 0);
+            const approved = (parseFloat(qtyEl?.value) || 0) + (altQtyEl ? (parseFloat(altQtyEl.value) || 0) : 0);
 
             if (!chk.checked || approved === 0) {
                 cntDeclined++;
@@ -1423,8 +1610,9 @@
         let allFullApproval = true;
         checkboxes.forEach((chk, i) => {
             const qtyEl = document.getElementById(`qty-${i}`);
+            const altQtyEl = document.getElementById(`alt-qty-${i}`);
             const requested = parseFloat(qtyEl?.dataset.requested || 0);
-            const approved = parseFloat(qtyEl?.value || 0);
+            const approved = (parseFloat(qtyEl?.value) || 0) + (altQtyEl ? (parseFloat(altQtyEl.value) || 0) : 0);
             if (chk.checked && approved > 0) allDeclined = false;
             if (!chk.checked || approved < requested) allFullApproval = false;
         });
@@ -1440,10 +1628,14 @@
         document.querySelectorAll('.approved-qty-input').forEach((inp, i) => {
             const chk = document.getElementById(`chk-${i}`);
             const reason = document.getElementById(`reason-${i}`)?.value || '';
+            const altSelect = document.getElementById(`alt-select-${i}`);
+            const altQtyInput = document.getElementById(`alt-qty-${i}`);
             items.push({
                 id: parseInt(inp.dataset.itemId),
                 quantity_approved: chk && !chk.checked ? 0 : (parseFloat(inp.value) || 0),
-                remarks: reason
+                remarks: reason,
+                alternative_description: altSelect ? (altSelect.value || null) : null,
+                alternative_quantity_approved: altQtyInput ? (parseFloat(altQtyInput.value) || 0) : 0
             });
         });
 

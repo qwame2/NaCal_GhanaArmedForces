@@ -13,7 +13,7 @@
 
     <!-- CSS Assets -->
     <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
-    
+
     <!-- Scripts -->
     <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
     <script src="{{ asset('js/lucide.min.js') }}"></script>
@@ -24,25 +24,25 @@
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
     </script>
-    
+
     <style>
         :root {
             --font-display: 'Outfit', sans-serif;
             --font-sans: 'Plus Jakarta Sans', sans-serif;
-            
+
             /* Modern E-commerce Jumia-Inspired Color Palette */
             --store-orange: #f97316;
             --store-orange-hover: #ea580c;
             --store-orange-light: rgba(249, 115, 22, 0.08);
-            
+
             --store-indigo: #6366f1;
             --store-indigo-hover: #4f46e5;
             --store-indigo-light: rgba(99, 102, 241, 0.08);
-            
+
             --success-color: #10b981;
             --warning-color: #f59e0b;
             --danger-color: #ef4444;
-            
+
             /* Theme overrides */
             --bg-main: #f8fafc;
             --bg-card: #ffffff;
@@ -1437,7 +1437,7 @@
                         <i data-lucide="shopping-bag" style="width: 16px;"></i> Start Requesting
                     </button>
                     <a href="{{ route('requisitions.history') }}" class="hero-btn hero-btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-                        <i data-lucide="clock" style="width: 16px;"></i> View My History
+                        <i data-lucide="clock" style="width: 16px;"></i> Truck Items
                     </a>
                 </div>
             </div>
@@ -1452,14 +1452,14 @@
 
     <!-- --- MAIN STOREFRONT LAYOUT --- -->
     <main class="store-layout">
-        
+
         <!-- --- LEFT SIDEBAR: CATEGORIES --- -->
         <aside class="store-sidebar">
             <h3 class="sidebar-title">
                 <i data-lucide="layers" style="width: 18px; color: var(--store-orange);"></i>
                 Browse Categories
             </h3>
-            
+
             @php
                 // Count items per category locally in PHP to present accurate stats
                 $categoryCounts = ['all' => count($availableItems)];
@@ -1515,33 +1515,33 @@
                         $catName = $ledgeMap[$item->ledge_category] ?? 'Other';
                         $stockVal = (float) $item->total_stock;
                         $stockStatus = 'stock-in';
-                        $stockLabel = 'In Stock (' . number_format($stockVal, 0) . ')';
-                        
+                        $stockLabel = 'In Stock';
+
                         if ($stockVal <= 0) {
                             $stockStatus = 'stock-out';
                             $stockLabel = 'Out of Stock';
                         } elseif ($stockVal <= 10) {
                             $stockStatus = 'stock-low';
-                            $stockLabel = 'Low Stock (' . number_format($stockVal, 0) . ')';
+                            $stockLabel = 'Low Stock';
                         }
                     @endphp
 
-                    <div class="product-card-wrapper" 
-                         data-category="{{ $catCode }}" 
+                    <div class="product-card-wrapper"
+                         data-category="{{ $catCode }}"
                          data-title="{{ strtolower($item->description) }}"
                          style="transition: all 0.25s ease;">
-                        
+
                         <div class="product-card">
                             <div class="product-image-container">
                                 <div class="product-icon-box">
                                     <i data-lucide="package" style="width: 28px; height: 28px;"></i>
                                 </div>
                             </div>
-                            
+
                             <div class="product-body">
                                 <span class="product-cat-tag">{{ $catName }}</span>
                                 <h4 class="product-title" title="{{ $item->description }}">{{ $item->description }}</h4>
-                                
+
                                 <div class="product-meta-row">
                                     <span class="product-unit">
                                         <i data-lucide="tag" style="width: 12px; color: var(--store-orange);"></i> {{ $item->unit ?: 'pcs' }}
@@ -1562,8 +1562,8 @@
                                                 <i data-lucide="plus" style="width: 12px;"></i>
                                             </button>
                                         </div>
-                                        
-                                        <button class="add-cart-btn" id="add-btn-{{ $idx }}" 
+
+                                        <button class="add-cart-btn" id="add-btn-{{ $idx }}"
                                                 onclick="addToCart('{{ addslashes($item->description) }}', '{{ $catCode }}', '{{ addslashes($item->unit) }}', {{ $stockVal }}, {{ $idx }})">
                                             <i data-lucide="plus" style="width: 14px;"></i> Add
                                         </button>
@@ -1593,9 +1593,37 @@
     <script>
         // E-COMMERCE CORE STATE & LOGIC
         const availableItems = @json($availableItems);
-
         const ledgeMap = @json($ledgeMap);
         let cart = [];
+
+        let currentCategoryId = 'all';
+        let searchQuery = '';
+
+        function filterCatalog() {
+            const query = searchQuery.toLowerCase().trim();
+            const cards = document.querySelectorAll('.product-card-wrapper');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const cardCategory = card.getAttribute('data-category');
+                const cardTitle = card.getAttribute('data-title') || '';
+
+                const matchesCategory = (currentCategoryId === 'all') || (cardCategory === currentCategoryId);
+                const matchesSearch = !query || cardTitle.includes(query);
+
+                if (matchesCategory && matchesSearch) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            const displayedCountEl = document.getElementById('displayed-products-count');
+            if (displayedCountEl) {
+                displayedCountEl.textContent = visibleCount;
+            }
+        }
 
         // Load cart from LocalStorage on page mount to provide gold-standard durability
         function loadCartFromStorage() {
@@ -1619,11 +1647,11 @@
             const input = document.getElementById(`qty-input-${idx}`);
             const maxVal = parseFloat(input.getAttribute('max')) || 999;
             let current = parseFloat(input.value) || 1;
-            
+
             current += amt;
             if (current < 1) current = 1;
             if (current > maxVal) current = maxVal;
-            
+
             input.value = current;
         }
 
@@ -1631,10 +1659,10 @@
         function addToCart(desc, cat, unit, maxStock, idx) {
             const qtyInput = document.getElementById(`qty-input-${idx}`);
             const qtyToAdd = parseFloat(qtyInput.value) || 1;
-            
+
             // Check if product already exists in checkout cart
             const existingItem = cart.find(i => i.description.trim().toLowerCase() === desc.trim().toLowerCase());
-            
+
             if (existingItem) {
                 const totalNewQty = existingItem.quantity_requested + qtyToAdd;
                 if (totalNewQty > maxStock) {
@@ -1664,7 +1692,7 @@
             addBtn.classList.add('added');
             addBtn.innerHTML = '<i data-lucide="check" style="width: 14px;"></i> Added';
             lucide.createIcons();
-            
+
             setTimeout(() => {
                 addBtn.classList.remove('added');
                 addBtn.innerHTML = originalHTML;
@@ -1706,10 +1734,10 @@
 
             // Theme Toggle logic
             const themeToggleBtn = document.getElementById('theme-toggle');
-            
+
             function updateThemeIcon(theme) {
-                themeToggleBtn.innerHTML = theme === 'dark' ? 
-                    '<i data-lucide="sun" style="width: 18px;"></i>' : 
+                themeToggleBtn.innerHTML = theme === 'dark' ?
+                    '<i data-lucide="sun" style="width: 18px;"></i>' :
                     '<i data-lucide="moon" style="width: 18px;"></i>';
                 lucide.createIcons();
             }
@@ -1720,7 +1748,7 @@
             themeToggleBtn.addEventListener('click', () => {
                 const currentTheme = document.documentElement.getAttribute('data-theme');
                 const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                
+
                 document.documentElement.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
                 updateThemeIcon(newTheme);
