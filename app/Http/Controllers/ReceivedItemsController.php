@@ -84,7 +84,7 @@ class ReceivedItemsController extends Controller
                 'status' => $req->status,
                 'batch' => $data,
                 'recorded_by_name' => $req->user->name ?? 'Personnel',
-                'created_at' => $req->created_at->format('d/m/Y H:i'),
+                'created_at' => $req->created_at->format('d/m/y H:i'),
                 'request_type' => $req->request_type
             ];
             return response()->json($response);
@@ -117,7 +117,7 @@ class ReceivedItemsController extends Controller
             'batch' => $data,
             'ledge_name' => $ledgeMap[$data['ledge_category']] ?? $data['ledge_category'],
             'recorded_by_name' => $req->user->name ?? 'Personnel',
-            'created_at' => $req->created_at->format('d/m/Y H:i'),
+            'created_at' => $req->created_at->format('d/m/y H:i'),
             'request_type' => $req->request_type
         ];
 
@@ -691,7 +691,7 @@ class ReceivedItemsController extends Controller
             'stats' => [
                 'total_deliveries' => $totalDeliveries,
                 'total_items' => $totalItemsSupplied,
-                'last_delivery' => $lastDelivery ? \Carbon\Carbon::parse($lastDelivery->arrival_date)->format('M d, Y') : 'N/A'
+                'last_delivery' => $lastDelivery ? \Carbon\Carbon::parse($lastDelivery->arrival_date)->format('d/m/y') : 'N/A'
             ]
         ]);
     }

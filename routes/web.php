@@ -794,6 +794,42 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         return back()->with('success', "Threshold rule for \"{$keyword}\" removed.");
     })->name('admin.settings.threshold-rule.destroy');
 
+    // Item Request Limits
+    Route::post('/admin/settings/request-limit', function(\Illuminate\Http\Request $request) {
+        if (!auth()->user()->is_admin) abort(403);
+        $category = trim($request->input('category'));
+        $keyword = strtolower(trim($request->input('keyword')));
+        $limit = (int)$request->input('limit');
+        if (!$category || !$keyword || $limit < 0) return back()->with('error', 'Category, keyword, and a valid limit are required.');
+
+        $setting = \App\Models\Setting::firstOrCreate(
+            ['key' => 'item_request_limits'],
+            ['value' => '{}', 'type' => 'json', 'group' => 'inventory', 'description' => 'Keyword-to-limit mapping for item request limits.']
+        );
+        $rules = json_decode($setting->value ?? '{}', true) ?? [];
+        
+        $rules[$keyword] = [
+            'category' => $category,
+            'limit' => $limit
+        ];
+        $setting->value = json_encode($rules);
+        $setting->save();
+        return back()->with('success', "Request limit rule added: [{$category}] \"{$keyword}\" → max {$limit} items");
+    })->name('admin.settings.request-limit.store');
+
+    Route::delete('/admin/settings/request-limit', function(\Illuminate\Http\Request $request) {
+        if (!auth()->user()->is_admin) abort(403);
+        $keyword = strtolower(trim($request->input('keyword')));
+        $setting = \App\Models\Setting::where('key', 'item_request_limits')->first();
+        if ($setting) {
+            $rules = json_decode($setting->value ?? '{}', true) ?? [];
+            unset($rules[$keyword]);
+            $setting->value = json_encode($rules);
+            $setting->save();
+        }
+        return back()->with('success', "Request limit rule for \"{$keyword}\" removed.");
+    })->name('admin.settings.request-limit.destroy');
+
     // Supplier Registry
     Route::post('/admin/settings/supplier-registry', function(\Illuminate\Http\Request $request) {
         if (!auth()->user()->is_admin) abort(403);

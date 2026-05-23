@@ -765,6 +765,8 @@
                             description: item.description,
                             quantity_requested: item.quantity_requested,
                             quantity_approved: item.quantity_approved,
+                            alternative_description: item.alternative_description,
+                            alternative_quantity_approved: item.alternative_quantity_approved,
                             remarks: item.remarks || ''
                         }))
                     };
@@ -793,6 +795,13 @@
                             if (prevApproved !== currApproved && currApproved !== null) {
                                 reqMoved = true;
                                 details.push(`<b>${currItem.description}</b> approved allocation: <b>${parseFloat(currApproved).toLocaleString()}</b>`);
+                            }
+
+                            const prevAltApproved = prevItem ? prevItem.alternative_quantity_approved : null;
+                            const currAltApproved = currItem.alternative_quantity_approved;
+                            if (prevAltApproved !== currAltApproved && currAltApproved !== null && currAltApproved > 0) {
+                                reqMoved = true;
+                                details.push(`<b>${currItem.description}</b> alternative approved (${currItem.alternative_description || 'Alternative'}): <b>${parseFloat(currAltApproved).toLocaleString()}</b>`);
                             }
                         });
 
@@ -959,30 +968,19 @@
                                 const altApproved = item.alternative_quantity_approved !== null ? parseFloat(item.alternative_quantity_approved) : 0;
                                 return `
                                 <div class="history-item-tag" style="${item.alternative_description ? 'grid-column: 1 / -1; max-width: 100%;' : ''}">
+                                    <b>${item.description}</b> 
+                                    <span style="color:var(--store-orange)">—</span> ${parseFloat(item.quantity_requested).toLocaleString()} ${item.unit}
+                                    ${item.quantity_approved !== null ? `
+                                        <span style="color:var(--success-color); font-weight:800; margin-left:4px;">
+                                            (Approved: ${approved.toLocaleString()} ${item.unit})
+                                        </span>
+                                    ` : ''}
                                     ${item.alternative_description ? `
-                                        <div style="font-weight: 700;">
-                                            Original requested: <b>${item.description}</b>
-                                            <span style="color:var(--store-orange)">—</span> Requested: ${parseFloat(item.quantity_requested).toLocaleString()} ${item.unit}
-                                            <span style="color:var(--success-color); font-weight:800; margin-left:4px;">
-                                                (Approved: ${approved.toLocaleString()} ${item.unit})
-                                            </span>
-                                        </div>
                                         <div style="font-size:0.8rem; font-weight:800; color:var(--store-orange); display:flex; align-items:center; gap:4px; margin-top:6px;">
-                                            <i data-lucide="shuffle" style="width:14px;height:14px;"></i>Alternative: ${item.alternative_description}
-                                            <span style="font-size:0.78rem; font-weight:800; color:var(--success-color);">
-                                                (Approved: ${altApproved.toLocaleString()} ${item.unit})
-                                            </span>
+                                            <i data-lucide="shuffle" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:2px;"></i>Note: Alternative Approved: ${item.alternative_description} (ALT-${altApproved.toLocaleString()} ${item.unit})
                                         </div>
-                                    ` : `
-                                        <b>${item.description}</b> 
-                                        <span style="color:var(--store-orange)">—</span> ${parseFloat(item.quantity_requested).toLocaleString()} ${item.unit}
-                                        ${item.quantity_approved !== null ? `
-                                            <span style="color:var(--success-color); font-weight:800; margin-left:4px;">
-                                                (Approved: ${approved.toLocaleString()} ${item.unit})
-                                            </span>
-                                        ` : ''}
-                                    `}
-                                    ${item.remarks ? `<br><small style="color:var(--text-muted); font-style:italic;">Note: ${item.remarks}</small>` : ''}
+                                    ` : ''}
+                                    ${item.remarks && !item.remarks.includes('Alternative Approved:') ? `<br><small style="color:var(--text-muted); font-style:italic;">Note: ${item.remarks}</small>` : ''}
                                 </div>
                             `; }).join('')}
                         </div>

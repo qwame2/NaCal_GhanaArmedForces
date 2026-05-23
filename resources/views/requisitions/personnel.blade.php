@@ -384,7 +384,7 @@
           </td>
           <td style="padding:1rem 1.5rem;text-align:center;"><span class="pill" style="background:{{ $pb['bg'] }};color:{{ $pb['color'] }};">{{ $pb['label'] }}</span></td>
           <td style="padding:1rem 1.5rem;text-align:center;"><span class="pill" style="background:{{ $sb['bg'] }};color:{{ $sb['color'] }};">● {{ $sb['label'] }}</span></td>
-          <td style="padding:1rem 1.5rem;font-size:.78rem;color:var(--text-muted);font-weight:600;">{{ $req->created_at->format('d M Y') }}<br>{{ $req->created_at->format('H:i') }}</td>
+          <td style="padding:1rem 1.5rem;font-size:.78rem;color:var(--text-muted);font-weight:600;">{{ $req->created_at->format('d/m/y') }}<br>{{ $req->created_at->format('H:i') }}</td>
           <td style="padding:1rem 1.5rem;text-align:center;">
             @if(in_array($req->status, ['approved', 'partially_approved']))
               @if($req->collected_at)

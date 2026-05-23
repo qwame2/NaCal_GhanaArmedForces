@@ -20,14 +20,18 @@ class StoreRequisitionController extends Controller
     {
         $ledgeMap = Setting::getCategories();
 
-        // Fetch all available inventory items (grouped by description, with stock > 0)
+        // Fetch all available inventory items (grouped by description)
         $availableItems = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
             ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
-            ->havingRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) > 0')
             ->orderBy('inventory_items.description')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                $physicalStock = (float) $item->total_stock;
+                $item->total_stock = \App\Models\Setting::getAvailableStock($item->description, $physicalStock, $item->ledge_category);
+                return $item;
+            });
 
         // My submitted requisitions (for current user)
         $myRequisitions = StoreRequisition::with('items')
@@ -157,9 +161,9 @@ class StoreRequisitionController extends Controller
                     'usage_type'     => $req->usage_type,
                     'usage_type_badge' => $req->usage_type_badge,
                     'admin_notes'    => $req->admin_notes,
-                    'created_at'     => $req->created_at->format('d/m/Y H:i'),
-                    'processed_at'   => $req->processed_at?->format('d/m/Y H:i'),
-                    'collected_at'   => $req->collected_at?->format('d/m/Y H:i'),
+                    'created_at'     => $req->created_at->format('d/m/y H:i'),
+                    'processed_at'   => $req->processed_at?->format('d/m/y H:i'),
+                    'collected_at'   => $req->collected_at?->format('d/m/y H:i'),
                     'collected_by_name' => $req->collector?->name,
                     'items'          => $req->items->map(fn($i) => [
                         'description'        => $i->description,
@@ -167,6 +171,8 @@ class StoreRequisitionController extends Controller
                         'unit'               => $i->unit,
                         'quantity_requested' => $i->quantity_requested,
                         'quantity_approved'  => $i->quantity_approved,
+                        'alternative_description'       => $i->alternative_description,
+                        'alternative_quantity_approved' => $i->alternative_quantity_approved !== null ? (float)$i->alternative_quantity_approved : null,
                         'remarks'            => $i->remarks,
                     ]),
                 ];
@@ -354,15 +360,20 @@ class StoreRequisitionController extends Controller
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, inventory_batches.ledge_category as category')
             ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
-            ->havingRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) > 0')
             ->orderBy('inventory_items.description')
             ->get()
-            ->map(fn($item) => [
-                'description' => $item->description,
-                'unit'        => $item->unit,
-                'total_stock' => (float)$item->total_stock,
-                'category'    => $item->category,
-            ]);
+            ->map(function($item) {
+                $physicalStock = (float) $item->total_stock;
+                $avail = \App\Models\Setting::getAvailableStock($item->description, $physicalStock, $item->category);
+                return [
+                    'description' => $item->description,
+                    'unit'        => $item->unit,
+                    'total_stock' => $avail,
+                    'category'    => $item->category,
+                ];
+            })
+            ->filter(fn($item) => $item['total_stock'] > 0)
+            ->values();
 
         return response()->json([
             'id'             => $req->id,
@@ -377,10 +388,10 @@ class StoreRequisitionController extends Controller
             'usage_type'     => $req->usage_type,
             'usage_type_badge' => $req->usage_type_badge,
             'admin_notes'    => $req->admin_notes,
-            'created_at'     => $req->created_at->format('d M Y, H:i'),
-            'processed_at'   => $req->processed_at?->format('d M Y, H:i'),
+            'created_at'     => $req->created_at->format('d/m/y H:i'),
+            'processed_at'   => $req->processed_at?->format('d/m/y H:i'),
             'processor'      => $req->processor?->name,
-            'collected_at'   => $req->collected_at?->format('d M Y, H:i'),
+            'collected_at'   => $req->collected_at?->format('d/m/y H:i'),
             'collected_by_name' => $req->collector?->name,
             'items'          => $items,
             'alternatives'   => $alternatives,

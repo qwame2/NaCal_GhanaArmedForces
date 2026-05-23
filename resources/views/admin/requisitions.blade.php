@@ -845,7 +845,7 @@
                     <td style="padding:1rem 1.5rem;text-align:center;">
                         @if(in_array($req->status, ['approved', 'partially_approved']))
                             @if($req->collected_at)
-                                <span style="font-size:.78rem;color:#10b981;font-weight:800;display:inline-flex;align-items:center;gap:4px;" title="Collected on {{ $req->collected_at->format('d M Y, H:i') }}{{ $req->collector ? ' by '.$req->collector->name : '' }}">
+                                <span style="font-size:.78rem;color:#10b981;font-weight:800;display:inline-flex;align-items:center;gap:4px;" title="Collected on {{ $req->collected_at->format('d/m/y, H:i') }}{{ $req->collector ? ' by '.$req->collector->name : '' }}">
                                     <i data-lucide="check-circle" style="width:14px;"></i> Collected
                                 </span>
                             @else
@@ -857,7 +857,7 @@
                             <span style="font-size:.75rem;color:var(--text-muted);font-style:italic;">—</span>
                         @endif
                     </td>
-                    <td style="padding:1rem 1.5rem;font-size:.78rem;color:var(--text-muted);font-weight:600;">{{ $req->created_at->format('d M Y') }}<br>{{ $req->created_at->format('H:i') }}</td>
+                    <td style="padding:1rem 1.5rem;font-size:.78rem;color:var(--text-muted);font-weight:600;">{{ $req->created_at->format('d/m/y') }}<br>{{ $req->created_at->format('H:i') }}</td>
                     <td style="padding:1rem 1.5rem;text-align:center;">
                         <button onclick="openRequisitionModal({{ $req->id }})"
                             style="background:rgba(79,70,229,.1);color:#4f46e5;border:none;padding:.5rem 1rem;border-radius:10px;font-weight:800;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;" onmouseover="this.style.background='#4f46e5';this.style.color='white'" onmouseout="this.style.background='rgba(79,70,229,.1)';this.style.color='#4f46e5'">
@@ -1410,16 +1410,19 @@
             if (altUnitLbl) altUnitLbl.textContent = unit;
             
             // Set max approved limit for alternative quantity
+            // Set max approved limit for alternative quantity
+            let actualAltQty = 0;
             if (altQtyInput) {
                 altQtyInput.max = stock;
                 // Default alternative quantity to: Math.max(0, requested - original_approved) capped by alternative stock
                 const originalApproved = parseFloat(qtyInput.value) || 0;
                 const defaultAltQty = Math.max(0, requested - originalApproved);
-                altQtyInput.value = parseFloat(Math.min(defaultAltQty, stock).toFixed(2));
+                actualAltQty = parseFloat(Math.min(defaultAltQty, stock).toFixed(2));
+                altQtyInput.value = actualAltQty;
             }
             
             // Set remark automatically
-            reasonInput.value = `Alternative Approved: ${val}`;
+            reasonInput.value = `Alternative Approved: ${val} (ALT-${actualAltQty} ${unit})`;
             reasonInput.style.display = 'block';
             
             // Update description display
@@ -1453,6 +1456,17 @@
         const maxVal = parseFloat(qtyInput.max);
         if (!isNaN(maxVal) && parseFloat(qtyInput.value) > maxVal) {
             qtyInput.value = maxVal;
+        }
+        
+        // Update remarks with quantity dynamically
+        const altSelect = document.getElementById(`alt-select-${idx}`);
+        const reasonInput = document.getElementById(`reason-${idx}`);
+        if (altSelect && altSelect.value && reasonInput) {
+            const val = altSelect.value;
+            const qty = parseFloat(qtyInput.value) || 0;
+            const selectedOpt = altSelect.options[altSelect.selectedIndex];
+            const unit = selectedOpt ? (selectedOpt.dataset.unit || 'units') : 'units';
+            reasonInput.value = `Alternative Approved: ${val} (ALT-${qty} ${unit})`;
         }
         updateStatusBar();
     }

@@ -594,7 +594,17 @@ class AdminController extends Controller
                 return $items->pluck('description')->unique()->values();
             });
 
-        return view('admin.settings', compact('settings', 'categories', 'itemsByCategory'));
+        // Build a map of item description → total stock balance for the request-limit form hint
+        $stockByKeyword = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->selectRaw('inventory_items.description, SUM(inventory_items.stock_balance) as total_stock')
+            ->groupBy('inventory_items.description')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [strtolower(trim($item->description)) => (float) $item->total_stock];
+            });
+
+        return view('admin.settings', compact('settings', 'categories', 'itemsByCategory', 'stockByKeyword'));
     }
 
     public function updateSettings(\Illuminate\Http\Request $request)

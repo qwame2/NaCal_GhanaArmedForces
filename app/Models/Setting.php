@@ -167,4 +167,71 @@ class Setting extends Model
 
         return 'units';
     }
+
+    /**
+     * Get the request limit for a specific item.
+     */
+    public static function getItemRequestLimit($description, $category = null)
+    {
+        $limits = self::get('item_request_limits', []);
+        $descLower = strtolower(trim($description));
+
+        foreach ($limits as $keyword => $rule) {
+            if (str_contains($descLower, strtolower(trim($keyword)))) {
+                $ruleCat = $rule['category'] ?? null;
+                if ($ruleCat && $category && $ruleCat !== $category) {
+                    continue;
+                }
+                return (int)($rule['limit'] ?? $rule);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the available stock for an item after applying the request limit.
+     */
+    public static function getAvailableStock($description, $physicalStock, $category = null)
+    {
+        $limit = self::getItemRequestLimit($description, $category);
+        if ($limit === null) {
+            return $physicalStock;
+        }
+
+        // Find the matched keyword rule to use for counting
+        $limits = self::get('item_request_limits', []);
+        $descLower = strtolower(trim($description));
+        $matchedKeyword = null;
+        foreach ($limits as $keyword => $rule) {
+            if (str_contains($descLower, strtolower(trim($keyword)))) {
+                $ruleCat = $rule['category'] ?? null;
+                if ($ruleCat && $category && $ruleCat !== $category) {
+                    continue;
+                }
+                $matchedKeyword = $keyword;
+                break;
+            }
+        }
+
+        if (!$matchedKeyword) {
+            return $physicalStock;
+        }
+
+        $keywordLower = strtolower(trim($matchedKeyword));
+        $query = \App\Models\StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
+            ->whereIn('store_requisitions.status', ['approved', 'partially_approved']);
+
+        $originalSum = (float) $query->clone()
+            ->where(\DB::raw('LOWER(store_requisition_items.description)'), 'LIKE', '%' . $keywordLower . '%')
+            ->sum('store_requisition_items.quantity_approved');
+
+        $alternativeSum = (float) $query->clone()
+            ->where(\DB::raw('LOWER(store_requisition_items.alternative_description)'), 'LIKE', '%' . $keywordLower . '%')
+            ->sum('store_requisition_items.alternative_quantity_approved');
+
+        $givenOut = $originalSum + $alternativeSum;
+        $remainingLimit = max(0, $limit - $givenOut);
+
+        return min($physicalStock, $remainingLimit);
+    }
 }

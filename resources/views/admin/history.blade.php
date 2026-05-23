@@ -185,7 +185,7 @@
                             <div>
                                 <h4 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: var(--text-main);">Inventory Batch Modifed</h4>
                                 <p style="margin: 2px 0 0; font-size: 0.8rem; color: var(--text-muted);">
-                                    By <b>{{ $record->user->name ?? 'Unknown' }}</b> &bull; {{ $record->updated_at->format('M d, Y @ h:i A') }}
+                                    By <b>{{ $record->user->name ?? 'Unknown' }}</b> &bull; {{ $record->updated_at->format('d/m/y @ h:i A') }}
                                 </p>
                             </div>
                         </div>

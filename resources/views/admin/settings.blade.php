@@ -954,6 +954,157 @@
         </div>
     </div>
 
+    {{-- Item Request Limits --}}
+    <div class="cfg-card" id="request-limits" style="margin-top: 2rem;">
+        <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <div class="cfg-icon-box" style="background: linear-gradient(135deg,#6366f1,#4f46e5);">
+                    <i data-lucide="ban"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0 0 0.25rem 0;">Item Request Limits</h3>
+                    <p style="margin: 0;">Set maximum request limits on items. The Out of Stock status is shown on the dashboard when limits are met.</p>
+                </div>
+            </div>
+
+            <div class="cfg-search-wrap" style="margin: 0 3.5rem 0 0; width: 260px; position: relative;">
+                <i data-lucide="search" style="width: 14px; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                <input type="text" id="limitSearch" placeholder="Search limits..." oninput="filterLimits()" style="width: 100%; padding: 0.5rem 1rem 0.5rem 2.2rem; font-size: 0.8rem; height: 38px; border: 2px solid #edf2f7; border-radius: 10px; outline: none; transition: 0.2s; background: white;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#edf2f7'">
+            </div>
+        </div>
+        <div class="cfg-card-body">
+            <div style="display: grid; grid-template-columns: 1fr 360px; gap: 2rem; align-items: start;">
+
+                {{-- Existing Request Limits --}}
+                <div>
+                    <p style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 1rem; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="list" style="width: 14px;"></i> Active Request Limits
+                    </p>
+                    @php
+                        $requestLimits = json_decode(\App\Models\Setting::where('key','item_request_limits')->value('value') ?? '{}', true) ?? [];
+                        $groupedLimits = [];
+                        foreach ($requestLimits as $keyword => $data) {
+                            $cat = is_array($data) ? $data['category'] : 'Uncategorized';
+                            $limit = is_array($data) ? $data['limit'] : $data;
+                            $groupedLimits[$cat][$keyword] = $limit;
+                        }
+                    @endphp
+                    @if(empty($groupedLimits))
+                        <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
+                            <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
+                            <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No request limits defined yet. Add rules on the right.</p>
+                        </div>
+                    @else
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;" id="limitsContainer">
+                            @foreach($groupedLimits as $catCode => $limitsGroup)
+                                <div class="limit-rule-group">
+                                    <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
+                                        <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
+                                        {{ $categories[$catCode] ?? 'Uncategorized' }}
+                                    </h6>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem;">
+                                        @foreach($limitsGroup as $keyword => $limit)
+                                            <div class="limit-rule-card" data-keyword="{{ strtolower($keyword) }}" style="display: flex; align-items: center; gap: 10px; padding: 0.75rem 1rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s;">
+                                                <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#6366f1,#4f46e5); color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
+                                                    <i data-lucide="ban" style="width: 14px;"></i>
+                                                </div>
+                                                <div style="flex: 1; min-width: 0;">
+                                                    <div style="font-weight: 800; font-size: 0.82rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $keyword }}">{{ $keyword }}</div>
+                                                    @php
+                                                        $displayUnit = \App\Models\Setting::getItemUnit($keyword);
+                                                        // Calculate given out qty
+                                                        $query = \App\Models\StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
+                                                            ->whereIn('store_requisitions.status', ['approved', 'partially_approved']);
+                                                        $originalSum = (float) $query->clone()
+                                                            ->where(\DB::raw('LOWER(store_requisition_items.description)'), 'LIKE', '%' . strtolower(trim($keyword)) . '%')
+                                                            ->sum('store_requisition_items.quantity_approved');
+                                                        $alternativeSum = (float) $query->clone()
+                                                            ->where(\DB::raw('LOWER(store_requisition_items.alternative_description)'), 'LIKE', '%' . strtolower(trim($keyword)) . '%')
+                                                            ->sum('store_requisition_items.alternative_quantity_approved');
+                                                        $givenOut = $originalSum + $alternativeSum;
+                                                    @endphp
+                                                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">Limit: {{ $limit }} {{ $displayUnit }}</div>
+                                                    <div style="font-size: 0.65rem; font-weight: 600; color: {{ $givenOut >= $limit ? 'var(--danger-color)' : 'var(--success-color)' }}; margin-top: 2px;">Given Out: {{ $givenOut }} / {{ $limit }}</div>
+                                                </div>
+                                                <div style="display: flex; gap: 4px;">
+                                                    <button type="button" onclick="populateLimitForm('{{ $keyword }}', {{ $limit }}, '{{ $catCode }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
+                                                        <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
+                                                    </button>
+                                                    <form action="{{ route('admin.settings.request-limit.destroy') }}" method="POST" onsubmit="return confirm('Remove request limit rule for \'{{ $keyword }}\'?');" style="margin: 0;">
+                                                        @csrf @method('DELETE')
+                                                        <input type="hidden" name="keyword" value="{{ $keyword }}">
+                                                        <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Limit Rule">
+                                                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Add New Limit Rule --}}
+                <div class="cat-form-card">
+                    <h5 id="limitFormTitle">Add Request Limit</h5>
+                    <p>Specify the keyword (e.g. "pen") and set the max allowed request limit. When this limit is reached, it will display as Out of Stock on the dashboard.</p>
+                    <form action="{{ route('admin.settings.request-limit.store') }}" method="POST" id="limitForm">
+                        @csrf
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Target Category</label>
+                                <select name="category" id="limitCategory" class="cfg-text-input" required style="cursor: pointer;">
+                                    <option value="">Select Category...</option>
+                                    @foreach($categories ?? [] as $code => $name)
+                                        <option value="{{ $code }}">[{{ $code }}] {{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Item Keyword</label>
+                                <select name="keyword" id="limitKeyword" class="cfg-text-input select2-limit" required>
+                                    <option value="">Select Category First...</option>
+                                </select>
+                            </div>
+
+                            {{-- Stock info panel (shown after an item is selected) --}}
+                            <div id="limitStockInfo" style="display:none; border-radius: 14px; padding: 0.85rem 1.1rem; background: #f8fafc; border: 1.5px solid #e2e8f0; transition: 0.3s;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div id="limitStockIcon" style="width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <i data-lucide="package" style="width: 16px; height: 16px; color: white;"></i>
+                                    </div>
+                                    <div style="flex:1; min-width:0;">
+                                        <div style="font-size: 0.72rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Current Stock Balance</div>
+                                        <div id="limitStockValue" style="font-size: 1rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">—</div>
+                                    </div>
+                                    <span id="limitStockBadge" style="font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; padding: 4px 10px; border-radius: 30px;"></span>
+                                </div>
+                                <p id="limitStockHint" style="font-size: 0.72rem; font-weight: 600; color: #64748b; margin: 8px 0 0; line-height: 1.5;"></p>
+                            </div>
+
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Maximum Request Limit</label>
+                                <input type="number" name="limit" id="limitVal" class="cfg-text-input" placeholder="e.g. 5" required min="0">
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" id="limitSubmitBtn" class="btn-cfg-add" style="flex: 1; background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 6px 16px rgba(99,102,241,0.25);">
+                                    <i data-lucide="plus-circle" id="limitSubmitIcon"></i> <span id="limitSubmitText">Add Limit Rule</span>
+                                </button>
+                                <button type="button" id="limitResetBtn" onclick="resetLimitForm()" style="display: none; padding: 0.75rem 1rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s;">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     {{-- Suppliers Info --}}
     <div class="cfg-card" id="suppliers-registry" style="margin-top: 2rem;">
         <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
@@ -1084,7 +1235,8 @@
 </div>
 
 <script>
-    const itemsByCategory = @json($itemsByCategory ?? []);
+    const itemsByCategory  = @json($itemsByCategory  ?? []);
+    const stockByKeyword   = @json($stockByKeyword   ?? []);
 
 
 
@@ -1230,6 +1382,61 @@
         if (window.lucide) lucide.createIcons();
     }
 
+    function populateLimitForm(keyword, limit, category) {
+        document.getElementById('limitFormTitle').innerText = 'Update Request Limit';
+        document.getElementById('limitCategory').value = category;
+        $('#limitCategory').trigger('change.select2');
+        
+        setTimeout(() => {
+            const keywordSelect = $('#limitKeyword');
+            if (keywordSelect.find("option[value='" + keyword + "']").length === 0) {
+                keywordSelect.append(new Option(keyword, keyword));
+            }
+            keywordSelect.val(keyword).trigger('change.select2');
+            // Manually show the stock panel since we're not using select2:select here
+            if (typeof showLimitStock === 'function') showLimitStock(keyword);
+        }, 100);
+
+        document.getElementById('limitVal').value = limit;
+        document.getElementById('limitSubmitText').innerText = 'Update Limit Rule';
+        document.getElementById('limitSubmitBtn').style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+        document.getElementById('limitResetBtn').style.display = 'inline-block';
+        const icon = document.getElementById('limitSubmitIcon');
+        icon.setAttribute('data-lucide', 'refresh-cw');
+        if (window.lucide) lucide.createIcons();
+        document.getElementById('request-limits').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetLimitForm() {
+        document.getElementById('limitFormTitle').innerText = 'Add Request Limit';
+        document.getElementById('limitForm').reset();
+        $('#limitKeyword').val(null).trigger('change.select2');
+        document.getElementById('limitStockInfo').style.display = 'none';
+        document.getElementById('limitSubmitText').innerText = 'Add Limit Rule';
+        document.getElementById('limitSubmitBtn').style.background = 'linear-gradient(135deg,#6366f1,#4f46e5)';
+        document.getElementById('limitResetBtn').style.display = 'none';
+        const icon = document.getElementById('limitSubmitIcon');
+        icon.setAttribute('data-lucide', 'plus-circle');
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function filterLimits() {
+        const query = document.getElementById('limitSearch').value.toLowerCase().trim();
+        document.querySelectorAll('#limitsContainer .limit-rule-group').forEach(group => {
+            let visibleInGroup = 0;
+            group.querySelectorAll('.limit-rule-card').forEach(card => {
+                const keyword = card.getAttribute('data-keyword') || '';
+                if (!query || keyword.includes(query)) {
+                    card.style.display = 'flex';
+                    visibleInGroup++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            group.style.display = visibleInGroup > 0 ? 'block' : 'none';
+        });
+    }
+
     $(document).ready(function() {
         if (window.lucide) lucide.createIcons();
 
@@ -1302,7 +1509,109 @@
 
             keywordSelect.trigger('change');
         });
+
+        // Initialize Select2 for limits
+        $('.select2-limit').select2({
+            tags: true,
+            placeholder: 'Select or type a new item...',
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#request-limits')
+        });
+
+        // Handle category change to update item dropdown (Limits)
+        $('#limitCategory').on('change', function() {
+            const cat = $(this).val();
+            const keywordSelect = $('#limitKeyword');
+            keywordSelect.empty().append('<option value="">Select Item...</option>');
+
+            if (cat && itemsByCategory[cat]) {
+                itemsByCategory[cat].forEach(item => {
+                    keywordSelect.append(new Option(item, item));
+                });
+            } else if (!cat) {
+                keywordSelect.append('<option value="">Select Category First...</option>');
+            }
+
+            // Re-trigger so Select2 re-renders; DON'T trigger stock lookup here
+            keywordSelect.trigger('change.select2');
+
+            // Hide the stock panel when category changes (selection reset)
+            document.getElementById('limitStockInfo').style.display = 'none';
+        });
+
+        // Trigger stock display when admin actively SELECTS an item via Select2
+        $('#limitKeyword').on('select2:select', function(e) {
+            showLimitStock(e.params.data.id);
+        });
+
+        // Hide when cleared
+        $('#limitKeyword').on('select2:clear select2:unselecting', function() {
+            document.getElementById('limitStockInfo').style.display = 'none';
+        });
     });
+
+    // Global: show stock balance for a given keyword in the Add Request Limit form
+    function showLimitStock(keyword) {
+        keyword = (keyword || '').toLowerCase().trim();
+        const infoPanel = document.getElementById('limitStockInfo');
+        if (!keyword) { infoPanel.style.display = 'none'; return; }
+
+        // Find best match: exact first, then substring
+        let stock = null;
+        if (stockByKeyword[keyword] !== undefined) {
+            stock = stockByKeyword[keyword];
+        } else {
+            for (const [k, v] of Object.entries(stockByKeyword)) {
+                if (k.includes(keyword) || keyword.includes(k)) { stock = v; break; }
+            }
+        }
+
+        const iconEl  = document.getElementById('limitStockIcon');
+        const valEl   = document.getElementById('limitStockValue');
+        const badgeEl = document.getElementById('limitStockBadge');
+        const hintEl  = document.getElementById('limitStockHint');
+
+        if (stock === null) {
+            iconEl.style.background  = '#e2e8f0';
+            valEl.textContent        = 'No stock data found';
+            badgeEl.textContent      = 'Unknown';
+            badgeEl.style.background = '#f1f5f9';
+            badgeEl.style.color      = '#64748b';
+            hintEl.textContent       = 'No inventory records match this keyword. The limit will still be applied once set.';
+        } else if (stock <= 0) {
+            iconEl.style.background  = 'linear-gradient(135deg,#ef4444,#dc2626)';
+            valEl.textContent        = '0 units';
+            badgeEl.textContent      = 'Out of Stock';
+            badgeEl.style.background = '#fee2e2';
+            badgeEl.style.color      = '#dc2626';
+            hintEl.textContent       = 'This item is currently out of stock. Setting a limit here will keep it as Unavailable on the dashboard.';
+        } else if (stock <= 5) {
+            iconEl.style.background  = 'linear-gradient(135deg,#f59e0b,#d97706)';
+            valEl.textContent        = stock + ' units available';
+            badgeEl.textContent      = 'Very Low';
+            badgeEl.style.background = '#fef3c7';
+            badgeEl.style.color      = '#d97706';
+            hintEl.textContent       = 'Stock is critically low. Consider setting a conservative limit to preserve remaining supply.';
+        } else if (stock <= 20) {
+            iconEl.style.background  = 'linear-gradient(135deg,#eab308,#ca8a04)';
+            valEl.textContent        = stock + ' units available';
+            badgeEl.textContent      = 'Low';
+            badgeEl.style.background = '#fefce8';
+            badgeEl.style.color      = '#ca8a04';
+            hintEl.textContent       = 'Stock is running low. Set a limit that reflects the quantity you wish to make available for requisitions.';
+        } else {
+            iconEl.style.background  = 'linear-gradient(135deg,#10b981,#059669)';
+            valEl.textContent        = stock + ' units available';
+            badgeEl.textContent      = 'In Stock';
+            badgeEl.style.background = '#dcfce7';
+            badgeEl.style.color      = '#16a34a';
+            hintEl.textContent       = 'Sufficient stock available. Set your desired request limit and it will be enforced on the requisition dashboard.';
+        }
+
+        infoPanel.style.display = 'block';
+        if (window.lucide) lucide.createIcons();
+    }
 
     function setOtpExpiry(minutes, btn) {
         document.getElementById('setting_otp_expiry_minutes').value = minutes;
