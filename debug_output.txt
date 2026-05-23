@@ -24,6 +24,17 @@
                     }
                 ]
             }
+        },
+        {
+            "id": 15,
+            "request_type": "item_recovery",
+            "status": "pending",
+            "payload": {
+                "issued_item_id": "10",
+                "return_qty": "10",
+                "return_date": "2026-05-23",
+                "remarks": "sdfd"
+            }
         }
     ],
     "suppliers_table_exists": true,

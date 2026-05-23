@@ -3,253 +3,193 @@
 @section('content')
 <div class="animate-slide-up" style="max-width: 1600px; margin: 0 auto; padding: 0 1.5rem;">
 
-    <!-- Ultra-Modern Operations Header -->
+    <!-- Operations Header -->
     <div class="glass-card header-mesh" style="padding: 3rem; border-radius: 32px; margin-bottom: 3rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08);">
-        <!-- Decorative background elements -->
         <div style="position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%); z-index: 0;"></div>
         <div style="position: absolute; bottom: -50px; left: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%); z-index: 0;"></div>
 
         <div style="position: relative; z-index: 1;">
-            <div class="header-top" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
                 <div>
-                    <div class="header-badges" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                        <span class="inventory-badge">Inventory Control</span>
-                        <div class="header-dot"></div>
-                        <span class="operation-text">
-                            <i data-lucide="cpu" style="width: 14px;"></i> System Operation
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <span class="inventory-badge">Issue Registry</span>
+                        <div style="width: 4px; height: 4px; background: var(--text-muted); border-radius: 50%; opacity: 0.5;"></div>
+                        <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                            <i data-lucide="shield" style="width: 14px; color: var(--primary);"></i> Operations Verified
                         </span>
                     </div>
-                    <h1 class="main-title">Issue <span class="gradient-text">Inventory</span></h1>
-                    <p class="subtitle-text">Seamlessly disburse stock items and track recipient allocations in real-time.</p>
-                </div>
-
-                <div class="header-actions" style="display: flex; gap: 1rem;">
-                    <button onclick="openHistorySheet()" class="modern-action-btn" title="View Issued Items">
-                        <i data-lucide="history" style="width: 20px;"></i>
-                        <span>View Issues</span>
-                    </button>
-                    <!-- <button class="modern-action-btn secondary" title="View Audit Logs">
-                        <i data-lucide="scroll-text" style="width: 20px;"></i>
-                    </button> -->
-                </div>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 2rem; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 2.5rem;">
-                <div class="search-cat-container" style="display: flex; gap: 2.5rem; align-items: center; flex-wrap: wrap;">
-                    <!-- Elegant Search -->
-                    <div class="search-box-wrapper" style="position: relative; flex: 1; min-width: 250px;">
-                        <i data-lucide="search" style="position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%); width: 22px; color: var(--primary); opacity: 0.6;"></i>
-                        <input type="text" id="catalogSearch" placeholder="What are you looking for today?" style="width: 100%; padding: 1.35rem 1.5rem 1.35rem 4rem; border-radius: 20px; border: 2px solid transparent; background: rgba(0,0,0,0.03); color: var(--text-main); font-size: 1.05rem; font-weight: 600; outline: none; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);" onfocus="this.style.borderColor='var(--primary)'; this.style.background='var(--bg-card)'; this.style.boxShadow='0 10px 25px rgba(99, 102, 241, 0.08)';" onblur="this.style.borderColor='transparent'; this.style.background='rgba(0,0,0,0.03)';">
-                    </div>
-
-                    <!-- Premium Category Selector with Scroll Indicators -->
-                    <div style="position: relative; flex: 1; display: flex; align-items: center; min-width: 0;">
-                        <button onclick="scrollCats(-1)" class="scroll-arrow prev" id="catLeftArrow" style="display: none;">
-                            <i data-lucide="chevron-left" style="width: 18px;"></i>
-                        </button>
-
-                        <div id="catList" class="hide-scrollbar cat-slider-premium">
-                            <button class="cat-pill modern active" onclick="filterCategory('all', this)">
-                                <i data-lucide="rocket" style="width: 16px;"></i>
-                                Everything
-                            </button>
-                            @foreach($ledgeMap as $code => $name)
-                            @php
-                                $icon = 'package';
-                                if ($code == 'B') $icon = 'trash-2';
-                                elseif ($code == 'C') $icon = 'monitor';
-                                elseif ($code == 'J') $icon = 'printer';
-                                elseif ($code == 'G') $icon = 'activity';
-                            @endphp
-                            <button class="cat-pill modern" onclick="filterCategory('{{ $code }}', this)">
-                                <i data-lucide="{{ $icon }}" style="width: 16px;"></i>
-                                {{ $name }}
-                            </button>
-                            @endforeach
-                        </div>
-
-                        <button onclick="scrollCats(1)" class="scroll-arrow next" id="catRightArrow">
-                            <i data-lucide="chevron-right" style="width: 18px;"></i>
-                        </button>
-                    </div>
+                    <h1 style="margin: 0; font-size: 3rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em; line-height: 1;">Issue <span class="gradient-text">Inventory Log</span></h1>
+                    <p style="margin: 12px 0 0; color: var(--text-muted); font-size: 1.1rem; font-weight: 500; opacity: 0.8;">Full tracking registry of all inventory items given out (disbursed or collected requisitions) across the logistics network.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Main Workspace Split -->
-    <div class="workspace-grid" style="display: grid; grid-template-columns: 1fr 420px; gap: 3rem; align-items: flex-start; padding-bottom: 5rem;">
-
-        <!-- Left Column: Catalog -->
-        <div>
-            <div id="productGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1.5rem;">
-                @forelse($items as $item)
-                @php
-                    $colors = [
-                        'B' => ['#ef4444', 'rgba(239,68,68,0.05)', 'rgba(239,68,68,0.1)', 'trash-2'],
-                        'C' => ['#f59e0b', 'rgba(245,158,11,0.05)', 'rgba(245,158,11,0.1)', 'monitor'],
-                        'J' => ['#10b981', 'rgba(16,185,129,0.05)', 'rgba(16,185,129,0.1)', 'printer'],
-                        'G' => ['#8b5cf6', 'rgba(139,92,246,0.05)', 'rgba(139,92,246,0.1)', 'activity']
-                    ];
-                    $config = $colors[$item->ledge_category] ?? ['var(--primary)', 'rgba(99,102,241,0.05)', 'rgba(99,102,241,0.1)', 'package'];
-                    $isOutOfStock = $item->total_stock <= 0;
-                @endphp
-
-                <div class="product-card glass-card" data-category="{{ $item->ledge_category }}" data-description="{{ strtolower($item->description) }}" style="{{ $isOutOfStock ? 'opacity: 0.7;' : '' }}">
-                    <div class="product-badge" style="background: {{ $config[2] }}; color: {{ $config[0] }};">Category {{ $item->ledge_category }}</div>
-                    <div style="height: 60px; display: flex; align-items: center; justify-content: center; background: {{ $config[1] }}; border-radius: 10px; margin-bottom: 0.75rem;">
-                        <i data-lucide="{{ $config[3] }}" style="width: 28px; height: 28px; color: {{ $config[0] }}; opacity: 0.6;"></i>
-                    </div>
-                    <h4 style="margin: 0 0 0.5rem; font-size: 1rem; font-weight: 850; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $item->description }}</h4>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Stock</span>
-                        <div style="text-align: right;">
-                            <span style="font-size: 1.15rem; font-weight: 900; color: {{ $isOutOfStock ? '#ef4444' : '#10b981' }};">{{ number_format($item->total_stock) }}</span>
-                            <span style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-left: 2px;">{{ $item->unit ?: 'Package Types' }}</span>
-                        </div>
-                    </div>
-
-                    @if($isOutOfStock)
-                        <button class="add-to-cart-btn" style="opacity: 0.5; cursor: not-allowed;"><i data-lucide="slash" style="width: 18px;"></i> Unavailable</button>
-                    @elseif(in_array($item->description, $pendingItems))
-                        <button class="add-to-cart-btn" disabled style="background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.2); color: var(--primary); cursor: wait;">
-                            <i data-lucide="clock" style="width: 18px;" class="animate-pulse"></i> Pending Auth
-                        </button>
-                    @elseif(!auth()->user()->can_operate_logistics)
-                        <button class="add-to-cart-btn" disabled title="Unauthorized: Logistics Permission Required" style="background: #cbd5e1; border-color: #cbd5e1; color: white; cursor: not-allowed; box-shadow: none;">
-                            <i data-lucide="lock" style="width: 18px;"></i> Locked
-                        </button>
-                    @else
-                        <button class="add-to-cart-btn" onclick="addToCart('{{ addslashes($item->description) }}', {{ (int)$item->total_stock }}, '{{ $item->ledge_category }}', '{{ $item->unit }}')">
-                            <i data-lucide="plus-circle" style="width: 18px;"></i> Add to List
-                        </button>
-                    @endif
-                </div>
-                @empty
-                <div style="grid-column: 1 / -1; padding: 5rem; text-align: center;">
-                    <i data-lucide="package-x" style="width: 64px; height: 64px; color: var(--text-muted); opacity: 0.3; margin-bottom: 1.5rem;"></i>
-                    <h3 style="font-weight: 800; color: var(--text-main);">No Stock Items Available</h3>
-                    <p style="color: var(--text-muted);">Please add items to your inventory first.</p>
-                </div>
-                @endforelse
+    <!-- Statistical Insight Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+        <div class="glass-card stat-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem; transition: transform 0.3s;">
+            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(99, 102, 241, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="package-2" style="width: 32px; height: 32px;"></i>
             </div>
-        </div>
-
-        <!-- Right Column: Cart Panel -->
-        <div class="cart-sticky" style="position: sticky; top: 100px;">
-            <div class="glass-card" style="border-radius: 28px; padding: 0.5rem; border: 2px solid var(--border-color);">
-                <div style="padding: 1.75rem; border-bottom: 1px solid var(--border-color);">
-                    <h3 style="margin: 0 0 1.5rem; font-size: 1.25rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 12px;">
-                        <i data-lucide="clipboard-list" style="color: var(--primary);"></i> Disbursement Info
-                    </h3>
-                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                        <div>
-                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Issue Date</label>
-                            <input type="date" id="issuanceDate" value="{{ date('Y-m-d') }}" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700;">
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">User Department</label>
-                            <input type="text" id="beneficiary" placeholder="User Department" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700;">
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Approval</label>
-                            <input type="text" id="authority" value="{{ $adminName }}" readonly placeholder="Approving Officer" style="width: 100%; padding: 0.85rem; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(99, 102, 241, 0.05); color: var(--primary); font-weight: 800; cursor: not-allowed;">
-                        </div>
-                        <div>
-                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Alloc. Type</label>
-                            <div id="issueTypeSlider" style="display: flex; background: var(--bg-main); padding: 0.4rem; border-radius: 14px; border: 1px solid var(--border-color); position: relative;">
-                                <div id="sliderPill" style="position: absolute; top: 0.4rem; left: 0.4rem; width: calc(50% - 0.5rem); height: calc(100% - 0.8rem); background: var(--primary); border-radius: 10px; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;"></div>
-                                <button type="button" class="issue-type-btn active" onclick="setIssueType('Permanent', this, 0)" style="flex: 1; padding: 0.75rem; border: none; background: transparent; color: white; font-weight: 800; font-size: 0.8rem; cursor: pointer; position: relative; z-index: 2;">PERMANENT</button>
-                                <button type="button" class="issue-type-btn" onclick="setIssueType('Temporary', this, 1)" style="flex: 1; padding: 0.75rem; border: none; background: transparent; color: var(--text-muted); font-weight: 800; font-size: 0.8rem; cursor: pointer; position: relative; z-index: 2;">TEMPORARY</button>
-                                <input type="hidden" id="issuanceType" value="Permanent">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="padding: 1.75rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                        <h4 style="margin: 0; font-weight: 900; color: var(--text-main);">Selected Items</h4>
-                        <span id="cartItemCount" style="padding: 0.25rem 0.75rem; background: var(--primary); color: white; border-radius: 99px; font-size: 0.75rem; font-weight: 800;">0</span>
-                    </div>
-                    <div id="cartEmptyState" style="padding: 2.5rem 0; text-align: center; border: 2px dashed var(--border-color); border-radius: 18px; color: var(--text-muted);">
-                        <i data-lucide="package-open" style="width: 38px; height: 38px; opacity: 0.3; margin-bottom: 0.75rem;"></i>
-                        <p style="font-weight: 700; font-size: 0.9rem;">Select items to disburse</p>
-                    </div>
-                    <div id="cartItemsContainer" class="hide-scrollbar" style="display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto;"></div>
-                </div>
-
-                <div style="padding: 1.5rem 1.75rem; border-top: 1px solid var(--border-color); background: rgba(99,102,241,0.02); border-radius: 0 0 28px 28px;">
-                    <button id="confirmBtn" class="confirm-btn-final" onclick="confirmIssuance()">
-                        <i data-lucide="zap" style="width: 24px; fill: white;"></i>
-                        <span>Confirm Disbursement</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- History Bottom Sheet -->
-<div id="historySheet" class="modal-backdrop">
-    <div class="sheet-content glass-card">
-        <div class="samsung-drag-handle" style="display: none;"></div>
-        <div class="sheet-header" style="padding: 2.5rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
             <div>
-                <h3 style="margin: 0; font-size: 2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">Issued Items <span style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">History</span></h3>
-                <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600; opacity: 0.8;">Full tracking history of disbursed inventory items and allocations.</p>
+                <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Total Disbursed</div>
+                <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ number_format($issuedItems->sum('quantity')) }} <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Assets</span></div>
             </div>
-            <button onclick="closeHistorySheet()" class="modern-action-btn secondary" style="width: 54px; height: 54px; border-radius: 18px; border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
-                <i data-lucide="x" style="width: 28px;"></i>
-            </button>
         </div>
-        <div class="sheet-body" style="flex: 1; overflow-y: auto; padding: 3rem; background: var(--bg-main);">
-            <!-- History Real-time Filters -->
-            <div id="historyFiltersContainer" style="display: none; margin-bottom: 2.5rem; background: var(--bg-card); padding: 1.75rem; border-radius: 24px; border: 1px solid var(--border-color); align-items: flex-end; flex-wrap: wrap; gap: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
-                <div style="flex: 2; min-width: 250px;">
-                    <label style="display: block; font-size: 0.7rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Search Transaction</label>
-                    <div style="position: relative;">
-                        <i data-lucide="search" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6;"></i>
-                        <input type="text" id="historySearch" placeholder="User Department name or identification code..." style="width: 100%; padding: 1rem 1rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; transition: all 0.3s; font-size: 0.95rem;" oninput="filterHistory()" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='var(--border-color)'; this.style.background='var(--bg-main)';">
-                    </div>
-                </div>
-                <div style="flex: 1; min-width: 180px;">
-                    <label style="display: block; font-size: 0.7rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Category Filter</label>
-                    <div style="position: relative;">
-                        <i data-lucide="layers" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6; pointer-events: none;"></i>
-                        <select id="historyCatFilter" onchange="filterHistory()" style="width: 100%; padding: 1rem 1.25rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; cursor: pointer; font-size: 0.95rem; appearance: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='var(--border-color)'; this.style.background='var(--bg-main)';">
-                            <option value="all">All Categories</option>
-                            @foreach($ledgeMap as $code => $name)
-                                <option value="{{ $code }}">Category {{ $code }} - {{ $name }}</option>
-                            @endforeach
-                        </select>
-                        <i data-lucide="chevron-down" style="position: absolute; right: 1.25rem; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted); pointer-events: none;"></i>
-                    </div>
-                </div>
-                <div style="flex: 1; min-width: 180px;">
-                    <label style="display: block; font-size: 0.7rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Alloc. Status</label>
-                    <div style="position: relative;">
-                        <i data-lucide="clipboard-check" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6; pointer-events: none;"></i>
-                        <select id="historyTypeFilter" onchange="filterHistory()" style="width: 100%; padding: 1rem 1.25rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; cursor: pointer; font-size: 0.95rem; appearance: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='var(--border-color)'; this.style.background='var(--bg-main)';">
-                            <option value="all">All Types</option>
-                            <option value="Permanent">Permanent</option>
-                            <option value="Temporary">Temporary</option>
-                        </select>
-                        <i data-lucide="chevron-down" style="position: absolute; right: 1.25rem; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted); pointer-events: none;"></i>
-                    </div>
-                </div>
-                <div style="flex: 1; min-width: 180px;">
-                    <label style="display: block; font-size: 0.7rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Timeline</label>
-                    <div style="position: relative;">
-                        <i data-lucide="calendar" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6; pointer-events: none;"></i>
-                        <input type="date" id="historyDateFilter" onchange="filterHistory()" style="width: 100%; padding: 1rem 1.25rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; cursor: pointer; font-size: 0.95rem; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='white';" onblur="this.style.borderColor='var(--border-color)'; this.style.background='var(--bg-main)';">
-                    </div>
+
+        <div class="glass-card stat-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem; transition: transform 0.3s;">
+            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="check-square" style="width: 32px; height: 32px;"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Permanent Allocations</div>
+                <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ number_format($issuedItems->where('issuance_type', 'Permanent')->sum('quantity')) }} <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Assets</span></div>
+            </div>
+        </div>
+
+        <div class="glass-card stat-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem; transition: transform 0.3s;">
+            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="clock" style="width: 32px; height: 32px;"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Temporary Loans</div>
+                <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ number_format($issuedItems->where('issuance_type', 'Temporary')->sum('quantity')) }} <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Assets</span></div>
+            </div>
+        </div>
+
+        <div class="glass-card stat-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem; transition: transform 0.3s;">
+            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="map-pin" style="width: 32px; height: 32px;"></i>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Active Destinations</div>
+                <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ $issuedItems->pluck('beneficiary')->unique()->count() }} <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Depts</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Filters Container -->
+    <div class="glass-card" style="border-radius: 28px; padding: 2.5rem 3rem; border: 1px solid var(--border-color); margin-bottom: 3rem;">
+        <div style="display: flex; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
+            <!-- Live Search -->
+            <div style="flex: 2; min-width: 300px;">
+                <label style="display: block; font-size: 0.72rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Search Logs</label>
+                <div style="position: relative;">
+                    <i data-lucide="search" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6;"></i>
+                    <input type="text" id="logSearch" placeholder="Search by asset, destination department, or authority..." style="width: 100%; padding: 1rem 1rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; transition: all 0.3s; font-size: 0.95rem;" oninput="filterLogs()">
                 </div>
             </div>
 
-            <div id="historyTableContainer">
-                <!-- Data dynamically injected -->
+            <!-- Category Filter -->
+            <div style="flex: 1; min-width: 180px;">
+                <label style="display: block; font-size: 0.72rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Category</label>
+                <div style="position: relative;">
+                    <i data-lucide="layers" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6; pointer-events: none;"></i>
+                    <select id="logCatFilter" onchange="filterLogs()" style="width: 100%; padding: 1rem 1.25rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; cursor: pointer; font-size: 0.95rem; appearance: none; transition: all 0.3s;">
+                        <option value="all">All Categories</option>
+                        @foreach($ledgeMap as $code => $name)
+                            <option value="{{ $code }}">Category {{ $code }} - {{ $name }}</option>
+                        @endforeach
+                    </select>
+                    <i data-lucide="chevron-down" style="position: absolute; right: 1.25rem; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted); pointer-events: none;"></i>
+                </div>
             </div>
+
+            <!-- Allocation Type Filter -->
+            <div style="flex: 1; min-width: 180px;">
+                <label style="display: block; font-size: 0.72rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Allocation Type</label>
+                <div style="position: relative;">
+                    <i data-lucide="clipboard-check" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6; pointer-events: none;"></i>
+                    <select id="logTypeFilter" onchange="filterLogs()" style="width: 100%; padding: 1rem 1.25rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; cursor: pointer; font-size: 0.95rem; appearance: none; transition: all 0.3s;">
+                        <option value="all">All Types</option>
+                        <option value="Permanent">Permanent</option>
+                        <option value="Temporary">Temporary</option>
+                    </select>
+                    <i data-lucide="chevron-down" style="position: absolute; right: 1.25rem; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted); pointer-events: none;"></i>
+                </div>
+            </div>
+
+            <!-- Date Filter -->
+            <div style="flex: 1; min-width: 180px;">
+                <label style="display: block; font-size: 0.72rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Disbursement Date</label>
+                <div style="position: relative;">
+                    <i data-lucide="calendar" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6; pointer-events: none;"></i>
+                    <input type="date" id="logDateFilter" onchange="filterLogs()" style="width: 100%; padding: 1.02rem 1.25rem 1.02rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; cursor: pointer; font-size: 0.95rem; transition: all 0.3s;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Registry View -->
+    <div class="glass-card" style="border-radius: 32px; padding: 3rem 4rem; border: 1px solid var(--border-color); min-height: 500px;">
+        <div id="logTableContainer">
+            @if($issuedItems->count() > 0)
+            <div class="table-scroll-wrapper" style="width: 100%; overflow-x: auto; padding-bottom: 1.5rem;">
+                <table class="responsive-log-table" style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0 1.25rem; table-layout: auto;">
+                    <thead>
+                        <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900; white-space: nowrap;">
+                            <th style="padding: 0 1.5rem 0.5rem;">Timeline</th>
+                            <th style="padding: 0 1.5rem 0.5rem;">Asset Breakdown</th>
+                            <th style="padding: 0 1.5rem 0.5rem;">Storage Location</th>
+                            <th style="padding: 0 1.5rem 0.5rem;">Destination</th>
+                            <th style="padding: 0 1.5rem 0.5rem;">Qty Disbursed</th>
+                            <th style="padding: 0 1.5rem 0.5rem;">Authority</th>
+                            <th style="padding: 0 1.5rem 0.5rem; text-align: right;">Allocation Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody">
+                        @foreach($issuedItems as $item)
+                        @php
+                            $t = $item->created_at;
+                            $dateVal = $t->format('Y-m-d');
+                            $dateStr = $t->format('d/m/y');
+                            $timeStr = $t->format('H:i');
+                            
+                            $statusBadge = '';
+                            if ($item->quantity === 0 && $item->issuance_type === 'Temporary') {
+                                $statusBadge = '<span class="status-badge" style="background: rgba(100, 116, 139, 0.1); color: var(--text-muted); font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em; border: 1px dashed rgba(100, 116, 139, 0.3);">RETURNED</span>';
+                            } else {
+                                $badgeClass = $item->issuance_type === 'Temporary' ? 'status-warning' : 'status-success';
+                                $statusColor = $item->issuance_type === 'Temporary' ? '#ea580c' : '#10b981';
+                                $statusBg = $item->issuance_type === 'Temporary' ? 'rgba(234,88,12,0.1)' : 'rgba(16,185,129,0.1)';
+                                $statusBadge = '<span class="status-badge" style="background: ' . $statusBg . '; color: ' . $statusColor . '; font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em;">' . strtoupper($item->issuance_type) . '</span>';
+                            }
+                        @endphp
+                        <tr class="log-row" data-date="{{ $dateVal }}" data-category="{{ $item->ledge_category }}" data-type="{{ $item->issuance_type }}" data-search="{{ strtolower($item->description . ' ' . $item->beneficiary . ' ' . ($item->authority ?? '') . ' ' . $item->location) }}" style="background: var(--bg-card); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-radius: 20px;">
+                            <td data-label="Timeline" style="padding: 1.75rem 1.5rem; border-radius: 20px 0 0 20px;">
+                                <div style="font-weight: 800; color: var(--text-main); font-size: 0.95rem;">{{ $dateStr }}</div>
+                                <div style="font-weight: 700; color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                                    <i data-lucide="clock" style="width: 12px;"></i> {{ $timeStr }}
+                                </div>
+                            </td>
+                            <td data-label="Asset Breakdown" style="padding: 1.75rem 1.5rem;">
+                                <div style="font-weight: 950; color: var(--primary); font-size: 1.05rem;">{{ $item->description }}</div>
+                                <div style="margin-top: 4px;"><span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.6rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1); letter-spacing: 0.03em;">CATEGORY {{ $item->ledge_category }}</span></div>
+                            </td>
+                            <td data-label="Storage Location" style="padding: 1.75rem 1.5rem; font-weight: 800; color: var(--text-main); font-size: 0.95rem;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i data-lucide="map-pin" style="width: 16px; color: var(--text-muted); opacity: 0.6;"></i>
+                                    <span>{{ $item->location }}</span>
+                                </div>
+                            </td>
+                            <td data-label="Destination" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--text-main); font-size: 1.05rem; white-space: nowrap;">{{ $item->beneficiary }}</td>
+                            <td data-label="Qty Disbursed" style="padding: 1.75rem 1.5rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main);">{{ number_format($item->quantity) }} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">{{ $item->unit ?: 'Package Types' }}</span></td>
+                            <td data-label="Authority" style="padding: 1.75rem 1.5rem; font-weight: 700; color: var(--text-muted); font-size: 0.95rem; white-space: nowrap;">{{ $item->authority ?: 'N/A' }}</td>
+                            <td data-label="Allocation Status" style="padding: 1.75rem 1.5rem; border-radius: 0 20px 20px 0; text-align: right;">
+                                {!! $statusBadge !!}
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @else
+            <div style="padding: 10rem 0; text-align: center; background: rgba(0,0,0,0.01); border-radius: 32px; border: 2px dashed var(--border-color);">
+                <i data-lucide="database-zap" style="width: 80px; height: 80px; color: var(--text-muted); opacity: 0.15; margin-bottom: 2rem;"></i>
+                <h3 style="font-weight: 900; color: var(--text-main); font-size: 1.5rem;">No Disbursements Logged</h3>
+                <p style="color: var(--text-muted); font-size: 1.1rem;">There are currently no items logged as given out or disbursed.</p>
+            </div>
+            @endif
         </div>
     </div>
 </div>
@@ -260,326 +200,39 @@
         padding: 0.4rem 1.25rem; border-radius: 99px; text-transform: uppercase;
         letter-spacing: 0.1em; box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
     }
-    .header-dot {
-        width: 4px; height: 4px; background: var(--text-muted); border-radius: 50%; opacity: 0.5;
-    }
-    .operation-text {
-        color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;
-    }
-    .main-title {
-        margin: 0; font-size: 3rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em; line-height: 1;
-    }
     .gradient-text {
         background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .subtitle-text {
-        margin: 12px 0 0; color: var(--text-muted); font-size: 1.1rem; font-weight: 500; opacity: 0.8;
-    }
-
-    /* Filter Scroll Arrows */
-    .scroll-arrow {
-        width: 40px; height: 40px; border-radius: 12px;
-        background: var(--bg-card); border: 2px solid var(--border-color);
-        color: var(--text-main); cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 10;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        flex-shrink: 0;
-    }
-    .scroll-arrow:hover {
-        background: var(--primary); color: white; border-color: var(--primary);
-        transform: scale(1.1);
-    }
-    .scroll-arrow.prev { margin-right: 0.5rem; }
-    .scroll-arrow.next { margin-left: 0.5rem; }
-
     .header-mesh {
         background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0, transparent 50%),
                     radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0, transparent 50%),
                     var(--bg-card);
         backdrop-filter: blur(20px);
     }
-
-    .modern-action-btn {
-        padding: 0.85rem 1.75rem;
-        border-radius: 18px;
-        border: 2px solid var(--border-color);
-        background: var(--bg-card);
-        color: var(--text-main);
-        font-weight: 800;
-        font-size: 0.95rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.05);
     }
-
-    .modern-action-btn:hover {
-        transform: translateY(-3px);
-        border-color: var(--primary);
-        color: var(--primary);
-        box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.15);
-    }
-
-    .modern-action-btn.secondary {
-        width: 58px;
-        height: 58px;
-        padding: 0;
-        justify-content: center;
-    }
-
-    .cat-slider-premium {
-        display: flex; gap: 0.85rem; overflow-x: auto;
-        padding: 0.5rem 1rem; scroll-behavior: smooth; flex: 1;
-        -webkit-overflow-scrolling: touch;
-        scroll-snap-type: x mandatory;
-        scroll-padding-left: 1rem;
-        overscroll-behavior-x: contain;
-        /* Samsung-style soft edge fade */
-        mask-image: linear-gradient(to right, transparent, black 3%, black 97%, transparent);
-        -webkit-mask-image: linear-gradient(to right, transparent, black 3%, black 97%, transparent);
-    }
-
-    .cat-pill.modern {
-        background: rgba(0,0,0,0.03);
-        border: 1px solid transparent;
-        padding: 1rem 1.75rem;
-        border-radius: 99px; /* Fully rounded Samsung style */
-        font-weight: 800;
-        font-size: 0.95rem;
-        color: var(--text-muted);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        white-space: nowrap;
-        flex-shrink: 0;
-        scroll-snap-align: start;
-    }
-
-    .cat-pill.modern:hover {
-        background: white;
-        color: var(--primary);
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-        border-color: var(--primary-light);
-    }
-
-    .cat-pill.modern.active {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
-        box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3);
-        transform: scale(1.05) translateY(-2px);
-    }
-
-    .product-card {
-        padding: 1.25rem; border-radius: 18px; display: flex; flex-direction: column;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid var(--border-color);
-    }
-    .product-card:hover {
-        transform: translateY(-8px);
-        box-shadow: var(--card-shadow-hover);
-        border-color: var(--primary-light);
-    }
-    .product-badge {
-        position: absolute; top: 1rem; right: 1rem;
-        padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.6rem; font-weight: 900;
-    }
-    .add-to-cart-btn {
-        margin-top: auto; padding: 0.75rem; border-radius: 12px;
-        border: 2px solid var(--primary); background: transparent;
-        color: var(--primary); font-weight: 900; cursor: pointer;
-        display: flex; align-items: center; justify-content: center; gap: 8px;
-        transition: 0.3s;
-        font-size: 0.85rem;
-    }
-    .add-to-cart-btn:hover:not(:disabled) {
-        background: var(--primary); color: white;
-        box-shadow: 0 8px 20px rgba(99,102,241,0.25);
-    }
-    .confirm-btn-final {
-        width: 100%; padding: 1.15rem; border-radius: 18px;
-        border: none;
-        background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
-        color: white;
-        font-size: 1.1rem; font-weight: 900; cursor: pointer;
-        display: flex; align-items: center; justify-content: center; gap: 12px;
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
-        position: relative;
-        overflow: hidden;
-    }
-    .confirm-btn-final::before {
-        content: '';
-        position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: 0.5s;
-    }
-    .confirm-btn-final:hover:not(:disabled) {
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(79, 70, 229, 0.45);
-        filter: brightness(1.1);
-    }
-    .confirm-btn-final:hover::before {
-        left: 100%;
-    }
-    .confirm-btn-final:active { transform: translateY(0) scale(0.98); }
-    .confirm-btn-final:disabled {
-        background: #94a3b8;
-        box-shadow: none;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    /* Bottom Sheet & Animation Effects */
-    .modal-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.6);
-        backdrop-filter: blur(8px);
-        z-index: 2000;
-        display: flex;
-        justify-content: center;
-        align-items: flex-end;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        padding: 0;
-    }
-
-    .modal-backdrop.active {
-        opacity: 1;
-        visibility: visible;
-    }
-
-    .sheet-content {
-        width: 100%;
-        height: 92vh;
-        border-radius: 32px 32px 0 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        border: 1px solid rgba(255,255,255,0.4);
-        box-shadow: 0 -25px 50px -12px rgba(0,0,0,0.15);
-        transform: translateY(100%);
-        transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .modal-backdrop.active .sheet-content {
-        transform: translateY(0);
-    }
-
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-
-    .activity-row:hover {
-        transform: scale(1.01) translateY(-2px);
-        box-shadow: 0 12px 25px rgba(0,0,0,0.06) !important;
+    .log-row:hover {
+        transform: scale(1.008) translateY(-3px);
+        box-shadow: 0 12px 25px rgba(0,0,0,0.05) !important;
         border-color: var(--primary-light) !important;
     }
 
-    /* Hide Scrollbar Utility */
-    .hide-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-    .hide-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-
-    @media (max-width: 1024px) {
-        .workspace-grid {
-            grid-template-columns: 1fr !important;
-            gap: 2rem !important;
-        }
-        .cart-sticky {
-            position: relative !important;
-            top: 0 !important;
-            margin-top: 2rem;
-        }
-        .header-mesh {
-            padding: 2rem !important;
-            border-radius: 24px !important;
-            margin-bottom: 2rem !important;
-        }
-        .header-top {
-            flex-direction: column !important;
-            gap: 1.5rem !important;
-        }
-        .header-actions {
-            width: 100%;
-            justify-content: flex-start;
-        }
-        .search-cat-container {
-            flex-direction: column-reverse !important;
-            gap: 1.5rem !important;
-        }
-        .search-box-wrapper {
-            max-width: 100% !important;
-            min-width: 100% !important;
-        }
-        .main-title { font-size: 2.5rem !important; }
-        .scroll-arrow { display: none !important; }
-        #catList { padding-bottom: 0.5rem !important; gap: 0.5rem !important; }
+    .status-badge {
+        display: inline-block;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
     }
 
     @media (max-width: 768px) {
-        .header-mesh {
-            padding: 1.5rem !important;
-        }
-        .main-title { font-size: 2rem !important; }
-        .subtitle-text { font-size: 0.95rem !important; }
-        .inventory-badge { font-size: 0.65rem !important; padding: 0.35rem 1.1rem !important; }
-
-        .product-card {
-            padding: 1rem !important;
-        }
-
-        .sheet-content {
-            height: 92vh !important;
-            border-radius: 36px 36px 0 0 !important;
-            border: none !important;
-            border-top: 1px solid rgba(255,255,255,0.15) !important;
-        }
-
-        .samsung-drag-handle {
-            display: block !important; width: 44px; height: 5px; border-radius: 5px;
-            background: rgba(150, 150, 150, 0.3); margin: 16px auto 0;
-        }
-
-        .sheet-header {
-            padding: 1.5rem !important;
-            flex-direction: column;
-            gap: 1rem;
-            align-items: flex-start !important;
-        }
-
-        .sheet-header div { width: 100%; }
-        .sheet-header .modern-action-btn.secondary {
-            display: none !important;
-        }
-
-        .sheet-body {
-            padding: 1.25rem !important;
-        }
-
-        /* PREMIUM SAMSUNG CARD VIEW - DISBURSEMENT HISTORY */
-        .table-scroll-wrapper { overflow-x: visible !important; }
-        .responsive-history-table { min-width: auto !important; border-spacing: 0 1.5rem !important; border-collapse: separate !important; }
-        .responsive-history-table thead { display: none; }
-        .responsive-history-table tbody { display: block; }
-        .responsive-history-table tr {
+        .responsive-log-table { min-width: auto !important; border-spacing: 0 1.5rem !important; border-collapse: separate !important; }
+        .responsive-log-table thead { display: none; }
+        .responsive-log-table tbody { display: block; }
+        .responsive-log-table tr {
             display: block;
             margin-bottom: 2rem;
             padding: 2rem !important;
-            border-radius: 36px !important;
+            border-radius: 28px !important;
             background: var(--bg-card) !important;
             box-shadow: 0 12px 35px rgba(0,0,0,0.06) !important;
             border: 1px solid var(--border-color) !important;
@@ -587,7 +240,7 @@
             overflow: hidden;
             transition: all 0.3s ease;
         }
-        .responsive-history-table tr::before {
+        .responsive-log-table tr::before {
             content: '';
             position: absolute;
             left: 0;
@@ -597,7 +250,7 @@
             background: var(--primary);
             opacity: 0.8;
         }
-        .responsive-history-table td {
+        .responsive-log-table td {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -606,8 +259,8 @@
             border-radius: 0 !important;
             width: 100% !important;
         }
-        .responsive-history-table td:last-child { border-bottom: none !important; padding-top: 1.5rem !important; }
-        .responsive-history-table td::before {
+        .responsive-log-table td:last-child { border-bottom: none !important; padding-top: 1.5rem !important; }
+        .responsive-log-table td::before {
             content: attr(data-label);
             font-weight: 850;
             color: var(--text-muted);
@@ -615,423 +268,63 @@
             text-transform: uppercase;
             letter-spacing: 0.1em;
         }
-        .responsive-history-table td div,
-        .responsive-history-table td span { text-align: right; font-weight: 700; font-size: 1rem; }
-    }
-
-    @media (max-width: 480px) {
-        .main-title { font-size: 1.75rem !important; }
-        .subtitle-text { font-size: 0.85rem !important; }
-        .inventory-badge { padding: 0.35rem 1rem !important; font-size: 0.6rem !important; }
-        .operation-text { font-size: 0.75rem !important; }
-
-        .modern-action-btn {
-            padding: 0.75rem 1.25rem !important;
-            font-size: 0.85rem !important;
-            width: 100% !important;
-            justify-content: center !important;
-        }
-        .header-actions {
-            flex-direction: column !important;
-        }
-        .modern-action-btn.secondary {
-            width: 100% !important;
-            height: auto !important;
-            padding: 0.75rem !important;
-        }
-        .cat-pill.modern {
-            padding: 0.75rem 1.25rem !important;
-            font-size: 0.85rem !important;
-        }
-        .search-box-wrapper input {
-            padding: 1.15rem 1.25rem 1.15rem 3.5rem !important;
-            font-size: 0.95rem !important;
-        }
-        #productGrid {
-            grid-template-columns: 1fr !important;
-        }
-        .product-card {
-            padding: 1.25rem !important;
-        }
-        .product-card h4 {
-            font-size: 0.95rem !important;
-        }
-        .header-badges {
-        .header-badges {
-            gap: 0.5rem !important;
-        }
-    }
-
-    /* Hide native number spinners for custom quantity input */
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-    input[type=number] {
-        -moz-appearance: textfield;
+        .responsive-log-table td div,
+        .responsive-log-table td span { text-align: right; font-weight: 700; font-size: 1rem; }
     }
 </style>
 
 <script>
-    let cart = [];
+    function filterLogs() {
+        const searchTerm = document.getElementById('logSearch').value.toLowerCase();
+        const catFilter = document.getElementById('logCatFilter').value;
+        const typeFilter = document.getElementById('logTypeFilter').value;
+        const dateFilter = document.getElementById('logDateFilter').value;
 
-    function updateCartUI() {
-        const container = document.getElementById('cartItemsContainer');
-        const emptyState = document.getElementById('cartEmptyState');
-        const countBadge = document.getElementById('cartItemCount');
+        const rows = document.querySelectorAll('.log-row');
+        let visibleCount = 0;
 
-        container.innerHTML = '';
-        countBadge.textContent = cart.length;
+        rows.forEach(row => {
+            const matchesSearch = row.dataset.search.includes(searchTerm);
+            const matchesCat = catFilter === 'all' || row.dataset.category === catFilter;
+            const matchesType = typeFilter === 'all' || row.dataset.type === typeFilter;
+            const matchesDate = !dateFilter || row.dataset.date === dateFilter;
 
-        if (cart.length === 0) {
-            emptyState.style.display = 'block';
-        } else {
-            emptyState.style.display = 'none';
-            cart.forEach((item, index) => {
+            if (matchesSearch && matchesCat && matchesType && matchesDate) {
+                row.style.display = 'table-row';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Toggle table header/empty state based on filters
+        const container = document.getElementById('logTableContainer');
+        const emptyState = document.getElementById('emptyFilterState');
+
+        if (visibleCount === 0) {
+            if (!emptyState) {
                 const el = document.createElement('div');
-                el.style.cssText = 'background: var(--bg-main); padding: 1.25rem; border-radius: 18px; border: 1px solid var(--border-color); margin-bottom: 0.75rem;';
+                el.id = 'emptyFilterState';
+                el.style.cssText = 'padding: 10rem 0; text-align: center; background: rgba(0,0,0,0.01); border-radius: 32px; border: 2px dashed var(--border-color);';
                 el.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                        <span style="font-weight: 900; font-size: 0.95rem; color: var(--text-main);">${item.description}</span>
-                        <button onclick="removeFromCart(${index})" style="background:transparent; border:none; color:#ef4444; cursor:pointer;"><i data-lucide="trash-2" style="width:16px;"></i></button>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">Avl: ${item.maxStock} ${item.unit || ''}</span>
-                        <div style="display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 0.25rem 0.35rem; border-radius: 10px; border: 1.5px solid var(--border-color);">
-                            <button onclick="updateQty(${index}, -1)" style="border:none; background:transparent; cursor:pointer;"><i data-lucide="minus-circle" style="width:18px; color:var(--text-muted);"></i></button>
-                            <input type="number" value="${item.qty}" min="1" max="${item.maxStock}" onchange="setQty(${index}, this.value)" style="font-weight: 900; width: 40px; text-align: center; border: none; background: transparent; outline: none; color: var(--text-main); font-size: 0.95rem;">
-                            <button onclick="updateQty(${index}, 1)" style="border:none; background:transparent; cursor:pointer;"><i data-lucide="plus-circle" style="width:18px; color:var(--primary);"></i></button>
-                        </div>
-                    </div>
+                    <i data-lucide="database-zap" style="width: 80px; height: 80px; color: var(--text-muted); opacity: 0.15; margin-bottom: 2rem;"></i>
+                    <h3 style="font-weight: 900; color: var(--text-main); font-size: 1.5rem;">No Records Match</h3>
+                    <p style="color: var(--text-muted); font-size: 1.1rem;">Try adjusting your search query or filters to locate items.</p>
                 `;
                 container.appendChild(el);
-            });
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }
-    }
-
-    function addToCart(desc, stock, cat, unit) {
-        const exists = cart.find(i => i.description === desc);
-        if (exists) {
-            if (exists.qty < stock) exists.qty++;
-            else showToast('Stock Limit', 'Cannot exceed available stock', 'warning');
-        } else {
-            cart.push({ description: desc, maxStock: stock, category: cat, qty: 1, unit: unit });
-            showToast('Added', desc, 'success');
-        }
-        updateCartUI();
-    }
-
-    function removeFromCart(idx) { cart.splice(idx, 1); updateCartUI(); }
-    function updateQty(idx, delta) {
-        const item = cart[idx];
-        const newQty = item.qty + delta;
-        if (newQty > 0 && newQty <= item.maxStock) {
-            item.qty = newQty;
-            updateCartUI();
-        } else if (newQty > item.maxStock) {
-            showToast('Stock Limit', 'Cannot exceed available stock', 'warning');
-        }
-    }
-
-    function setQty(idx, val) {
-        const item = cart[idx];
-        let newQty = parseInt(val);
-        if (isNaN(newQty) || newQty <= 0) newQty = 1;
-        if (newQty > item.maxStock) {
-            newQty = item.maxStock;
-            showToast('Stock Limit', 'Cannot exceed available stock', 'warning');
-        }
-        item.qty = newQty;
-        updateCartUI();
-    }
-
-    function setIssueType(type, btn, idx) {
-        document.getElementById('issuanceType').value = type;
-        document.getElementById('sliderPill').style.transform = `translateX(${idx * 100}%)`;
-        document.querySelectorAll('.issue-type-btn').forEach(b => b.style.color = 'var(--text-muted)');
-        btn.style.color = 'white';
-    }
-
-    function filterCategory(cat, btn) {
-        document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const cards = document.querySelectorAll('.product-card');
-        cards.forEach(c => c.style.display = (cat === 'all' || c.dataset.category === cat) ? 'flex' : 'none');
-    }
-
-    const catList = document.getElementById('catList');
-    const leftArrow = document.getElementById('catLeftArrow');
-    const rightArrow = document.getElementById('catRightArrow');
-
-    function scrollCats(dir) {
-        catList.scrollBy({ left: dir * 300, behavior: 'smooth' });
-    }
-
-    catList.addEventListener('scroll', () => {
-        leftArrow.style.display = catList.scrollLeft > 20 ? 'flex' : 'none';
-        const maxScroll = catList.scrollWidth - catList.clientWidth;
-        rightArrow.style.display = catList.scrollLeft < maxScroll - 20 ? 'flex' : 'none';
-    });
-
-    // Live Search
-    document.getElementById('catalogSearch').addEventListener('input', e => {
-        const term = e.target.value.toLowerCase();
-        document.querySelectorAll('.product-card').forEach(c => {
-            const desc = c.dataset.description;
-            c.style.display = desc.includes(term) ? 'flex' : 'none';
-        });
-    });
-
-    async function confirmIssuance() {
-        if (!cart.length) return showToast('Empty List', 'Add items first', 'info');
-        const beneficiary = document.getElementById('beneficiary').value;
-        const authority = document.getElementById('authority').value;
-        if (!beneficiary) return showToast('Missing User Department', 'Enter user department name', 'warning');
-        if (!authority) return showToast('Missing Approval', 'Enter approving officer', 'warning');
-
-        const btn = document.getElementById('confirmBtn');
-        const originalHtml = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = 'Processing...';
-
-        try {
-            const res = await fetch("{{ route('issueitems.store', [], false) }}", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify({
-                    issuance_date: document.getElementById('issuanceDate').value,
-                    beneficiary: beneficiary,
-                    authority: authority,
-                    issuance_type: document.getElementById('issuanceType').value,
-                    items: cart
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showToast('Dispatched', data.message, 'success');
-                setTimeout(() => window.location.reload(), 2000);
-            } else {
-                showToast('Error', data.message, 'error');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             }
-        } catch (e) {
-            showToast('System Error', 'Could not complete request', 'error');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = originalHtml;
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }
-    }
-
-    let fullHistoryData = [];
-
-    async function openHistorySheet() {
-        const sheet = document.getElementById('historySheet');
-        const container = document.getElementById('historyTableContainer');
-        const filters = document.getElementById('historyFiltersContainer');
-
-        sheet.classList.add('active');
-        filters.style.display = 'none';
-        container.innerHTML = `
-            <div style="padding: 12rem 0; text-align: center;">
-                <div class="loader" style="width: 48px; height: 48px; border: 5px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 2rem;"></div>
-                <p style="font-weight: 850; color: var(--text-main); font-size: 1.25rem;">Synchronizing with Registry...</p>
-                <p style="color: var(--text-muted); font-size: 0.95rem;">Decrypting secure inventory transaction logs</p>
-            </div>
-        `;
-
-        try {
-            const res = await fetch("{{ route('api.issued-items-history', [], false) }}");
-            fullHistoryData = await res.json();
-
-            if (fullHistoryData.length > 0) filters.style.display = 'flex';
-            renderHistory(fullHistoryData);
-        } catch (e) {
-            container.innerHTML = `
-                <div style="padding: 10rem 0; text-align: center;">
-                    <div style="width: 72px; height: 72px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.1);">
-                        <i data-lucide="wifi-off" style="width: 36px; height: 36px;"></i>
-                    </div>
-                    <h3 style="font-weight: 900; color: var(--text-main); font-size: 1.75rem; letter-spacing: -0.02em;">Registry Connection Offline</h3>
-                    <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 400px; margin: 1rem auto;">We were unable to establish a secure handshake with the inventory database.</p>
-                    <button onclick="openHistorySheet()" class="modern-action-btn" style="margin: 2rem auto; padding: 1rem 2.5rem;">
-                        <i data-lucide="refresh-cw" style="width: 18px;"></i>
-                        Retry Uplink
-                    </button>
-                </div>
-            `;
-        }
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-
-    function filterHistory() {
-        const searchTerm = document.getElementById('historySearch').value.toLowerCase();
-        const catFilter = document.getElementById('historyCatFilter').value;
-        const typeFilter = document.getElementById('historyTypeFilter').value;
-        const dateFilter = document.getElementById('historyDateFilter').value;
-
-        const filtered = fullHistoryData.filter(item => {
-            const matchesSearch = item.beneficiary.toLowerCase().includes(searchTerm) ||
-                               item.description.toLowerCase().includes(searchTerm) ||
-                               (item.authority && item.authority.toLowerCase().includes(searchTerm));
-            const matchesCat = catFilter === 'all' || item.ledge_category == catFilter;
-            const matchesType = typeFilter === 'all' || item.issuance_type == typeFilter;
-
-            // Date matching (YYYY-MM-DD comparison)
-            const itemDate = new Date(item.created_at).toISOString().split('T')[0];
-            const matchesDate = !dateFilter || itemDate === dateFilter;
-
-            return matchesSearch && matchesCat && matchesType && matchesDate;
-        });
-
-        renderHistory(filtered);
-    }
-
-    function renderHistory(data) {
-        const container = document.getElementById('historyTableContainer');
-
-        if (data.length === 0) {
-            container.innerHTML = `
-                <div style="padding: 10rem 0; text-align: center; background: rgba(0,0,0,0.01); border-radius: 32px; border: 2px dashed var(--border-color);">
-                    <i data-lucide="database-zap" style="width: 80px; height: 80px; color: var(--text-muted); opacity: 0.15; margin-bottom: 2rem;"></i>
-                    <h3 style="font-weight: 900; color: var(--text-main); font-size: 1.5rem;">No Records Found</h3>
-                    <p style="color: var(--text-muted); font-size: 1.1rem;">Try adjusting your filters to find existing transactions.</p>
-                </div>
-            `;
+            const tableWrapper = container.querySelector('.table-scroll-wrapper');
+            if (tableWrapper) tableWrapper.style.display = 'none';
         } else {
-            let html = `
-                <div class="table-scroll-wrapper" style="width: 100%; overflow-x: auto; padding-bottom: 1.5rem; -webkit-overflow-scrolling: touch;">
-                    <table class="responsive-history-table" style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0 1.25rem; table-layout: auto;">
-                        <thead>
-                            <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900; white-space: nowrap;">
-                                <th style="padding: 0 1.5rem 0.5rem;">Timeline</th>
-                                <th style="padding: 0 1.5rem 0.5rem;">User Department</th>
-                                <th style="padding: 0 1.5rem 0.5rem;">Approval</th>
-                                <th style="padding: 0 1.5rem 0.5rem;">Disbursed Asset</th>
-                                <th style="padding: 0 1.5rem 0.5rem;">Category</th>
-                                <th style="padding: 0 1.5rem 0.5rem;">Qty</th>
-                                <th style="padding: 0 1.5rem 0.5rem;">Security Status</th>
-                            </tr>
-                        </thead>
-                    <tbody>
-            `;
-
-            data.forEach(item => {
-                const t = new Date(item.created_at);
-                const date = t.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' });
-                const time = t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-
-                let statusBadge = '';
-                if (item.quantity === 0 && item.issuance_type === 'Temporary') {
-                    statusBadge = `<span class="status-badge" style="background: rgba(100, 116, 139, 0.1); color: var(--text-muted); font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em; border: 1px dashed rgba(100, 116, 139, 0.3);">RETURNED</span>`;
-                } else {
-                    const badgeClass = item.issuance_type === 'Temporary' ? 'status-warning' : 'status-success';
-                    statusBadge = `<span class="status-badge ${badgeClass}" style="font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">${item.issuance_type.toUpperCase()}</span>`;
-                }
-
-                html += `
-                    <tr class="activity-row" style="background: var(--bg-card); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-radius: 20px;">
-                        <td data-label="Timeline" style="padding: 1.75rem 1.5rem; border-radius: 20px 0 0 20px;">
-                            <div style="font-weight: 800; color: var(--text-main); font-size: 0.95rem;">${date}</div>
-                            <div style="font-weight: 700; color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-                                <i data-lucide="clock" style="width: 12px;"></i> ${time}
-                            </div>
-                        </td>
-                        <td data-label="User Department" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--text-main); font-size: 1.05rem; white-space: nowrap;">${item.beneficiary}</td>
-                        <td data-label="Approval" style="padding: 1.75rem 1.5rem; font-weight: 700; color: var(--text-muted); font-size: 0.95rem; white-space: nowrap;">${item.authority || '-'}</td>
-                        <td data-label="Asset" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--primary); font-size: 1.05rem; white-space: nowrap;">${item.description}</td>
-                        <td data-label="Category" style="padding: 1.75rem 1.5rem; white-space: nowrap;">
-                            <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.7rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1); letter-spacing: 0.03em;">CATEGORY ${item.ledge_category}</span>
-                        </td>
-                        <td data-label="Qty" style="padding: 1.75rem 1.5rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main);">${item.quantity} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.unit || 'Package Types'}</span></td>
-                        <td data-label="Status" style="padding: 1.75rem 1.5rem; border-radius: 0 20px 20px 0;">
-                            ${statusBadge}
-                        </td>
-                    </tr>
-                `;
-            });
-
-            html += `</tbody></table></div>`;
-            container.innerHTML = html;
-        }
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-
-    function closeHistorySheet() {
-        const sheet = document.getElementById('historySheet');
-        const content = sheet.querySelector('.sheet-content');
-
-        sheet.classList.remove('active');
-
-        if (content) {
-            setTimeout(() => {
-                content.style.transition = '';
-                content.style.transform = '';
-                sheet.style.opacity = '';
-                sheet.style.transition = '';
-            }, 400);
+            if (emptyState) emptyState.remove();
+            const tableWrapper = container.querySelector('.table-scroll-wrapper');
+            if (tableWrapper) tableWrapper.style.display = 'block';
         }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
-
-        const sheetBackdrop = document.getElementById('historySheet');
-        const sheetContent = sheetBackdrop ? sheetBackdrop.querySelector('.sheet-content') : null;
-
-        if (sheetContent && sheetBackdrop) {
-            let startY = 0;
-            let currentY = 0;
-            let isDragging = false;
-            let windowHeight = window.innerHeight;
-
-            sheetContent.addEventListener('touchstart', (e) => {
-                if (e.target.closest('.sheet-header') || e.target.closest('.samsung-drag-handle')) {
-                    startY = e.touches[0].clientY;
-                    isDragging = true;
-                    windowHeight = window.innerHeight;
-
-                    sheetContent.style.setProperty('transition', 'none', 'important');
-                    sheetBackdrop.style.setProperty('transition', 'none', 'important');
-                }
-            }, { passive: true });
-
-            sheetContent.addEventListener('touchmove', (e) => {
-                if (!isDragging) return;
-                currentY = e.touches[0].clientY;
-                const diff = currentY - startY;
-
-                if (diff > 0) {
-                    sheetContent.style.transform = `translateY(${diff}px)`;
-                    let fade = 1 - (diff / (windowHeight * 0.8));
-                    sheetBackdrop.style.opacity = fade > 0 ? fade : 0;
-                    e.preventDefault();
-                } else {
-                    let resistance = diff * 0.15;
-                    sheetContent.style.transform = `translateY(${resistance}px)`;
-                    e.preventDefault();
-                }
-            }, { passive: false });
-
-            sheetContent.addEventListener('touchend', () => {
-                if (!isDragging) return;
-                isDragging = false;
-                const diff = currentY - startY;
-
-                sheetContent.style.setProperty('transition', 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)', 'important');
-                sheetBackdrop.style.setProperty('transition', 'opacity 0.4s ease', 'important');
-
-                if (diff > 150 || diff > windowHeight * 0.25) {
-                    sheetContent.style.transform = 'translateY(100%)';
-                    sheetBackdrop.style.opacity = '0';
-                    setTimeout(() => closeHistorySheet(), 350);
-                } else {
-                    sheetContent.style.transform = 'translateY(0)';
-                    sheetBackdrop.style.opacity = '1';
-                }
-            });
-        }
     });
 </script>
 @endsection

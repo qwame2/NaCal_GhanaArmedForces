@@ -19,6 +19,9 @@ class ReturnController extends Controller
             return redirect()->route('admin.inventory')->with('info', 'Strategic Oversight required. Redirecting to Command Center.');
         }
 
+        // Run self-healing to convert collected requisitions
+        $this->selfHealRequisitions();
+
         if (!Schema::hasTable('returned_items')) {
             Schema::create('returned_items', function (Blueprint $table) {
                 $table->id();
@@ -233,6 +236,58 @@ class ReturnController extends Controller
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Purge Protocol Failed: ' . $e->getMessage());
+        }
+    }
+
+    private function selfHealRequisitions()
+    {
+        if (!Schema::hasColumn('issuances', 'requisition_id')) {
+            try {
+                Schema::table('issuances', function (Blueprint $table) {
+                    $table->unsignedBigInteger('requisition_id')->nullable();
+                });
+            } catch (\Exception $e) {
+                // Ignore if already created
+            }
+        }
+
+        $collectedReqs = \App\Models\StoreRequisition::with(['items', 'processor'])
+            ->whereIn('status', ['approved', 'partially_approved'])
+            ->whereNotNull('collected_at')
+            ->get();
+
+        foreach ($collectedReqs as $req) {
+            $exists = Issuance::where('requisition_id', $req->id)->exists();
+            if (!$exists) {
+                $issuance = Issuance::create([
+                    'issuance_date' => $req->collected_at->format('Y-m-d'),
+                    'beneficiary' => $req->department . ' (' . $req->requester_name . ')',
+                    'authority' => $req->processor?->name ?? 'Requisition Approved',
+                    'issuance_type' => $req->usage_type === 'temporary' ? 'Temporary' : 'Permanent',
+                    'requisition_id' => $req->id,
+                ]);
+
+                foreach ($req->items as $item) {
+                    if ($item->quantity_approved > 0) {
+                        IssuedItem::create([
+                            'issuance_id' => $issuance->id,
+                            'description' => $item->description,
+                            'ledge_category' => $item->category ?? 'A',
+                            'quantity' => $item->quantity_approved,
+                            'unit' => $item->unit,
+                        ]);
+                    }
+                    if ($item->alternative_quantity_approved > 0 && !empty($item->alternative_description)) {
+                        IssuedItem::create([
+                            'issuance_id' => $issuance->id,
+                            'description' => $item->alternative_description,
+                            'ledge_category' => $item->category ?? 'A',
+                            'quantity' => $item->alternative_quantity_approved,
+                            'unit' => $item->unit,
+                        ]);
+                    }
+                }
+            }
         }
     }
 }

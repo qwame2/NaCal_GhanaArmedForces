@@ -17,18 +17,14 @@ class IssueItemsController extends Controller
             return redirect()->route('admin.inventory')->with('info', 'Strategic Oversight required. Redirecting to Command Center.');
         }
 
+        // Run self-healing to convert collected requisitions to issuances
+        $this->selfHealRequisitions();
+
         if (!\Illuminate\Support\Facades\Schema::hasColumn('issued_items', 'unit')) {
             \Illuminate\Support\Facades\Schema::table('issued_items', function (\Illuminate\Database\Schema\Blueprint $table) {
                 $table->string('unit')->nullable();
             });
         }
-
-        // Get unique items by description and sum up their available qty, excluding System Draft
-        $items = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->selectRaw('inventory_items.description, inventory_batches.ledge_category, MAX(inventory_items.unit) as unit, SUM(inventory_items.qty) as total_stock')
-            ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
-            ->get();
 
         $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
             ? \App\Models\Setting::getCategories() 
@@ -42,25 +38,26 @@ class IssueItemsController extends Controller
                 'J' => 'Equipment'
             ];
 
-        $adminName = \App\Models\User::where('is_admin', true)->value('name') ?? 'Administrator';
-
-        // Fetch all pending issue submissions to mark items as "Pending Auth"
-        $pendingIssuances = \App\Models\EditRequest::where('request_type', 'issue_submission')
-            ->where('status', 'pending')
+        // Fetch all given out items
+        $issuedItems = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->select('issued_items.*', 'issuances.issuance_date', 'issuances.beneficiary', 'issuances.authority', 'issuances.issuance_type', 'issuances.created_at')
+            ->orderBy('issuances.issuance_date', 'desc')
+            ->orderBy('issuances.created_at', 'desc')
             ->get();
 
-        $pendingItems = [];
-        foreach ($pendingIssuances as $req) {
-            $payload = json_decode($req->payload, true);
-            if (isset($payload['items'])) {
-                foreach ($payload['items'] as $pItem) {
-                    $pendingItems[] = $pItem['description'];
-                }
-            }
-        }
-        $pendingItems = array_unique($pendingItems);
+        // Get locations of inventory items to attach
+        $locations = InventoryItem::select('description', 'location')
+            ->whereNotNull('location')
+            ->where('location', '!=', '')
+            ->get()
+            ->pluck('location', 'description')
+            ->toArray();
 
-        return view('issue-items.index', compact('items', 'ledgeMap', 'adminName', 'pendingItems'));
+        foreach ($issuedItems as $item) {
+            $item->location = $locations[$item->description] ?? 'Not Specified';
+        }
+
+        return view('issue-items.index', compact('issuedItems', 'ledgeMap'));
     }
 
     public function store(Request $request)
@@ -165,6 +162,8 @@ class IssueItemsController extends Controller
 
     public function history()
     {
+        $this->selfHealRequisitions();
+
         $issuedItems = IssuedItem::with('issuance')
             ->join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->select('issued_items.*', 'issuances.issuance_date', 'issuances.beneficiary', 'issuances.authority', 'issuances.issuance_type', 'issuances.created_at')
@@ -172,5 +171,57 @@ class IssueItemsController extends Controller
             ->get();
 
         return response()->json($issuedItems);
+    }
+
+    private function selfHealRequisitions()
+    {
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('issuances', 'requisition_id')) {
+            try {
+                \Illuminate\Support\Facades\Schema::table('issuances', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->unsignedBigInteger('requisition_id')->nullable();
+                });
+            } catch (\Exception $e) {
+                // Ignore if already created
+            }
+        }
+
+        $collectedReqs = \App\Models\StoreRequisition::with(['items', 'processor'])
+            ->whereIn('status', ['approved', 'partially_approved'])
+            ->whereNotNull('collected_at')
+            ->get();
+
+        foreach ($collectedReqs as $req) {
+            $exists = Issuance::where('requisition_id', $req->id)->exists();
+            if (!$exists) {
+                $issuance = Issuance::create([
+                    'issuance_date' => $req->collected_at->format('Y-m-d'),
+                    'beneficiary' => $req->department . ' (' . $req->requester_name . ')',
+                    'authority' => $req->processor?->name ?? 'Requisition Approved',
+                    'issuance_type' => $req->usage_type === 'temporary' ? 'Temporary' : 'Permanent',
+                    'requisition_id' => $req->id,
+                ]);
+
+                foreach ($req->items as $item) {
+                    if ($item->quantity_approved > 0) {
+                        IssuedItem::create([
+                            'issuance_id' => $issuance->id,
+                            'description' => $item->description,
+                            'ledge_category' => $item->category ?? 'A',
+                            'quantity' => $item->quantity_approved,
+                            'unit' => $item->unit,
+                        ]);
+                    }
+                    if ($item->alternative_quantity_approved > 0 && !empty($item->alternative_description)) {
+                        IssuedItem::create([
+                            'issuance_id' => $issuance->id,
+                            'description' => $item->alternative_description,
+                            'ledge_category' => $item->category ?? 'A',
+                            'quantity' => $item->alternative_quantity_approved,
+                            'unit' => $item->unit,
+                        ]);
+                    }
+                }
+            }
+        }
     }
 }

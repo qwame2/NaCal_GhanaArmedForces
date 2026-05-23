@@ -181,9 +181,6 @@ class StoreRequisitionController extends Controller
         return response()->json($requisitions);
     }
 
-    /**
-     * Personnel / Requisitioner: Confirm physical collection of items for a requisition.
-     */
     public function collect(Request $request, $id)
     {
         if (auth()->user()->role === 'Requisitioner') {
@@ -203,6 +200,46 @@ class StoreRequisitionController extends Controller
         $req->collected_at = now();
         $req->collected_by = auth()->id();
         $req->save();
+
+        // Create an Issuance and IssuedItems to represent this given out/collected asset
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('issuances', 'requisition_id')) {
+            try {
+                \Illuminate\Support\Facades\Schema::table('issuances', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->unsignedBigInteger('requisition_id')->nullable();
+                });
+            } catch (\Exception $e) {
+                // Ignore if already created
+            }
+        }
+
+        $issuance = \App\Models\Issuance::create([
+            'issuance_date' => $req->collected_at->format('Y-m-d'),
+            'beneficiary' => $req->department . ' (' . $req->requester_name . ')',
+            'authority' => $req->processor?->name ?? 'Requisition Approved',
+            'issuance_type' => $req->usage_type === 'temporary' ? 'Temporary' : 'Permanent',
+            'requisition_id' => $req->id,
+        ]);
+
+        foreach ($req->items as $item) {
+            if ($item->quantity_approved > 0) {
+                \App\Models\IssuedItem::create([
+                    'issuance_id' => $issuance->id,
+                    'description' => $item->description,
+                    'ledge_category' => $item->category ?? 'A',
+                    'quantity' => $item->quantity_approved,
+                    'unit' => $item->unit,
+                ]);
+            }
+            if ($item->alternative_quantity_approved > 0 && !empty($item->alternative_description)) {
+                \App\Models\IssuedItem::create([
+                    'issuance_id' => $issuance->id,
+                    'description' => $item->alternative_description,
+                    'ledge_category' => $item->category ?? 'A',
+                    'quantity' => $item->alternative_quantity_approved,
+                    'unit' => $item->unit,
+                ]);
+            }
+        }
 
         SystemLog::create([
             'user_id'    => auth()->id(),
