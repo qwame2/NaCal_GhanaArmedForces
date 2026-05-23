@@ -8,9 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('store_requisitions', function (Blueprint $table) {
-            $table->string('usage_type')->default('permanent'); // permanent or temporary
-        });
+        if (!Schema::hasColumn('store_requisitions', 'usage_type')) {
+            Schema::table('store_requisitions', function (Blueprint $table) {
+                $table->string('usage_type')->default('permanent'); // permanent or temporary
+            });
+        }
     }
 
     public function down(): void
