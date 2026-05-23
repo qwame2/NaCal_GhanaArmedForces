@@ -153,6 +153,21 @@ class ReturnController extends Controller
                     'is_automated' => true,
                     'edit_request_id' => $editReq->id
                 ]);
+                
+                // Log this submission automatically to System Archive
+                \App\Models\SystemLog::create([
+                    'user_id' => auth()->id(),
+                    'event_type' => 'INVENTORY',
+                    'action' => 'SUBMIT_RECOVERY_REQUEST',
+                    'description' => auth()->user()->name . " submitted a return recovery request for {$validated['return_qty']} {$issuedItem->description}(s).",
+                    'severity' => 'info',
+                    'is_archived' => true,
+                    'metadata' => [
+                        'item_description' => $issuedItem->description,
+                        'return_qty' => $validated['return_qty'],
+                        'return_date' => $validated['return_date']
+                    ]
+                ]);
             }
 
             DB::commit();
@@ -226,6 +241,7 @@ class ReturnController extends Controller
                     'action' => 'PURGE_RECORDS',
                     'description' => "Administrator purged {$count} recovery logs from the active database.",
                     'severity' => 'danger',
+                    'is_archived' => true,
                     'ip_address' => request()->ip()
                 ]);
             }
@@ -250,6 +266,14 @@ class ReturnController extends Controller
                 // Ignore if already created
             }
         }
+
+        // Clean up duplicates from the previous mass-assignment bug
+        Issuance::whereNull('requisition_id')
+            ->where(function($q) {
+                $q->where('authority', 'Requisition Approved')
+                  ->orWhere('beneficiary', 'like', '%(%');
+            })
+            ->delete();
 
         $collectedReqs = \App\Models\StoreRequisition::with(['items', 'processor'])
             ->whereIn('status', ['approved', 'partially_approved'])
@@ -289,5 +313,6 @@ class ReturnController extends Controller
                 }
             }
         }
+
     }
 }

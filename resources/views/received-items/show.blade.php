@@ -77,6 +77,14 @@
                         break;
                     }
                 }
+
+                $isBatchIssuedOut = false;
+                foreach ($batch->items as $it) {
+                    if ($it->hasActiveTemporaryLoan()) {
+                        $isBatchIssuedOut = true;
+                        break;
+                    }
+                }
             @endphp
             <div style="display: grid; gap: 1.25rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -93,7 +101,11 @@
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Supply Status</span>
-                    <span style="color: var(--primary); font-weight: 800; font-size: 0.9rem;">{{ $batch->supplier_status ?: 'Full Delivery' }}</span>
+                    @if($isBatchIssuedOut)
+                        <span style="color: #f59e0b; font-weight: 800; font-size: 0.9rem; text-transform: uppercase;">Issued Out</span>
+                    @else
+                        <span style="color: var(--primary); font-weight: 800; font-size: 0.9rem;">{{ $batch->supplier_status ?: 'Full Delivery' }}</span>
+                    @endif
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Total Line Items</span>

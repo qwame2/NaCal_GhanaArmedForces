@@ -273,7 +273,7 @@ class AdminController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
-        $users = User::where('is_admin', false)->get();
+        $users = User::where('is_admin', false)->where('role', '!=', 'Requisitioner')->get();
         return view('admin.permissions', compact('users'));
     }
 
@@ -536,7 +536,9 @@ class AdminController extends Controller
                 return $clean;
             })->toArray();
         $allSuppliers = collect(array_merge($registrySuppliers, $dbSuppliers))
-            ->filter()
+            ->filter(function ($item) {
+                return strtolower(trim($item)) !== 'system';
+            })
             ->unique(function ($item) {
                 return strtolower(trim($item));
             })
@@ -745,10 +747,6 @@ class AdminController extends Controller
         }
         if ($request->has('date_to') && $request->date_to) {
             $query->whereDate('updated_at', '<=', $request->date_to);
-        }
-
-        if ($request->has('search') && $request->search) {
-            $query->where('item_id', 'LIKE', '%' . $request->search . '%');
         }
 
         $history = $query->orderBy('updated_at', 'desc')->paginate(10);

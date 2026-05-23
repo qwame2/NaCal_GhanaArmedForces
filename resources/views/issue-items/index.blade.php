@@ -12,13 +12,13 @@
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
                 <div>
                     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                        <span class="inventory-badge">Issue Registry</span>
+                        <span class="inventory-badge">Issue</span>
                         <div style="width: 4px; height: 4px; background: var(--text-muted); border-radius: 50%; opacity: 0.5;"></div>
                         <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
                             <i data-lucide="shield" style="width: 14px; color: var(--primary);"></i> Operations Verified
                         </span>
                     </div>
-                    <h1 style="margin: 0; font-size: 3rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em; line-height: 1;">Issue <span class="gradient-text">Inventory Log</span></h1>
+                    <h1 style="margin: 0; font-size: 3rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em; line-height: 1;">Issue <span class="gradient-text">Inventory</span></h1>
                     <p style="margin: 12px 0 0; color: var(--text-muted); font-size: 1.1rem; font-weight: 500; opacity: 0.8;">Full tracking registry of all inventory items given out (disbursed or collected requisitions) across the logistics network.</p>
                 </div>
             </div>
@@ -33,7 +33,7 @@
             </div>
             <div>
                 <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Total Disbursed</div>
-                <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ number_format($issuedItems->sum('quantity')) }} <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Assets</span></div>
+                <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ number_format($issuedItems->sum('quantity')) }} <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Items</span></div>
             </div>
         </div>
 
@@ -43,7 +43,7 @@
             </div>
             <div>
                 <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Permanent Allocations</div>
-                <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ number_format($issuedItems->where('issuance_type', 'Permanent')->sum('quantity')) }} <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Assets</span></div>
+                <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ number_format($issuedItems->where('issuance_type', 'Permanent')->sum('quantity')) }} <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Items</span></div>
             </div>
         </div>
 
@@ -53,7 +53,7 @@
             </div>
             <div>
                 <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Temporary Loans</div>
-                <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ number_format($issuedItems->where('issuance_type', 'Temporary')->sum('quantity')) }} <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Assets</span></div>
+                <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ number_format($issuedItems->where('issuance_type', 'Temporary')->sum('quantity')) }} <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Items</span></div>
             </div>
         </div>
 
@@ -121,7 +121,7 @@
     </div>
 
     <!-- Data Registry View -->
-    <div class="glass-card" style="border-radius: 32px; padding: 3rem 4rem; border: 1px solid var(--border-color); min-height: 500px;">
+    <div class="glass-card" style="border-radius: 32px; padding: 3rem 4rem; border: 1px solid var(--border-color); min-height: 500px; margin-bottom: 3rem;">
         <div id="logTableContainer">
             @if($issuedItems->count() > 0)
             <div class="table-scroll-wrapper" style="width: 100%; overflow-x: auto; padding-bottom: 1.5rem;">
@@ -129,12 +129,12 @@
                     <thead>
                         <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900; white-space: nowrap;">
                             <th style="padding: 0 1.5rem 0.5rem;">Timeline</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Asset Breakdown</th>
+                            <th style="padding: 0 1.5rem 0.5rem;">Items</th>
                             <th style="padding: 0 1.5rem 0.5rem;">Storage Location</th>
                             <th style="padding: 0 1.5rem 0.5rem;">Destination</th>
                             <th style="padding: 0 1.5rem 0.5rem;">Qty Disbursed</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Authority</th>
-                            <th style="padding: 0 1.5rem 0.5rem; text-align: right;">Allocation Status</th>
+                            <th style="padding: 0 1.5rem 0.5rem;">Approval</th>
+                            <th style="padding: 0 1.5rem 0.5rem; text-align: right;">Status</th>
                         </tr>
                     </thead>
                     <tbody id="logTableBody">
@@ -144,12 +144,11 @@
                             $dateVal = $t->format('Y-m-d');
                             $dateStr = $t->format('d/m/y');
                             $timeStr = $t->format('H:i');
-                            
+
                             $statusBadge = '';
                             if ($item->quantity === 0 && $item->issuance_type === 'Temporary') {
                                 $statusBadge = '<span class="status-badge" style="background: rgba(100, 116, 139, 0.1); color: var(--text-muted); font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em; border: 1px dashed rgba(100, 116, 139, 0.3);">RETURNED</span>';
                             } else {
-                                $badgeClass = $item->issuance_type === 'Temporary' ? 'status-warning' : 'status-success';
                                 $statusColor = $item->issuance_type === 'Temporary' ? '#ea580c' : '#10b981';
                                 $statusBg = $item->issuance_type === 'Temporary' ? 'rgba(234,88,12,0.1)' : 'rgba(16,185,129,0.1)';
                                 $statusBadge = '<span class="status-badge" style="background: ' . $statusBg . '; color: ' . $statusColor . '; font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em;">' . strtoupper($item->issuance_type) . '</span>';
@@ -185,9 +184,9 @@
             </div>
             @else
             <div style="padding: 10rem 0; text-align: center; background: rgba(0,0,0,0.01); border-radius: 32px; border: 2px dashed var(--border-color);">
-                <i data-lucide="database-zap" style="width: 80px; height: 80px; color: var(--text-muted); opacity: 0.15; margin-bottom: 2rem;"></i>
-                <h3 style="font-weight: 900; color: var(--text-main); font-size: 1.5rem;">No Disbursements Logged</h3>
-                <p style="color: var(--text-muted); font-size: 1.1rem;">There are currently no items logged as given out or disbursed.</p>
+                <i data-lucide="database" style="width: 80px; height: 80px; color: var(--text-muted); opacity: 0.15; margin-bottom: 2rem;"></i>
+                <h3 style="font-weight: 900; color: var(--text-main); font-size: 1.5rem;">Log Registry Empty</h3>
+                <p style="color: var(--text-muted); font-size: 1.1rem;">No recent stock disbursements or collections have been processed yet.</p>
             </div>
             @endif
         </div>
@@ -218,12 +217,10 @@
         box-shadow: 0 12px 25px rgba(0,0,0,0.05) !important;
         border-color: var(--primary-light) !important;
     }
-
     .status-badge {
         display: inline-block;
         box-shadow: 0 4px 10px rgba(0,0,0,0.03);
     }
-
     @media (max-width: 768px) {
         .responsive-log-table { min-width: auto !important; border-spacing: 0 1.5rem !important; border-collapse: separate !important; }
         .responsive-log-table thead { display: none; }
@@ -297,7 +294,6 @@
             }
         });
 
-        // Toggle table header/empty state based on filters
         const container = document.getElementById('logTableContainer');
         const emptyState = document.getElementById('emptyFilterState');
 

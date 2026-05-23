@@ -301,7 +301,9 @@ class ReceivedItemsController extends Controller
                 return preg_replace('/\s\[.*\]$/', '', $name);
             })->toArray();
         $allSuppliers = collect(array_merge($registrySuppliers, $dbSuppliers))
-            ->filter()
+            ->filter(function ($item) {
+                return strtolower(trim($item)) !== 'system';
+            })
             ->unique()
             ->values();
 

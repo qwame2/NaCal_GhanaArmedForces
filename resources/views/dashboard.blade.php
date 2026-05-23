@@ -490,15 +490,21 @@
                 }
 
                 $cleanSupDisplay = preg_replace('/\s\[.*\]$/', '', $rawSup);
-                $supStatusDisplay = $transaction->supplier_status ?? 'N/A';
-
-                if ($acqType === 'Donor') {
-                    $supStatusDisplay = 'Donor';
-                    $supColor = '#8b5cf6';
+                
+                $isIssuedOut = $transaction->hasActiveTemporaryLoan();
+                if ($isIssuedOut) {
+                    $supStatusDisplay = 'ISSUED OUT';
+                    $supColor = '#f59e0b';
                 } else {
-                    $supColor = '#94a3b8';
-                    if (str_contains(strtolower($supStatusDisplay), 'full delivery')) $supColor = '#10b981';
-                    elseif (str_contains(strtolower($supStatusDisplay), 'partial delivery')) $supColor = '#ef4444';
+                    $supStatusDisplay = $transaction->supplier_status ?? 'N/A';
+                    if ($acqType === 'Donor') {
+                        $supStatusDisplay = 'Donor';
+                        $supColor = '#8b5cf6';
+                    } else {
+                        $supColor = '#94a3b8';
+                        if (str_contains(strtolower($supStatusDisplay), 'full delivery')) $supColor = '#10b981';
+                        elseif (str_contains(strtolower($supStatusDisplay), 'partial delivery')) $supColor = '#ef4444';
+                    }
                 }
                 @endphp
                 <td data-label="Supplier / Donor" style="color: var(--text-main);">
@@ -859,6 +865,14 @@
                 // Reset Form
                 jQuery('#newEntryForm')[0].reset();
 
+                // Reset submit button state
+                const submitBtn = jQuery('#newEntryForm button[type="submit"]');
+                submitBtn.prop('disabled', false).css({
+                    'opacity': '1',
+                    'cursor': 'pointer',
+                    'pointer-events': 'auto'
+                }).removeAttr('title');
+
                 jQuery('#entryDate').val(formattedDate);
                 jQuery('#arrivalDate').val(new Date().toISOString().split('T')[0]);
 
@@ -1038,7 +1052,7 @@
                 const unit = ($(this).find('.row-unit').val() || '').trim();
                 const location = ($(this).find('.row-location').val() || '').trim();
 
-                if (unit.indexOf("Confront Admin") !== -1 || !unit) {
+                if (unit.indexOf("Confront Admin") !== -1 || !unit || location.indexOf("Confront Admin") !== -1 || location.indexOf("Confront the Admin") !== -1 || !location) {
                     validationFailed = true;
                     invalidItemName = desc || 'Unnamed Item';
                 }
@@ -1419,8 +1433,8 @@
                             $locationInput.val(prevData.location || 'Not Specified');
                             resetUnitStyle();
                         } else {
-                            $unitInput.val("Package type not assigned. Confront Admin!");
-                            $locationInput.val("Confront Admin!");
+                            $unitInput.val("Package type not assigned.");
+                            $locationInput.val("Confront the Admin");
                             setErrorUnitStyle();
                         }
                     } else if (prevData && prevData.unit) {
@@ -1428,8 +1442,8 @@
                         $locationInput.val(prevData.location || 'Not Specified');
                         resetUnitStyle();
                     } else {
-                        $unitInput.val("Package type not assigned. Confront Admin!");
-                        $locationInput.val("Confront Admin!");
+                        $unitInput.val("Package type not assigned.");
+                        $locationInput.val("Confront the Admin");
                         setErrorUnitStyle();
                     }
 
@@ -1469,6 +1483,9 @@
                     } else {
                         statsPanel.slideUp(300);
                     }
+                    if (typeof updateSubmitButtonState === 'function') {
+                        updateSubmitButtonState();
+                    }
                 });
 
                 // Auto-Calculation Logic: Sync Stock Balance to follow Received Qty
@@ -1497,18 +1514,50 @@
                 const initStatus = $('#supplierStatusSelect').val();
                 if (initStatus === 'Partial Delivery') {
                     $row.find('.lbl-received-qty .lbl-text').text('Expected / Invoice Qty');
-                    $row.find('.row-qty').css('border-color', '#f59e0b');
+                    $row.find('.row-qty').css({'border-color': '#f59e0b', 'background': 'var(--bg-card)'}).prop('readonly', false);
                     $row.find('.actual-qty-group').show();
                 } else {
                     $row.find('.lbl-received-qty .lbl-text').text('Received Qty');
-                    $row.find('.row-qty').css('border-color', 'var(--primary-light)');
+                    $row.find('.row-qty').css({'border-color': 'var(--primary-light)', 'background': 'var(--bg-main)'}).prop('readonly', false);
                     $row.find('.actual-qty-group').hide();
-                    if (initStatus === 'Full Delivery' || initStatus === 'Donor') {
-                        $row.find('.row-qty').prop('readonly', true).css('background', 'var(--bg-main)');
-                    }
                 }
             }
             lucide.createIcons(); // Re-init icons
+            updateSubmitButtonState();
+        }
+
+        function updateSubmitButtonState() {
+            let disabled = false;
+            $('#itemsContainer .item-entry-row').each(function() {
+                const unitVal = ($(this).find('.row-unit').val() || '').trim();
+                const locationVal = ($(this).find('.row-location').val() || '').trim();
+
+                if (unitVal.indexOf("Package type not assigned") !== -1 ||
+                    unitVal.indexOf("Confront Admin") !== -1 ||
+                    locationVal.indexOf("Confront Admin") !== -1 ||
+                    locationVal.indexOf("Confront the Admin") !== -1) {
+                    disabled = true;
+                }
+            });
+
+            const submitBtn = $('#newEntryForm button[type="submit"]');
+            if (disabled) {
+                submitBtn.prop('disabled', true);
+                submitBtn.css({
+                    'opacity': '0.5',
+                    'cursor': 'not-allowed',
+                    'pointer-events': 'none'
+                });
+                submitBtn.attr('title', 'Please assign a package type and store location before submitting.');
+            } else {
+                submitBtn.prop('disabled', false);
+                submitBtn.css({
+                    'opacity': '1',
+                    'cursor': 'pointer',
+                    'pointer-events': 'auto'
+                });
+                submitBtn.removeAttr('title');
+            }
         }
 
         // Initialize Supplier Status with Nice Templates
@@ -1650,6 +1699,9 @@
                 $('#itemsContainer .item-entry-row').each(function(index) {
                     $(this).find('.row-badge').text('ITEM TYPE #' + (index + 1));
                 });
+                if (typeof updateSubmitButtonState === 'function') {
+                    updateSubmitButtonState();
+                }
             });
         });
 

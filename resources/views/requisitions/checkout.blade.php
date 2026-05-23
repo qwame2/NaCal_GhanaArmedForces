@@ -19,10 +19,7 @@
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="{{ asset('js/sweetalert2@11.js') }}"></script>
 
-    <script>
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    </script>
+
 
     <style>
         :root {
@@ -50,15 +47,7 @@
             --header-blur: rgba(255, 255, 255, 0.8);
         }
 
-        [data-theme="dark"] {
-            --bg-main: #090d16;
-            --bg-card: #111827;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #1f2937;
-            --shadow-premium: 0 20px 40px -15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.02);
-            --header-blur: rgba(17, 24, 39, 0.8);
-        }
+
 
         body {
             font-family: var(--font-sans);
@@ -484,8 +473,8 @@
     <header class="store-header">
         <div class="header-container">
             <a href="{{ route('requisitions.index') }}" class="store-brand">
-                <div class="brand-logo-container">
-                    <i data-lucide="shopping-bag" style="width: 22px; height: 22px;"></i>
+                <div class="brand-logo-container" style="background: transparent; box-shadow: none; width: 56px; height: 56px;">
+                    <img src="{{ asset('img/download-1.webp') }}" alt="Logo" style="width: 56px; height: 56px; object-fit: contain; border-radius: 12px;">
                 </div>
                 <div>
                     <div class="brand-name">CENTRAL STORE</div>

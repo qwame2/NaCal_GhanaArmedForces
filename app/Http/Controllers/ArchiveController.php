@@ -20,6 +20,18 @@ class ArchiveController extends Controller
         $endDate = $request->get('end_date');
         $search = $request->get('search');
 
+        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
+
         if ($type === 'logs') {
             $query = SystemLog::with('user')->where('is_archived', true);
             if ($search) {
@@ -29,6 +41,17 @@ class ArchiveController extends Controller
                       ->orWhereHas('user', function($uq) use ($search) {
                           $uq->where('name', 'like', "%{$search}%");
                       });
+                });
+            }
+        } elseif ($type === 'disbursements') {
+            $query = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+                ->select('issued_items.*', 'issuances.issuance_date', 'issuances.beneficiary', 'issuances.authority', 'issuances.issuance_type', 'issuances.created_at');
+            
+            if ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('issued_items.description', 'like', "%{$search}%")
+                      ->orWhere('issuances.beneficiary', 'like', "%{$search}%")
+                      ->orWhere('issuances.authority', 'like', "%{$search}%");
                 });
             }
         } else {
@@ -47,15 +70,40 @@ class ArchiveController extends Controller
         }
 
         if ($startDate) {
-            $query->whereDate('created_at', '>=', $startDate);
+            if ($type === 'disbursements') {
+                $query->whereDate('issuances.issuance_date', '>=', $startDate);
+            } else {
+                $query->whereDate('created_at', '>=', $startDate);
+            }
         }
         if ($endDate) {
-            $query->whereDate('created_at', '<=', $endDate);
+            if ($type === 'disbursements') {
+                $query->whereDate('issuances.issuance_date', '<=', $endDate);
+            } else {
+                $query->whereDate('created_at', '<=', $endDate);
+            }
         }
 
-        $data = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        if ($type === 'disbursements') {
+            $data = $query->orderBy('issuances.issuance_date', 'desc')
+                          ->orderBy('issuances.created_at', 'desc')
+                          ->paginate($perPage);
 
-        return view('admin.archive', compact('data', 'type', 'startDate', 'endDate', 'search'));
+            $locations = \App\Models\InventoryItem::select('description', 'location')
+                ->whereNotNull('location')
+                ->where('location', '!=', '')
+                ->get()
+                ->pluck('location', 'description')
+                ->toArray();
+
+            foreach ($data as $item) {
+                $item->location = $locations[$item->description] ?? 'Not Specified';
+            }
+        } else {
+            $data = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        }
+
+        return view('admin.archive', compact('data', 'type', 'startDate', 'endDate', 'search', 'ledgeMap'));
     }
 
     public function archiveMessage(Request $request, $id)

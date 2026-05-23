@@ -144,6 +144,22 @@ class IssueItemsController extends Controller
                     'is_automated' => true,
                     'edit_request_id' => $editReq->id
                 ]);
+                
+                // Log this submission automatically to System Archive
+                \App\Models\SystemLog::create([
+                    'user_id' => auth()->id(),
+                    'event_type' => 'INVENTORY',
+                    'action' => 'SUBMIT_DISBURSEMENT_REQUEST',
+                    'description' => auth()->user()->name . " submitted a disbursement request for " . count($validated['items']) . " item(s) to {$validated['beneficiary']}.",
+                    'severity' => 'info',
+                    'is_archived' => true,
+                    'metadata' => [
+                        'beneficiary' => $validated['beneficiary'],
+                        'authority' => $validated['authority'],
+                        'issuance_type' => $validated['issuance_type'],
+                        'items_count' => count($validated['items'])
+                    ]
+                ]);
             }
 
             return response()->json([
@@ -185,6 +201,14 @@ class IssueItemsController extends Controller
             }
         }
 
+        // Clean up duplicates from the previous mass-assignment bug
+        \App\Models\Issuance::whereNull('requisition_id')
+            ->where(function($q) {
+                $q->where('authority', 'Requisition Approved')
+                  ->orWhere('beneficiary', 'like', '%(%');
+            })
+            ->delete();
+
         $collectedReqs = \App\Models\StoreRequisition::with(['items', 'processor'])
             ->whereIn('status', ['approved', 'partially_approved'])
             ->whereNotNull('collected_at')
@@ -223,5 +247,6 @@ class IssueItemsController extends Controller
                 }
             }
         }
+
     }
 }

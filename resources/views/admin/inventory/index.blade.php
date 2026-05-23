@@ -341,7 +341,9 @@
                             <td><div style="font-weight: 600; color: #475569;">{{ $cleanSupplier ?: '-' }}</div></td>
                             <td><div style="font-weight: 600; color: #475569;">{{ $item->donor_name ?: '-' }}</div></td>
                             <td>
-                                @if($isPartial)
+                                 @if($item->hasActiveTemporaryLoan())
+                                     <span style="font-size: 0.65rem; font-weight: 900; color: white; background: #f59e0b; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">ISSUED OUT</span>
+                                @elseif($isPartial)
                                     <span style="font-size: 0.65rem; font-weight: 900; color: white; background: #ef4444; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">PARTIAL</span>
                                 @else
                                     <span style="font-size: 0.65rem; font-weight: 900; color: white; background: #10b981; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">FULL</span>

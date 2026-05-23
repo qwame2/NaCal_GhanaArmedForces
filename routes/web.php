@@ -323,7 +323,9 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                 return $clean;
             })->toArray();
         $allSuppliers = collect(array_merge($registrySuppliers, $dbSuppliers))
-            ->filter()
+            ->filter(function ($item) {
+                return strtolower(trim($item)) !== 'system';
+            })
             ->unique(function ($item) {
                 return strtolower(trim($item));
             })

@@ -19,11 +19,7 @@
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="{{ asset('js/sweetalert2@11.js') }}"></script>
 
-    <script>
-        // Pre-initialize theme to prevent flash
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    </script>
+
     
     <style>
         :root {
@@ -52,16 +48,7 @@
             --header-blur: rgba(255, 255, 255, 0.8);
         }
 
-        [data-theme="dark"] {
-            --bg-main: #090d16;
-            --bg-card: #111827;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #1f2937;
-            --shadow-premium: 0 20px 40px -15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.02);
-            --shadow-hover: 0 30px 60px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
-            --header-blur: rgba(17, 24, 39, 0.8);
-        }
+
 
         body {
             font-family: var(--font-sans);
@@ -643,8 +630,8 @@
     <header class="store-header">
         <div class="header-container">
             <a href="{{ route('requisitions.index') }}" class="store-brand">
-                <div class="brand-logo-container">
-                    <i data-lucide="shield" style="width: 22px; height: 22px;"></i>
+                <div class="brand-logo-container" style="background: transparent; box-shadow: none; width: 56px; height: 56px;">
+                    <img src="{{ asset('img/download-1.webp') }}" alt="Logo" style="width: 56px; height: 56px; object-fit: contain; border-radius: 12px;">
                 </div>
                 <div>
                     <div class="brand-name">{{ \App\Models\Setting::get('organization_name', 'NACOC') }}</div>
@@ -659,10 +646,7 @@
             </div>
 
             <div class="header-actions">
-                <!-- Theme Toggle Button -->
-                <button class="action-btn" id="theme-toggle" title="Toggle System Theme">
-                    <i data-lucide="moon" style="width: 18px;"></i>
-                </button>
+
 
                 <!-- Back to Catalog Storefront -->
                 <a href="{{ route('requisitions.index') }}" class="cart-toggle-btn">
@@ -734,6 +718,8 @@
     <script>
         let allRequisitions = [];
         let searchQuery = '';
+        let currentPage = 1;
+        const itemsPerPage = 5;
 
         // Dynamic API loader for user requisitions
         async function loadMyRequisitions() {
@@ -761,6 +747,7 @@
                         status_badge_bg: req.status_badge.bg,
                         status_badge_color: req.status_badge.color,
                         admin_notes: req.admin_notes || '',
+                        decline_reason: req.decline_reason || '',
                         items: req.items.map(item => ({
                             description: item.description,
                             quantity_requested: item.quantity_requested,
@@ -785,6 +772,13 @@
                             reqMoved = true;
                             if (req.admin_notes) {
                                 details.push(`Remarks: <span style="color:var(--store-orange); font-style:italic;">"${req.admin_notes}"</span>`);
+                            }
+                        }
+
+                        if (prev.decline_reason !== (req.decline_reason || '')) {
+                            reqMoved = true;
+                            if (req.decline_reason) {
+                                details.push(`Decline Reason: <span style="color:var(--danger-color); font-weight:700;">"${req.decline_reason}"</span>`);
                             }
                         }
 
@@ -880,7 +874,20 @@
                 return;
             }
 
-            container.innerHTML = filtered.map(req => {
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            if (currentPage > totalPages) {
+                currentPage = totalPages;
+            }
+            if (currentPage < 1) {
+                currentPage = 1;
+            }
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+            const paginated = filtered.slice(startIndex, endIndex);
+
+            let itemsHtml = paginated.map(req => {
                 let isCollected = req.collected_at !== null && req.collected_at !== undefined;
                 let completedSteps = 1;
                 let activeStep = 2;
@@ -994,6 +1001,15 @@
                             </div>
                         ` : ''}
 
+                        ${req.decline_reason ? `
+                            <div class="history-notes-box" style="margin-bottom: 0.75rem; border: 1px dashed rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.03);">
+                                <i data-lucide="x-circle" style="width: 15px; flex-shrink:0; margin-top:2px; color: var(--danger-color);"></i>
+                                <div>
+                                    <b style="color: var(--danger-color);">Decline Reason:</b> ${req.decline_reason}
+                                </div>
+                            </div>
+                        ` : ''}
+
                         <div class="requisition-actions-row" style="margin-top: 1rem; display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
                             ${req.status === 'pending' ? `
                                 <button class="action-btn-followup" onclick="sendFollowUp(${req.id}, this)" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--warning-color); padding: 8px 16px; border-radius: 10px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;">
@@ -1009,7 +1025,47 @@
                     </div>
                 `;
             }).join('');
+
+            // Pagination Controls
+            let paginationHtml = '';
+            if (totalPages > 1) {
+                paginationHtml = `
+                    <div class="pagination-container" style="display:flex; justify-content:space-between; align-items:center; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border-color); flex-wrap:wrap; gap:1rem;">
+                        <div style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">
+                            Showing <span style="color:var(--text-main); font-weight:800;">${startIndex + 1}</span> to <span style="color:var(--text-main); font-weight:800;">${endIndex}</span> of <span style="color:var(--text-main); font-weight:800;">${totalItems}</span> requisitions
+                        </div>
+                        <div style="display:flex; gap:0.5rem; align-items:center;">
+                            <button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="pagination-btn prev-btn" style="display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:10px; border:1.5px solid var(--border-color); background:${currentPage === 1 ? 'var(--bg-main)' : 'var(--bg-card)'}; color:${currentPage === 1 ? 'var(--text-muted)' : 'var(--text-main)'}; cursor:${currentPage === 1 ? 'not-allowed' : 'pointer'}; opacity:${currentPage === 1 ? '0.5' : '1'}; transition:all 0.2s;" onmouseover="if(${currentPage !== 1}){this.style.borderColor='var(--store-orange)'; this.style.color='var(--store-orange)';}" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)';">
+                                <i data-lucide="chevron-left" style="width:16px;"></i>
+                            </button>
+                `;
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const isActive = i === currentPage;
+                    paginationHtml += `
+                        <button onclick="goToPage(${i})" class="pagination-btn page-num-btn ${isActive ? 'active' : ''}" style="display:inline-flex; align-items:center; justify-content:center; min-width:38px; height:38px; padding:0 8px; border-radius:10px; border:1.5px solid ${isActive ? 'var(--store-orange)' : 'var(--border-color)'}; background:${isActive ? 'var(--store-orange)' : 'var(--bg-card)'}; color:${isActive ? 'white' : 'var(--text-main)'}; font-weight:800; font-size:0.85rem; cursor:pointer; transition:all 0.2s;" onmouseover="if(!${isActive}){this.style.borderColor='var(--store-orange)'; this.style.color='var(--store-orange)';}" onmouseout="if(!${isActive}){this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)';}">
+                            ${i}
+                        </button>
+                    `;
+                }
+
+                paginationHtml += `
+                            <button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="pagination-btn next-btn" style="display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:10px; border:1.5px solid var(--border-color); background:${currentPage === totalPages ? 'var(--bg-main)' : 'var(--bg-card)'}; color:${currentPage === totalPages ? 'var(--text-muted)' : 'var(--text-main)'}; cursor:${currentPage === totalPages ? 'not-allowed' : 'pointer'}; opacity:${currentPage === totalPages ? '0.5' : '1'}; transition:all 0.2s;" onmouseover="if(${currentPage !== totalPages}){this.style.borderColor='var(--store-orange)'; this.style.color='var(--store-orange)';}" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)';">
+                                <i data-lucide="chevron-right" style="width:16px;"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = itemsHtml + paginationHtml;
             lucide.createIcons();
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderHistoryList();
+            document.querySelector('.history-card').scrollIntoView({ behavior: 'smooth' });
         }
 
         async function sendFollowUp(id, btn) {
@@ -1074,26 +1130,11 @@
             const searchInput = document.getElementById('history-search');
             searchInput.addEventListener('input', (e) => {
                 searchQuery = e.target.value;
+                currentPage = 1;
                 renderHistoryList();
             });
 
-            // Theme Toggle logic
-            const themeToggleBtn = document.getElementById('theme-toggle');
-            function updateThemeIcon(theme) {
-                themeToggleBtn.innerHTML = theme === 'dark' ? 
-                    '<i data-lucide="sun" style="width: 18px;"></i>' : 
-                    '<i data-lucide="moon" style="width: 18px;"></i>';
-                lucide.createIcons();
-            }
-            updateThemeIcon(savedTheme);
 
-            themeToggleBtn.addEventListener('click', () => {
-                const currentTheme = document.documentElement.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                document.documentElement.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                updateThemeIcon(newTheme);
-            });
         });
     </script>
 </body>

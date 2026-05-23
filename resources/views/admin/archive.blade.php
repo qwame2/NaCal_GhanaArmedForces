@@ -10,7 +10,7 @@
             <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500;">Access archived communications and system activity records.</p>
         </div>
         
-        <div style="display: flex; gap: 1rem; background: #fff; padding: 0.5rem; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+        <div style="display: flex; gap: 1rem; background: #fff; padding: 0.5rem; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.02); flex-wrap: wrap;">
             <a href="{{ route('admin.archive', ['type' => 'messages']) }}" 
                style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s; {{ $type === 'messages' ? 'background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);' : 'color: var(--text-muted);' }}">
                <i data-lucide="message-square" style="width: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i> Archived Messages
@@ -18,6 +18,10 @@
             <a href="{{ route('admin.archive', ['type' => 'logs']) }}" 
                style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s; {{ $type === 'logs' ? 'background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);' : 'color: var(--text-muted);' }}">
                <i data-lucide="activity" style="width: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i> Archived Logs
+            </a>
+            <a href="{{ route('admin.archive', ['type' => 'disbursements']) }}" 
+               style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s; {{ $type === 'disbursements' ? 'background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);' : 'color: var(--text-muted);' }}">
+               <i data-lucide="package-2" style="width: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i> Archived Disbursements
             </a>
         </div>
     </div>
@@ -210,8 +214,8 @@
                             <div style="width: 110px; height: 110px; background: #f8fafc; border-radius: 35px; display: flex; align-items: center; justify-content: center; margin: 0 auto 2.5rem auto; box-shadow: inset 0 2px 15px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;">
                                 <i data-lucide="inbox" style="width: 54px; height: 54px; color: var(--primary); opacity: 0.25;"></i>
                             </div>
-                            <h4 style="font-weight: 950; color: var(--text-main); font-size: 1.75rem; margin-bottom: 0.75rem; letter-spacing: -0.03em;">Registry Pristine</h4>
-                            <p style="font-weight: 600; font-size: 1.1rem; color: #94a3b8; max-width: 400px; margin: 0 auto;">No historical communications have been archived within this terminal vault yet.</p>
+                            <h4 style="font-weight: 950; color: var(--text-main); font-size: 1.75rem; margin-bottom: 0.75rem; letter-spacing: -0.03em;">No Messages Archived</h4>
+                            <p style="font-weight: 600; font-size: 1.1rem; color: #94a3b8; max-width: 400px; margin: 0 auto;">There are currently no archived messages in the system.</p>
                         </td>
                     </tr>
                     @endforelse
@@ -219,7 +223,7 @@
             </table>
         </div>
     </div>
-    @else
+    @elseif($type === 'logs')
     <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); border: 1px solid rgba(79, 70, 229, 0.08);">
         <div style="max-height: 70vh; overflow: auto;" class="custom-scrollbar">
             <table style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0; text-align: left;">
@@ -306,24 +310,106 @@
                             <div style="width: 100px; height: 100px; background: #f8fafc; border-radius: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem auto; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);">
                                 <i data-lucide="activity" style="width: 48px; height: 48px; color: var(--primary); opacity: 0.2;"></i>
                             </div>
-                            <h4 style="font-weight: 950; color: var(--text-main); font-size: 1.5rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">Log Archive Empty</h4>
-                            <p style="font-weight: 500; font-size: 1.1rem;">No system activity records have been secured here yet.</p>
+                            <h4 style="font-weight: 950; color: var(--text-main); font-size: 1.5rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">No Logs Archived</h4>
+                            <p style="font-weight: 500; font-size: 1.1rem;">There are currently no archived activity logs in the system.</p>
                         </td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+    </div>
+    @elseif($type === 'disbursements')
+    <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); border: 1px solid rgba(79, 70, 229, 0.08);">
+        <div style="max-height: 70vh; overflow: auto;" class="custom-scrollbar">
+            <table style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0; text-align: left;">
+                <thead style="position: sticky; top: 0; z-index: 20; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px); box-shadow: 0 1px 0 var(--border-color);">
+                    <tr>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Timeline</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Asset Breakdown</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Storage Location</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Destination</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Qty Disbursed</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Authority</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right; white-space: nowrap;">Allocation Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($data as $item)
+                    @php
+                        $t = $item->created_at;
+                        $dateStr = $t ? $t->format('d/m/y') : '';
+                        $timeStr = $t ? $t->format('H:i') : '';
+                        
+                        $statusBadge = '';
+                        if ($item->quantity === 0 && $item->issuance_type === 'Temporary') {
+                            $statusBadge = '<span class="status-badge" style="background: rgba(100, 116, 139, 0.1); color: var(--text-muted); font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em; border: 1px dashed rgba(100, 116, 139, 0.3);">RETURNED</span>';
+                        } else {
+                            $statusColor = $item->issuance_type === 'Temporary' ? '#ea580c' : '#10b981';
+                            $statusBg = $item->issuance_type === 'Temporary' ? 'rgba(234,88,12,0.1)' : 'rgba(16,185,129,0.1)';
+                            $statusBadge = '<span class="status-badge" style="background: ' . $statusBg . '; color: ' . $statusColor . '; font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em;">' . strtoupper($item->issuance_type) . '</span>';
+                        }
+                    @endphp
+                    <tr style="border-bottom: 1px solid var(--border-color); transition: all 0.3s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                        <td style="padding: 1.5rem 2rem;">
+                            <div style="font-weight: 900; color: var(--text-main); font-size: 0.85rem; letter-spacing: -0.01em;">{{ $dateStr }}</div>
+                            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-top: 2px;">{{ $timeStr }}</div>
+                        </td>
+                        <td style="padding: 1.5rem 2rem;">
+                            <div style="font-weight: 950; color: var(--primary); font-size: 1.05rem;">{{ $item->description }}</div>
+                            <div style="margin-top: 4px;">
+                                <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.6rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1); letter-spacing: 0.03em;">
+                                    CATEGORY {{ $item->ledge_category }}
+                                </span>
+                            </div>
+                        </td>
+                        <td style="padding: 1.5rem 2rem; font-weight: 800; color: var(--text-main); font-size: 0.95rem;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="map-pin" style="width: 16px; color: var(--text-muted); opacity: 0.6;"></i>
+                                <span>{{ $item->location }}</span>
+                            </div>
+                        </td>
+                        <td style="padding: 1.5rem 2rem; font-weight: 900; color: var(--text-main); font-size: 1.05rem; white-space: nowrap;">
+                            {{ $item->beneficiary }}
+                        </td>
+                        <td style="padding: 1.5rem 2rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main);">
+                            {{ number_format($item->quantity) }} 
+                            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                                {{ $item->unit ?: 'Package Types' }}
+                            </span>
+                        </td>
+                        <td style="padding: 1.5rem 2rem; font-weight: 700; color: var(--text-muted); font-size: 0.95rem; white-space: nowrap;">
+                            {{ $item->authority ?: 'N/A' }}
+                        </td>
+                        <td style="padding: 1.5rem 2rem; text-align: right;">
+                            {!! $statusBadge !!}
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="7" style="padding: 10rem 2rem; text-align: center; color: var(--text-muted);">
+                            <div style="width: 110px; height: 110px; background: #f8fafc; border-radius: 35px; display: flex; align-items: center; justify-content: center; margin: 0 auto 2.5rem auto; box-shadow: inset 0 2px 15px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;">
+                                <i data-lucide="database-zap" style="width: 54px; height: 54px; color: var(--primary); opacity: 0.25;"></i>
+                            </div>
+                            <h4 style="font-weight: 950; color: var(--text-main); font-size: 1.75rem; margin-bottom: 0.75rem; letter-spacing: -0.03em;">No Disbursements Logged</h4>
+                            <p style="font-weight: 600; font-size: 1.1rem; color: #94a3b8; max-width: 400px; margin: 0 auto;">There are currently no items logged as given out or disbursed.</p>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
     @endif
     </div>
 
     <div style="margin-top: 4rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
         <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); display: flex; align-items: center; gap: 8px; background: white; padding: 0.5rem 1.25rem; border-radius: 100px; border: 1.5px solid #edf2f7; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
             <i data-lucide="info" style="width: 14px; color: var(--primary);"></i>
-            Showing <span style="color: var(--text-main);">{{ $data->firstItem() }}</span> to <span style="color: var(--text-main);">{{ $data->lastItem() }}</span> of <span style="color: var(--text-main);">{{ $data->total() }}</span> archived records
+            Showing <span style="color: var(--text-main);">{{ $data->firstItem() ?? 0 }}</span> to <span style="color: var(--text-main);">{{ $data->lastItem() ?? 0 }}</span> of <span style="color: var(--text-main);">{{ $data->total() }}</span> records
         </div>
         <div class="custom-pagination">
-            {{ $data->appends(['type' => $type])->links('pagination::bootstrap-4') }}
+            {{ $data->appends(['type' => $type, 'search' => $search, 'start_date' => $startDate, 'end_date' => $endDate])->links('pagination::bootstrap-4') }}
         </div>
     </div>
 </div>

@@ -363,18 +363,27 @@
                         $cleanSupplier = $item->supplier_name;
                         $acquisitionType = $item->acquisition_type ?? 'Supplier';
                         $donorName = $item->donor_name ?? '-';
-                        $displayStatus = strtoupper($item->supplier_status ?: 'FULL DELIVERY');
-
-                        $statusColor = '#94a3b8';
-                        if ($acquisitionType === 'Donor' || $displayStatus === 'DONOR') {
-                            $statusColor = '#8b5cf6';
-                            $displayStatus = 'DONOR';
-                        } elseif ($displayStatus === 'FULL DELIVERY' || str_contains($displayStatus, 'FULL')) {
-                            $statusColor = '#10b981';
-                            $displayStatus = 'FULL DELIVERY';
-                        } elseif ($displayStatus === 'PARTIAL DELIVERY' || str_contains($displayStatus, 'PARTIAL')) {
-                            $statusColor = '#ef4444';
-                            $displayStatus = 'PARTIAL DELIVERY';
+                        
+                        $dbStatus = strtoupper($item->supplier_status ?: 'FULL DELIVERY');
+                        $isDbPartialDelivery = ($dbStatus === 'PARTIAL DELIVERY' || str_contains($dbStatus, 'PARTIAL'));
+                        
+                        $isIssuedOut = $item->hasActiveTemporaryLoan();
+                        if ($isIssuedOut) {
+                            $displayStatus = 'ISSUED OUT';
+                            $statusColor = '#f59e0b';
+                        } else {
+                            $displayStatus = $dbStatus;
+                            $statusColor = '#94a3b8';
+                            if ($acquisitionType === 'Donor' || $displayStatus === 'DONOR') {
+                                $statusColor = '#8b5cf6';
+                                $displayStatus = 'DONOR';
+                            } elseif ($displayStatus === 'FULL DELIVERY' || str_contains($displayStatus, 'FULL')) {
+                                $statusColor = '#10b981';
+                                $displayStatus = 'FULL DELIVERY';
+                            } elseif ($displayStatus === 'PARTIAL DELIVERY' || str_contains($displayStatus, 'PARTIAL')) {
+                                $statusColor = '#ef4444';
+                                $displayStatus = 'PARTIAL DELIVERY';
+                            }
                         }
                         @endphp
                         <td data-label="Supplier / Donor" style="padding: 1.25rem 1.5rem; color: var(--text-main);">
@@ -416,7 +425,7 @@
 
                         <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right;">
                             <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
-                                    @if(($displayStatus === 'PARTIAL DELIVERY' || $displayStatus === 'Partial Delivery') && is_numeric($item->variance) && (float)$item->variance < 0)
+                                    @if($isDbPartialDelivery && is_numeric($item->variance) && (float)$item->variance < 0)
                                         @php
                                             $pendingRemainder = \App\Models\EditRequest::where('item_id', $item->batch_id)
                                                 ->where('item_type', 'batch')

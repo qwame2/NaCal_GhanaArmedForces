@@ -19,11 +19,7 @@
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="{{ asset('js/sweetalert2@11.js') }}"></script>
 
-    <script>
-        // Pre-initialize theme to prevent flash
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    </script>
+
 
     <style>
         :root {
@@ -54,16 +50,7 @@
             --header-blur: rgba(255, 255, 255, 0.8);
         }
 
-        [data-theme="dark"] {
-            --bg-main: #090d16;
-            --bg-card: #111827;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #1f2937;
-            --shadow-premium: 0 20px 40px -15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.02);
-            --shadow-hover: 0 30px 60px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
-            --header-blur: rgba(17, 24, 39, 0.8);
-        }
+
 
         body {
             font-family: var(--font-sans);
@@ -1372,8 +1359,8 @@
         <div class="header-container">
             <!-- Brand -->
             <a href="{{ route('requisitions.index') }}" class="store-brand">
-                <div class="brand-logo-container">
-                    <i data-lucide="shopping-bag" style="width: 22px; height: 22px;"></i>
+                <div class="brand-logo-container" style="background: transparent; box-shadow: none; width: 56px; height: 56px;">
+                    <img src="{{ asset('img/download-1.webp') }}" alt="Logo" style="width: 56px; height: 56px; object-fit: contain; border-radius: 12px;">
                 </div>
                 <div>
                     <div class="brand-name">CENTRAL STORE</div>
@@ -1395,9 +1382,7 @@
                 </a>
                 @endif
 
-                <button class="action-btn" id="theme-toggle" title="Toggle Light/Dark Theme">
-                    <i data-lucide="moon" style="width: 18px;"></i>
-                </button>
+
 
                 <a href="{{ route('requisitions.history') }}" class="action-btn" title="View Requisition History" style="text-decoration: none;">
                     <i data-lucide="clock" style="width: 18px;"></i>
@@ -1732,27 +1717,7 @@
                 });
             });
 
-            // Theme Toggle logic
-            const themeToggleBtn = document.getElementById('theme-toggle');
 
-            function updateThemeIcon(theme) {
-                themeToggleBtn.innerHTML = theme === 'dark' ?
-                    '<i data-lucide="sun" style="width: 18px;"></i>' :
-                    '<i data-lucide="moon" style="width: 18px;"></i>';
-                lucide.createIcons();
-            }
-
-            const initialTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            updateThemeIcon(initialTheme);
-
-            themeToggleBtn.addEventListener('click', () => {
-                const currentTheme = document.documentElement.getAttribute('data-theme');
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-
-                document.documentElement.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                updateThemeIcon(newTheme);
-            });
 
             // Cart Redirect to checkout page
             const cartNavBtn = document.getElementById('cart-nav-btn');

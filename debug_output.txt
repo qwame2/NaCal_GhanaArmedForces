@@ -35,6 +35,56 @@
                 "return_date": "2026-05-23",
                 "remarks": "sdfd"
             }
+        },
+        {
+            "id": 16,
+            "request_type": "sra_creation",
+            "status": "pending",
+            "payload": {
+                "ledge_category": "A",
+                "supplier_name": "MTN",
+                "supplier_status": "Full Delivery",
+                "donor_name": null,
+                "acquisition_type": "Supplier",
+                "entry_date": "2026-05-23 16:52:40",
+                "arrival_date": "2026-05-23",
+                "items": [
+                    {
+                        "description": "PENS",
+                        "unit": "Package type not assigned.",
+                        "stock_balance": "30",
+                        "qty": "30",
+                        "variance": "0",
+                        "remarks": null,
+                        "location": "Confront Admin!"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 17,
+            "request_type": "sra_creation",
+            "status": "pending",
+            "payload": {
+                "ledge_category": "A",
+                "supplier_name": "MTN",
+                "supplier_status": "Full Delivery",
+                "donor_name": null,
+                "acquisition_type": "Supplier",
+                "entry_date": "2026-05-23 16:53:47",
+                "arrival_date": "2026-05-23",
+                "items": [
+                    {
+                        "description": "BOOKS",
+                        "unit": "Package type not assigned.",
+                        "stock_balance": "23",
+                        "qty": "23",
+                        "variance": "0",
+                        "remarks": null,
+                        "location": "Confront Admin!"
+                    }
+                ]
+            }
         }
     ],
     "suppliers_table_exists": true,

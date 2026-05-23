@@ -63,23 +63,11 @@
                 </div>
             </div>
 
-            <div style="flex: 1.5; min-width: 240px;">
-                <div style="background: white; border: 1.5px solid #edf2f7; padding: 10px 18px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 36px; height: 36px; background: #eef2ff; color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                        <i data-lucide="search" style="width: 18px;"></i>
-                    </div>
-                    <div style="flex: 1; display: flex; flex-direction: column;">
-                        <label style="font-size: 0.6rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Search Batch ID</label>
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Enter Batch ID..." style="width: 100%; background: transparent; border: none; color: var(--text-main); font-weight: 800; font-size: 0.95rem; outline: none;">
-                    </div>
-                </div>
-            </div>
-
             <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 3px;">
                 <button type="submit" class="btn-primary" style="padding: 0.95rem 2rem; border-radius: 16px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(79,70,229,0.2);">
                     Apply Filter
                 </button>
-                @if(request()->hasAny(['user_id', 'date_from', 'date_to', 'search']) && (request('user_id') != '' || request('date_from') != '' || request('date_to') != '' || request('search') != ''))
+                @if(request()->hasAny(['user_id', 'date_from', 'date_to']) && (request('user_id') != '' || request('date_from') != '' || request('date_to') != ''))
                     <a href="{{ route('admin.history') }}" style="padding: 0.95rem 1.5rem; color: #ef4444; background: #fef2f2; border-radius: 16px; text-decoration: none; font-size: 0.9rem; font-weight: 800; transition: all 0.3s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">Reset</a>
                 @endif
             </div>

@@ -18,6 +18,7 @@ class StoreRequisition extends Model
         'priority',
         'status',
         'admin_notes',
+        'decline_reason',
         'processed_by',
         'processed_at',
         'collected_at',

@@ -170,8 +170,24 @@ class EditRequestController extends Controller
                 'action' => 'AUTHORIZATION',
                 'description' => "Administrator authorized {$typeLabelForLog} request submitted by {$editReq->user->name}.",
                 'severity' => 'info',
+                'is_archived' => ($requestTypeForLog === 'issue_submission'),
                 'ip_address' => request()->ip()
             ]);
+        }
+
+        if ($request->status === 'canceled') {
+            $requestTypeForLog = $editReq->request_type ?? 'edit';
+            if ($requestTypeForLog === 'issue_submission') {
+                \App\Models\SystemLog::create([
+                    'user_id' => auth()->id(),
+                    'event_type' => 'SECURITY',
+                    'action' => 'DECLINE_DISBURSEMENT',
+                    'description' => "Administrator declined disbursement request submitted by {$editReq->user->name}.",
+                    'severity' => 'warning',
+                    'is_archived' => true,
+                    'ip_address' => request()->ip()
+                ]);
+            }
         }
 
         $requestType = $editReq->request_type ?? 'edit';
@@ -647,9 +663,7 @@ class EditRequestController extends Controller
                         $take = min($available, $qtyToIssue);
 
                         $inventoryItem->qty = $available - $take;
-                        if ($payload['issuance_type'] === 'Permanent') {
-                            $inventoryItem->stock_balance = $stockBal - $take;
-                        }
+                        $inventoryItem->stock_balance = $stockBal - $take;
                         $inventoryItem->save();
 
                         $qtyToIssue -= $take;
@@ -666,6 +680,7 @@ class EditRequestController extends Controller
                     'action' => 'ISSUE_ITEM',
                     'description' => "Admin approved disbursement of items to {$payload['beneficiary']} on authority of {$payload['authority']}.",
                     'severity' => $payload['issuance_type'] === 'Permanent' ? 'warning' : 'info',
+                    'is_archived' => true,
                     'metadata' => [
                         'beneficiary' => $payload['beneficiary'],
                         'authority' => $payload['authority'],
@@ -768,6 +783,7 @@ class EditRequestController extends Controller
                 if ($remainingToRefill > 0) {
                     $latestItem = $inventoryItems->last();
                     $latestItem->qty = floatval($latestItem->qty) + $remainingToRefill;
+                    $latestItem->stock_balance = floatval($latestItem->stock_balance) + $remainingToRefill;
                     $latestItem->save();
                 }
 
@@ -789,6 +805,7 @@ class EditRequestController extends Controller
                     'action' => 'RETURN_ITEM',
                     'description' => "Personnel logged return of {$qtyToReturn} {$issuedItem->description}(s) (Approved by Admin).",
                     'severity' => 'info',
+                    'is_archived' => true,
                     'metadata' => [
                         'item_description' => $issuedItem->description,
                         'return_qty' => $qtyToReturn,
@@ -805,12 +822,33 @@ class EditRequestController extends Controller
                     'action' => 'AUTHORIZATION',
                     'description' => "Administrator authorized ASSET RECOVERY request submitted by {$editReq->user->name}.",
                     'severity' => 'info',
+                    'is_archived' => true,
                     'ip_address' => request()->ip()
                 ]);
 
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\DB::rollBack();
                 return response()->json(['success' => false, 'message' => 'Failed to process: ' . $e->getMessage()]);
+            }
+        } else {
+            // Log rejection
+            try {
+                $issuedItem = \App\Models\IssuedItem::findOrFail($editReq->item_id);
+                \App\Models\SystemLog::create([
+                    'user_id' => auth()->id(),
+                    'event_type' => 'INVENTORY',
+                    'action' => 'REJECT_RECOVERY',
+                    'description' => "Admin rejected return recovery request for {$issuedItem->description} submitted by {$editReq->user->name}.",
+                    'severity' => 'warning',
+                    'is_archived' => true,
+                    'metadata' => [
+                        'item_description' => $issuedItem->description,
+                        'reason' => $request->reason
+                    ],
+                    'ip_address' => request()->ip()
+                ]);
+            } catch (\Exception $e) {
+                // Ignore if not found
             }
         }
 

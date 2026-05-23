@@ -805,7 +805,6 @@
         <table style="width:100%;border-collapse:collapse;">
             <thead style="background:var(--bg-main);">
                 <tr>
-                    <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">#</th>
                     <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Department / Requester</th>
                     <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Items</th>
                     <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Priority</th>
@@ -819,7 +818,6 @@
                 @forelse($requisitions as $req)
                 @php $sb = $req->status_badge; $pb = $req->priority_badge; @endphp
                 <tr class="req-table-row">
-                    <td style="padding:1rem 1.5rem;font-size:.8rem;font-weight:700;color:var(--text-muted);">#{{ $req->id }}</td>
                     <td style="padding:1rem 1.5rem;">
                         <div style="display:flex; align-items:center; gap:8px;">
                             <div style="font-size:.9rem;font-weight:800;color:var(--text-main);">{{ $req->department }}</div>
@@ -867,7 +865,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" style="padding:3rem;text-align:center;color:var(--text-muted);">
+                    <td colspan="7" style="padding:3rem;text-align:center;color:var(--text-muted);">
                         <i data-lucide="inbox" style="width:32px;margin-bottom:.75rem;opacity:.3;"></i>
                         <p style="font-weight:700;color:var(--text-main);">No requisitions found</p>
                         <p style="font-size:.85rem;">Department requests will appear here.</p>
@@ -1031,6 +1029,7 @@
                                 id="qty-${i}"
                                 data-item-id="${item.id}"
                                 data-requested="${parseFloat(item.quantity_requested)}"
+                                data-stock="${parseFloat(item.current_stock)}"
                                 data-index="${i}"
                                 value="${parseFloat(item.quantity_requested)}"
                                 min="0" step="0.01"
@@ -1183,6 +1182,17 @@
     <!-- profile grid and metadata -->
     ${profileGridHtml}
 
+    <!-- Stock Warning Banner -->
+    <div id="stockWarningBanner" style="display:none; background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #ef4444; padding:12px 16px; border-radius:12px; margin-bottom:1.5rem; align-items:center; gap:12px;">
+        <div style="width:32px; height:32px; background:rgba(239, 68, 68, 0.08); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#ef4444; flex-shrink:0;">
+            <i data-lucide="alert-triangle" style="width:20px;"></i>
+        </div>
+        <div style="flex:1;">
+            <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:#991b1b; text-transform:uppercase;">Insufficient Stock Blocked</h4>
+            <p style="margin:0; font-size:0.75rem; color:#b91c1c; font-weight:600;">One or more items have approved allocations exceeding the available stock in the system. Reduce their quantity or select alternative items to proceed.</p>
+        </div>
+    </div>
+
     <!-- decision header / list -->
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; margin-top:1.5rem;">
         <h3 style="margin:0; font-size:0.95rem; font-weight:900; color:var(--text-main); letter-spacing:-0.01em; display:flex; align-items:center; gap:6px;">
@@ -1240,8 +1250,24 @@
             <i data-lucide="message-square" style="width:14px;color:var(--text-muted);"></i> General Requisition Notes (Add notes visible to the requester...)
         </label>
         <textarea id="adminNotes" rows="3" placeholder="Add central store decision notes, pickup directions, or overall remarks here..." style="width:100%;padding:.85rem 1rem;border:1.5px solid var(--border-color);border-radius:12px;font-family:inherit;font-size:.88rem;background:var(--bg-main);color:var(--text-main);resize:vertical;box-sizing:border-box;transition:all 0.25s ease;" onfocus="this.style.borderColor='var(--primary)';this.style.background='var(--bg-card)';">${data.admin_notes||''}</textarea>
+    </div>
+
+    <!-- Decline Reason Box (shown only when all items are declined) -->
+    <div id="declineReasonBox" style="display:none; margin-top:1rem; background:rgba(239,68,68,0.03); border:1.5px solid rgba(239,68,68,0.25); border-radius:12px; padding:1rem 1.25rem;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:.68rem; font-weight:900; color:#dc2626; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px;">
+            <i data-lucide="alert-circle" style="width:14px;"></i> Reason for Declining (required when declining entire requisition)
+        </label>
+        <textarea id="declineReason" rows="3" placeholder="State the reason for declining this requisition. The requester will see this message..." style="width:100%;padding:.85rem 1rem;border:1.5px solid rgba(239,68,68,0.3);border-radius:10px;font-family:inherit;font-size:.88rem;background:var(--bg-card);color:var(--text-main);resize:vertical;box-sizing:border-box;transition:all 0.25s ease;" onfocus="this.style.borderColor='#ef4444';" onblur="this.style.borderColor='rgba(239,68,68,0.3)'"></textarea>
     </div>` : `
     ${data.admin_notes?`<div style="background:rgba(79,70,229,.03);border:1px solid rgba(79,70,229,.15);border-radius:16px;padding:1.25rem; margin-top: 1rem;"><div style="font-size:.68rem;font-weight:900;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:4px;margin-bottom:4px;"><i data-lucide="message-square" style="width:14px;"></i> Store Officer Notes</div><p style="margin:0;font-size:.9rem;color:var(--text-main);line-height:1.6;font-style:italic;">"${data.admin_notes}"</p></div>`:''}
+
+    ${data.status === 'declined' && data.decline_reason ? `
+    <div style="background:rgba(239,68,68,0.04); border:1px solid rgba(239,68,68,0.2); border-radius:16px; padding:1.25rem; margin-top:0.75rem;">
+        <div style="font-size:.68rem;font-weight:900;color:#dc2626;text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:4px;margin-bottom:6px;">
+            <i data-lucide="alert-circle" style="width:14px;"></i> Reason for Decline
+        </div>
+        <p style="margin:0;font-size:.9rem;color:#7f1d1d;line-height:1.6;">${data.decline_reason}</p>
+    </div>` : ''}
 
     <div style="background:var(--bg-main); border:1px solid var(--border-color); border-radius:16px; padding:1.15rem; margin-top:1.25rem; display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex; align-items:center; gap:8px;">
@@ -1538,13 +1564,84 @@
         let allApproved = true;
         let anyApproved = false;
         let anyPartial = false;
+        let hasExceededStock = false;
 
         checkboxes.forEach((chk, i) => {
             const qtyEl = document.getElementById(`qty-${i}`);
+            const altSelect = document.getElementById(`alt-select-${i}`);
             const altQtyEl = document.getElementById(`alt-qty-${i}`);
+            
             const requested = parseFloat(qtyEl?.dataset.requested || 0);
-            const approved = (parseFloat(qtyEl?.value) || 0) + (altQtyEl ? (parseFloat(altQtyEl.value) || 0) : 0);
+            const originalStock = parseFloat(qtyEl?.dataset.stock || 0);
+            
+            // Determine active stock limit based on alternative select
+            let stockLimit = originalStock;
+            let approvedQty = 0;
+            
+            if (chk.checked) {
+                if (altSelect && altSelect.value) {
+                    // Alternative is active
+                    const selectedOpt = altSelect.options[altSelect.selectedIndex];
+                    stockLimit = parseFloat(selectedOpt?.dataset.stock || 0);
+                    approvedQty = parseFloat(altQtyEl?.value || 0);
+                } else {
+                    // Original is active
+                    approvedQty = parseFloat(qtyEl?.value || 0);
+                }
+                
+                // Validate
+                const row = document.getElementById(`item-row-${i}`);
+                if (approvedQty > stockLimit) {
+                    hasExceededStock = true;
+                    // Add red border or warning outline
+                    if (row) {
+                        row.style.borderColor = '#ef4444';
+                        row.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+                    }
+                    
+                    // Show a warning text next to description/stockInfo
+                    let warningSpan = document.getElementById(`stock-exceeded-warning-${i}`);
+                    if (!warningSpan) {
+                        warningSpan = document.createElement('div');
+                        warningSpan.id = `stock-exceeded-warning-${i}`;
+                        warningSpan.style.color = '#ef4444';
+                        warningSpan.style.fontSize = '0.72rem';
+                        warningSpan.style.fontWeight = '900';
+                        warningSpan.style.marginTop = '4px';
+                        warningSpan.style.display = 'flex';
+                        warningSpan.style.alignItems = 'center';
+                        warningSpan.style.gap = '4px';
+                        
+                        const parent = document.getElementById(`item-desc-text-${i}`)?.parentNode;
+                        if (parent) {
+                            parent.appendChild(warningSpan);
+                        }
+                    }
+                    warningSpan.innerHTML = `⚠️ Blocked: Allocation (${approvedQty}) exceeds available stock (${stockLimit})`;
+                } else {
+                    if (row) {
+                        row.style.borderColor = '';
+                        row.style.boxShadow = '';
+                    }
+                    const warningSpan = document.getElementById(`stock-exceeded-warning-${i}`);
+                    if (warningSpan) {
+                        warningSpan.remove();
+                    }
+                }
+            } else {
+                // If not approved, clear warning
+                const row = document.getElementById(`item-row-${i}`);
+                if (row) {
+                    row.style.borderColor = '';
+                    row.style.boxShadow = '';
+                }
+                const warningSpan = document.getElementById(`stock-exceeded-warning-${i}`);
+                if (warningSpan) {
+                    warningSpan.remove();
+                }
+            }
 
+            const approved = chk.checked ? approvedQty : 0;
             if (!chk.checked || approved === 0) {
                 cntDeclined++;
                 allApproved = false;
@@ -1586,6 +1683,27 @@
             }
         }
 
+        const banner = document.getElementById('stockWarningBanner');
+        const submitBtn = document.getElementById('submitDecisionBtn');
+        
+        if (hasExceededStock) {
+            if (banner) banner.style.display = 'flex';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+                submitBtn.style.cursor = 'not-allowed';
+                submitBtn.title = 'Cannot approve: allocation exceeds available stock';
+            }
+        } else {
+            if (banner) banner.style.display = 'none';
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+                submitBtn.title = '';
+            }
+        }
+
         const bar = document.getElementById('statusBar');
         const icon = document.getElementById('statusBarIcon');
         const text = document.getElementById('statusBarText');
@@ -1593,7 +1711,14 @@
 
         const allDeclined = !anyApproved;
 
-        if (allDeclined) {
+        if (hasExceededStock) {
+            bar.className = 'all-declined';
+            bar.style.background = 'rgba(239,68,68,.1)';
+            bar.style.color = '#991b1b';
+            bar.style.border = '1px solid rgba(239,68,68,.2)';
+            icon.textContent = '⛔';
+            text.innerHTML = 'Approval blocked — <b>allocation exceeds available stock</b>';
+        } else if (allDeclined) {
             bar.className = 'all-declined';
             bar.style.background = 'rgba(239,68,68,.1)';
             bar.style.color = '#991b1b';
@@ -1615,6 +1740,22 @@
             icon.textContent = '⚠️';
             text.innerHTML = 'Some items differ — will be <b>Partially Approved</b>';
         }
+
+        // Show / hide decline reason box based on whether all items are declined
+        const declineReasonBox = document.getElementById('declineReasonBox');
+        if (declineReasonBox) {
+            if (allDeclined && !hasExceededStock) {
+                declineReasonBox.style.display = 'block';
+            } else {
+                declineReasonBox.style.display = 'none';
+                const reasonTextarea = document.getElementById('declineReason');
+                if (reasonTextarea) {
+                    reasonTextarea.style.borderColor = 'rgba(239,68,68,0.3)';
+                }
+            }
+        }
+
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     // Compute auto status from item selections
@@ -1654,7 +1795,20 @@
         });
 
         const notes = document.getElementById('adminNotes')?.value || '';
+        const declineReason = document.getElementById('declineReason')?.value || '';
         const btn = document.getElementById('submitDecisionBtn');
+
+        // Validate decline reason is provided when declining everything
+        if (status === 'declined' && !declineReason.trim()) {
+            const box = document.getElementById('declineReason');
+            if (box) {
+                box.style.borderColor = '#ef4444';
+                box.focus();
+                box.placeholder = '⚠ Please provide a reason for declining this requisition...';
+            }
+            showToast('Required', 'Please enter a reason for declining the requisition.', 'error');
+            return;
+        }
         btn.disabled = true;
         btn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;"></div> Processing Decision...';
 
@@ -1668,6 +1822,7 @@
             body: JSON.stringify({
                 status,
                 admin_notes: notes,
+                decline_reason: declineReason,
                 items
             })
         });

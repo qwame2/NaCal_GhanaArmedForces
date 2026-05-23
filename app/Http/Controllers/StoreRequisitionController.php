@@ -161,6 +161,7 @@ class StoreRequisitionController extends Controller
                     'usage_type'     => $req->usage_type,
                     'usage_type_badge' => $req->usage_type_badge,
                     'admin_notes'    => $req->admin_notes,
+                    'decline_reason' => $req->decline_reason,
                     'created_at'     => $req->created_at->format('d/m/y H:i'),
                     'processed_at'   => $req->processed_at?->format('d/m/y H:i'),
                     'collected_at'   => $req->collected_at?->format('d/m/y H:i'),
@@ -345,7 +346,7 @@ class StoreRequisitionController extends Controller
             $query->where('department', 'LIKE', '%' . $request->department . '%');
         }
 
-        $requisitions = $query->paginate(15)->withQueryString();
+        $requisitions = $query->paginate(5)->withQueryString();
         $ledgeMap = Setting::getCategories();
 
         $stats = [
@@ -425,6 +426,7 @@ class StoreRequisitionController extends Controller
             'usage_type'     => $req->usage_type,
             'usage_type_badge' => $req->usage_type_badge,
             'admin_notes'    => $req->admin_notes,
+            'decline_reason' => $req->decline_reason,
             'created_at'     => $req->created_at->format('d/m/y H:i'),
             'processed_at'   => $req->processed_at?->format('d/m/y H:i'),
             'processor'      => $req->processor?->name,
@@ -443,9 +445,10 @@ class StoreRequisitionController extends Controller
         if (!auth()->user()->is_admin) return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
 
         $request->validate([
-            'status'      => 'required|in:approved,partially_approved,declined',
-            'admin_notes' => 'nullable|string|max:1000',
-            'items'       => 'nullable|array',
+            'status'         => 'required|in:approved,partially_approved,declined',
+            'admin_notes'    => 'nullable|string|max:1000',
+            'decline_reason' => 'nullable|string|max:2000',
+            'items'          => 'nullable|array',
             'items.*.id'                             => 'required|integer',
             'items.*.quantity_approved'              => 'required|numeric|min:0',
             'items.*.alternative_description'        => 'nullable|string|max:255',
@@ -577,10 +580,11 @@ class StoreRequisitionController extends Controller
                     }
                 }
 
-                $req->status       = $targetStatus;
-                $req->admin_notes  = $request->admin_notes;
-                $req->processed_by = auth()->id();
-                $req->processed_at = now();
+                $req->status        = $targetStatus;
+                $req->admin_notes   = $request->admin_notes;
+                $req->decline_reason = ($targetStatus === 'declined') ? $request->decline_reason : null;
+                $req->processed_by  = auth()->id();
+                $req->processed_at  = now();
                 $req->save();
 
                 return $req;
@@ -616,6 +620,9 @@ class StoreRequisitionController extends Controller
             $msg .= "Your store requisition (Ref: #{$req->id}) from <b>{$req->department}</b> has been <b>{$sl['label']}</b> by the Store Officer.<br><br>";
             if ($request->admin_notes) {
                 $msg .= "<b>Store Notes:</b> " . e($request->admin_notes) . "<br><br>";
+            }
+            if ($request->status === 'declined' && $request->decline_reason) {
+                $msg .= "<div style='margin-top:8px;padding:10px 14px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:10px;font-size:0.85rem;color:#7f1d1d;'><b>Reason for Decline:</b> " . e($request->decline_reason) . "</div><br>";
             }
             $msg .= "<a href='" . route('requisitions.index') . "' style='display:inline-block;background:{$sl['color']};color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>View My Requisitions</a>";
             $msg .= "</div>";
@@ -664,7 +671,7 @@ class StoreRequisitionController extends Controller
             $query->where('department', 'LIKE', '%' . $request->department . '%');
         }
 
-        $requisitions = $query->paginate(15)->withQueryString();
+        $requisitions = $query->paginate(5)->withQueryString();
         $ledgeMap = Setting::getCategories();
 
         $stats = [

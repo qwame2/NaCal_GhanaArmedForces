@@ -16,13 +16,13 @@
             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
                 <span class="status-badge-premium">
                     <i data-lucide="refresh-cw" style="width: 12px;"></i>
-                    Registry Recovery Node
+                    Recovery Node
                 </span>
                 <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
                     <i data-lucide="shield" style="width: 14px; color: #f59e0b;"></i> System Verified
                 </span>
             </div>
-            <h1 style="margin: 0; font-size: 3.5rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.06em; line-height: 1;">Return <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Registry</span></h1>
+            <h1 style="margin: 0; font-size: 3.5rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.06em; line-height: 1;">Return <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Log</span></h1>
             <p style="margin: 15px 0 0; color: var(--text-muted); font-size: 1.15rem; font-weight: 600; max-width: 600px; line-height: 1.6;">Re-integrate issued assets back into the primary store. Monitor outstanding allocations in real-time.</p>
         </div>
 
@@ -62,7 +62,7 @@
             <i data-lucide="check-circle" style="width: 32px;"></i>
         </div>
         <div>
-            <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Registry Integrity</div>
+            <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Compliance Rate</div>
             <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">100% <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">Verified</span></div>
         </div>
     </div>

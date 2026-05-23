@@ -297,6 +297,14 @@
                         break;
                     }
                 }
+
+                $isBatchIssuedOut = false;
+                foreach ($batch->items as $it) {
+                    if ($it->hasActiveTemporaryLoan()) {
+                        $isBatchIssuedOut = true;
+                        break;
+                    }
+                }
             @endphp
 
             <div class="info-line">
@@ -313,7 +321,11 @@
             </div>
             <div class="info-line">
                 <span class="info-label">Supply Status</span>
-                <span class="info-value">{{ $batch->supplier_status ?: 'Full Delivery' }}</span>
+                @if($isBatchIssuedOut)
+                    <span class="info-value" style="color: #f59e0b; text-transform: uppercase;">Issued Out</span>
+                @else
+                    <span class="info-value">{{ $batch->supplier_status ?: 'Full Delivery' }}</span>
+                @endif
             </div>
             <div class="info-line">
                 <span class="info-label">Verification ID</span>

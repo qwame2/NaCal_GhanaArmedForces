@@ -13,7 +13,8 @@ class Issuance extends Model
         'issuance_date',
         'beneficiary',
         'authority',
-        'issuance_type'
+        'issuance_type',
+        'requisition_id'
     ];
 
     public function items()
