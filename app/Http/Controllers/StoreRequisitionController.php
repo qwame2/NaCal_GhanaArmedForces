@@ -283,7 +283,7 @@ class StoreRequisitionController extends Controller
     {
         if (!auth()->user()->is_admin) abort(403);
 
-        $query = StoreRequisition::with(['items', 'requester', 'processor'])
+        $query = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])
             ->orderByRaw("FIELD(status, 'pending', 'partially_approved', 'approved', 'declined')")
             ->orderByRaw("FIELD(priority, 'urgent', 'normal', 'low')")
             ->orderBy('created_at', 'desc');
@@ -317,8 +317,10 @@ class StoreRequisitionController extends Controller
      */
     public function adminShow($id)
     {
-        if (!auth()->user()->is_admin) abort(403);
-        $req = StoreRequisition::with(['items', 'requester', 'processor'])->findOrFail($id);
+        if (!auth()->user()->is_admin && auth()->user()->role === 'Requisitioner') {
+            abort(403, 'Unauthorized');
+        }
+        $req = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])->findOrFail($id);
 
         // Enrich items with current stock availability
         $items = $req->items->map(function ($item) {
@@ -355,6 +357,8 @@ class StoreRequisitionController extends Controller
             'created_at'     => $req->created_at->format('d M Y, H:i'),
             'processed_at'   => $req->processed_at?->format('d M Y, H:i'),
             'processor'      => $req->processor?->name,
+            'collected_at'   => $req->collected_at?->format('d M Y, H:i'),
+            'collected_by_name' => $req->collector?->name,
             'items'          => $items,
         ]);
     }
@@ -540,5 +544,14 @@ class StoreRequisitionController extends Controller
         ];
 
         return view('requisitions.personnel', compact('requisitions', 'ledgeMap', 'stats'));
+    }
+
+    /**
+     * Requisitioner: Show standalone Requisition History page.
+     */
+    public function history(Request $request)
+    {
+        $ledgeMap = Setting::getCategories();
+        return view('requisitions.history', compact('ledgeMap'));
     }
 }

@@ -1,684 +1,925 @@
 @extends('layouts.admin')
 @section('content')
 <style>
-.req-stat-card{background:var(--bg-card);border-radius:16px;border:1px solid var(--border-color);padding:1.5rem;display:flex;align-items:center;gap:1rem;}
-.req-table-row{border-bottom:1px solid var(--border-color);transition:.15s;}
-.req-table-row:hover{background:rgba(99,102,241,.03);}
-.req-table-row:last-child{border-bottom:none;}
-.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;}
-.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.45);backdrop-filter:blur(6px);z-index:3000;display:none;align-items:center;justify-content:center;transition:all 0.3s ease;}
-.modal-overlay.open{display:flex;}
-.modal-box{background:var(--bg-card);border-radius:24px;width:100%;max-width:920px;max-height:94vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(15,23,42,0.22);transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1);}
-.modal-body{flex:1;overflow-y:auto;padding:2.25rem;scroll-behavior:smooth;}
-.modal-body::-webkit-scrollbar {width:6px;}
-.modal-body::-webkit-scrollbar-track {background:transparent;}
-.modal-body::-webkit-scrollbar-thumb {background:var(--border-color);border-radius:99px;}
-.modal-body:hover::-webkit-scrollbar-thumb {background:var(--text-muted);opacity:0.6;}
-
-@keyframes fadeInModal {
-  from { opacity: 0; transform: scale(.96) translateY(10px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-.modal-box{animation:fadeInModal .35s cubic-bezier(0.16, 1, 0.3, 1);}
-
-/* Priority-specific visual accents */
-.modal-box.urgent-priority { border-top: 6px solid #dc2626; }
-.modal-box.normal-priority { border-top: 6px solid #4f46e5; }
-.modal-box.low-priority { border-top: 6px solid #64748b; }
-
-/* Horizontal Stepper Timeline */
-.stepper-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    margin-bottom: 2rem;
-    background: var(--bg-main);
-    padding: 1.25rem 2rem;
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
-}
-.stepper-line {
-    position: absolute;
-    top: 50%;
-    left: 4rem;
-    right: 4rem;
-    height: 3px;
-    background: var(--border-color);
-    z-index: 1;
-    transform: translateY(-50%);
-}
-.stepper-progress {
-    position: absolute;
-    top: 50%;
-    left: 4rem;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary) 0%, #10b981 100%);
-    z-index: 1;
-    transform: translateY(-50%);
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    width: 33%;
-}
-.stepper-step {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    transition: transform 0.25s ease;
-}
-.stepper-step:hover {
-    transform: translateY(-2px);
-}
-.stepper-bubble {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: var(--bg-card);
-    border: 3px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-}
-.stepper-label {
-    font-size: 0.72rem;
-    font-weight: 900;
-    color: var(--text-muted);
-    margin-top: 8px;
-    transition: color 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-}
-.stepper-step.completed .stepper-bubble {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    border-color: #10b981;
-    color: white;
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
-}
-.stepper-step.completed .stepper-label {
-    color: #10b981;
-}
-
-@keyframes activePulse {
-    0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
-    70% { box-shadow: 0 0 0 8px rgba(79, 70, 229, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
-}
-
-.stepper-step.active .stepper-bubble {
-    background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%);
-    border-color: var(--primary);
-    color: white;
-    animation: activePulse 2s infinite;
-}
-.stepper-step.active .stepper-label {
-    color: var(--primary);
-}
-.stepper-step.declined-step .stepper-bubble {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    border-color: #ef4444;
-    color: white;
-    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
-}
-.stepper-step.declined-step .stepper-label {
-    color: #ef4444;
-}
-
-/* Responsive Vertical Stepper for Mobile viewports */
-@media (max-width: 640px) {
-    .stepper-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1.75rem;
-        padding: 1.5rem 1.5rem 1.5rem 2rem;
-    }
-    .stepper-line {
-        top: 1.5rem;
-        bottom: 1.5rem;
-        left: 3.2rem;
-        width: 3px;
-        height: calc(100% - 3rem);
-        right: auto;
-        transform: translateX(-50%);
-    }
-    .stepper-progress {
-        top: 1.5rem;
-        left: 3.2rem;
-        width: 3px;
-        right: auto;
-        transform: translateX(-50%);
-        transition: height 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .stepper-step {
-        flex-direction: row;
+    .req-stat-card {
+        background: var(--bg-card);
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        padding: 1.5rem;
+        display: flex;
         align-items: center;
-        text-align: left;
-        gap: 1.15rem;
+        gap: 1rem;
+    }
+
+    .req-table-row {
+        border-bottom: 1px solid var(--border-color);
+        transition: .15s;
+    }
+
+    .req-table-row:hover {
+        background: rgba(99, 102, 241, .03);
+    }
+
+    .req-table-row:last-child {
+        border-bottom: none;
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: .68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(6px);
+        z-index: 3000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .modal-overlay.open {
+        display: flex;
+    }
+
+    .modal-box {
+        background: var(--bg-card);
+        border-radius: 24px;
+        width: 100%;
+        max-width: 920px;
+        max-height: 94vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 30px 80px rgba(15, 23, 42, 0.22);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2.25rem;
+        scroll-behavior: smooth;
+    }
+
+    .modal-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .modal-body::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 99px;
+    }
+
+    .modal-body:hover::-webkit-scrollbar-thumb {
+        background: var(--text-muted);
+        opacity: 0.6;
+    }
+
+    @keyframes fadeInModal {
+        from {
+            opacity: 0;
+            transform: scale(.96) translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    .modal-box {
+        animation: fadeInModal .35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Priority-specific visual accents */
+    .modal-box.urgent-priority {
+        border-top: 6px solid #dc2626;
+    }
+
+    .modal-box.normal-priority {
+        border-top: 6px solid #4f46e5;
+    }
+
+    .modal-box.low-priority {
+        border-top: 6px solid #64748b;
+    }
+
+    /* Horizontal Stepper Timeline */
+    .stepper-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        margin-bottom: 2rem;
+        background: var(--bg-main);
+        padding: 1.25rem 2rem;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+    }
+
+    .stepper-line {
+        position: absolute;
+        top: 50%;
+        left: 4rem;
+        right: 4rem;
+        height: 3px;
+        background: var(--border-color);
+        z-index: 1;
+        transform: translateY(-50%);
+    }
+
+    .stepper-progress {
+        position: absolute;
+        top: 50%;
+        left: 4rem;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary) 0%, #10b981 100%);
+        z-index: 1;
+        transform: translateY(-50%);
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        width: 33%;
+    }
+
+    .stepper-step {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: transform 0.25s ease;
+    }
+
+    .stepper-step:hover {
+        transform: translateY(-2px);
+    }
+
+    .stepper-bubble {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--bg-card);
+        border: 3px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .stepper-label {
+        font-size: 0.72rem;
+        font-weight: 900;
+        color: var(--text-muted);
+        margin-top: 8px;
+        transition: color 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .stepper-step.completed .stepper-bubble {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-color: #10b981;
+        color: white;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+    }
+
+    .stepper-step.completed .stepper-label {
+        color: #10b981;
+    }
+
+    @keyframes activePulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 8px rgba(79, 70, 229, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+        }
+    }
+
+    .stepper-step.active .stepper-bubble {
+        background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%);
+        border-color: var(--primary);
+        color: white;
+        animation: activePulse 2s infinite;
+    }
+
+    .stepper-step.active .stepper-label {
+        color: var(--primary);
+    }
+
+    .stepper-step.declined-step .stepper-bubble {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border-color: #ef4444;
+        color: white;
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+    }
+
+    .stepper-step.declined-step .stepper-label {
+        color: #ef4444;
+    }
+
+    /* Responsive Vertical Stepper for Mobile viewports */
+    @media (max-width: 640px) {
+        .stepper-container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.75rem;
+            padding: 1.5rem 1.5rem 1.5rem 2rem;
+        }
+
+        .stepper-line {
+            top: 1.5rem;
+            bottom: 1.5rem;
+            left: 3.2rem;
+            width: 3px;
+            height: calc(100% - 3rem);
+            right: auto;
+            transform: translateX(-50%);
+        }
+
+        .stepper-progress {
+            top: 1.5rem;
+            left: 3.2rem;
+            width: 3px;
+            right: auto;
+            transform: translateX(-50%);
+            transition: height 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .stepper-step {
+            flex-direction: row;
+            align-items: center;
+            text-align: left;
+            gap: 1.15rem;
+            width: 100%;
+        }
+
+        .stepper-step:hover {
+            transform: translateX(3px);
+        }
+
+        .stepper-label {
+            margin-top: 0;
+            font-size: 0.75rem;
+        }
+    }
+
+    /* Profile Panel & Grid */
+    .profile-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: var(--bg-main);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.15rem;
+        transition: all 0.25s ease;
+    }
+
+    .profile-card:hover {
+        border-color: rgba(79, 70, 229, 0.25);
+        background: rgba(99, 102, 241, 0.02);
+        transform: translateY(-1px);
+    }
+
+    .profile-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--primary-glow);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.25rem;
+        border: 1.5px solid rgba(79, 70, 229, 0.15);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .stat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+    }
+
+    .purpose-quote {
+        background: var(--bg-main);
+        border-left: 4px solid var(--primary);
+        border-radius: 4px 16px 16px 4px;
+        padding: 1.25rem 1.5rem;
+        font-size: 0.88rem;
+        color: var(--text-main);
+        line-height: 1.6;
+        font-style: italic;
+        position: relative;
+    }
+
+    .purpose-quote:before {
+        content: '“';
+        font-size: 3.5rem;
+        color: rgba(79, 70, 229, 0.08);
+        position: absolute;
+        top: -0.8rem;
+        left: 0.5rem;
+        font-family: Georgia, serif;
+    }
+
+    /* Custom iOS Switch Toggle */
+    .switch-wrapper {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .switch-input {
+        display: none;
+    }
+
+    .switch-label {
+        position: relative;
+        display: block;
+        width: 44px;
+        height: 24px;
+        background: #cbd5e1;
+        border-radius: 99px;
+        cursor: pointer;
+        transition: background 0.25s ease;
+    }
+
+    .switch-label:after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.15s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+    }
+
+    .switch-input:checked+.switch-label {
+        background: #10b981;
+    }
+
+    .switch-input:checked+.switch-label:after {
+        transform: translateX(20px);
+    }
+
+    .switch-label:active:after {
+        width: 24px;
+    }
+
+    /* Custom Quantity Spinners */
+    .qty-spinner {
+        display: inline-flex;
+        align-items: center;
+        background: var(--bg-main);
+        border: 1.5px solid var(--border-color);
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.25s ease;
+    }
+
+    .qty-spinner:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-glow);
+        background: var(--bg-card);
+    }
+
+    .qty-btn {
+        background: none;
+        border: none;
+        width: 28px;
+        height: 32px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        font-weight: 900;
+        font-size: 0.85rem;
+        transition: background 0.15s;
+        user-select: none;
+    }
+
+    .qty-btn:hover {
+        background: rgba(0, 0, 0, 0.04);
+        color: var(--text-main);
+    }
+
+    .qty-spinner input {
+        width: 54px;
+        border: none;
+        background: none;
+        text-align: center;
+        font-weight: 800;
+        color: var(--text-main);
+        font-size: 0.88rem;
+        padding: 0;
+        outline: none;
+    }
+
+    .qty-spinner input::-webkit-outer-spin-button,
+    .qty-spinner input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .qty-spinner input[type=number] {
+        -moz-appearance: textfield;
+    }
+
+    /* Item decision row/card */
+    .item-decision-card {
+        border-bottom: 1px solid var(--border-color);
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        transition: all 0.2s ease;
+        background: var(--bg-card);
+    }
+
+    .item-decision-card:last-child {
+        border-bottom: none;
+    }
+
+    .item-decision-card.declined-row {
+        background: rgba(239, 68, 68, 0.015);
+    }
+
+    .item-decision-card.approved-row {
+        background: rgba(16, 185, 129, 0.008);
+    }
+
+    .item-decision-card:hover {
+        background: rgba(99, 102, 241, 0.012);
+    }
+
+    .item-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
         width: 100%;
     }
-    .stepper-step:hover {
-        transform: translateX(3px);
+
+    .item-card-header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+        min-width: 260px;
     }
-    .stepper-label {
-        margin-top: 0;
-        font-size: 0.75rem;
+
+    .item-card-header-right {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
     }
-}
 
-/* Profile Panel & Grid */
-.profile-card {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    background: var(--bg-main);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 1.15rem;
-    transition: all 0.25s ease;
-}
-.profile-card:hover {
-    border-color: rgba(79, 70, 229, 0.25);
-    background: rgba(99, 102, 241, 0.02);
-    transform: translateY(-1px);
-}
-.profile-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: var(--primary-glow);
-    color: var(--primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 1.25rem;
-    border: 1.5px solid rgba(79, 70, 229, 0.15);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-}
-.stat-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-size: 0.72rem;
-    font-weight: 800;
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    color: var(--text-main);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.01);
-}
-.purpose-quote {
-    background: var(--bg-main);
-    border-left: 4px solid var(--primary);
-    border-radius: 4px 16px 16px 4px;
-    padding: 1.25rem 1.5rem;
-    font-size: 0.88rem;
-    color: var(--text-main);
-    line-height: 1.6;
-    font-style: italic;
-    position: relative;
-}
-.purpose-quote:before {
-    content: '“';
-    font-size: 3.5rem;
-    color: rgba(79, 70, 229, 0.08);
-    position: absolute;
-    top: -0.8rem;
-    left: 0.5rem;
-    font-family: Georgia, serif;
-}
+    .item-card-panel {
+        background: var(--bg-main);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        border: 1px solid var(--border-color);
+        width: 100%;
+        box-sizing: border-box;
+    }
 
-/* Custom iOS Switch Toggle */
-.switch-wrapper {
-    display: inline-flex;
-    align-items: center;
-}
-.switch-input {
-    display: none;
-}
-.switch-label {
-    position: relative;
-    display: block;
-    width: 44px;
-    height: 24px;
-    background: #cbd5e1;
-    border-radius: 99px;
-    cursor: pointer;
-    transition: background 0.25s ease;
-}
-.switch-label:after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 20px;
-    height: 20px;
-    background: white;
-    border-radius: 50%;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.15s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.12);
-}
-.switch-input:checked + .switch-label {
-    background: #10b981;
-}
-.switch-input:checked + .switch-label:after {
-    transform: translateX(20px);
-}
-.switch-label:active:after {
-    width: 24px;
-}
+    .item-card-spinner-box {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
 
-/* Custom Quantity Spinners */
-.qty-spinner {
-    display: inline-flex;
-    align-items: center;
-    background: var(--bg-main);
-    border: 1.5px solid var(--border-color);
-    border-radius: 10px;
-    overflow: hidden;
-    transition: all 0.25s ease;
-}
-.qty-spinner:focus-within {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--primary-glow);
-    background: var(--bg-card);
-}
-.qty-btn {
-    background: none;
-    border: none;
-    width: 28px;
-    height: 32px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-muted);
-    font-weight: 900;
-    font-size: 0.85rem;
-    transition: background 0.15s;
-    user-select: none;
-}
-.qty-btn:hover {
-    background: rgba(0,0,0,0.04);
-    color: var(--text-main);
-}
-.qty-spinner input {
-    width: 54px;
-    border: none;
-    background: none;
-    text-align: center;
-    font-weight: 800;
-    color: var(--text-main);
-    font-size: 0.88rem;
-    padding: 0;
-    outline: none;
-}
-.qty-spinner input::-webkit-outer-spin-button,
-.qty-spinner input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-.qty-spinner input[type=number] {
-    -moz-appearance: textfield;
-}
-
-/* Item decision row/card */
-.item-decision-card {
-    border-bottom: 1px solid var(--border-color);
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    transition: all 0.2s ease;
-    background: var(--bg-card);
-}
-.item-decision-card:last-child {
-    border-bottom: none;
-}
-.item-decision-card.declined-row {
-    background: rgba(239, 68, 68, 0.015);
-}
-.item-decision-card.approved-row {
-    background: rgba(16, 185, 129, 0.008);
-}
-.item-decision-card:hover {
-    background: rgba(99, 102, 241, 0.012);
-}
-
-.item-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-    width: 100%;
-}
-.item-card-header-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex: 1;
-    min-width: 260px;
-}
-.item-card-header-right {
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
-.item-card-panel {
-    background: var(--bg-main);
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    border: 1px solid var(--border-color);
-    width: 100%;
-    box-sizing: border-box;
-}
-.item-card-spinner-box {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-}
-.item-card-status-box {
-    flex: 1;
-    min-width: 260px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-}
+    .item-card-status-box {
+        flex: 1;
+        min-width: 260px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
 
 
-/* Quick Remarks Pills */
-.quick-tag {
-    background: var(--bg-main);
-    border: 1px solid var(--border-color);
-    color: var(--text-muted);
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    display: inline-block;
-    margin-right: 4px;
-    margin-top: 4px;
-    user-select: none;
-}
-.quick-tag:hover {
-    background: var(--primary-glow);
-    color: var(--primary);
-    border-color: var(--primary);
-}
+    /* Quick Remarks Pills */
+    .quick-tag {
+        background: var(--bg-main);
+        border: 1px solid var(--border-color);
+        color: var(--text-muted);
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        display: inline-block;
+        margin-right: 4px;
+        margin-top: 4px;
+        user-select: none;
+    }
 
-/* Live Summary Board */
-.summary-dashboard {
-    background: linear-gradient(135deg, var(--bg-main) 0%, rgba(99, 102, 241, 0.02) 100%);
-    border: 1.5px solid var(--border-color);
-    border-radius: 16px;
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
-}
-.summary-metrics {
-    display: flex;
-    gap: 2rem;
-}
-.metric-box {
-    display: flex;
-    flex-direction: column;
-}
-.metric-val {
-    font-size: 1.45rem;
-    font-weight: 900;
-    line-height: 1.2;
-}
-.metric-lbl {
-    font-size: 0.68rem;
-    font-weight: 800;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-top: 2px;
-}
+    .quick-tag:hover {
+        background: var(--primary-glow);
+        color: var(--primary);
+        border-color: var(--primary);
+    }
 
-/* Visual Progress Fulfill Bar */
-.fulfill-progress-container {
-    width: 100%;
-    background: var(--border-color);
-    height: 6px;
-    border-radius: 99px;
-    overflow: hidden;
-    margin-top: 6px;
-}
-.fulfill-progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
-    border-radius: 99px;
-    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.fulfill-ratio-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 6px;
-    border-radius: 6px;
-    font-size: 0.68rem;
-    font-weight: 800;
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-}
-.fulfill-ratio-badge.reduced {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
-}
-.fulfill-ratio-badge.declined {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-}
+    /* Live Summary Board */
+    .summary-dashboard {
+        background: linear-gradient(135deg, var(--bg-main) 0%, rgba(99, 102, 241, 0.02) 100%);
+        border: 1.5px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.01);
+    }
 
-/* Status Bar styling */
-#statusBar{padding:1rem 1.25rem;border-radius:14px;display:flex;align-items:center;gap:.75rem;font-weight:800;font-size:.88rem;margin-bottom:1.5rem;transition:all .3s ease;}
-#statusBar.all-approved{background:rgba(16,185,129,.12);color:#065f46;border:1px solid rgba(16,185,129,.25);}
-#statusBar.partial{background:rgba(245,158,11,.12);color:#92400e;border:1px solid rgba(245,158,11,.25);}
-#statusBar.all-declined{background:rgba(239,68,68,.1);color:#991b1b;border:1px solid rgba(239,68,68,.2);}
+    .summary-metrics {
+        display: flex;
+        gap: 2rem;
+    }
 
-.reason-input{width:100%;padding:.6rem .8rem;border:1.5px solid var(--border-color);border-radius:10px;font-family:inherit;font-size:.8rem;background:var(--bg-main);color:var(--text-main);resize:vertical;box-sizing:border-box;}
-.reason-input:focus{border-color:var(--primary);outline:none;background:var(--bg-card);}
-.qty-input{width:80px;padding:.4rem .65rem;border:1.5px solid var(--border-color);border-radius:8px;font-weight:800;font-size:.85rem;text-align:right;background:var(--bg-main);color:var(--text-main);}
+    .metric-box {
+        display: flex;
+        flex-direction: column;
+    }
 
-.legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px;}
+    .metric-val {
+        font-size: 1.45rem;
+        font-weight: 900;
+        line-height: 1.2;
+    }
+
+    .metric-lbl {
+        font-size: 0.68rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-top: 2px;
+    }
+
+    /* Visual Progress Fulfill Bar */
+    .fulfill-progress-container {
+        width: 100%;
+        background: var(--border-color);
+        height: 6px;
+        border-radius: 99px;
+        overflow: hidden;
+        margin-top: 6px;
+    }
+
+    .fulfill-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+        border-radius: 99px;
+        transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .fulfill-ratio-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .fulfill-ratio-badge.reduced {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+    }
+
+    .fulfill-ratio-badge.declined {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+    /* Status Bar styling */
+    #statusBar {
+        padding: 1rem 1.25rem;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        font-weight: 800;
+        font-size: .88rem;
+        margin-bottom: 1.5rem;
+        transition: all .3s ease;
+    }
+
+    #statusBar.all-approved {
+        background: rgba(16, 185, 129, .12);
+        color: #065f46;
+        border: 1px solid rgba(16, 185, 129, .25);
+    }
+
+    #statusBar.partial {
+        background: rgba(245, 158, 11, .12);
+        color: #92400e;
+        border: 1px solid rgba(245, 158, 11, .25);
+    }
+
+    #statusBar.all-declined {
+        background: rgba(239, 68, 68, .1);
+        color: #991b1b;
+        border: 1px solid rgba(239, 68, 68, .2);
+    }
+
+    .reason-input {
+        width: 100%;
+        padding: .6rem .8rem;
+        border: 1.5px solid var(--border-color);
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: .8rem;
+        background: var(--bg-main);
+        color: var(--text-main);
+        resize: vertical;
+        box-sizing: border-box;
+    }
+
+    .reason-input:focus {
+        border-color: var(--primary);
+        outline: none;
+        background: var(--bg-card);
+    }
+
+    .qty-input {
+        width: 80px;
+        padding: .4rem .65rem;
+        border: 1.5px solid var(--border-color);
+        border-radius: 8px;
+        font-weight: 800;
+        font-size: .85rem;
+        text-align: right;
+        background: var(--bg-main);
+        color: var(--text-main);
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 4px;
+    }
 </style>
 
 <div style="padding:2rem;">
 
-  {{-- Header --}}
-  <div style="margin-bottom:2rem;">
-    <div style="font-size:.7rem;font-weight:800;color:#4f46e5;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">Store Management</div>
-    <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Store Requisitions</h1>
-    <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">Review and process department item requests</p>
-  </div>
+    {{-- Header --}}
+    <div style="margin-bottom:2rem;">
+        <div style="font-size:.7rem;font-weight:800;color:#4f46e5;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">Store Management</div>
+        <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Store Requisitions</h1>
+        <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">Review and process department item requests</p>
+    </div>
 
-  {{-- Stats --}}
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;">
-    <div class="req-stat-card">
-      <div style="width:44px;height:44px;background:rgba(99,102,241,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:20px;color:#6366f1;"></i></div>
-      <div><div style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['pending'] }}</div><div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Pending</div></div>
-    </div>
-    <div class="req-stat-card">
-      <div style="width:44px;height:44px;background:rgba(220,38,38,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="alert-triangle" style="width:20px;color:#dc2626;"></i></div>
-      <div><div style="font-size:1.5rem;font-weight:900;color:#dc2626;">{{ $stats['urgent'] }}</div><div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Urgent</div></div>
-    </div>
-    <div class="req-stat-card">
-      <div style="width:44px;height:44px;background:rgba(16,185,129,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="check-circle" style="width:20px;color:#10b981;"></i></div>
-      <div><div style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['approved'] }}</div><div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Approved</div></div>
-    </div>
-    <div class="req-stat-card">
-      <div style="width:44px;height:44px;background:rgba(245,158,11,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="git-merge" style="width:20px;color:#f59e0b;"></i></div>
-      <div><div style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['partially_approved'] }}</div><div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Partial</div></div>
-    </div>
-    <div class="req-stat-card">
-      <div style="width:44px;height:44px;background:rgba(239,68,68,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="x-circle" style="width:20px;color:#ef4444;"></i></div>
-      <div><div style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['declined'] }}</div><div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Declined</div></div>
-    </div>
-  </div>
-
-  {{-- Filters --}}
-  <form method="GET" style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem;">
-    <select name="status" onchange="this.form.submit()" style="padding:.6rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-main);font-weight:700;font-size:.85rem;cursor:pointer;">
-      <option value="">All Status</option>
-      <option value="pending" {{ request('status')==='pending'?'selected':'' }}>Pending</option>
-      <option value="approved" {{ request('status')==='approved'?'selected':'' }}>Approved</option>
-      <option value="partially_approved" {{ request('status')==='partially_approved'?'selected':'' }}>Partial</option>
-      <option value="declined" {{ request('status')==='declined'?'selected':'' }}>Declined</option>
-    </select>
-    <select name="priority" onchange="this.form.submit()" style="padding:.6rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-main);font-weight:700;font-size:.85rem;cursor:pointer;">
-      <option value="">All Priority</option>
-      <option value="urgent" {{ request('priority')==='urgent'?'selected':'' }}>Urgent</option>
-      <option value="normal" {{ request('priority')==='normal'?'selected':'' }}>Normal</option>
-      <option value="low" {{ request('priority')==='low'?'selected':'' }}>Low</option>
-    </select>
-    <input type="text" name="department" value="{{ request('department') }}" placeholder="Filter by department..." onchange="this.form.submit()" style="padding:.6rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-main);font-weight:600;font-size:.85rem;min-width:220px;">
-    @if(request()->anyFilled(['status','priority','department']))
-    <a href="{{ route('admin.requisitions') }}" style="padding:.6rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-muted);font-weight:700;font-size:.85rem;text-decoration:none;display:flex;align-items:center;gap:6px;">
-      <i data-lucide="x" style="width:14px;"></i> Clear
-    </a>
-    @endif
-  </form>
-
-  {{-- Table --}}
-  <div style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);overflow:hidden;">
-    <table style="width:100%;border-collapse:collapse;">
-      <thead style="background:var(--bg-main);">
-        <tr>
-          <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">#</th>
-          <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Department / Requester</th>
-          <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Items</th>
-          <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Priority</th>
-          <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Status</th>
-          <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Date</th>
-          <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        @forelse($requisitions as $req)
-        @php $sb = $req->status_badge; $pb = $req->priority_badge; @endphp
-        <tr class="req-table-row">
-          <td style="padding:1rem 1.5rem;font-size:.8rem;font-weight:700;color:var(--text-muted);">#{{ $req->id }}</td>
-          <td style="padding:1rem 1.5rem;">
-            <div style="font-size:.9rem;font-weight:800;color:var(--text-main);">{{ $req->department }}</div>
-            <div style="font-size:.75rem;color:var(--text-muted);font-weight:600;">{{ $req->requester_name }}{{ $req->rank_or_title ? ' · '.$req->rank_or_title : '' }}</div>
-          </td>
-          <td style="padding:1rem 1.5rem;">
-            <div style="display:flex;flex-wrap:wrap;gap:4px;">
-              @foreach($req->items->take(3) as $item)
-              <span style="font-size:.7rem;font-weight:700;color:var(--text-main);background:var(--bg-main);border:1px solid var(--border-color);padding:2px 8px;border-radius:6px;">
-                {{ Str::limit($item->description, 20) }} ({{ number_format($item->quantity_requested,0) }})
-              </span>
-              @endforeach
-              @if($req->items->count() > 3)
-              <span style="font-size:.7rem;font-weight:700;color:#4f46e5;background:rgba(79,70,229,.1);padding:2px 8px;border-radius:6px;">+{{ $req->items->count()-3 }} more</span>
-              @endif
+    {{-- Stats --}}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;">
+        <div class="req-stat-card">
+            <div style="width:44px;height:44px;background:rgba(99,102,241,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:20px;color:#6366f1;"></i></div>
+            <div>
+                <div style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['pending'] }}</div>
+                <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Pending</div>
             </div>
-          </td>
-          <td style="padding:1rem 1.5rem;text-align:center;"><span class="pill" style="background:{{ $pb['bg'] }};color:{{ $pb['color'] }};">{{ $pb['label'] }}</span></td>
-          <td style="padding:1rem 1.5rem;text-align:center;"><span class="pill" style="background:{{ $sb['bg'] }};color:{{ $sb['color'] }};">● {{ $sb['label'] }}</span></td>
-          <td style="padding:1rem 1.5rem;font-size:.78rem;color:var(--text-muted);font-weight:600;">{{ $req->created_at->format('d M Y') }}<br>{{ $req->created_at->format('H:i') }}</td>
-          <td style="padding:1rem 1.5rem;text-align:center;">
-            <button onclick="openRequisitionModal({{ $req->id }})"
-              style="background:rgba(79,70,229,.1);color:#4f46e5;border:none;padding:.5rem 1rem;border-radius:10px;font-weight:800;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;" onmouseover="this.style.background='#4f46e5';this.style.color='white'" onmouseout="this.style.background='rgba(79,70,229,.1)';this.style.color='#4f46e5'">
-              <i data-lucide="eye" style="width:14px;"></i> Review
-            </button>
-          </td>
-        </tr>
-        @empty
-        <tr>
-          <td colspan="7" style="padding:3rem;text-align:center;color:var(--text-muted);">
-            <i data-lucide="inbox" style="width:32px;margin-bottom:.75rem;opacity:.3;"></i>
-            <p style="font-weight:700;color:var(--text-main);">No requisitions found</p>
-            <p style="font-size:.85rem;">Department requests will appear here.</p>
-          </td>
-        </tr>
-        @endforelse
-      </tbody>
-    </table>
-    @if($requisitions->hasPages())
-    <div style="padding:1rem 1.5rem;border-top:1px solid var(--border-color);">{{ $requisitions->links() }}</div>
-    @endif
-  </div>
+        </div>
+        <div class="req-stat-card">
+            <div style="width:44px;height:44px;background:rgba(220,38,38,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="alert-triangle" style="width:20px;color:#dc2626;"></i></div>
+            <div>
+                <div style="font-size:1.5rem;font-weight:900;color:#dc2626;">{{ $stats['urgent'] }}</div>
+                <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Urgent</div>
+            </div>
+        </div>
+        <div class="req-stat-card">
+            <div style="width:44px;height:44px;background:rgba(16,185,129,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="check-circle" style="width:20px;color:#10b981;"></i></div>
+            <div>
+                <div style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['approved'] }}</div>
+                <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Approved</div>
+            </div>
+        </div>
+        <div class="req-stat-card">
+            <div style="width:44px;height:44px;background:rgba(245,158,11,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="git-merge" style="width:20px;color:#f59e0b;"></i></div>
+            <div>
+                <div style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['partially_approved'] }}</div>
+                <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Partial</div>
+            </div>
+        </div>
+        <div class="req-stat-card">
+            <div style="width:44px;height:44px;background:rgba(239,68,68,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="x-circle" style="width:20px;color:#ef4444;"></i></div>
+            <div>
+                <div style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['declined'] }}</div>
+                <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Declined</div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Filters --}}
+    <form method="GET" style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+        <select name="status" onchange="this.form.submit()" style="padding:.6rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-main);font-weight:700;font-size:.85rem;cursor:pointer;">
+            <option value="">All Status</option>
+            <option value="pending" {{ request('status')==='pending'?'selected':'' }}>Pending</option>
+            <option value="approved" {{ request('status')==='approved'?'selected':'' }}>Approved</option>
+            <option value="partially_approved" {{ request('status')==='partially_approved'?'selected':'' }}>Partial</option>
+            <option value="declined" {{ request('status')==='declined'?'selected':'' }}>Declined</option>
+        </select>
+        <select name="priority" onchange="this.form.submit()" style="padding:.6rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-main);font-weight:700;font-size:.85rem;cursor:pointer;">
+            <option value="">All Priority</option>
+            <option value="urgent" {{ request('priority')==='urgent'?'selected':'' }}>Urgent</option>
+            <option value="normal" {{ request('priority')==='normal'?'selected':'' }}>Normal</option>
+            <option value="low" {{ request('priority')==='low'?'selected':'' }}>Low</option>
+        </select>
+        <input type="text" name="department" value="{{ request('department') }}" placeholder="Filter by department..." onchange="this.form.submit()" style="padding:.6rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-main);font-weight:600;font-size:.85rem;min-width:220px;">
+        @if(request()->anyFilled(['status','priority','department']))
+        <a href="{{ route('admin.requisitions') }}" style="padding:.6rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-muted);font-weight:700;font-size:.85rem;text-decoration:none;display:flex;align-items:center;gap:6px;">
+            <i data-lucide="x" style="width:14px;"></i> Clear
+        </a>
+        @endif
+    </form>
+
+    {{-- Table --}}
+    <div style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);overflow:hidden;">
+        <table style="width:100%;border-collapse:collapse;">
+            <thead style="background:var(--bg-main);">
+                <tr>
+                    <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">#</th>
+                    <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Department / Requester</th>
+                    <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Items</th>
+                    <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Priority</th>
+                    <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Status</th>
+                    <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Collection</th>
+                    <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Date</th>
+                    <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($requisitions as $req)
+                @php $sb = $req->status_badge; $pb = $req->priority_badge; @endphp
+                <tr class="req-table-row">
+                    <td style="padding:1rem 1.5rem;font-size:.8rem;font-weight:700;color:var(--text-muted);">#{{ $req->id }}</td>
+                    <td style="padding:1rem 1.5rem;">
+                        <div style="font-size:.9rem;font-weight:800;color:var(--text-main);">{{ $req->department }}</div>
+                        <div style="font-size:.75rem;color:var(--text-muted);font-weight:600;">{{ $req->requester_name }}{{ $req->rank_or_title ? ' · '.$req->rank_or_title : '' }}</div>
+                    </td>
+                    <td style="padding:1rem 1.5rem;">
+                        <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                            @foreach($req->items->take(3) as $item)
+                            <span style="font-size:.7rem;font-weight:700;color:var(--text-main);background:var(--bg-main);border:1px solid var(--border-color);padding:2px 8px;border-radius:6px;">
+                                {{ Str::limit($item->description, 20) }} ({{ number_format($item->quantity_requested,0) }})
+                            </span>
+                            @endforeach
+                            @if($req->items->count() > 3)
+                            <span style="font-size:.7rem;font-weight:700;color:#4f46e5;background:rgba(79,70,229,.1);padding:2px 8px;border-radius:6px;">+{{ $req->items->count()-3 }} more</span>
+                            @endif
+                        </div>
+                    </td>
+                    <td style="padding:1rem 1.5rem;text-align:center;"><span class="pill" style="background:{{ $pb['bg'] }};color:{{ $pb['color'] }};">{{ $pb['label'] }}</span></td>
+                    <td style="padding:1rem 1.5rem;text-align:center;"><span class="pill" style="background:{{ $sb['bg'] }};color:{{ $sb['color'] }};">● {{ $sb['label'] }}</span></td>
+                    <td style="padding:1rem 1.5rem;text-align:center;">
+                        @if(in_array($req->status, ['approved', 'partially_approved']))
+                            @if($req->collected_at)
+                                <span style="font-size:.78rem;color:#10b981;font-weight:800;display:inline-flex;align-items:center;gap:4px;" title="Collected on {{ $req->collected_at->format('d M Y, H:i') }}{{ $req->collector ? ' by '.$req->collector->name : '' }}">
+                                    <i data-lucide="check-circle" style="width:14px;"></i> Collected
+                                </span>
+                            @else
+                                <span style="font-size:.78rem;color:#f59e0b;font-weight:800;display:inline-flex;align-items:center;gap:4px;">
+                                    <i data-lucide="clock" style="width:14px;"></i> Awaiting Collection
+                                </span>
+                            @endif
+                        @else
+                            <span style="font-size:.75rem;color:var(--text-muted);font-style:italic;">—</span>
+                        @endif
+                    </td>
+                    <td style="padding:1rem 1.5rem;font-size:.78rem;color:var(--text-muted);font-weight:600;">{{ $req->created_at->format('d M Y') }}<br>{{ $req->created_at->format('H:i') }}</td>
+                    <td style="padding:1rem 1.5rem;text-align:center;">
+                        <button onclick="openRequisitionModal({{ $req->id }})"
+                            style="background:rgba(79,70,229,.1);color:#4f46e5;border:none;padding:.5rem 1rem;border-radius:10px;font-weight:800;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;" onmouseover="this.style.background='#4f46e5';this.style.color='white'" onmouseout="this.style.background='rgba(79,70,229,.1)';this.style.color='#4f46e5'">
+                            <i data-lucide="eye" style="width:14px;"></i> Review
+                        </button>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="8" style="padding:3rem;text-align:center;color:var(--text-muted);">
+                        <i data-lucide="inbox" style="width:32px;margin-bottom:.75rem;opacity:.3;"></i>
+                        <p style="font-weight:700;color:var(--text-main);">No requisitions found</p>
+                        <p style="font-size:.85rem;">Department requests will appear here.</p>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+        @if($requisitions->hasPages())
+        <div style="padding:1rem 1.5rem;border-top:1px solid var(--border-color);">{{ $requisitions->links() }}</div>
+        @endif
+    </div>
 </div>
 
 {{-- Review Modal --}}
 <div class="modal-overlay" id="reqModal" onclick="if(event.target===this)closeModal()">
-  <div class="modal-box">
-    <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-      <div style="display:flex;align-items:center;gap:1rem;">
-        <div style="width:44px;height:44px;background:rgba(79,70,229,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-          <i data-lucide="clipboard-list" style="width:20px;color:#4f46e5;"></i>
+    <div class="modal-box">
+        <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:1rem;">
+                <div style="width:44px;height:44px;background:rgba(79,70,229,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                    <i data-lucide="clipboard-list" style="width:20px;color:#4f46e5;"></i>
+                </div>
+                <div>
+                    <h2 style="margin:0;font-size:1.1rem;font-weight:900;color:var(--text-main);">Requisition Review</h2>
+                    <p id="modalSubtitle" style="margin:0;font-size:.8rem;color:var(--text-muted);font-weight:500;"></p>
+                </div>
+            </div>
+            <button onclick="closeModal()" style="background:var(--bg-main);border:none;width:34px;height:34px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                <i data-lucide="x" style="width:18px;color:var(--text-muted);"></i>
+            </button>
         </div>
-        <div>
-          <h2 style="margin:0;font-size:1.1rem;font-weight:900;color:var(--text-main);">Requisition Review</h2>
-          <p id="modalSubtitle" style="margin:0;font-size:.8rem;color:var(--text-muted);font-weight:500;"></p>
+        <div class="modal-body" id="modalBody">
+            <div style="text-align:center;padding:2rem;color:var(--text-muted);">Loading...</div>
         </div>
-      </div>
-      <button onclick="closeModal()" style="background:var(--bg-main);border:none;width:34px;height:34px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
-        <i data-lucide="x" style="width:18px;color:var(--text-muted);"></i>
-      </button>
+        <div id="modalFooter" style="padding:1.25rem 2rem;border-top:1px solid var(--border-color);display:flex;justify-content:flex-end;gap:.75rem;flex-shrink:0;"></div>
     </div>
-    <div class="modal-body" id="modalBody">
-      <div style="text-align:center;padding:2rem;color:var(--text-muted);">Loading...</div>
-    </div>
-    <div id="modalFooter" style="padding:1.25rem 2rem;border-top:1px solid var(--border-color);display:flex;justify-content:flex-end;gap:.75rem;flex-shrink:0;"></div>
-  </div>
 </div>
 
 <script>
-let currentReqId = null;
-let currentReqData = null;
+    let currentReqId = null;
+    let currentReqData = null;
 
-async function openRequisitionModal(id) {
-    currentReqId = id;
-    document.getElementById('reqModal').classList.add('open');
-    document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);"><div style="width:24px;height:24px;border:2px solid rgba(0,0,0,.1);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;"></div>Loading details...</div>';
-    document.getElementById('modalFooter').innerHTML = '';
-    document.getElementById('modalSubtitle').textContent = 'Loading...';
+    async function openRequisitionModal(id) {
+        currentReqId = id;
+        document.getElementById('reqModal').classList.add('open');
+        document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);"><div style="width:24px;height:24px;border:2px solid rgba(0,0,0,.1);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;"></div>Loading details...</div>';
+        document.getElementById('modalFooter').innerHTML = '';
+        document.getElementById('modalSubtitle').textContent = 'Loading...';
 
-    const res = await fetch(`{{ url('/admin/requisitions') }}/${id}/show`);
-    const data = await res.json();
-    currentReqData = data;
+        const res = await fetch(`{{ url('/admin/requisitions') }}/${id}/show`);
+        const data = await res.json();
+        currentReqData = data;
 
-    // Apply priority border accents
-    const modalBox = document.querySelector('.modal-box');
-    modalBox.className = 'modal-box'; // reset
-    modalBox.classList.add(`${data.priority}-priority`);
+        // Apply priority border accents
+        const modalBox = document.querySelector('.modal-box');
+        modalBox.className = 'modal-box'; // reset
+        modalBox.classList.add(`${data.priority}-priority`);
 
-    document.getElementById('modalSubtitle').textContent = `Requisition Ref: #${data.id}`;
+        document.getElementById('modalSubtitle').textContent = `Requisition Ref: #${data.id}`;
 
-    const isPending = data.status === 'pending';
+        const isPending = data.status === 'pending';
 
 
 
-    // ── 2. Profile Grid ──────────────────────────────────────────────
-    const avatarLetter = data.requester_name ? data.requester_name.charAt(0).toUpperCase() : 'R';
-    const totalItemsCount = data.items.length;
-    const totalQtyRequested = data.items.reduce((sum, item) => sum + parseFloat(item.quantity_requested || 0), 0);
+        // ── 2. Profile Grid ──────────────────────────────────────────────
+        const avatarLetter = data.requester_name ? data.requester_name.charAt(0).toUpperCase() : 'R';
+        const totalItemsCount = data.items.length;
+        const totalQtyRequested = data.items.reduce((sum, item) => sum + parseFloat(item.quantity_requested || 0), 0);
 
-    const profileGridHtml = `
+        const profileGridHtml = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.75rem;">
         <div class="profile-card">
             <div class="profile-avatar">${avatarLetter}</div>
@@ -700,7 +941,7 @@ async function openRequisitionModal(id) {
                 </div>
             </div>
         </div>
-        
+
         <div class="profile-card" style="grid-column: 1 / -1; display:flex; flex-direction:column; align-items:stretch; gap:0.75rem;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-size:.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Requisition Intention & Purpose</span>
@@ -716,15 +957,15 @@ async function openRequisitionModal(id) {
     </div>
     `;
 
-    // ── 3. Item rows ──────────────────────────────────────────────
-    let itemRowsHtml = '';
-    if (isPending) {
-        data.items.forEach((item, i) => {
-            const stockInfo = item.stock_sufficient
-                ? `<span style="color:#10b981;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="check-circle-2" style="width:12px;height:12px;"></i> Sufficient Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>`
-                : `<span style="color:#f59e0b;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-triangle" style="width:12px;height:12px;"></i> Critical Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>`;
+        // ── 3. Item rows ──────────────────────────────────────────────
+        let itemRowsHtml = '';
+        if (isPending) {
+            data.items.forEach((item, i) => {
+                const stockInfo = item.stock_sufficient ?
+                    `<span style="color:#10b981;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="check-circle-2" style="width:12px;height:12px;"></i> Sufficient Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>` :
+                    `<span style="color:#f59e0b;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-triangle" style="width:12px;height:12px;"></i> Critical Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>`;
 
-            itemRowsHtml += `
+                itemRowsHtml += `
             <div class="item-decision-card approved-row" id="item-row-${i}" data-index="${i}">
                 <!-- Top Row: Toggle, Details, and Requested Qty -->
                 <div class="item-card-header">
@@ -741,7 +982,7 @@ async function openRequisitionModal(id) {
                             <div style="margin-top:4px;">${stockInfo}</div>
                         </div>
                     </div>
-                    
+
                     <div class="item-card-header-right">
                         <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;">Requested</div>
                         <div>
@@ -778,7 +1019,7 @@ async function openRequisitionModal(id) {
                                 placeholder="Remarks for decline or reduction..."
                                 rows="2"
                                 style="display:none; margin-bottom: 6px;">${item.remarks||''}</textarea>
-                            
+
                             <span id="reason-ok-${i}" style="font-size:.78rem;color:#10b981;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
                                 <i data-lucide="check-circle" style="width:14px;height:14px;"></i> Approved Allocation
                             </span>
@@ -791,29 +1032,29 @@ async function openRequisitionModal(id) {
                     </div>
                 </div>
             </div>`;
-        });
-    } else {
-        // Read-only view for already processed
-        const rows = data.items.map(item => {
-            const requested = parseFloat(item.quantity_requested) || 0;
-            const approved = item.quantity_approved !== null ? parseFloat(item.quantity_approved) : 0;
-            const pct = requested > 0 ? Math.min(Math.round((approved / requested) * 100), 100) : 0;
-            
-            let fulfillBadgeClass = 'fulfill-ratio-badge';
-            let fulfillLabel = `${pct}% Fulfill`;
-            if (approved === 0) {
-                fulfillBadgeClass += ' declined';
-                fulfillLabel = 'Declined';
-            } else if (approved < requested) {
-                fulfillBadgeClass += ' reduced';
-                fulfillLabel = `${pct}% Reduced`;
-            }
-            
-            const stockInfo = item.stock_sufficient
-                ? `<span style="color:#10b981;font-size:.7rem;font-weight:700;">✔ Sufficient</span>`
-                : `<span style="color:#ef4444;font-size:.7rem;font-weight:700;">⚠ Short Stock</span>`;
+            });
+        } else {
+            // Read-only view for already processed
+            const rows = data.items.map(item => {
+                const requested = parseFloat(item.quantity_requested) || 0;
+                const approved = item.quantity_approved !== null ? parseFloat(item.quantity_approved) : 0;
+                const pct = requested > 0 ? Math.min(Math.round((approved / requested) * 100), 100) : 0;
 
-            return `
+                let fulfillBadgeClass = 'fulfill-ratio-badge';
+                let fulfillLabel = `${pct}% Fulfill`;
+                if (approved === 0) {
+                    fulfillBadgeClass += ' declined';
+                    fulfillLabel = 'Declined';
+                } else if (approved < requested) {
+                    fulfillBadgeClass += ' reduced';
+                    fulfillLabel = `${pct}% Reduced`;
+                }
+
+                const stockInfo = item.stock_sufficient ?
+                    `<span style="color:#10b981;font-size:.7rem;font-weight:700;">✔ Sufficient</span>` :
+                    `<span style="color:#ef4444;font-size:.7rem;font-weight:700;">⚠ Short Stock</span>`;
+
+                return `
             <div class="item-decision-card ${approved === 0 ? 'declined-row' : 'approved-row'}">
                 <!-- Top Row: Description & Fulfillment status badge -->
                 <div class="item-card-header">
@@ -860,22 +1101,22 @@ async function openRequisitionModal(id) {
                     <p style="margin:0; font-size:0.8rem; color:var(--text-main); font-style:italic; line-height:1.4;">"${item.remarks}"</p>
                 </div>` : ''}
             </div>`;
-        }).join('');
-        
-        itemRowsHtml = `
+            }).join('');
+
+            itemRowsHtml = `
         <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.01);">
             ${rows}
         </div>`;
-    }
+        }
 
-    document.getElementById('modalBody').innerHTML = `
+        document.getElementById('modalBody').innerHTML = `
     <!-- profile grid and metadata -->
     ${profileGridHtml}
 
     <!-- decision header / list -->
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; margin-top:1.5rem;">
         <h3 style="margin:0; font-size:0.95rem; font-weight:900; color:var(--text-main); letter-spacing:-0.01em; display:flex; align-items:center; gap:6px;">
-            <i data-lucide="list-checks" style="width:16px; color:var(--primary);"></i> Requested Ledger Items
+            <i data-lucide="list-checks" style="width:16px; color:var(--primary);"></i> Requested Items
         </h3>
         <span style="font-size:.72rem; color:var(--text-muted); font-weight:700;">Please review stock indicators before committing decisions.</span>
     </div>
@@ -886,7 +1127,7 @@ async function openRequisitionModal(id) {
         <span id="statusBarIcon">✅</span>
         <span id="statusBarText">All items will be <b>Approved</b></span>
     </div>
-    
+
     <!-- Legend -->
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.85rem; font-size:.72rem; font-weight:700; color:var(--text-muted); background:var(--bg-main); padding:0.6rem 1rem; border-radius:10px; border:1.5px solid var(--border-color);">
         <div style="display:flex; gap:1.25rem;">
@@ -931,7 +1172,7 @@ async function openRequisitionModal(id) {
         <textarea id="adminNotes" rows="3" placeholder="Add central store decision notes, pickup directions, or overall remarks here..." style="width:100%;padding:.85rem 1rem;border:1.5px solid var(--border-color);border-radius:12px;font-family:inherit;font-size:.88rem;background:var(--bg-main);color:var(--text-main);resize:vertical;box-sizing:border-box;transition:all 0.25s ease;" onfocus="this.style.borderColor='var(--primary)';this.style.background='var(--bg-card)';">${data.admin_notes||''}</textarea>
     </div>` : `
     ${data.admin_notes?`<div style="background:rgba(79,70,229,.03);border:1px solid rgba(79,70,229,.15);border-radius:16px;padding:1.25rem; margin-top: 1rem;"><div style="font-size:.68rem;font-weight:900;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:4px;margin-bottom:4px;"><i data-lucide="message-square" style="width:14px;"></i> Store Officer Notes</div><p style="margin:0;font-size:.9rem;color:var(--text-main);line-height:1.6;font-style:italic;">"${data.admin_notes}"</p></div>`:''}
-    
+
     <div style="background:var(--bg-main); border:1px solid var(--border-color); border-radius:16px; padding:1.15rem; margin-top:1.25rem; display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex; align-items:center; gap:8px;">
             <div style="width:34px; height:34px; background:rgba(79,70,229,0.08); color:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center;">
@@ -946,10 +1187,44 @@ async function openRequisitionModal(id) {
             <div style="font-size:.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Processing Timestamp</div>
             <div style="font-size:.85rem; font-weight:900; color:var(--text-main);">${data.processed_at ? data.processed_at : 'Pending'}</div>
         </div>
-    </div>`}`;
+    </div>
+    
+    ${data.collected_at ? `
+    <div style="background:rgba(16,185,129,0.03); border:1px solid rgba(16,185,129,0.15); border-radius:16px; padding:1.15rem; margin-top:0.75rem; display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:34px; height:34px; background:rgba(16,185,129,0.08); color:#10b981; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                <i data-lucide="package-check" style="width:16px;"></i>
+            </div>
+            <div>
+                <div style="font-size:.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Collection Status</div>
+                <div style="font-size:.85rem; font-weight:900; color:var(--text-main);">Physically Collected</div>
+            </div>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Collected At / By</div>
+            <div style="font-size:.85rem; font-weight:900; color:var(--text-main);">${data.collected_at} ${data.collected_by_name ? 'by ' + data.collected_by_name : ''}</div>
+        </div>
+    </div>
+    ` : (['approved', 'partially_approved'].includes(data.status) ? `
+    <div style="background:rgba(245,158,11,0.03); border:1px solid rgba(245,158,11,0.15); border-radius:16px; padding:1.15rem; margin-top:0.75rem; display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <div style="width:34px; height:34px; background:rgba(245,158,11,0.08); color:#f59e0b; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                <i data-lucide="clock" style="width:16px;"></i>
+            </div>
+            <div>
+                <div style="font-size:.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Collection Status</div>
+                <div style="font-size:.85rem; font-weight:900; color:var(--text-main);">Awaiting Collection</div>
+            </div>
+        </div>
+        <div style="text-align:right;">
+            <span class="pill" style="background:rgba(245,158,11,0.1); color:#f59e0b;">Pending Pickup</span>
+        </div>
+    </div>
+    ` : '')}
+    `}`;
 
-    if (isPending) {
-        document.getElementById('modalFooter').innerHTML = `
+        if (isPending) {
+            document.getElementById('modalFooter').innerHTML = `
         <button onclick="closeModal()" style="background:var(--bg-main); color:var(--text-main); border:1.5px solid var(--border-color); padding:.75rem 1.5rem; border-radius:12px; font-weight:800; cursor:pointer; font-size:.88rem; transition:0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='var(--bg-main)'">
             Cancel
         </button>
@@ -957,224 +1232,315 @@ async function openRequisitionModal(id) {
             style="background:#4f46e5;color:white;border:none;padding:.75rem 2.25rem;border-radius:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.88rem;box-shadow:0 8px 20px rgba(79, 70, 229, 0.25);transition:0.2s;" onmouseover="this.style.background='#4338ca'" onmouseout="this.style.background='#4f46e5'">
             <i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision
         </button>`;
+            updateStatusBar();
+        } else {
+            let footerHtml = `
+        <button onclick="closeModal()" style="background:var(--bg-main); color:var(--text-main); border:1.5px solid var(--border-color); padding:.75rem 1.5rem; border-radius:12px; font-weight:800; cursor:pointer; font-size:.88rem; transition:0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='var(--bg-main)'">
+            Close Window
+        </button>`;
+
+            if (['approved', 'partially_approved'].includes(data.status) && !data.collected_at) {
+                footerHtml += `
+            <button onclick="confirmCollection(${data.id}, this)"
+                style="background:#10b981;color:white;border:none;padding:.75rem 2.25rem;border-radius:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.88rem;box-shadow:0 8px 20px rgba(16, 185, 129, 0.25);transition:0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                <i data-lucide="package-check" style="width:16px;"></i> Confirm Collection
+            </button>`;
+            }
+            document.getElementById('modalFooter').innerHTML = footerHtml;
+        }
+
+        lucide.createIcons();
+    }
+
+    // Custom function to adjust quantity in custom spinner
+    function adjustQty(idx, dir) {
+        const qtyInput = document.getElementById(`qty-${idx}`);
+        if (!qtyInput || qtyInput.disabled) return;
+        let currentVal = parseFloat(qtyInput.value) || 0;
+        let newVal = currentVal + dir;
+        if (newVal < 0) newVal = 0;
+        qtyInput.value = parseFloat(newVal.toFixed(2));
+        onQtyChange(idx);
+    }
+
+    // Custom function to fill remarks quickly
+    function fillQuickReason(idx, text) {
+        const reasonInput = document.getElementById(`reason-${idx}`);
+        if (reasonInput) {
+            reasonInput.value = text;
+        }
+    }
+
+    // Toggle item approval on checkbox/switch change
+    function toggleItemApproval(idx) {
+        const chk = document.getElementById(`chk-${idx}`);
+        const row = document.getElementById(`item-row-${idx}`);
+        const qtyInput = document.getElementById(`qty-${idx}`);
+        const reasonInput = document.getElementById(`reason-${idx}`);
+        const reasonOk = document.getElementById(`reason-ok-${idx}`);
+        const quickTags = document.getElementById(`quick-tags-${idx}`);
+
+        if (chk.checked) {
+            // Approve
+            row.className = 'item-decision-card approved-row';
+            qtyInput.disabled = false;
+            qtyInput.parentElement.style.opacity = '1';
+            reasonInput.style.display = 'none';
+            reasonOk.style.display = 'inline-flex';
+            quickTags.style.display = 'none';
+            // Restore qty to requested if it was 0
+            if (parseFloat(qtyInput.value) === 0) {
+                qtyInput.value = qtyInput.dataset.requested;
+            }
+        } else {
+            // Decline
+            row.className = 'item-decision-card declined-row';
+            qtyInput.value = 0;
+            qtyInput.disabled = true;
+            qtyInput.parentElement.style.opacity = '.4';
+            reasonInput.style.display = 'block';
+            reasonOk.style.display = 'none';
+            quickTags.style.display = 'block';
+        }
         updateStatusBar();
     }
 
-    lucide.createIcons();
-}
+    // When quantity changes, update indication
+    function onQtyChange(idx) {
+        const qtyInput = document.getElementById(`qty-${idx}`);
+        const reasonInput = document.getElementById(`reason-${idx}`);
+        const reasonOk = document.getElementById(`reason-ok-${idx}`);
+        const quickTags = document.getElementById(`quick-tags-${idx}`);
+        const requested = parseFloat(qtyInput.dataset.requested);
+        const approved = parseFloat(qtyInput.value) || 0;
 
-// Custom function to adjust quantity in custom spinner
-function adjustQty(idx, dir) {
-    const qtyInput = document.getElementById(`qty-${idx}`);
-    if (!qtyInput || qtyInput.disabled) return;
-    let currentVal = parseFloat(qtyInput.value) || 0;
-    let newVal = currentVal + dir;
-    if (newVal < 0) newVal = 0;
-    qtyInput.value = parseFloat(newVal.toFixed(2));
-    onQtyChange(idx);
-}
-
-// Custom function to fill remarks quickly
-function fillQuickReason(idx, text) {
-    const reasonInput = document.getElementById(`reason-${idx}`);
-    if (reasonInput) {
-        reasonInput.value = text;
-    }
-}
-
-// Toggle item approval on checkbox/switch change
-function toggleItemApproval(idx) {
-    const chk = document.getElementById(`chk-${idx}`);
-    const row = document.getElementById(`item-row-${idx}`);
-    const qtyInput = document.getElementById(`qty-${idx}`);
-    const reasonInput = document.getElementById(`reason-${idx}`);
-    const reasonOk = document.getElementById(`reason-ok-${idx}`);
-    const quickTags = document.getElementById(`quick-tags-${idx}`);
-
-    if (chk.checked) {
-        // Approve
-        row.className = 'item-decision-card approved-row';
-        qtyInput.disabled = false;
-        qtyInput.parentElement.style.opacity = '1';
-        reasonInput.style.display = 'none';
-        reasonOk.style.display = 'inline-flex';
-        quickTags.style.display = 'none';
-        // Restore qty to requested if it was 0
-        if (parseFloat(qtyInput.value) === 0) {
-            qtyInput.value = qtyInput.dataset.requested;
+        if (approved < requested && approved > 0) {
+            reasonInput.style.display = 'block';
+            reasonInput.placeholder = 'Reason for reduced quantity allocation...';
+            reasonOk.style.display = 'none';
+            quickTags.style.display = 'block';
+        } else if (approved >= requested) {
+            reasonInput.style.display = 'none';
+            reasonOk.style.display = 'inline-flex';
+            quickTags.style.display = 'none';
         }
-    } else {
-        // Decline
-        row.className = 'item-decision-card declined-row';
-        qtyInput.value = 0;
-        qtyInput.disabled = true;
-        qtyInput.parentElement.style.opacity = '.4';
-        reasonInput.style.display = 'block';
-        reasonOk.style.display = 'none';
-        quickTags.style.display = 'block';
+        updateStatusBar();
     }
-    updateStatusBar();
-}
 
-// When quantity changes, update indication
-function onQtyChange(idx) {
-    const qtyInput = document.getElementById(`qty-${idx}`);
-    const reasonInput = document.getElementById(`reason-${idx}`);
-    const reasonOk = document.getElementById(`reason-ok-${idx}`);
-    const quickTags = document.getElementById(`quick-tags-${idx}`);
-    const requested = parseFloat(qtyInput.dataset.requested);
-    const approved = parseFloat(qtyInput.value) || 0;
+    // Compute overall decision status and update the status bar & summary dashboard
+    function updateStatusBar() {
+        const checkboxes = document.querySelectorAll('.approve-toggle');
+        const qtyInputs = document.querySelectorAll('.approved-qty-input');
 
-    if (approved < requested && approved > 0) {
-        reasonInput.style.display = 'block';
-        reasonInput.placeholder = 'Reason for reduced quantity allocation...';
-        reasonOk.style.display = 'none';
-        quickTags.style.display = 'block';
-    } else if (approved >= requested) {
-        reasonInput.style.display = 'none';
-        reasonOk.style.display = 'inline-flex';
-        quickTags.style.display = 'none';
-    }
-    updateStatusBar();
-}
+        let cntApproved = 0;
+        let cntReduced = 0;
+        let cntDeclined = 0;
+        let allApproved = true;
+        let anyApproved = false;
+        let anyPartial = false;
 
-// Compute overall decision status and update the status bar & summary dashboard
-function updateStatusBar() {
-    const checkboxes = document.querySelectorAll('.approve-toggle');
-    const qtyInputs = document.querySelectorAll('.approved-qty-input');
-    
-    let cntApproved = 0;
-    let cntReduced = 0;
-    let cntDeclined = 0;
-    let allApproved = true;
-    let anyApproved = false;
-    let anyPartial = false;
+        checkboxes.forEach((chk, i) => {
+            const qtyEl = document.getElementById(`qty-${i}`);
+            const requested = parseFloat(qtyEl?.dataset.requested || 0);
+            const approved = parseFloat(qtyEl?.value || 0);
 
-    checkboxes.forEach((chk, i) => {
-        const qtyEl = document.getElementById(`qty-${i}`);
-        const requested = parseFloat(qtyEl?.dataset.requested || 0);
-        const approved = parseFloat(qtyEl?.value || 0);
-
-        if (!chk.checked || approved === 0) {
-            cntDeclined++;
-            allApproved = false;
-        } else {
-            anyApproved = true;
-            if (approved < requested) {
-                cntReduced++;
-                anyPartial = true;
+            if (!chk.checked || approved === 0) {
+                cntDeclined++;
                 allApproved = false;
             } else {
-                cntApproved++;
+                anyApproved = true;
+                if (approved < requested) {
+                    cntReduced++;
+                    anyPartial = true;
+                    allApproved = false;
+                } else {
+                    cntApproved++;
+                }
+            }
+        });
+
+        // Update live metrics on summary board
+        const metricApp = document.getElementById('metricApproved');
+        const metricRed = document.getElementById('metricReduced');
+        const metricDec = document.getElementById('metricDeclined');
+        const summaryBadge = document.getElementById('summaryActionBadge');
+
+        if (metricApp) metricApp.textContent = cntApproved;
+        if (metricRed) metricRed.textContent = cntReduced;
+        if (metricDec) metricDec.textContent = cntDeclined;
+
+        if (summaryBadge) {
+            if (cntDeclined === checkboxes.length) {
+                summaryBadge.style.background = 'rgba(239,68,68,0.1)';
+                summaryBadge.style.color = '#ef4444';
+                summaryBadge.textContent = '❌ Full Decline';
+            } else if (cntApproved === checkboxes.length) {
+                summaryBadge.style.background = 'rgba(16,185,129,0.1)';
+                summaryBadge.style.color = '#10b981';
+                summaryBadge.textContent = '✅ Full Approval';
+            } else {
+                summaryBadge.style.background = 'rgba(245,158,11,0.1)';
+                summaryBadge.style.color = '#f59e0b';
+                summaryBadge.textContent = '⚠️ Partial Approval';
             }
         }
-    });
 
-    // Update live metrics on summary board
-    const metricApp = document.getElementById('metricApproved');
-    const metricRed = document.getElementById('metricReduced');
-    const metricDec = document.getElementById('metricDeclined');
-    const summaryBadge = document.getElementById('summaryActionBadge');
+        const bar = document.getElementById('statusBar');
+        const icon = document.getElementById('statusBarIcon');
+        const text = document.getElementById('statusBarText');
+        if (!bar) return;
 
-    if (metricApp) metricApp.textContent = cntApproved;
-    if (metricRed) metricRed.textContent = cntReduced;
-    if (metricDec) metricDec.textContent = cntDeclined;
+        const allDeclined = !anyApproved;
 
-    if (summaryBadge) {
-        if (cntDeclined === checkboxes.length) {
-            summaryBadge.style.background = 'rgba(239,68,68,0.1)';
-            summaryBadge.style.color = '#ef4444';
-            summaryBadge.textContent = '❌ Full Decline';
-        } else if (cntApproved === checkboxes.length) {
-            summaryBadge.style.background = 'rgba(16,185,129,0.1)';
-            summaryBadge.style.color = '#10b981';
-            summaryBadge.textContent = '✅ Full Approval';
+        if (allDeclined) {
+            bar.className = 'all-declined';
+            bar.style.background = 'rgba(239,68,68,.1)';
+            bar.style.color = '#991b1b';
+            bar.style.border = '1px solid rgba(239,68,68,.2)';
+            icon.textContent = '❌';
+            text.innerHTML = 'All items will be <b>Declined</b>';
+        } else if (allApproved && !anyPartial) {
+            bar.className = 'all-approved';
+            bar.style.background = 'rgba(16,185,129,.12)';
+            bar.style.color = '#065f46';
+            bar.style.border = '1px solid rgba(16,185,129,.25)';
+            icon.textContent = '✅';
+            text.innerHTML = 'All items will be <b>Approved</b>';
         } else {
-            summaryBadge.style.background = 'rgba(245,158,11,0.1)';
-            summaryBadge.style.color = '#f59e0b';
-            summaryBadge.textContent = '⚠️ Partial Approval';
+            bar.className = 'partial';
+            bar.style.background = 'rgba(245,158,11,.12)';
+            bar.style.color = '#92400e';
+            bar.style.border = '1px solid rgba(245,158,11,.25)';
+            icon.textContent = '⚠️';
+            text.innerHTML = 'Some items differ — will be <b>Partially Approved</b>';
         }
     }
 
-    const bar = document.getElementById('statusBar');
-    const icon = document.getElementById('statusBarIcon');
-    const text = document.getElementById('statusBarText');
-    if (!bar) return;
-
-    const allDeclined = !anyApproved;
-
-    if (allDeclined) {
-        bar.className = 'all-declined';
-        bar.style.background='rgba(239,68,68,.1)'; bar.style.color='#991b1b'; bar.style.border='1px solid rgba(239,68,68,.2)';
-        icon.textContent = '❌';
-        text.innerHTML = 'All items will be <b>Declined</b>';
-    } else if (allApproved && !anyPartial) {
-        bar.className = 'all-approved';
-        bar.style.background='rgba(16,185,129,.12)'; bar.style.color='#065f46'; bar.style.border='1px solid rgba(16,185,129,.25)';
-        icon.textContent = '✅';
-        text.innerHTML = 'All items will be <b>Approved</b>';
-    } else {
-        bar.className = 'partial';
-        bar.style.background='rgba(245,158,11,.12)'; bar.style.color='#92400e'; bar.style.border='1px solid rgba(245,158,11,.25)';
-        icon.textContent = '⚠️';
-        text.innerHTML = 'Some items differ — will be <b>Partially Approved</b>';
-    }
-}
-
-// Compute auto status from item selections
-function computeStatus() {
-    const checkboxes = document.querySelectorAll('.approve-toggle');
-    let allDeclined = true;
-    let allFullApproval = true;
-    checkboxes.forEach((chk, i) => {
-        const qtyEl = document.getElementById(`qty-${i}`);
-        const requested = parseFloat(qtyEl?.dataset.requested || 0);
-        const approved = parseFloat(qtyEl?.value || 0);
-        if (chk.checked && approved > 0) allDeclined = false;
-        if (!chk.checked || approved < requested) allFullApproval = false;
-    });
-    if (allDeclined) return 'declined';
-    if (allFullApproval) return 'approved';
-    return 'partially_approved';
-}
-
-async function submitDecision() {
-    const status = computeStatus();
-    const items = [];
-
-    document.querySelectorAll('.approved-qty-input').forEach((inp, i) => {
-        const chk = document.getElementById(`chk-${i}`);
-        const reason = document.getElementById(`reason-${i}`)?.value || '';
-        items.push({
-            id: parseInt(inp.dataset.itemId),
-            quantity_approved: chk && !chk.checked ? 0 : (parseFloat(inp.value) || 0),
-            remarks: reason
+    // Compute auto status from item selections
+    function computeStatus() {
+        const checkboxes = document.querySelectorAll('.approve-toggle');
+        let allDeclined = true;
+        let allFullApproval = true;
+        checkboxes.forEach((chk, i) => {
+            const qtyEl = document.getElementById(`qty-${i}`);
+            const requested = parseFloat(qtyEl?.dataset.requested || 0);
+            const approved = parseFloat(qtyEl?.value || 0);
+            if (chk.checked && approved > 0) allDeclined = false;
+            if (!chk.checked || approved < requested) allFullApproval = false;
         });
-    });
-
-    const notes = document.getElementById('adminNotes')?.value || '';
-    const btn = document.getElementById('submitDecisionBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;"></div> Processing Decision...';
-
-    const res = await fetch(`{{ url('/admin/requisitions') }}/${currentReqId}/process`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
-        body: JSON.stringify({ status, admin_notes: notes, items })
-    });
-    const data = await res.json();
-    if (data.success) {
-        showToast('Success', data.message, 'success');
-        closeModal();
-        setTimeout(() => location.reload(), 1200);
-    } else {
-        showToast('Error', data.message || 'Failed to process decision.', 'error');
-        btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision';
-        lucide.createIcons();
+        if (allDeclined) return 'declined';
+        if (allFullApproval) return 'approved';
+        return 'partially_approved';
     }
-}
 
-function closeModal() { document.getElementById('reqModal').classList.remove('open'); }
+    async function submitDecision() {
+        const status = computeStatus();
+        const items = [];
+
+        document.querySelectorAll('.approved-qty-input').forEach((inp, i) => {
+            const chk = document.getElementById(`chk-${i}`);
+            const reason = document.getElementById(`reason-${i}`)?.value || '';
+            items.push({
+                id: parseInt(inp.dataset.itemId),
+                quantity_approved: chk && !chk.checked ? 0 : (parseFloat(inp.value) || 0),
+                remarks: reason
+            });
+        });
+
+        const notes = document.getElementById('adminNotes')?.value || '';
+        const btn = document.getElementById('submitDecisionBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;"></div> Processing Decision...';
+
+        const res = await fetch(`{{ url('/admin/requisitions') }}/${currentReqId}/process`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                status,
+                admin_notes: notes,
+                items
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('Success', data.message, 'success');
+            closeModal();
+            setTimeout(() => location.reload(), 1200);
+        } else {
+            showToast('Error', data.message || 'Failed to process decision.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision';
+            lucide.createIcons();
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('reqModal').classList.remove('open');
+    }
+
+    async function confirmCollection(id, btn) {
+        Swal.fire({
+            title: 'Confirm Physical Collection',
+            text: 'Are you sure you want to confirm the physical collection of items for store requisition #' + id + '?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Confirm Collection',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#94a3b8'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const originalHTML = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;"></div> Processing...';
+
+                try {
+                    const response = await fetch(`/requisitions/${id}/collect`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Collection Confirmed',
+                            text: data.message,
+                            confirmButtonColor: '#10b981'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Confirmation Failed',
+                            text: data.message,
+                            confirmButtonColor: 'var(--primary)'
+                        });
+                        btn.disabled = false;
+                        btn.innerHTML = originalHTML;
+                    }
+                } catch (error) {
+                    console.error('Error confirming collection:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Network Error',
+                        text: 'An error occurred while confirming physical collection.',
+                        confirmButtonColor: 'var(--primary)'
+                    });
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
+            }
+        });
+    }
 </script>
 @endsection

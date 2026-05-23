@@ -1399,6 +1399,10 @@
                     <i data-lucide="moon" style="width: 18px;"></i>
                 </button>
 
+                <a href="{{ route('requisitions.history') }}" class="action-btn" title="View Requisition History" style="text-decoration: none;">
+                    <i data-lucide="clock" style="width: 18px;"></i>
+                </a>
+
                 <button class="cart-toggle-btn" id="cart-nav-btn">
                     <i data-lucide="shopping-cart" style="width: 16px;"></i>
                     <span>My Request</span>
@@ -1432,9 +1436,9 @@
                     <button class="hero-btn" onclick="document.getElementById('shop-grid-start').scrollIntoView({behavior:'smooth'})">
                         <i data-lucide="shopping-bag" style="width: 16px;"></i> Start Requesting
                     </button>
-                    <button class="hero-btn hero-btn-secondary" onclick="viewMyHistory()">
+                    <a href="{{ route('requisitions.history') }}" class="hero-btn hero-btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
                         <i data-lucide="clock" style="width: 16px;"></i> View My History
-                    </button>
+                    </a>
                 </div>
             </div>
             <!-- Interactive Floating Art (fallback illustration via Lucide graphics) -->
@@ -1583,30 +1587,6 @@
         </section>
     </main>
 
-    <div id="history-title-anchor"></div>
-
-    <!-- --- HISTORY SECTION --- -->
-    <section class="history-container">
-        <div class="history-card">
-            <div class="history-header">
-                <h3 class="history-title">
-                    <i data-lucide="clock" style="width: 22px; color: var(--store-orange);"></i>
-                    My Requisition History
-                </h3>
-                <button class="refresh-btn" onclick="loadMyRequisitions()">
-                    <i data-lucide="refresh-cw" style="width: 14px;"></i> Refresh Log
-                </button>
-            </div>
-
-            <div id="history-items-list">
-                <div style="padding: 3rem 1.5rem; text-align: center; color: var(--text-muted);">
-                    <i data-lucide="loader" style="width: 32px; height: 32px; margin: 0 auto 0.75rem auto; animation: spin 1s linear infinite; opacity: 0.5;"></i>
-                    <p>Loading historical requisition logs...</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Autocomplete dropdown container (legacy support) -->
     <div id="itemAutocomplete" style="display:none;position:fixed;background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.12);z-index:9999;max-height:220px;overflow-y:auto;min-width:260px;"></div>
 
@@ -1614,20 +1594,6 @@
         // E-COMMERCE CORE STATE & LOGIC
         const availableItems = @json($availableItems);
 
-        // View My History Navigation & Highlight Animation
-        function viewMyHistory() {
-            const anchor = document.getElementById('history-title-anchor');
-            if (anchor) {
-                anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-            const historyCard = document.querySelector('.history-card');
-            if (historyCard) {
-                historyCard.classList.remove('highlight-pulse');
-                void historyCard.offsetWidth; // trigger reflow for animation restart
-                historyCard.classList.add('highlight-pulse');
-            }
-            loadMyRequisitions();
-        }
         const ledgeMap = @json($ledgeMap);
         let cart = [];
 
@@ -1715,363 +1681,10 @@
             cartCountBadge.textContent = cart.length;
         }
 
-        // Fetch user's submitted requisitions (Dynamically loads tracking timeline)
-        async function loadMyRequisitions() {
-            const container = document.getElementById('history-items-list');
-            try {
-                const response = await fetch('{{ route("requisitions.my") }}');
-                const requisitions = await response.json();
-
-                // --- STORE MOVEMENT DETECTION ENGINE ---
-                const snapshotKey = 'requisitions_status_snapshot';
-                const savedSnapshot = localStorage.getItem(snapshotKey);
-                let previousData = {};
-                if (savedSnapshot) {
-                    try {
-                        previousData = JSON.parse(savedSnapshot);
-                    } catch (e) {
-                        previousData = {};
-                    }
-                }
-
-                const movements = [];
-                const currentSnapshot = {};
-
-                requisitions.forEach(req => {
-                    // Populate current snapshot representing full state
-                    currentSnapshot[req.id] = {
-                        id: req.id,
-                        status: req.status,
-                        status_label: req.status_badge.label,
-                        status_badge_bg: req.status_badge.bg,
-                        status_badge_color: req.status_badge.color,
-                        admin_notes: req.admin_notes || '',
-                        items: req.items.map(item => ({
-                            description: item.description,
-                            quantity_requested: item.quantity_requested,
-                            quantity_approved: item.quantity_approved,
-                            remarks: item.remarks || ''
-                        }))
-                    };
-
-                    // Check for movement if a snapshot was already active and had this requisition
-                    if (savedSnapshot && previousData[req.id]) {
-                        const prev = previousData[req.id];
-                        let reqMoved = false;
-                        let details = [];
-
-                        // 1. Overall Requisition Status Change
-                        if (prev.status !== req.status) {
-                            reqMoved = true;
-                            details.push(`Status transitioned from <span style="background:${prev.status_badge_bg || '#f1f5f9'}; color:${prev.status_badge_color || '#475569'}; padding:2px 8px; border-radius:12px; font-size:0.75rem; font-weight:700;">● ${prev.status_label || prev.status}</span> to <span style="background:${req.status_badge.bg}; color:${req.status_badge.color}; padding:2px 8px; border-radius:12px; font-size:0.75rem; font-weight:700;">● ${req.status_badge.label}</span>`);
-                        }
-
-                        // 2. Stores Department Admin Remarks Change
-                        const prevNotes = prev.admin_notes || '';
-                        const currNotes = req.admin_notes || '';
-                        if (prevNotes !== currNotes) {
-                            reqMoved = true;
-                            if (currNotes) {
-                                details.push(`Remarks: <span style="color:var(--store-orange); font-style:italic;">"${currNotes}"</span>`);
-                            } else {
-                                details.push(`Remarks cleared by stores department.`);
-                            }
-                        }
-
-                        // 3. Approved Quantity Updates
-                        req.items.forEach(currItem => {
-                            const prevItem = prev.items.find(pi => pi.description === currItem.description);
-                            const prevApproved = prevItem ? prevItem.quantity_approved : null;
-                            const currApproved = currItem.quantity_approved;
-                            if (prevApproved !== currApproved) {
-                                reqMoved = true;
-                                if (currApproved !== null) {
-                                    details.push(`<b>${currItem.description}</b> approved quantity: <b>${parseFloat(currApproved).toLocaleString()}</b> (Requested: ${parseFloat(currItem.quantity_requested).toLocaleString()})`);
-                                }
-                            }
-                        });
-
-                        if (reqMoved) {
-                            movements.push({
-                                id: req.id,
-                                statusLabel: req.status_badge.label,
-                                statusBg: req.status_badge.bg,
-                                statusColor: req.status_badge.color,
-                                details: details
-                            });
-                        }
-                    }
-                });
-
-                // Update the localStorage snapshot
-                localStorage.setItem(snapshotKey, JSON.stringify(currentSnapshot));
-
-                // Prompt user of any movements using custom premium styled SweetAlert popup
-                if (movements.length > 0) {
-                    let htmlContent = `
-                        <div class="movement-alerts-list" style="text-align: left; max-height: 380px; overflow-y: auto; padding-right: 4px;">
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.4;">
-                                There has been activity on your submitted store requisitions since your last check:
-                            </p>
-                    `;
-
-                    movements.forEach(m => {
-                        htmlContent += `
-                            <div class="movement-card" style="border: 1px solid var(--border-color); border-left: 4px solid var(--store-orange); border-radius: 14px; padding: 1rem; margin-bottom: 0.75rem; background: var(--bg-main);">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                                    <span style="font-weight: 800; font-size: 0.9rem; color: var(--text-main);">Requisition #${m.id}</span>
-                                    <span style="background:${m.statusBg}; color:${m.statusColor}; padding:2px 8px; border-radius:12px; font-size:0.68rem; font-weight:800; text-transform:uppercase;">
-                                        ${m.statusLabel}
-                                    </span>
-                                </div>
-                                <ul style="margin: 0; padding-left: 1.1rem; font-size: 0.82rem; color: var(--text-main); line-height: 1.5;">
-                                    ${m.details.map(d => `<li style="margin-bottom: 4px;">${d}</li>`).join('')}
-                                </ul>
-                            </div>
-                        `;
-                    });
-
-                    htmlContent += `</div>`;
-
-                    Swal.fire({
-                        title: '🔔 Requisition Activity!',
-                        html: htmlContent,
-                        icon: 'info',
-                        confirmButtonText: 'Understood',
-                        confirmButtonColor: 'var(--store-orange)',
-                        width: '520px',
-                        customClass: {
-                            popup: 'premium-swal-popup',
-                            title: 'premium-swal-title',
-                            htmlContainer: 'premium-swal-html'
-                        }
-                    });
-                }
-                
-                if (requisitions.length === 0) {
-                    container.innerHTML = `
-                        <div style="padding: 4rem 1.5rem; text-align: center; color: var(--text-muted);">
-                            <i data-lucide="inbox" style="width: 42px; height: 42px; margin: 0 auto 1rem auto; opacity: 0.3; color: var(--store-orange);"></i>
-                            <h4 style="font-size: 1.05rem; color: var(--text-main); margin-bottom: 0.3rem;">No requisitions submitted yet</h4>
-                            <p style="font-size: 0.82rem; max-width: 350px; margin: 0 auto;">Your submitted central store requisition pipelines will show up here dynamically with live order trackers.</p>
-                        </div>
-                    `;
-                    lucide.createIcons();
-                    return;
-                }
-
-                container.innerHTML = requisitions.map(req => {
-                    // Status timeline logic
-                    let isCollected = req.collected_at !== null && req.collected_at !== undefined;
-                    let completedSteps = 1; // 1: Submitted (always green)
-                    let activeStep = 2;    // 2: Under Review
-                    let isDeclined = req.status === 'declined';
-                    let isPartially = req.status === 'partially_approved';
-                    let isApproved = req.status === 'approved';
-                    
-                    if (isCollected) {
-                        completedSteps = 4;
-                    } else if (isApproved || isPartially) {
-                        completedSteps = 3; // 1, 2 completed, 3 active
-                        activeStep = 4;
-                    } else if (isDeclined) {
-                        completedSteps = 1; 
-                        activeStep = 2; // review is declined
-                    }
-
-                    // Progress bar width representation
-                    let progressWidth = '0%';
-                    if (completedSteps === 1 && !isDeclined) progressWidth = '33%';
-                    if (completedSteps === 3) progressWidth = '66%';
-                    if (completedSteps === 4) progressWidth = '100%';
-
-                    return `
-                        <div class="history-item-box">
-                            <div class="history-item-top">
-                                <div>
-                                    <span class="history-ref">Requisition Ref: #${req.id}</span>
-                                    <div class="history-meta-info">
-                                        <span><i data-lucide="calendar" style="width:12px; vertical-align:middle;"></i> ${req.created_at}</span>
-                                        <span>·</span>
-                                        <span>Department: <b>${req.department}</b></span>
-                                        <span>·</span>
-                                        <span>Priority: <b style="color:${req.priority === 'urgent' ? 'var(--danger-color)' : 'var(--store-indigo)'}; text-transform:uppercase;">${req.priority}</b></span>
-                                    </div>
-                                </div>
-                                <div class="history-status-pills">
-                                    <span class="status-pill" style="background:${req.status_badge.bg}; color:${req.status_badge.color};">
-                                        ● ${req.status_badge.label}
-                                    </span>
-                                    <span class="status-pill" style="background:${req.priority_badge.bg}; color:${req.priority_badge.color};">
-                                        ${req.priority_badge.label}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <p style="font-size:0.85rem; color:var(--text-main); margin: 0.5rem 0 1rem 0; font-weight:600; line-height:1.4;">
-                                <i data-lucide="quote" style="width:12px; color:var(--store-orange); transform:scaleX(-1); vertical-align:top; margin-right:4px;"></i>
-                                ${req.purpose}
-                            </p>
-
-                            <!-- Live Tracking Timeline Pipeline -->
-                            <div class="order-tracker">
-                                <div class="tracker-progress-line" style="width: ${progressWidth};"></div>
-                                
-                                <div class="tracker-step completed">
-                                    <div class="tracker-dot"><i data-lucide="file-text" style="width: 14px;"></i></div>
-                                    <span class="tracker-label">Submitted</span>
-                                </div>
-
-                                <div class="tracker-step ${completedSteps >= 2 ? 'completed' : (isDeclined ? 'declined' : 'active')}">
-                                    <div class="tracker-dot">
-                                        <i data-lucide="${isDeclined ? 'x-circle' : 'activity'}" style="width: 14px;"></i>
-                                    </div>
-                                    <span class="tracker-label">${isDeclined ? 'Declined' : 'Under Review'}</span>
-                                </div>
-
-                                <div class="tracker-step ${completedSteps >= 3 ? 'completed' : (isDeclined ? '' : '')}">
-                                    <div class="tracker-dot">
-                                        <i data-lucide="${isPartially ? 'alert-triangle' : 'check-circle'}" style="width: 14px;"></i>
-                                    </div>
-                                    <span class="tracker-label">${isPartially ? 'Partially Approved' : 'Approved'}</span>
-                                </div>
-
-                                <div class="tracker-step ${completedSteps >= 4 ? 'completed' : ''}">
-                                    <div class="tracker-dot"><i data-lucide="package-open" style="width: 14px;"></i></div>
-                                    <span class="tracker-label">Collection</span>
-                                </div>
-                            </div>
-
-                            <!-- List of supplies -->
-                            <div class="history-items-grid">
-                                ${req.items.map(item => `
-                                    <div class="history-item-tag">
-                                        <b>${item.description}</b> 
-                                        <span style="color:var(--store-orange)">—</span> ${parseFloat(item.quantity_requested).toLocaleString()} ${item.unit}
-                                        ${item.quantity_approved !== null ? `
-                                            <span style="color:var(--success-color); font-weight:800; margin-left:4px;">
-                                                (Approved: ${parseFloat(item.quantity_approved).toLocaleString()})
-                                            </span>
-                                        ` : ''}
-                                        ${item.remarks ? `<br><small style="color:var(--text-muted); font-style:italic;">Note: ${item.remarks}</small>` : ''}
-                                    </div>
-                                `).join('')}
-                            </div>
-
-                            <!-- Store officer remarks -->
-                            ${req.admin_notes ? `
-                                <div class="history-notes-box" style="margin-bottom: 0.75rem;">
-                                    <i data-lucide="message-square" style="width: 15px; flex-shrink:0; margin-top:2px;"></i>
-                                    <div>
-                                        <b>Store Officer Remark:</b> ${req.admin_notes}
-                                    </div>
-                                </div>
-                            ` : ''}
-
-                            <!-- Action Buttons for Follow up and Collection Confirmation -->
-                            <div class="requisition-actions-row" style="margin-top: 1rem; display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
-                                ${req.status === 'pending' ? `
-                                    <button class="action-btn-followup" onclick="sendFollowUp(${req.id}, this)" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--warning-color); padding: 8px 16px; border-radius: 10px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;">
-                                        <i data-lucide="bell" style="width: 14px;"></i> Follow Up
-                                    </button>
-                                ` : ''}
-                                ${req.collected_at ? `
-                                    <div class="collection-status-indicator" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15); color: var(--success-color); padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 0.78rem;">
-                                        <i data-lucide="check-circle" style="width: 14px; color: var(--success-color);"></i> Collected on ${req.collected_at} ${req.collected_by_name ? `by ${req.collected_by_name}` : ''}
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-                
-                lucide.createIcons();
-            } catch(e) {
-                container.innerHTML = `
-                    <div style="padding: 3rem 1.5rem; text-align: center; color: var(--danger-color);">
-                        <i data-lucide="alert-triangle" style="width: 32px; height: 32px; margin: 0 auto 0.75rem auto;"></i>
-                        <p>Failed to retrieve central store requisition histories. Check connection.</p>
-                    </div>
-                `;
-                lucide.createIcons();
-            }
-        }
-
-        async function sendFollowUp(id, btn) {
-            const originalHTML = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader" style="width: 14px; animation: spin 1s linear infinite; vertical-align: middle;"></i> Sending...`;
-            lucide.createIcons();
-
-            try {
-                const response = await fetch(`/requisitions/${id}/followup`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Follow Up Sent!',
-                        text: data.message,
-                        confirmButtonColor: 'var(--store-orange)',
-                        customClass: {
-                            popup: 'premium-swal-popup',
-                            title: 'premium-swal-title',
-                            htmlContainer: 'premium-swal-html'
-                        }
-                    });
-                    btn.innerHTML = `<i data-lucide="check" style="width: 14px;"></i> Reminder Sent`;
-                    btn.style.background = 'rgba(100, 116, 139, 0.05)';
-                    btn.style.borderColor = 'rgba(100, 116, 139, 0.1)';
-                    btn.style.color = 'var(--text-muted)';
-                    btn.style.cursor = 'not-allowed';
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Unable to Follow Up',
-                        text: data.message,
-                        confirmButtonColor: 'var(--store-orange)',
-                        customClass: {
-                            popup: 'premium-swal-popup',
-                            title: 'premium-swal-title',
-                            htmlContainer: 'premium-swal-html'
-                        }
-                    });
-                    btn.disabled = false;
-                    btn.innerHTML = originalHTML;
-                }
-                lucide.createIcons();
-            } catch (error) {
-                console.error('Error sending follow-up:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Network Error',
-                    text: 'An error occurred while sending the follow-up reminder.',
-                    confirmButtonColor: 'var(--store-orange)',
-                    customClass: {
-                        popup: 'premium-swal-popup',
-                        title: 'premium-swal-title',
-                        htmlContainer: 'premium-swal-html'
-                    }
-                });
-                btn.disabled = false;
-                btn.innerHTML = originalHTML;
-                lucide.createIcons();
-            }
-        }
-
-
         // Event Listeners on Mount
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             loadCartFromStorage();
-            loadMyRequisitions();
 
             // Storefront Search filter binding
             const searchInput = document.getElementById('storefront-search');

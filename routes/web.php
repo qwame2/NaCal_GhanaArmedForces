@@ -407,6 +407,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
 
     // Personnel Requisition Routes
     Route::get('/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'index'])->name('requisitions.index');
+    Route::get('/requisitions/history', [\App\Http\Controllers\StoreRequisitionController::class, 'history'])->name('requisitions.history');
     Route::get('/personnel/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'personnelIndex'])->name('personnel.requisitions');
     Route::get('/requisitions/checkout', [\App\Http\Controllers\StoreRequisitionController::class, 'checkout'])->name('requisitions.checkout');
     Route::post('/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'store'])->name('requisitions.store');
