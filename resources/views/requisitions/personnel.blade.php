@@ -571,7 +571,49 @@
             </tbody>
         </table>
         @if($requisitions->hasPages())
-        <div style="padding:1rem 1.5rem;border-top:1px solid var(--border-color);">{{ $requisitions->links() }}</div>
+        <div style="padding:1rem 1.5rem; border-top:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem;">
+            <div style="font-size:.75rem; font-weight:700; color:var(--text-muted);">
+                Showing
+                <span style="font-weight:900; color:var(--text-main);">{{ $requisitions->firstItem() }}</span>
+                –
+                <span style="font-weight:900; color:var(--text-main);">{{ $requisitions->lastItem() }}</span>
+                of
+                <span style="font-weight:900; color:var(--text-main);">{{ $requisitions->total() }}</span>
+                requisitions
+            </div>
+            <div style="display:flex; align-items:center; gap:.35rem;">
+                {{-- Previous --}}
+                @if($requisitions->onFirstPage())
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:var(--bg-main);border:1.5px solid var(--border-color);color:var(--text-muted);opacity:.45;cursor:not-allowed;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </span>
+                @else
+                <a href="{{ $requisitions->previousPageUrl() }}" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:var(--bg-card);border:1.5px solid var(--border-color);color:var(--text-main);text-decoration:none;transition:.15s;" onmouseover="this.style.background='var(--primary)';this.style.color='white';this.style.borderColor='var(--primary)';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </a>
+                @endif
+
+                {{-- Page Numbers --}}
+                @foreach($requisitions->getUrlRange(max(1, $requisitions->currentPage()-2), min($requisitions->lastPage(), $requisitions->currentPage()+2)) as $page => $url)
+                    @if($page == $requisitions->currentPage())
+                    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 10px;border-radius:10px;background:var(--primary);color:white;font-weight:900;font-size:.82rem;border:1.5px solid var(--primary);box-shadow:0 4px 12px rgba(99,102,241,.3);">{{ $page }}</span>
+                    @else
+                    <a href="{{ $url }}" style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 10px;border-radius:10px;background:var(--bg-card);color:var(--text-main);font-weight:700;font-size:.82rem;border:1.5px solid var(--border-color);text-decoration:none;transition:.15s;" onmouseover="this.style.background='rgba(99,102,241,.08)';this.style.borderColor='rgba(99,102,241,.3)';this.style.color='var(--primary)';" onmouseout="this.style.background='var(--bg-card)';this.style.borderColor='var(--border-color)';this.style.color='var(--text-main)';">{{ $page }}</a>
+                    @endif
+                @endforeach
+
+                {{-- Next --}}
+                @if($requisitions->hasMorePages())
+                <a href="{{ $requisitions->nextPageUrl() }}" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:var(--bg-card);border:1.5px solid var(--border-color);color:var(--text-main);text-decoration:none;transition:.15s;" onmouseover="this.style.background='var(--primary)';this.style.color='white';this.style.borderColor='var(--primary)';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </a>
+                @else
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:var(--bg-main);border:1.5px solid var(--border-color);color:var(--text-muted);opacity:.45;cursor:not-allowed;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </span>
+                @endif
+            </div>
+        </div>
         @endif
     </div>
 </div>

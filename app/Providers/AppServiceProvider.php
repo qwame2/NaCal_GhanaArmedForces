@@ -111,6 +111,20 @@ class AppServiceProvider extends ServiceProvider
                 } else {
                     $view->with('pendingPasswordRequests', 0);
                     $view->with('pendingRequisitionsCount', 0);
+
+                    if (auth()->user()->role === 'Requisitioner') {
+                        // Requisitioners: count their own approved reqs awaiting collection
+                        $approvedRequisitionsCount = \App\Models\StoreRequisition::where('requested_by', auth()->id())
+                            ->whereIn('status', ['approved', 'partially_approved'])
+                            ->whereNull('collected_at')
+                            ->count();
+                    } else {
+                        // Personnel staff: count all approved reqs awaiting collection confirmation
+                        $approvedRequisitionsCount = \App\Models\StoreRequisition::whereIn('status', ['approved', 'partially_approved'])
+                            ->whereNull('collected_at')
+                            ->count();
+                    }
+                    $view->with('approvedRequisitionsCount', $approvedRequisitionsCount);
                 }
             }
         });

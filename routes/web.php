@@ -651,6 +651,30 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         ]);
     })->name('api.admin.sidebar-counts');
 
+    // Personnel API: Sidebar Counts (approved requisitions awaiting collection)
+    Route::get('/api/personnel/sidebar-counts', function() {
+        if (!auth()->check() || auth()->user()->is_admin) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        if (auth()->user()->role === 'Requisitioner') {
+            // Requisitioners: only their own approved reqs awaiting collection
+            $approvedRequisitions = \App\Models\StoreRequisition::where('requested_by', auth()->id())
+                ->whereIn('status', ['approved', 'partially_approved'])
+                ->whereNull('collected_at')
+                ->count();
+        } else {
+            // Personnel staff: all approved reqs awaiting collection confirmation
+            $approvedRequisitions = \App\Models\StoreRequisition::whereIn('status', ['approved', 'partially_approved'])
+                ->whereNull('collected_at')
+                ->count();
+        }
+
+        return response()->json([
+            'approved_requisitions' => $approvedRequisitions,
+        ]);
+    })->name('api.personnel.sidebar-counts');
+
     // Admin Routes
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
     Route::post('/admin/users', [AdminController::class, 'storeUser'])->name('admin.users.store');

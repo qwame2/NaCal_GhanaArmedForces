@@ -119,6 +119,12 @@
                 <a href="{{ route('personnel.requisitions') }}" class="nav-link {{ request()->routeIs('personnel.requisitions') ? 'active' : '' }}" data-tooltip="Store Requisitions">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                     <span>Requisitions</span>
+                    @php $approvedReqCount = $approvedRequisitionsCount ?? 0; @endphp
+                    <span id="sidebar-badge-approved-reqs"
+                          style="background: #ef4444; color: white; padding: 2px 7px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite; {{ $approvedReqCount <= 0 ? 'display: none;' : '' }}"
+                          title="{{ $approvedReqCount }} requisition(s) approved — tap to confirm collection">
+                        {{ $approvedReqCount }}
+                    </span>
                 </a>
             </li>
         </ul>
@@ -824,6 +830,12 @@
             /* Removed help cursor as requested */
         }
     </style>
+    <style>
+        @keyframes reqs-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.15); opacity: 0.85; }
+        }
+    </style>
     <script>
         // CIA SECURITY ENFORCEMENT: Tab-Scoped Authentication Lock
         // This ensures that closing a tab effectively logs the user out for that tab.
@@ -865,6 +877,35 @@
 
             window.addEventListener('pagehide', handleExit);
             window.addEventListener('beforeunload', handleExit);
+
+            // ── Personnel Sidebar Badge: Approved Requisitions Awaiting Collection ──
+            function pollApprovedRequisitions() {
+                fetch("{{ route('api.personnel.sidebar-counts') }}", {
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(res => {
+                    const ct = res.headers.get('content-type');
+                    if (res.status === 200 && ct && ct.includes('application/json')) return res.json();
+                    return null;
+                })
+                .then(data => {
+                    if (!data) return;
+                    const badge = document.getElementById('sidebar-badge-approved-reqs');
+                    if (!badge) return;
+                    const count = data.approved_requisitions || 0;
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                })
+                .catch(() => {});
+            }
+
+            // Poll every 15 seconds; first check after 4 seconds
+            setTimeout(pollApprovedRequisitions, 4000);
+            setInterval(pollApprovedRequisitions, 15000);
         })();
     </script>
     @stack('scripts')
