@@ -866,7 +866,7 @@
                         btn.innerHTML = originalHTML;
                     }
                 } catch (error) {
-                    console.error('Error confirming collection:', error);
+                    /* console print removed */
                     Swal.fire({
                         icon: 'error',
                         title: 'Network Error',

@@ -1993,7 +1993,7 @@
                     body.innerHTML = html;
                     if (typeof lucide !== 'undefined') lucide.createIcons();
                 } catch(parseErr) {
-                    console.error('Modal parse error:', parseErr);
+                    /* console print removed */
                     body.innerHTML = `<div style="padding: 2rem; text-align: center; color: #ef4444;">
                         <strong>Error loading batch data.</strong><br>
                         <small style="color: #94a3b8;">${parseErr.message}</small>
@@ -2001,7 +2001,7 @@
                 }
             })
             .catch(err => {
-                console.error('Fetch error:', err);
+                /* console print removed */
                 subtitle.innerText = `Error loading Batch #${batchId}`;
                 body.innerHTML = `<div style="padding: 2rem; text-align: center; color: #ef4444;">
                     <strong>Failed to retrieve batch data.</strong><br>
@@ -2123,7 +2123,7 @@
                 alert('Execution Error: ' + (result.message || 'Unknown error occurred.'));
             }
         } catch (error) {
-            console.error('Submission Failed:', error);
+            /* console print removed */
             alert('A critical system error occurred during submission.');
         } finally {
             btn.innerHTML = originalHtml;
@@ -2176,7 +2176,7 @@
                 if (!isSilent) resultsContainer.style.opacity = '1';
             })
             .catch(error => {
-                console.error('Background Sync Error:', error);
+                /* console print removed */
                 if (!isSilent) resultsContainer.style.opacity = '1';
             });
     }
@@ -2380,7 +2380,7 @@
                 }
             }
         } catch (err) {
-            console.error('Auth Check Error:', err);
+            /* console print removed */
         }
 
         // Proceed if authorized
@@ -2409,7 +2409,7 @@
                 alert('Purge Error: ' + (result.message || 'Unknown error'));
             }
         } catch (error) {
-            console.error('Purge Transaction Error:', error);
+            /* console print removed */
             alert('A critical system error occurred during the transaction purge.');
         }
     }
@@ -2700,7 +2700,7 @@
             }
         })
         .catch(err => {
-            console.error(err);
+            /* console print removed */
             showToast('Network Error', 'Could not establish connection to logistics servers.', 'error');
         })
         .finally(() => {
@@ -3119,7 +3119,7 @@ function promptActionReason(batchId, type = 'edit') {
                 }
             })
             .catch(err => {
-                console.error('Request Error:', err);
+                /* console print removed */
                 Swal.fire('Protocol Error', 'Failed to establish connection with the approval server.', 'error');
             });
         }
@@ -3566,7 +3566,7 @@ async function submitEditBatch() {
         lucide.createIcons();
     })
     .catch(error => {
-        console.error('Error:', error);
+        /* console print removed */
         Swal.fire({
             title: 'Critical Error',
             text: 'System communication failed.',
@@ -3590,7 +3590,7 @@ async function submitEditBatch() {
             window.history.replaceState({path:cleanUrl}, '', cleanUrl);
 
             if (editId) {
-                console.log("Auto-opening edit modal for batch:", editId);
+                /* console print removed */
                 let attempts = 0;
                 const loader = setInterval(() => {
                     if (typeof window.openEditBatchModal === 'function') {
@@ -3604,7 +3604,7 @@ async function submitEditBatch() {
             }
 
             if (deleteId) {
-                console.log("Auto-triggering delete for batch:", deleteId);
+                /* console print removed */
                 let attempts = 0;
                 const loader = setInterval(() => {
                     if (typeof window.deleteBatch === 'function') {

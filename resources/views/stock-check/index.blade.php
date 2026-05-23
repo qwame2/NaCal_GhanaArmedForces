@@ -460,7 +460,7 @@ function submitStockCheck() {
         }
     })
     .catch(err => {
-        console.error(err);
+        /* console print removed */
         showToast('Network Error', 'Could not establish connection to logistics servers.', 'error');
     })
     .finally(() => {
@@ -653,7 +653,7 @@ function submitBatchStockCheck() {
         }
     })
     .catch(err => {
-        console.error(err);
+        /* console print removed */
         showToast('Network Error', 'Could not establish connection to logistics servers.', 'error');
     })
     .finally(() => {

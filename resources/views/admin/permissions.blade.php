@@ -449,7 +449,7 @@
         .catch(error => {
             row.classList.remove('syncing-row');
             checkbox.checked = !checkbox.checked; // Revert
-            console.error('Error:', error);
+            /* console print removed */
             alert('A system error occurred.');
         });
     }

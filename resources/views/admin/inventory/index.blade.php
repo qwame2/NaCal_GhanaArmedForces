@@ -114,7 +114,7 @@
                         switchTab(currentTab);
                     })
                     .catch(error => {
-                        console.error('Live Update Error:', error);
+                        /* console print removed */
                         container.style.opacity = '1';
                         container.style.pointerEvents = 'auto';
                     });

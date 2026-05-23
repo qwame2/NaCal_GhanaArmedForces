@@ -791,8 +791,15 @@
         // Real-time Admin Notification Refresh Logic
         window.refreshNotifications = function() {
             fetch("{{ route('api.notifications', [], false) }}")
-                .then(res => res.json())
+                .then(res => {
+                    const contentType = res.headers.get("content-type");
+                    if (res.status === 200 && contentType && contentType.indexOf("application/json") !== -1) {
+                        return res.json();
+                    }
+                    return null;
+                })
                 .then(data => {
+                    if (!data) return;
                     // Update Navbar Bell Dot
                     const btn = document.getElementById('admin-notification-btn');
                     if (btn) {
@@ -859,7 +866,7 @@
                     // Sync to notifications page if active
                     window.dispatchEvent(new CustomEvent('notificationsSynced', { detail: data }));
                 })
-                .catch(err => console.error('Admin Notification Sync Error:', err));
+                .catch(err => {});
         };
 
         // Start polling (every 30 seconds)
@@ -903,8 +910,15 @@
             }
 
             fetch("{{ route('api.total-unread') }}")
-                .then(res => res.json())
+                .then(res => {
+                    const contentType = res.headers.get("content-type");
+                    if (res.status === 200 && contentType && contentType.indexOf("application/json") !== -1) {
+                        return res.json();
+                    }
+                    return null;
+                })
                 .then(data => {
+                    if (!data) return;
                     const badge = document.getElementById('global-unread-badge');
                     if (badge) {
                         if (data.count > 0) {
@@ -914,7 +928,8 @@
                             badge.style.display = 'none';
                         }
                     }
-                });
+                })
+                .catch(err => {});
         };
 
         setInterval(window.refreshUnreadMessages, 10000);
@@ -1206,12 +1221,18 @@
             }
 
             function pollSidebarCounts() {
-                fetch("{{ route('api.admin.sidebar-counts', [], false) }}", {
+                fetch("{{ route('api.admin.sidebar-counts') }}", {
                     headers: { 'Accept': 'application/json' }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    const contentType = response.headers.get("content-type");
+                    if (response.status === 200 && contentType && contentType.indexOf("application/json") !== -1) {
+                        return response.json();
+                    }
+                    return null;
+                })
                 .then(data => {
-                    if (data.error) return; // Unauthorized or something else
+                    if (!data || data.error) return; // Unauthorized or something else
                     updateBadge('sidebar-badge-messages', data.messages);
                     updateBadge('sidebar-badge-password', data.password_requests);
                     updateBadge('sidebar-badge-alerts', data.alerts);
@@ -1228,7 +1249,7 @@
                         }
                     }
                 })
-                .catch(err => console.error("Error polling sidebar counts:", err));
+                .catch(err => {});
             }
 
             // Start polling every 15 seconds

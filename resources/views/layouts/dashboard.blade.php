@@ -439,7 +439,7 @@
                                 searchResults.style.display = 'block';
                             })
                             .catch(error => {
-                                console.error('Global search error:', error);
+                                /* console print removed */
                                 searchResults.innerHTML = '<div style="padding: 1.5rem; text-align: center; color: #ef4444; font-size: 0.85rem;">Failed to fetch results. Check connection.</div>';
                             });
 
@@ -499,11 +499,17 @@
                 });
             }
 
-            // Real-time Notification Refresh Logic
             window.refreshNotifications = function() {
                 fetch("{{ route('api.notifications', [], false) }}")
-                    .then(res => res.json())
+                    .then(res => {
+                        const contentType = res.headers.get("content-type");
+                        if (res.status === 200 && contentType && contentType.indexOf("application/json") !== -1) {
+                            return res.json();
+                        }
+                        return null;
+                    })
                     .then(data => {
+                        if (!data) return;
                         // Update Navbar Bell Badge
                         const btn = document.getElementById('notification-btn');
                         if (btn) {
@@ -572,7 +578,7 @@
                         // Sync to notifications page if active
                         window.dispatchEvent(new CustomEvent('notificationsSynced', { detail: data }));
                     })
-                    .catch(err => console.error('Notification Sync Error:', err));
+                    .catch(err => {});
             };
 
             // Start polling (every 30 seconds)
@@ -616,8 +622,15 @@
                 }
 
                 fetch("{{ route('api.total-unread', [], false) }}")
-                    .then(res => res.json())
+                    .then(res => {
+                        const contentType = res.headers.get("content-type");
+                        if (res.status === 200 && contentType && contentType.indexOf("application/json") !== -1) {
+                            return res.json();
+                        }
+                        return null;
+                    })
                     .then(data => {
+                        if (!data) return;
                         const badge = document.getElementById('global-unread-badge');
                         if (badge) {
                             if (data.count > 0) {
@@ -627,7 +640,8 @@
                                 badge.style.display = 'none';
                             }
                         }
-                    });
+                    })
+                    .catch(err => {});
             };
 
             setInterval(window.refreshUnreadMessages, 10000);

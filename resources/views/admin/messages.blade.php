@@ -581,7 +581,7 @@
                             }
                             msg.message = tempDiv.innerHTML;
                         } catch (e) {
-                            console.error('Failed to simplify SRA message html dynamically', e);
+                            /* console print removed */
                         }
                     }
 
@@ -637,7 +637,7 @@
                     container.scrollTop = container.scrollHeight;
                 }
             })
-            .catch(err => console.error('Comms Error:', err));
+            .catch(err => /* console print removed */);
 
         // Mark as read
         const readUrl = `{{ route('api.messages.read', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId);
@@ -747,7 +747,7 @@
                 }
             })
             .catch(err => {
-                console.error('Transmission Error:', err);
+                /* console print removed */
                 alert('Security Alert: ' + err.message);
             })
             .finally(() => {
@@ -930,7 +930,7 @@
                 }
             })
             .catch(err => {
-                console.error('SRA Auth Error:', err);
+                /* console print removed */
                 const errMsg = err.message || 'An unexpected error occurred during SRA authorization.';
                 showToast('System Error', errMsg, 'error');
                 btnElement.innerText = status === 'approved' ? 'Approve & Save' : 'Reject';
@@ -1067,7 +1067,7 @@
                 }
             })
             .catch(err => {
-                console.error(err);
+                /* console print removed */
                 showToast('System Error', 'Could not complete the re-integration process.', 'error');
                 btnElement.innerText = status === 'approved' ? 'Approve Re-integration' : 'Reject Recovery';
                 btnElement.disabled = false;
@@ -1168,7 +1168,7 @@
                 }
             })
             .catch(err => {
-                console.error(err);
+                /* console print removed */
                 showToast('System Error', 'Could not complete the verification process.', 'error');
                 btnElement.innerText = status === 'approved' ? 'Approve' : 'Reject';
                 btnElement.disabled = false;
@@ -1263,7 +1263,7 @@
                 _renderRecoverySheet(data);
             })
             .catch(err => {
-                console.error(err);
+                /* console print removed */
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> Preview Recovery Details`;
@@ -1386,7 +1386,7 @@
                 }
             })
             .catch(err => {
-                console.error(err);
+                /* console print removed */
                 showToast('Connection Error', 'An unexpected error occurred. Please check system logs.', 'error');
                 btnElement.innerText = status === 'approved' ? 'Approve' : 'Cancel';
                 btnElement.disabled = false;
@@ -1671,7 +1671,7 @@
                 _renderRemainderSheet(data);
             })
             .catch(err => {
-                console.error('Preview fetch error:', err);
+                /* console print removed */
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> Preview Changes`;
@@ -2114,12 +2114,12 @@
                                 if (typeof lucide !== 'undefined') lucide.createIcons();
                             }
                         })
-                        .catch(e => console.error('Failed to load supplier stats inline:', e));
+                        .catch(e => /* console print removed */);
                 }
             })
             .catch(err => {
                 window._entryPreviewLoading = false;
-                console.error('Entry preview error:', err);
+                /* console print removed */
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = `<i data-lucide="eye" style="width:16px;"></i> Preview Entry Details`;
@@ -2237,7 +2237,7 @@
                 });
             })
             .catch(err => {
-                console.error(err);
+                /* console print removed */
                 Swal.fire('Error', 'Could not load supplier details.', 'error');
             });
     };
@@ -2463,7 +2463,7 @@
                 }
             })
             .catch(err => {
-                console.error('Rollback error:', err);
+                /* console print removed */
                 showToast('System Error', 'Could not complete rollback.', 'error');
                 rollbackBtns.forEach(b => { b.disabled = false; b.innerHTML = '<i data-lucide="rotate-ccw" style="width:18px;"></i> Rollback'; });
                 if (typeof lucide !== 'undefined') lucide.createIcons();

@@ -914,39 +914,39 @@
             }
 
             if (newPayload.ledge_category !== origPayload.ledge_category) {
-                console.log('Rollback change: ledge_category', newPayload.ledge_category, origPayload.ledge_category);
+                /* console print removed */
                 return true;
             }
 
             if (normalizeName(newPayload.supplier_name) !== normalizeName(origPayload.supplier_name)) {
-                console.log('Rollback change: supplier_name', newPayload.supplier_name, origPayload.supplier_name);
+                /* console print removed */
                 return true;
             }
 
             if (normalizeName(newPayload.donor_name) !== normalizeName(origPayload.donor_name)) {
-                console.log('Rollback change: donor_name', newPayload.donor_name, origPayload.donor_name);
+                /* console print removed */
                 return true;
             }
 
             if (newPayload.supplier_status !== origPayload.supplier_status) {
-                console.log('Rollback change: supplier_status', newPayload.supplier_status, origPayload.supplier_status);
+                /* console print removed */
                 return true;
             }
 
             if (newPayload.acquisition_type !== origPayload.acquisition_type) {
-                console.log('Rollback change: acquisition_type', newPayload.acquisition_type, origPayload.acquisition_type);
+                /* console print removed */
                 return true;
             }
 
             if (newPayload.arrival_date !== origPayload.arrival_date) {
-                console.log('Rollback change: arrival_date', newPayload.arrival_date, origPayload.arrival_date);
+                /* console print removed */
                 return true;
             }
 
             const newItems = newPayload.items || [];
             const origItems = origPayload.items || [];
             if (newItems.length !== origItems.length) {
-                console.log('Rollback change: items count', newItems.length, origItems.length);
+                /* console print removed */
                 return true;
             }
 
@@ -955,27 +955,27 @@
                 const oi = origItems[i] || {};
                 
                 if ((ni.description || '').trim().toUpperCase() !== (oi.description || '').trim().toUpperCase()) {
-                    console.log(`Rollback change: item[${i}].description`, ni.description, oi.description);
+                    /* console print removed */
                     return true;
                 }
                 if ((ni.unit || '').trim().toUpperCase() !== (oi.unit || '').trim().toUpperCase()) {
-                    console.log(`Rollback change: item[${i}].unit`, ni.unit, oi.unit);
+                    /* console print removed */
                     return true;
                 }
                 if ((ni.location || '').trim().toUpperCase() !== (oi.location || '').trim().toUpperCase()) {
-                    console.log(`Rollback change: item[${i}].location`, ni.location, oi.location);
+                    /* console print removed */
                     return true;
                 }
                 if (parseFloat(ni.qty || 0) !== parseFloat(oi.qty || 0)) {
-                    console.log(`Rollback change: item[${i}].qty`, ni.qty, oi.qty);
+                    /* console print removed */
                     return true;
                 }
                 if (parseFloat(ni.stock_balance || 0) !== parseFloat(oi.stock_balance || 0)) {
-                    console.log(`Rollback change: item[${i}].stock_balance`, ni.stock_balance, oi.stock_balance);
+                    /* console print removed */
                     return true;
                 }
                 if ((ni.remarks || '').trim().toUpperCase() !== (oi.remarks || '').trim().toUpperCase()) {
-                    console.log(`Rollback change: item[${i}].remarks`, ni.remarks, oi.remarks);
+                    /* console print removed */
                     return true;
                 }
             }
@@ -1880,7 +1880,7 @@
                     window.history.replaceState({}, '', window.location.protocol + '//' + window.location.host + window.location.pathname);
                 })
                 .catch(err => {
-                    console.error('Rollback load error:', err);
+                    /* console print removed */
                     if (typeof showToast === 'function') {
                         showToast('Error', 'Could not load your previous submission data.', 'error');
                     }

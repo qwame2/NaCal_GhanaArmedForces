@@ -650,7 +650,7 @@ No gross anomalies or unaccounted systemic variances were detected during this r
                 const canReport = data.can_generate_reports;
                 
                 if (!canReport) {
-                    console.warn("ADMIN OVERSIGHT: Analytics permission revoked. Disabling buttons.");
+                    /* console print removed */
                     // Disable all interaction points and add tooltip
                     document.querySelectorAll('.period-btn, .btn-primary, .btn-secondary').forEach(btn => {
                         btn.classList.add('restricted-btn');
@@ -667,7 +667,7 @@ No gross anomalies or unaccounted systemic variances were detected during this r
                     });
                 }
             })
-            .catch(err => console.error('Pulse Sync Error:', err));
+            .catch(err => /* console print removed */);
     }
 
     // Run sync pulse every 5 seconds for real-time reactivity

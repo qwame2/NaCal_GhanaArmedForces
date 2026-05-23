@@ -385,7 +385,7 @@
                     container.scrollTop = container.scrollHeight;
                 }
             })
-            .catch(err => console.error('Comms Error:', err));
+            .catch(err => /* console print removed */);
             
         // Mark as read
         const readUrl = `{{ route('api.messages.read', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId);
@@ -431,12 +431,12 @@
                 clearFile();
                 fetchMessages();
             } else {
-                console.error('Transmission failed:', data.message);
+                /* console print removed */
                 alert('Transmission failed. Check network integrity.');
             }
         })
         .catch(err => {
-            console.error('Network Error:', err);
+            /* console print removed */
             alert('Security Alert: ' + err.message);
         })
         .finally(() => {

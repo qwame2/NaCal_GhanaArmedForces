@@ -837,7 +837,7 @@
 
                 renderHistoryList();
             } catch(e) {
-                console.error(e);
+                /* console print removed */
                 container.innerHTML = `
                     <div style="padding: 3rem 1.5rem; text-align: center; color: var(--danger-color);">
                         <i data-lucide="alert-triangle" style="width: 32px; height: 32px; margin: 0 auto 0.75rem auto;"></i>
@@ -1109,7 +1109,7 @@
                 }
                 lucide.createIcons();
             } catch (error) {
-                console.error(error);
+                /* console print removed */
                 Swal.fire({
                     icon: 'error',
                     title: 'Network Error',
