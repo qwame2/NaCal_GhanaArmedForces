@@ -1341,6 +1341,23 @@
                 text-align: left;
             }
         }
+
+        /* Action Buttons Hover & Interactions */
+        .action-btn-followup:hover {
+            background: var(--warning-color) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+            transform: translateY(-1px);
+        }
+        .action-btn-collect:hover {
+            background: var(--success-color) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            transform: translateY(-1px);
+        }
+        .action-btn-followup:active, .action-btn-collect:active {
+            transform: translateY(1px);
+        }
     </style>
 </head>
 <body>
@@ -1845,13 +1862,16 @@
 
                 container.innerHTML = requisitions.map(req => {
                     // Status timeline logic
+                    let isCollected = req.collected_at !== null && req.collected_at !== undefined;
                     let completedSteps = 1; // 1: Submitted (always green)
                     let activeStep = 2;    // 2: Under Review
                     let isDeclined = req.status === 'declined';
                     let isPartially = req.status === 'partially_approved';
                     let isApproved = req.status === 'approved';
                     
-                    if (isApproved || isPartially) {
+                    if (isCollected) {
+                        completedSteps = 4;
+                    } else if (isApproved || isPartially) {
                         completedSteps = 3; // 1, 2 completed, 3 active
                         activeStep = 4;
                     } else if (isDeclined) {
@@ -1863,10 +1883,7 @@
                     let progressWidth = '0%';
                     if (completedSteps === 1 && !isDeclined) progressWidth = '33%';
                     if (completedSteps === 3) progressWidth = '66%';
-                    if (isApproved && req.admin_notes && req.admin_notes.toLowerCase().includes('picked up')) {
-                        completedSteps = 4;
-                        progressWidth = '100%';
-                    }
+                    if (completedSteps === 4) progressWidth = '100%';
 
                     return `
                         <div class="history-item-box">
@@ -1943,13 +1960,27 @@
 
                             <!-- Store officer remarks -->
                             ${req.admin_notes ? `
-                                <div class="history-notes-box">
+                                <div class="history-notes-box" style="margin-bottom: 0.75rem;">
                                     <i data-lucide="message-square" style="width: 15px; flex-shrink:0; margin-top:2px;"></i>
                                     <div>
                                         <b>Store Officer Remark:</b> ${req.admin_notes}
                                     </div>
                                 </div>
                             ` : ''}
+
+                            <!-- Action Buttons for Follow up and Collection Confirmation -->
+                            <div class="requisition-actions-row" style="margin-top: 1rem; display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
+                                ${req.status === 'pending' ? `
+                                    <button class="action-btn-followup" onclick="sendFollowUp(${req.id}, this)" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--warning-color); padding: 8px 16px; border-radius: 10px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;">
+                                        <i data-lucide="bell" style="width: 14px;"></i> Follow Up
+                                    </button>
+                                ` : ''}
+                                ${req.collected_at ? `
+                                    <div class="collection-status-indicator" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15); color: var(--success-color); padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 0.78rem;">
+                                        <i data-lucide="check-circle" style="width: 14px; color: var(--success-color);"></i> Collected on ${req.collected_at} ${req.collected_by_name ? `by ${req.collected_by_name}` : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -1965,6 +1996,76 @@
                 lucide.createIcons();
             }
         }
+
+        async function sendFollowUp(id, btn) {
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader" style="width: 14px; animation: spin 1s linear infinite; vertical-align: middle;"></i> Sending...`;
+            lucide.createIcons();
+
+            try {
+                const response = await fetch(`/requisitions/${id}/followup`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Follow Up Sent!',
+                        text: data.message,
+                        confirmButtonColor: 'var(--store-orange)',
+                        customClass: {
+                            popup: 'premium-swal-popup',
+                            title: 'premium-swal-title',
+                            htmlContainer: 'premium-swal-html'
+                        }
+                    });
+                    btn.innerHTML = `<i data-lucide="check" style="width: 14px;"></i> Reminder Sent`;
+                    btn.style.background = 'rgba(100, 116, 139, 0.05)';
+                    btn.style.borderColor = 'rgba(100, 116, 139, 0.1)';
+                    btn.style.color = 'var(--text-muted)';
+                    btn.style.cursor = 'not-allowed';
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Unable to Follow Up',
+                        text: data.message,
+                        confirmButtonColor: 'var(--store-orange)',
+                        customClass: {
+                            popup: 'premium-swal-popup',
+                            title: 'premium-swal-title',
+                            htmlContainer: 'premium-swal-html'
+                        }
+                    });
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }
+                lucide.createIcons();
+            } catch (error) {
+                console.error('Error sending follow-up:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'An error occurred while sending the follow-up reminder.',
+                    confirmButtonColor: 'var(--store-orange)',
+                    customClass: {
+                        popup: 'premium-swal-popup',
+                        title: 'premium-swal-title',
+                        htmlContainer: 'premium-swal-html'
+                    }
+                });
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+                lucide.createIcons();
+            }
+        }
+
 
         // Event Listeners on Mount
         document.addEventListener('DOMContentLoaded', () => {

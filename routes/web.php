@@ -13,7 +13,8 @@ use App\Http\Controllers\ArchiveController;
 
 // Self-healing auto-migration schema update
 try {
-    if (!\Illuminate\Support\Facades\Schema::hasColumn('inventory_items', 'location')) {
+    if (!\Illuminate\Support\Facades\Schema::hasColumn('inventory_items', 'location') ||
+        !\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collected_at')) {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
     }
 } catch (\Exception $e) {
@@ -406,9 +407,12 @@ Route::middleware(['auth', 'check_status'])->group(function () {
 
     // Personnel Requisition Routes
     Route::get('/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'index'])->name('requisitions.index');
+    Route::get('/personnel/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'personnelIndex'])->name('personnel.requisitions');
     Route::get('/requisitions/checkout', [\App\Http\Controllers\StoreRequisitionController::class, 'checkout'])->name('requisitions.checkout');
     Route::post('/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'store'])->name('requisitions.store');
     Route::get('/api/my-requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'myRequisitions'])->name('requisitions.my');
+    Route::post('/requisitions/{id}/collect', [\App\Http\Controllers\StoreRequisitionController::class, 'collect'])->name('requisitions.collect');
+    Route::post('/requisitions/{id}/followup', [\App\Http\Controllers\StoreRequisitionController::class, 'followUp'])->name('requisitions.followup');
     Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
     Route::put('/received-items/{id}', [ReceivedItemsController::class, 'update'])->name('receiveditems.update');
     Route::get('/received-items/{id}/print', [ReceivedItemsController::class, 'print'])->name('receiveditems.print');

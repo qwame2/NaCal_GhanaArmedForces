@@ -127,19 +127,26 @@ class StoreRequisitionController extends Controller
     }
 
     /**
-     * Personnel: View status of their own requisitions (API).
+     * Personnel: View status of requisitions (API).
      */
     public function myRequisitions()
     {
-        $requisitions = StoreRequisition::with('items')
-            ->where('requested_by', auth()->id())
-            ->orderBy('created_at', 'desc')
+        $query = StoreRequisition::with(['items', 'requester', 'collector']);
+
+        // Requisitioners see only their own. Personnel see all.
+        if (auth()->user()->role === 'Requisitioner') {
+            $query->where('requested_by', auth()->id());
+        }
+
+        $requisitions = $query->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($req) {
                 return [
                     'id'             => $req->id,
                     'department'     => $req->department,
                     'requester_name' => $req->requester_name,
+                    'requester_phone'=> $req->requester?->phone ?? 'N/A',
+                    'requester_email'=> $req->requester?->email ?? 'N/A',
                     'purpose'        => $req->purpose,
                     'priority'       => $req->priority,
                     'priority_badge' => $req->priority_badge,
@@ -148,6 +155,8 @@ class StoreRequisitionController extends Controller
                     'admin_notes'    => $req->admin_notes,
                     'created_at'     => $req->created_at->format('d/m/Y H:i'),
                     'processed_at'   => $req->processed_at?->format('d/m/Y H:i'),
+                    'collected_at'   => $req->collected_at?->format('d/m/Y H:i'),
+                    'collected_by_name' => $req->collector?->name,
                     'items'          => $req->items->map(fn($i) => [
                         'description'        => $i->description,
                         'category'           => $i->category,
@@ -160,6 +169,107 @@ class StoreRequisitionController extends Controller
             });
 
         return response()->json($requisitions);
+    }
+
+    /**
+     * Personnel / Requisitioner: Confirm physical collection of items for a requisition.
+     */
+    public function collect(Request $request, $id)
+    {
+        if (auth()->user()->role === 'Requisitioner') {
+            return response()->json(['success' => false, 'message' => 'Only store personnel can confirm physical collection.'], 403);
+        }
+
+        $req = StoreRequisition::findOrFail($id);
+
+        if (!in_array($req->status, ['approved', 'partially_approved'])) {
+            return response()->json(['success' => false, 'message' => 'Only approved or partially approved requisitions can be collected.'], 400);
+        }
+
+        if ($req->collected_at) {
+            return response()->json(['success' => false, 'message' => 'This requisition has already been marked as collected.'], 400);
+        }
+
+        $req->collected_at = now();
+        $req->collected_by = auth()->id();
+        $req->save();
+
+        SystemLog::create([
+            'user_id'    => auth()->id(),
+            'event_type' => 'REQUISITION',
+            'action'     => 'COLLECT_REQUISITION',
+            'description'=> auth()->user()->name . " confirmed physical collection of store requisition #{$req->id} by {$req->requester_name}.",
+            'severity'   => 'info',
+            'metadata'   => ['requisition_id' => $req->id],
+            'ip_address' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Physical collection confirmed successfully.',
+        ]);
+    }
+
+    /**
+     * Personnel: Send follow-up reminder for a pending requisition.
+     */
+    public function followUp(Request $request, $id)
+    {
+        $req = StoreRequisition::findOrFail($id);
+
+        if ($req->requested_by !== auth()->id()) {
+            return response()->json(['success' => false, 'message' => 'You are not authorized to follow up on this requisition.'], 403);
+        }
+
+        if ($req->status !== 'pending') {
+            return response()->json(['success' => false, 'message' => 'You can only follow up on pending requisitions.'], 400);
+        }
+
+        // Limit follow-ups to once every 5 minutes to prevent spam
+        $cacheKey = 'requisition_followup_' . $req->id;
+        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'You have recently sent a follow-up reminder for this requisition. Please wait a few minutes before trying again.'
+            ], 429);
+        }
+
+        // Log the action
+        SystemLog::create([
+            'user_id'    => auth()->id(),
+            'event_type' => 'REQUISITION',
+            'action'     => 'FOLLOW_UP_REQUISITION',
+            'description'=> auth()->user()->name . " sent a follow-up reminder for pending store requisition #{$req->id}.",
+            'severity'   => 'info',
+            'metadata'   => ['requisition_id' => $req->id],
+            'ip_address' => $request->ip(),
+        ]);
+
+        // Notify all active admins
+        $admins = User::where('is_admin', true)->where('is_active', true)->get();
+        foreach ($admins as $admin) {
+            $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #f59e0b;border-radius:12px;background:rgba(245,158,11,0.05);'>";
+            $msg .= "<b style='color:#ea580c;'>🔔 REQUISITION FOLLOW-UP REMINDER — Ref: #{$req->id}</b><br><br>";
+            $msg .= "Requisitioner <b>" . e($req->requester_name) . "</b> has sent a follow-up reminder regarding their pending requisition from department: <b>" . e($req->department) . "</b>.<br><br>";
+            $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br><br>";
+            $msg .= "<a href='" . route('admin.requisitions') . "' style='display:inline-block;background:#f59e0b;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition Now</a>";
+            $msg .= "</div>";
+
+            Message::create([
+                'sender_id'    => auth()->id(),
+                'receiver_id'  => $admin->id,
+                'message'      => $msg,
+                'is_automated' => true,
+            ]);
+        }
+
+        // Store in cache for 5 minutes (300 seconds)
+        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 300);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Follow-up reminder sent successfully to the store administrators.',
+        ]);
     }
 
     // =====================================================================
@@ -264,27 +374,87 @@ class StoreRequisitionController extends Controller
             'items.*.quantity_approved' => 'required|numeric|min:0',
         ]);
 
-        $req = StoreRequisition::with('items')->findOrFail($id);
+        try {
+            $req = \Illuminate\Support\Facades\DB::transaction(function() use ($request, $id) {
+                $req = StoreRequisition::with('items')->findOrFail($id);
+                $isPending = ($req->status === 'pending');
+                $targetStatus = $request->status;
 
-        // Update approved quantities per item
-        if ($request->filled('items')) {
-            foreach ($request->items as $itemData) {
-                $reqItem = $req->items->firstWhere('id', $itemData['id']);
-                if ($reqItem) {
-                    $reqItem->quantity_approved = $itemData['quantity_approved'];
-                    if (!empty($itemData['remarks'])) {
-                        $reqItem->remarks = $itemData['remarks'];
+                if ($request->filled('items')) {
+                    foreach ($request->items as $itemData) {
+                        $reqItem = $req->items->firstWhere('id', $itemData['id']);
+                        if ($reqItem) {
+                            $approvedQty = floatval($itemData['quantity_approved']);
+                            $reqItem->quantity_approved = $approvedQty;
+                            if (!empty($itemData['remarks'])) {
+                                $reqItem->remarks = $itemData['remarks'];
+                            }
+                            $reqItem->save();
+
+                            // Deduct from inventory if transitioning to approved/partially_approved and approvedQty > 0
+                            if ($isPending && in_array($targetStatus, ['approved', 'partially_approved']) && $approvedQty > 0) {
+                                // Validate stock availability
+                                $totalStock = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                                    ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                                    ->where(\DB::raw('TRIM(inventory_items.description)'), trim($reqItem->description))
+                                    ->selectRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+                                    ->value('total_stock') ?? 0;
+
+                                if ($approvedQty > $totalStock) {
+                                    throw new \Exception("Cannot approve {$approvedQty} for '{$reqItem->description}'. Only {$totalStock} is available in stock.");
+                                }
+
+                                // Deduct from inventory items using FIFO
+                                $qtyToDeduct = $approvedQty;
+                                $stockItems = InventoryItem::where(\DB::raw('TRIM(description)'), trim($reqItem->description))
+                                    ->whereHas('batch', function ($q) use ($reqItem) {
+                                        $q->where('supplier_status', '!=', 'System Draft');
+                                        if ($reqItem->category) {
+                                            $q->where('ledge_category', $reqItem->category);
+                                        }
+                                    })
+                                    ->where(function($query) {
+                                        $query->where('qty', '>', 0)
+                                            ->orWhere('stock_balance', '>', 0);
+                                    })
+                                    ->orderBy('created_at', 'asc')
+                                    ->orderBy('id', 'asc')
+                                    ->get();
+
+                                foreach ($stockItems as $inventoryItem) {
+                                    if ($qtyToDeduct <= 0) break;
+
+                                    $availableQty = floatval(str_replace(',', '', $inventoryItem->qty));
+                                    $availableStock = floatval(str_replace(',', '', $inventoryItem->stock_balance));
+                                    
+                                    $takeQty = min($availableQty, $qtyToDeduct);
+                                    $takeStock = min($availableStock, $qtyToDeduct);
+
+                                    $inventoryItem->qty = max(0, $availableQty - $takeQty);
+                                    $inventoryItem->stock_balance = max(0, $availableStock - $takeStock);
+                                    $inventoryItem->save();
+
+                                    $qtyToDeduct -= max($takeQty, $takeStock);
+                                }
+                            }
+                        }
                     }
-                    $reqItem->save();
                 }
-            }
-        }
 
-        $req->status       = $request->status;
-        $req->admin_notes  = $request->admin_notes;
-        $req->processed_by = auth()->id();
-        $req->processed_at = now();
-        $req->save();
+                $req->status       = $targetStatus;
+                $req->admin_notes  = $request->admin_notes;
+                $req->processed_by = auth()->id();
+                $req->processed_at = now();
+                $req->save();
+
+                return $req;
+            });
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        }
 
         // Log
         SystemLog::create([
@@ -332,5 +502,43 @@ class StoreRequisitionController extends Controller
             'success' => true,
             'message' => "Requisition #{$req->id} has been {$labels[$request->status]}.",
         ]);
+    }
+
+    /**
+     * Personnel: List all requisitions for management.
+     */
+    public function personnelIndex(Request $request)
+    {
+        if (auth()->user()->role === 'Requisitioner') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $query = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])
+            ->orderByRaw("FIELD(status, 'pending', 'partially_approved', 'approved', 'declined')")
+            ->orderByRaw("FIELD(priority, 'urgent', 'normal', 'low')")
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
+        }
+        if ($request->filled('department')) {
+            $query->where('department', 'LIKE', '%' . $request->department . '%');
+        }
+
+        $requisitions = $query->paginate(15)->withQueryString();
+        $ledgeMap = Setting::getCategories();
+
+        $stats = [
+            'pending'            => StoreRequisition::where('status', 'pending')->count(),
+            'approved'           => StoreRequisition::where('status', 'approved')->count(),
+            'partially_approved' => StoreRequisition::where('status', 'partially_approved')->count(),
+            'declined'           => StoreRequisition::where('status', 'declined')->count(),
+            'urgent'             => StoreRequisition::where('status', 'pending')->where('priority', 'urgent')->count(),
+        ];
+
+        return view('requisitions.personnel', compact('requisitions', 'ledgeMap', 'stats'));
     }
 }

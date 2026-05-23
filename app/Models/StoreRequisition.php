@@ -20,10 +20,13 @@ class StoreRequisition extends Model
         'admin_notes',
         'processed_by',
         'processed_at',
+        'collected_at',
+        'collected_by',
     ];
 
     protected $casts = [
         'processed_at' => 'datetime',
+        'collected_at' => 'datetime',
     ];
 
     public function items()
@@ -39,6 +42,11 @@ class StoreRequisition extends Model
     public function processor()
     {
         return $this->belongsTo(User::class, 'processed_by');
+    }
+
+    public function collector()
+    {
+        return $this->belongsTo(User::class, 'collected_by');
     }
 
     public function getPriorityBadgeAttribute(): array
