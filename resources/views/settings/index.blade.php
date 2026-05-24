@@ -88,27 +88,45 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem;">
                     <div class="form-group">
                         <label>Full Name</label>
-                        <input type="text" id="prof-name" value="{{ auth()->user()->name }}" class="modern-input">
+                        <div class="settings-field-wrapper">
+                            <div class="settings-field-icon"><i data-lucide="user"></i></div>
+                            <input type="text" id="prof-name" value="{{ auth()->user()->name }}" class="modern-input">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Identification Username</label>
-                        <input type="text" value="{{ auth()->user()->username }}" class="modern-input" readonly style="opacity: 0.7;">
+                        <div class="settings-field-wrapper">
+                            <div class="settings-field-icon"><i data-lucide="fingerprint"></i></div>
+                            <input type="text" value="{{ auth()->user()->username }}" class="modern-input" readonly style="opacity: 0.7;">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Email Address</label>
-                        <input type="email" id="prof-email" value="{{ auth()->user()->email }}" class="modern-input">
+                        <div class="settings-field-wrapper">
+                            <div class="settings-field-icon"><i data-lucide="mail"></i></div>
+                            <input type="email" id="prof-email" value="{{ auth()->user()->email }}" class="modern-input">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Contact Phone</label>
-                        <input type="text" id="prof-phone" value="{{ auth()->user()->phone }}" class="modern-input" placeholder="+233 ...">
+                        <div class="settings-field-wrapper">
+                            <div class="settings-field-icon"><i data-lucide="phone"></i></div>
+                            <input type="text" id="prof-phone" value="{{ auth()->user()->phone }}" class="modern-input" placeholder="+233 ...">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Professional Role</label>
-                        <input type="text" id="prof-role" value="{{ auth()->user()->role }}" class="modern-input" placeholder="e.g. Storekeeper">
+                        <div class="settings-field-wrapper">
+                            <div class="settings-field-icon"><i data-lucide="shield"></i></div>
+                            <input type="text" id="prof-role" value="{{ auth()->user()->role }}" class="modern-input" placeholder="e.g. Storekeeper">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Assigned Department</label>
-                        <input type="text" id="prof-dept" value="{{ auth()->user()->department }}" class="modern-input" placeholder="e.g. Logistics">
+                        <div class="settings-field-wrapper">
+                            <div class="settings-field-icon"><i data-lucide="building"></i></div>
+                            <input type="text" id="prof-dept" value="{{ auth()->user()->department }}" class="modern-input" readonly placeholder="e.g. Logistics">
+                        </div>
                     </div>
                 </div>
 
@@ -212,8 +230,9 @@
         <div style="display: flex; flex-direction: column; gap: 1.75rem;">
             <div class="form-group">
                 <label>Current Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="current_password" class="modern-input" placeholder="••••••••">
+                <div class="settings-field-wrapper">
+                    <div class="settings-field-icon"><i data-lucide="lock"></i></div>
+                    <input type="password" id="current_password" class="modern-input" placeholder="••••••••" style="padding-left: 2.8rem; padding-right: 3rem;">
                     <button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)">
                         <i data-lucide="eye"></i>
                     </button>
@@ -222,8 +241,9 @@
             
             <div class="form-group">
                 <label>New Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="new_password" class="modern-input" placeholder="••••••••" oninput="validatePassword()">
+                <div class="settings-field-wrapper">
+                    <div class="settings-field-icon"><i data-lucide="key-round"></i></div>
+                    <input type="password" id="new_password" class="modern-input" placeholder="••••••••" oninput="validatePassword()" style="padding-left: 2.8rem; padding-right: 3rem;">
                     <button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)">
                         <i data-lucide="eye"></i>
                     </button>
@@ -235,8 +255,9 @@
 
             <div class="form-group">
                 <label>Confirm New Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="confirm_password" class="modern-input" placeholder="••••••••" oninput="validatePassword()">
+                <div class="settings-field-wrapper">
+                    <div class="settings-field-icon"><i data-lucide="shield-check"></i></div>
+                    <input type="password" id="confirm_password" class="modern-input" placeholder="••••••••" oninput="validatePassword()" style="padding-left: 2.8rem; padding-right: 3rem;">
                     <button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)">
                         <i data-lucide="eye"></i>
                     </button>
@@ -264,18 +285,47 @@
     
     .settings-nav-btn {
         display: flex; align-items: center; gap: 1.15rem;
-        width: 100%; padding: 1.35rem 1.75rem; border: none;
+        width: 100%; padding: 1.25rem 1.5rem; border: none;
         background: transparent; color: var(--text-muted);
-        font-weight: 800; font-size: 1rem; cursor: pointer;
-        border-radius: 20px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        font-weight: 800; font-size: 0.95rem; cursor: pointer;
+        border-radius: 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
     }
-    .settings-nav-btn i { width: 22px; transition: all 0.3s; }
-    .settings-nav-btn:hover { background: rgba(99, 102, 241, 0.05); color: var(--primary); transform: translateX(5px); }
+    .settings-nav-btn::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 20%;
+        height: 60%;
+        width: 4px;
+        background: var(--primary);
+        border-radius: 0 4px 4px 0;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .settings-nav-btn i { width: 20px; height: 20px; transition: all 0.3s; color: var(--text-muted); }
+    .settings-nav-btn:hover { 
+        background: rgba(99, 102, 241, 0.05); 
+        color: var(--primary); 
+        transform: translateX(4px); 
+    }
+    .settings-nav-btn:hover i {
+        color: var(--primary);
+    }
+    .settings-nav-btn:hover::before {
+        transform: scaleX(1);
+    }
     .settings-nav-btn.active {
-        background: var(--primary); color: white;
-        box-shadow: 0 15px 30px rgba(99, 102, 241, 0.25);
+        background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%); 
+        color: white;
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.35);
     }
     .settings-nav-btn.active i { color: white; }
+    .settings-nav-btn.active::before {
+        display: none;
+    }
 
     .settings-section { display: none; }
     .settings-section.active { display: block; animation: sectionFade 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -286,17 +336,61 @@
     }
 
     .form-group label {
-        display: block; font-size: 0.72rem; font-weight: 900;
+        display: block; font-size: 0.68rem; font-weight: 800;
         color: var(--text-muted); text-transform: uppercase;
-        margin-bottom: 10px; letter-spacing: 0.8px;
+        margin-bottom: 8px; letter-spacing: 0.05em;
     }
     .modern-input {
-        width: 100%; padding: 1.15rem 1.4rem; border-radius: 16px;
+        width: 100%; padding: 1rem 1.25rem; border-radius: 14px;
         border: 2px solid var(--border-color); background: var(--bg-main);
-        color: var(--text-main); font-weight: 800; font-size: 1.05rem;
-        outline: none; transition: all 0.3s;
+        color: var(--text-main); font-weight: 700; font-size: 0.95rem;
+        outline: none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .modern-input:focus { border-color: var(--primary); background: var(--bg-card); box-shadow: 0 12px 25px rgba(99,102,241,0.08); }
+    .modern-input:focus { 
+        border-color: var(--primary); 
+        background: var(--bg-card); 
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12), 0 8px 20px rgba(99, 102, 241, 0.04); 
+    }
+    .modern-input[readonly] {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+
+    /* New premium field wrapper with left-aligned icons */
+    .settings-field-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    .settings-field-icon {
+        position: absolute;
+        left: 14px;
+        color: #94a3b8;
+        pointer-events: none;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.25s;
+    }
+    .settings-field-icon i {
+        width: 16px;
+        height: 16px;
+    }
+    .settings-field-wrapper .modern-input {
+        padding-left: 2.8rem;
+    }
+    .settings-field-wrapper:focus-within .settings-field-icon {
+        color: var(--primary);
+    }
+
+    .modal-content {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border-color) !important;
+        box-shadow: 0 40px 100px -20px rgba(0,0,0,0.25) !important;
+    }
 
     .setting-item {
         display: flex; align-items: center; justify-content: space-between;
@@ -370,6 +464,7 @@
         justify-content: center;
         transition: all 0.2s;
         border-radius: 8px;
+        z-index: 2;
     }
     .password-toggle:hover {
         color: var(--primary);

@@ -48,6 +48,10 @@
         transition: all 0.3s ease;
     }
 
+    .swal2-container {
+        z-index: 99999 !important;
+    }
+
     .modal-overlay.open {
         display: flex;
     }
@@ -418,6 +422,117 @@
         display: inline-block;
         margin-right: 4px;
     }
+
+    /* Modern Premium Filter Card Section */
+    .filter-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .filter-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.25rem;
+    }
+
+    .filter-row {
+        display: flex;
+        gap: 0.85rem;
+        flex-wrap: wrap;
+        align-items: center;
+        width: 100%;
+        margin: 0;
+    }
+
+    .filter-field-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .filter-icon {
+        position: absolute;
+        left: 14px;
+        color: var(--text-muted);
+        pointer-events: none;
+        transition: color 0.2s ease;
+    }
+
+    .filter-control {
+        width: 100%;
+        padding: 0.7rem 1rem 0.7rem 2.6rem;
+        border: 1.5px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-main);
+        color: var(--text-main);
+        font-family: inherit;
+        font-weight: 600;
+        font-size: 0.85rem;
+        outline: none;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    select.filter-control {
+        padding-right: 2.25rem;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        background-size: 14px;
+    }
+
+    .filter-control:focus {
+        border-color: #4f46e5;
+        background: var(--bg-card);
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+    }
+
+    .filter-control:focus + .filter-icon {
+        color: #4f46e5;
+    }
+
+    .filter-control::placeholder {
+        color: var(--text-muted);
+        opacity: 0.75;
+    }
+
+    .filter-clear-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 0.7rem 1.25rem;
+        border: 1.5px solid #ef4444;
+        border-radius: 12px;
+        background: rgba(239, 68, 68, 0.05);
+        color: #ef4444;
+        font-weight: 800;
+        font-size: 0.82rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .filter-clear-btn:hover {
+        background: #ef4444;
+        color: white;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
 </style>
 
 <div style="padding:2rem;">
@@ -469,30 +584,54 @@
     </div>
 
     {{-- Filters --}}
-    <form method="GET" style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem;">
-        <select name="status" onchange="this.form.submit()" style="padding:.6rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-main);font-weight:700;font-size:.85rem;cursor:pointer;">
-            <option value="">All Status</option>
-            <option value="pending" {{ request('status')==='pending'?'selected':'' }}>Pending</option>
-            <option value="approved" {{ request('status')==='approved'?'selected':'' }}>Approved</option>
-            <option value="partially_approved" {{ request('status')==='partially_approved'?'selected':'' }}>Partial</option>
-            <option value="declined" {{ request('status')==='declined'?'selected':'' }}>Declined</option>
-        </select>
-        <select name="priority" onchange="this.form.submit()" style="padding:.6rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-main);font-weight:700;font-size:.85rem;cursor:pointer;">
-            <option value="">All Priority</option>
-            <option value="urgent" {{ request('priority')==='urgent'?'selected':'' }}>Urgent</option>
-            <option value="normal" {{ request('priority')==='normal'?'selected':'' }}>Normal</option>
-            <option value="low" {{ request('priority')==='low'?'selected':'' }}>Low</option>
-        </select>
-        <input type="text" name="department" value="{{ request('department') }}" placeholder="Filter by department..." onchange="this.form.submit()" style="padding:.6rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-main);font-weight:600;font-size:.85rem;min-width:220px;">
-        @if(request()->anyFilled(['status','priority','department']))
-        <a href="{{ route('personnel.requisitions') }}" style="padding:.6rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-muted);font-weight:700;font-size:.85rem;text-decoration:none;display:flex;align-items:center;gap:6px;">
-            <i data-lucide="x" style="width:14px;"></i> Clear
-        </a>
-        @endif
-    </form>
+    <div class="filter-card">
+        <div class="filter-header">
+            <i data-lucide="sliders-horizontal" style="width: 14px; height: 14px; color: #4f46e5;"></i>
+            <span>Filter Options</span>
+        </div>
+        <form method="GET" class="filter-row" id="filter-form" action="{{ route('personnel.requisitions') }}">
+            <div class="filter-field-wrapper" style="flex: 1.2; min-width: 220px;">
+                <i data-lucide="search" class="filter-icon" style="width: 16px; height: 16px;"></i>
+                <input type="text" name="search_id" id="search_id_input" class="filter-control" value="{{ request('search_id') }}" placeholder="Search by ID or Item name..." autocomplete="off">
+            </div>
+
+            <div class="filter-field-wrapper" style="min-width: 160px; flex: 1;">
+                <i data-lucide="activity" class="filter-icon" style="width: 14px; height: 14px;"></i>
+                <select name="status" onchange="updateFilters()" class="filter-control">
+                    <option value="">All Statuses</option>
+                    <option value="pending" {{ request('status')==='pending'?'selected':'' }}>Pending</option>
+                    <option value="approved" {{ request('status')==='approved'?'selected':'' }}>Approved</option>
+                    <option value="partially_approved" {{ request('status')==='partially_approved'?'selected':'' }}>Partial</option>
+                    <option value="declined" {{ request('status')==='declined'?'selected':'' }}>Declined</option>
+                </select>
+            </div>
+
+            <div class="filter-field-wrapper" style="min-width: 160px; flex: 1;">
+                <i data-lucide="alert-circle" class="filter-icon" style="width: 14px; height: 14px;"></i>
+                <select name="priority" onchange="updateFilters()" class="filter-control">
+                    <option value="">All Priorities</option>
+                    <option value="urgent" {{ request('priority')==='urgent'?'selected':'' }}>Urgent</option>
+                    <option value="normal" {{ request('priority')==='normal'?'selected':'' }}>Normal</option>
+                    <option value="low" {{ request('priority')==='low'?'selected':'' }}>Low</option>
+                </select>
+            </div>
+
+            <div class="filter-field-wrapper" style="flex: 1.2; min-width: 220px;">
+                <i data-lucide="building" class="filter-icon" style="width: 15px; height: 15px;"></i>
+                <input type="text" name="department" id="dept_input" value="{{ request('department') }}" placeholder="Filter by department..." class="filter-control" autocomplete="off">
+            </div>
+
+            @if(request()->anyFilled(['status','priority','department','search_id']))
+            <a href="{{ route('personnel.requisitions') }}" class="filter-clear-btn">
+                <i data-lucide="x-circle" style="width:16px; height:16px;"></i>
+                <span>Clear Filters</span>
+            </a>
+            @endif
+        </form>
+    </div>
 
     {{-- Table --}}
-    <div style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);overflow:hidden;">
+    <div id="requisitions-table-container" style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);overflow:hidden; transition: opacity 0.2s ease;">
         <table style="width:100%;border-collapse:collapse;">
             <thead style="background:var(--bg-main);">
                 <tr>
@@ -510,7 +649,7 @@
                 @php $sb = $req->status_badge; $pb = $req->priority_badge; @endphp
                 <tr class="req-table-row">
                     <td style="padding:1rem 1.5rem;">
-                        <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                             <div style="font-size:.9rem;font-weight:800;color:var(--text-main);">{{ $req->department }}</div>
                             @php $utb = $req->usage_type_badge; @endphp
                             <span class="pill" style="background:{{ $utb['bg'] }}; color:{{ $utb['color'] }}; font-size: 0.6rem; padding: 2px 6px; border-radius: 6px; font-weight:800; text-transform:none; letter-spacing:0;">{{ $utb['label'] }}</span>
@@ -658,7 +797,7 @@
         modalBox.className = 'modal-box'; // reset
         modalBox.classList.add(`${data.priority}-priority`);
 
-        document.getElementById('modalSubtitle').textContent = `Requisition Ref: #${data.id}`;
+        document.getElementById('modalSubtitle').textContent = `Requisition Ref: ${data.unique_id || ('REQ-' + String(data.id).padStart(5, '0'))}`;
 
         // Profile Grid
         const avatarLetter = data.requester_name ? data.requester_name.charAt(0).toUpperCase() : 'R';
@@ -785,6 +924,70 @@
         ${rows}
     </div>`;
 
+        let collectorInfoHtml = '';
+        if (['approved', 'partially_approved'].includes(data.status)) {
+            if (data.collected_at) {
+                collectorInfoHtml = `
+                <div style="background:rgba(16,185,129,0.03); border:1.5px dashed rgba(16,185,129,0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; flex-direction:column; gap:1rem;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px dashed rgba(16,185,129,0.15); padding-bottom:8px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="width:34px; height:34px; background:rgba(16,185,129,0.08); color:#10b981; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                                <i data-lucide="package-check" style="width:16px;"></i>
+                            </div>
+                            <div>
+                                <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Physical Collection Log</h4>
+                                <p style="margin:0; font-size:0.75rem; color:var(--text-muted);">Items have been successfully issued and collected</p>
+                            </div>
+                        </div>
+                        <span class="pill" style="background:rgba(16,185,129,0.1); color:#10b981; font-weight:800; font-size:0.7rem; padding:4px 10px;">COLLECTED</span>
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem;">
+                            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Collector Name</div>
+                            <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collector_name || 'N/A'}</div>
+                        </div>
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem;">
+                            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Collector Contact</div>
+                            <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collector_contact || 'N/A'}</div>
+                        </div>
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem;">
+                            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Confirmed By (Store Staff)</div>
+                            <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collected_by_name || 'N/A'}</div>
+                        </div>
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem;">
+                            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Collection Date & Time</div>
+                            <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collected_at || 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>`;
+            } else {
+                collectorInfoHtml = `
+                <div style="background:var(--bg-main); border:1.5px solid var(--border-color); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; flex-direction:column; gap:1rem;">
+                    <div style="display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+                        <div style="width:34px; height:34px; background:rgba(16,185,129,0.08); color:#10b981; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                            <i data-lucide="package-check" style="width:16px;"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Collector Information</h4>
+                            <p style="margin:0; font-size:0.75rem; color:var(--text-muted);">Details of the person physically collecting the physical item(s)</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <i data-lucide="user" style="position:absolute; left:12px; color:var(--text-muted); width:16px; height:16px; pointer-events:none;"></i>
+                            <input type="text" id="modalCollectorName" oninput="validateModalCollectorInputs()" placeholder="Collector Full Name *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 4px rgba(16, 185, 129, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
+                        </div>
+                        <div style="position:relative; display:flex; align-items:center;">
+                            <i data-lucide="phone" style="position:absolute; left:12px; color:var(--text-muted); width:16px; height:16px; pointer-events:none;"></i>
+                            <input type="text" id="modalCollectorContact" oninput="validateModalCollectorInputs()" placeholder="Collector Contact Number *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 4px rgba(16, 185, 129, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
+                        </div>
+                    </div>
+                </div>`;
+            }
+        }
+
         document.getElementById('modalBody').innerHTML = `
     ${profileGridHtml}
 
@@ -826,7 +1029,9 @@
             <div style="font-size:.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">Processing Timestamp</div>
             <div style="font-size:.85rem; font-weight:900; color:var(--text-main);">${data.processed_at ? data.processed_at : 'Pending'}</div>
         </div>
-    </div>`;
+    </div>
+    
+    ${collectorInfoHtml}`;
 
         let footerHtml = `
     <button onclick="closeModal()" style="background:var(--bg-main); color:var(--text-main); border:1.5px solid var(--border-color); padding:.75rem 1.5rem; border-radius:12px; font-weight:800; cursor:pointer; font-size:.88rem; transition:0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='var(--bg-main)'">
@@ -835,14 +1040,12 @@
 
         // If approved or partially approved but not collected, render "Confirm Collection" button in modal too
         if (['approved', 'partially_approved'].includes(data.status)) {
-            // Need to check if collected from outer element or data
-            const row = document.querySelector(`tr[class*="req-table-row"] button[onclick="openRequisitionModal(${id})"]`).closest('tr');
-            const isAlreadyCollected = row.innerHTML.includes('Collected');
+            const isAlreadyCollected = !!data.collected_at;
 
             if (!isAlreadyCollected) {
                 footerHtml += `
-            <button onclick="confirmCollection(${id}, this)"
-                style="background:#10b981;color:white;border:none;padding:.75rem 2.25rem;border-radius:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.88rem;box-shadow:0 8px 20px rgba(16, 185, 129, 0.25);transition:0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+            <button onclick="confirmCollection(${id}, this)" id="modalConfirmBtn" disabled
+                style="background:#cbd5e1;color:#64748b;border:none;padding:.75rem 2.25rem;border-radius:12px;font-weight:800;cursor:not-allowed;display:flex;align-items:center;gap:8px;font-size:.88rem;box-shadow:none;transition:0.2s;">
                 <i data-lucide="package-check" style="width:16px;"></i> Confirm Collection
             </button>`;
             }
@@ -852,69 +1055,277 @@
         lucide.createIcons();
     }
 
+    function validateModalCollectorInputs() {
+        const nameInput = document.getElementById('modalCollectorName');
+        const contactInput = document.getElementById('modalCollectorContact');
+        const confirmBtn = document.getElementById('modalConfirmBtn');
+        
+        if (!nameInput || !contactInput || !confirmBtn) return;
+        
+        const nameVal = nameInput.value.trim();
+        const contactVal = contactInput.value.trim();
+        
+        if (nameVal && contactVal) {
+            confirmBtn.disabled = false;
+            confirmBtn.style.background = '#10b981';
+            confirmBtn.style.color = 'white';
+            confirmBtn.style.cursor = 'pointer';
+            confirmBtn.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.25)';
+            confirmBtn.onmouseover = function() { this.style.background = '#059669'; };
+            confirmBtn.onmouseout = function() { this.style.background = '#10b981'; };
+        } else {
+            confirmBtn.disabled = true;
+            confirmBtn.style.background = '#cbd5e1';
+            confirmBtn.style.color = '#64748b';
+            confirmBtn.style.cursor = 'not-allowed';
+            confirmBtn.style.boxShadow = 'none';
+            confirmBtn.onmouseover = null;
+            confirmBtn.onmouseout = null;
+        }
+    }
+
     function closeModal() {
         document.getElementById('reqModal').classList.remove('open');
     }
 
     async function confirmCollection(id, btn) {
-        Swal.fire({
-            title: 'Confirm Physical Collection',
-            text: 'Are you sure you want to confirm the physical collection of items for store requisition #' + id + '?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, Confirm Collection',
-            cancelButtonText: 'Cancel',
-            confirmButtonColor: '#10b981',
-            cancelButtonColor: '#94a3b8'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                const originalHTML = btn.innerHTML;
-                btn.disabled = true;
-                btn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;"></div> Processing...';
+        // 1. Try to read from the modal inputs first:
+        const modal = document.getElementById('reqModal');
+        const isModalOpen = modal && modal.classList.contains('open');
+        const modalNameInput = document.getElementById('modalCollectorName');
+        const modalContactInput = document.getElementById('modalCollectorContact');
 
-                try {
-                    const response = await fetch(`/requisitions/${id}/collect`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    });
+        let collector_name = '';
+        let collector_contact = '';
 
-                    const data = await response.json();
+        if (isModalOpen && modalNameInput && modalContactInput) {
+            // Triggered from modal
+            collector_name = modalNameInput.value.trim();
+            collector_contact = modalContactInput.value.trim();
 
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Collection Confirmed',
-                            text: data.message,
-                            confirmButtonColor: '#10b981'
-                        }).then(() => {
-                            location.reload();
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Confirmation Failed',
-                            text: data.message,
-                            confirmButtonColor: 'var(--primary)'
-                        });
-                        btn.disabled = false;
-                        btn.innerHTML = originalHTML;
-                    }
-                } catch (error) {
-                    /* console print removed */
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Network Error',
-                        text: 'An error occurred while confirming physical collection.',
-                        confirmButtonColor: 'var(--primary)'
-                    });
-                    btn.disabled = false;
-                    btn.innerHTML = originalHTML;
+            if (!collector_name || !collector_contact) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Required Fields Missing',
+                    text: 'Please enter the Collector Name and Contact Number inside the Collector Information section before confirming collection.',
+                    confirmButtonColor: '#10b981'
+                });
+                if (!collector_name) modalNameInput.style.borderColor = '#ef4444';
+                if (!collector_contact) modalContactInput.style.borderColor = '#ef4444';
+                return;
+            }
+
+            Swal.fire({
+                title: 'Confirm Physical Collection',
+                html: `Confirm physical collection of items for store requisition <b>#${id}</b>?<br><br>` +
+                      `<div style="text-align:left; background:var(--bg-main); border:1px solid var(--border-color); border-radius:12px; padding:12px; font-size:0.85rem;">` +
+                      `<b>Collector Name:</b> ${collector_name}<br>` +
+                      `<b>Collector Contact:</b> ${collector_contact}` +
+                      `</div>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Confirm Collection',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#94a3b8'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    await executeCollectionFetch(id, btn, collector_name, collector_contact);
                 }
+            });
+
+        } else {
+            // Triggered from table row. Show SweetAlert2 popup with inputs.
+            Swal.fire({
+                title: 'Physical Collection Details',
+                html:
+                    '<p style="font-size:0.85rem; margin-bottom:15px; color:var(--text-muted);">Please enter the details of the person physically collecting the items.</p>' +
+                    '<input id="swal-input-name" class="swal2-input" placeholder="Collector Full Name" style="margin-top:0; margin-bottom:12px; width:80%; font-family:inherit; font-size:0.88rem; font-weight:700;">' +
+                    '<input id="swal-input-contact" class="swal2-input" placeholder="Collector Contact Number" style="margin-top:0; width:80%; font-family:inherit; font-size:0.88rem; font-weight:700;">',
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Confirm Collection',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#94a3b8',
+                preConfirm: () => {
+                    const name = document.getElementById('swal-input-name').value.trim();
+                    const contact = document.getElementById('swal-input-contact').value.trim();
+                    if (!name || !contact) {
+                        Swal.showValidationMessage('Please fill out both Collector Name and Contact Number');
+                        return false;
+                    }
+                    return { name: name, contact: contact };
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    await executeCollectionFetch(id, btn, result.value.name, result.value.contact);
+                }
+            });
+        }
+    }
+
+    async function executeCollectionFetch(id, btn, collector_name, collector_contact) {
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;"></div> Processing...';
+
+        try {
+            const response = await fetch(`{{ request()->getBasePath() }}/requisitions/${id}/collect`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    collector_name: collector_name,
+                    collector_contact: collector_contact
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Collection Confirmed',
+                    text: data.message,
+                    confirmButtonColor: '#10b981'
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Confirmation Failed',
+                    text: data.message,
+                    confirmButtonColor: 'var(--primary)'
+                });
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Network Error',
+                text: 'An error occurred while confirming physical collection.',
+                confirmButtonColor: 'var(--primary)'
+            });
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        }
+    }
+
+    let debounceTimer = null;
+
+    function triggerFilterUpdate() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            updateFilters();
+        }, 300); // 300ms debounce
+    }
+
+    async function updateFilters() {
+        const form = document.getElementById('filter-form');
+        const container = document.getElementById('requisitions-table-container');
+        if (!form || !container) return;
+
+        container.style.opacity = '0.5';
+
+        const formData = new FormData(form);
+        const searchParams = new URLSearchParams();
+        for (const [key, value] of formData.entries()) {
+            if (value.trim() !== '') {
+                searchParams.append(key, value);
+            }
+        }
+
+        const url = form.action + '?' + searchParams.toString();
+
+        try {
+            const response = await fetch(url);
+            const html = await response.text();
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newTable = doc.getElementById('requisitions-table-container');
+            
+            if (newTable) {
+                container.innerHTML = newTable.innerHTML;
+            }
+            container.style.opacity = '1';
+
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+            bindPaginationClicks();
+
+            window.history.pushState(null, '', url);
+        } catch (e) {
+            console.error(e);
+            container.style.opacity = '1';
+        }
+    }
+
+    function bindPaginationClicks() {
+        const container = document.getElementById('requisitions-table-container');
+        if (!container) return;
+
+        const links = container.querySelectorAll('.pagination-container a, td a, th a, div a');
+        links.forEach(link => {
+            const href = link.getAttribute('href');
+            if (!href || href.startsWith('javascript:') || href === '#') return;
+
+            if (href.includes('page=') || href.includes('requisitions')) {
+                link.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    container.style.opacity = '0.5';
+                    try {
+                        const response = await fetch(href);
+                        const html = await response.text();
+
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newTable = doc.getElementById('requisitions-table-container');
+                        
+                        if (newTable) {
+                            container.innerHTML = newTable.innerHTML;
+                        }
+                        container.style.opacity = '1';
+
+                        if (window.lucide) {
+                            window.lucide.createIcons();
+                        }
+                        bindPaginationClicks();
+
+                        window.history.pushState(null, '', href);
+                    } catch (err) {
+                        console.error(err);
+                        container.style.opacity = '1';
+                    }
+                });
             }
         });
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('search_id_input');
+        const deptInput = document.getElementById('dept_input');
+        if (searchInput) {
+            if (searchInput.value) {
+                searchInput.focus();
+                const len = searchInput.value.length;
+                searchInput.setSelectionRange(len, len);
+            }
+            searchInput.addEventListener('input', triggerFilterUpdate);
+        }
+        if (deptInput) {
+            deptInput.addEventListener('input', triggerFilterUpdate);
+        }
+        bindPaginationClicks();
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    });
 </script>
 @endsection

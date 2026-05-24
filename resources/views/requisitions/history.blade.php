@@ -622,6 +622,90 @@
                 gap: 1rem;
             }
         }
+
+        /* Swal Profile Styles */
+        .glass-monolith-popup {
+            border-radius: 32px !important;
+            padding: 1.75rem 2rem !important;
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.15) !important;
+            border: 1px solid rgba(255,255,255,0.8) !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+        .premium-swal-btn {
+            height: 48px !important;
+            padding: 0 30px !important;
+            border-radius: 14px !important;
+            font-weight: 800 !important;
+            font-size: 0.85rem !important;
+            letter-spacing: 0.02em !important;
+            box-shadow: 0 10px 20px rgba(249, 115, 22, 0.2) !important;
+        }
+        .premium-swal-cancel-btn {
+            height: 48px !important;
+            padding: 0 25px !important;
+            border-radius: 14px !important;
+            font-weight: 800 !important;
+            font-size: 0.85rem !important;
+            color: #64748b !important;
+        }
+        .swal-input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .swal-input-group label {
+            text-align: left;
+        }
+        .spin {
+            animation: spin 1.2s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Profile Modal Redesigned Fields */
+        .swal-field-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .swal-field-icon {
+            position: absolute;
+            left: 14px;
+            color: #94a3b8;
+            pointer-events: none;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .swal-field-input {
+            width: 100%;
+            height: 44px;
+            padding: 0 1rem 0 2.6rem !important;
+            border-radius: 14px !important;
+            border: 2px solid #e2e8f0 !important;
+            background: #f8fafc !important;
+            color: #0f172a !important;
+            font-size: 0.88rem !important;
+            font-weight: 700 !important;
+            outline: none !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            transition: all 0.3s !important;
+        }
+        .swal-field-input:focus {
+            border-color: var(--store-orange) !important;
+            background: white !important;
+            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.06) !important;
+        }
+        .swal-field-input[readonly] {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -655,14 +739,21 @@
                 </a>
 
                 <!-- User Profile Info -->
-                <div class="user-widget">
-                    <div class="user-avatar">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', auth()->user()->name)[1] ?? '', 0, 1)) }}
-                    </div>
+                <div class="user-widget" onclick="openProfileCompletionModal()" style="cursor: pointer; transition: 0.2s;" onmouseover="this.style.borderColor='var(--store-orange)';" onmouseout="this.style.borderColor='var(--border-color)';" title="My Profile Details">
+                    @if(auth()->user()->avatar)
+                        <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                    @else
+                        <div class="user-avatar">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', auth()->user()->name)[1] ?? '', 0, 1)) }}
+                        </div>
+                    @endif
                     <div class="user-info-name">{{ auth()->user()->name }}</div>
-                    <div class="logout-link" onclick="document.getElementById('logout-form').submit();" title="Sign Out">
-                        <i data-lucide="log-out" style="width: 14px;"></i>
+                    <div style="color: var(--text-muted); display: flex; align-items: center; padding: 2px;">
+                        <i data-lucide="user-cog" style="width: 14px;"></i>
                     </div>
+                </div>
+                <div class="logout-link" onclick="event.stopPropagation(); document.getElementById('logout-form').submit();" title="Sign Out" style="margin-left: 0.5rem; border: 1px solid var(--border-color); width: 32px; height: 32px; justify-content: center; display: flex; align-items: center;">
+                    <i data-lucide="log-out" style="width: 14px;"></i>
                 </div>
             </div>
         </div>
@@ -800,7 +891,8 @@
                         });
 
                         if (reqMoved) {
-                            movements.push({ id: req.id, statusLabel: req.status_badge.label, statusBg: req.status_badge.bg, statusColor: req.status_badge.color, details });
+                            const uniqueId = req.unique_id || ('REQ-' + String(req.id).padStart(5, '0'));
+                            movements.push({ id: req.id, unique_id: uniqueId, statusLabel: req.status_badge.label, statusBg: req.status_badge.bg, statusColor: req.status_badge.color, details });
                         }
                     }
                 });
@@ -813,7 +905,7 @@
                         alertHtml += `
                             <div style="border: 1px solid var(--border-color); border-left: 4px solid var(--store-orange); border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; background: var(--bg-main);">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                                    <span style="font-weight: 800; font-size: 0.9rem;">Requisition #${m.id}</span>
+                                    <span style="font-weight: 800; font-size: 0.9rem;">Requisition ${m.unique_id}</span>
                                     <span style="background:${m.statusBg}; color:${m.statusColor}; padding:2px 8px; border-radius:12px; font-size:0.68rem; font-weight:800; text-transform:uppercase;">
                                         ${m.statusLabel}
                                     </span>
@@ -855,11 +947,13 @@
 
             const filtered = allRequisitions.filter(req => {
                 if (!q) return true;
+                const uniqueId = req.unique_id || ('REQ-' + String(req.id).padStart(5, '0'));
                 const matchId = req.id.toString().includes(q);
+                const matchUniqueId = uniqueId.toLowerCase().includes(q);
                 const matchDept = req.department.toLowerCase().includes(q);
                 const matchPurpose = req.purpose.toLowerCase().includes(q);
                 const matchItems = req.items.some(i => i.description.toLowerCase().includes(q));
-                return matchId || matchDept || matchPurpose || matchItems;
+                return matchId || matchUniqueId || matchDept || matchPurpose || matchItems;
             });
 
             if (filtered.length === 0) {
@@ -914,7 +1008,7 @@
                     <div class="history-item-box">
                         <div class="history-item-top">
                             <div>
-                                <span class="history-ref">Requisition Ref: #${req.id}</span>
+                                <span class="history-ref">Requisition Ref: ${req.unique_id || ('REQ-' + String(req.id).padStart(5, '0'))}</span>
                                 <div class="history-meta-info">
                                     <span><i data-lucide="calendar" style="width:12px; vertical-align:middle;"></i> ${req.created_at}</span>
                                     <span>·</span>
@@ -1133,9 +1227,225 @@
                 currentPage = 1;
                 renderHistoryList();
             });
-
-
         });
+
+        function openProfileCompletionModal() {
+            const user = {
+                name: '{{ addslashes(auth()->user()->name) }}',
+                username: '{{ addslashes(auth()->user()->username) }}',
+                email: '{{ auth()->user()->email ?? "" }}',
+                phone: '{{ auth()->user()->phone ?? "" }}',
+                department: '{{ auth()->user()->department ?? "" }}',
+                role: '{{ auth()->user()->role ?? "" }}',
+                avatar: '{{ auth()->user()->avatar ? Storage::url(auth()->user()->avatar) : "" }}'
+            };
+
+            Swal.fire({
+                title: `
+                    <div style="display: flex; align-items: center; gap: 15px; text-align: left; width: 100%;">
+                        <div style="width: 48px; height: 48px; background: rgba(249, 115, 22, 0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #f97316;">
+                            <i data-lucide="user-check"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 1.25rem; font-weight: 950; color: #0f172a;">Complete Profile</div>
+                            <div style="font-size: 0.75rem; color: #64748b; font-weight: 700; margin-top: 2px; text-transform: uppercase;">Update contact and verification records</div>
+                        </div>
+                    </div>
+                `,
+                html: `
+                    <div style="text-align: left; padding: 1rem 0.5rem; font-family: 'Plus Jakarta Sans', sans-serif;">
+                        
+                        <!-- Avatar Upload Area -->
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
+                            <div style="position: relative; width: 100px; height: 100px;" id="swal-avatar-container">
+                                ${user.avatar ? `
+                                    <img src="${user.avatar}" id="swal-avatar-preview" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+                                ` : `
+                                    <div id="swal-avatar-placeholder" style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--store-indigo) 0%, #4338ca 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 950; color: white; border: 4px solid white; box-shadow: 0 10px 20px rgba(99,102,241,0.25);">
+                                        ${user.name.substring(0, 1).toUpperCase()}
+                                    </div>
+                                `}
+                                <!-- Floating Upload Button -->
+                                <button type="button" onclick="document.getElementById('swal-avatar-file').click()" style="position: absolute; bottom: 0; right: 0; width: 32px; height: 32px; background: white; border-radius: 50%; border: 1.5px solid #cbd5e1; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.12); transition: 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'" title="Upload Photo">
+                                    <i data-lucide="camera" style="width: 15px; color: var(--store-orange);"></i>
+                                </button>
+                                <input type="file" id="swal-avatar-file" accept="image/*" style="display: none;" onchange="previewAndUploadSwalAvatar(this)">
+                            </div>
+                            <div style="font-size: 0.7rem; color: #64748b; font-weight: 700; margin-top: 8px;">JPEG/PNG image, maximum size 5MB</div>
+                        </div>
+
+                        <form id="profileForm" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="swal-input-group">
+                                    <label style="display: block; font-size: 0.68rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;">Full Name</label>
+                                    <div class="swal-field-wrapper">
+                                        <div class="swal-field-icon"><i data-lucide="user"></i></div>
+                                        <input type="text" id="swal-prof-name" value="${user.name}" class="swal-field-input" placeholder="e.g. John Doe" required>
+                                    </div>
+                                </div>
+                                <div class="swal-input-group">
+                                    <label style="display: block; font-size: 0.68rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;">Username</label>
+                                    <div class="swal-field-wrapper">
+                                        <div class="swal-field-icon"><i data-lucide="fingerprint"></i></div>
+                                        <input type="text" value="${user.username}" class="swal-field-input" placeholder="Username" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="swal-input-group">
+                                    <label style="display: block; font-size: 0.68rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;">Email Address</label>
+                                    <div class="swal-field-wrapper">
+                                        <div class="swal-field-icon"><i data-lucide="mail"></i></div>
+                                        <input type="email" id="swal-prof-email" value="${user.email}" class="swal-field-input" placeholder="e.g. email@domain.com">
+                                    </div>
+                                </div>
+                                <div class="swal-input-group">
+                                    <label style="display: block; font-size: 0.68rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;">Phone Number</label>
+                                    <div class="swal-field-wrapper">
+                                        <div class="swal-field-icon"><i data-lucide="phone"></i></div>
+                                        <input type="text" id="swal-prof-phone" value="${user.phone}" class="swal-field-input" placeholder="e.g. +233...">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="swal-input-group">
+                                    <label style="display: block; font-size: 0.68rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;">Department (Unit)</label>
+                                    <div class="swal-field-wrapper">
+                                        <div class="swal-field-icon"><i data-lucide="building"></i></div>
+                                        <input type="text" id="swal-prof-dept" value="${user.department}" class="swal-field-input" readonly placeholder="e.g. IT, Security">
+                                    </div>
+                                </div>
+                                <div class="swal-input-group">
+                                    <label style="display: block; font-size: 0.68rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;">Professional Role</label>
+                                    <div class="swal-field-wrapper">
+                                        <div class="swal-field-icon"><i data-lucide="shield"></i></div>
+                                        <input type="text" id="swal-prof-role" value="${user.role}" class="swal-field-input" placeholder="e.g. Officer">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Save Profile Settings',
+                cancelButtonText: 'Close',
+                confirmButtonColor: '#f97316',
+                cancelButtonColor: '#f1f5f9',
+                customClass: {
+                    popup: 'glass-monolith-popup',
+                    confirmButton: 'premium-swal-btn',
+                    cancelButton: 'premium-swal-cancel-btn'
+                },
+                width: '760px',
+                didOpen: () => {
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                },
+                preConfirm: async () => {
+                    const name = document.getElementById('swal-prof-name').value;
+                    const email = document.getElementById('swal-prof-email').value;
+                    const phone = document.getElementById('swal-prof-phone').value;
+                    const department = document.getElementById('swal-prof-dept').value;
+                    const role = document.getElementById('swal-prof-role').value;
+
+                    if (!name) {
+                        Swal.showValidationMessage('Full Name is required');
+                        return false;
+                    }
+
+                    try {
+                        const res = await fetch("{{ route('settings.update', [], false) }}", {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json', 
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ name, email, phone, department, role })
+                        });
+                        const data = await res.json();
+                        if (!res.ok || !data.success) {
+                            Swal.showValidationMessage(data.message || 'Profile sync failed.');
+                            return false;
+                        }
+                        return data;
+                    } catch (e) {
+                        Swal.showValidationMessage('Network node transmission error.');
+                        return false;
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Profile Updated',
+                        text: 'Your details have been successfully synchronized.',
+                        icon: 'success',
+                        confirmButtonColor: '#f97316'
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            });
+        }
+
+        async function previewAndUploadSwalAvatar(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+
+            // Validate file size limit
+            const maxMB = 5;
+            if (file.size > maxMB * 1024 * 1024) {
+                Swal.showValidationMessage(`Selected file size must be less than ${maxMB}MB.`);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            try {
+                // Show upload loading indicator in container
+                const container = document.getElementById('swal-avatar-container');
+                const originalHTML = container.innerHTML;
+                container.innerHTML = `
+                    <div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
+                        <i data-lucide="loader-2" class="spin" style="width: 24px; color: #f97316;"></i>
+                    </div>
+                `;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+
+                const res = await fetch("{{ route('settings.avatar', [], false) }}", {
+                    method: 'POST',
+                    headers: { 
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json' 
+                    },
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    container.innerHTML = `
+                        <img src="${data.url}?t=${new Date().getTime()}" id="swal-avatar-preview" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+                        <!-- Floating Upload Button -->
+                        <button type="button" onclick="document.getElementById('swal-avatar-file').click()" style="position: absolute; bottom: 0; right: 0; width: 32px; height: 32px; background: white; border-radius: 50%; border: 1.5px solid #cbd5e1; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.12); transition: 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'" title="Upload Photo">
+                            <i data-lucide="camera" style="width: 15px; color: var(--store-orange);"></i>
+                        </button>
+                    `;
+                    // Also update user storefront widget image if present
+                    const widgetAvatar = document.querySelector('.user-widget img');
+                    if (widgetAvatar) {
+                        widgetAvatar.src = data.url + '?t=' + new Date().getTime();
+                    }
+                } else {
+                    container.innerHTML = originalHTML;
+                    Swal.showValidationMessage(data.message || 'Avatar upload failed.');
+                }
+            } catch (e) {
+                Swal.showValidationMessage('Failed to upload avatar.');
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
     </script>
 </body>
 </html>

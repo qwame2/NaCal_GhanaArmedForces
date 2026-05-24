@@ -44,11 +44,19 @@ class StrictAuditLogging
                         'admin/logs' => 'System Logs',
                         'admin/inventory' => 'the Inventory Overview',
                         'admin/users' => 'the User Registry',
+                        'admin/requisitions' => 'the Admin Requisitions page',
                         'admin' => 'the Admin Hub',
                         'received-items' => 'the Received Items list',
                         'issue-items' => 'the Item Issuance console',
                         'return-items' => 'the Item Recovery page',
                         'stock-check' => 'the Stock Verification page',
+                        'personnel/requisitions' => 'the Store Requisitions Management portal',
+                        'requisitions/history' => 'their Requisition History page',
+                        'requisitions/checkout' => 'the Requisition Checkout form',
+                        'requisitions' => 'the Store Requisitions page',
+                        'reports' => 'the Reports center',
+                        'settings' => 'the Account Settings panel',
+                        'notifications' => 'the Notifications page',
                         'api/total-unread' => 'notifications',
                         'messages' => 'messages',
                         'profile' => 'profile settings',
@@ -59,6 +67,12 @@ class StrictAuditLogging
                             $friendlyPath = $readable;
                             break;
                         }
+                    }
+
+                    // Fallback to turn any unmatched raw path like "/personnel/requisitions" into a friendly sentence
+                    if (str_starts_with($friendlyPath, '/')) {
+                        $cleaned = str_replace(['/', '-', '_'], ' ', ltrim($friendlyPath, '/'));
+                        $friendlyPath = 'the ' . ucwords($cleaned) . ' page';
                     }
 
                     // Custom Overrides for Specific System Endpoints

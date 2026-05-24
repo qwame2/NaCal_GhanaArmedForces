@@ -14,7 +14,8 @@ use App\Http\Controllers\ArchiveController;
 // Self-healing auto-migration schema update
 try {
     if (!\Illuminate\Support\Facades\Schema::hasColumn('inventory_items', 'location') ||
-        !\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collected_at')) {
+        !\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collected_at') ||
+        !\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collector_name')) {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
     }
 } catch (\Exception $e) {
@@ -703,10 +704,19 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/admin/settings/unit-rule', function(\Illuminate\Http\Request $request) {
         if (!auth()->user()->is_admin) abort(403);
         $category = trim($request->input('category'));
-        $keyword = strtoupper(trim($request->input('keyword')));
         $unit    = strtoupper(trim($request->input('unit')));
         $location = trim($request->input('location')) ?: 'Not Specified';
-        if (!$category || !$keyword || !$unit) return back()->with('error', 'Category, keyword, and unit are required.');
+
+        // Support both single keyword or multiple keywords
+        $keywords = $request->input('keywords');
+        if (!$keywords) {
+            $singleKeyword = $request->input('keyword');
+            $keywords = $singleKeyword ? [$singleKeyword] : [];
+        }
+
+        if (empty($keywords) || !$category || !$unit) {
+            return back()->with('error', 'Category, keywords, and unit are required.');
+        }
 
         $setting = \App\Models\Setting::firstOrCreate(
             ['key' => 'item_unit_rules'],
@@ -714,52 +724,60 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         );
         $rules = json_decode($setting->value ?? '{}', true) ?? [];
         
-        $rules[$keyword] = [
-            'category' => $category,
-            'unit' => $unit,
-            'location' => $location
-        ];
+        $addedCount = 0;
+        foreach ($keywords as $kw) {
+            $kwUpper = strtoupper(trim($kw));
+            if (empty($kwUpper)) continue;
+            
+            $rules[$kwUpper] = [
+                'category' => $category,
+                'unit' => $unit,
+                'location' => $location
+            ];
+            
+            // Automatically store this item in the database as a System Draft batch item
+            try {
+                \Illuminate\Support\Facades\DB::transaction(function() use ($category, $kwUpper, $unit, $location) {
+                    $systemBatch = \App\Models\InventoryBatch::firstOrCreate(
+                        [
+                            'ledge_category' => $category,
+                            'supplier_status' => 'System Draft'
+                        ],
+                        [
+                            'supplier_name' => 'System',
+                            'acquisition_type' => 'Supplier',
+                            'entry_date' => now(),
+                            'arrival_date' => now(),
+                            'recorded_by' => auth()->id() ?? 1,
+                            'approval_status' => 'approved'
+                        ]
+                    );
+
+                    \App\Models\InventoryItem::updateOrCreate(
+                        [
+                            'description' => $kwUpper,
+                            'batch_id' => $systemBatch->id
+                        ],
+                        [
+                            'unit' => $unit,
+                            'stock_balance' => 0,
+                            'qty' => 0,
+                            'variance' => 0,
+                            'remarks' => 'Auto-generated unit rule placeholder',
+                            'location' => $location
+                        ]
+                    );
+                });
+            } catch (\Exception $e) {
+                // Log or ignore to not break main settings flow
+            }
+            $addedCount++;
+        }
+        
         $setting->value = json_encode($rules);
         $setting->save();
 
-        // Automatically store this item in the database as a System Draft batch item
-        try {
-            \Illuminate\Support\Facades\DB::transaction(function() use ($category, $keyword, $unit, $location) {
-                $systemBatch = \App\Models\InventoryBatch::firstOrCreate(
-                    [
-                        'ledge_category' => $category,
-                        'supplier_status' => 'System Draft'
-                    ],
-                    [
-                        'supplier_name' => 'System',
-                        'acquisition_type' => 'Supplier',
-                        'entry_date' => now(),
-                        'arrival_date' => now(),
-                        'recorded_by' => auth()->id() ?? 1,
-                        'approval_status' => 'approved'
-                    ]
-                );
-
-                \App\Models\InventoryItem::updateOrCreate(
-                    [
-                        'description' => $keyword,
-                        'batch_id' => $systemBatch->id
-                    ],
-                    [
-                        'unit' => $unit,
-                        'stock_balance' => 0,
-                        'qty' => 0,
-                        'variance' => 0,
-                        'remarks' => 'Auto-generated unit rule placeholder',
-                        'location' => $location
-                    ]
-                );
-            });
-        } catch (\Exception $e) {
-            // Log or ignore to not break main settings flow
-        }
-
-        return back()->with('success', "Unit rule added: [{$category}] \"{$keyword}\" → {$unit} ({$location})");
+        return back()->with('success', "Added {$addedCount} package type rule(s) successfully.");
     })->name('admin.settings.unit-rule.store');
 
     Route::delete('/admin/settings/unit-rule', function(\Illuminate\Http\Request $request) {
@@ -794,9 +812,17 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/admin/settings/threshold-rule', function(\Illuminate\Http\Request $request) {
         if (!auth()->user()->is_admin) abort(403);
         $category = trim($request->input('category'));
-        $keyword = strtolower(trim($request->input('keyword')));
         $threshold = (int)$request->input('threshold');
-        if (!$category || !$keyword || $threshold < 0) return back()->with('error', 'Category, keyword, and a valid threshold are required.');
+        
+        $keywords = $request->input('keywords');
+        if (!$keywords) {
+            $singleKeyword = $request->input('keyword');
+            $keywords = $singleKeyword ? [$singleKeyword] : [];
+        }
+
+        if (empty($keywords) || !$category || $threshold < 0) {
+            return back()->with('error', 'Category, keywords, and a valid threshold are required.');
+        }
 
         $setting = \App\Models\Setting::firstOrCreate(
             ['key' => 'item_threshold_rules'],
@@ -804,13 +830,20 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         );
         $rules = json_decode($setting->value ?? '{}', true) ?? [];
         
-        $rules[$keyword] = [
-            'category' => $category,
-            'threshold' => $threshold
-        ];
+        $addedCount = 0;
+        foreach ($keywords as $kw) {
+            $kwLower = strtolower(trim($kw));
+            if (empty($kwLower)) continue;
+            
+            $rules[$kwLower] = [
+                'category' => $category,
+                'threshold' => $threshold
+            ];
+            $addedCount++;
+        }
         $setting->value = json_encode($rules);
         $setting->save();
-        return back()->with('success', "Threshold rule added: [{$category}] \"{$keyword}\" → {$threshold} units");
+        return back()->with('success', "Added {$addedCount} threshold rule(s) successfully.");
     })->name('admin.settings.threshold-rule.store');
 
     Route::delete('/admin/settings/threshold-rule', function(\Illuminate\Http\Request $request) {
@@ -830,9 +863,17 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/admin/settings/request-limit', function(\Illuminate\Http\Request $request) {
         if (!auth()->user()->is_admin) abort(403);
         $category = trim($request->input('category'));
-        $keyword = strtolower(trim($request->input('keyword')));
         $limit = (int)$request->input('limit');
-        if (!$category || !$keyword || $limit < 0) return back()->with('error', 'Category, keyword, and a valid limit are required.');
+        
+        $keywords = $request->input('keywords');
+        if (!$keywords) {
+            $singleKeyword = $request->input('keyword');
+            $keywords = $singleKeyword ? [$singleKeyword] : [];
+        }
+
+        if (empty($keywords) || !$category || $limit < 0) {
+            return back()->with('error', 'Category, keywords, and a valid limit are required.');
+        }
 
         $setting = \App\Models\Setting::firstOrCreate(
             ['key' => 'item_request_limits'],
@@ -840,13 +881,20 @@ Route::middleware(['auth', 'check_status'])->group(function () {
         );
         $rules = json_decode($setting->value ?? '{}', true) ?? [];
         
-        $rules[$keyword] = [
-            'category' => $category,
-            'limit' => $limit
-        ];
+        $addedCount = 0;
+        foreach ($keywords as $kw) {
+            $kwLower = strtolower(trim($kw));
+            if (empty($kwLower)) continue;
+            
+            $rules[$kwLower] = [
+                'category' => $category,
+                'limit' => $limit
+            ];
+            $addedCount++;
+        }
         $setting->value = json_encode($rules);
         $setting->save();
-        return back()->with('success', "Request limit rule added: [{$category}] \"{$keyword}\" → max {$limit} items");
+        return back()->with('success', "Added {$addedCount} request limit rule(s) successfully.");
     })->name('admin.settings.request-limit.store');
 
     Route::delete('/admin/settings/request-limit', function(\Illuminate\Http\Request $request) {
@@ -865,29 +913,35 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     // Supplier Registry
     Route::post('/admin/settings/supplier-registry', function(\Illuminate\Http\Request $request) {
         if (!auth()->user()->is_admin) abort(403);
-        $name = trim($request->input('name'));
+        $namesStr = trim($request->input('name'));
         $delivery_person = trim($request->input('delivery_person'));
         $phone = trim($request->input('phone'));
         $email = trim($request->input('email'));
         $address = trim($request->input('address'));
         $desc = trim($request->input('desc'));
 
-        if (!$name) return back()->with('error', 'Supplier name is required.');
+        if (!$namesStr) return back()->with('error', 'Supplier name is required.');
 
-        $supplier = \App\Models\Supplier::updateOrCreate(
-            ['name' => $name],
-            [
-                'delivery_person' => $delivery_person,
-                'phone' => $phone,
-                'email' => $email,
-                'address' => $address,
-                'desc' => $desc
-            ]
-        );
-        $isUpdate = !$supplier->wasRecentlyCreated;
+        // Support comma-separated names
+        $names = array_filter(array_map('trim', explode(',', $namesStr)));
+        if (empty($names)) return back()->with('error', 'Please enter at least one valid supplier name.');
 
-        $actionMsg = $isUpdate ? 'updated' : 'registered';
-        return back()->with('success', "Supplier \"{$name}\" successfully {$actionMsg} in the registry.");
+        $addedCount = 0;
+        foreach ($names as $name) {
+            \App\Models\Supplier::updateOrCreate(
+                ['name' => $name],
+                [
+                    'delivery_person' => $delivery_person,
+                    'phone' => $phone,
+                    'email' => $email,
+                    'address' => $address,
+                    'desc' => $desc
+                ]
+            );
+            $addedCount++;
+        }
+
+        return back()->with('success', "Processed {$addedCount} supplier(s) in the registry successfully.");
     })->name('admin.settings.supplier.store');
 
     Route::delete('/admin/settings/supplier-registry', function(\Illuminate\Http\Request $request) {

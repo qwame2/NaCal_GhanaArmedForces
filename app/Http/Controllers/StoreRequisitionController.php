@@ -149,6 +149,7 @@ class StoreRequisitionController extends Controller
             ->map(function ($req) {
                 return [
                     'id'             => $req->id,
+                    'unique_id'      => $req->unique_id,
                     'department'     => $req->department,
                     'requester_name' => $req->requester_name,
                     'requester_phone'=> $req->requester?->phone ?? 'N/A',
@@ -166,6 +167,8 @@ class StoreRequisitionController extends Controller
                     'processed_at'   => $req->processed_at?->format('d/m/y H:i'),
                     'collected_at'   => $req->collected_at?->format('d/m/y H:i'),
                     'collected_by_name' => $req->collector?->name,
+                    'collector_name' => $req->collector_name,
+                    'collector_contact' => $req->collector_contact,
                     'items'          => $req->items->map(fn($i) => [
                         'description'        => $i->description,
                         'category'           => $i->category,
@@ -184,9 +187,14 @@ class StoreRequisitionController extends Controller
 
     public function collect(Request $request, $id)
     {
-        if (auth()->user()->role === 'Requisitioner') {
+        if (auth()->user()->role === 'Requisitioner' || auth()->user()->is_admin) {
             return response()->json(['success' => false, 'message' => 'Only store personnel can confirm physical collection.'], 403);
         }
+
+        $request->validate([
+            'collector_name' => 'required|string|max:255',
+            'collector_contact' => 'required|string|max:100',
+        ]);
 
         $req = StoreRequisition::findOrFail($id);
 
@@ -200,6 +208,8 @@ class StoreRequisitionController extends Controller
 
         $req->collected_at = now();
         $req->collected_by = auth()->id();
+        $req->collector_name = $request->collector_name;
+        $req->collector_contact = $request->collector_contact;
         $req->save();
 
         // Create an Issuance and IssuedItems to represent this given out/collected asset
@@ -246,7 +256,7 @@ class StoreRequisitionController extends Controller
             'user_id'    => auth()->id(),
             'event_type' => 'REQUISITION',
             'action'     => 'COLLECT_REQUISITION',
-            'description'=> auth()->user()->name . " confirmed physical collection of store requisition #{$req->id} by {$req->requester_name}.",
+            'description'=> auth()->user()->name . " confirmed physical collection of store requisition #{$req->id} by {$req->collector_name} ({$req->collector_contact}).",
             'severity'   => 'info',
             'metadata'   => ['requisition_id' => $req->id],
             'ip_address' => $request->ip(),
@@ -345,6 +355,18 @@ class StoreRequisitionController extends Controller
         if ($request->filled('department')) {
             $query->where('department', 'LIKE', '%' . $request->department . '%');
         }
+        if ($request->filled('search_id')) {
+            $search = trim($request->input('search_id'));
+            $query->where(function($q) use ($search) {
+                $parsedId = preg_replace('/[^0-9]/', '', $search);
+                if (!empty($parsedId)) {
+                    $q->where('id', $parsedId);
+                }
+                $q->orWhereHas('items', function($ki) use ($search) {
+                    $ki->where('description', 'LIKE', '%' . $search . '%');
+                });
+            });
+        }
 
         $requisitions = $query->paginate(5)->withQueryString();
         $ledgeMap = Setting::getCategories();
@@ -415,6 +437,7 @@ class StoreRequisitionController extends Controller
 
         return response()->json([
             'id'             => $req->id,
+            'unique_id'      => $req->unique_id,
             'requester_name' => $req->requester_name,
             'department'     => $req->department,
             'rank_or_title'  => $req->rank_or_title,
@@ -432,6 +455,8 @@ class StoreRequisitionController extends Controller
             'processor'      => $req->processor?->name,
             'collected_at'   => $req->collected_at?->format('d/m/y H:i'),
             'collected_by_name' => $req->collector?->name,
+            'collector_name' => $req->collector_name,
+            'collector_contact' => $req->collector_contact,
             'items'          => $items,
             'alternatives'   => $alternatives,
         ]);
@@ -669,6 +694,18 @@ class StoreRequisitionController extends Controller
         }
         if ($request->filled('department')) {
             $query->where('department', 'LIKE', '%' . $request->department . '%');
+        }
+        if ($request->filled('search_id')) {
+            $search = trim($request->input('search_id'));
+            $query->where(function($q) use ($search) {
+                $parsedId = preg_replace('/[^0-9]/', '', $search);
+                if (!empty($parsedId)) {
+                    $q->where('id', $parsedId);
+                }
+                $q->orWhereHas('items', function($ki) use ($search) {
+                    $ki->where('description', 'LIKE', '%' . $search . '%');
+                });
+            });
         }
 
         $requisitions = $query->paginate(5)->withQueryString();

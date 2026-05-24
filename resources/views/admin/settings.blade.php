@@ -16,6 +16,22 @@
         to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* Premium Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
 
 
     /* ── Main Content ── */
@@ -116,6 +132,96 @@
 
     .select2-container--default.select2-container--focus .select2-selection--single {
         border-color: #4f46e5 !important;
+    }
+
+    /* ── Select2 Multiple Selection Styling ── */
+    .select2-container--default .select2-selection--multiple {
+        min-height: 48px !important;
+        background: white !important;
+        border: 2px solid #edf2f7 !important;
+        border-radius: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        padding: 4px 10px !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.01) !important;
+    }
+
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #4f46e5 !important;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        width: 100% !important;
+        padding: 0 !important;
+        gap: 6px !important;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background: linear-gradient(135deg, #e0e7ff, #e0e7ff) !important;
+        border: 1px solid #c7d2fe !important;
+        border-radius: 8px !important;
+        color: #4f46e5 !important;
+        font-weight: 700 !important;
+        font-size: 0.8rem !important;
+        padding: 4px 10px !important;
+        margin: 2px 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        transition: all 0.15s ease !important;
+        box-shadow: 0 1px 2px rgba(79, 70, 229, 0.05) !important;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice:hover {
+        background: #4f46e5 !important;
+        border-color: #4f46e5 !important;
+        color: white !important;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: #4f46e5 !important;
+        border: none !important;
+        background: transparent !important;
+        font-weight: 800 !important;
+        font-size: 0.85rem !important;
+        margin-right: 6px !important;
+        cursor: pointer !important;
+        transition: all 0.15s ease !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice:hover .select2-selection__choice__remove {
+        color: white !important;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        color: #f43f5e !important;
+        transform: scale(1.15) !important;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field {
+        margin: 2px 0 !important;
+        font-family: inherit !important;
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        color: #1e293b !important;
+        height: auto !important;
+        line-height: inherit !important;
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-search--inline .select2-search__field::placeholder {
+        color: #94a3b8 !important;
+        font-weight: 500 !important;
     }
 
     .select2-container--default .select2-selection--single .select2-selection__rendered {
@@ -705,14 +811,14 @@
                             <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No unit rules defined yet. Add rules on the right.</p>
                         </div>
                     @else
-                        <div style="display: flex; flex-direction: column; gap: 1.5rem;" id="rulesContainer">
+                        <div class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;" id="rulesContainer">
                             @foreach($groupedRules as $catCode => $rulesGroup)
                                 <div class="unit-rule-group">
                                     <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
                                         <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
                                         {{ $categories[$catCode] ?? 'Uncategorized' }}
                                     </h6>
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem;">
+                                    <div class="custom-scrollbar" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 0.25rem;">
                                         @foreach($rulesGroup as $keyword => $ruleData)
                                             @php
                                                 $unit = $ruleData['unit'];
@@ -752,8 +858,8 @@
 
                 {{-- Add New Rule --}}
                 <div class="cat-form-card">
-                    <h5>Add Package Type Rule</h5>
-                    <p>Type a keyword (e.g. "pen") and set its default unit (e.g. "Boxes"). Matching is case-insensitive.</p>
+                    <h5>Add Package Type Rule(s)</h5>
+                    <p>Type or select keyword(s) (e.g. "pen") and set their default unit (e.g. "Boxes"). Matching is case-insensitive.</p>
                     <form action="{{ route('admin.settings.unit-rule.store') }}" method="POST">
                         @csrf
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
@@ -767,8 +873,8 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Item Keyword</label>
-                                <select name="keyword" id="unitKeyword" class="cfg-text-input select2-unit" required>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Item Keyword(s)</label>
+                                <select name="keywords[]" id="unitKeyword" class="cfg-text-input select2-unit" required multiple="multiple">
                                     <option value="">Select Category First...</option>
                                 </select>
                             </div>
@@ -871,14 +977,14 @@
                             <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No threshold rules defined yet. Add rules on the right.</p>
                         </div>
                     @else
-                        <div style="display: flex; flex-direction: column; gap: 1.5rem;" id="thresholdsContainer">
+                        <div class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;" id="thresholdsContainer">
                             @foreach($groupedThresholds as $catCode => $thresholdsGroup)
                                 <div class="threshold-rule-group">
                                     <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
                                         <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
                                         {{ $categories[$catCode] ?? 'Uncategorized' }}
                                     </h6>
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem;">
+                                    <div class="custom-scrollbar" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 0.25rem;">
                                         @foreach($thresholdsGroup as $keyword => $threshold)
                                             <div class="threshold-rule-card" data-keyword="{{ strtolower($keyword) }}" style="display: flex; align-items: center; gap: 10px; padding: 0.75rem 1rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s;">
                                                 <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#ef4444,#dc2626); color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
@@ -929,8 +1035,8 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Item Keyword</label>
-                                <select name="keyword" id="thresholdKeyword" class="cfg-text-input select2-threshold" required>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Item Keyword(s)</label>
+                                <select name="keywords[]" id="thresholdKeyword" class="cfg-text-input select2-threshold" required multiple="multiple">
                                     <option value="">Select Category First...</option>
                                 </select>
                             </div>
@@ -995,14 +1101,14 @@
                             <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No request limits defined yet. Add rules on the right.</p>
                         </div>
                     @else
-                        <div style="display: flex; flex-direction: column; gap: 1.5rem;" id="limitsContainer">
+                        <div class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;" id="limitsContainer">
                             @foreach($groupedLimits as $catCode => $limitsGroup)
                                 <div class="limit-rule-group">
                                     <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
                                         <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
                                         {{ $categories[$catCode] ?? 'Uncategorized' }}
                                     </h6>
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem;">
+                                    <div class="custom-scrollbar" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 0.25rem;">
                                         @foreach($limitsGroup as $keyword => $limit)
                                             <div class="limit-rule-card" data-keyword="{{ strtolower($keyword) }}" style="display: flex; align-items: center; gap: 10px; padding: 0.75rem 1rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s;">
                                                 <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#6366f1,#4f46e5); color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
@@ -1064,8 +1170,8 @@
                                 </select>
                             </div>
                             <div>
-                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Item Keyword</label>
-                                <select name="keyword" id="limitKeyword" class="cfg-text-input select2-limit" required>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Item Keyword(s)</label>
+                                <select name="keywords[]" id="limitKeyword" class="cfg-text-input select2-limit" required multiple="multiple">
                                     <option value="">Select Category First...</option>
                                 </select>
                             </div>
@@ -1194,8 +1300,8 @@
                         @csrf
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
                             <div>
-                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Supplier Name (Company)</label>
-                                <input type="text" name="name" id="supplierNameInput" class="cfg-text-input" placeholder="e.g. Acme Corp" required>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Supplier Name(s) (Company)</label>
+                                <input type="text" name="name" id="supplierNameInput" class="cfg-text-input" placeholder="e.g. Acme Corp, Apex Ltd (comma-separated for multiple)" required>
                             </div>
                             <div>
                                 <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Delivery Person Name</label>
@@ -1306,10 +1412,10 @@
         setTimeout(() => {
             const keywordSelect = $('#unitKeyword');
             if (keywordSelect.find("option[value='" + keyword + "']").length) {
-                keywordSelect.val(keyword).trigger('change');
+                keywordSelect.val([keyword]).trigger('change');
             } else {
                 var newOption = new Option(keyword, keyword, true, true);
-                keywordSelect.append(newOption).trigger('change');
+                keywordSelect.append(newOption).val([keyword]).trigger('change');
             }
         }, 100);
 
@@ -1351,11 +1457,11 @@
         setTimeout(() => {
             const keywordSelect = $('#thresholdKeyword');
             if (keywordSelect.find("option[value='" + keyword + "']").length) {
-                keywordSelect.val(keyword).trigger('change');
+                keywordSelect.val([keyword]).trigger('change');
             } else {
                 // If tag is allowed, we can add it
                 var newOption = new Option(keyword, keyword, true, true);
-                keywordSelect.append(newOption).trigger('change');
+                keywordSelect.append(newOption).val([keyword]).trigger('change');
             }
         }, 100);
 
@@ -1392,7 +1498,7 @@
             if (keywordSelect.find("option[value='" + keyword + "']").length === 0) {
                 keywordSelect.append(new Option(keyword, keyword));
             }
-            keywordSelect.val(keyword).trigger('change.select2');
+            keywordSelect.val([keyword]).trigger('change.select2');
             // Manually show the stock panel since we're not using select2:select here
             if (typeof showLimitStock === 'function') showLimitStock(keyword);
         }, 100);
@@ -1443,7 +1549,7 @@
         // Initialize Select2 for units
         $('.select2-unit').select2({
             tags: true,
-            placeholder: 'Select or type a new item...',
+            placeholder: 'Select or type one or more items...',
             allowClear: true,
             width: '100%',
             dropdownParent: $('#unit-rules')
@@ -1513,7 +1619,7 @@
         // Initialize Select2 for limits
         $('.select2-limit').select2({
             tags: true,
-            placeholder: 'Select or type a new item...',
+            placeholder: 'Select or type one or more items...',
             allowClear: true,
             width: '100%',
             dropdownParent: $('#request-limits')
@@ -1545,9 +1651,16 @@
             showLimitStock(e.params.data.id);
         });
 
-        // Hide when cleared
-        $('#limitKeyword').on('select2:clear select2:unselecting', function() {
-            document.getElementById('limitStockInfo').style.display = 'none';
+        // Handle unselecting or clearing
+        $('#limitKeyword').on('change', function() {
+            const selected = $(this).val();
+            if (!selected || selected.length === 0) {
+                document.getElementById('limitStockInfo').style.display = 'none';
+            } else {
+                // Show stock for the last selected item in the list
+                const lastSelected = selected[selected.length - 1];
+                showLimitStock(lastSelected);
+            }
         });
     });
 

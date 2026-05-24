@@ -144,6 +144,7 @@
                             <div class="ops-cluster" style="justify-content: center; display: flex; align-items: center; gap: 10px;">
                                 <button type="button" class="btn-purge" title="User Details"
                                     onclick="viewUserDetails({
+                                        id: '{{ $user->id }}',
                                         name: '{{ addslashes($user->name) }}',
                                         username: '{{ addslashes($user->username) }}',
                                         email: '{{ $user->email ?? 'Not Provided' }}',
@@ -151,6 +152,7 @@
                                         department: '{{ $user->department ?? 'UNASSIGNED' }}',
                                         role: '{{ $user->role }}',
                                         last_login: '{{ $user->last_login_at ? $user->last_login_at->format('d/m/y H:i') : 'No record' }}',
+                                        last_logout: '{{ $user->last_logout_at ? $user->last_logout_at->format('d/m/y H:i') : 'No record' }}',
                                         status: '{{ $user->is_active ? 'ACTIVE' : 'DEACTIVATED' }}',
                                         avatar: '{{ $user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}'
                                     })"
@@ -524,6 +526,394 @@
         cursor: not-allowed;
         box-shadow: none;
     }
+
+    /* User Details Modal Redesign */
+    .user-details-card {
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        font-family: 'Outfit', sans-serif;
+    }
+    
+    .profile-header-banner {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
+        border: 1px solid rgba(79, 70, 229, 0.1);
+        border-radius: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .profile-header-banner::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -20%;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .profile-avatar-wrapper {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        flex-shrink: 0;
+    }
+    
+    .profile-avatar {
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+        object-fit: cover;
+        border: 4px solid white;
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.15);
+    }
+    
+    .profile-status-ring {
+        position: absolute;
+        bottom: -4px;
+        right: -4px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .profile-status-ring.online {
+        background: #10b981;
+    }
+    .profile-status-ring.offline {
+        background: #ef4444;
+    }
+    
+    .profile-title-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: left;
+    }
+    
+    .profile-name {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #0f172a;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
+    }
+    
+    .profile-badges {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .profile-username-badge {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #4f46e5;
+        background: #eef2ff;
+        padding: 4px 10px;
+        border-radius: 8px;
+        text-transform: lowercase;
+        border: 1px solid rgba(79, 70, 229, 0.1);
+    }
+    
+    .profile-id-badge {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #64748b;
+        background: #f1f5f9;
+        padding: 4px 10px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+    
+    @media (max-width: 550px) {
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .details-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 1.25rem;
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.006);
+    }
+    
+    .details-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.05);
+        border-color: rgba(79, 70, 229, 0.3);
+    }
+    
+    .card-icon-box {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all 0.3s;
+    }
+    
+    .card-icon-box i {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .email-icon { background: #eef2ff; color: #4f46e5; }
+    .phone-icon { background: #ecfdf5; color: #10b981; }
+    .dept-icon { background: #faf5ff; color: #a855f7; }
+    .role-icon { background: #fff7ed; color: #f97316; }
+    
+    .details-card:hover .card-icon-box {
+        transform: scale(1.05);
+    }
+    
+    .card-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        text-align: left;
+        min-width: 0;
+    }
+    
+    .card-label {
+        font-size: 0.68rem;
+        font-weight: 800;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .card-value {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: #1e293b;
+        word-break: break-all;
+    }
+    
+    .card-value.highlighted-text {
+        color: #4f46e5;
+    }
+    
+    .card-value-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .btn-copy-action, .btn-call-action {
+        background: #f1f5f9;
+        border: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        color: #64748b;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+    
+    .btn-copy-action:hover, .btn-call-action:hover {
+        background: #4f46e5;
+        color: white;
+    }
+    
+    .btn-copy-action i, .btn-call-action i {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .role-badge-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        width: fit-content;
+    }
+    
+    .role-badge-pill.admin {
+        background: #fef2f2;
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.1);
+    }
+    
+    .role-badge-pill.staff {
+        background: #f0fdf4;
+        color: #15803d;
+        border: 1px solid rgba(21, 128, 61, 0.1);
+    }
+    
+    .session-timeline-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+    
+    .timeline-title {
+        margin: 0;
+        font-size: 0.85rem;
+        font-weight: 900;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-align: left;
+    }
+    
+    .timeline-title i {
+        width: 16px;
+        height: 16px;
+        color: #4f46e5;
+    }
+    
+    .timeline-flow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        gap: 1rem;
+    }
+    
+    @media (max-width: 500px) {
+        .timeline-flow {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.5rem;
+        }
+        .timeline-connector {
+            display: none;
+        }
+    }
+    
+    .timeline-node {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        text-align: left;
+    }
+    
+    .node-icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: white;
+        border: 1.5px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    }
+    
+    .node-icon-box i {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .login-node .node-icon-box {
+        color: #10b981;
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+    
+    .logout-node .node-icon-box {
+        color: #64748b;
+        border-color: #e2e8f0;
+    }
+    
+    .node-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .node-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .node-time {
+        font-size: 0.85rem;
+        font-weight: 850;
+        color: #1e293b;
+        font-family: monospace;
+    }
+    
+    .timeline-connector {
+        flex: 1;
+        height: 2px;
+        background: repeating-linear-gradient(to right, #cbd5e1 0px, #cbd5e1 4px, transparent 4px, transparent 8px);
+        max-width: 100px;
+    }
+    
+    .status-summary-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-top: 12px;
+        border-top: 1px solid #e2e8f0;
+        font-size: 0.8rem;
+        color: #64748b;
+        text-align: left;
+    }
+    
+    .status-indicator-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+    
+    .status-indicator-dot.active {
+        background: #10b981;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    }
+    
+    .status-indicator-dot.inactive {
+        background: #ef4444;
+        box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+    }
 </style>
 
 <script>
@@ -792,81 +1182,113 @@
 
     function viewUserDetails(user) {
         Swal.fire({
-            title: `
-                <div style="text-align: left; position: relative; margin-bottom: 5px;">
-                    <div style="position: absolute; top: -15px; left: -15px; right: -15px; height: 80px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); opacity: 0.05; border-radius: 24px 24px 0 0;"></div>
-                    <div style="display: flex; align-items: center; gap: 20px; position: relative; z-index: 1; padding: 5px 0;">
-                        <div style="position: relative;">
-                            <img src="${user.avatar}" style="width: 72px; height: 72px; border-radius: 22px; border: 4px solid white; box-shadow: 0 15px 30px rgba(79, 70, 229, 0.15); object-fit: cover;">
-                            <div style="position: absolute; bottom: -5px; right: -5px; width: 22px; height: 22px; border-radius: 50%; border: 3px solid white; background: ${user.status === 'ACTIVE' ? '#10b981' : '#ef4444'}; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"></div>
+            html: `
+                <div class="user-details-card">
+                    <!-- Header Banner -->
+                    <div class="profile-header-banner">
+                        <div class="profile-avatar-wrapper">
+                            <img src="${user.avatar}" class="profile-avatar" alt="${user.name}">
+                            <span class="profile-status-ring ${user.status === 'ACTIVE' ? 'online' : 'offline'}"></span>
                         </div>
-                        <div>
-                            <div style="font-size: 1.4rem; font-weight: 950; color: #0f172a; letter-spacing: -0.03em; line-height: 1.1;">${user.name}</div>
-                            <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
-                                <span style="font-size: 0.75rem; font-weight: 800; color: #4f46e5; background: #eef2ff; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.02em;">@${user.username}</span>
-                                <span style="font-size: 0.75rem; font-weight: 800; color: #64748b; opacity: 0.6;">•</span>
-                                <span style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase;">ID: 00${Math.floor(Math.random() * 900) + 100}</span>
+                        <div class="profile-title-group">
+                            <h2 class="profile-name">${user.name}</h2>
+                            <div class="profile-badges">
+                                <span class="profile-username-badge">@${user.username}</span>
+                                <span class="profile-id-badge">ID: ${(user.id || '').toString().padStart(5, '0')}</span>
                             </div>
                         </div>
                     </div>
-                </div>`,
-            html: `
-                <div style="padding: 5px; text-align: left;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-                        <!-- Primary Info Cards -->
-                        <div style="grid-column: span 2; background: #f8fafc; padding: 18px; border-radius: 20px; border: 1px solid #f1f5f9; position: relative; overflow: hidden;">
-                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">
-                                <i data-lucide="mail" style="width: 12px; height: 12px;"></i> Email Address
-                             </label>
-                             <div style="font-size: 0.95rem; font-weight: 800; color: #1e293b; word-break: break-all;">${user.email}</div>
+
+                    <!-- Details Grid -->
+                    <div class="details-grid">
+                        <!-- Email Card -->
+                        <div class="details-card email-card">
+                            <div class="card-icon-box email-icon">
+                                <i data-lucide="mail"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-label">Email Address</span>
+                                <div class="card-value-wrap">
+                                    <span class="card-value text-break">${user.email}</span>
+                                    ${user.email !== 'Not Provided' ? `
+                                    <button class="btn-copy-action" onclick="copyValue('${user.email}', this)" title="Copy Email">
+                                        <i data-lucide="copy" class="copy-icon"></i>
+                                    </button>` : ''}
+                                </div>
+                            </div>
                         </div>
 
-                        <div style="background: #f8fafc; padding: 18px; border-radius: 20px; border: 1px solid #f1f5f9;">
-                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">
-                                <i data-lucide="phone" style="width: 12px; height: 12px;"></i> Comms Line
-                             </label>
-                             <div style="font-size: 0.9rem; font-weight: 800; color: #1e293b;">${user.phone}</div>
+                        <!-- Phone Card -->
+                        <div class="details-card phone-card">
+                            <div class="card-icon-box phone-icon">
+                                <i data-lucide="phone"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-label">Comms Line</span>
+                                <div class="card-value-wrap">
+                                    <span class="card-value">${user.phone}</span>
+                                    ${user.phone !== 'Not Provided' ? `
+                                    <a href="tel:${user.phone}" class="btn-call-action" title="Call User">
+                                        <i data-lucide="phone-call"></i>
+                                    </a>` : ''}
+                                </div>
+                            </div>
                         </div>
 
-                        <div style="background: #f8fafc; padding: 18px; border-radius: 20px; border: 1px solid #f1f5f9;">
-                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">
-                                <i data-lucide="building" style="width: 12px; height: 12px;"></i> Sector Unit
-                             </label>
-                             <div style="font-size: 0.9rem; font-weight: 800; color: #4f46e5;">${user.department}</div>
+                        <!-- Department Card -->
+                        <div class="details-card dept-card">
+                            <div class="card-icon-box dept-icon">
+                                <i data-lucide="building"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-label">Sector Unit</span>
+                                <span class="card-value highlighted-text">${user.department}</span>
+                            </div>
                         </div>
 
-                        <div style="background: #f8fafc; padding: 18px; border-radius: 20px; border: 1px solid #f1f5f9;">
-                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">
-                                <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i> Access Level
-                             </label>
-                             <div style="display: flex; align-items: center; gap: 6px;">
-                                <span style="font-size: 0.85rem; font-weight: 950; color: ${user.role === 'Admin' ? '#ef4444' : '#10b981'};">
+                        <!-- Role Card -->
+                        <div class="details-card role-card">
+                            <div class="card-icon-box role-icon">
+                                <i data-lucide="shield-check"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-label">Access Level</span>
+                                <span class="role-badge-pill ${user.role.toLowerCase() === 'admin' ? 'admin' : 'staff'}">
                                     ${user.role.toUpperCase()}
                                 </span>
-                             </div>
-                        </div>
-
-                        <div style="background: #f8fafc; padding: 18px; border-radius: 20px; border: 1px solid #f1f5f9;">
-                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">
-                                <i data-lucide="activity" style="width: 12px; height: 12px;"></i> Account Status
-                             </label>
-                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <div style="width: 8px; height: 8px; border-radius: 50%; background: ${user.status === 'ACTIVE' ? '#10b981' : '#ef4444'}; box-shadow: 0 0 10px ${user.status === 'ACTIVE' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'};"></div>
-                                <span style="font-size: 0.85rem; font-weight: 950; color: #1e293b;">${user.status}</span>
-                             </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div style="background: #f8fafc; padding: 18px 24px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f5f9;">
-                        <div>
-                            <div style="font-size: 0.6rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.08em;">Last Login Time</div>
-                            <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
-                                <i data-lucide="clock" style="width: 14px; color: #4f46e5;"></i>
-                                ${user.last_login}
+                    <!-- Timeline/Session Section -->
+                    <div class="session-timeline-card">
+                        <h4 class="timeline-title">
+                            <i data-lucide="activity"></i> Session Synchronizations
+                        </h4>
+                        <div class="timeline-flow">
+                            <div class="timeline-node login-node">
+                                <div class="node-icon-box">
+                                    <i data-lucide="log-in"></i>
+                                </div>
+                                <div class="node-details">
+                                    <span class="node-label">Last Login</span>
+                                    <span class="node-time">${user.last_login}</span>
+                                </div>
+                            </div>
+                            <div class="timeline-connector"></div>
+                            <div class="timeline-node logout-node">
+                                <div class="node-icon-box">
+                                    <i data-lucide="log-out"></i>
+                                </div>
+                                <div class="node-details">
+                                    <span class="node-label">Last Logout</span>
+                                    <span class="node-time">${user.last_logout}</span>
+                                </div>
                             </div>
                         </div>
-                        <div style="width: 40px; height: 40px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #4f46e5; border: 1px solid #f1f5f9;">
-                            <i data-lucide="terminal" style="width: 20px;"></i>
+                        <div class="status-summary-bar">
+                            <span class="status-indicator-dot ${user.status === 'ACTIVE' ? 'active' : 'inactive'}"></span>
+                            <span class="status-text">Account is currently <strong>${user.status}</strong></span>
                         </div>
                     </div>
                 </div>
@@ -882,8 +1304,31 @@
             padding: '1.5rem',
             background: '#ffffff',
             customClass: {
-                popup: 'glass-monolith',
+                popup: 'glass-monolith-popup',
             }
+        });
+    }
+
+    function copyValue(text, element) {
+        navigator.clipboard.writeText(text).then(() => {
+            const icon = element.querySelector('i');
+            const originalLucide = icon.getAttribute('data-lucide');
+            icon.setAttribute('data-lucide', 'check');
+            element.style.background = '#10b981';
+            element.style.color = 'white';
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            setTimeout(() => {
+                icon.setAttribute('data-lucide', originalLucide);
+                element.style.background = '';
+                element.style.color = '';
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }, 1500);
+        }).catch(err => {
+            console.error('Could not copy text: ', err);
         });
     }
 

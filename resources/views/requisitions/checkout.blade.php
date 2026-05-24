@@ -755,17 +755,15 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Empty LocalStorage cart
                     cart = [];
                     saveCart();
-
+                    const uniqueId = 'REQ-' + String(result.id).padStart(5, '0');
                     Swal.fire({
                         icon: 'success',
                         title: 'Requisition Sent!',
-                        text: result.message,
+                        html: `${result.message}<br><br><div style="font-size:1.15rem; font-weight:900; background:var(--store-orange-light); border: 1.5px dashed var(--store-orange); padding:10px; border-radius:12px; color:var(--store-orange)">Requisition ID: ${uniqueId}</div><br><small style="color:var(--text-muted); font-weight:700;">Please write down or copy this ID. You will need to present it to confirm collection of your approved items.</small>`,
                         confirmButtonColor: 'var(--store-orange)'
                     }).then(() => {
-                        // Redirect back to catalog shop/history
                         window.location.href = "{{ route('requisitions.index') }}";
                     });
                 } else {

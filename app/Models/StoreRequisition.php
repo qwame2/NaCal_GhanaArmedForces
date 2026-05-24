@@ -9,6 +9,13 @@ class StoreRequisition extends Model
 {
     use HasFactory;
 
+    protected $appends = ['unique_id'];
+
+    public function getUniqueIdAttribute(): string
+    {
+        return 'REQ-' . str_pad($this->id, 5, '0', STR_PAD_LEFT);
+    }
+
     protected $fillable = [
         'requester_name',
         'department',
@@ -24,6 +31,8 @@ class StoreRequisition extends Model
         'collected_at',
         'collected_by',
         'usage_type',
+        'collector_name',
+        'collector_contact',
     ];
 
     protected $casts = [

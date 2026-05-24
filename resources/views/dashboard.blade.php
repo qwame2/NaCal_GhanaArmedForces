@@ -126,6 +126,46 @@
         .premium-switch input:checked + .slider:before {
             transform: translateX(20px);
         }
+
+        /* Ensure all text inside the Add New Inventory Item modal is clear and solid black in light mode */
+        html:not([data-theme='dark']) #newEntryModal {
+            --text-main: #000000 !important;
+            --text-muted: #000000 !important;
+        }
+
+        html:not([data-theme='dark']) #newEntryModal .modal-content,
+        html:not([data-theme='dark']) #newEntryModal label,
+        html:not([data-theme='dark']) #newEntryModal h3,
+        html:not([data-theme='dark']) #newEntryModal p:not(.unassigned-warning-hint p),
+        html:not([data-theme='dark']) #newEntryModal span:not(.existing-indicator):not(.badge):not(.select2-results__option--highlighted span):not(.required-asterisk):not(:last-child),
+        html:not([data-theme='dark']) #newEntryModal input:not([type="submit"]):not([type="button"]):not(.row-variance),
+        html:not([data-theme='dark']) #newEntryModal select,
+        html:not([data-theme='dark']) #newEntryModal .select2-container--default .select2-selection--single .select2-selection__rendered,
+        html:not([data-theme='dark']) #newEntryModal .select2-results__option:not(.select2-results__option--highlighted),
+        html:not([data-theme='dark']) #newEntryModal .select2-search__field {
+            color: #000000 !important;
+        }
+
+        /* Ensure placeholder texts are clear, readable gray/slate and distinct from actual inputs */
+        html:not([data-theme='dark']) #newEntryModal input::placeholder,
+        html:not([data-theme='dark']) #newEntryModal textarea::placeholder,
+        html:not([data-theme='dark']) #newEntryModal .select2-selection__placeholder {
+            color: #475569 !important;
+            opacity: 0.8 !important;
+            font-weight: 500 !important;
+        }
+
+        /* Ensure warning messages and variance indicators remain colored rather than overridden to black */
+        html:not([data-theme='dark']) #newEntryModal .unassigned-warning-hint,
+        html:not([data-theme='dark']) #newEntryModal .unassigned-warning-hint * {
+            color: #ef4444 !important;
+        }
+
+        /* Ensure required field asterisks remain red in all modes */
+        #newEntryModal .required-asterisk,
+        #newEntryModal label > span:last-child {
+            color: #ef4444 !important;
+        }
     </style>
 
     <!-- Stats Grid -->
