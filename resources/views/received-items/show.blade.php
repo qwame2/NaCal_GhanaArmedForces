@@ -39,8 +39,13 @@
             </div>
             <div style="display: grid; gap: 1.25rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Receiving Date</span>
-                    <span style="color: var(--text-main); font-weight: 700;">{{ \Carbon\Carbon::parse($batch->entry_date)->format('d/m/y') }}</span>
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Received Date</span>
+                    <span style="color: var(--text-main); font-weight: 700;">{{ $batch->arrival_date ? \Carbon\Carbon::parse($batch->arrival_date)->format('d/m/y') : 'N/A' }}</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Entry Date</span>
+                    <span style="color: var(--text-main); font-weight: 700;">{{ $batch->entry_date ? \Carbon\Carbon::parse($batch->entry_date)->format('d/m/y H:i') : 'N/A' }}</span>
                 </div>
 
                 <div style="display: flex; justify-content: space-between; align-items: center;">

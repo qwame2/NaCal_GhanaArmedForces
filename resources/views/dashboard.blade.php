@@ -1111,7 +1111,7 @@
                 const unit = ($(this).find('.row-unit').val() || '').trim();
                 const location = ($(this).find('.row-location').val() || '').trim();
 
-                if (unit.indexOf("Confront Admin") !== -1 || !unit || location.indexOf("Confront Admin") !== -1 || location.indexOf("Confront the Admin") !== -1 || !location) {
+                if (unit.indexOf("Confront Admin") !== -1 || unit.indexOf("not assigned") !== -1 || !unit || location.indexOf("Confront Admin") !== -1 || location.indexOf("Confront the Admin") !== -1 || location.indexOf("not assigned") !== -1 || !location) {
                     validationFailed = true;
                     invalidItemName = desc || 'Unnamed Item';
                 }
@@ -1486,6 +1486,19 @@
                         });
                     };
 
+                    const showWarningHint = () => {
+                        removeWarningHint();
+                        const warningHtml = `<div class="unassigned-warning-hint" style="margin-top:8px; font-size:0.75rem; font-weight:700; color:#ef4444; display:flex; align-items:center; gap:6px; line-height:1.4; padding: 6px 12px; background: rgba(239, 68, 68, 0.05); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.15);">
+                            <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span>This item is not yet saved/assigned by the Admin. Please contact the Admin to register this item's package type and store location.</span>
+                        </div>`;
+                        $unitInput.closest('.form-group').append(warningHtml);
+                    };
+
+                    const removeWarningHint = () => {
+                        $row.find('.unassigned-warning-hint').remove();
+                    };
+
                     const setReadonlyStyle = () => {
                         $unitInput.prop('readonly', true).attr('placeholder', 'Auto-determined').css({
                             'cursor': 'not-allowed'
@@ -1494,6 +1507,18 @@
                             'cursor': 'not-allowed'
                         });
                         resetUnitStyle();
+                        removeWarningHint();
+                    };
+
+                    const setWarningDisabledStyle = () => {
+                        $unitInput.prop('readonly', true).attr('placeholder', 'Auto-determined').css({
+                            'cursor': 'not-allowed'
+                        });
+                        $locationInput.prop('readonly', true).attr('placeholder', 'Auto-determined').css({
+                            'cursor': 'not-allowed'
+                        });
+                        setErrorUnitStyle();
+                        showWarningHint();
                     };
 
                     if (!selectedDesc) {
@@ -1518,26 +1543,47 @@
 
                         if (matchedUnit) {
                             const ruleValue = matchedUnit[1];
-                            $unitInput.val(typeof ruleValue === 'object' ? ruleValue.unit : ruleValue);
-                            $locationInput.val(typeof ruleValue === 'object' ? (ruleValue.location || 'Not Specified') : 'Not Specified');
-                            setReadonlyStyle();
+                            const unitVal = typeof ruleValue === 'object' ? ruleValue.unit : ruleValue;
+                            const locVal = typeof ruleValue === 'object' ? (ruleValue.location || 'Not Specified') : 'Not Specified';
+                            $unitInput.val(unitVal);
+                            $locationInput.val(locVal);
+
+                            if (unitVal.includes("Confront Admin") || locVal.includes("Confront Admin") || unitVal.includes("not assigned") || locVal.includes("not assigned")) {
+                                setWarningDisabledStyle();
+                            } else {
+                                setReadonlyStyle();
+                            }
                         } else if (prevData && prevData.unit) {
                             $unitInput.val(prevData.unit);
                             $locationInput.val(prevData.location || 'Not Specified');
-                            setReadonlyStyle();
+
+                            const unitVal = prevData.unit;
+                            const locVal = prevData.location || '';
+                            if (unitVal.includes("Confront Admin") || locVal.includes("Confront Admin") || unitVal.includes("not assigned") || locVal.includes("not assigned")) {
+                                setWarningDisabledStyle();
+                            } else {
+                                setReadonlyStyle();
+                            }
                         } else {
-                            $unitInput.val('');
-                            $locationInput.val('');
-                            setEditableStyle();
+                            $unitInput.val('Package type not assigned.');
+                            $locationInput.val('Confront Admin!');
+                            setWarningDisabledStyle();
                         }
                     } else if (prevData && prevData.unit) {
                         $unitInput.val(prevData.unit);
                         $locationInput.val(prevData.location || 'Not Specified');
-                        setReadonlyStyle();
+
+                        const unitVal = prevData.unit;
+                        const locVal = prevData.location || '';
+                        if (unitVal.includes("Confront Admin") || locVal.includes("Confront Admin") || unitVal.includes("not assigned") || locVal.includes("not assigned")) {
+                            setWarningDisabledStyle();
+                        } else {
+                            setReadonlyStyle();
+                        }
                     } else {
-                        $unitInput.val('');
-                        $locationInput.val('');
-                        setEditableStyle();
+                        $unitInput.val('Package type not assigned.');
+                        $locationInput.val('Confront Admin!');
+                        setWarningDisabledStyle();
                     }
 
                     const updateStatsPanel = () => {

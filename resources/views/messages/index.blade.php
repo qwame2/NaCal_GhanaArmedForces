@@ -11,19 +11,19 @@
                 <i data-lucide="search" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; color: var(--text-muted);"></i>
             </div>
         </div>
-        
+
         <div style="flex: 1; overflow-y: auto; padding: 1.25rem;">
             <!-- Admins/Overseers -->
             <div style="font-size: 0.75rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 0.15em; padding: 0 1rem 1rem 1rem; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="shield" style="width: 14px;"></i>
-                Overseer Command
+                Admin Command
             </div>
             @foreach($admins as $admin)
-            <div class="network-item" id="user-{{ $admin->id }}" 
+            <div class="network-item" id="user-{{ $admin->id }}"
                  data-user-name="{{ htmlspecialchars($admin->name, ENT_QUOTES, 'UTF-8') }}"
                  data-user-role="System Administrator"
                  data-user-avatar="{{ $admin->avatar ? Storage::url($admin->avatar) : '' }}"
-                 style="display: flex; align-items: center; gap: 14px; padding: 1.25rem; border-radius: 18px; cursor: pointer; transition: 0.3s; margin-bottom: 6px; border: 1px solid transparent;" 
+                 style="display: flex; align-items: center; gap: 14px; padding: 1.25rem; border-radius: 18px; cursor: pointer; transition: 0.3s; margin-bottom: 6px; border: 1px solid transparent;"
                  onclick="selectChat({{ $admin->id }})">
                 <div style="position: relative;">
                     @if($admin->avatar)
@@ -51,11 +51,11 @@
                 Team Personnel
             </div>
             @foreach($colleagues as $colleague)
-            <div class="network-item" id="user-{{ $colleague->id }}" 
+            <div class="network-item" id="user-{{ $colleague->id }}"
                  data-user-name="{{ htmlspecialchars($colleague->name, ENT_QUOTES, 'UTF-8') }}"
                  data-user-role="{{ htmlspecialchars($colleague->role ?? 'Personnel', ENT_QUOTES, 'UTF-8') }}"
                  data-user-avatar="{{ $colleague->avatar ? Storage::url($colleague->avatar) : '' }}"
-                 style="display: flex; align-items: center; gap: 14px; padding: 1.25rem; border-radius: 18px; cursor: pointer; transition: 0.3s; margin-bottom: 6px; border: 1px solid transparent;" 
+                 style="display: flex; align-items: center; gap: 14px; padding: 1.25rem; border-radius: 18px; cursor: pointer; transition: 0.3s; margin-bottom: 6px; border: 1px solid transparent;"
                  onclick="selectChat({{ $colleague->id }})">
                 <div style="position: relative;">
                     @if($colleague->avatar)
@@ -152,7 +152,7 @@
         background: var(--primary-glow);
         border: 1px solid var(--primary-glow);
     }
-    
+
     .comms-btn {
         width: 44px;
         height: 44px;
@@ -194,7 +194,7 @@
         opacity: 0.6;
         margin-bottom: 2rem;
     }
-    
+
     .comms-bubble {
         padding: 1.1rem 1.4rem;
         border-radius: 20px;
@@ -204,21 +204,21 @@
         box-shadow: 0 4px 20px rgba(0,0,0,0.02);
         word-break: break-word;
     }
-    
+
     .me .comms-bubble {
         background: var(--primary);
         color: white;
         border-bottom-right-radius: 6px;
         box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
     }
-    
+
     .recipient .comms-bubble {
         background: var(--bg-card);
         color: var(--text-main);
         border-bottom-left-radius: 6px;
         border: 1px solid var(--border-color);
     }
-    
+
     .system .comms-bubble {
         background: transparent;
         color: var(--text-muted);
@@ -226,7 +226,7 @@
         font-size: 0.85rem;
         padding: 0.75rem 1.25rem;
     }
-    
+
     .comms-meta {
         font-size: 0.7rem;
         font-weight: 900;
@@ -278,7 +278,7 @@
 
         document.getElementById('activeName').textContent = name;
         document.getElementById('activeRole').textContent = role;
-        
+
         const avatarDiv = document.getElementById('activeAvatar');
         if (avatar) {
             avatarDiv.innerHTML = `<img src="${avatar}" style="width: 52px; height: 52px; border-radius: 16px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">`;
@@ -293,7 +293,7 @@
         if (activeEl) activeEl.classList.add('active');
 
         fetchMessages();
-        
+
         if (pollInterval) clearInterval(pollInterval);
         pollInterval = setInterval(fetchMessages, 3000);
 
@@ -302,7 +302,7 @@
 
     function fetchMessages() {
         if (!activeUserId) return;
-        
+
         const fetchUrl = `{{ route('api.messages.fetch', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId);
         fetch(fetchUrl)
             .then(res => {
@@ -312,7 +312,7 @@
             .then(data => {
                 const container = document.getElementById('terminalOutput');
                 const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
-                
+
                 let html = '';
 
                 data.forEach(msg => {
@@ -334,7 +334,7 @@
                     const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                     let processedMessage = msg.message;
-                    
+
                     // Pre-check for expiration to prevent UI "blinking"
                     if (processedMessage && processedMessage.includes('clearance-container')) {
                         const expiryMatch = processedMessage.match(/data-expires-at='(\d+)'/);
@@ -364,7 +364,7 @@
                     if (isMe) {
                         const isRead = msg.read_at != null;
                         const isRecipientOnline = onlineStatuses[activeUserId];
-                        
+
                         if (isRead) {
                             ticksHtml = '<i data-lucide="check-check" style="color: #10b981; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
                         } else if (isRecipientOnline) {
@@ -394,18 +394,18 @@
                         </div>
                     `;
                 });
-                
+
                 container.innerHTML = html;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
                 initClearanceTimers();
-                
+
                 if (wasAtBottom) {
                     container.scrollTop = container.scrollHeight;
                 }
             })
            .catch(err => { /* console print removed */ });
 
-            
+
         // Mark as read
         const readUrl = `{{ route('api.messages.read', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId);
         fetch(readUrl, {
@@ -418,18 +418,18 @@
         e.preventDefault();
         const content = document.getElementById('msgContent').value;
         const file = document.getElementById('attachment').files[0];
-        
+
         if (!content && !file) return;
-        
+
         const formData = new FormData();
         formData.append('receiver_id', activeUserId);
         formData.append('message', content);
         if (file) formData.append('attachment', file);
-        
+
         const sendBtn = document.getElementById('sendBtn');
         sendBtn.disabled = true;
         sendBtn.innerHTML = '<div class="loader-mini"></div>';
-        
+
         fetch("{{ route('api.messages.send', [], false) }}", {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
@@ -486,7 +486,7 @@
                 document.querySelectorAll('.unread-badge').forEach(badge => {
                     const userId = badge.id.replace('badge-', '');
                     const count = counts[userId] || 0;
-                    
+
                     if (count > 0) {
                         badge.textContent = count;
                         if (userId == activeUserId) {
@@ -523,7 +523,7 @@
                     if (dot) {
                         dot.style.background = isOnline ? '#10b981' : '#94a3b8';
                     }
-                    
+
                     if (activeUserId == userId) {
                         const statusDot = document.getElementById('statusDot');
                         if (statusDot) statusDot.style.background = isOnline ? '#10b981' : '#94a3b8';
@@ -534,7 +534,7 @@
 
     function initClearanceTimers() {
         if (window.clearanceInterval) clearInterval(window.clearanceInterval);
-        
+
         window.clearanceInterval = setInterval(() => {
             const containers = document.querySelectorAll('.clearance-container');
             if (containers.length === 0) {
@@ -546,7 +546,7 @@
                 const expiresAt = parseInt(container.getAttribute('data-expires-at'));
                 const now = Date.now();
                 const timeLeft = Math.max(0, Math.floor((expiresAt - now) / 1000));
-                
+
                 const timerSpan = container.querySelector('.timer-seconds');
                 const actionBtn = container.querySelector('.clearance-action-btn');
                 const notice = container.querySelector('.clearance-timer-notice');
@@ -564,7 +564,7 @@
                         actionBtn.style.boxShadow = 'none';
                         actionBtn.style.pointerEvents = 'none';
                         actionBtn.innerText = 'Session Expired';
-                        
+
                         let link = container.querySelector('.request-again-link');
                         if (!link) {
                             link = document.createElement('a');

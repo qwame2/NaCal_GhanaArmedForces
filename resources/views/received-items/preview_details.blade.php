@@ -54,7 +54,11 @@
                     </div>
                     <div>
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Received Date</span>
-                        <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ \Carbon\Carbon::parse($batch->arrival_date)->format('d/m/y') }}</span>
+                        <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $batch->arrival_date ? \Carbon\Carbon::parse($batch->arrival_date)->format('d/m/y') : 'N/A' }}</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Entry Date</span>
+                        <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $batch->entry_date ? \Carbon\Carbon::parse($batch->entry_date)->format('d/m/y H:i') : ($batch->created_at ? \Carbon\Carbon::parse($batch->created_at)->format('d/m/y H:i') : 'N/A') }}</span>
                     </div>
                     <div>
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Category</span>

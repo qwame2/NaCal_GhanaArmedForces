@@ -1092,8 +1092,18 @@ class EditRequestController extends Controller
         $fieldListHtml = '';
         if (!empty($flaggedFields)) {
             $fieldListHtml .= "<ul style='margin: 8px 0 0 0; padding-left: 18px; font-size: 0.85rem; color: #7f1d1d; line-height: 1.8;'>";
+            $fieldLabels = [
+                'arrival_date' => 'Received Date',
+                'entry_date' => 'Entry Date',
+                'ledge_category' => 'Category Section',
+                'supplier_name' => 'Supplier Name',
+                'donor_name' => 'Donor Name',
+                'acquisition_type' => 'Acquisition Type',
+                'supplier_status' => 'Delivery Status',
+            ];
             foreach ($flaggedFields as $field => $note) {
-                $fieldListHtml .= "<li><b>" . e(ucwords(str_replace('_', ' ', $field))) . ":</b> " . e($note) . "</li>";
+                $label = $fieldLabels[$field] ?? ucwords(str_replace('_', ' ', $field));
+                $fieldListHtml .= "<li><b>" . e($label) . ":</b> " . e($note) . "</li>";
             }
             $fieldListHtml .= "</ul>";
         }

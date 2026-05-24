@@ -1883,7 +1883,7 @@
 
                 window._entryPreviewLoading = false;
 
-                const batch = data.batch;
+                const batch = data.batch || { items: [] };
                 let content = '';
 
                 if (data.request_type === 'issue_submission') {
@@ -1963,6 +1963,35 @@
                 `;
                 } else {
                     const prevBatch = data.previous_batch || null;
+                    const formattedArrival = (() => {
+                        if (!batch.arrival_date) return 'N/A';
+                        try {
+                            const parts = batch.arrival_date.split('-');
+                            if (parts.length === 3) {
+                                return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`;
+                            }
+                        } catch(e) {}
+                        return batch.arrival_date;
+                    })();
+
+                    const formattedEntry = (() => {
+                        const entryRaw = batch.entry_date || data.created_at;
+                        if (!entryRaw) return 'N/A';
+                        try {
+                            if (entryRaw.includes('/') && entryRaw.includes(':')) {
+                                return entryRaw;
+                            }
+                            const spaceParts = entryRaw.split(' ');
+                            if (spaceParts.length === 2) {
+                                const dateParts = spaceParts[0].split('-');
+                                const timeParts = spaceParts[1].split(':');
+                                if (dateParts.length === 3 && timeParts.length >= 2) {
+                                    return `${dateParts[2]}/${dateParts[1]}/${dateParts[0].slice(-2)} ${timeParts[0]}:${timeParts[1]}`;
+                                }
+                            }
+                        } catch(e) {}
+                        return entryRaw;
+                    })();
                     const itemsHtml = batch.items.map(item => {
                         let isQtyChanged = false;
                         let isStockChanged = false;
@@ -2119,6 +2148,16 @@
                     </div>
 
                     <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                        <div style="text-align: right;">
+                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Received Date</label>
+                            <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">${formattedArrival}</span>
+                        </div>
+                        <div style="width: 1px; height: 35px; background: #e2e8f0; align-self: center;"></div>
+                        <div style="text-align: right;">
+                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Entry Date</label>
+                            <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">${formattedEntry}</span>
+                        </div>
+                        <div style="width: 1px; height: 35px; background: #e2e8f0; align-self: center;"></div>
                         <div style="text-align: right;">
                             <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Supply Status</label>
                             <span style="font-size: 0.95rem; font-weight: 700; color: #1e293b;">${batch.supplier_status || 'Full Delivery'}</span>
