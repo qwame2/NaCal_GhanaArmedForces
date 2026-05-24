@@ -17,12 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(
             append: [
                 \App\Http\Middleware\StrictAuditLogging::class,
-            ],
-            remove: [
-                \Illuminate\Session\Middleware\StartSession::class,
-                \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
             ]
         );
+        $middleware->validateCsrfTokens(except: [
+            '*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
