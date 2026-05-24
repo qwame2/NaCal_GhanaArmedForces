@@ -1038,6 +1038,11 @@
             const btns = actionsDiv.querySelectorAll('button');
             btns.forEach(b => b.disabled = true);
         }
+        const sideActionsDiv = document.getElementById(`oversight-recovery-actions-${id}`);
+        if (sideActionsDiv) {
+            const btns = sideActionsDiv.querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+        }
 
         btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
         if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -1060,15 +1065,19 @@
             })
             .then(data => {
                 if (data.success) {
-                    const actionsDiv = document.getElementById(`recovery-actions-${id}`);
-                    if (actionsDiv) {
-                        const color = status === 'approved' ? '#10b981' : '#dc2626';
-                        const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
-                        actionsDiv.innerHTML = `<div style="padding: 12px 20px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 900; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
+                    const badgeHtml = `<div style="padding: 12px 20px; border-radius: 12px; background: ${status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)'}; color: ${status === 'approved' ? '#10b981' : '#dc2626'}; font-weight: 900; border: 1.5px solid ${status === 'approved' ? '#10b981' : '#dc2626'}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
                         <i data-lucide="${status === 'approved' ? 'check-circle' : 'alert-circle'}" style="width: 16px;"></i> RECOVERY ${status.toUpperCase()}
                     </div>`;
-                        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+                    const actionsDiv = document.getElementById(`recovery-actions-${id}`);
+                    if (actionsDiv) {
+                        actionsDiv.innerHTML = badgeHtml;
                     }
+                    const sideActionsDiv = document.getElementById(`oversight-recovery-actions-${id}`);
+                    if (sideActionsDiv) {
+                        sideActionsDiv.innerHTML = badgeHtml;
+                    }
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
                     showToast('Registry Updated', `Recovery has been ${status}.`, 'success');
                 } else {
                     showToast('Update Failed', data.message || 'Error processing recovery', 'error');
@@ -1185,15 +1194,42 @@
             });
     }
 
-    function _renderRecoverySheet(data) {
+    function _renderRecoverySheet(data, reqId) {
         const item = data.item;
+        
+        let footerHtml = '';
+        if (data.status === 'pending') {
+            footerHtml = `
+                <div id="oversight-recovery-actions-${reqId}" style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0;">
+                    <button onclick="window.processRecoveryApproval(${reqId}, 'rejected', this)" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                        <i data-lucide="x-circle" style="width: 18px;"></i> Reject Recovery
+                    </button>
+                    <button onclick="window.processRecoveryApproval(${reqId}, 'approved', this)" style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                        <i data-lucide="check-circle" style="width: 18px;"></i> Approve Re-integration
+                    </button>
+                </div>
+            `;
+        } else {
+            const isApproved = data.status === 'approved';
+            const color = isApproved ? '#10b981' : '#dc2626';
+            const bgColor = isApproved ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+            const labelText = isApproved ? 'RECOVERY APPROVED' : 'RECOVERY REJECTED';
+            footerHtml = `
+                <div style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: center; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0;">
+                    <div style="padding: 12px 24px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 950; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                        <i data-lucide="${isApproved ? 'check-circle' : 'alert-circle'}" style="width: 18px;"></i> ${labelText}
+                    </div>
+                </div>
+            `;
+        }
+
         const html = `
-            <div style="background: white; padding: 3rem 2.5rem; border-bottom: 1px solid #e2e8f0; position: relative; border-radius: 28px 28px 0 0;">
+            <div style="background: white; padding: 3.5rem 3rem 2.5rem 3rem; border-bottom: 1px solid #e2e8f0; position: relative;">
                 <button onclick="window.closeOversightPanel()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
                     <i data-lucide="x" style="width: 18px;"></i>
                 </button>
 
-                <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2.5rem;">
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
                     <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);">
                         <i data-lucide="refresh-cw" style="width: 32px; height: 32px;"></i>
                     </div>
@@ -1203,21 +1239,23 @@
                         <p style="margin: 4px 0 0; font-size: 0.95rem; color: #64748b; font-weight: 500;">Submitted by <b>${data.personnel}</b></p>
                     </div>
                 </div>
+            </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; background: #f8fafc; padding: 2rem; border-radius: 24px; border: 1px solid #f1f5f9;">
-                    <div style="background: white; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+            <div style="padding: 2.5rem 3rem; flex: 1; overflow-y: auto; background: #f8fafc;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; background: #fff; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
+                    <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Asset Description</span>
                         <span style="font-size: 1.1rem; font-weight: 900; color: #0f172a; line-height: 1.4;">${item.description}</span>
                     </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                    <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Registry Category</span>
                         <span style="font-size: 1rem; font-weight: 800; color: #4f46e5; background: rgba(79, 70, 229, 0.1); padding: 4px 12px; border-radius: 8px; display: inline-block;">${item.category}</span>
                     </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                    <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Beneficiary</span>
                         <span style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">${item.beneficiary}</span>
                     </div>
-                    <div style="background: white; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                    <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Return Quantity</span>
                         <div style="display: flex; align-items: baseline; gap: 6px;">
                             <span style="font-size: 2rem; font-weight: 900; color: #10b981;">${item.return_qty}</span>
@@ -1244,6 +1282,8 @@
                     </div>
                 </div>
             </div>
+            
+            ${footerHtml}
         `;
 
         document.getElementById('oversightPanelContent').innerHTML = html;
@@ -1270,7 +1310,7 @@
                     btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> Preview Recovery Details`;
                     if (typeof lucide !== 'undefined') lucide.createIcons();
                 }
-                _renderRecoverySheet(data);
+                _renderRecoverySheet(data, reqId);
             })
             .catch(err => {
                 /* console print removed */

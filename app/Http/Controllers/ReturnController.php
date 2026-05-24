@@ -101,34 +101,19 @@ class ReturnController extends Controller
 
             $admins = \App\Models\User::where('is_admin', true)->get();
             if ($admins->count() > 0) {
-                $msgContent = "
-                    <div class='recovery-approval-card' style='background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin: 10px 0;'>
-                        <div style='display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;'>
-                            <div style='width: 40px; height: 40px; background: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;'>
-                                <i data-lucide='refresh-cw' style='width: 20px;'></i>
-                            </div>
-                            <div>
-                                <h4 style='margin: 0; color: #0f172a; font-size: 0.95rem; font-weight: 800; letter-spacing: -0.01em;'>RECOVERY APPROVAL</h4>
-                                <p style='margin: 0; font-size: 0.75rem; color: #64748b; font-weight: 600;'>Asset Re-integration Request</p>
-                            </div>
-                        </div>
-                        
-                        <div style='display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;'>
-                            <div style='display: flex; align-items: center; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;'><i data-lucide='user' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Personnel:</b> " . auth()->user()->name . "</span></div>
-                            <div style='display: flex; align-items: flex-start; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b; margin-top: 2px;'><i data-lucide='package' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569; line-height: 1.4;'><b style='color: #0f172a;'>Item:</b> {$issuedItem->description}</span></div>
-                            <div style='display: flex; align-items: center; gap: 8px;'><div style='width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;'><i data-lucide='hash' style='width: 14px;'></i></div><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Qty to Return:</b> {$validated['return_qty']}</span></div>
-                        </div>
-
-                        <button class='recovery-preview-btn' data-recovery-req-id='{$editReq->id}' style='width: 100%; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; margin-bottom: 8px; transition: all 0.2s;'>
-                            <i data-lucide='eye' style='width:15px; flex-shrink:0;'></i> Preview Recovery Details</button>
-
-                        <div id='recovery-actions-{$editReq->id}' style='display: flex; flex-direction: column; gap: 8px;'>
-                            <button onclick='window.processRecoveryApproval({$editReq->id}, \"approved\", this)' style='background: #10b981; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>
-                                <i data-lucide='check-circle' style='width: 16px;'></i> Approve Re-integration</button>
-                            <button onclick='window.processRecoveryApproval({$editReq->id}, \"rejected\", this)' style='background: #ef4444; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>
-                                <i data-lucide='x-circle' style='width: 16px;'></i> Reject Recovery</button>
-                        </div>
-                    </div>";
+                $msgContent = "<div class='recovery-approval-card' style='background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin: 10px 0;'>";
+                $msgContent .= "<div style='display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;'>";
+                $msgContent .= "<div style='width: 40px; height: 40px; background: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white;'>";
+                $msgContent .= "<i data-lucide='refresh-cw' style='width: 20px;'></i>";
+                $msgContent .= "</div><div>";
+                $msgContent .= "<h4 style='margin: 0; color: #0f172a; font-size: 0.95rem; font-weight: 800; letter-spacing: -0.01em;'>RECOVERY APPROVAL</h4>";
+                $msgContent .= "<p style='margin: 0; font-size: 0.75rem; color: #64748b; font-weight: 600;'>Asset Re-integration Request</p>";
+                $msgContent .= "</div></div>";
+                
+                $msgContent .= "<div id='recovery-actions-{$editReq->id}' style='display: flex; flex-direction: column; gap: 8px;'>";
+                $msgContent .= "<button class='recovery-preview-btn' data-recovery-req-id='{$editReq->id}' style='width: 100%; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;'>";
+                $msgContent .= "<i data-lucide='eye' style='width:16px; flex-shrink:0;'></i> Preview Recovery Details</button>";
+                $msgContent .= "</div></div>";
 
                 foreach ($admins as $admin) {
                     \App\Models\Message::create([
