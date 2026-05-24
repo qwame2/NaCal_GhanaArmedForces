@@ -19,7 +19,12 @@
                 Overseer Command
             </div>
             @foreach($admins as $admin)
-            <div class="network-item" id="user-{{ $admin->id }}" style="display: flex; align-items: center; gap: 14px; padding: 1.25rem; border-radius: 18px; cursor: pointer; transition: 0.3s; margin-bottom: 6px; border: 1px solid transparent;" onclick="selectChat({{ $admin->id }}, '{{ $admin->name }}', 'System Administrator', '{{ $admin->avatar ? Storage::url($admin->avatar) : '' }}')">
+            <div class="network-item" id="user-{{ $admin->id }}" 
+                 data-user-name="{{ htmlspecialchars($admin->name, ENT_QUOTES, 'UTF-8') }}"
+                 data-user-role="System Administrator"
+                 data-user-avatar="{{ $admin->avatar ? Storage::url($admin->avatar) : '' }}"
+                 style="display: flex; align-items: center; gap: 14px; padding: 1.25rem; border-radius: 18px; cursor: pointer; transition: 0.3s; margin-bottom: 6px; border: 1px solid transparent;" 
+                 onclick="selectChat({{ $admin->id }})">
                 <div style="position: relative;">
                     @if($admin->avatar)
                         <img src="{{ Storage::url($admin->avatar) }}" style="width: 48px; height: 48px; border-radius: 14px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
@@ -46,7 +51,12 @@
                 Team Personnel
             </div>
             @foreach($colleagues as $colleague)
-            <div class="network-item" id="user-{{ $colleague->id }}" style="display: flex; align-items: center; gap: 14px; padding: 1.25rem; border-radius: 18px; cursor: pointer; transition: 0.3s; margin-bottom: 6px; border: 1px solid transparent;" onclick="selectChat({{ $colleague->id }}, '{{ $colleague->name }}', '{{ $colleague->role ?? 'Personnel' }}', '{{ $colleague->avatar ? Storage::url($colleague->avatar) : '' }}')">
+            <div class="network-item" id="user-{{ $colleague->id }}" 
+                 data-user-name="{{ htmlspecialchars($colleague->name, ENT_QUOTES, 'UTF-8') }}"
+                 data-user-role="{{ htmlspecialchars($colleague->role ?? 'Personnel', ENT_QUOTES, 'UTF-8') }}"
+                 data-user-avatar="{{ $colleague->avatar ? Storage::url($colleague->avatar) : '' }}"
+                 style="display: flex; align-items: center; gap: 14px; padding: 1.25rem; border-radius: 18px; cursor: pointer; transition: 0.3s; margin-bottom: 6px; border: 1px solid transparent;" 
+                 onclick="selectChat({{ $colleague->id }})">
                 <div style="position: relative;">
                     @if($colleague->avatar)
                         <img src="{{ Storage::url($colleague->avatar) }}" style="width: 48px; height: 48px; border-radius: 14px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
@@ -252,6 +262,14 @@
     let onlineStatuses = {};
 
     function selectChat(userId, name, role, avatar) {
+        if (!name) {
+            const item = document.getElementById(`user-${userId}`);
+            if (item) {
+                name = item.getAttribute('data-user-name') || '';
+                role = item.getAttribute('data-user-role') || '';
+                avatar = item.getAttribute('data-user-avatar') || '';
+            }
+        }
         activeUserId = userId;
         document.getElementById('emptyState').style.display = 'none';
         document.getElementById('sessionHeader').style.display = 'flex';
@@ -385,7 +403,8 @@
                     container.scrollTop = container.scrollHeight;
                 }
             })
-            .catch(err => /* console print removed */);
+           .catch(err => { /* console print removed */ });
+
             
         // Mark as read
         const readUrl = `{{ route('api.messages.read', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId);

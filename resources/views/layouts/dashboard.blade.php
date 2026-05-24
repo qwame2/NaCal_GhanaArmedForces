@@ -121,7 +121,7 @@
                     <span>Requisitions</span>
                     @php $approvedReqCount = $approvedRequisitionsCount ?? 0; @endphp
                     <span id="sidebar-badge-approved-reqs"
-                          style="background: #ef4444; color: white; padding: 2px 7px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite; {{ $approvedReqCount <= 0 ? 'display: none;' : '' }}"
+                          style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $approvedReqCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
                           title="{{ $approvedReqCount }} requisition(s) approved — tap to confirm collection">
                         {{ $approvedReqCount }}
                     </span>
@@ -895,7 +895,7 @@
                     const count = data.approved_requisitions || 0;
                     if (count > 0) {
                         badge.textContent = count;
-                        badge.style.display = 'inline-block';
+                        badge.style.display = 'flex';
                     } else {
                         badge.style.display = 'none';
                     }

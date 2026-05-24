@@ -25,6 +25,7 @@
                 data-user-name="{{ $user->name }}"
                 data-user-role="{{ $user->role }}"
                 data-user-avatar="{{ $user->avatar ? asset('storage/' . $user->avatar) : '' }}"
+                onclick="selectChat({{ $user->id }})"
                 style="display: flex; align-items: center; gap: 14px; padding: 1.25rem; border-radius: 18px; cursor: pointer; transition: 0.3s; margin-bottom: 6px; border: 1px solid transparent; position: relative;">
                 <div style="position: relative;">
                     @if($user->avatar)
@@ -491,7 +492,15 @@
         });
     }
 
-    window.selectChat = function(userId, name, role, avatar) {
+    function selectChat(userId, name, role, avatar) {
+        if (!name) {
+            const item = document.getElementById(`user-${userId}`);
+            if (item) {
+                name = item.getAttribute('data-user-name') || '';
+                role = item.getAttribute('data-user-role') || '';
+                avatar = item.getAttribute('data-user-avatar') || '';
+            }
+        }
         activeUserId = userId;
         document.getElementById('emptyState').style.display = 'none';
         document.getElementById('sessionHeader').style.display = 'flex';
@@ -637,7 +646,8 @@
                     container.scrollTop = container.scrollHeight;
                 }
             })
-            .catch(err => /* console print removed */);
+            .catch(err => { /* console print removed */ });
+
 
         // Mark as read
         const readUrl = `{{ route('api.messages.read', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId);
@@ -2114,7 +2124,7 @@
                                 if (typeof lucide !== 'undefined') lucide.createIcons();
                             }
                         })
-                        .catch(e => /* console print removed */);
+                        .catch(e => { /* console print removed */ });
                 }
             })
             .catch(err => {
@@ -2242,18 +2252,8 @@
             });
     };
 
-    // Event delegation — catches personnel item clicks
+    // Event delegation — catches comms preview clicks
     document.addEventListener('click', function(e) {
-        const item = e.target.closest('.network-item');
-        if (item) {
-            const userId = item.getAttribute('data-user-id');
-            const name = item.getAttribute('data-user-name');
-            const role = item.getAttribute('data-user-role');
-            const avatar = item.getAttribute('data-user-avatar');
-            window.selectChat(userId, name, role, avatar);
-            return;
-        }
-
         const entryBtn = e.target.closest('button.entry-preview-btn, a.entry-preview-btn, button[data-entry-req-id], a[href*="sra-preview"]');
         if (entryBtn) {
             e.preventDefault();

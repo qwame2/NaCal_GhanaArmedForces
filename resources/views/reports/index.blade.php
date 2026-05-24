@@ -667,7 +667,8 @@ No gross anomalies or unaccounted systemic variances were detected during this r
                     });
                 }
             })
-            .catch(err => /* console print removed */);
+            .catch(err => { /* console print removed */ });
+
     }
 
     // Run sync pulse every 5 seconds for real-time reactivity
