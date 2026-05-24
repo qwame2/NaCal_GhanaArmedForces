@@ -203,9 +203,9 @@ class AuthController extends Controller
                     return redirect()->route('admin.index');
                 }
                 if ($user->role === 'Requisitioner') {
-                    return redirect()->intended(route('requisitions.index', [], false));
+                    return redirect()->route('requisitions.index');
                 }
-                return redirect()->intended('dashboard');
+                return redirect()->route('dashboard');
             }
 
             // Log the login

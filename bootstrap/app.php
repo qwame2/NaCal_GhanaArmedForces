@@ -14,9 +14,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'check_status' => \App\Http\Middleware\CheckUserStatus::class,
         ]);
-        $middleware->web(append: [
-            \App\Http\Middleware\StrictAuditLogging::class,
-        ]);
+        $middleware->web(
+            append: [
+                \App\Http\Middleware\StrictAuditLogging::class,
+            ],
+            remove: [
+                \Illuminate\Session\Middleware\StartSession::class,
+                \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+            ]
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
