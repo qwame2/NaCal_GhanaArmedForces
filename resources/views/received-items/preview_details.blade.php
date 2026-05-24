@@ -7,7 +7,7 @@
     $acqType = $batch->acquisition_type ?? 'Supplier';
     $isDonor = ($acqType === 'Donor' || str_contains($batch->supplier_name ?? '', '[Donor Action]') || str_contains($batch->supplier_name ?? '', '[Donation]'));
     $provider = $isDonor ? ($batch->donor_name ?: trim(preg_replace('/\[.*?\]/', '', $batch->supplier_name ?? ''))) : trim(preg_replace('/\[.*?\]/', '', $batch->supplier_name ?? ''));
-    
+
     $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
     $deliveryPerson = '';
     foreach ($suppliersRegistry as $k => $v) {
@@ -26,7 +26,7 @@
                 DRAFT PREVIEW
             </div>
         </div>
-        
+
         <div style="display: flex; align-items: flex-start; gap: 2rem;">
             <div style="width: 80px; height: 80px; background: var(--primary-glow); color: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="clipboard-check" style="width: 40px; height: 40px;"></i>
@@ -34,7 +34,7 @@
             <div style="flex: 1;">
                 <h1 style="font-size: 1.75rem; font-weight: 900; color: #0f172a; margin: 0 0 0.5rem 0; letter-spacing: -0.02em;">New Stock Entry Verification</h1>
                 <p style="color: var(--text-muted); font-size: 1rem; font-weight: 500; margin: 0;">Personnel <b>{{ $batch->recorded_by_name }}</b> is proposing a new inventory batch entry for strategic oversight.</p>
-                
+
                 <div style="display: flex; gap: 2rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9; flex-wrap: wrap;">
                     <div>
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Sourcing Method</span>
@@ -57,7 +57,7 @@
                         <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ \Carbon\Carbon::parse($batch->arrival_date)->format('d/m/y') }}</span>
                     </div>
                     <div>
-                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Registry Category</span>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Category</span>
                         <span style="font-size: 0.95rem; font-weight: 700; color: var(--primary); background: var(--primary-glow); padding: 2px 10px; border-radius: 6px;">{{ $ledgeMap[$batch->ledge_category] ?? $batch->ledge_category }}</span>
                     </div>
                 </div>
@@ -71,7 +71,7 @@
             <h3 style="margin: 0; font-size: 1.1rem; font-weight: 900; color: #0f172a;">Submitted Item Details</h3>
             <span style="background: #e0f2fe; color: #0369a1; font-size: 0.7rem; font-weight: 800; padding: 4px 12px; border-radius: 99px;">{{ count($batch->items) }} ITEMS DECLARED</span>
         </div>
-        
+
         <div style="padding: 0;">
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
                 <thead>

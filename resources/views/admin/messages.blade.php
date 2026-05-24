@@ -550,7 +550,7 @@
                     const isStrictlyPersonnel = msg.message && msg.message.includes('personnel-view') && !msg.message.includes('admin-view');
                     const isSraApproval = msg.message && (msg.message.includes('sra-approval-msg') || msg.message.includes('sra-approval-card') || msg.message.includes('SRA APPROVAL REQUIRED'));
                     const isEditReq = msg.message && (msg.message.includes('edit-req-msg') || msg.message.includes('AUTHORIZATION REQUIRED'));
-                    const isSubmissionStatus = msg.message && (msg.message.includes('ENTRY SUBMISSION LOGGED') || msg.message.includes('RECOVERY SUBMITTED') || msg.message.includes('DISBURSEMENT REQUEST LOGGED'));
+                    const isSubmissionStatus = msg.message && (msg.message.includes('ENTRY SUBMISSION LOGGED') || msg.message.includes('RECOVERY SUBMITTED') || msg.message.includes('REMAINDER SUBMITTED') || msg.message.includes('DISBURSEMENT REQUEST LOGGED'));
 
                     if (msg.is_automated && !isSraApproval && !isEditReq && (isStrictlyPersonnel || isSubmissionStatus)) {
                         return;
@@ -1078,7 +1078,7 @@
                         sideActionsDiv.innerHTML = badgeHtml;
                     }
                     if (typeof lucide !== 'undefined') lucide.createIcons();
-                    showToast('Registry Updated', `Recovery has been ${status}.`, 'success');
+                    showToast('Recovery Updated', `Recovery has been ${status}.`, 'success');
                 } else {
                     showToast('Update Failed', data.message || 'Error processing recovery', 'error');
                     btnElement.innerText = status === 'approved' ? 'Approve Re-integration' : 'Reject Recovery';
@@ -1179,7 +1179,7 @@
                     </div>`;
                         if (typeof lucide !== 'undefined') lucide.createIcons();
                     }
-                    showToast('Registry Reconciled', `Stock verification has been ${status}.`, 'success');
+                    showToast('Inventory Reconciled', `Stock verification has been ${status}.`, 'success');
                 } else {
                     showToast('Update Failed', data.message || 'Error processing verification', 'error');
                     btnElement.innerText = status === 'approved' ? 'Approve' : 'Reject';
@@ -1196,7 +1196,7 @@
 
     function _renderRecoverySheet(data, reqId) {
         const item = data.item;
-        
+
         let footerHtml = '';
         if (data.status === 'pending') {
             footerHtml = `
@@ -1234,7 +1234,7 @@
                         <i data-lucide="refresh-cw" style="width: 32px; height: 32px;"></i>
                     </div>
                     <div>
-                        <div style="font-size: 0.75rem; font-weight: 800; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Asset Recovery Oversight</div>
+                        <div style="font-size: 0.75rem; font-weight: 800; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Item Recovery Oversight</div>
                         <h2 style="margin: 0; font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -0.03em;">Return Verification</h2>
                         <p style="margin: 4px 0 0; font-size: 0.95rem; color: #64748b; font-weight: 500;">Submitted by <b>${data.personnel}</b></p>
                     </div>
@@ -1244,11 +1244,11 @@
             <div style="padding: 2.5rem 3rem; flex: 1; overflow-y: auto; background: #f8fafc;">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; background: #fff; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
                     <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
-                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Asset Description</span>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Item Description</span>
                         <span style="font-size: 1.1rem; font-weight: 900; color: #0f172a; line-height: 1.4;">${item.description}</span>
                     </div>
                     <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
-                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Registry Category</span>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Category</span>
                         <span style="font-size: 1rem; font-weight: 800; color: #4f46e5; background: rgba(79, 70, 229, 0.1); padding: 4px 12px; border-radius: 8px; display: inline-block;">${item.category}</span>
                     </div>
                     <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
@@ -1259,7 +1259,7 @@
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Return Quantity</span>
                         <div style="display: flex; align-items: baseline; gap: 6px;">
                             <span style="font-size: 2rem; font-weight: 900; color: #10b981;">${item.return_qty}</span>
-                            <span style="font-size: 0.85rem; font-weight: 700; color: #64748b;">of ${item.issued_qty} units</span>
+                            <span style="font-size: 0.85rem; font-weight: 700; color: #64748b;">of ${item.issued_qty} ${item.unit || 'units'}</span>
                         </div>
                     </div>
                 </div>
@@ -1278,11 +1278,11 @@
                         <i data-lucide="shield-check" style="width: 18px;"></i>
                     </div>
                     <div style="font-size: 0.85rem; font-weight: 700; color: #065f46;">
-                        Approval will automatically re-integrate ${item.return_qty} units into the registry stock balances.
+                        Approval will automatically re-integrate ${item.return_qty} ${item.unit || 'units'} into the stock balances.
                     </div>
                 </div>
             </div>
-            
+
             ${footerHtml}
         `;
 
@@ -1584,83 +1584,163 @@
     })();
 
     // Helper to render the bottom sheet given preview data from the API
+    // Helper to render the side panel given preview data from the API
     function _renderRemainderSheet(data) {
         const items = data.items || [];
+        const reqId = data.reqId;
+        const totalAdding = items.reduce((s, i) => s + i.adding, 0);
 
-        let bodyHtml = '';
-
+        let tableRows = '';
         if (items.length === 0) {
-            bodyHtml = `<p style="color:#94a3b8; text-align:center; padding: 1.5rem 0;">No item details found.</p>`;
+            tableRows = `
+                <tr>
+                    <td colspan="5" style="padding: 2rem; text-align: center; color: #94a3b8; font-weight: 600;">
+                        No item details found.
+                    </td>
+                </tr>
+            `;
         } else {
-            const totalAdding = items.reduce((s, i) => s + i.adding, 0);
-
-            // Summary stats
-            bodyHtml += `
-            <div style="display:flex; gap:10px; margin-bottom:18px;">
-                <div style="flex:1; background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:12px; padding:12px 16px;">
-                    <div style="font-size:0.68rem; font-weight:800; color:#92400e; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:3px;">Items Affected</div>
-                    <div style="font-size:1.5rem; font-weight:900; color:#b45309; line-height:1;">${items.length}</div>
-                </div>
-                <div style="flex:1; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:12px; padding:12px 16px;">
-                    <div style="font-size:0.68rem; font-weight:800; color:#065f46; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:3px;">Total Package Types Adding</div>
-                    <div style="font-size:1.5rem; font-weight:900; color:#10b981; line-height:1;">+${totalAdding}</div>
-                </div>
-            </div>`;
-
-            // Items table
-            bodyHtml += `<div style="border:1px solid #e2e8f0; border-radius:14px; overflow:hidden; margin-bottom:14px;">`;
-            bodyHtml += `<div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; padding:9px 14px; background:#f8fafc;">
-                <span style="font-size:0.68rem; font-weight:900; color:#64748b; text-transform:uppercase; letter-spacing:0.06em;">Item</span>
-                <span style="font-size:0.68rem; font-weight:900; color:#64748b; text-transform:uppercase; text-align:center;">Current</span>
-                <span style="font-size:0.68rem; font-weight:900; color:#10b981; text-transform:uppercase; text-align:center;">+ Adding</span>
-                <span style="font-size:0.68rem; font-weight:900; color:#4f46e5; text-transform:uppercase; text-align:center;">New Total</span>
-            </div>`;
-
             items.forEach((item, idx) => {
-                bodyHtml += `
-                <div style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:6px; padding:12px 14px; border-top:1px solid #f1f5f9; background:${idx%2===0?'#fff':'#fafafa'}; align-items:center;">
-                    <div>
-                        <div style="font-size:0.88rem; font-weight:800; color:#0f172a;">${item.description}</div>
-                        <div style="font-size:0.72rem; color:#94a3b8; font-weight:600;">${item.unit}</div>
-                    </div>
-                    <div style="text-align:center; font-size:0.88rem; font-weight:700; color:#475569;">${item.current}</div>
-                    <div style="text-align:center;">
-                        <span style="background:rgba(16,185,129,0.1); color:#10b981; padding:3px 10px; border-radius:7px; font-size:0.82rem; font-weight:900;">+${item.adding}</span>
-                    </div>
-                    <div style="text-align:center;">
-                        <span style="background:rgba(79,70,229,0.08); color:#4f46e5; padding:3px 10px; border-radius:7px; font-size:0.82rem; font-weight:900;">${item.projected}</span>
-                    </div>
-                </div>`;
+                tableRows += `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a;">
+                        ${item.description}
+                    </td>
+                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">
+                        ${item.unit || 'Package Types'}
+                    </td>
+                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0f172a; text-align: right;">${(parseFloat(item.current) || 0).toLocaleString()}</td>
+                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #10b981; text-align: right; background: rgba(16, 185, 129, 0.05); border-left: 2px solid #10b981;">+${(parseFloat(item.adding) || 0).toLocaleString()}</td>
+                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #4f46e5; text-align: right; background: rgba(79, 70, 229, 0.03); border-left: 2px solid #4f46e5;">${(parseFloat(item.projected) || 0).toLocaleString()}</td>
+                </tr>
+                `;
             });
-            bodyHtml += `</div>`;
-
-            bodyHtml += `<div style="padding:10px 14px; background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.18); border-radius:10px; font-size:0.78rem; color:#92400e; font-weight:600;">
-                ⚠️ &nbsp;These changes will only apply to inventory <strong>after you approve</strong> the request.
-            </div>`;
         }
 
-        Swal.fire({
-            title: `<div style="display:flex; align-items:center; gap:10px; justify-content:center;">
-                        <div style="width:36px; height:36px; background:linear-gradient(135deg,#f59e0b,#d97706); border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 12px rgba(245,158,11,0.3);">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m7.5 4.27 9 5.15"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" x2="12" y1="22" y2="12"/><circle cx="18.5" cy="15.5" r="2.5"/><path d="M20.27 17.27 22 19"/></svg>
+        let footerHtml = '';
+        if (data.status === 'pending') {
+            footerHtml = `
+                <div id="oversight-actions-${reqId}" style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0;">
+                    <button onclick="typeof window.rollbackEntry === 'function' ? window.rollbackEntry(${reqId}) : alert('Rollback functionality pending implementation')" style="margin-right: auto; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                        <i data-lucide="rotate-ccw" style="width: 18px;"></i> Rollback
+                    </button>
+                    <button onclick="window.processSraCreationApproval(${reqId}, 'rejected', this)" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                        <i data-lucide="x-circle" style="width: 18px;"></i> Reject
+                    </button>
+                    <button onclick="window.processSraCreationApproval(${reqId}, 'approved', this)" style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                        <i data-lucide="check-circle" style="width: 18px;"></i> Approve Entry
+                    </button>
+                </div>
+            `;
+        } else {
+            const isApproved = data.status === 'approved';
+            const color = isApproved ? '#10b981' : '#dc2626';
+            const bgColor = isApproved ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+            const labelText = isApproved ? 'REMAINDER COMMITTED' : 'REJECTED';
+            footerHtml = `
+                <div style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: center; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0; position: relative;">
+                    <button onclick="typeof window.rollbackEntry === 'function' ? window.rollbackEntry(${reqId}) : alert('Rollback functionality pending implementation')" style="position: absolute; left: 3rem; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+                        <i data-lucide="rotate-ccw" style="width: 18px;"></i> Rollback
+                    </button>
+                    <div style="padding: 12px 24px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 950; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                        <i data-lucide="${isApproved ? 'check-circle' : 'alert-circle'}" style="width: 18px;"></i> ${labelText}
+                    </div>
+                </div>
+            `;
+        }
+
+        const content = `
+            <!-- Header Section -->
+            <div style="background: white; padding: 3.5rem 3rem 2.5rem 3rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: relative;">
+                <button onclick="window.closeOversightPanel()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 10;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
+                    <i data-lucide="x" style="width: 18px;"></i>
+                </button>
+
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div style="width: 56px; height: 56px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="package-search" style="width: 28px; height: 28px;"></i>
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.5rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">Remainder Approval</h2>
+                        <p style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 500;">User: <b>${data.personnel}</b> &nbsp;&bull;&nbsp; Batch #${data.batchId}</p>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                    <div style="text-align: right;">
+                        <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Supply Status</label>
+                        <span style="font-size: 0.95rem; font-weight: 700; color: #1e293b;">Pending Partial Delivery Fulfillment</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div style="padding: 2.5rem 3rem; flex: 1; overflow-y: auto; background: #f8fafc;">
+                <!-- Summary Stats -->
+                <div style="display:flex; gap:1.5rem; margin-bottom:1.5rem;">
+                    <div style="flex:1; background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.01); display: flex; align-items: center; gap: 1.25rem;">
+                        <div style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="layers" style="width: 24px; height: 24px;"></i>
                         </div>
-                        <div style="text-align:left;">
-                            <div style="font-size:1rem; font-weight:900; color:#0f172a;">Remainder Change Preview</div>
-                            <div style="font-size:0.75rem; color:#64748b; font-weight:600;">Batch #${data.batchId} &nbsp;•&nbsp; ${data.personnel}</div>
+                        <div>
+                            <div style="font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:3px;">Items Affected</div>
+                            <div style="font-size:1.75rem; font-weight:900; color:#0f172a; line-height:1;">${items.length}</div>
                         </div>
-                    </div>`,
-            html: bodyHtml,
-            showConfirmButton: false,
-            showCloseButton: true,
-            width: 580,
-            padding: '1.25rem',
-            customClass: {
-                popup: 'remainder-preview-popup',
-                title: 'remainder-preview-title',
-                htmlContainer: 'remainder-preview-body',
-                closeButton: 'remainder-preview-close',
-            }
-        });
+                    </div>
+                    <div style="flex:1; background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.01); display: flex; align-items: center; gap: 1.25rem;">
+                        <div style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="package-plus" style="width: 24px; height: 24px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:3px;">Total Qty Adding</div>
+                            <div style="font-size:1.75rem; font-weight:900; color:#10b981; line-height:1;">+${totalAdding}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <h3 style="font-size: 1rem; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="list-checks" style="width: 20px; color: #4f46e5;"></i> Remainder Item Details
+                </h3>
+                <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                            <tr>
+                                <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Item Description</th>
+                                <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
+                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Current Stock</th>
+                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em;">+ Adding</th>
+                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.05em;">New Projected</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="padding: 1.5rem; background: #fffbeb; border-radius: 16px; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 1.25rem;">
+                    <div style="width: 40px; height: 40px; background: #f59e0b; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="shield-alert" style="width: 20px;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <span style="display: block; font-size: 0.9rem; font-weight: 800; color: #92400e;">Remainder Review in Progress</span>
+                        <span style="font-size: 0.8rem; color: #b45309;">These changes will only apply to inventory after you approve the request.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Section -->
+            ${footerHtml}
+        `;
+
+        document.getElementById('oversightPanelContent').innerHTML = content;
+        document.getElementById('oversightOverlay').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('oversightOverlay').classList.add('show');
+            document.getElementById('oversightSidePanel').classList.add('open');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }, 10);
     }
 
 
@@ -1718,6 +1798,7 @@
                     btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> Preview Changes`;
                     if (typeof lucide !== 'undefined') lucide.createIcons();
                 }
+                data.reqId = reqId;
                 _renderRemainderSheet(data);
             })
             .catch(err => {

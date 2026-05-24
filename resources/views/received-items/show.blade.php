@@ -49,7 +49,7 @@
                 </div>
 
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Registry Category</span>
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Category</span>
                     <span style="color: var(--text-main); font-weight: 700;">{{ $ledgeMap[$batch->ledge_category] ?? $batch->ledge_category }}</span>
                 </div>
             </div>
@@ -67,7 +67,7 @@
                 $supplierNameStr = $batch->supplier_name ?? '';
                 $isDonor = ($acqType === 'Donor' || str_contains($supplierNameStr, '[Donor Action]') || str_contains($supplierNameStr, '[Donation]'));
                 $provider = $isDonor ? ($batch->donor_name ?: trim(preg_replace('/\[.*?\]/', '', $supplierNameStr))) : trim(preg_replace('/\[.*?\]/', '', $supplierNameStr));
-                
+
                 $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
                 $deliveryPerson = '';
                 foreach ($suppliersRegistry as $k => $v) {
@@ -193,7 +193,7 @@
     @media (max-width: 768px) {
         .page-header { flex-direction: column; align-items: flex-start !important; gap: 1.5rem; }
         .page-header button { width: 100%; }
-        
+
         .activity-table thead { display: none; }
         .activity-table tr { display: block; margin: 1rem; border: 1px solid var(--border-color); border-radius: 12px; }
         .activity-table td { display: flex; justify-content: space-between; padding: 0.75rem 1rem !important; text-align: right; }

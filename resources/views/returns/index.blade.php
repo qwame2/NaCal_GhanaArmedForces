@@ -172,7 +172,7 @@
                         <div style="color: var(--text-main); font-size: 0.8rem; font-weight: 900;">{{ date('d/m/y', strtotime($item->issuance_date)) }}</div>
                     </div>
                 </div>
-                
+
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem;">
                     <div style="width: 40px; height: 40px; border-radius: 12px; background: var(--bg-main); display: flex; align-items: center; justify-content: center; color: var(--primary);">
                         <i data-lucide="package" style="width: 20px;"></i>
@@ -323,7 +323,7 @@
 
 <!-- History Bottom Sheet with Modern Professional Report Design -->
 <div id="historySheet" class="modal-backdrop-premium" onclick="handleHistoryOutsideClick(event)">
-    <div class="modal-container-premium animate-pop-in sheet-content" style="max-width: 1400px; width: 98%; max-height: 90vh; display: flex; flex-direction: column; background: var(--bg-card) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;">
+    <div class="modal-container-premium animate-pop-in sheet-content" style="max-width: 1920px; width: 98%; max-height: 90vh; display: flex; flex-direction: column; background: var(--bg-card) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;">
         <div class="samsung-drag-handle"></div>
         <div class="modal-header-premium" style="display: flex; justify-content: space-between; align-items: center; padding: 2rem 3rem; background: var(--bg-card);">
             <div>
@@ -1267,7 +1267,7 @@
                                 ` : ''}
                                 <th style="padding: 0 1rem 0.5rem;">Return Date</th>
                                 <th style="padding: 0 1rem 0.5rem;">Original Issue Date</th>
-                                <th style="padding: 0 1rem 0.5rem;">Asset Description</th>
+                                <th style="padding: 0 1rem 0.5rem;">Item Description</th>
                                 <th style="padding: 0 1rem 0.5rem;">Classification</th>
                                 <th style="padding: 0 1rem 0.5rem;">Recipient</th>
                                 <th style="padding: 0 1rem 0.5rem;">Approval</th>
@@ -1627,12 +1627,12 @@
                             const returnTime = new Date(item.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
                             return `
-                                The item identified as <strong>${item.description}</strong> (Ref ID: #${item.id}), 
-                                categorized under <strong>LEDGE ${item.ledge_category}</strong>, was officially recovered from 
-                                <strong>${item.beneficiary}${item.authority ? ' (Approval: ' + item.authority + ')' : ''}</strong>. 
+                                The item identified as <strong>${item.description}</strong> (Ref ID: #${item.id}),
+                                categorized under <strong>LEDGE ${item.ledge_category}</strong>, was officially recovered from
+                                <strong>${item.beneficiary}${item.authority ? ' (Approval: ' + item.authority + ')' : ''}</strong>.
                                 Upon recovery, the asset was documented in the following state: <em>"${item.remarks || 'No specific condition noted'}"</em>.
-                                This asset, originally issued on <strong>${issueDate} at ${issueTime}</strong>, involved the return of <strong>${item.returned_qty} package type(s)</strong> 
-                                to the central registry. The recovery process was formally completed and verified on 
+                                This asset, originally issued on <strong>${issueDate} at ${issueTime}</strong>, involved the return of <strong>${item.returned_qty} package type(s)</strong>
+                                to the central registry. The recovery process was formally completed and verified on
                                 <strong>${returnDate} at ${returnTime}</strong>. ${index < selectedItems.length - 1 ? '<br><br>' : ''}
                             `;
                         }).join('')}

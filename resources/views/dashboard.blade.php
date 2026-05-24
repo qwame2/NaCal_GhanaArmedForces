@@ -1039,6 +1039,64 @@
         $('#newEntryForm').on('submit', function(e) {
             e.preventDefault();
 
+            // Client-side validation for required fields
+            const missingFields = [];
+            
+            // Check Category
+            if (!$('#ledgeSelect').val()) {
+                missingFields.push("Category Section");
+            }
+            
+            // Check Supplier/Donor Name
+            if (!$('#supplierNameSelect').val()) {
+                missingFields.push("Supplier/Donor Name");
+            }
+            
+            // Check Delivery Status (only if not donor)
+            const isDonor = $('#isDonorCheckbox').is(':checked');
+            if (!isDonor && !$('#supplierStatusSelect').val()) {
+                missingFields.push("Delivery Status");
+            }
+            
+            // Check Received Date
+            if (!$('#arrivalDate').val()) {
+                missingFields.push("Received Date");
+            }
+            
+            // Check dynamic item rows
+            $('.item-entry-row').each(function(index) {
+                const itemIdx = index + 1;
+                const desc = ($(this).find('.item-select-dynamic').val() || '').trim();
+                const qty = ($(this).find('.row-qty').val() || '').trim();
+                const physQty = ($(this).find('.row-stock-balance').val() || '').trim();
+                const status = $('#supplierStatusSelect').val();
+                
+                if (!desc) {
+                    missingFields.push(`Item Type #${itemIdx}: Description`);
+                }
+                if (!qty) {
+                    missingFields.push(`Item Type #${itemIdx}: Received Qty`);
+                }
+                if (status === 'Partial Delivery' && !physQty) {
+                    missingFields.push(`Item Type #${itemIdx}: Physically Received Qty`);
+                }
+            });
+            
+            if (missingFields.length > 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Required Fields Missing',
+                    html: `<div style="text-align: left; font-size: 0.9rem; font-weight: 600; color: var(--text-main);">
+                            Please complete the following required fields before submitting:
+                            <ul style="margin-top: 10px; padding-left: 20px; color: #ef4444; line-height: 1.6;">
+                                ${missingFields.map(f => `<li>${f}</li>`).join('')}
+                            </ul>
+                           </div>`,
+                    confirmButtonColor: '#ef4444'
+                });
+                return;
+            }
+
             const btn = $(this).find('button[type="submit"]');
             const originalHtml = btn.html();
 
@@ -1227,9 +1285,9 @@
                             <div class="form-group full-width">
                                  <label style="display: flex; align-items: center; gap: 6px;">
                                      <i data-lucide="search" style="width: 12px; color: var(--primary);"></i>
-                                     Item Description (Search & Select)
+                                     Item Description (Search & Select) <span style="color: #ef4444; margin-left: 2px;">*</span>
                                  </label>
-                                 <select class="item-select-dynamic" style="width: 100%;">
+                                 <select class="item-select-dynamic" style="width: 100%;" required>
                                      <option value=""></option>
                                      ${filteredItems.map(item => `<option value="${item.description}">${item.description}</option>`).join('')}
                                  </select>
@@ -1300,16 +1358,16 @@
                                     <div>
                                         <label class="lbl-received-qty" style="display: flex; align-items: center; gap: 6px;">
                                             <i data-lucide="plus-circle" style="width: 12px; color: var(--primary);"></i>
-                                            <span class="lbl-text">Received Qty</span>
+                                            <span class="lbl-text">Received Qty</span> <span style="color: #ef4444; margin-left: 2px;">*</span>
                                         </label>
-                                        <input type="number" class="row-qty" style="border-color: var(--primary-light); width: 100%;">
+                                        <input type="number" class="row-qty" style="border-color: var(--primary-light); width: 100%;" required>
                                     </div>
                                     <div class="actual-qty-group" style="display: none;">
                                         <label style="display: flex; align-items: center; gap: 6px;">
                                             <i data-lucide="check-circle" style="width: 12px; color: #10b981;"></i>
-                                            <span style="color: #10b981; font-weight: 800;">Physically Received Qty</span>
+                                            <span style="color: #10b981; font-weight: 800;">Physically Received Qty</span> <span style="color: #ef4444; margin-left: 2px;">*</span>
                                         </label>
-                                        <input type="number" class="row-stock-balance" value="0" style="border-color: #10b981; width: 100%;">
+                                        <input type="number" class="row-stock-balance" value="0" style="border-color: #10b981; width: 100%;" required>
                                     </div>
                                 </div>
                             </div>
@@ -1985,16 +2043,16 @@
             </div>
         </div>
 
-        <form id="newEntryForm">
+        <form id="newEntryForm" novalidate>
             <!-- Sticky Batch Controls -->
             <div class="modal-controls-sticky">
                 <div class="form-grid">
                     <div id="ledgeContainer" class="form-group full-width">
                         <label style="display: flex; align-items: center; gap: 6px;">
                             <i data-lucide="layers" style="width: 12px; color: var(--primary);"></i>
-                            Category Section (Search & Select)
+                            Category Section (Search & Select) <span style="color: #ef4444; margin-left: 2px;">*</span>
                         </label>
-                        <select id="ledgeSelect" class="select2-input" style="width: 100%;">
+                        <select id="ledgeSelect" class="select2-input" style="width: 100%;" required>
                             <option value=""></option>
                             @foreach($ledgeMap as $code => $name)
                                 <option value="{{ $code }}">Category {{ $code }} - {{ $name }}</option>
@@ -2013,9 +2071,9 @@
                             <div>
                                 <label style="display: flex; align-items: center; gap: 6px;">
                                     <i data-lucide="truck" style="width: 12px; color: var(--primary);"></i>
-                                    Supplier/Donor Name (Search or Type)
+                                    Supplier/Donor Name (Search or Type) <span style="color: #ef4444; margin-left: 2px;">*</span>
                                 </label>
-                                <select id="supplierNameSelect" style="width: 100%;">
+                                <select id="supplierNameSelect" style="width: 100%;" required>
                                     <option value=""></option>
                                     @foreach($allSuppliers as $supplier)
                                     <option value="{{ $supplier }}">{{ $supplier }}</option>
@@ -2045,9 +2103,9 @@
                             <div id="deliveryStatusGroup">
                                 <label style="display: flex; align-items: center; gap: 6px;">
                                     <i data-lucide="activity" style="width: 12px; color: var(--primary);"></i>
-                                    Delivery Status
+                                    Delivery Status <span style="color: #ef4444; margin-left: 2px;">*</span>
                                 </label>
-                                <select id="supplierStatusSelect" style="width: 100%;">
+                                <select id="supplierStatusSelect" style="width: 100%;" required>
                                     <option value="">Select Status</option>
                                     <option value="Full Delivery" data-icon="check-circle" data-color="#10b981">Full Delivery</option>
                                     <option value="Partial Delivery" data-icon="alert-circle" data-color="#f59e0b">Partial Delivery</option>
@@ -2056,9 +2114,9 @@
                                 <div id="dateControl" class="form-group" style="display: none; opacity: 0; margin-top: 0.75rem;">
                                     <label style="display: flex; align-items: center; gap: 6px;">
                                         <i data-lucide="calendar" style="width: 12px; color: var(--primary);"></i>
-                                        Received Date (Manual)
+                                        Received Date (Manual) <span style="color: #ef4444; margin-left: 2px;">*</span>
                                     </label>
-                                    <input type="date" id="arrivalDate" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit;">
+                                    <input type="date" id="arrivalDate" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit;" required>
                                     <input type="hidden" id="entryDate">
                                 </div>
                             </div>

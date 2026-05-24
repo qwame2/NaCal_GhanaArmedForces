@@ -951,7 +951,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                     'description' => $issuedItem->description ?? 'Unknown Item',
                     'category' => $issuedItem->ledge_category ?? 'N/A',
                     'beneficiary' => $issuedItem->issuance->beneficiary ?? 'N/A',
-                    'issued_qty' => $issuedItem->qty ?? 0,
+                    'issued_qty' => $issuedItem ? ($issuedItem->quantity + \App\Models\ReturnedItem::where('issued_item_id', $issuedItem->id)->sum('returned_qty')) : 0,
                     'return_qty' => $payload['return_qty'] ?? 0,
                     'remarks' => $payload['remarks'] ?? ''
                 ]
@@ -1009,6 +1009,12 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             return response()->json(['error' => 'Issued item not found'], 404);
         }
 
+        $unit = $issuedItem->unit;
+        if (empty($unit)) {
+            $unit = \App\Models\InventoryItem::whereRaw('LOWER(TRIM(description)) = ?', [strtolower(trim($issuedItem->description))])
+                ->value('unit') ?? 'units';
+        }
+
         return response()->json([
             'personnel' => $editReq->user->name ?? 'Unknown',
             'status'    => $editReq->status,
@@ -1016,11 +1022,12 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                 'description' => $issuedItem->description,
                 'beneficiary' => $issuedItem->issuance->beneficiary,
                 'authority'   => $issuedItem->issuance->authority,
-                'issued_qty'  => $issuedItem->quantity + (float)$payload['return_qty'], // original qty before this request
+                'issued_qty'  => $issuedItem->quantity + \App\Models\ReturnedItem::where('issued_item_id', $issuedItem->id)->sum('returned_qty'),
                 'return_qty'  => (float)$payload['return_qty'],
                 'return_date' => $payload['return_date'],
                 'remarks'     => $payload['remarks'],
-                'category'    => $issuedItem->ledge_category
+                'category'    => $issuedItem->ledge_category,
+                'unit'        => $unit
             ]
         ]);
     })->name('api.recovery-preview');
@@ -1132,7 +1139,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                         ]);
                     }
 
-                    $confirmation = "<div style='padding: 15px; border: 1px solid #f59e0b; border-radius: 16px; background: rgba(245, 158, 11, 0.03); display: flex; align-items: center; gap: 12px;'>";
+                    $confirmation = "<div class='personnel-view' style='padding: 15px; border: 1px solid #f59e0b; border-radius: 16px; background: rgba(245, 158, 11, 0.03); display: flex; align-items: center; gap: 12px;'>";
                     $confirmation .= "<div style='width: 32px; height: 32px; background: #f59e0b; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white;'><i data-lucide='clock' style='width: 16px;'></i></div>";
                     $confirmation .= "<div><b style='color: #f59e0b; font-size: 0.85rem;'>REMAINDER SUBMITTED</b><br><span style='font-size: 0.75rem; color: #64748b; font-weight: 600;'>Awaiting Admin verification for remainder items.</span></div>";
                     $confirmation .= "</div>";
