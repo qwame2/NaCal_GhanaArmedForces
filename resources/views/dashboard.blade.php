@@ -989,13 +989,14 @@
         const ledgeSelect = $('#ledgeSelect');
         const itemDetails = $('#itemDetails');
 
-        // Database Items from Backend (All item descriptions and units mapped to UPPERCASE)
+        // Database Items from Backend (All item descriptions, units, and ledge categories mapped to UPPERCASE/trimmed)
         const existingDBItems = JSON.parse(document.getElementById('inventory-data').textContent || '[]').map(item => {
             return {
                 ...item,
-                description: (item.description || '').toUpperCase(),
-                unit: (item.unit || '').toUpperCase(),
-                location: (item.location || '').toUpperCase()
+                description: (item.description || '').toUpperCase().trim(),
+                unit: (item.unit || '').toUpperCase().trim(),
+                location: (item.location || '').toUpperCase().trim(),
+                ledge_category: (item.ledge_category || '').toUpperCase().trim()
             };
         });
         const globalTotalStock = {{ $totalInventory }};
@@ -1007,16 +1008,16 @@
             .then(rules => {
                 const upperRules = {};
                 Object.entries(rules || {}).forEach(([keyword, rule]) => {
-                    const upperKeyword = keyword.toUpperCase();
+                    const upperKeyword = keyword.toUpperCase().trim();
                     if (typeof rule === 'object' && rule !== null) {
                         upperRules[upperKeyword] = {
-                            category: rule.category,
-                            unit: (rule.unit || '').toUpperCase(),
-                            location: (rule.location || 'Not Specified').toUpperCase()
+                            category: (rule.category || '').toUpperCase().trim(),
+                            unit: (rule.unit || '').toUpperCase().trim(),
+                            location: (rule.location || 'Not Specified').toUpperCase().trim()
                         };
                     } else {
                         upperRules[upperKeyword] = {
-                            unit: (rule || '').toUpperCase(),
+                            unit: (rule || '').toUpperCase().trim(),
                             location: 'NOT SPECIFIED'
                         };
                     }
@@ -1129,14 +1130,13 @@
             if (validationFailed) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Package Type Not Assigned',
-                    text: `The item "${invalidItemName}" does not have a unit assigned by the administrator yet. Please confront admin.`,
+                    title: 'Package Type or Location Missing',
+                    text: `The item "${invalidItemName}" does not have a valid package type or store location assigned. Please enter or select them before submitting.`,
                     confirmButtonColor: '#ef4444'
                 });
                 return;
             }
 
-            const isDonor = $('#isDonorCheckbox').is(':checked');
             const supplierStatus = isDonor ? 'Donor' : $('#supplierStatusSelect').val();
             const acquisitionType = isDonor ? 'Donor' : 'Supplier';
             const supplierOrDonorName = ($('#supplierNameSelect').val() || '').trim();
@@ -1169,7 +1169,7 @@
 
             // Loading State
             btn.html('<i class="animate-spin" data-lucide="loader-2"></i> Saving...').prop('disabled', true);
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
 
             $.ajax({
                 url: '{{ route("inventory.store", [], false) }}',
@@ -1209,7 +1209,7 @@
                         confirmButtonColor: '#ef4444'
                     });
                     btn.html(originalHtml).prop('disabled', false);
-                    lucide.createIcons();
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
                 }
             });
         });
@@ -1220,7 +1220,7 @@
 
         // Handle Ledge Selection
         ledgeSelect.on('change', function() {
-            const selectedLedge = $(this).val();
+            const selectedLedge = ($(this).val() || '').toUpperCase().trim();
             if (selectedLedge) {
                 // Keep Ledge on Top, Show Batch Controls below it
                 $('#qtyControl').show().animate({
@@ -1240,7 +1240,7 @@
                 $('.item-select-dynamic').each(function() {
                     const $select = $(this);
                     const currentVal = $select.val();
-                    const filtered = existingDBItems.filter(item => item.ledge_category === selectedLedge);
+                    const filtered = existingDBItems.filter(item => (item.ledge_category || '').toUpperCase().trim() === selectedLedge);
 
                     let optionsHtml = '<option value=""></option>';
                     filtered.forEach(item => {
@@ -1267,8 +1267,8 @@
             const container = $('#itemsContainer');
             if (!append) container.empty();
 
-            const selectedLedge = $('#ledgeSelect').val();
-            const filteredItems = existingDBItems.filter(item => item.ledge_category === selectedLedge);
+            const selectedLedge = ($('#ledgeSelect').val() || '').toUpperCase().trim();
+            const filteredItems = existingDBItems.filter(item => (item.ledge_category || '').toUpperCase().trim() === selectedLedge);
 
             for (let i = 0; i < count; i++) {
                 const currentRows = container.children('.item-entry-row').length;
@@ -1463,20 +1463,55 @@
                         });
                     };
 
+                    const setEditableStyle = () => {
+                        $unitInput.prop('readonly', false).attr('placeholder', 'Enter package type...').css({
+                            'color': 'var(--text-main)',
+                            'border-color': 'var(--primary)',
+                            'background': 'var(--bg-card)',
+                            'box-shadow': '0 0 0 3px rgba(99, 102, 241, 0.1)',
+                            'font-style': 'normal',
+                            'font-size': '0.95rem',
+                            'letter-spacing': 'normal',
+                            'cursor': 'text'
+                        });
+                        $locationInput.prop('readonly', false).attr('placeholder', 'Enter store location...').css({
+                            'color': 'var(--text-main)',
+                            'border-color': 'var(--primary)',
+                            'background': 'var(--bg-card)',
+                            'box-shadow': '0 0 0 3px rgba(99, 102, 241, 0.1)',
+                            'font-style': 'normal',
+                            'font-size': '0.95rem',
+                            'letter-spacing': 'normal',
+                            'cursor': 'text'
+                        });
+                    };
+
+                    const setReadonlyStyle = () => {
+                        $unitInput.prop('readonly', true).attr('placeholder', 'Auto-determined').css({
+                            'cursor': 'not-allowed'
+                        });
+                        $locationInput.prop('readonly', true).attr('placeholder', 'Auto-determined').css({
+                            'cursor': 'not-allowed'
+                        });
+                        resetUnitStyle();
+                    };
+
                     if (!selectedDesc) {
                         $unitInput.val('');
                         $locationInput.val('');
-                        resetUnitStyle();
+                        setReadonlyStyle();
                     } else if (window._unitRules) {
-                        const descLower = selectedDesc.toLowerCase();
-                        const currentCat = $('#ledgeSelect').val(); // Get current category
+                        const descUpper = selectedDesc.toUpperCase().trim();
+                        const currentCat = ($('#ledgeSelect').val() || '').toUpperCase().trim();
 
                         const matchedUnit = Object.entries(window._unitRules).find(([kw, rule]) => {
-                            if (!descLower.includes(kw)) return false;
+                            const upperKw = kw.toUpperCase().trim();
+                            if (!descUpper.includes(upperKw)) return false;
 
                             if (typeof rule === 'object' && rule !== null) {
                                 // Must match category if rule specifies one
-                                return rule.category === currentCat;
+                                const ruleCat = (rule.category || '').toUpperCase().trim();
+                                return ruleCat === currentCat;
                             }
                             return true; // Fallback for old string rules
                         });
@@ -1485,24 +1520,24 @@
                             const ruleValue = matchedUnit[1];
                             $unitInput.val(typeof ruleValue === 'object' ? ruleValue.unit : ruleValue);
                             $locationInput.val(typeof ruleValue === 'object' ? (ruleValue.location || 'Not Specified') : 'Not Specified');
-                            resetUnitStyle();
+                            setReadonlyStyle();
                         } else if (prevData && prevData.unit) {
                             $unitInput.val(prevData.unit);
                             $locationInput.val(prevData.location || 'Not Specified');
-                            resetUnitStyle();
+                            setReadonlyStyle();
                         } else {
-                            $unitInput.val("Package type not assigned.");
-                            $locationInput.val("Confront the Admin");
-                            setErrorUnitStyle();
+                            $unitInput.val('');
+                            $locationInput.val('');
+                            setEditableStyle();
                         }
                     } else if (prevData && prevData.unit) {
                         $unitInput.val(prevData.unit);
                         $locationInput.val(prevData.location || 'Not Specified');
-                        resetUnitStyle();
+                        setReadonlyStyle();
                     } else {
-                        $unitInput.val("Package type not assigned.");
-                        $locationInput.val("Confront the Admin");
-                        setErrorUnitStyle();
+                        $unitInput.val('');
+                        $locationInput.val('');
+                        setEditableStyle();
                     }
 
                     const updateStatsPanel = () => {
@@ -1529,7 +1564,7 @@
                         } else {
                             statsPanel.slideUp(300);
                         }
-                        lucide.createIcons();
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
                     };
 
                     if (selectedDesc) {
@@ -1580,7 +1615,7 @@
                     $row.find('.actual-qty-group').hide();
                 }
             }
-            lucide.createIcons(); // Re-init icons
+            if (typeof lucide !== 'undefined') lucide.createIcons(); // Re-init icons
             updateSubmitButtonState();
         }
 
@@ -1593,7 +1628,9 @@
                 if (unitVal.indexOf("Package type not assigned") !== -1 ||
                     unitVal.indexOf("Confront Admin") !== -1 ||
                     locationVal.indexOf("Confront Admin") !== -1 ||
-                    locationVal.indexOf("Confront the Admin") !== -1) {
+                    locationVal.indexOf("Confront the Admin") !== -1 ||
+                    !unitVal ||
+                    !locationVal) {
                     disabled = true;
                 }
             });
@@ -1617,6 +1654,10 @@
                 submitBtn.removeAttr('title');
             }
         }
+
+        $(document).on('input', '.row-unit, .row-location', function() {
+            updateSubmitButtonState();
+        });
 
         // Initialize Supplier Status with Nice Templates
         function formatStatus(opt) {
@@ -1921,6 +1962,12 @@
                                     }
                                     descSel.val(itm.description).trigger('change');
                                     $row.find('.row-qty').val(itm.qty || '');
+                                    if (itm.unit) {
+                                        $row.find('.row-unit').val(itm.unit);
+                                    }
+                                    if (itm.location) {
+                                        $row.find('.row-location').val(itm.location);
+                                    }
                                     $row.find('.row-stock-balance').val(itm.stock_balance || '');
                                     $row.find('.row-variance').val(itm.variance || 0);
                                     $row.find('.row-remarks').val(itm.remarks || '');

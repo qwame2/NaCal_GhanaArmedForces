@@ -209,7 +209,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                         'name' => $ledgeMap[$code] ?? "Category $code",
                         'percentage' => $percentage,
                         'avail' => $avail,
-                        'is_override' => $isOverride
+                        'is_override' => false
                     ];
                 }
             }
