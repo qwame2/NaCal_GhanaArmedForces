@@ -1588,13 +1588,16 @@
     function _renderRemainderSheet(data) {
         const items = data.items || [];
         const reqId = data.reqId;
-        const totalAdding = items.reduce((s, i) => s + i.adding, 0);
+        const totalExpected = items.reduce((s, i) => s + (parseFloat(i.expected) || 0), 0);
+        const totalCurrent = items.reduce((s, i) => s + (parseFloat(i.current) || 0), 0);
+        const totalAdding = items.reduce((s, i) => s + (parseFloat(i.adding) || 0), 0);
+        const totalProjected = items.reduce((s, i) => s + (parseFloat(i.projected) || 0), 0);
 
         let tableRows = '';
         if (items.length === 0) {
             tableRows = `
                 <tr>
-                    <td colspan="5" style="padding: 2rem; text-align: center; color: #94a3b8; font-weight: 600;">
+                    <td colspan="6" style="padding: 2rem; text-align: center; color: #94a3b8; font-weight: 600;">
                         No item details found.
                     </td>
                 </tr>
@@ -1609,6 +1612,7 @@
                     <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">
                         ${item.unit || 'Package Types'}
                     </td>
+                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #f59e0b; text-align: right; background: rgba(245, 158, 11, 0.02); border-left: 2px solid #f59e0b;">${(parseFloat(item.expected) || 0).toLocaleString()}</td>
                     <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0f172a; text-align: right;">${(parseFloat(item.current) || 0).toLocaleString()}</td>
                     <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #10b981; text-align: right; background: rgba(16, 185, 129, 0.05); border-left: 2px solid #10b981;">+${(parseFloat(item.adding) || 0).toLocaleString()}</td>
                     <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #4f46e5; text-align: right; background: rgba(79, 70, 229, 0.03); border-left: 2px solid #4f46e5;">${(parseFloat(item.projected) || 0).toLocaleString()}</td>
@@ -1688,12 +1692,21 @@
                         </div>
                     </div>
                     <div style="flex:1; background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.01); display: flex; align-items: center; gap: 1.25rem;">
+                        <div style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.15); color: #d97706; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="package" style="width: 24px; height: 24px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:3px;">Total Expected</div>
+                            <div style="font-size:1.75rem; font-weight:900; color:#d97706; line-height:1;">${totalExpected.toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div style="flex:1; background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.01); display: flex; align-items: center; gap: 1.25rem;">
                         <div style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                             <i data-lucide="package-plus" style="width: 24px; height: 24px;"></i>
                         </div>
                         <div>
                             <div style="font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:3px;">Total Qty Adding</div>
-                            <div style="font-size:1.75rem; font-weight:900; color:#10b981; line-height:1;">+${totalAdding}</div>
+                            <div style="font-size:1.75rem; font-weight:900; color:#10b981; line-height:1;">+${totalAdding.toLocaleString()}</div>
                         </div>
                     </div>
                 </div>
@@ -1708,6 +1721,7 @@
                             <tr>
                                 <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Item Description</th>
                                 <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
+                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.05em;">Total Expected</th>
                                 <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Current Stock</th>
                                 <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em;">+ Adding</th>
                                 <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.05em;">New Projected</th>
@@ -1716,6 +1730,25 @@
                         <tbody>
                             ${tableRows}
                         </tbody>
+                        <tfoot style="background: #f8fafc; border-top: 2px solid #e2e8f0;">
+                            <tr>
+                                <td colspan="2" style="padding: 1rem 1.5rem; font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
+                                    Total Remainder Quantities
+                                </td>
+                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #f59e0b; background: rgba(245, 158, 11, 0.02); border-left: 2px solid #f59e0b;">
+                                    ${totalExpected.toLocaleString()}
+                                </td>
+                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 0.85rem; font-weight: 800; color: #0f172a;">
+                                    ${totalCurrent.toLocaleString()}
+                                </td>
+                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #10b981; background: rgba(16, 185, 129, 0.05); border-left: 2px solid #10b981;">
+                                    +${totalAdding.toLocaleString()}
+                                </td>
+                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #4f46e5; background: rgba(79, 70, 229, 0.03); border-left: 2px solid #4f46e5;">
+                                    ${totalProjected.toLocaleString()}
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
 

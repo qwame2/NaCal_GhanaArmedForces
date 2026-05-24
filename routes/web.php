@@ -979,6 +979,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
                 'current'     => (float) $invItem->stock_balance,
                 'adding'      => (float) $u['incoming_qty'],
                 'projected'   => (float) $invItem->stock_balance + (float) $u['incoming_qty'],
+                'expected'    => (float) $invItem->stock_balance - (float) $invItem->variance,
             ];
         }
 
