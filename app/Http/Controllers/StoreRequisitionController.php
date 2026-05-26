@@ -42,11 +42,13 @@ class StoreRequisitionController extends Controller
         return view('requisitions.index', compact('availableItems', 'ledgeMap', 'myRequisitions'));
     }
 
-    /**
-     * Personnel: Show the checkout page.
-     */
     public function checkout(Request $request)
     {
+        $user = auth()->user();
+        if (empty($user->name) || $user->name === $user->username || empty($user->phone) || empty($user->role) || strcasecmp($user->role, 'Requisitioner') === 0 || empty($user->service_number)) {
+            return redirect()->route('requisitions.index')->with('show_profile_modal', true);
+        }
+
         $ledgeMap = Setting::getCategories();
         return view('requisitions.checkout', compact('ledgeMap'));
     }
@@ -56,6 +58,14 @@ class StoreRequisitionController extends Controller
      */
     public function store(Request $request)
     {
+        $user = auth()->user();
+        if (empty($user->name) || $user->name === $user->username || empty($user->phone) || empty($user->role) || strcasecmp($user->role, 'Requisitioner') === 0 || empty($user->service_number)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your profile is incomplete. Please complete your profile details (Full Name, Phone Number, Service Number, and Professional Role) before submitting a request.'
+            ], 422);
+        }
+
         $request->validate([
             'requester_name'  => 'required|string|max:255',
             'department'      => 'required|string|max:255',
@@ -495,6 +505,8 @@ class StoreRequisitionController extends Controller
             'status'         => $req->status,
             'status_badge'   => $req->status_badge,
             'main_admin_status' => $req->main_admin_status,
+            'origin_admin_status' => $req->origin_admin_status,
+            'origin_approved_by' => $req->origin_approved_by,
             'usage_type'     => $req->usage_type,
             'usage_type_badge' => $req->usage_type_badge,
             'admin_notes'    => $req->admin_notes,
@@ -790,7 +802,7 @@ class StoreRequisitionController extends Controller
     {
         if (!in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) abort(403);
 
-        $isStoresHead = (strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
 
         $query = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])
             ->orderByRaw("FIELD(priority, 'urgent', 'normal', 'low')")
@@ -880,7 +892,7 @@ class StoreRequisitionController extends Controller
 
         $req = StoreRequisition::findOrFail($id);
 
-        $isStoresHead = (strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
 
         if (!$isStoresHead) {
             // Originating department head check
@@ -903,6 +915,7 @@ class StoreRequisitionController extends Controller
         if ($request->status === 'approved') {
             if (!$isStoresHead) {
                 $req->origin_admin_status = 'approved';
+                $req->origin_approved_by = auth()->user()->name;
                 $actionName = 'DEPT_HEAD_APPROVE';
                 $logDesc = "Department Head " . auth()->user()->name . " approved store requisition #{$req->id} from department: {$req->department}. Escalated to Department Head (Stores).";
             } else {

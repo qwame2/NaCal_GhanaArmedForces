@@ -13,9 +13,13 @@
 
     <!-- CSS Assets -->
     <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     <!-- Scripts -->
     <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="{{ asset('js/sweetalert2@11.js') }}"></script>
 
@@ -465,6 +469,73 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Select2 checkout overrides */
+        .select2-container--default .select2-selection--single {
+            height: 46px !important;
+            border: 1.5px solid var(--border-color) !important;
+            border-radius: 12px !important;
+            background: var(--bg-main) !important;
+            color: var(--text-main) !important;
+            display: flex !important;
+            align-items: center !important;
+            padding-left: 8px !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+            font-family: inherit !important;
+            outline: none !important;
+            box-sizing: border-box !important;
+            transition: all 0.2s !important;
+        }
+        .select2-container--default .select2-selection--single:hover {
+            border-color: var(--store-orange) !important;
+        }
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: var(--store-orange) !important;
+            background: var(--bg-card) !important;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.08) !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 44px !important;
+            right: 12px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: var(--text-main) !important;
+            font-weight: 600 !important;
+        }
+        .select2-dropdown {
+            border: 1.5px solid var(--border-color) !important;
+            border-radius: 12px !important;
+            box-shadow: var(--shadow-premium) !important;
+            background: var(--bg-card) !important;
+            z-index: 99999 !important;
+            overflow: hidden !important;
+        }
+        .select2-search__field {
+            border-radius: 8px !important;
+            border: 1px solid var(--border-color) !important;
+            padding: 8px 12px !important;
+            background: var(--bg-main) !important;
+            color: var(--text-main) !important;
+        }
+        .select2-results__option {
+            padding: 10px 15px !important;
+            font-size: 0.85rem !important;
+            font-weight: 600 !important;
+        }
+        .select2-results__option--highlighted[aria-selected] {
+            background-color: var(--store-orange) !important;
+            color: white !important;
+        }
+        .select2-results__group {
+            font-size: 0.65rem !important;
+            font-weight: 900 !important;
+            color: var(--text-muted) !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            padding: 8px 15px 4px !important;
+            background: var(--bg-main) !important;
+        }
     </style>
 </head>
 <body>
@@ -539,7 +610,58 @@
 
                 <div>
                     <label class="form-label">Department / Unit *</label>
-                    <input type="text" id="department" class="form-input" value="{{ auth()->user()->department ?? '' }}" required placeholder="e.g. Medical, Operations...">
+                    <select id="department" class="form-input" required>
+                        <option value="">-- Select Department --</option>
+                        <optgroup label="INVESTIGATIONS & INTELLIGENCE DIRECTORATE">
+                            <option value="Intelligence Department">Intelligence Department</option>
+                            <option value="Investigations Department">Investigations Department</option>
+                            <option value="Forensic Science Department">Forensic Science Department</option>
+                            <option value="Asset recovery & Management Department">Asset recovery & Management Department</option>
+                            <option value="Strategic Intelligence Oversight Department">Strategic Intelligence Oversight Department</option>
+                        </optgroup>
+                        <optgroup label="LICENSING & REGULATORY DIRECTORATE">
+                            <option value="Cannabis Regulations Department">Cannabis Regulations Department</option>
+                            <option value="Precursor Diversion Department">Precursor Diversion Department</option>
+                        </optgroup>
+                        <optgroup label="DRUG DEMAND REDUCTION DIRECTORATE">
+                            <option value="Drug Education & Prevention Department">Drug Education & Prevention Department</option>
+                            <option value="Rehabilitation & Social Re-integration Department">Rehabilitation & Social Re-integration Department</option>
+                            <option value="Harm Reduction Department">Harm Reduction Department</option>
+                            <option value="Alternative Livelihoods Development Department">Alternative Livelihoods Development Department</option>
+                        </optgroup>
+                        <optgroup label="OPERATIONS AND ENFORCEMENT DIRECTORATE">
+                            <option value="Canine Operations Department">Canine Operations Department</option>
+                        </optgroup>
+                        <optgroup label="FINANCE DIRECTORATE">
+                            <option value="Accounts & Budget Department">Accounts & Budget Department</option>
+                            <option value="Payroll & Pension Department">Payroll & Pension Department</option>
+                        </optgroup>
+                        <optgroup label="RESEARCH POLICY & PLANNING DIRECTORATE">
+                            <option value="Research Policy Planning Monitoring & Evaluation Department">Research Policy Planning Monitoring & Evaluation Department</option>
+                            <option value="Professional Standards Department">Professional Standards Department</option>
+                        </optgroup>
+                        <optgroup label="ADMINISTRATION DIRECTORATE">
+                            <option value="General Services Department">General Services Department</option>
+                            <option value="ICT Department">ICT Department</option>
+                            <option value="Transport Department">Transport Department</option>
+                            <option value="Procurement Department">Procurement Department</option>
+                            <option value="Project Management Department">Project Management Department</option>
+                        </optgroup>
+                        <optgroup label="HUMAN RESOURCE DIRECTORATE">
+                            <option value="Human Resource Management Department">Human Resource Management Department</option>
+                            <option value="Welfare Department">Welfare Department</option>
+                            <option value="Religious Affairs Department">Religious Affairs Department</option>
+                        </optgroup>
+                        <optgroup label="TRAINING & DEVELOPMENT DIRECTORATE">
+                            <option value="Internal & External Training Department">Internal & External Training Department</option>
+                        </optgroup>
+                        <optgroup label="PUBLIC AFFAIRS AND INTERNATIONAL RELATIONS">
+                            <option value="Public Affairs Department">Public Affairs Department</option>
+                            <option value="International Relations Department">International Relations Department</option>
+                            <option value="Material Development Department">Material Development Department</option>
+                            <option value="Client Service Department">Client Service Department</option>
+                        </optgroup>
+                    </select>
                 </div>
 
                 <div>
@@ -814,6 +936,13 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadCart();
             lucide.createIcons();
+
+            // Initialize Select2 on the department dropdown with default prefilled value
+            $('#department').select2({
+                width: '100%',
+                placeholder: '-- Select Department --',
+                allowClear: true
+            }).val('{{ auth()->user()->department ?? "" }}').trigger('change');
 
             // Setup Usage Type pill interactivity
             const returnDateContainer = document.getElementById('return-date-container');

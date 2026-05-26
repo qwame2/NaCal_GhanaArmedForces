@@ -2,6 +2,9 @@
 
 @section('content')
 
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
 <style>
     body {
         background: #f0f4ff;
@@ -349,6 +352,60 @@
             gap: 0;
         }
     }
+
+    /* Select2 customization in Change Password Portal */
+    .select2-container {
+        flex: 1 !important;
+        width: 100% !important;
+    }
+    .select2-container--default .select2-selection--single {
+        background: transparent !important;
+        border: none !important;
+        height: 48px !important;
+        display: flex !important;
+        align-items: center !important;
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        padding-left: 4px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 44px !important;
+        right: 10px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #0f172a !important;
+        font-weight: 700 !important;
+    }
+    .select2-dropdown {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 30px rgba(99, 102, 241, 0.08) !important;
+        z-index: 999999 !important;
+    }
+    .select2-search__field {
+        border-radius: 8px !important;
+        padding: 8px 12px !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+    .select2-results__option {
+        padding: 8px 12px !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+    }
+    .select2-results__option--highlighted[aria-selected] {
+        background-color: #6366f1 !important;
+        color: white !important;
+    }
+    .select2-results__group {
+        font-size: 0.65rem !important;
+        font-weight: 900 !important;
+        color: #94a3b8 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        padding: 8px 12px 4px !important;
+        background: #f8fafc !important;
+    }
 </style>
 
 <div class="sync-wrapper">
@@ -501,11 +558,62 @@
                     <div class="field-block">
                         <div class="field-label">
                             <label>Department</label>
-                            <span class="req-badge">OPTIONAL</span>
+                            <span class="req-badge" style="background:#fffbeb; color:#d97706; border:1px solid #fef3c7;">REQUIRED</span>
                         </div>
                         <div class="field-input">
                             <div class="field-icon"><i data-lucide="building"></i></div>
-                            <input type="text" name="department" value="{{ old('department', $user->department) }}" placeholder="e.g. IT, Logistics">
+                            <select name="department" id="sync-department-select" style="width: 100%; border: none; background: transparent; padding: 12px 4px; font-weight: 700; color: #0f172a; outline: none;" required>
+                                <option value="">-- Select Department --</option>
+                                <optgroup label="INVESTIGATIONS & INTELLIGENCE DIRECTORATE">
+                                    <option value="Intelligence Department">Intelligence Department</option>
+                                    <option value="Investigations Department">Investigations Department</option>
+                                    <option value="Forensic Science Department">Forensic Science Department</option>
+                                    <option value="Asset recovery & Management Department">Asset recovery & Management Department</option>
+                                    <option value="Strategic Intelligence Oversight Department">Strategic Intelligence Oversight Department</option>
+                                </optgroup>
+                                <optgroup label="LICENSING & REGULATORY DIRECTORATE">
+                                    <option value="Cannabis Regulations Department">Cannabis Regulations Department</option>
+                                    <option value="Precursor Diversion Department">Precursor Diversion Department</option>
+                                </optgroup>
+                                <optgroup label="DRUG DEMAND REDUCTION DIRECTORATE">
+                                    <option value="Drug Education & Prevention Department">Drug Education & Prevention Department</option>
+                                    <option value="Rehabilitation & Social Re-integration Department">Rehabilitation & Social Re-integration Department</option>
+                                    <option value="Harm Reduction Department">Harm Reduction Department</option>
+                                    <option value="Alternative Livelihoods Development Department">Alternative Livelihoods Development Department</option>
+                                </optgroup>
+                                <optgroup label="OPERATIONS AND ENFORCEMENT DIRECTORATE">
+                                    <option value="Canine Operations Department">Canine Operations Department</option>
+                                </optgroup>
+                                <optgroup label="FINANCE DIRECTORATE">
+                                    <option value="Accounts & Budget Department">Accounts & Budget Department</option>
+                                    <option value="Payroll & Pension Department">Payroll & Pension Department</option>
+                                </optgroup>
+                                <optgroup label="RESEARCH POLICY & PLANNING DIRECTORATE">
+                                    <option value="Research Policy Planning Monitoring & Evaluation Department">Research Policy Planning Monitoring & Evaluation Department</option>
+                                    <option value="Professional Standards Department">Professional Standards Department</option>
+                                </optgroup>
+                                <optgroup label="ADMINISTRATION DIRECTORATE">
+                                    <option value="General Services Department">General Services Department</option>
+                                    <option value="ICT Department">ICT Department</option>
+                                    <option value="Transport Department">Transport Department</option>
+                                    <option value="Procurement Department">Procurement Department</option>
+                                    <option value="Project Management Department">Project Management Department</option>
+                                </optgroup>
+                                <optgroup label="HUMAN RESOURCE DIRECTORATE">
+                                    <option value="Human Resource Management Department">Human Resource Management Department</option>
+                                    <option value="Welfare Department">Welfare Department</option>
+                                    <option value="Religious Affairs Department">Religious Affairs Department</option>
+                                </optgroup>
+                                <optgroup label="TRAINING & DEVELOPMENT DIRECTORATE">
+                                    <option value="Internal & External Training Department">Internal & External Training Department</option>
+                                </optgroup>
+                                <optgroup label="PUBLIC AFFAIRS AND INTERNATIONAL RELATIONS">
+                                    <option value="Public Affairs Department">Public Affairs Department</option>
+                                    <option value="International Relations Department">International Relations Department</option>
+                                    <option value="Material Development Department">Material Development Department</option>
+                                    <option value="Client Service Department">Client Service Department</option>
+                                </optgroup>
+                            </select>
                         </div>
                     </div>
                     @endif
@@ -612,5 +720,18 @@
         checkMatch();
     });
 </script>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    jQuery(document).ready(function($) {
+        $('#sync-department-select').select2({
+            width: '100%',
+            placeholder: '-- Select Department --',
+            allowClear: true
+        });
+    });
+</script>
+@endpush
 
 @endsection

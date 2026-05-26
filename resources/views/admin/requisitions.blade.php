@@ -1116,6 +1116,26 @@
         const totalItemsCount = data.items.length;
         const totalQtyRequested = data.items.reduce((sum, item) => sum + parseFloat(item.quantity_requested || 0), 0);
 
+        let purposeText = data.purpose || '';
+        let returnDateBannerHtml = '';
+        const dateMatch = purposeText.match(/\[Expected Return Date:\s*([^\]]+)\]/i);
+        if (dateMatch) {
+            const rawDate = dateMatch[1].trim();
+            let formattedDate = rawDate;
+            try {
+                const dateObj = new Date(rawDate);
+                if (!isNaN(dateObj.getTime())) {
+                    formattedDate = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+                }
+            } catch(e) {}
+            returnDateBannerHtml = `
+            <div style="background:rgba(245, 158, 11, 0.06); border:1px solid rgba(245, 158, 11, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#d97706; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(245, 158, 11, 0.03); width:100%;">
+                <i data-lucide="calendar-clock" style="width:16px; height:16px; color:#d97706; flex-shrink:0;"></i>
+                <span>Expected Return Date: <strong style="color:#b45309; font-size:0.95rem; font-weight:950; text-decoration: underline;">${formattedDate}</strong></span>
+            </div>`;
+            purposeText = purposeText.replace(/\[Expected Return Date:\s*[^\]]+\]/i, '').trim();
+        }
+
         const profileGridHtml = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.75rem;">
         <div class="profile-card">
@@ -1142,14 +1162,15 @@
         <div class="profile-card" style="grid-column: 1 / -1; display:flex; flex-direction:column; align-items:stretch; gap:0.75rem;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-size:.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Requisition Intention & Purpose</span>
-                <div class="stat-pill-group">
+                <div class="stat-pill-group" style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
                     <span class="stat-pill" style="background:${data.usage_type_badge.bg}; color:${data.usage_type_badge.color}; border-color:rgba(0,0,0,0.05); font-weight:800;"><i data-lucide="${data.usage_type === 'temporary' ? 'calendar' : 'package-check'}" style="width:12px;"></i> ${data.usage_type_badge.label}</span>
                     <span class="stat-pill"><i data-lucide="layers" style="width:12px;"></i> ${totalItemsCount} ${totalItemsCount === 1 ? 'Item Type' : 'Item Types'}</span>
                     <span class="stat-pill"><i data-lucide="hash" style="width:12px;"></i> Total Qty: ${totalQtyRequested.toLocaleString()}</span>
                 </div>
             </div>
+            ${returnDateBannerHtml}
             <div class="purpose-quote">
-                ${data.purpose}
+                ${purposeText}
             </div>
         </div>
     </div>

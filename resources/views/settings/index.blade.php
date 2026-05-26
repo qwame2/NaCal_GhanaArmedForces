@@ -87,10 +87,10 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem;">
                     <div class="form-group">
-                        <label>Full Name</label>
+                        <label>Full Name *</label>
                         <div class="settings-field-wrapper">
                             <div class="settings-field-icon"><i data-lucide="user"></i></div>
-                            <input type="text" id="prof-name" value="{{ auth()->user()->name }}" class="modern-input">
+                            <input type="text" id="prof-name" value="{{ auth()->user()->name }}" class="modern-input" required>
                         </div>
                     </div>
                     <div class="form-group">
@@ -108,17 +108,24 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Contact Phone</label>
+                        <label>Contact Phone *</label>
                         <div class="settings-field-wrapper">
                             <div class="settings-field-icon"><i data-lucide="phone"></i></div>
-                            <input type="text" id="prof-phone" value="{{ auth()->user()->phone }}" class="modern-input" placeholder="+233 ...">
+                            <input type="text" id="prof-phone" value="{{ auth()->user()->phone }}" class="modern-input" placeholder="+233 ..." required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Professional Role</label>
+                        <label>Service Number *</label>
+                        <div class="settings-field-wrapper">
+                            <div class="settings-field-icon"><i data-lucide="hash"></i></div>
+                            <input type="text" id="prof-service" value="{{ auth()->user()->service_number }}" class="modern-input" placeholder="e.g. SN-8942" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Professional Role *</label>
                         <div class="settings-field-wrapper">
                             <div class="settings-field-icon"><i data-lucide="shield"></i></div>
-                            <input type="text" id="prof-role" value="{{ auth()->user()->role }}" class="modern-input" placeholder="e.g. Storekeeper">
+                            <input type="text" id="prof-role" value="{{ auth()->user()->role === 'Requisitioner' ? '' : auth()->user()->role }}" class="modern-input" placeholder="e.g. Storekeeper" required>
                         </div>
                     </div>
                     <div class="form-group">
@@ -576,6 +583,30 @@
     }
 
     async function saveSettings() {
+        const name = document.getElementById('prof-name').value.trim();
+        const email = document.getElementById('prof-email').value.trim();
+        const phone = document.getElementById('prof-phone').value.trim();
+        const service = document.getElementById('prof-service').value.trim();
+        const role = document.getElementById('prof-role').value.trim();
+        const dept = document.getElementById('prof-dept').value.trim();
+
+        if (!name) {
+            showToast('Field Required', 'Full Name is mandatory.', 'warning');
+            return;
+        }
+        if (!phone) {
+            showToast('Field Required', 'Contact Phone is mandatory.', 'warning');
+            return;
+        }
+        if (!service) {
+            showToast('Field Required', 'Service Number is mandatory.', 'warning');
+            return;
+        }
+        if (!role || role.toLowerCase() === 'requisitioner') {
+            showToast('Field Required', 'A valid Professional Role is mandatory and cannot be "Requisitioner".', 'warning');
+            return;
+        }
+
         const btn = document.querySelector('.save-btn');
         const originalHtml = btn.innerHTML;
         btn.disabled = true;
@@ -586,11 +617,12 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({
-                    name: document.getElementById('prof-name').value,
-                    email: document.getElementById('prof-email').value,
-                    phone: document.getElementById('prof-phone').value,
-                    role: document.getElementById('prof-role').value,
-                    department: document.getElementById('prof-dept').value
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    service_number: service,
+                    role: role,
+                    department: dept
                 })
             });
             const data = await res.json();

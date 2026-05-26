@@ -34,6 +34,7 @@ class StoreRequisition extends Model
         'collector_name',
         'collector_contact',
         'origin_admin_status',
+        'origin_approved_by',
     ];
 
     protected $casts = [

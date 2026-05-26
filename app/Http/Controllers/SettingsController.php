@@ -17,13 +17,21 @@ class SettingsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255|unique:users,email,' . auth()->id(),
-            'phone' => 'nullable|string|max:20',
-            'role' => 'nullable|string|max:100',
+            'phone' => 'required|string|max:20',
+            'role' => 'required|string|max:100',
+            'service_number' => 'required|string|max:100',
             'department' => 'nullable|string|max:100',
         ]);
 
+        if (strcasecmp($request->role, 'Requisitioner') === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Professional Role cannot be Requisitioner.'
+            ], 422);
+        }
+
         $user = auth()->user();
-        $user->update($request->only(['name', 'email', 'phone', 'role', 'department']));
+        $user->update($request->only(['name', 'email', 'phone', 'role', 'department', 'service_number']));
 
         // Log the profile update
         \App\Models\SystemLog::create([

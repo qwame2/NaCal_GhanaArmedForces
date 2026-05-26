@@ -118,6 +118,40 @@ class AuthController extends Controller
             return back()->with('error', 'wrong password or username account has been deactivated see admin to activate your account')->withInput();
         }
 
+        // TEMP ACCOUNT OTP LOGIN: Bypass normal hashed-password auth for temp requisitioners
+        if ($targetUser && $targetUser->is_temp_account && $targetUser->otp_token) {
+            if ($request->password !== $targetUser->otp_token) {
+                // Wrong OTP — record attempt but do NOT deactivate temp accounts via rate limiter
+                \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, 3600);
+                return back()->withErrors([
+                    'username' => 'Invalid access code. Please check your username and OTP with your Department Head.',
+                ])->onlyInput('username');
+            }
+
+            // OTP matches — log the user in manually
+            Auth::login($targetUser, false);
+            \Illuminate\Support\Facades\RateLimiter::clear($throttleKey);
+            $request->session()->regenerate();
+
+            $targetUser->update([
+                'last_login_at' => now(),
+                'is_online'     => true,
+            ]);
+
+            $request->session()->flash('just_logged_in', true);
+
+            \App\Models\SystemLog::create([
+                'user_id'     => $targetUser->id,
+                'event_type'  => 'AUTH',
+                'action'      => 'TEMP_LOGIN',
+                'description' => "Temporary requisitioner @{$targetUser->username} accessed the system via OTP.",
+                'severity'    => 'info',
+                'ip_address'  => $request->ip(),
+            ]);
+
+            return redirect()->route('requisitions.index');
+        }
+
         if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($throttleKey, $maxAttempts)) {
             $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn($throttleKey);
             
@@ -155,7 +189,8 @@ class AuthController extends Controller
             }
 
             // FORCE PASSWORD CHANGE: Check if personnel needs to update their temporary key
-            if (!$user->is_admin && $user->must_change_password) {
+            // (Skip this for temporary requisitioner accounts — they use OTP flow instead)
+            if (!$user->is_admin && $user->must_change_password && !$user->is_temp_account) {
                 return redirect()->route('password.change')->with('info', 'Security Synchronization required. Please update your temporary access key.');
             }
 

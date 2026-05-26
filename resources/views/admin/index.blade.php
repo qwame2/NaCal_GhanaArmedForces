@@ -981,23 +981,61 @@
                                 <option value="Department Head">Dept. Head</option>
                                 <option value="Main Admin">Dept. Head (Stores)</option>
                                 <option value="Officer">Store Officer</option>
-                                <option value="Requisitioner">Requisitioner</option>
                             </select>
                         </div>
                         <div class="swal-input-group" id="swal-department-group">
                             <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Department <span style="color: #ef4444;">*</span></label>
-                            <select name="department" id="swal-department-select" class="premium-select-input" required onchange="handleDeptSelectChange(this)">
+                            <select name="department" id="swal-department-select" class="premium-select-input" style="width: 100%;" required>
                                 <option value="">-- Select Department --</option>
-                                <option value="IT">IT</option>
-                                <option value="HR">HR</option>
-                                <option value="Procurement">Procurement</option>
-                                <option value="Finance">Finance</option>
-                                <option value="Operations">Operations</option>
-                                <option value="Legal">Legal</option>
-                                <option value="Medical">Medical</option>
-                                <option value="Logistics">Logistics</option>
-                                <option value="Administration">Administration</option>
-                                <option value="custom">Other (type below)...</option>
+                                <optgroup label="INVESTIGATIONS & INTELLIGENCE DIRECTORATE">
+                                    <option value="Intelligence Department">Intelligence Department</option>
+                                    <option value="Investigations Department">Investigations Department</option>
+                                    <option value="Forensic Science Department">Forensic Science Department</option>
+                                    <option value="Asset recovery & Management Department">Asset recovery & Management Department</option>
+                                    <option value="Strategic Intelligence Oversight Department">Strategic Intelligence Oversight Department</option>
+                                </optgroup>
+                                <optgroup label="LICENSING & REGULATORY DIRECTORATE">
+                                    <option value="Cannabis Regulations Department">Cannabis Regulations Department</option>
+                                    <option value="Precursor Diversion Department">Precursor Diversion Department</option>
+                                </optgroup>
+                                <optgroup label="DRUG DEMAND REDUCTION DIRECTORATE">
+                                    <option value="Drug Education & Prevention Department">Drug Education & Prevention Department</option>
+                                    <option value="Rehabilitation & Social Re-integration Department">Rehabilitation & Social Re-integration Department</option>
+                                    <option value="Harm Reduction Department">Harm Reduction Department</option>
+                                    <option value="Alternative Livelihoods Development Department">Alternative Livelihoods Development Department</option>
+                                </optgroup>
+                                <optgroup label="OPERATIONS AND ENFORCEMENT DIRECTORATE">
+                                    <option value="Canine Operations Department">Canine Operations Department</option>
+                                </optgroup>
+                                <optgroup label="FINANCE DIRECTORATE">
+                                    <option value="Accounts & Budget Department">Accounts & Budget Department</option>
+                                    <option value="Payroll & Pension Department">Payroll & Pension Department</option>
+                                </optgroup>
+                                <optgroup label="RESEARCH POLICY & PLANNING DIRECTORATE">
+                                    <option value="Research Policy Planning Monitoring & Evaluation Department">Research Policy Planning Monitoring & Evaluation Department</option>
+                                    <option value="Professional Standards Department">Professional Standards Department</option>
+                                </optgroup>
+                                <optgroup label="ADMINISTRATION DIRECTORATE">
+                                    <option value="General Services Department">General Services Department</option>
+                                    <option value="ICT Department">ICT Department</option>
+                                    <option value="Transport Department">Transport Department</option>
+                                    <option value="Procurement Department">Procurement Department</option>
+                                    <option value="Project Management Department">Project Management Department</option>
+                                </optgroup>
+                                <optgroup label="HUMAN RESOURCE DIRECTORATE">
+                                    <option value="Human Resource Management Department">Human Resource Management Department</option>
+                                    <option value="Welfare Department">Welfare Department</option>
+                                    <option value="Religious Affairs Department">Religious Affairs Department</option>
+                                </optgroup>
+                                <optgroup label="TRAINING & DEVELOPMENT DIRECTORATE">
+                                    <option value="Internal & External Training Department">Internal & External Training Department</option>
+                                </optgroup>
+                                <optgroup label="PUBLIC AFFAIRS AND INTERNATIONAL RELATIONS">
+                                    <option value="Public Affairs Department">Public Affairs Department</option>
+                                    <option value="International Relations Department">International Relations Department</option>
+                                    <option value="Material Development Department">Material Development Department</option>
+                                    <option value="Client Service Department">Client Service Department</option>
+                                </optgroup>
                             </select>
                         </div>
                     </div>
@@ -1031,9 +1069,18 @@
                 confirmButton: 'premium-swal-btn',
                 cancelButton: 'premium-swal-cancel-btn'
             },
-            width: '650px',
+            width: '850px',
             didOpen: () => {
                 lucide.createIcons();
+                // Initialize Select2 on the department dropdown inside SweetAlert2
+                $('#swal-department-select').select2({
+                    dropdownParent: $('.swal2-container'),
+                    width: '100%',
+                    placeholder: '-- Select Department --',
+                    allowClear: true
+                }).on('change', function() {
+                    handleDeptSelectChange(this);
+                });
                 // Trigger initial state based on default selected role
                 handleRoleChange(document.getElementById('swal-role-select'));
             },
@@ -1203,7 +1250,11 @@
         color: #64748b !important;
     }
 
-    /* Select2 Premium Styling */
+    /* Select2 Premium Styling Override */
+    .select2-container {
+        z-index: 999999999 !important;
+    }
+
     .select2-container--default .select2-selection--single {
         height: 50px !important;
         border: 1px solid #e2e8f0 !important;
@@ -1215,6 +1266,17 @@
         font-weight: 700 !important;
         color: #0f172a !important;
         background: white !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .select2-container--default .select2-selection--single:hover {
+        border-color: #cbd5e1 !important;
+        background-color: #f8fafc !important;
+    }
+
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #4f46e5 !important;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
     }
 
     .select2-container--default .select2-selection--single .select2-selection__arrow {
@@ -1222,30 +1284,63 @@
         right: 12px !important;
     }
 
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #0f172a !important;
+        font-weight: 700 !important;
+    }
+
     .select2-dropdown {
         border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
+        border-radius: 16px !important;
         box-shadow: 0 20px 50px rgba(0,0,0,0.1) !important;
         overflow: hidden !important;
         z-index: 999999999 !important;
+        background: white !important;
+        padding: 6px !important;
     }
 
     .select2-search__field {
-        border-radius: 8px !important;
-        padding: 8px 12px !important;
+        border-radius: 10px !important;
+        padding: 10px 14px !important;
         border: 1px solid #e2e8f0 !important;
+        font-weight: 600 !important;
+        outline: none !important;
+    }
+
+    .select2-search__field:focus {
+        border-color: #4f46e5 !important;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08) !important;
     }
 
     .select2-results__option {
         padding: 10px 15px !important;
         font-size: 0.85rem !important;
         font-weight: 600 !important;
+        border-radius: 8px !important;
+        color: #334155 !important;
+        margin-bottom: 2px !important;
+        transition: all 0.15s ease !important;
     }
 
     .select2-results__option--highlighted[aria-selected] {
         background-color: #4f46e5 !important;
+        color: white !important;
+    }
+
+    .select2-results__group {
+        font-size: 0.65rem !important;
+        font-weight: 900 !important;
+        color: #64748b !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.08em !important;
+        padding: 12px 15px 6px !important;
+        background: #f8fafc !important;
+        border-radius: 8px !important;
+        margin: 6px 0 2px 0 !important;
+        display: block !important;
     }
 </style>
+
 
 <!-- Legacy Admin Audit Modal -->
 <div class="modal-overlay" id="legacyAuditModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); z-index: 99999; justify-content: center; align-items: center;">

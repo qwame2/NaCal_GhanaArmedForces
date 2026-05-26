@@ -35,6 +35,9 @@ class User extends Authenticatable
         'last_login_at',
         'recovery_secret',
         'must_change_password',
+        'is_temp_account',
+        'otp_token',
+        'sponsored_by',
     ];
 
     /**
@@ -55,16 +58,25 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'last_login_at' => 'datetime',
-            'is_active' => 'boolean',
-            'is_online' => 'boolean',
-            'can_add_inventory' => 'boolean',
-            'can_operate_logistics' => 'boolean',
-            'can_generate_reports' => 'boolean',
-            'must_change_password' => 'boolean',
+            'email_verified_at'      => 'datetime',
+            'password'               => 'hashed',
+            'last_login_at'          => 'datetime',
+            'is_active'              => 'boolean',
+            'is_online'              => 'boolean',
+            'can_add_inventory'      => 'boolean',
+            'can_operate_logistics'  => 'boolean',
+            'can_generate_reports'   => 'boolean',
+            'must_change_password'   => 'boolean',
+            'is_temp_account'        => 'boolean',
         ];
+    }
+
+    /**
+     * The Department Head who created this temporary account.
+     */
+    public function sponsor()
+    {
+        return $this->belongsTo(User::class, 'sponsored_by');
     }
 
     public function getSecurityStatus(): array

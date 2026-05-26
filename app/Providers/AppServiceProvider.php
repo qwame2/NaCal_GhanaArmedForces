@@ -25,6 +25,19 @@ class AppServiceProvider extends ServiceProvider
                     $table->string('service_number')->nullable();
                 });
             }
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'origin_approved_by')) {
+                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('origin_approved_by')->nullable();
+                });
+            } else {
+                try {
+                    \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->string('origin_approved_by', 255)->nullable()->change();
+                    });
+                } catch (\Exception $e) {
+                    // Ignore
+                }
+            }
             if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'rank')) {
                 \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
                     $table->string('rank')->nullable();
@@ -54,6 +67,27 @@ class AppServiceProvider extends ServiceProvider
                 \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
                     $table->string('origin_admin_status')->default('pending');
                 });
+            }
+
+            // Backfill origin_approved_by for existing approved requisitions
+            try {
+                $needsBackfill = \App\Models\StoreRequisition::whereNull('origin_approved_by')
+                    ->where('origin_admin_status', 'approved')
+                    ->get();
+                foreach ($needsBackfill as $req) {
+                    $deptHead = \App\Models\User::whereIn('role', ['Main Admin', 'Department Head'])
+                        ->where('department', $req->department)
+                        ->first();
+                    if ($deptHead) {
+                        $req->origin_approved_by = $deptHead->name;
+                        $req->save();
+                    } else {
+                        $req->origin_approved_by = $req->department . " Department Head";
+                        $req->save();
+                    }
+                }
+            } catch (\Exception $ex) {
+                // Ignore backfill errors on migration
             }
         } catch (\Exception $e) {
             // Ignore

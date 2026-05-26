@@ -15,7 +15,8 @@ use App\Http\Controllers\ArchiveController;
 try {
     if (!\Illuminate\Support\Facades\Schema::hasColumn('inventory_items', 'location') ||
         !\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collected_at') ||
-        !\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collector_name')) {
+        !\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collector_name') ||
+        !\Illuminate\Support\Facades\Schema::hasColumn('users', 'is_temp_account')) {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
     }
 } catch (\Exception $e) {
@@ -77,7 +78,7 @@ Route::get('/register', function() { return redirect()->route('login'); });
 Route::get('/account-deactivated', function() { return view('auth.deactivated'); })->name('account.deactivated');
 
 // Protected Routes (Grouped under auth and active status check)
-Route::middleware(['auth', 'check_status'])->group(function () {
+Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     
     Route::get('/dashboard', function () {
         // STRICT ROLE ENFORCEMENT: Admins are not allowed in the Personnel Dashboard
@@ -432,6 +433,13 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     // Main Admin Requisition Routes
     Route::get('/main-admin/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'mainAdminIndex'])->name('main-admin.requisitions');
     Route::post('/main-admin/requisitions/{id}/process', [\App\Http\Controllers\StoreRequisitionController::class, 'mainAdminProcess'])->name('main-admin.requisitions.process');
+
+    // Temp Requisitioner Provisioning Routes (Non-Stores Department Heads only)
+    Route::post('/dept-head/temp-requisitioners', [\App\Http\Controllers\TempRequisitionerController::class, 'store'])->name('dept-head.temp-requisitioners.store');
+    Route::delete('/dept-head/temp-requisitioners/{id}', [\App\Http\Controllers\TempRequisitionerController::class, 'destroy'])->name('dept-head.temp-requisitioners.destroy');
+    Route::get('/api/dept-head/temp-requisitioners', [\App\Http\Controllers\TempRequisitionerController::class, 'index'])->name('dept-head.temp-requisitioners.index');
+    Route::post('/dept-head/temp-requisitioners/{id}/regenerate-otp', [\App\Http\Controllers\TempRequisitionerController::class, 'regenerateOtp'])->name('dept-head.temp-requisitioners.regenerate-otp');
+
     Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
     Route::put('/received-items/{id}', [ReceivedItemsController::class, 'update'])->name('receiveditems.update');
     Route::get('/received-items/{id}/print', [ReceivedItemsController::class, 'print'])->name('receiveditems.print');

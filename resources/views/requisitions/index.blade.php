@@ -1818,8 +1818,38 @@
             // Cart Redirect to checkout page
             const cartNavBtn = document.getElementById('cart-nav-btn');
             cartNavBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const user = {
+                    name: '{{ addslashes(auth()->user()->name) }}',
+                    username: '{{ addslashes(auth()->user()->username) }}',
+                    phone: '{{ auth()->user()->phone ?? "" }}',
+                    role: '{{ auth()->user()->role ?? "" }}',
+                    service_number: '{{ auth()->user()->service_number ?? "" }}'
+                };
+                if (!user.name || user.name === user.username || !user.phone || !user.role || user.role.toLowerCase() === 'requisitioner' || !user.service_number) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Profile Incomplete',
+                        text: 'You must complete your profile details (Full Name, Phone, Service Number, and Professional Role) before making a request.',
+                        confirmButtonText: 'Complete Profile Now',
+                        confirmButtonColor: 'var(--store-orange)',
+                        showCancelButton: true,
+                        cancelButtonText: 'Later'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            openProfileCompletionModal();
+                        }
+                    });
+                    return;
+                }
                 window.location.href = "{{ route('requisitions.checkout') }}";
             });
+
+            @if(session('show_profile_modal') || empty(auth()->user()->name) || auth()->user()->name === auth()->user()->username || empty(auth()->user()->phone) || empty(auth()->user()->role) || strcasecmp(auth()->user()->role, 'Requisitioner') === 0 || empty(auth()->user()->service_number))
+                setTimeout(() => {
+                    openProfileCompletionModal();
+                }, 800);
+            @endif
         });
 
         function openProfileCompletionModal() {
@@ -1830,8 +1860,11 @@
                 phone: '{{ auth()->user()->phone ?? "" }}',
                 department: '{{ auth()->user()->department ?? "" }}',
                 role: '{{ auth()->user()->role ?? "" }}',
+                service_number: '{{ auth()->user()->service_number ?? "" }}',
                 avatar: '{{ auth()->user()->avatar ? Storage::url(auth()->user()->avatar) : "" }}'
             };
+
+            const displayRole = user.role.toLowerCase() === 'requisitioner' ? '' : user.role;
 
             Swal.fire({
                 title: `
@@ -1870,7 +1903,7 @@
                         <form id="profileForm" style="display: flex; flex-direction: column; gap: 0.85rem;">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                 <div class="swal-input-group">
-                                    <label style="display: block; font-size: 0.68rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;">Full Name</label>
+                                    <label style="display: block; font-size: 0.68rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;">Full Name *</label>
                                     <div class="swal-field-wrapper">
                                         <div class="swal-field-icon"><i data-lucide="user"></i></div>
                                         <input type="text" id="swal-prof-name" value="${user.name}" class="swal-field-input" placeholder="e.g. John Doe" required>
@@ -1894,10 +1927,10 @@
                                     </div>
                                 </div>
                                 <div class="swal-input-group">
-                                    <label style="display: block; font-size: 0.68rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;">Phone Number</label>
+                                    <label style="display: block; font-size: 0.68rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;">Phone Number *</label>
                                     <div class="swal-field-wrapper">
                                         <div class="swal-field-icon"><i data-lucide="phone"></i></div>
-                                        <input type="text" id="swal-prof-phone" value="${user.phone}" class="swal-field-input" placeholder="e.g. +233...">
+                                        <input type="text" id="swal-prof-phone" value="${user.phone}" class="swal-field-input" placeholder="e.g. +233..." required>
                                     </div>
                                 </div>
                             </div>
@@ -1911,11 +1944,19 @@
                                     </div>
                                 </div>
                                 <div class="swal-input-group">
-                                    <label style="display: block; font-size: 0.68rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;">Professional Role</label>
+                                    <label style="display: block; font-size: 0.68rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;">Service Number *</label>
                                     <div class="swal-field-wrapper">
-                                        <div class="swal-field-icon"><i data-lucide="shield"></i></div>
-                                        <input type="text" id="swal-prof-role" value="${user.role}" class="swal-field-input" placeholder="e.g. Officer">
+                                        <div class="swal-field-icon"><i data-lucide="hash"></i></div>
+                                        <input type="text" id="swal-prof-service" value="${user.service_number}" class="swal-field-input" placeholder="e.g. SN-8942" required>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="swal-input-group">
+                                <label style="display: block; font-size: 0.68rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em;">Professional Role *</label>
+                                <div class="swal-field-wrapper">
+                                    <div class="swal-field-icon"><i data-lucide="shield"></i></div>
+                                    <input type="text" id="swal-prof-role" value="${displayRole}" class="swal-field-input" placeholder="e.g. Officer" required>
                                 </div>
                             </div>
                         </form>
@@ -1936,14 +1977,27 @@
                     if (typeof lucide !== 'undefined') lucide.createIcons();
                 },
                 preConfirm: async () => {
-                    const name = document.getElementById('swal-prof-name').value;
-                    const email = document.getElementById('swal-prof-email').value;
-                    const phone = document.getElementById('swal-prof-phone').value;
-                    const department = document.getElementById('swal-prof-dept').value;
-                    const role = document.getElementById('swal-prof-role').value;
+                    const name = document.getElementById('swal-prof-name').value.trim();
+                    const email = document.getElementById('swal-prof-email').value.trim();
+                    const phone = document.getElementById('swal-prof-phone').value.trim();
+                    const department = document.getElementById('swal-prof-dept').value.trim();
+                    const service_number = document.getElementById('swal-prof-service').value.trim();
+                    const role = document.getElementById('swal-prof-role').value.trim();
 
-                    if (!name) {
-                        Swal.showValidationMessage('Full Name is required');
+                    if (!name || name === user.username) {
+                        Swal.showValidationMessage('Full Name is required and must not be username');
+                        return false;
+                    }
+                    if (!phone) {
+                        Swal.showValidationMessage('Phone Number is required');
+                        return false;
+                    }
+                    if (!service_number) {
+                        Swal.showValidationMessage('Service Number is required');
+                        return false;
+                    }
+                    if (!role || role.toLowerCase() === 'requisitioner') {
+                        Swal.showValidationMessage('Professional Role is required and cannot be "Requisitioner"');
                         return false;
                     }
 
@@ -1955,7 +2009,7 @@
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                                 'Accept': 'application/json'
                             },
-                            body: JSON.stringify({ name, email, phone, department, role })
+                            body: JSON.stringify({ name, email, phone, department, role, service_number })
                         });
                         const data = await res.json();
                         if (!res.ok || !data.success) {
