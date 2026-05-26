@@ -12,6 +12,13 @@ class EditRequestController extends Controller
 {
     public function store(Request $request)
     {
+        if (auth()->user()->role === 'Main Admin') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Department Head (Stores) is only allowed to view received items and cannot make changes.'], 403);
+        }
+        if (auth()->user()->role === 'Department Head') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
         $requestType = $request->get('request_type', 'edit');
         if (!auth()->user()->is_admin && !auth()->user()->can_add_inventory && in_array($requestType, ['edit', 'edit_submission', 'delete'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized: You do not have permission to modify inventory records.'], 403);

@@ -22,7 +22,13 @@ class AuthController extends Controller
                 $user->update(['is_online' => true]);
             }
 
-            return $user->is_admin ? redirect()->route('admin.index') : redirect()->route('dashboard');
+            if ($user->is_admin) {
+                return redirect()->route('admin.index');
+            } elseif (in_array($user->role, ['Main Admin', 'Department Head'])) {
+                return redirect()->route('main-admin.requisitions');
+            } else {
+                return redirect()->route('dashboard');
+            }
         }
         return view('auth.auth');
     }
@@ -189,6 +195,8 @@ class AuthController extends Controller
             if ($target === 'admin') {
                 if ($user->is_admin) {
                     return redirect()->route('admin.index');
+                } elseif (in_array($user->role, ['Main Admin', 'Department Head'])) {
+                    return redirect()->route('main-admin.requisitions');
                 } else {
                     Auth::logout();
                     $request->session()->invalidate();
@@ -204,6 +212,9 @@ class AuthController extends Controller
                 }
                 if ($user->role === 'Requisitioner') {
                     return redirect()->route('requisitions.index');
+                }
+                if (in_array($user->role, ['Main Admin', 'Department Head'])) {
+                    return redirect()->route('main-admin.requisitions');
                 }
                 return redirect()->route('dashboard');
             }
@@ -223,6 +234,8 @@ class AuthController extends Controller
                 return redirect()->route('admin.index');
             } elseif ($user->role === 'Requisitioner') {
                 return redirect()->route('requisitions.index');
+            } elseif (in_array($user->role, ['Main Admin', 'Department Head'])) {
+                return redirect()->route('main-admin.requisitions');
             } else {
                 return redirect()->route('dashboard');
             }
@@ -300,17 +313,22 @@ class AuthController extends Controller
 
     public function updatePassword(Request $request)
     {
-        $request->validate([
+        $user = auth()->user();
+
+        // Check if head of stores already entered fullname and department
+        $hasNameEntered = !empty($user->name) && $user->name !== $user->username;
+        $hasDeptEntered = !empty($user->department);
+
+        $rules = [
             'password' => [
                 'required',
                 'string',
                 'min:8',
                 'confirmed',
                 'regex:/[0-9]/', // Must contain at least one number
-                function ($attribute, $value, $fail) {
-                    $user = auth()->user();
-                    $username = strtolower($user->username);
-                    $fullname = strtolower($user->name);
+                function ($attribute, $value, $fail) use ($request, $user) {
+                    $username = strtolower($request->username ?? $user->username);
+                    $fullname = strtolower($request->name ?? $user->name);
                     $password = strtolower($value);
                     
                     if (str_contains($password, $username)) {
@@ -321,13 +339,38 @@ class AuthController extends Controller
                     }
                 },
             ],
-        ]);
+            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'phone' => 'nullable|string|max:255',
+            'service_number' => 'nullable|string|max:255',
+            'rank' => 'nullable|string|max:255',
+        ];
 
-        $user = auth()->user();
-        $user->update([
+        if (!$hasNameEntered) {
+            $rules['name'] = 'required|string|max:255';
+        }
+        if (!$hasDeptEntered) {
+            $rules['department'] = 'nullable|string|max:255';
+        }
+
+        $request->validate($rules);
+
+        $updateData = [
             'password' => Hash::make($request->password),
             'must_change_password' => false,
-        ]);
+            'username' => $request->username,
+            'phone' => $request->phone,
+            'service_number' => $request->service_number,
+            'rank' => $request->rank,
+        ];
+
+        if (!$hasNameEntered) {
+            $updateData['name'] = $request->name;
+        }
+        if (!$hasDeptEntered) {
+            $updateData['department'] = $request->department;
+        }
+
+        $user->update($updateData);
 
         // Log the security update
         \App\Models\SystemLog::create([

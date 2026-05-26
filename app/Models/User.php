@@ -30,6 +30,8 @@ class User extends Authenticatable
         'is_online',
         'department',
         'phone',
+        'service_number',
+        'rank',
         'last_login_at',
         'recovery_secret',
         'must_change_password',

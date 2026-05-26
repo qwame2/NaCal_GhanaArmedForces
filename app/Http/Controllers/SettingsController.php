@@ -103,7 +103,11 @@ class SettingsController extends Controller
             ->update(['read_at' => now()]);
 
         $admins = \App\Models\User::where('is_admin', true)->get();
-        $colleagues = \App\Models\User::where('is_admin', false)->where('id', '!=', auth()->id())->get();
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
+            $colleagues = collect();
+        } else {
+            $colleagues = \App\Models\User::where('is_admin', false)->where('id', '!=', auth()->id())->get();
+        }
         return view('messages.index', compact('admins', 'colleagues'));
     }
 }

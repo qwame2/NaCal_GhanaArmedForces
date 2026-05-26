@@ -33,6 +33,7 @@ class StoreRequisition extends Model
         'usage_type',
         'collector_name',
         'collector_contact',
+        'origin_admin_status',
     ];
 
     protected $casts = [
@@ -71,6 +72,16 @@ class StoreRequisition extends Model
 
     public function getStatusBadgeAttribute(): array
     {
+        if ($this->status === 'pending') {
+            if (($this->origin_admin_status ?? 'pending') === 'pending') {
+                return ['label' => 'Awaiting Dept Head Approval', 'color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'];
+            }
+            if (($this->main_admin_status ?? 'pending') === 'pending') {
+                return ['label' => 'Awaiting Store Head Review', 'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'];
+            }
+            return ['label' => 'Awaiting Admin Review', 'color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'];
+        }
+
         return match($this->status) {
             'approved'           => ['label' => 'Approved',           'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.1)'],
             'partially_approved' => ['label' => 'Partial Approval',   'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'],

@@ -27,6 +27,11 @@ class ReceivedItemsController extends Controller
 
     public function preview($id)
     {
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
+            abort(403, 'Unauthorized.');
+        }
+
         $req = \App\Models\EditRequest::findOrFail($id);
         $data = json_decode($req->payload, true);
         
@@ -66,6 +71,11 @@ class ReceivedItemsController extends Controller
 
     public function previewApi($id)
     {
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         $req = \App\Models\EditRequest::with('user')->findOrFail($id);
         $data = json_decode($req->payload, true);
         $ledgeMap = $this->getLedgeMap();
@@ -151,6 +161,11 @@ class ReceivedItemsController extends Controller
 
     public function index(Request $request)
     {
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
+            abort(403, 'Unauthorized. Access restricted to Department Head (Stores) and Store Officers.');
+        }
+
         if (auth()->user()->is_admin) {
             return redirect()->route('admin.inventory')->with('info', 'Strategic Oversight required. Redirecting to Command Center.');
         }
@@ -348,6 +363,10 @@ class ReceivedItemsController extends Controller
 
     public function update(Request $request, $id)
     {
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Department Heads are only allowed to view received items and cannot make changes.'], 403);
+        }
+
         if (!auth()->user()->is_admin) {
             $editReq = \App\Models\EditRequest::where('user_id', auth()->id())
                 ->where('item_id', $id)
@@ -543,6 +562,11 @@ class ReceivedItemsController extends Controller
 
     public function show(Request $request, $id)
     {
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
+            abort(403, 'Unauthorized.');
+        }
+
         $ledgeMap = $this->getLedgeMap();
         $batch = InventoryBatch::with(['items'])->findOrFail($id);
         
@@ -564,6 +588,11 @@ class ReceivedItemsController extends Controller
 
     public function print($id)
     {
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
+            abort(403, 'Unauthorized.');
+        }
+
         $ledgeMap = $this->getLedgeMap();
         $batch = InventoryBatch::with(['items'])->findOrFail($id);
         
@@ -578,6 +607,11 @@ class ReceivedItemsController extends Controller
 
     public function sra($id)
     {
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
+            abort(403, 'Unauthorized.');
+        }
+
         $ledgeMap = $this->getLedgeMap();
         $batch = InventoryBatch::with(['items'])->findOrFail($id);
         
@@ -610,6 +644,10 @@ class ReceivedItemsController extends Controller
 
     public function destroy($id)
     {
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Department Heads are only allowed to view received items and cannot make changes.'], 403);
+        }
+
         if (!auth()->user()->is_admin) {
             $editReq = \App\Models\EditRequest::where('user_id', auth()->id())
                 ->where('item_id', $id)
@@ -667,6 +705,11 @@ class ReceivedItemsController extends Controller
 
     public function getSupplierStats($name)
     {
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         $cleanName = trim(preg_replace('/\[.*?\]/', '', $name));
         $supplier = \App\Models\Supplier::where('name', $cleanName)->first();
         

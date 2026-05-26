@@ -122,10 +122,25 @@
                                     <div class="dot"></div>
                                     Administrator
                                 </div>
+                            @elseif($user->role === 'Main Admin')
+                                <div class="clearance-pill dept-head">
+                                    <div class="dot"></div>
+                                    Department Head
+                                </div>
+                            @elseif($user->role === 'Officer')
+                                <div class="clearance-pill store-officer">
+                                    <div class="dot"></div>
+                                    Store Officer
+                                </div>
+                            @elseif($user->role === 'Requisitioner')
+                                <div class="clearance-pill requisitioner">
+                                    <div class="dot"></div>
+                                    Requisitioner
+                                </div>
                             @else
                                 <div class="clearance-pill standard">
                                     <div class="dot"></div>
-                                    Staff Member
+                                    {{ $user->role ?? 'Staff Member' }}
                                 </div>
                             @endif
                         </td>
@@ -452,9 +467,15 @@
         white-space: nowrap;
     }
     .clearance-pill.admin { background: #eef2ff; color: #4f46e5; border: 1px solid rgba(79, 70, 229, 0.1); }
+    .clearance-pill.dept-head { background: #ecfdf5; color: #047857; border: 1px solid rgba(4, 120, 87, 0.1); }
+    .clearance-pill.store-officer { background: #fff7ed; color: #c2410c; border: 1px solid rgba(194, 65, 12, 0.1); }
+    .clearance-pill.requisitioner { background: #f5f3ff; color: #6d28d9; border: 1px solid rgba(109, 40, 217, 0.1); }
     .clearance-pill.standard { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
     .clearance-pill .dot { width: 8px; height: 8px; border-radius: 50%; }
     .clearance-pill.admin .dot { background: #4f46e5; box-shadow: 0 0 10px rgba(79, 70, 229, 0.4); }
+    .clearance-pill.dept-head .dot { background: #059669; box-shadow: 0 0 10px rgba(5, 150, 105, 0.4); }
+    .clearance-pill.store-officer .dot { background: #ea580c; box-shadow: 0 0 10px rgba(234, 88, 12, 0.4); }
+    .clearance-pill.requisitioner .dot { background: #7c3aed; box-shadow: 0 0 10px rgba(124, 58, 237, 0.4); }
     .clearance-pill.standard .dot { background: #cbd5e1; }
 
     .sector-badge {
@@ -956,14 +977,35 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                         <div class="swal-input-group">
                             <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Role <span style="color: #ef4444;">*</span></label>
-                            <select name="role" class="swal2-input" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0; background: white;" required>
-                                <option value="Officer">Officer</option>
-                                <option value="Requisitioner">Requisitioner (Store Requests)</option>
+                            <select name="role" id="swal-role-select" class="premium-select-input" required onchange="handleRoleChange(this)">
+                                <option value="Department Head">Dept. Head</option>
+                                <option value="Main Admin">Dept. Head (Stores)</option>
+                                <option value="Officer">Store Officer</option>
+                                <option value="Requisitioner">Requisitioner</option>
                             </select>
                         </div>
+                        <div class="swal-input-group" id="swal-department-group">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Department <span style="color: #ef4444;">*</span></label>
+                            <select name="department" id="swal-department-select" class="premium-select-input" required onchange="handleDeptSelectChange(this)">
+                                <option value="">-- Select Department --</option>
+                                <option value="IT">IT</option>
+                                <option value="HR">HR</option>
+                                <option value="Procurement">Procurement</option>
+                                <option value="Finance">Finance</option>
+                                <option value="Operations">Operations</option>
+                                <option value="Legal">Legal</option>
+                                <option value="Medical">Medical</option>
+                                <option value="Logistics">Logistics</option>
+                                <option value="Administration">Administration</option>
+                                <option value="custom">Other (type below)...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="swal-custom-dept-group" style="display:none; margin-bottom: 1.5rem;">
                         <div class="swal-input-group">
-                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Department</label>
-                            <input type="text" name="department" class="swal2-input" placeholder="e.g. IT, HR" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0;">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Custom Department Name <span style="color: #ef4444;">*</span></label>
+                            <input type="text" id="swal-custom-dept-input" class="swal2-input" placeholder="e.g. Signals, Engineering" style="width: 100%; margin: 0; height: 50px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; border: 1px solid #e2e8f0;">
                         </div>
                     </div>
 
@@ -992,8 +1034,36 @@
             width: '650px',
             didOpen: () => {
                 lucide.createIcons();
+                // Trigger initial state based on default selected role
+                handleRoleChange(document.getElementById('swal-role-select'));
             },
             preConfirm: () => {
+                const role = document.getElementById('swal-role-select').value;
+                const deptSelect = document.getElementById('swal-department-select');
+                const customInput = document.getElementById('swal-custom-dept-input');
+
+                // If Department Head, validate department is set
+                if (role === 'Department Head') {
+                    if (!deptSelect.value) {
+                        Swal.showValidationMessage('Please select a department for the Department Head.');
+                        return false;
+                    }
+                    if (deptSelect.value === 'custom') {
+                        const customVal = customInput.value.trim();
+                        if (!customVal) {
+                            Swal.showValidationMessage('Please enter a custom department name.');
+                            return false;
+                        }
+                        // Inject custom value into hidden input
+                        deptSelect.name = '';
+                        const hidden = document.createElement('input');
+                        hidden.type = 'hidden';
+                        hidden.name = 'department';
+                        hidden.value = customVal;
+                        document.getElementById('addPersonnelForm').appendChild(hidden);
+                    }
+                }
+
                 const form = document.getElementById('addPersonnelForm');
                 if (!form.checkValidity()) {
                     form.reportValidity();
@@ -1006,6 +1076,58 @@
                 document.getElementById('addPersonnelForm').submit();
             }
         });
+    }
+
+    function handleRoleChange(select) {
+        const role = select.value;
+        const deptGroup = document.getElementById('swal-department-group');
+        const deptSelect = document.getElementById('swal-department-select');
+        const customGroup = document.getElementById('swal-custom-dept-group');
+
+        if (role === 'Department Head') {
+            deptGroup.style.display = 'block';
+            deptSelect.required = true;
+            deptSelect.name = 'department';
+            // Clean up Stores hidden field if user switched back from Dept. Head (Stores)
+            const storesField = document.getElementById('swal-stores-dept-hidden');
+            if (storesField) storesField.remove();
+        } else if (role === 'Main Admin') {
+            // Head of Stores — auto-assign Stores department
+            deptGroup.style.display = 'none';
+            customGroup.style.display = 'none';
+            deptSelect.required = false;
+            deptSelect.name = '';
+            // Ensure a hidden field for Stores is appended (only once)
+            let storesField = document.getElementById('swal-stores-dept-hidden');
+            if (!storesField) {
+                storesField = document.createElement('input');
+                storesField.type = 'hidden';
+                storesField.name = 'department';
+                storesField.id = 'swal-stores-dept-hidden';
+                storesField.value = 'Stores';
+                document.getElementById('addPersonnelForm').appendChild(storesField);
+            }
+        } else {
+            deptGroup.style.display = 'none';
+            customGroup.style.display = 'none';
+            deptSelect.required = false;
+            deptSelect.name = '';
+            // Remove the stores hidden field if it was there
+            const storesField = document.getElementById('swal-stores-dept-hidden');
+            if (storesField) storesField.remove();
+        }
+    }
+
+    function handleDeptSelectChange(select) {
+        const customGroup = document.getElementById('swal-custom-dept-group');
+        const customInput = document.getElementById('swal-custom-dept-input');
+        if (select.value === 'custom') {
+            customGroup.style.display = 'block';
+            customInput.required = true;
+        } else {
+            customGroup.style.display = 'none';
+            customInput.required = false;
+        }
     }
 
     function toggleSwalPassword() {
@@ -1023,6 +1145,41 @@
 </script>
 
 <style>
+    .premium-select-input {
+        width: 100% !important;
+        margin: 0 !important;
+        height: 50px !important;
+        border-radius: 12px !important;
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        border: 1px solid #e2e8f0 !important;
+        background-color: white !important;
+        background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%234f46e5%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 18px center !important;
+        background-size: 16px !important;
+        padding-right: 45px !important;
+        padding-left: 16px !important;
+        color: #0f172a !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        cursor: pointer !important;
+    }
+
+    .premium-select-input:hover {
+        border-color: #cbd5e1 !important;
+        background-color: #f8fafc !important;
+    }
+
+    .premium-select-input:focus {
+        border-color: #4f46e5 !important;
+        background-color: white !important;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
+        outline: none !important;
+    }
+
     .glass-monolith-popup {
         border-radius: 35px !important;
         padding: 2.5rem !important;

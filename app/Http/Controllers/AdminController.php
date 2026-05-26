@@ -36,18 +36,34 @@ class AdminController extends Controller
                     }
                 }
             ],
+            'role'       => 'required|string|in:Department Head,Main Admin,Officer,Requisitioner',
             'department' => 'nullable|string|max:255',
-            'role' => 'nullable|string',
         ]);
 
+        // Determine department based on role
+        $role = $request->role;
+        if ($role === 'Main Admin') {
+            $department = 'Stores';
+            $isAdmin    = true;
+        } elseif ($role === 'Department Head') {
+            $department = $request->department;
+            if (!$department) {
+                return back()->withErrors(['department' => 'Department is required for a Department Head.'])->withInput();
+            }
+            $isAdmin = false;
+        } else {
+            $department = $request->department;
+            $isAdmin    = false;
+        }
+
         $user = User::create([
-            'name' => $request->name ?? $request->username,
-            'username' => $request->username,
-            'password' => Hash::make($request->password),
-            'department' => $request->department,
-            'role' => $request->role ?? 'Officer',
-            'is_admin' => false,
-            'is_active' => true,
+            'name'               => $request->name ?? $request->username,
+            'username'           => $request->username,
+            'password'           => Hash::make($request->password),
+            'department'         => $department,
+            'role'               => $role,
+            'is_admin'           => $isAdmin,
+            'is_active'          => true,
             'must_change_password' => true,
         ]);
 

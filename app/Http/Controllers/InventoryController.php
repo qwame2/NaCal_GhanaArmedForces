@@ -11,6 +11,10 @@ class InventoryController extends Controller
 {
     public function store(Request $request)
     {
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Department Heads are only allowed to view received items and cannot make changes.'], 403);
+        }
+
         $validated = $request->validate([
             'ledge_category' => 'required|string',
             'supplier_name' => 'nullable|string',

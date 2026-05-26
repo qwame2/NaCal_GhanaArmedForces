@@ -5,7 +5,11 @@
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Inventory Log</span>
+                @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
+                    <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · Department Head Hub</span>
+                @else
+                    <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Inventory Log</span>
+                @endif
                 <span style="color: var(--text-muted); font-size: 0.85rem;">Historical Records</span>
             </div>
             <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main);">Received <span style="color: var(--primary);">Items</span></h2>
@@ -336,7 +340,9 @@
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
 
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Level</th>
+                        @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Action</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -423,6 +429,7 @@
                             </div>
                         </td>
 
+                        @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
                         <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right;">
                             <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
                                     @if($isDbPartialDelivery && is_numeric($item->variance) && (float)$item->variance < 0)
@@ -462,10 +469,11 @@
                                     @endif
                             </div>
                         </td>
+                        @endif
         </tr>
         @empty
         <tr>
-            <td colspan="11" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
+            <td colspan="{{ in_array(auth()->user()->role, ['Main Admin', 'Department Head']) ? 10 : 11 }}" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; margin: 0 auto;">
                     <div style="background: rgba(99, 102, 241, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(99, 102, 241, 0.2); animation: pulse 2s infinite;">
                         <i data-lucide="package-search" style="width: 44px; stroke-width: 1.5px;"></i>

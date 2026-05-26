@@ -90,6 +90,11 @@ Route::middleware(['auth', 'check_status'])->group(function () {
             return redirect()->route('requisitions.index');
         }
 
+        // Redirect Main Admin to their designated page
+        if (auth()->user()->role === 'Main Admin') {
+            return redirect()->route('main-admin.requisitions');
+        }
+
         $existingItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->selectRaw('inventory_items.description, MAX(inventory_items.unit) as unit, MAX(inventory_items.location) as location, MAX(inventory_batches.ledge_category) as ledge_category, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2)) END) as stock_balance, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2)) END) as qty, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.variance, ",", "") AS DECIMAL(15,2)) END) as variance')
             ->groupBy('inventory_items.description')
@@ -423,6 +428,10 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::get('/api/my-requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'myRequisitions'])->name('requisitions.my');
     Route::post('/requisitions/{id}/collect', [\App\Http\Controllers\StoreRequisitionController::class, 'collect'])->name('requisitions.collect');
     Route::post('/requisitions/{id}/followup', [\App\Http\Controllers\StoreRequisitionController::class, 'followUp'])->name('requisitions.followup');
+
+    // Main Admin Requisition Routes
+    Route::get('/main-admin/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'mainAdminIndex'])->name('main-admin.requisitions');
+    Route::post('/main-admin/requisitions/{id}/process', [\App\Http\Controllers\StoreRequisitionController::class, 'mainAdminProcess'])->name('main-admin.requisitions.process');
     Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
     Route::put('/received-items/{id}', [ReceivedItemsController::class, 'update'])->name('receiveditems.update');
     Route::get('/received-items/{id}/print', [ReceivedItemsController::class, 'print'])->name('receiveditems.print');

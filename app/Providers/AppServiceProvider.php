@@ -20,6 +20,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         try {
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'service_number')) {
+                \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('service_number')->nullable();
+                });
+            }
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'rank')) {
+                \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('rank')->nullable();
+                });
+            }
             if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'usage_type')) {
                 \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
                     $table->string('usage_type')->default('permanent');
@@ -33,6 +43,16 @@ class AppServiceProvider extends ServiceProvider
             if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisition_items', 'alternative_quantity_approved')) {
                 \Illuminate\Support\Facades\Schema::table('store_requisition_items', function (\Illuminate\Database\Schema\Blueprint $table) {
                     $table->decimal('alternative_quantity_approved', 15, 2)->nullable();
+                });
+            }
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'main_admin_status')) {
+                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('main_admin_status')->default('pending');
+                });
+            }
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'origin_admin_status')) {
+                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('origin_admin_status')->default('pending');
                 });
             }
         } catch (\Exception $e) {
@@ -106,11 +126,28 @@ class AppServiceProvider extends ServiceProvider
                 if (auth()->user()->is_admin) {
                     $pendingPasswordRequests = \App\Models\PasswordResetRequest::where('status', 'pending')->count();
                     $view->with('pendingPasswordRequests', $pendingPasswordRequests);
-                    $pendingRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')->count();
+                    // Heads only see pending requisitions that have been approved by Main Admin
+                    $pendingRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')->where('main_admin_status', 'approved')->count();
                     $view->with('pendingRequisitionsCount', $pendingRequisitionsCount);
+                    $view->with('mainRequisitionsCount', 0);
                 } else {
                     $view->with('pendingPasswordRequests', 0);
                     $view->with('pendingRequisitionsCount', 0);
+                    
+                    // Main Admin count of pending requisitions awaiting review
+                    $isStoresHead = (strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+                    if ($isStoresHead) {
+                        $mainRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
+                            ->where('origin_admin_status', 'approved')
+                            ->where('main_admin_status', 'pending')
+                            ->count();
+                    } else {
+                        $mainRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
+                            ->where('department', auth()->user()->department)
+                            ->where('origin_admin_status', 'pending')
+                            ->count();
+                    }
+                    $view->with('mainRequisitionsCount', $mainRequisitionsCount);
 
                     if (auth()->user()->role === 'Requisitioner') {
                         // Requisitioners: count their own approved reqs awaiting collection

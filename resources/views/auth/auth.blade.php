@@ -706,15 +706,8 @@
             toggleAuth('login');
 
             // Show lockout overlay if admin is already online
-            if (ADMIN_ONLINE) {
-                const lockOverlay = document.getElementById('adminOnlineOverlay');
-                if (lockOverlay) lockOverlay.style.display = 'flex';
-                const formSlider = document.getElementById('formsSlider');
-                if (formSlider) {
-                    formSlider.style.pointerEvents = 'none';
-                    formSlider.setAttribute('inert', '');
-                }
-            }
+            // Disabled to allow Main Admin (Department Head) to authenticate through the Head terminal.
+            // Concurrent Admin session locks are securely handled by the backend authentication logic.
         } else {
             // Switching back to Personnel — always dismiss lockout overlay
             const overlay = document.getElementById('adminOnlineOverlay');

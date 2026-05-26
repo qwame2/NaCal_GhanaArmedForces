@@ -13,7 +13,11 @@
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: rgba(99, 102, 241, 0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Batch Details</span>
+                @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
+                    <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · Department Head Hub</span>
+                @else
+                    <span style="background: rgba(99, 102, 241, 0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Batch Details</span>
+                @endif
                 <span style="color: var(--text-muted); font-size: 0.85rem;">#BATCH-{{ $batch->id }}</span>
             </div>
             <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main);">Entry <span style="color: var(--primary);">Specifications</span></h2>

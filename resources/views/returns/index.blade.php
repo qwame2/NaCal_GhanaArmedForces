@@ -14,10 +14,14 @@
     <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                <span class="status-badge-premium">
-                    <i data-lucide="refresh-cw" style="width: 12px;"></i>
-                    Recovery Node
-                </span>
+                @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
+                    <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · Department Head Hub</span>
+                @else
+                    <span class="status-badge-premium">
+                        <i data-lucide="refresh-cw" style="width: 12px;"></i>
+                        Recovery Node
+                    </span>
+                @endif
                 <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
                     <i data-lucide="shield" style="width: 14px; color: #f59e0b;"></i> System Verified
                 </span>
@@ -43,7 +47,7 @@
         </div>
         <div>
             <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Outstanding Assets</div>
-            <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ $issuedItems->sum('quantity') }} <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">Total Assets</span></div>
+            <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ number_format($stats['total_outstanding']) }} <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">Total Assets</span></div>
         </div>
     </div>
 
@@ -53,7 +57,7 @@
         </div>
         <div>
             <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Active Holders</div>
-            <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ $issuedItems->where('quantity', '>', 0)->pluck('beneficiary')->unique()->count() }} <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">Depts</span></div>
+            <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ $stats['active_holders'] }} <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">Depts</span></div>
         </div>
     </div>
 
@@ -75,15 +79,23 @@
             <h3 style="margin: 0; font-size: 2rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.02em;">Outstanding Allocations</h3>
             <p style="margin: 8px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                 <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 10px #f59e0b;"></span>
-                Tracking {{ $issuedItems->where('quantity', '>', 0)->count() }} active holdings across the logistics network
+                Tracking {{ $stats['total_active_holdings'] }} active holdings across the logistics network
             </p>
         </div>
 
-        <div class="search-container-premium" style="min-width: 400px; flex: 1; max-width: 500px;">
-            <i data-lucide="search" class="search-icon"></i>
-            <input type="text" id="returnSearch" placeholder="Search by recipient, item, or category..." oninput="filterReturns()" style="padding: 1.25rem 1.5rem 1.25rem 3.5rem; font-size: 1.05rem; border-radius: 20px;">
-            <div class="search-accent"></div>
-        </div>
+        <form method="GET" action="{{ route('returns.index') }}" id="filter-form" style="display: flex; gap: 1rem; align-items: center; min-width: 400px; flex: 1; max-width: 600px;">
+            <div class="search-container-premium" style="flex: 1; position: relative;">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by recipient, item, or category..." style="padding: 1.25rem 1.5rem 1.25rem 3.5rem; font-size: 1.05rem; border-radius: 20px;" autocomplete="off">
+                <div class="search-accent"></div>
+            </div>
+            @if(request('search'))
+            <a href="{{ route('returns.index') }}" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 1.15rem 1.5rem; border: 2px solid #ef4444; border-radius: 20px; background: rgba(239, 68, 68, 0.05); color: #ef4444; font-weight: 800; font-size: 1rem; text-decoration: none; transition: all 0.2s ease; cursor: pointer; height: 56px; box-sizing: border-box;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.05)'; this.style.color='#ef4444';">
+                <i data-lucide="x-circle" style="width:16px; height:16px;"></i>
+                <span>Clear</span>
+            </a>
+            @endif
+        </form>
     </div>
 
     @if($issuedItems->count() > 0)
@@ -95,15 +107,20 @@
                     <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900; border-bottom: 2px solid var(--bg-main);">
                         <th style="padding: 0 1.5rem 1rem;">Asset Breakdown</th>
                         <th style="padding: 0 1.5rem 1rem;">Holder Information</th>
+                        <th style="padding: 0 1.5rem 1rem;">Collector</th>
+                        <th style="padding: 0 1.5rem 1rem;">Head of Stores</th>
+                        <th style="padding: 0 1.5rem 1rem;">Store Officer</th>
                         <th style="padding: 0 1.5rem 1rem;">Classification</th>
                         <th style="padding: 0 1.5rem 1rem;">Allocation Balance</th>
+                        @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
                         <th style="padding: 0 1.5rem 1rem; text-align: right;">Action Control</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody id="returnsTableBody">
                     @foreach($issuedItems as $item)
                     @if($item->quantity > 0)
-                    <tr class="return-row" data-search="{{ strtolower($item->beneficiary . ' ' . $item->description . ' ' . $item->ledge_category) }}">
+                    <tr class="return-row" data-search="{{ strtolower($item->beneficiary . ' ' . $item->description . ' ' . $item->ledge_category . ' ' . ($item->collector_name ?? '') . ' ' . ($item->confirming_officer_name ?? 'Adomako Emmanuel')) }}">
                         <td style="padding: 1.75rem 1.5rem; border-radius: 24px 0 0 24px;">
                             <div style="display: flex; align-items: center; gap: 15px;">
                                 <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--bg-main); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--primary);">
@@ -120,12 +137,30 @@
                         </td>
                         <td style="padding: 1.75rem 1.5rem;">
                             <div style="font-weight: 850; color: var(--text-main); font-size: 1.05rem;">{{ $item->beneficiary }}</div>
-                            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-top: 2px;">Ref: {{ $item->authority ?: 'General Auth' }}</div>
+                        </td>
+                        <td style="padding: 1.75rem 1.5rem;">
+                            @if(!empty($item->collector_name))
+                            <div style="font-size: 0.95rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="user" style="width: 14px; height: 14px;"></i>
+                                {{ $item->collector_name }}
+                            </div>
+                            @else
+                            <span style="color: var(--text-muted); font-size: 0.9rem;">-</span>
+                            @endif
+                        </td>
+                        <td style="padding: 1.75rem 1.5rem;">
+                            <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">{{ $item->authority ?: 'Adomako Emmanuel' }}</div>
+                        </td>
+                        <td style="padding: 1.75rem 1.5rem;">
+                            <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #10b981;"></i>
+                                {{ $item->confirming_officer_name ?: 'Adomako Emmanuel' }}
+                            </div>
                         </td>
                         <td style="padding: 1.75rem 1.5rem;">
                             <span class="ledge-badge-premium" style="padding: 0.5rem 1.25rem; border-radius: 12px; font-size: 0.7rem;">CATEGORY {{ $item->ledge_category }}</span>
                         </td>
-                        <td style="padding: 1.75rem 1.5rem;">
+                        <td style="padding: 1.75rem 1.5rem; @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) border-radius: 0 24px 24px 0; @endif">
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <div style="padding: 0.75rem 1.25rem; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 16px;">
                                     <span style="font-weight: 950; font-size: 1.4rem; color: #d97706;">{{ $item->quantity }}</span>
@@ -133,6 +168,7 @@
                                 </div>
                             </div>
                         </td>
+                        @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
                         <td style="padding: 1.75rem 1.5rem; border-radius: 0 24px 24px 0; text-align: right;">
                             @if($item->pending_recovery)
                             <button disabled class="recover-btn-premium" style="padding: 1rem 1.5rem; border-radius: 16px; font-weight: 900; background: #6366f1; color: white; border: none; cursor: wait; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); opacity: 0.85;">
@@ -151,6 +187,7 @@
                             </button>
                             @endif
                         </td>
+                        @endif
                     </tr>
                     @endif
                     @endforeach
@@ -164,7 +201,7 @@
         <div style="display: grid; gap: 1.5rem;" id="returnsMobileBody">
             @foreach($issuedItems as $item)
             @if($item->quantity > 0)
-            <div class="return-card-mobile" data-search="{{ strtolower($item->beneficiary . ' ' . $item->description . ' ' . $item->ledge_category) }}" style="padding: 2rem; background: var(--bg-card); border-radius: 28px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+            <div class="return-card-mobile" data-search="{{ strtolower($item->beneficiary . ' ' . $item->description . ' ' . $item->ledge_category . ' ' . ($item->collector_name ?? '') . ' ' . ($item->confirming_officer_name ?? 'Adomako Emmanuel')) }}" style="padding: 2rem; background: var(--bg-card); border-radius: 28px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
                     <span class="ledge-badge-premium" style="font-size: 0.65rem;">CAT {{ $item->ledge_category }}</span>
                     <div style="text-align: right;">
@@ -183,7 +220,17 @@
                 <div style="background: var(--bg-main); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem;">
                     <div style="font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Holder</div>
                     <div style="color: var(--text-main); font-weight: 850; font-size: 1.05rem;">{{ $item->beneficiary }}</div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-top: 2px;">Ref: {{ $item->authority ?: 'General' }}</div>
+                    @if(!empty($item->collector_name))
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                        <i data-lucide="user" style="width: 12px; height: 12px;"></i>
+                        Collector: {{ $item->collector_name }}
+                    </div>
+                    @endif
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-top: 6px;">Head of Stores: {{ $item->authority ?: 'Adomako Emmanuel' }}</div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #10b981; margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                        <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i>
+                        Store Officer: {{ $item->confirming_officer_name ?: 'Adomako Emmanuel' }}
+                    </div>
                 </div>
 
                 <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px dashed var(--border-color);">
@@ -191,19 +238,21 @@
                         <div style="font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Balance</div>
                         <div style="font-size: 1.75rem; font-weight: 950; color: #d97706;">{{ $item->quantity }} <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted);">{{ $item->actual_unit ?: ($item->unit ?: 'Package Types') }}</span></div>
                     </div>
-                    @if($item->pending_recovery)
-                    <button disabled title="Awaiting Administrative Approval" style="width: 120px; height: 56px; border-radius: 18px; background: #6366f1; color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); cursor: wait; opacity: 0.9;">
-                        <i data-lucide="clock" style="width: 20px;" class="animate-pulse"></i>
-                        <span style="font-size: 0.75rem; font-weight: 900; text-transform: uppercase;">Pending</span>
-                    </button>
-                    @elseif(auth()->user()->can_operate_logistics)
-                    <button onclick="openReturnModal({{ json_encode($item) }})" class="mobile-recover-btn" style="width: 56px; height: 56px; border-radius: 18px; background: #0f172a; color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                        <i data-lucide="corner-up-left" style="width: 24px;"></i>
-                    </button>
-                    @else
-                    <button disabled title="Unauthorized" style="width: 56px; height: 56px; border-radius: 18px; background: #cbd5e1; color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: not-allowed;">
-                        <i data-lucide="lock" style="width: 24px;"></i>
-                    </button>
+                    @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
+                        @if($item->pending_recovery)
+                        <button disabled title="Awaiting Administrative Approval" style="width: 120px; height: 56px; border-radius: 18px; background: #6366f1; color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2); cursor: wait; opacity: 0.9;">
+                            <i data-lucide="clock" style="width: 20px;" class="animate-pulse"></i>
+                            <span style="font-size: 0.75rem; font-weight: 900; text-transform: uppercase;">Pending</span>
+                        </button>
+                        @elseif(auth()->user()->can_operate_logistics)
+                        <button onclick="openReturnModal({{ json_encode($item) }})" class="mobile-recover-btn" style="width: 56px; height: 56px; border-radius: 18px; background: #0f172a; color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                            <i data-lucide="corner-up-left" style="width: 24px;"></i>
+                        </button>
+                        @else
+                        <button disabled title="Unauthorized" style="width: 56px; height: 56px; border-radius: 18px; background: #cbd5e1; color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: not-allowed;">
+                            <i data-lucide="lock" style="width: 24px;"></i>
+                        </button>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -211,6 +260,48 @@
             @endforeach
         </div>
     </div>
+
+    {{-- Pagination --}}
+    @if($issuedItems->hasPages())
+    <div style="padding: 2.5rem 0 0; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 2rem;">
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
+            Showing
+            <span style="color: var(--text-main); font-weight: 900;">{{ $issuedItems->firstItem() ?? 0 }}</span>
+            to
+            <span style="color: var(--text-main); font-weight: 900;">{{ $issuedItems->lastItem() ?? 0 }}</span>
+            of
+            <span style="color: var(--text-main); font-weight: 900;">{{ $issuedItems->total() }}</span>
+            entries
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            {{-- Previous --}}
+            @if($issuedItems->onFirstPage())
+                <span style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-main); color: var(--text-muted); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); opacity: 0.5; cursor: not-allowed;">Prev</span>
+            @else
+                <a href="{{ $issuedItems->appends(request()->query())->previousPageUrl() }}" style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#f59e0b'; this.style.color='#f59e0b'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">Prev</a>
+            @endif
+
+            {{-- Page Numbers --}}
+            <div style="display: flex; gap: 0.25rem;">
+                @foreach($issuedItems->appends(request()->query())->getUrlRange(max(1, $issuedItems->currentPage()-2), min($issuedItems->lastPage(), $issuedItems->currentPage()+2)) as $page => $url)
+                    @if($page == $issuedItems->currentPage())
+                        <span style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: #f59e0b; color: white; font-size: 0.85rem; font-weight: 900; box-shadow: 0 4px 10px rgba(245,158,11,0.2);">{{ $page }}</span>
+                    @else
+                        <a href="{{ $url }}" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.85rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#f59e0b'; this.style.color='#f59e0b'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">{{ $page }}</a>
+                    @endif
+                @endforeach
+            </div>
+
+            {{-- Next --}}
+            @if($issuedItems->hasMorePages())
+                <a href="{{ $issuedItems->appends(request()->query())->nextPageUrl() }}" style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#f59e0b'; this.style.color='#f59e0b'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">Next</a>
+            @else
+                <span style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-main); color: var(--text-muted); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); opacity: 0.5; cursor: not-allowed;">Next</span>
+            @endif
+        </div>
+    </div>
+    @endif
     @else
     <div style="padding: 10rem 0; text-align: center;">
         <div style="position: relative; display: inline-block; margin-bottom: 2.5rem;">
@@ -219,8 +310,8 @@
                 <i data-lucide="refresh-cw" style="width: 40px; height: 40px; color: var(--primary); opacity: 0.2;"></i>
             </div>
         </div>
-        <h3 style="font-weight: 950; color: var(--text-main); font-size: 1.5rem;">Clean Slate</h3>
-        <p style="color: var(--text-muted); font-weight: 600;">All issued assets have been accounted for and returned.</p>
+        <h3 style="font-weight: 950; color: var(--text-main); font-size: 1.5rem;">No Records Found</h3>
+        <p style="color: var(--text-muted); font-weight: 600;">No active holdings match the current filter criteria.</p>
     </div>
     @endif
 </div>
@@ -1122,8 +1213,13 @@
     function openReturnModal(item) {
         document.getElementById('modal_item_id').value = item.id;
         document.getElementById('modal_item_desc').innerText = item.description;
-        document.getElementById('modal_item_beneficiary').innerText = 'Held by: ' + item.beneficiary;
-        document.getElementById('modal_item_authority').innerText = 'Approval: ' + (item.authority ? item.authority : 'N/A');
+        
+        let details = 'Held by: ' + item.beneficiary;
+        if (item.collector_name) {
+            details += ' (Collector: ' + item.collector_name + ')';
+        }
+        document.getElementById('modal_item_beneficiary').innerText = details;
+        document.getElementById('modal_item_authority').innerText = 'Head of Stores: ' + (item.authority ? item.authority : 'Adomako Emmanuel') + ' | Store Officer: ' + (item.confirming_officer_name ? item.confirming_officer_name : 'Adomako Emmanuel');
         document.getElementById('modal_return_qty').value = item.quantity;
         document.getElementById('modal_return_qty').max = item.quantity;
         document.getElementById('modal_max_qty').innerText = item.quantity + ' ' + (item.actual_unit || item.unit || 'Package Types');
@@ -1162,19 +1258,31 @@
         validateReturnQty();
     }
 
-    function filterReturns() {
-        const term = document.getElementById('returnSearch').value.toLowerCase();
+    document.addEventListener('DOMContentLoaded', function() {
+        @if(session('reopen_history'))
+        setTimeout(openHistorySheet, 500);
+        @endif
 
-        // Filter Table
-        document.querySelectorAll('.return-row').forEach(row => {
-            row.style.display = row.dataset.search.includes(term) ? 'table-row' : 'none';
-        });
-
-        // Filter Cards
-        document.querySelectorAll('.return-card-mobile').forEach(card => {
-            card.style.display = card.dataset.search.includes(term) ? 'block' : 'none';
-        });
-    }
+        // Search input debounce for premium user experience
+        const searchInput = document.querySelector('input[name="search"]');
+        if (searchInput) {
+            let debounceTimer;
+            searchInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    searchInput.form.submit();
+                }, 600); // 600ms debounce
+            });
+            
+            // Set cursor to the end of the text on load if focused
+            if (document.activeElement === searchInput || searchInput.value) {
+                const val = searchInput.value;
+                searchInput.value = '';
+                searchInput.value = val;
+                searchInput.focus();
+            }
+        }
+    });
 
     function validateReturnQty() {
         const input = document.getElementById('modal_return_qty');
@@ -1232,6 +1340,8 @@
             const matchSearch = i.description.toLowerCase().includes(term) ||
                 i.beneficiary.toLowerCase().includes(term) ||
                 (i.authority && i.authority.toLowerCase().includes(term)) ||
+                (i.confirming_officer_name && i.confirming_officer_name.toLowerCase().includes(term)) ||
+                (i.collector_name && i.collector_name.toLowerCase().includes(term)) ||
                 i.ledge_category.toLowerCase().includes(term);
             const itemDate = i.return_date || new Date(i.created_at).toISOString().split('T')[0];
             const matchDate = !date || itemDate === date;
@@ -1270,7 +1380,9 @@
                                 <th style="padding: 0 1rem 0.5rem;">Item Description</th>
                                 <th style="padding: 0 1rem 0.5rem;">Classification</th>
                                 <th style="padding: 0 1rem 0.5rem;">Recipient</th>
-                                <th style="padding: 0 1rem 0.5rem;">Approval</th>
+                                <th style="padding: 0 1rem 0.5rem;">Collector</th>
+                                <th style="padding: 0 1rem 0.5rem;">Head of Stores</th>
+                                <th style="padding: 0 1rem 0.5rem;">Store Officer</th>
                                 <th style="padding: 0 1rem 0.5rem;">Returned Qty</th>
                                 <th style="padding: 0 1rem 0.5rem;">Status / State</th>
                                 <th style="padding: 0 1rem 0.5rem;">Outstanding Balance</th>
@@ -1319,8 +1431,23 @@
                     <td style="padding: 1.25rem 1rem;">
                         <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1);">CATEGORY ${item.ledge_category}</span>
                     </td>
-                    <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.beneficiary}</td>
-                    <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.authority || '-'}</td>
+                    <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">
+                        ${item.beneficiary}
+                    </td>
+                    <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">
+                        ${item.collector_name ? `
+                        <div style="font-size: 0.9rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 4px;">
+                            <i data-lucide="user" style="width: 12px; height: 12px;"></i>
+                            ${item.collector_name}
+                        </div>` : '-'}
+                    </td>
+                    <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.authority || 'Adomako Emmanuel'}</td>
+                    <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <i data-lucide="shield-check" style="width: 12px; height: 12px; color: #10b981;"></i>
+                            ${item.confirming_officer_name || 'Adomako Emmanuel'}
+                        </div>
+                    </td>
                     <td style="padding: 1.25rem 1rem; font-weight: 900; font-size: 1.2rem; color: #10b981;">${item.returned_qty} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.actual_unit || item.unit || 'Package Types'}</span></td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; max-width: 200px;">
                         <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.remarks || 'No remarks'}">${item.remarks || '-'}</div>
@@ -1352,7 +1479,9 @@
                     </div>
                     <h4 style="margin: 0; color: var(--text-main); font-size: 1.1rem; font-weight: 900;">${item.description}</h4>
                     <p style="margin: 6px 0 0; color: var(--text-muted); font-weight: 700; font-size: 0.9rem;">Recipient: ${item.beneficiary}</p>
-                    <p style="margin: 2px 0 0.5rem; color: var(--text-muted); font-weight: 700; font-size: 0.85rem;">Approval: ${item.authority || '-'}</p>
+                    ${item.collector_name ? `<p style="margin: 2px 0 0; color: var(--primary); font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;"><i data-lucide="user" style="width: 12px; height: 12px;"></i> Collector: ${item.collector_name}</p>` : ''}
+                    <p style="margin: 2px 0 0.5rem; color: var(--text-muted); font-weight: 700; font-size: 0.85rem;">Head of Stores: ${item.authority || 'Adomako Emmanuel'}</p>
+                    <p style="margin: 2px 0 0.5rem; color: #10b981; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><i data-lucide="shield-check" style="width: 12px;"></i> Store Officer: ${item.confirming_officer_name || 'Adomako Emmanuel'}</p>
                     <p style="margin: 0 0 1.25rem; color: var(--text-main); font-weight: 600; font-size: 0.8rem; background: rgba(0,0,0,0.02); padding: 8px; border-radius: 8px;">State: ${item.remarks || 'No description'}</p>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
@@ -1828,10 +1957,6 @@
         });
     }
 
-    @if(session('reopen_history'))
-    document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(openHistorySheet, 500);
-    });
-    @endif
+    // Reopen history sheet session check is handled in main DOMContentLoaded listener
 </script>
 @endsection

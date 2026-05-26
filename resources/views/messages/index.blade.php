@@ -46,6 +46,7 @@
             @endforeach
 
             <!-- Colleagues -->
+            @if(count($colleagues) > 0)
             <div style="font-size: 0.75rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.15em; padding: 2rem 1rem 1rem 1rem; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="users" style="width: 14px;"></i>
                 Team Personnel
@@ -74,6 +75,7 @@
                 </div>
             </div>
             @endforeach
+            @endif
         </div>
     </div>
 

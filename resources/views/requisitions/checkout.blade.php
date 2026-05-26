@@ -545,9 +545,8 @@
                 <div>
                     <label class="form-label">Priority Level *</label>
                     <select id="priority" class="form-input">
-                        <option value="normal" selected>Normal Delivery</option>
+                        <option value="normal" selected>Normal Processing</option>
                         <option value="urgent">Urgent Processing</option>
-                        <option value="low">Low Priority</option>
                     </select>
                 </div>
 
@@ -565,6 +564,11 @@
                             <span>Temporary</span>
                         </label>
                     </div>
+                </div>
+
+                <div id="return-date-container" style="display: none;">
+                    <label class="form-label">Expected Return Date *</label>
+                    <input type="date" id="returnDate" class="form-input" min="{{ date('Y-m-d', strtotime('+1 day')) }}">
                 </div>
 
                 <div>
@@ -720,6 +724,23 @@
             e.preventDefault();
             if (cart.length === 0) return;
 
+            const usageType = document.querySelector('input[name="usage_type"]:checked').value;
+            let finalPurpose = document.getElementById('purpose').value;
+            
+            if (usageType === 'temporary') {
+                const retDate = document.getElementById('returnDate').value;
+                if (!retDate) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Return Date Required',
+                        text: 'Please select an expected return date for your temporary requisition.',
+                        confirmButtonColor: 'var(--store-orange)'
+                    });
+                    return;
+                }
+                finalPurpose += `\n\n[Expected Return Date: ${retDate}]`;
+            }
+
             const btn = document.getElementById('submit-checkout-btn');
             btn.disabled = true;
             btn.innerHTML = '<i data-lucide="loader" style="width:16px; animation:spin 1s linear infinite;"></i> Registering Request...';
@@ -729,9 +750,9 @@
                 requester_name: document.getElementById('requesterName').value,
                 department:     document.getElementById('department').value,
                 rank_or_title:  document.getElementById('rankTitle').value,
-                purpose:        document.getElementById('purpose').value,
+                purpose:        finalPurpose,
                 priority:       document.getElementById('priority').value,
-                usage_type:     document.querySelector('input[name="usage_type"]:checked').value,
+                usage_type:     usageType,
                 items:          cart.map(i => ({
                     description: i.description,
                     category:    i.category || '',
@@ -795,11 +816,24 @@
             lucide.createIcons();
 
             // Setup Usage Type pill interactivity
+            const returnDateContainer = document.getElementById('return-date-container');
+            const returnDateInput = document.getElementById('returnDate');
+
             document.querySelectorAll('.usage-pill-label').forEach(label => {
                 label.addEventListener('click', function() {
                     document.querySelectorAll('.usage-pill-label').forEach(l => l.classList.remove('active'));
                     this.classList.add('active');
-                    this.querySelector('input[type="radio"]').checked = true;
+                    const radio = this.querySelector('input[type="radio"]');
+                    radio.checked = true;
+
+                    if (radio.value === 'temporary') {
+                        returnDateContainer.style.display = 'block';
+                        returnDateInput.setAttribute('required', 'required');
+                    } else {
+                        returnDateContainer.style.display = 'none';
+                        returnDateInput.removeAttribute('required');
+                        returnDateInput.value = '';
+                    }
                 });
             });
         });

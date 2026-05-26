@@ -9,7 +9,7 @@
 
     .sync-wrapper {
         width: 100%;
-        max-width: 460px;
+        max-width: 680px;
     }
 
     /* === TOP STATUS BAR === */
@@ -336,6 +336,19 @@
     }
     .logout-btn:hover { color: #ef4444; }
     .logout-btn i { width: 13px; }
+
+    .sync-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 0.25rem;
+    }
+    @media (max-width: 480px) {
+        .sync-grid {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+    }
 </style>
 
 <div class="sync-wrapper">
@@ -402,36 +415,147 @@
                 </div>
                 @endif
 
-                <div class="field-block">
-                    <div class="field-label">
-                        <label>New Security Key</label>
-                        <span class="req-badge">MIN 8 CHARS + NUMBER</span>
+                @php
+                    $user = auth()->user();
+                    $hasNameEntered = !empty($user->name) && $user->name !== $user->username;
+                    $hasDeptEntered = !empty($user->department);
+                @endphp
+
+                <!-- Username and Full Name -->
+                <div class="sync-grid">
+                    <div class="field-block">
+                        <div class="field-label">
+                            <label>Username</label>
+                            <span class="req-badge">REQUIRED</span>
+                        </div>
+                        <div class="field-input">
+                            <div class="field-icon"><i data-lucide="user"></i></div>
+                            <input type="text" name="username" value="{{ old('username', $user->username) }}" placeholder="e.g. j_doe" required autocomplete="username">
+                        </div>
                     </div>
-                    <div class="field-input">
-                        <div class="field-icon"><i data-lucide="key-round"></i></div>
-                        <input type="password" name="password" id="pass-field" placeholder="Enter new password" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number" autocomplete="new-password">
-                        <button type="button" class="eye-btn" onclick="togglePass('pass-field', this)">
-                            <i data-lucide="eye"></i>
-                        </button>
+
+                    @if($hasNameEntered)
+                    <div class="field-block">
+                        <div class="field-label">
+                            <label>Full Name</label>
+                            <span class="req-badge" style="background: #e0f2fe; color: #0284c7;">LOCKED</span>
+                        </div>
+                        <div class="field-input" style="background: #f8fafc; border-color: #e2e8f0; opacity: 0.85;">
+                            <div class="field-icon"><i data-lucide="lock" style="color: #94a3b8; width: 14px;"></i></div>
+                            <input type="text" value="{{ $user->name }}" style="color: #64748b; cursor: not-allowed;" readonly tabindex="-1">
+                        </div>
                     </div>
-                    <p style="font-size: 0.65rem; color: #64748b; font-weight: 700; margin-top: 6px; padding-left: 4px;">Requirement: Min 8 chars including a number. Cannot match username.</p>
+                    @else
+                    <div class="field-block">
+                        <div class="field-label">
+                            <label>Full Name</label>
+                            <span class="req-badge">REQUIRED</span>
+                        </div>
+                        <div class="field-input">
+                            <div class="field-icon"><i data-lucide="user-check"></i></div>
+                            <input type="text" name="name" value="{{ old('name', $user->name === $user->username ? '' : $user->name) }}" placeholder="e.g. John Doe" required autocomplete="name">
+                        </div>
+                    </div>
+                    @endif
                 </div>
 
-                <div class="field-block">
-                    <div class="field-label">
-                        <label>Confirm Key</label>
-                        <span class="req-badge match-badge" style="transition: all 0.3s ease;">MUST MATCH</span>
+                <!-- Contact Number & Service Number -->
+                <div class="sync-grid">
+                    <div class="field-block">
+                        <div class="field-label">
+                            <label>Contact Number</label>
+                            <span class="req-badge">OPTIONAL</span>
+                        </div>
+                        <div class="field-input">
+                            <div class="field-icon"><i data-lucide="phone"></i></div>
+                            <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" placeholder="e.g. +2332400000">
+                        </div>
                     </div>
-                    <div class="field-input">
-                        <div class="field-icon"><i data-lucide="shield"></i></div>
-                        <input type="password" name="password_confirmation" id="confirm-field" placeholder="Confirm new password" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number" autocomplete="new-password">
-                        <button type="button" class="eye-btn" onclick="togglePass('confirm-field', this)">
-                            <i data-lucide="eye"></i>
-                        </button>
+
+                    <div class="field-block">
+                        <div class="field-label">
+                            <label>Service Number</label>
+                            <span class="req-badge">OPTIONAL</span>
+                        </div>
+                        <div class="field-input">
+                            <div class="field-icon"><i data-lucide="hash"></i></div>
+                            <input type="text" name="service_number" value="{{ old('service_number', $user->service_number) }}" placeholder="e.g. SN-8942">
+                        </div>
                     </div>
                 </div>
 
-                <div class="divider"></div>
+                <!-- Department & Role -->
+                <div class="sync-grid">
+                    @if($hasDeptEntered)
+                    <div class="field-block">
+                        <div class="field-label">
+                            <label>Department</label>
+                            <span class="req-badge" style="background: #e0f2fe; color: #0284c7;">LOCKED</span>
+                        </div>
+                        <div class="field-input" style="background: #f8fafc; border-color: #e2e8f0; opacity: 0.85;">
+                            <div class="field-icon"><i data-lucide="lock" style="color: #94a3b8; width: 14px;"></i></div>
+                            <input type="text" value="{{ $user->department }}" style="color: #64748b; cursor: not-allowed;" readonly tabindex="-1">
+                        </div>
+                    </div>
+                    @else
+                    <div class="field-block">
+                        <div class="field-label">
+                            <label>Department</label>
+                            <span class="req-badge">OPTIONAL</span>
+                        </div>
+                        <div class="field-input">
+                            <div class="field-icon"><i data-lucide="building"></i></div>
+                            <input type="text" name="department" value="{{ old('department', $user->department) }}" placeholder="e.g. IT, Logistics">
+                        </div>
+                    </div>
+                    @endif
+
+                    <div class="field-block">
+                        <div class="field-label">
+                            <label>Role</label>
+                            <span class="req-badge" style="background: #e0f2fe; color: #0284c7;">LOCKED</span>
+                        </div>
+                        <div class="field-input" style="background: #f8fafc; border-color: #e2e8f0; opacity: 0.85;">
+                            <div class="field-icon"><i data-lucide="shield-check" style="color: #94a3b8; width: 14px;"></i></div>
+                            <input type="text" value="{{ $user->role }}" style="color: #64748b; cursor: not-allowed;" readonly tabindex="-1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider" style="margin: 1.25rem 0;"></div>
+
+                <div class="sync-grid">
+                    <div class="field-block">
+                        <div class="field-label">
+                            <label>New Security Key</label>
+                            <span class="req-badge">MIN 8 CHARS + NUMBER</span>
+                        </div>
+                        <div class="field-input">
+                            <div class="field-icon"><i data-lucide="key-round"></i></div>
+                            <input type="password" name="password" id="pass-field" placeholder="Enter new password" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number" autocomplete="new-password">
+                            <button type="button" class="eye-btn" onclick="togglePass('pass-field', this)">
+                                <i data-lucide="eye"></i>
+                            </button>
+                        </div>
+                        <p style="font-size: 0.65rem; color: #64748b; font-weight: 700; margin-top: 6px; padding-left: 4px;">Requirement: Min 8 chars including a number. Cannot match username.</p>
+                    </div>
+
+                    <div class="field-block">
+                        <div class="field-label">
+                            <label>Confirm Key</label>
+                            <span class="req-badge match-badge" style="transition: all 0.3s ease;">MUST MATCH</span>
+                        </div>
+                        <div class="field-input">
+                            <div class="field-icon"><i data-lucide="shield"></i></div>
+                            <input type="password" name="password_confirmation" id="confirm-field" placeholder="Confirm new password" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number" autocomplete="new-password">
+                            <button type="button" class="eye-btn" onclick="togglePass('confirm-field', this)">
+                                <i data-lucide="eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider" style="margin: 1.25rem 0;"></div>
 
                 <button type="submit" class="sync-btn">
                     <i data-lucide="refresh-cw"></i>

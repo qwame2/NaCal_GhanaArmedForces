@@ -13,8 +13,13 @@ use Illuminate\Database\Schema\Blueprint;
 
 class ReturnController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
+            abort(403, 'Unauthorized. Access restricted to Department Head (Stores) and Store Officers.');
+        }
+
         if (auth()->user()->is_admin) {
             return redirect()->route('admin.inventory')->with('info', 'Strategic Oversight required. Redirecting to Command Center.');
         }
@@ -37,8 +42,26 @@ class ReturnController extends Controller
             });
         }
 
-        // Get all items that were issued and haven't been fully returned
-        $issuedItems = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+        // Global DB stats for returns card aggregates
+        $stats = [
+            'total_outstanding' => (float) IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+                ->where('issuances.issuance_type', 'Temporary')
+                ->sum('quantity'),
+            'active_holders' => (int) IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+                ->where('issuances.issuance_type', 'Temporary')
+                ->where('issued_items.quantity', '>', 0)
+                ->distinct('issuances.beneficiary')
+                ->count('issuances.beneficiary'),
+            'total_active_holdings' => (int) IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+                ->where('issuances.issuance_type', 'Temporary')
+                ->where('issued_items.quantity', '>', 0)
+                ->count()
+        ];
+
+        // Build search & paginated query
+        $query = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->leftJoin('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
+            ->leftJoin('users as confirming_officers', 'store_requisitions.collected_by', '=', 'confirming_officers.id')
             ->leftJoin(DB::raw('(SELECT description, MAX(unit) as unit FROM inventory_items GROUP BY description) as inv_units'), function($join) {
                 $join->on(DB::raw('LOWER(TRIM(issued_items.description))'), '=', DB::raw('LOWER(TRIM(inv_units.description))'));
             })
@@ -48,6 +71,8 @@ class ReturnController extends Controller
                 'issuances.authority', 
                 'issuances.issuance_date', 
                 'issuances.issuance_type',
+                'store_requisitions.collector_name',
+                'confirming_officers.name as confirming_officer_name',
                 DB::raw('COALESCE(NULLIF(issued_items.unit, ""), inv_units.unit) as actual_unit')
             )
             ->addSelect([
@@ -59,15 +84,32 @@ class ReturnController extends Controller
                     ->limit(1)
             ])
             ->where('issuances.issuance_type', 'Temporary')
-            ->where('issued_items.quantity', '>', 0)
-            ->orderBy('issuances.issuance_date', 'desc')
-            ->get();
+            ->where('issued_items.quantity', '>', 0);
 
-        return view('returns.index', compact('issuedItems'));
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function($q) use ($search) {
+                $q->where('issued_items.description', 'LIKE', "%{$search}%")
+                  ->orWhere('issuances.beneficiary', 'LIKE', "%{$search}%")
+                  ->orWhere('issued_items.ledge_category', 'LIKE', "%{$search}%")
+                  ->orWhere('store_requisitions.collector_name', 'LIKE', "%{$search}%")
+                  ->orWhere('confirming_officers.name', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $issuedItems = $query->orderBy('issuances.issuance_date', 'desc')
+            ->paginate(5)
+            ->withQueryString();
+
+        return view('returns.index', compact('issuedItems', 'stats'));
     }
 
     public function store(Request $request)
     {
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
+            return redirect()->back()->with('error', 'Unauthorized: Department Heads are only allowed to view returned items and cannot make changes.');
+        }
+
         $validated = $request->validate([
             'issued_item_id' => 'required|exists:issued_items,id',
             'return_qty' => 'required|integer|min:1',
@@ -167,12 +209,19 @@ class ReturnController extends Controller
 
     public function history()
     {
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
+            return response()->json([], 403);
+        }
+
         if (!Schema::hasTable('returned_items')) {
             return response()->json([]);
         }
 
         $returnedItems = ReturnedItem::join('issued_items', 'returned_items.issued_item_id', '=', 'issued_items.id')
             ->join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->leftJoin('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
+            ->leftJoin('users as confirming_officers', 'store_requisitions.collected_by', '=', 'confirming_officers.id')
             ->leftJoin(DB::raw('(SELECT description, MAX(unit) as unit FROM inventory_items GROUP BY description) as inv_units'), function($join) {
                 $join->on(DB::raw('LOWER(TRIM(issued_items.description))'), '=', DB::raw('LOWER(TRIM(inv_units.description))'));
             })
@@ -189,6 +238,8 @@ class ReturnController extends Controller
                 'issuances.authority',
                 'issuances.issuance_date',
                 'issuances.created_at as issuance_timestamp',
+                'store_requisitions.collector_name',
+                'confirming_officers.name as confirming_officer_name',
                 DB::raw('COALESCE(NULLIF(issued_items.unit, ""), inv_units.unit) as actual_unit')
             )
             ->orderBy('returned_items.created_at', 'desc')
@@ -199,6 +250,10 @@ class ReturnController extends Controller
 
     public function purge(Request $request)
     {
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
+            return redirect()->back()->with('error', 'Unauthorized: Department Heads are only allowed to view returned items and cannot make changes.');
+        }
+
         // Force strict administrator authorization check
         if (!auth()->check() || !auth()->user()->is_admin) {
             return redirect()->back()->with('error', 'Unauthorized Action: Purging return history is restricted to Administrators only.');

@@ -11,8 +11,13 @@ use Illuminate\Support\Facades\DB;
 
 class IssueItemsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
+            abort(403, 'Unauthorized. Access restricted to Department Head (Stores) and Store Officers.');
+        }
+
         if (auth()->user()->is_admin) {
             return redirect()->route('admin.inventory')->with('info', 'Strategic Oversight required. Redirecting to Command Center.');
         }
@@ -38,12 +43,60 @@ class IssueItemsController extends Controller
                 'J' => 'Equipment'
             ];
 
-        // Fetch all given out items
-        $issuedItems = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-            ->select('issued_items.*', 'issuances.issuance_date', 'issuances.beneficiary', 'issuances.authority', 'issuances.issuance_type', 'issuances.created_at')
-            ->orderBy('issuances.issuance_date', 'desc')
+        // Total calculations across database for stats cards
+        $stats = [
+            'total_disbursed' => (float) IssuedItem::sum('quantity'),
+            'permanent_allocations' => (float) IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+                ->where('issuances.issuance_type', 'Permanent')
+                ->sum('quantity'),
+            'temporary_loans' => (float) IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+                ->where('issuances.issuance_type', 'Temporary')
+                ->sum('quantity'),
+            'active_destinations' => (int) Issuance::distinct()->count('beneficiary')
+        ];
+
+        // Build the filtered query
+        $query = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->leftJoin('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
+            ->leftJoin('users as confirming_officers', 'store_requisitions.collected_by', '=', 'confirming_officers.id')
+            ->select(
+                'issued_items.*', 
+                'issuances.issuance_date', 
+                'issuances.beneficiary', 
+                'issuances.authority', 
+                'issuances.issuance_type', 
+                'issuances.created_at',
+                'store_requisitions.collector_name',
+                'confirming_officers.name as confirming_officer_name'
+            );
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function($q) use ($search) {
+                $q->where('issued_items.description', 'LIKE', "%{$search}%")
+                  ->orWhere('issuances.beneficiary', 'LIKE', "%{$search}%")
+                  ->orWhere('issuances.authority', 'LIKE', "%{$search}%")
+                  ->orWhere('store_requisitions.collector_name', 'LIKE', "%{$search}%")
+                  ->orWhere('confirming_officers.name', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('category') && $request->category !== 'all') {
+            $query->where('issued_items.ledge_category', $request->category);
+        }
+
+        if ($request->filled('type') && $request->type !== 'all') {
+            $query->where('issuances.issuance_type', $request->type);
+        }
+
+        if ($request->filled('date')) {
+            $query->whereDate('issuances.issuance_date', $request->date);
+        }
+
+        $issuedItems = $query->orderBy('issuances.issuance_date', 'desc')
             ->orderBy('issuances.created_at', 'desc')
-            ->get();
+            ->paginate(5)
+            ->withQueryString();
 
         // Get locations of inventory items to attach
         $locations = InventoryItem::select('description', 'location')
@@ -57,11 +110,15 @@ class IssueItemsController extends Controller
             $item->location = $locations[$item->description] ?? 'Not Specified';
         }
 
-        return view('issue-items.index', compact('issuedItems', 'ledgeMap'));
+        return view('issue-items.index', compact('issuedItems', 'ledgeMap', 'stats'));
     }
 
     public function store(Request $request)
     {
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Department Heads are only allowed to view issued items and cannot make changes.'], 403);
+        }
+
         $validated = $request->validate([
             'issuance_date' => 'required|date',
             'beneficiary' => 'required|string',
@@ -178,11 +235,27 @@ class IssueItemsController extends Controller
 
     public function history()
     {
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
+            return response()->json([], 403);
+        }
+
         $this->selfHealRequisitions();
 
         $issuedItems = IssuedItem::with('issuance')
             ->join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-            ->select('issued_items.*', 'issuances.issuance_date', 'issuances.beneficiary', 'issuances.authority', 'issuances.issuance_type', 'issuances.created_at')
+            ->leftJoin('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
+            ->leftJoin('users as confirming_officers', 'store_requisitions.collected_by', '=', 'confirming_officers.id')
+            ->select(
+                'issued_items.*', 
+                'issuances.issuance_date', 
+                'issuances.beneficiary', 
+                'issuances.authority', 
+                'issuances.issuance_type', 
+                'issuances.created_at',
+                'store_requisitions.collector_name',
+                'confirming_officers.name as confirming_officer_name'
+            )
             ->orderBy('issuances.created_at', 'desc')
             ->get();
 
