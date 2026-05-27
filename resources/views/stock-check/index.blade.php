@@ -215,8 +215,8 @@
                             <option value="Match">Match</option>
                             <option value="Missing">Missing</option>
                             <option value="Damaged">Damaged</option>
-                            <option value="Found">Found</option>
-                            <option value="Other">Other</option>
+                            <!-- <option value="Found">Found</option>
+                            <option value="Other">Other</option> -->
                         </select>
                     </div>
                     <div>
@@ -268,7 +268,7 @@
         </div>
         <div class="modal-body">
             <form id="batchVerifyForm" onsubmit="event.preventDefault(); submitBatchStockCheck();" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                
+
                 <div style="overflow-x: auto; max-height: 50vh; border-radius: 16px; border: 1px solid var(--border-color); background: var(--bg-main); margin-bottom: 1rem;">
                     <table style="width: 100%; border-collapse: collapse; text-align: left;">
                         <thead>
@@ -372,7 +372,7 @@ function openStockCheckModal(description, ledgeBal, stockBal, prevVar, prevAvail
     document.getElementById('auditStockBal').innerText = stockBal;
     document.getElementById('auditPrevVar').innerText = prevVar;
     document.getElementById('auditPrevAvail').innerText = prevAvail;
-    
+
     // Fetch active loans
     fetch(`{{ url('/api/item-audit-details') }}?description=${encodeURIComponent(description)}`)
         .then(r => r.json())
@@ -393,7 +393,7 @@ function calculateAuditVariance() {
     const physical = parseFloat(document.getElementById('physicalCount').value) || 0;
     const current = parseFloat(document.getElementById('auditStockBal').innerText) || 0;
     const variance = physical - current;
-    
+
     const varEl = document.getElementById('newAuditVariance');
     varEl.innerText = (variance > 0 ? '+' : '') + variance;
     varEl.style.color = variance === 0 ? '#10b981' : (variance > 0 ? '#8b5cf6' : '#ef4444');
@@ -477,7 +477,7 @@ function generateVerificationReport() {
     const physical = document.getElementById('physicalCount').value;
     const variance = document.getElementById('newAuditVariance').innerText;
     const description = document.getElementById('auditItemName').innerText;
-    
+
     let report = `STOCK VERIFICATION REPORT - ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })}\n`;
     report += `--------------------------------------------------\n`;
     report += `ITEM: ${description}\n`;
@@ -486,7 +486,7 @@ function generateVerificationReport() {
     report += `VARIANCE: ${variance}\n`;
     report += `CONDITION: ${document.getElementById('auditReason').value}\n`;
     report += `REMARKS: ${document.getElementById('auditNotes').value}\n`;
-    
+
     const blob = new Blob([report], { type: 'text/plain' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -507,7 +507,7 @@ function updateBatchSelection() {
     const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
     const bar = document.getElementById('batchActionBar');
     const badge = document.getElementById('selectedCountBadge');
-    
+
     if (checkedBoxes.length > 0) {
         badge.innerText = checkedBoxes.length;
         bar.style.transform = 'translateX(-50%) translateY(0)';
@@ -573,7 +573,7 @@ function openBatchVerifyModal() {
 function calculateBatchRowVariance(inputEl, stock) {
     const physical = parseFloat(inputEl.value);
     const varDisplay = inputEl.closest('tr').querySelector('.batch-variance-display');
-    
+
     if (isNaN(physical)) {
         varDisplay.innerText = '--';
         varDisplay.style.color = '#94a3b8';

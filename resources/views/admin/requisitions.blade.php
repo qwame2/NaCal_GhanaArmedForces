@@ -1180,12 +1180,35 @@
         if (isPending) {
             data.items.forEach((item, i) => {
                 const itemCategory = item.category ? item.category.trim().toLowerCase() : '';
+                const isAltAgreed = (data.alternative_status === 'agreed' && item.alternative_description);
+                const altApprovedQty = item.alternative_quantity_approved !== null ? parseFloat(item.alternative_quantity_approved) : 0;
+                
+                let defaultOriginalApproved = parseFloat(item.quantity_requested);
+                if (item.quantity_approved !== null) {
+                    defaultOriginalApproved = parseFloat(item.quantity_approved);
+                }
+                
+                if (isAltAgreed && defaultOriginalApproved === 0 && altApprovedQty > 0) {
+                    defaultOriginalApproved = Math.max(0, parseFloat(item.quantity_requested) - altApprovedQty);
+                }
+                
+                let altStock = 0;
+                let altUnit = item.unit;
+                if (isAltAgreed && data.alternatives) {
+                    const matchedAlt = data.alternatives.find(a => a.description.trim() === item.alternative_description.trim());
+                    if (matchedAlt) {
+                        altStock = matchedAlt.total_stock;
+                        altUnit = matchedAlt.unit;
+                    }
+                }
+
                 let alternativeOptions = `<option value="">-- Select Alternative Item --</option>`;
                 if (data.alternatives && data.alternatives.length > 0) {
                     data.alternatives.forEach(alt => {
                         const altCategory = alt.category ? alt.category.trim().toLowerCase() : '';
                         if (altCategory === itemCategory) {
-                            alternativeOptions += `<option value="${alt.description}" data-unit="${alt.unit}" data-stock="${alt.total_stock}">${alt.description} (Stock: ${alt.total_stock} ${alt.unit})</option>`;
+                            const isSelected = (isAltAgreed && alt.description.trim() === item.alternative_description.trim()) ? 'selected' : '';
+                            alternativeOptions += `<option value="${alt.description}" data-unit="${alt.unit}" data-stock="${alt.total_stock}" ${isSelected}>${alt.description} (Stock: ${alt.total_stock} ${alt.unit})</option>`;
                         }
                     });
                 }
@@ -1193,6 +1216,10 @@
                 const stockInfo = item.stock_sufficient ?
                     `<span style="color:#10b981;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="check-circle-2" style="width:12px;height:12px;"></i> Sufficient Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>` :
                     `<span style="color:#f59e0b;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-triangle" style="width:12px;height:12px;"></i> Critical Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>`;
+
+                const descTextHtml = isAltAgreed ?
+                    `<span>${item.description}</span> <span style="color:var(--store-orange); font-weight:800; margin-left:6px;"><i data-lucide="shuffle" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px;"></i>Alternative: ${item.alternative_description}</span>` :
+                    item.description;
 
                 itemRowsHtml += `
             <div class="item-decision-card approved-row" id="item-row-${i}" data-index="${i}">
@@ -1207,7 +1234,7 @@
                             <label for="chk-${i}" class="switch-label" title="Toggle item approval"></label>
                         </div>
                         <div>
-                            <div style="font-size:.95rem;font-weight:800;color:var(--text-main);" id="item-desc-text-${i}">${item.description}</div>
+                            <div style="font-size:.95rem;font-weight:800;color:var(--text-main);" id="item-desc-text-${i}">${descTextHtml}</div>
                             <div style="margin-top:4px;">${stockInfo}</div>
                         </div>
                     </div>
@@ -1233,7 +1260,7 @@
                                 data-requested="${parseFloat(item.quantity_requested)}"
                                 data-stock="${parseFloat(item.current_stock)}"
                                 data-index="${i}"
-                                value="${parseFloat(item.quantity_requested)}"
+                                value="${defaultOriginalApproved}"
                                 min="0" step="0.01"
                                 oninput="onQtyChange(${i})">
                             <button type="button" class="qty-btn" onclick="adjustQty(${i}, 1)">+</button>
@@ -1248,9 +1275,9 @@
                                 data-index="${i}"
                                 placeholder="Remarks for decline or reduction..."
                                 rows="2"
-                                style="display:none; margin-bottom: 6px;">${item.remarks||''}</textarea>
+                                style="display:${isAltAgreed ? 'block' : 'none'}; margin-bottom: 6px;">${item.remarks||''}</textarea>
 
-                            <span id="reason-ok-${i}" style="font-size:.78rem;color:#10b981;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+                            <span id="reason-ok-${i}" style="font-size:.78rem;color:#10b981;font-weight:700;display:${isAltAgreed ? 'none' : 'inline-flex'};align-items:center;gap:4px;">
                                 <i data-lucide="check-circle" style="width:14px;height:14px;"></i> Approved Allocation
                             </span>
 
@@ -1262,7 +1289,7 @@
                     </div>
 
                     <!-- Alternative Item Selector -->
-                    <div class="alternative-selector-box" id="alt-selector-box-${i}" style="display:none; flex-basis:100%; width:100%; margin-top:12px; padding-top:12px; border-top:1px dashed var(--border-color);">
+                    <div class="alternative-selector-box" id="alt-selector-box-${i}" style="display:${isAltAgreed ? 'block' : 'none'}; flex-basis:100%; width:100%; margin-top:12px; padding-top:12px; border-top:1px dashed var(--border-color);">
                         <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:6px;">Specify Alternative Item</span>
                         <div style="position:relative; display:inline-block; width:100%; max-width:400px; margin-bottom:8px;">
                             <i data-lucide="shuffle" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--store-orange); pointer-events:none; z-index:10;"></i>
@@ -1270,22 +1297,25 @@
                                 ${alternativeOptions}
                             </select>
                         </div>
-                        <div id="alt-stock-info-${i}" style="font-size:0.75rem; font-weight:800; color:var(--store-orange); margin-top:4px; margin-bottom:8px; display:none; background:rgba(249, 115, 22, 0.04); border:1px solid rgba(249, 115, 22, 0.12); padding:6px 12px; border-radius:8px; align-items:center; gap:6px;"></div>
+                        <div id="alt-stock-info-${i}" style="font-size:0.75rem; font-weight:800; color:var(--store-orange); margin-top:4px; margin-bottom:8px; display:${isAltAgreed ? 'inline-flex' : 'none'}; background:rgba(249, 115, 22, 0.04); border:1px solid rgba(249, 115, 22, 0.12); padding:6px 12px; border-radius:8px; align-items:center; gap:6px;">
+                            ${isAltAgreed ? `<i data-lucide="info" style="width:14px;height:14px;flex-shrink:0;"></i>Alternative Stock: <b>${altStock.toLocaleString()} ${altUnit}</b> available` : ''}
+                        </div>
 
                         <!-- Alternative Quantity Spinner -->
-                        <div class="alt-qty-container" id="alt-qty-container-${i}" style="display:none; align-items:center; gap:10px; margin-top:8px;">
+                        <div class="alt-qty-container" id="alt-qty-container-${i}" style="display:${isAltAgreed ? 'flex' : 'none'}; align-items:center; gap:10px; margin-top:8px;">
                             <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.02em;">Alternative Allocation</span>
                             <div class="qty-spinner" style="border-color:var(--store-orange);">
                                 <button type="button" class="qty-btn" style="color:var(--store-orange);" onclick="adjustAltQty(${i}, -1)">−</button>
                                 <input type="number" class="alt-approved-qty-input"
                                     id="alt-qty-${i}"
                                     data-index="${i}"
-                                    value="0"
+                                    value="${isAltAgreed ? parseFloat(item.alternative_quantity_approved) : 0}"
+                                    max="${isAltAgreed ? altStock : ''}"
                                     min="0" step="0.01"
                                     oninput="onAltQtyChange(${i})">
                                 <button type="button" class="qty-btn" style="color:var(--store-orange);" onclick="adjustAltQty(${i}, 1)">+</button>
                             </div>
-                            <span style="font-size:.78rem;color:var(--text-muted);font-weight:700;" id="alt-unit-lbl-${i}">${item.unit}</span>
+                            <span style="font-size:.78rem;color:var(--text-muted);font-weight:700;" id="alt-unit-lbl-${i}">${isAltAgreed ? altUnit : item.unit}</span>
                         </div>
                     </div>
                 </div>
@@ -1406,6 +1436,10 @@
                         <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem;">
                             <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Collector Contact</div>
                             <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collector_contact || 'N/A'}</div>
+                        </div>
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem; grid-column: span 2;">
+                            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Collection Destination / Location</div>
+                            <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collector_location || 'N/A'}</div>
                         </div>
                         <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem;">
                             <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Confirmed By (Store Staff)</div>
@@ -1556,6 +1590,13 @@
         <button onclick="closeModal()" style="background:var(--bg-main); color:var(--text-main); border:1.5px solid var(--border-color); padding:.75rem 1.5rem; border-radius:12px; font-weight:800; cursor:pointer; font-size:.88rem; transition:0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='var(--bg-main)'">
             Close Window
         </button>`;
+            if (data.collected_at) {
+                footerHtml = `
+                <a href="{{ request()->getBasePath() }}/requisitions/receipt/${id}" target="_blank"
+                    style="background:rgba(99, 102, 241, 0.08); border: 1.5px solid rgba(99, 102, 241, 0.2); color: #4f46e5; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#4f46e5'; this.style.color='white';" onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='#4f46e5';">
+                    <i data-lucide="printer" style="width: 16px;"></i> Print Collection Receipt
+                </a>` + footerHtml;
+            }
             document.getElementById('modalFooter').innerHTML = footerHtml;
         }
 
@@ -1900,6 +1941,14 @@
         const banner = document.getElementById('stockWarningBanner');
         const submitBtn = document.getElementById('submitDecisionBtn');
 
+        let hasAlternativeSelected = false;
+        checkboxes.forEach((chk, i) => {
+            const altSelect = document.getElementById(`alt-select-${i}`);
+            if (chk.checked && altSelect && altSelect.value) {
+                hasAlternativeSelected = true;
+            }
+        });
+
         if (hasExceededStock) {
             if (banner) banner.style.display = 'flex';
             if (submitBtn) {
@@ -1918,6 +1967,23 @@
             }
         }
 
+        if (submitBtn) {
+            if (hasAlternativeSelected) {
+                if (currentReqData && currentReqData.alternative_status === 'proposed') {
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.5';
+                    submitBtn.style.cursor = 'not-allowed';
+                    submitBtn.innerHTML = `<i data-lucide="clock" style="width:16px;"></i> Awaiting Response from ${currentReqData.department}`;
+                } else if (currentReqData && currentReqData.alternative_status === 'agreed') {
+                    submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision`;
+                } else {
+                    submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Send Alt Item to ${currentReqData.department}`;
+                }
+            } else {
+                submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision`;
+            }
+        }
+
         const bar = document.getElementById('statusBar');
         const icon = document.getElementById('statusBarIcon');
         const text = document.getElementById('statusBarText');
@@ -1932,6 +1998,27 @@
             bar.style.border = '1px solid rgba(239,68,68,.2)';
             icon.textContent = '⛔';
             text.innerHTML = 'Approval blocked — <b>allocation exceeds available stock</b>';
+        } else if (currentReqData && currentReqData.alternative_status === 'agreed' && hasAlternativeSelected) {
+            bar.className = 'all-approved';
+            bar.style.background = 'rgba(16,185,129,.12)';
+            bar.style.color = '#065f46';
+            bar.style.border = '1px solid rgba(16,185,129,.25)';
+            icon.textContent = '✅';
+            text.innerHTML = 'Department has <b>agreed</b> to alternative item proposal. Proceed to Commit.';
+        } else if (currentReqData && currentReqData.alternative_status === 'proposed' && hasAlternativeSelected) {
+            bar.className = 'partial';
+            bar.style.background = 'rgba(245,158,11,.12)';
+            bar.style.color = '#92400e';
+            bar.style.border = '1px solid rgba(245,158,11,.25)';
+            icon.textContent = '⏳';
+            text.innerHTML = 'Alternative proposed. <b>Awaiting department response...</b>';
+        } else if (hasAlternativeSelected) {
+            bar.className = 'partial';
+            bar.style.background = 'rgba(245,158,11,.12)';
+            bar.style.color = '#92400e';
+            bar.style.border = '1px solid rgba(245,158,11,.25)';
+            icon.textContent = '🔀';
+            text.innerHTML = 'Alternative item selected. <b>Click button below to propose to department</b>';
         } else if (allDeclined) {
             bar.className = 'all-declined';
             bar.style.background = 'rgba(239,68,68,.1)';
@@ -1993,12 +2080,18 @@
     async function submitDecision() {
         const status = computeStatus();
         const items = [];
-
+        
+        let hasAlternativeSelected = false;
         document.querySelectorAll('.approved-qty-input').forEach((inp, i) => {
             const chk = document.getElementById(`chk-${i}`);
             const reason = document.getElementById(`reason-${i}`)?.value || '';
             const altSelect = document.getElementById(`alt-select-${i}`);
             const altQtyInput = document.getElementById(`alt-qty-${i}`);
+            
+            if (chk && chk.checked && altSelect && altSelect.value) {
+                hasAlternativeSelected = true;
+            }
+            
             items.push({
                 id: parseInt(inp.dataset.itemId),
                 quantity_approved: chk && !chk.checked ? 0 : (parseFloat(inp.value) || 0),
@@ -2012,8 +2105,16 @@
         const declineReason = document.getElementById('declineReason')?.value || '';
         const btn = document.getElementById('submitDecisionBtn');
 
+        // Propose alternative flow
+        let finalStatus = status;
+        let altStatus = null;
+        if (hasAlternativeSelected && (!currentReqData || currentReqData.alternative_status !== 'agreed')) {
+            finalStatus = 'pending';
+            altStatus = 'proposed';
+        }
+
         // Validate decline reason is provided when declining everything
-        if (status === 'declined' && !declineReason.trim()) {
+        if (finalStatus === 'declined' && !declineReason.trim()) {
             const box = document.getElementById('declineReason');
             if (box) {
                 box.style.borderColor = '#ef4444';
@@ -2034,7 +2135,8 @@
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                status,
+                status: finalStatus,
+                alternative_status: altStatus,
                 admin_notes: notes,
                 decline_reason: declineReason,
                 items
@@ -2048,7 +2150,11 @@
         } else {
             showToast('Error', data.message || 'Failed to process decision.', 'error');
             btn.disabled = false;
-            btn.innerHTML = '<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision';
+            if (hasAlternativeSelected && (!currentReqData || currentReqData.alternative_status !== 'agreed')) {
+                btn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Send Alt Item to ${currentReqData.department}`;
+            } else {
+                btn.innerHTML = '<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision';
+            }
             lucide.createIcons();
         }
     }
@@ -2167,6 +2273,13 @@
         bindPaginationClicks();
         if (window.lucide) {
             window.lucide.createIcons();
+        }
+
+        // Auto-open specific requisition if open_id is present in query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const openId = urlParams.get('open_id');
+        if (openId) {
+            openRequisitionModal(parseInt(openId));
         }
     });
 </script>

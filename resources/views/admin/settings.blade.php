@@ -571,6 +571,168 @@
     }
     .otp-preset-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
     .otp-preset-btn.active { background: #4f46e5; color: white; border-color: #4f46e5; }
+
+    /* ── Stores Dept Head Workflow Redesign ── */
+    .workflow-card-modern {
+        background: white;
+        border-radius: 28px;
+        border: 1.5px solid #e2e8f0;
+        box-shadow: 0 10px 30px rgba(79,70,229,0.03);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .workflow-card-modern:hover {
+        border-color: #c7d2fe;
+        box-shadow: 0 16px 40px rgba(79,70,229,0.06);
+    }
+    
+    .workflow-cat-grid-modern {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.25rem;
+    }
+    
+    .workflow-cat-card-modern {
+        background: #f8fafc;
+        border: 2px solid #edf2f7;
+        border-radius: 20px;
+        padding: 1.25rem 1.5rem;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        position: relative;
+        overflow: hidden;
+        user-select: none;
+    }
+    
+    .workflow-cat-card-modern:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+        background: #ffffff;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.02);
+    }
+    
+    .workflow-cat-card-modern.active {
+        background: linear-gradient(145deg, #f5f7ff 0%, #edf1ff 100%);
+        border-color: #4f46e5;
+        box-shadow: 0 8px 24px rgba(79,70,229,0.06);
+    }
+    
+    .workflow-cat-card-modern.active:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(79,70,229,0.1);
+    }
+    
+    .workflow-cat-card-modern .corner-glow {
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        width: 50px;
+        height: 50px;
+        background: radial-gradient(circle, rgba(79,70,229,0.2) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.25s ease;
+        pointer-events: none;
+    }
+    
+    .workflow-cat-card-modern.active .corner-glow {
+        opacity: 1;
+    }
+    
+    .workflow-cat-card-modern .cat-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #4f46e5;
+        font-weight: 900;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #e2e8f0;
+        transition: all 0.25s ease;
+        flex-shrink: 0;
+    }
+    
+    .workflow-cat-card-modern.active .cat-circle {
+        background: linear-gradient(135deg, #4f46e5, #3730a3);
+        color: #ffffff;
+        border-color: transparent;
+        box-shadow: 0 4px 8px rgba(79,70,229,0.18);
+    }
+    
+    .workflow-cat-card-modern .status-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #64748b;
+        margin-top: 2px;
+        transition: color 0.25s;
+    }
+    
+    .workflow-cat-card-modern.active .status-label {
+        color: #4f46e5;
+    }
+    
+    .workflow-cat-card-modern .indicator-dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid #cbd5e1;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s ease;
+        flex-shrink: 0;
+        margin-left: auto;
+    }
+    
+    .workflow-cat-card-modern.active .indicator-dot {
+        background: #4f46e5;
+        border-color: #4f46e5;
+        box-shadow: 0 2px 6px rgba(79,70,229,0.25);
+    }
+    
+    .flow-line {
+        flex: 1;
+        height: 3px;
+        transition: all 0.4s ease;
+        background: #cbd5e1;
+        margin-top: -20px;
+    }
+    
+    .flow-line.active {
+        background: #4f46e5;
+        box-shadow: 0 0 8px rgba(79,70,229,0.25);
+    }
+    
+    .flow-line.dashed {
+        background: repeating-linear-gradient(to right, #cbd5e1 0px, #cbd5e1 6px, transparent 6px, transparent 12px);
+    }
+    
+    .flow-node-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .flow-node-badge {
+        font-size: 0.6rem;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+    }
 </style>
 
 {{-- Page Header --}}
@@ -690,7 +852,156 @@
                     </div>{{-- /cfg-card --}}
                 @endforeach
 
+                {{-- Stores Department Head Approval Workflow --}}
+                <div class="workflow-card-modern">
+                    @php
+                        $selectedCats = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
+                        if (!is_array($selectedCats)) {
+                            $selectedCats = json_decode($selectedCats, true) ?? [];
+                        }
+                    @endphp
+                    <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 1.25rem;">
+                            <div class="cfg-icon-box" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); box-shadow: 0 8px 20px rgba(79,70,229,0.15); width: 50px; height: 50px; border-radius: 16px;">
+                                <i data-lucide="shield-check" style="width: 24px; height: 24px; color: white;"></i>
+                            </div>
+                            <div>
+                                <h3 style="font-weight: 950; font-size: 1.25rem; color: #0f172a; margin: 0; letter-spacing: -0.03em;">Stores Dept. Head Approval Workflow</h3>
+                                <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review by the Department Head (Stores).</p>
+                            </div>
+                        </div>
+                        <span id="workflow-active-badge" style="background: rgba(79,70,229,0.08); color: #4f46e5; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(79,70,229,0.15); box-shadow: 0 2px 4px rgba(79,70,229,0.02); transition: all 0.3s ease;">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #4f46e5; transition: all 0.3s ease;" id="workflow-badge-dot"></span>
+                            <span id="workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($selectedCats) }}</span>
+                        </span>
+                    </div>
+                    <div class="cfg-card-body" style="padding: 2.5rem; background: #ffffff;">
+                        <input type="hidden" name="stores_dept_head_approval_categories_present" value="1">
+                        
+                        <!-- Hidden real multi-select to preserve native settings submission -->
+                        <select name="stores_dept_head_approval_categories[]" id="stores_dept_head_approval_categories" multiple="multiple" style="display: none;">
+                            @foreach($categories ?? [] as $code => $name)
+                                <option value="{{ $code }}" {{ in_array($code, $selectedCats) ? 'selected' : '' }}>{{ $code }}</option>
+                            @endforeach
+                        </select>
 
+                        <div style="display: flex; flex-direction: column; gap: 2rem;">
+                            
+                            <!-- Premium Interactive Card Selection Grid -->
+                            <div class="workflow-cat-grid-modern">
+                                @foreach($categories ?? [] as $code => $name)
+                                    @php $isActive = in_array($code, $selectedCats); @endphp
+                                    <div class="workflow-cat-card-modern {{ $isActive ? 'active' : '' }}" 
+                                         onclick="toggleWorkflowCategory('{{ $code }}', this)">
+                                        
+                                        <!-- Glowing corner accent for active state -->
+                                        <div class="corner-glow"></div>
+                                        
+                                        <!-- Category Code Circle -->
+                                        <div class="cat-circle">
+                                            {{ $code }}
+                                        </div>
+
+                                        <!-- Name & Status -->
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="font-weight: 850; font-size: 0.88rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $name }}</div>
+                                            <div class="status-label">
+                                                {{ $isActive ? 'Requires Stores Head' : 'Bypasses Stores Head' }}
+                                            </div>
+                                        </div>
+
+                                        <!-- Indicator Circle -->
+                                        <div class="indicator-dot">
+                                            <i data-lucide="check" style="width: 11px; height: 11px; color: white; display: {{ $isActive ? 'block' : 'none' }};"></i>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Workflow Explainer Graphic and Logic Info Card -->
+                            <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
+                                
+                                <!-- Sleek Gradient Alert Card -->
+                                <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.03) 0%, rgba(99, 102, 241, 0.01) 100%); 
+                                            border: 1.5px solid #edf2f7; 
+                                            border-radius: 24px; 
+                                            padding: 1.75rem 2rem; 
+                                            display: flex; 
+                                            gap: 1.25rem; 
+                                            align-items: flex-start;">
+                                    <div style="width: 42px; height: 42px; background: rgba(79,70,229,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #4f46e5; flex-shrink: 0; margin-top: 2px;">
+                                        <i data-lucide="info" style="width: 20px; height: 20px;"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <h5 style="margin: 0 0 6px 0; font-size: 0.95rem; font-weight: 850; color: #1e293b; letter-spacing: -0.010em;">Smart Routing Protocol Active</h5>
+                                        <p style="margin: 0; font-size: 0.8rem; color: #475569; line-height: 1.6; font-weight: 600;">
+                                            When item categories are configured above, any submitted requisition containing matching items will be routed for manual review by the <strong>Department Head (Stores)</strong> prior to final confirmation. Requisitions consisting solely of bypassed categories skip the Stores Department Head approval stage completely, saving processing time and avoiding administration bottlenecks.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Dynamic Mini Infographic Visualizer Card -->
+                                <div style="background: linear-gradient(to bottom, #fafbff, #ffffff); border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
+                                    <div style="font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; text-align: center; margin-bottom: 0.25rem;">Live Approval Routing Pathway</div>
+                                    
+                                    <div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%; padding: 0.5rem 0;" class="flow-nodes-container">
+                                        
+                                        <!-- Origin Node -->
+                                        <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 85px;">
+                                            <div class="flow-node-icon" style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; box-shadow: 0 4px 12px rgba(79,70,229,0.15);">
+                                                <i data-lucide="user-check" style="width: 18px; height: 18px;"></i>
+                                            </div>
+                                            <span style="font-size: 0.72rem; font-weight: 850; color: #1e293b; white-space: nowrap;">Origin Head</span>
+                                            <span class="flow-node-badge" style="background: #e0e7ff; color: #4f46e5;">Required</span>
+                                        </div>
+
+                                        <!-- Connector 1 -->
+                                        <div id="flow-line-1" class="flow-line {{ count($selectedCats) > 0 ? 'active' : 'dashed' }}"></div>
+
+                                        <!-- Stores Head Node -->
+                                        <div id="flow-node-stores" class="flow-node {{ count($selectedCats) > 0 ? 'active' : 'bypass' }}" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 85px;">
+                                            @if(count($selectedCats) > 0)
+                                                <div class="flow-node-icon" style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; box-shadow: 0 6px 15px rgba(79,70,229,0.2);">
+                                                    <i data-lucide="package" style="width: 18px; height: 18px;"></i>
+                                                </div>
+                                                <span class="flow-node-label" style="font-size: 0.72rem; font-weight: 855; color: #1e293b; text-decoration: none;">Stores Head</span>
+                                                <span class="flow-node-badge" style="background: rgba(79, 70, 229, 0.1); color: #4f46e5;">Required</span>
+                                            @else
+                                                <div class="flow-node-icon" style="background: #f8fafc; border: 2.5px solid #cbd5e1; color: #64748b; box-shadow: none;">
+                                                    <i data-lucide="package" style="width: 18px; height: 18px;"></i>
+                                                </div>
+                                                <span class="flow-node-label" style="font-size: 0.72rem; font-weight: 855; color: #94a3b8; text-decoration: line-through;">Stores Head</span>
+                                                <span class="flow-node-badge" style="background: #fef2f2; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.1);">Bypassed</span>
+                                            @endif
+                                        </div>
+
+                                        <!-- Connector 2 -->
+                                        <div id="flow-line-2" class="flow-line {{ count($selectedCats) > 0 ? 'active' : 'dashed' }}"></div>
+
+                                        <!-- Head of Stores Node -->
+                                        <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 85px;">
+                                            <div class="flow-node-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.15);">
+                                                <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                                            </div>
+                                            <span style="font-size: 0.72rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
+                                            <span class="flow-node-badge" style="background: #d1fae5; color: #065f46;">Final Sign</span>
+                                        </div>
+
+                                    </div>
+                                    
+                                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; line-height: 1.45; text-align: center; background: #f8fafc; border-radius: 12px; padding: 8px 12px; border: 1px solid #f1f5f9; transition: all 0.3s ease;" id="workflow-helper-hint">
+                                        @if(count($selectedCats) > 0)
+                                            Route routes through <strong>Stores Department Head</strong> for <strong style="color: #4f46e5;">{{ count($selectedCats) }}</strong> selected categories.
+                                        @else
+                                            Currently bypassing intermediate step due to settings configuration.
+                                        @endif
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 {{-- Sticky Save Bar --}}
                 <div class="cfg-save-bar">
@@ -700,6 +1011,54 @@
                     </button>
                 </div>
             </form>
+            @endif
+
+            {{-- Head of Stores Digital Signature Upload Card --}}
+            <div class="cfg-card" id="head-stores-signature" style="margin-bottom: 2rem;">
+                <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9;">
+                    <div style="display: flex; align-items: center; gap: 1.25rem;">
+                        <div class="cfg-icon-box" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 8px 20px rgba(245,158,11,0.15); width: 50px; height: 50px; border-radius: 16px;">
+                            <i data-lucide="signature" style="width: 24px; height: 24px; color: white;"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-weight: 950; font-size: 1.25rem; color: #0f172a; margin: 0; letter-spacing: -0.03em;">Head of Stores Digital Signature</h3>
+                            <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Upload your official signature image to authorize and automatically sign collection receipts.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="cfg-card-body" style="padding: 2.5rem; background: #ffffff;">
+                    <div style="display: grid; grid-template-columns: 280px 1fr; gap: 2.5rem; align-items: center;">
+                        <!-- Signature Preview Box -->
+                        <div style="width: 100%; height: 130px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 20px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;" id="signature-preview-box-admin">
+                            @if(auth()->user()->signature)
+                                <img src="{{ Storage::url(auth()->user()->signature) }}" style="max-width: 90%; max-height: 90%; object-fit: contain;" id="user-signature-img-admin">
+                            @else
+                                <div style="text-align: center; color: #64748b;" id="user-signature-placeholder-admin">
+                                    <i data-lucide="edit-3" style="width: 32px; margin: 0 auto 6px; display: block; opacity: 0.4; color: #4f46e5;"></i>
+                                    <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">No Signature Uploaded</span>
+                                </div>
+                            @endif
+                        </div>
+                        
+                        <!-- Upload Controls -->
+                        <div>
+                            <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+                                <button type="button" class="btn-cfg-save" onclick="document.getElementById('signature-file-upload-admin').click()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; width: auto; height: auto; border-radius: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; font-weight: 900; box-shadow: 0 4px 10px rgba(79,70,229,0.15);">
+                                    <i data-lucide="upload-cloud" style="width: 16px;"></i>
+                                    Upload Signature Image
+                                </button>
+                                <input type="file" id="signature-file-upload-admin" accept="image/*" style="display: none;" onchange="uploadSignatureFileAdmin(this)">
+                                
+                                <button type="button" id="remove-sig-btn-admin" class="otp-preset-btn" onclick="removeSignatureImageAdmin()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; border: 1.5px solid rgba(239, 68, 68, 0.2); color: #ef4444; width: auto; height: auto; border-radius: 14px; display: {{ auth()->user()->signature ? 'inline-flex' : 'none' }}; align-items: center; gap: 8px; cursor: pointer; background: white; font-weight: 800; border-radius: 12px;">
+                                    <i data-lucide="trash-2" style="width: 16px;"></i>
+                                    Remove Signature
+                                </button>
+                            </div>
+                            <span style="font-size: 0.72rem; color: #64748b; font-weight: 600; display: block; margin-top: 4px;">Supports PNG, JPG, or JPEG. Transparent PNG is highly recommended for official audit receipt formatting. Max size: 5MB.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {{-- Category Management --}}
             <div class="cfg-card" id="category-configs">
@@ -763,7 +1122,6 @@
                     </div>
                 </div>
             </div>
-        @endif
     </div>
 
     {{-- Item Package Type Rules --}}
@@ -1546,6 +1904,11 @@
     $(document).ready(function() {
         if (window.lucide) lucide.createIcons();
 
+        // Initialize interactive category cards and flowchart state
+        if (typeof updateWorkflowFlowchart === 'function') {
+            updateWorkflowFlowchart();
+        }
+
         // Initialize Select2 for units
         $('.select2-unit').select2({
             tags: true,
@@ -1773,6 +2136,325 @@
         if (window.lucide) lucide.createIcons();
 
         document.getElementById('suppliers-registry').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function toggleWorkflowCategory(code, card) {
+        const select = document.getElementById('stores_dept_head_approval_categories');
+        const option = select.querySelector(`option[value="${code}"]`);
+        
+        if (!option) return;
+
+        const isCurrentlyActive = card.classList.contains('active');
+        
+        if (isCurrentlyActive) {
+            // Deactivate
+            card.classList.remove('active');
+            
+            const label = card.querySelector('.status-label');
+            if (label) {
+                label.textContent = 'Bypasses Stores Head';
+            }
+
+            const dot = card.querySelector('.indicator-dot');
+            if (dot) {
+                const checkIcon = dot.querySelector('i');
+                if (checkIcon) checkIcon.style.display = 'none';
+            }
+            
+            option.selected = false;
+        } else {
+            // Activate
+            card.classList.add('active');
+            
+            const label = card.querySelector('.status-label');
+            if (label) {
+                label.textContent = 'Requires Stores Head';
+            }
+
+            const dot = card.querySelector('.indicator-dot');
+            if (dot) {
+                const checkIcon = dot.querySelector('i');
+                if (checkIcon) checkIcon.style.display = 'block';
+            }
+
+            option.selected = true;
+        }
+
+        // Trigger change event on select to ensure any listeners match
+        $(select).trigger('change');
+        
+        // Update the visual flowchart in real-time
+        updateWorkflowFlowchart();
+    }
+
+    function updateWorkflowFlowchart() {
+        const select = document.getElementById('stores_dept_head_approval_categories');
+        const activeCount = $(select).val()?.length || 0;
+        
+        // Update header badge
+        const badgeText = document.getElementById('workflow-badge-text');
+        const badgeDot = document.getElementById('workflow-badge-dot');
+        const badgeContainer = document.getElementById('workflow-active-badge');
+        
+        if (badgeText) {
+            badgeText.textContent = `Active Categories: ${activeCount}`;
+        }
+        
+        if (activeCount > 0) {
+            if (badgeDot) badgeDot.style.background = '#4f46e5';
+            if (badgeContainer) {
+                badgeContainer.style.background = 'rgba(79, 70, 229, 0.08)';
+                badgeContainer.style.color = '#4f46e5';
+                badgeContainer.style.borderColor = 'rgba(79, 70, 229, 0.2)';
+            }
+        } else {
+            if (badgeDot) badgeDot.style.background = '#64748b';
+            if (badgeContainer) {
+                badgeContainer.style.background = 'rgba(100, 116, 139, 0.08)';
+                badgeContainer.style.color = '#64748b';
+                badgeContainer.style.borderColor = 'rgba(100, 116, 139, 0.2)';
+            }
+        }
+
+        const node = document.getElementById('flow-node-stores');
+        const line1 = document.getElementById('flow-line-1');
+        const line2 = document.getElementById('flow-line-2');
+        const hint = document.getElementById('workflow-helper-hint');
+
+        if (activeCount > 0) {
+            // Stores Head is Required
+            if (node) {
+                node.classList.remove('bypass');
+                node.classList.add('active');
+                
+                const iconBox = node.querySelector('.flow-node-icon');
+                if (iconBox) {
+                    iconBox.style.background = 'linear-gradient(135deg, #4f46e5, #3730a3)';
+                    iconBox.style.color = '#ffffff';
+                    iconBox.style.borderColor = 'transparent';
+                    iconBox.style.boxShadow = '0 6px 15px rgba(79,70,229,0.2)';
+                }
+                
+                const label = node.querySelector('.flow-node-label');
+                if (label) {
+                    label.style.color = '#1e293b';
+                    label.style.textDecoration = 'none';
+                }
+                
+                const badge = node.querySelector('.flow-node-badge');
+                if (badge) {
+                    badge.textContent = 'Required';
+                    badge.style.background = 'rgba(79, 70, 229, 0.1)';
+                    badge.style.color = '#4f46e5';
+                    badge.style.borderColor = 'transparent';
+                }
+            }
+            
+            if (line1) {
+                line1.classList.remove('dashed');
+                line1.classList.add('active');
+                line1.style.background = '#4f46e5';
+            }
+            if (line2) {
+                line2.classList.remove('dashed');
+                line2.classList.add('active');
+                line2.style.background = '#4f46e5';
+            }
+            
+            if (hint) {
+                hint.innerHTML = `Route routes through <strong>Stores Department Head</strong> for <strong style="color: #4f46e5;">${activeCount}</strong> selected category${activeCount == 1 ? '' : 'ies'}.`;
+            }
+        } else {
+            // Stores Head is Bypassed
+            if (node) {
+                node.classList.remove('active');
+                node.classList.add('bypass');
+                
+                const iconBox = node.querySelector('.flow-node-icon');
+                if (iconBox) {
+                    iconBox.style.background = '#f8fafc';
+                    iconBox.style.color = '#64748b';
+                    iconBox.style.borderColor = '#cbd5e1';
+                    iconBox.style.boxShadow = 'none';
+                }
+                
+                const label = node.querySelector('.flow-node-label');
+                if (label) {
+                    label.style.color = '#94a3b8';
+                    label.style.textDecoration = 'line-through';
+                }
+                
+                const badge = node.querySelector('.flow-node-badge');
+                if (badge) {
+                    badge.textContent = 'Bypassed';
+                    badge.style.background = '#fef2f2';
+                    badge.style.color = '#ef4444';
+                    badge.style.borderColor = 'rgba(239, 68, 68, 0.1)';
+                }
+            }
+            
+            if (line1) {
+                line1.classList.remove('active');
+                line1.classList.add('dashed');
+                line1.style.background = '';
+            }
+            if (line2) {
+                line2.classList.remove('active');
+                line2.classList.add('dashed');
+                line2.style.background = '';
+            }
+            
+            if (hint) {
+                hint.innerHTML = 'Currently bypassing intermediate step due to settings configuration.';
+            }
+        }
+    }
+
+    async function uploadSignatureFileAdmin(input) {
+        if (!input.files || !input.files[0]) return;
+        
+        const file = input.files[0];
+        const maxSizeMB = 5; 
+        if (file.size > maxSizeMB * 1024 * 1024) {
+            if (typeof showToast === 'function') {
+                showToast('File Too Large', `Please select an image smaller than ${maxSizeMB}MB.`, 'error');
+            } else {
+                alert(`File Too Large: Please select an image smaller than ${maxSizeMB}MB.`);
+            }
+            input.value = ''; 
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('signature', file);
+        
+        const btn = input.previousElementSibling;
+        const orgHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin" style="width: 16px;"></i> Uploading...`;
+        if (window.lucide) lucide.createIcons();
+
+        try {
+            const res = await fetch("{{ route('settings.signature') }}", {
+                method: 'POST',
+                headers: { 
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json' 
+                },
+                body: formData
+            });
+
+            const textResponse = await res.text();
+            let data;
+            try {
+                const jsonMatch = textResponse.match(/\{.*\}/s);
+                const jsonClean = jsonMatch ? jsonMatch[0] : textResponse;
+                data = JSON.parse(jsonClean);
+            } catch (err) {
+                const snippet = textResponse.substring(0, 100).replace(/<[^>]*>/g, '');
+                if (typeof showToast === 'function') {
+                    showToast('Server Error', `Upload failed. Snippet: ${snippet}`, 'error');
+                } else {
+                    alert(`Server Error: Upload failed. Snippet: ${snippet}`);
+                }
+                btn.innerHTML = orgHtml;
+                btn.disabled = false;
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+            
+            if (res.ok && data.success) {
+                if (typeof showToast === 'function') {
+                    showToast('Signature Updated', data.message, 'success');
+                } else {
+                    alert('Signature Updated: ' + data.message);
+                }
+                
+                // Dynamically update preview
+                const previewBox = document.getElementById('signature-preview-box-admin');
+                previewBox.innerHTML = `<img src="${data.url}?t=${new Date().getTime()}" style="max-width: 90%; max-height: 90%; object-fit: contain;" id="user-signature-img-admin">`;
+                
+                // Show remove button
+                document.getElementById('remove-sig-btn-admin').style.display = 'inline-flex';
+            } else {
+                let serverError = data.message || 'Image rejected by validation.';
+                if (data.errors && data.errors.signature) {
+                    serverError = data.errors.signature[0];
+                }
+                if (typeof showToast === 'function') {
+                    showToast('Upload Failed', serverError, 'error');
+                } else {
+                    alert('Upload Failed: ' + serverError);
+                }
+            }
+        } catch (e) {
+            if (typeof showToast === 'function') {
+                showToast('Connection Error', 'Could not transmit signature image.', 'error');
+            } else {
+                alert('Connection Error: Could not transmit signature image.');
+            }
+        } finally {
+            btn.innerHTML = orgHtml;
+            btn.disabled = false;
+            input.value = ''; 
+            if (window.lucide) lucide.createIcons();
+        }
+    }
+
+    async function removeSignatureImageAdmin() {
+        if (!confirm('Are you sure you want to remove your digital signature?')) return;
+        
+        const btn = document.getElementById('remove-sig-btn-admin');
+        const orgHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin" style="width: 16px;"></i> Removing...`;
+        if (window.lucide) lucide.createIcons();
+
+        try {
+            const res = await fetch("{{ route('settings.signature.remove') }}", {
+                method: 'POST',
+                headers: { 
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (typeof showToast === 'function') {
+                    showToast('Signature Removed', data.message, 'success');
+                } else {
+                    alert('Signature Removed: ' + data.message);
+                }
+                
+                // Reset preview
+                const previewBox = document.getElementById('signature-preview-box-admin');
+                previewBox.innerHTML = `
+                    <div style="text-align: center; color: #64748b;" id="user-signature-placeholder-admin">
+                        <i data-lucide="edit-3" style="width: 32px; margin: 0 auto 6px; display: block; opacity: 0.4; color: #4f46e5;"></i>
+                        <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">No Signature Uploaded</span>
+                    </div>
+                `;
+                
+                // Hide remove button
+                btn.style.display = 'none';
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast('Action Failed', data.message || 'Could not complete request.', 'error');
+                } else {
+                    alert('Action Failed: ' + (data.message || 'Could not complete request.'));
+                }
+            }
+        } catch (e) {
+            if (typeof showToast === 'function') {
+                showToast('Connection Error', 'Could not reach deletion node.', 'error');
+            } else {
+                alert('Connection Error: Could not reach deletion node.');
+            }
+        } finally {
+            btn.innerHTML = orgHtml;
+            btn.disabled = false;
+            if (window.lucide) lucide.createIcons();
+        }
     }
 
     function resetSupplierForm() {

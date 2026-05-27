@@ -102,9 +102,15 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('main-admin.requisitions', ['status' => 'history']) }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && in_array(request('status'), ['history', 'approved', 'declined'])) ? 'active' : '' }}" data-tooltip="Requisition History">
+                    <a href="{{ route('main-admin.requisitions', ['status' => 'history']) }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && request('status') === 'history') ? 'active' : '' }}" data-tooltip="Requisition History">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
                         <span>Requisition History</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('main-admin.requisitions', ['status' => 'approved']) }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && request('status') === 'approved') ? 'active' : '' }}" data-tooltip="Track Staff Requests">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="10" x="2" y="6" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="7.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                        <span>Track Staff Requests</span>
                     </a>
                 </li>
                 @if(auth()->user()->role === 'Main Admin' || (strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0))
@@ -165,6 +171,12 @@
                               title="{{ $approvedReqCount }} requisition(s) approved — tap to confirm collection">
                             {{ $approvedReqCount }}
                         </span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('stockcheck.index') }}" class="nav-link {{ request()->routeIs('stockcheck.index') ? 'active' : '' }}" data-tooltip="Perform Stock Check">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+                        <span>Stock Check</span>
                     </a>
                 </li>
             @endif

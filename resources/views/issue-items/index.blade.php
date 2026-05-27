@@ -177,7 +177,12 @@
                                 </div>
                             </td>
                             <td data-label="Asset Breakdown" style="padding: 1.75rem 1.5rem;">
-                                <div style="font-weight: 950; color: var(--primary); font-size: 1.05rem;">{{ $item->description }}</div>
+                                <div style="font-weight: 950; color: var(--primary); font-size: 1.05rem; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                                    <span>{{ $item->description }}</span>
+                                    @if($item->isOverdue())
+                                        <span class="overdue-dot" title="This item is overdue for return" style="display:inline-block; width:8px; height:8px; background-color:#ef4444; border-radius:50%; margin-left:6px; box-shadow:0 0 0 rgba(239,68,68,0.7); animation:blink-red 1.2s infinite;" data-bs-toggle="tooltip"></span>
+                                    @endif
+                                </div>
                                 <div style="margin-top: 4px;"><span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.6rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1); letter-spacing: 0.03em;">CATEGORY {{ $item->ledge_category }}</span></div>
                             </td>
                             <td data-label="Storage Location" style="padding: 1.75rem 1.5rem; font-weight: 800; color: var(--text-main); font-size: 0.95rem;">
@@ -340,6 +345,20 @@
         }
         .responsive-log-table td div,
         .responsive-log-table td span { text-align: right; font-weight: 700; font-size: 1rem; }
+    }
+    @keyframes blink-red {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+        }
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        }
     }
 </style>
 

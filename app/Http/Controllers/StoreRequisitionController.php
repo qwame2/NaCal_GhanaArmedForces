@@ -18,6 +18,7 @@ class StoreRequisitionController extends Controller
      */
     public function index(Request $request)
     {
+        self::checkOverdueTemporaryItems();
         $ledgeMap = Setting::getCategories();
 
         // Fetch all available inventory items (grouped by description)
@@ -124,7 +125,7 @@ class StoreRequisitionController extends Controller
         $msg .= "Department <b>{$request->department}</b> has submitted a store requisition with <b>{$itemCount} item(s)</b>.<br><br>";
         $msg .= "<b>Requested by:</b> {$request->requester_name}<br>";
         $msg .= "<b>Purpose:</b> " . e($request->purpose) . "<br><br>";
-        $msg .= "<a href='" . route('main-admin.requisitions') . "' style='display:inline-block;background:#4f46e5;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition</a>";
+        $msg .= "<a href='" . route('main-admin.requisitions') . "?open_id={$requisition->id}' style='display:inline-block;background:#4f46e5;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition</a>";
         $msg .= "</div>";
 
         $notified = false;
@@ -157,7 +158,7 @@ class StoreRequisitionController extends Controller
 
             foreach ($recipients as $recipient) {
                 // Link for admins goes to admin.requisitions; link for stores head goes to main-admin.requisitions
-                $link = $recipient->is_admin ? route('admin.requisitions') : route('main-admin.requisitions');
+                $link = ($recipient->is_admin ? route('admin.requisitions') : route('main-admin.requisitions')) . "?open_id={$requisition->id}";
                 $customMsg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #6366f1;border-radius:12px;background:rgba(99,102,241,0.05);'>";
                 $customMsg .= "<b style='color:#4f46e5;'>📋 NEW STORE REQUISITION — {$priorityLabel} PRIORITY</b><br><br>";
                 $customMsg .= "Department <b>{$request->department}</b> has submitted a store requisition with <b>{$itemCount} item(s)</b>.<br><br>";
@@ -219,6 +220,7 @@ class StoreRequisitionController extends Controller
                     'collected_by_name' => $req->collector?->name,
                     'collector_name' => $req->collector_name,
                     'collector_contact' => $req->collector_contact,
+                    'collector_location' => $req->collector_location,
                     'items'          => $req->items->map(fn($i) => [
                         'description'        => $i->description,
                         'category'           => $i->category,
@@ -241,9 +243,19 @@ class StoreRequisitionController extends Controller
             return response()->json(['success' => false, 'message' => 'Only Store Officers are authorized to click the collection button and confirm physical collection.'], 403);
         }
 
+        // Add self-healing schema migration for collector_location if not exists
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collector_location')) {
+            try {
+                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('collector_location')->nullable();
+                });
+            } catch (\Exception $e) {}
+        }
+
         $request->validate([
             'collector_name' => 'required|string|max:255',
             'collector_contact' => 'required|string|max:100',
+            'collector_location' => 'required|string|max:255',
         ]);
 
         $req = StoreRequisition::findOrFail($id);
@@ -264,6 +276,7 @@ class StoreRequisitionController extends Controller
         $req->collected_by = auth()->id();
         $req->collector_name = $request->collector_name;
         $req->collector_contact = $request->collector_contact;
+        $req->collector_location = $request->collector_location;
         $req->save();
 
         // Create an Issuance and IssuedItems to represent this given out/collected asset
@@ -310,16 +323,121 @@ class StoreRequisitionController extends Controller
             'user_id'    => auth()->id(),
             'event_type' => 'REQUISITION',
             'action'     => 'COLLECT_REQUISITION',
-            'description'=> auth()->user()->name . " confirmed physical collection of store requisition #{$req->id} by {$req->collector_name} ({$req->collector_contact}).",
+            'description'=> auth()->user()->name . " confirmed physical collection of store requisition #{$req->id} by {$req->collector_name} ({$req->collector_contact}) to location {$req->collector_location}.",
             'severity'   => 'info',
             'metadata'   => ['requisition_id' => $req->id],
             'ip_address' => $request->ip(),
         ]);
 
+        // Generate Receipts record
+        try {
+            $receiptCount = \App\Models\Receipt::count() + 1;
+            $receiptNumber = 'RCP-' . date('Y') . '-' . str_pad($receiptCount, 5, '0', STR_PAD_LEFT);
+
+            $itemsSnapshot = $req->items->map(function($item) {
+                return [
+                    'description' => $item->description,
+                    'unit' => $item->unit,
+                    'quantity_requested' => (float)$item->quantity_requested,
+                    'quantity_approved' => (float)$item->quantity_approved,
+                    'alternative_description' => $item->alternative_description,
+                    'alternative_quantity_approved' => $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : null,
+                    'category' => $item->category,
+                    'remarks' => $item->remarks,
+                ];
+            })->toArray();
+
+            $receipt = \App\Models\Receipt::create([
+                'requisition_id' => $req->id,
+                'receipt_number' => $receiptNumber,
+                'collector_name' => $req->collector_name,
+                'collector_contact' => $req->collector_contact,
+                'collector_location' => $req->collector_location,
+                'collected_at' => $req->collected_at,
+                'issued_by' => auth()->id(),
+                'approved_by_dept_head' => $req->origin_approved_by ?? ($req->department . ' Department Head'),
+                'approved_by_stores_head' => $req->processor?->name ?? 'Head of Stores',
+                'items_json' => json_encode($itemsSnapshot),
+            ]);
+
+            $receiptId = $receipt->id;
+        } catch (\Exception $e) {
+            $receiptId = null;
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Physical collection confirmed successfully.',
+            'receipt_id' => $receiptId,
         ]);
+    }
+
+    /**
+     * Print Collection Receipt for a requisition.
+     */
+    public function printReceipt($id)
+    {
+        $req = StoreRequisition::with(['requester', 'processor', 'collector', 'receipt', 'items'])->findOrFail($id);
+
+        if (!$req->collected_at) {
+            abort(404, 'No collection has been confirmed for this requisition.');
+        }
+
+        $receipt = $req->receipt;
+
+        // Self-healing legacy fallback: if no receipt record exists, synthesize one transiently
+        if (!$receipt) {
+            $receiptCount = \App\Models\Receipt::count() + 1;
+            $receiptNumber = 'RCP-' . date('Y', strtotime($req->collected_at)) . '-' . str_pad($receiptCount, 5, '0', STR_PAD_LEFT) . '-LEGACY';
+
+            $itemsSnapshot = $req->items->map(function($item) {
+                return [
+                    'description' => $item->description,
+                    'unit' => $item->unit,
+                    'quantity_requested' => (float)$item->quantity_requested,
+                    'quantity_approved' => (float)$item->quantity_approved,
+                    'alternative_description' => $item->alternative_description,
+                    'alternative_quantity_approved' => $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : null,
+                    'category' => $item->category,
+                    'remarks' => $item->remarks,
+                ];
+            })->toArray();
+
+            $receipt = new \App\Models\Receipt([
+                'requisition_id' => $req->id,
+                'receipt_number' => $receiptNumber,
+                'collector_name' => $req->collector_name ?? 'N/A',
+                'collector_contact' => $req->collector_contact ?? 'N/A',
+                'collector_location' => $req->collector_location ?? 'N/A',
+                'collected_at' => $req->collected_at,
+                'issued_by' => $req->collected_by ?? 1,
+                'approved_by_dept_head' => $req->origin_approved_by ?? ($req->department . ' Department Head'),
+                'approved_by_stores_head' => $req->processor?->name ?? 'Head of Stores',
+                'items_json' => json_encode($itemsSnapshot),
+            ]);
+            
+            // Set transient relations if possible
+            if ($req->collector) {
+                $receipt->setRelation('issuer', $req->collector);
+            }
+        }
+
+        $items = json_decode($receipt->items_json, true) ?? [];
+
+        // Ledge mapping for display and calculations (Category standardization)
+        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
+
+        return view('requisitions.receipt', compact('req', 'receipt', 'items', 'ledgeMap'));
     }
 
     /**
@@ -329,12 +447,18 @@ class StoreRequisitionController extends Controller
     {
         $req = StoreRequisition::findOrFail($id);
 
-        if ($req->requested_by !== auth()->id()) {
+        $isRequester = ($req->requested_by === auth()->id());
+        $isDeptHead = (auth()->user()->role === 'Department Head' && strcasecmp($req->department, auth()->user()->department) === 0);
+
+        if (!$isRequester && !$isDeptHead) {
             return response()->json(['success' => false, 'message' => 'You are not authorized to follow up on this requisition.'], 403);
         }
 
-        if ($req->status !== 'pending') {
-            return response()->json(['success' => false, 'message' => 'You can only follow up on pending requisitions.'], 400);
+        $isPendingStore = ($req->status === 'pending');
+        $isAwaitingCollection = (in_array($req->status, ['approved', 'partially_approved']) && is_null($req->collected_at));
+
+        if (!$isPendingStore && !$isAwaitingCollection) {
+            return response()->json(['success' => false, 'message' => 'You can only follow up on pending or uncollected requisitions.'], 400);
         }
 
         // Limit follow-ups to once every 5 minutes to prevent spam
@@ -346,25 +470,40 @@ class StoreRequisitionController extends Controller
             ], 429);
         }
 
+        $senderName = auth()->user()->name;
+        $senderRole = auth()->user()->role;
+        $description = "{$senderName} ({$senderRole}) sent a follow-up reminder for pending store requisition #{$req->id}.";
+
         // Log the action
         SystemLog::create([
             'user_id'    => auth()->id(),
             'event_type' => 'REQUISITION',
             'action'     => 'FOLLOW_UP_REQUISITION',
-            'description'=> auth()->user()->name . " sent a follow-up reminder for pending store requisition #{$req->id}.",
+            'description'=> $description,
             'severity'   => 'info',
             'metadata'   => ['requisition_id' => $req->id],
             'ip_address' => $request->ip(),
         ]);
 
-        // Notify all active admins
-        $admins = User::where('is_admin', true)->where('is_active', true)->get();
+        // Notify all active admins and stores officers
+        $admins = User::where(function($q) {
+            $q->where('is_admin', true)
+              ->orWhereIn('role', ['Store Officer', 'Dept. Head (Stores)']);
+        })->where('is_active', true)->get();
+
         foreach ($admins as $admin) {
             $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #f59e0b;border-radius:12px;background:rgba(245,158,11,0.05);'>";
             $msg .= "<b style='color:#ea580c;'>🔔 REQUISITION FOLLOW-UP REMINDER — Ref: #{$req->id}</b><br><br>";
-            $msg .= "Requisitioner <b>" . e($req->requester_name) . "</b> has sent a follow-up reminder regarding their pending requisition from department: <b>" . e($req->department) . "</b>.<br><br>";
+            if ($isAwaitingCollection) {
+                $msg .= "Department Head <b>" . e($senderName) . "</b> has sent a follow-up reminder regarding an approved requisition awaiting physical collection from department: <b>" . e($req->department) . "</b>.<br><br>";
+            } elseif ($isDeptHead) {
+                $msg .= "Department Head <b>" . e($senderName) . "</b> has sent a follow-up reminder regarding a pending staff requisition from department: <b>" . e($req->department) . "</b>.<br><br>";
+            } else {
+                $msg .= "Requisitioner <b>" . e($req->requester_name) . "</b> has sent a follow-up reminder regarding their pending requisition from department: <b>" . e($req->department) . "</b>.<br><br>";
+            }
             $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br><br>";
-            $msg .= "<a href='" . route('admin.requisitions') . "' style='display:inline-block;background:#f59e0b;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition Now</a>";
+            $recipientLink = ($admin->is_admin ? route('admin.requisitions') : route('main-admin.requisitions')) . "?open_id={$req->id}";
+            $msg .= "<a href='" . $recipientLink . "' style='display:inline-block;background:#f59e0b;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition Now</a>";
             $msg .= "</div>";
 
             Message::create([
@@ -393,6 +532,7 @@ class StoreRequisitionController extends Controller
      */
     public function adminIndex(Request $request)
     {
+        self::checkOverdueTemporaryItems();
         if (!auth()->user()->is_admin) abort(403);
 
         $query = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])
@@ -506,6 +646,7 @@ class StoreRequisitionController extends Controller
             'status_badge'   => $req->status_badge,
             'main_admin_status' => $req->main_admin_status,
             'origin_admin_status' => $req->origin_admin_status,
+            'alternative_status' => $req->alternative_status,
             'origin_approved_by' => $req->origin_approved_by,
             'usage_type'     => $req->usage_type,
             'usage_type_badge' => $req->usage_type_badge,
@@ -518,6 +659,7 @@ class StoreRequisitionController extends Controller
             'collected_by_name' => $req->collector?->name,
             'collector_name' => $req->collector_name,
             'collector_contact' => $req->collector_contact,
+            'collector_location' => $req->collector_location,
             'items'          => $items,
             'alternatives'   => $alternatives,
         ]);
@@ -531,7 +673,8 @@ class StoreRequisitionController extends Controller
         if (!auth()->user()->is_admin) return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
 
         $request->validate([
-            'status'         => 'required|in:approved,partially_approved,declined',
+            'status'         => 'required|in:approved,partially_approved,declined,pending',
+            'alternative_status' => 'nullable|string|in:proposed,agreed,declined',
             'admin_notes'    => 'nullable|string|max:1000',
             'decline_reason' => 'nullable|string|max:2000',
             'items'          => 'nullable|array',
@@ -540,6 +683,96 @@ class StoreRequisitionController extends Controller
             'items.*.alternative_description'        => 'nullable|string|max:255',
             'items.*.alternative_quantity_approved' => 'nullable|numeric|min:0',
         ]);
+
+        if ($request->status === 'pending') {
+            try {
+                $req = \Illuminate\Support\Facades\DB::transaction(function() use ($request, $id) {
+                    $req = StoreRequisition::with('items')->findOrFail($id);
+                    if ($req->main_admin_status !== 'approved') {
+                        throw new \Exception('This requisition must be verified and approved by the Department Head first.');
+                    }
+                    
+                    if ($request->filled('items')) {
+                        foreach ($request->items as $itemData) {
+                            $reqItem = $req->items->firstWhere('id', $itemData['id']);
+                            if ($reqItem) {
+                                $altApprovedQty = isset($itemData['alternative_quantity_approved']) ? floatval($itemData['alternative_quantity_approved']) : 0;
+                                
+                                if (!empty($itemData['remarks'])) {
+                                    $reqItem->remarks = $itemData['remarks'];
+                                }
+                                if (!empty($itemData['alternative_description']) && $altApprovedQty > 0) {
+                                    $reqItem->alternative_description = $itemData['alternative_description'];
+                                    $reqItem->alternative_quantity_approved = $altApprovedQty;
+                                } else {
+                                    $reqItem->alternative_description = null;
+                                    $reqItem->alternative_quantity_approved = null;
+                                }
+                                $reqItem->quantity_approved = isset($itemData['quantity_approved']) ? floatval($itemData['quantity_approved']) : 0;
+                                $reqItem->save();
+                            }
+                        }
+                    }
+
+                    $req->alternative_status = 'proposed';
+                    if ($request->filled('admin_notes')) {
+                        $req->admin_notes = $request->admin_notes;
+                    }
+                    $req->save();
+
+                    return $req;
+                });
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 400);
+            }
+
+            // Log
+            SystemLog::create([
+                'user_id'    => auth()->id(),
+                'event_type' => 'REQUISITION',
+                'action'     => 'PROPOSE_ALTERNATIVE',
+                'description'=> "Administrator " . auth()->user()->name . " proposed alternative items for store requisition #{$req->id} from department: {$req->department}.",
+                'severity'   => 'info',
+                'metadata'   => ['requisition_id' => $req->id],
+                'ip_address' => $request->ip(),
+            ]);
+
+            // Notify originating department head(s)
+            $deptHeads = User::whereIn('role', ['Main Admin', 'Department Head'])
+                ->where('department', $req->department)
+                ->where('is_active', true)
+                ->get();
+            
+            $priorityLabel = strtoupper($req->priority);
+            $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #ea580c;border-radius:12px;background:rgba(234,88,12,0.05);'>";
+            $msg .= "<b style='color:#ea580c;'>🔔 ALTERNATIVE ITEM PROPOSED — Ref: #{$req->id}</b><br><br>";
+            $msg .= "The Head of Stores has proposed alternative items for your department's store requisition Ref: #<b>{$req->id}</b>.<br><br>";
+            $msg .= "<b>Requester:</b> {$req->requester_name}<br>";
+            $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br>";
+            if ($request->filled('admin_notes')) {
+                $msg .= "<b>Stores Notes:</b> " . e($request->admin_notes) . "<br><br>";
+            }
+            $msg .= "Please review the proposed alternative items and either <b>Agree</b> or <b>Decline</b> the proposal.<br><br>";
+            $msg .= "<a href='" . route('main-admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#ea580c;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Alternative Proposal</a>";
+            $msg .= "</div>";
+
+            foreach ($deptHeads as $head) {
+                Message::create([
+                    'sender_id'    => auth()->id(),
+                    'receiver_id'  => $head->id,
+                    'message'      => $msg,
+                    'is_automated' => true,
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Alternative item proposal sent successfully to the department head of {$req->department}.",
+            ]);
+        }
 
         try {
             $req = \Illuminate\Support\Facades\DB::transaction(function() use ($request, $id) {
@@ -800,6 +1033,7 @@ class StoreRequisitionController extends Controller
      */
     public function mainAdminIndex(Request $request)
     {
+        self::checkOverdueTemporaryItems();
         if (!in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) abort(403);
 
         $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
@@ -818,7 +1052,13 @@ class StoreRequisitionController extends Controller
                 if ($isStoresHead) {
                     $query->where('status', 'pending')->where('origin_admin_status', 'approved')->where('main_admin_status', 'pending');
                 } else {
-                    $query->where('status', 'pending')->where('origin_admin_status', 'pending');
+                    $query->where(function($q) {
+                        $q->where(function($qp) {
+                            $qp->where('status', 'pending')->where('origin_admin_status', 'pending');
+                        })->orWhere(function($qp) {
+                            $qp->where('status', 'pending')->where('alternative_status', 'proposed');
+                        });
+                    });
                 }
             } elseif ($request->status === 'approved') {
                 if ($isStoresHead) {
@@ -843,7 +1083,13 @@ class StoreRequisitionController extends Controller
             if ($isStoresHead) {
                 $query->where('status', 'pending')->where('origin_admin_status', 'approved')->where('main_admin_status', 'pending');
             } else {
-                $query->where('status', 'pending')->where('origin_admin_status', 'pending');
+                $query->where(function($q) {
+                    $q->where(function($qp) {
+                        $qp->where('status', 'pending')->where('origin_admin_status', 'pending');
+                    })->orWhere(function($qp) {
+                        $qp->where('status', 'pending')->where('alternative_status', 'proposed');
+                    });
+                });
             }
         }
 
@@ -866,13 +1112,25 @@ class StoreRequisitionController extends Controller
             ];
         } else {
             $stats = [
-                'pending'  => StoreRequisition::where('status', 'pending')->where('department', auth()->user()->department)->where('origin_admin_status', 'pending')->count(),
+                'pending'  => StoreRequisition::where('department', auth()->user()->department)
+                    ->where(function($q) {
+                        $q->where(function($qp) {
+                            $qp->where('status', 'pending')->where('origin_admin_status', 'pending');
+                        })->orWhere(function($qp) {
+                            $qp->where('status', 'pending')->where('alternative_status', 'proposed');
+                        });
+                    })->count(),
                 'approved' => StoreRequisition::where('department', auth()->user()->department)->where('origin_admin_status', 'approved')->count(),
                 'declined' => StoreRequisition::where('department', auth()->user()->department)->where('origin_admin_status', 'declined')->count(),
             ];
         }
 
-        return view('requisitions.main_admin', compact('requisitions', 'ledgeMap', 'stats'));
+        $hasOverdueReturn = false;
+        if (auth()->user()->role === 'Department Head' && !$isStoresHead) {
+            $hasOverdueReturn = \App\Http\Controllers\TempRequisitionerController::hasOverdueReturn(auth()->user()->department);
+        }
+
+        return view('requisitions.main_admin', compact('requisitions', 'ledgeMap', 'stats', 'hasOverdueReturn'));
     }
 
     /**
@@ -913,11 +1171,31 @@ class StoreRequisitionController extends Controller
         }
 
         if ($request->status === 'approved') {
+            $requiresStoresDeptHeadApproval = false;
+            if (!$isStoresHead) {
+                $storesApprovalCategories = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
+                if (!is_array($storesApprovalCategories)) {
+                    $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
+                }
+                foreach ($req->items as $item) {
+                    if (in_array($item->category, $storesApprovalCategories)) {
+                        $requiresStoresDeptHeadApproval = true;
+                        break;
+                    }
+                }
+            }
+
             if (!$isStoresHead) {
                 $req->origin_admin_status = 'approved';
                 $req->origin_approved_by = auth()->user()->name;
-                $actionName = 'DEPT_HEAD_APPROVE';
-                $logDesc = "Department Head " . auth()->user()->name . " approved store requisition #{$req->id} from department: {$req->department}. Escalated to Department Head (Stores).";
+                if ($requiresStoresDeptHeadApproval) {
+                    $actionName = 'DEPT_HEAD_APPROVE';
+                    $logDesc = "Department Head " . auth()->user()->name . " approved store requisition #{$req->id} from department: {$req->department}. Escalated to Department Head (Stores).";
+                } else {
+                    $req->main_admin_status = 'approved';
+                    $actionName = 'DEPT_HEAD_APPROVE_BYPASS';
+                    $logDesc = "Department Head " . auth()->user()->name . " approved store requisition #{$req->id} from department: {$req->department}. Bypassed Department Head (Stores) (Categories do not require approval) and escalated to Head of Stores.";
+                }
             } else {
                 $req->main_admin_status = 'approved';
                 $actionName = 'MAIN_ADMIN_APPROVE';
@@ -942,32 +1220,58 @@ class StoreRequisitionController extends Controller
 
             // Notifications
             if (!$isStoresHead) {
-                // Notify Department Head (Stores)
-                $storesHeads = User::whereIn('role', ['Main Admin', 'Department Head'])
-                    ->where(fn($q) => $q->where('department', 'Stores')->orWhere('department', 'Store'))
-                    ->where('is_active', true)
-                    ->get();
-                foreach ($storesHeads as $storesHead) {
-                    $priorityLabel = strtoupper($req->priority);
-                    $itemCount = $req->items()->count();
-                    $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
-                    $msg .= "<b style='color:#10b981;'>📋 DEPT HEAD APPROVED REQUISITION — {$priorityLabel} PRIORITY</b><br><br>";
-                    $msg .= "Department Head <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
-                    $msg .= "<b>Department:</b> {$req->department}<br>";
-                    $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
-                    $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br>";
-                    if ($request->filled('admin_notes')) {
-                        $msg .= "<b>Dept Head Notes:</b> " . e($request->admin_notes) . "<br><br>";
-                    }
-                    $msg .= "<a href='" . route('main-admin.requisitions') . "' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition</a>";
-                    $msg .= "</div>";
+                if ($requiresStoresDeptHeadApproval) {
+                    // Notify Department Head (Stores)
+                    $storesHeads = User::whereIn('role', ['Main Admin', 'Department Head'])
+                        ->where(fn($q) => $q->where('department', 'Stores')->orWhere('department', 'Store'))
+                        ->where('is_active', true)
+                        ->get();
+                    foreach ($storesHeads as $storesHead) {
+                        $priorityLabel = strtoupper($req->priority);
+                        $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
+                        $msg .= "<b style='color:#10b981;'>📋 DEPT HEAD APPROVED REQUISITION — {$priorityLabel} PRIORITY</b><br><br>";
+                        $msg .= "Department Head <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
+                        $msg .= "<b>Department:</b> {$req->department}<br>";
+                        $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
+                        $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br>";
+                        if ($request->filled('admin_notes')) {
+                            $msg .= "<b>Dept Head Notes:</b> " . e($request->admin_notes) . "<br><br>";
+                        }
+                        $msg .= "<a href='" . route('main-admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition</a>";
+                        $msg .= "</div>";
 
-                    Message::create([
-                        'sender_id'    => auth()->id(),
-                        'receiver_id'  => $storesHead->id,
-                        'message'      => $msg,
-                        'is_automated' => true,
-                    ]);
+                        Message::create([
+                            'sender_id'    => auth()->id(),
+                            'receiver_id'  => $storesHead->id,
+                            'message'      => $msg,
+                            'is_automated' => true,
+                        ]);
+                    }
+                } else {
+                    // Notify Head of Stores (Admin) directly since Stores Dept Head approval is bypassed!
+                    $admins = User::where('is_admin', true)->where('is_active', true)->get();
+                    foreach ($admins as $admin) {
+                        $priorityLabel = strtoupper($req->priority);
+                        $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
+                        $msg .= "<b style='color:#10b981;'>📋 REQUISITION BYPASSED DEPT. HEAD (STORES) — {$priorityLabel} PRIORITY</b><br><br>";
+                        $msg .= "Department Head <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
+                        $msg .= "This requisition does not require Stores Department Head approval and has been escalated directly to you.<br><br>";
+                        $msg .= "<b>Department:</b> {$req->department}<br>";
+                        $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
+                        $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br>";
+                        if ($request->filled('admin_notes')) {
+                            $msg .= "<b>Dept Head Notes:</b> " . e($request->admin_notes) . "<br><br>";
+                        }
+                        $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Perform Final Head Review</a>";
+                        $msg .= "</div>";
+
+                        Message::create([
+                            'sender_id'    => auth()->id(),
+                            'receiver_id'  => $admin->id,
+                            'message'      => $msg,
+                            'is_automated' => true,
+                        ]);
+                    }
                 }
             } else {
                 // Notify Head of Stores (Admin)
@@ -984,7 +1288,7 @@ class StoreRequisitionController extends Controller
                     if ($request->filled('admin_notes')) {
                         $msg .= "<b>Stores Head Notes:</b> " . e($request->admin_notes) . "<br><br>";
                     }
-                    $msg .= "<a href='" . route('admin.requisitions') . "' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Perform Final Head Review</a>";
+                    $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Perform Final Head Review</a>";
                     $msg .= "</div>";
 
                     Message::create([
@@ -1055,5 +1359,286 @@ class StoreRequisitionController extends Controller
             'success' => true,
             'message' => 'Requisition processed successfully.',
         ]);
+    }
+
+    /**
+     * Main Admin / Dept Head: Agree or Decline the proposed alternative item.
+     */
+    public function mainAdminAlternativeResponse(Request $request, $id)
+    {
+        $request->validate([
+            'response' => 'required|in:agree,decline',
+            'notes'    => 'nullable|string|max:1000',
+        ]);
+
+        $req = StoreRequisition::findOrFail($id);
+
+        if (auth()->user()->role !== 'Department Head' || $req->department !== auth()->user()->department) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized department access.'], 403);
+        }
+
+        if ($req->alternative_status !== 'proposed') {
+            return response()->json(['success' => false, 'message' => 'No active alternative item proposal exists for this requisition.'], 400);
+        }
+
+        if ($request->response === 'agree') {
+            $req->alternative_status = 'agreed';
+            if ($request->filled('notes')) {
+                $req->admin_notes = $request->notes;
+            }
+            $req->save();
+
+            // Log
+            SystemLog::create([
+                'user_id'    => auth()->id(),
+                'event_type' => 'REQUISITION',
+                'action'     => 'ALT_ITEM_AGREED',
+                'description'=> "Department Head " . auth()->user()->name . " agreed to alternative item proposal for requisition #{$req->id}.",
+                'severity'   => 'info',
+                'metadata'   => ['requisition_id' => $req->id],
+                'ip_address' => $request->ip(),
+            ]);
+
+            // Notify all admins/head of stores
+            $admins = User::where('is_admin', true)->where('is_active', true)->get();
+            foreach ($admins as $admin) {
+                $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
+                $msg .= "<b style='color:#10b981;'>✅ ALTERNATIVE ITEM AGREED — Ref: #{$req->id}</b><br><br>";
+                $msg .= "Department <b>{$req->department}</b> has <b>AGREED</b> to the proposed alternative items.<br><br>";
+                $msg .= "<b>Department Head Notes:</b> " . e($request->notes ?: 'None') . "<br><br>";
+                $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Proceed to Commit Decision</a>";
+                $msg .= "</div>";
+
+                Message::create([
+                    'sender_id'    => auth()->id(),
+                    'receiver_id'  => $admin->id,
+                    'message'      => $msg,
+                    'is_automated' => true,
+                ]);
+            }
+        } else {
+            $req->alternative_status = 'declined';
+            $req->status = 'declined';
+            $req->decline_reason = 'Department declined alternative item proposal. ' . ($request->notes ? 'Notes: ' . $request->notes : '');
+            $req->save();
+
+            // Log
+            SystemLog::create([
+                'user_id'    => auth()->id(),
+                'event_type' => 'REQUISITION',
+                'action'     => 'ALT_ITEM_DECLINED',
+                'description'=> "Department Head " . auth()->user()->name . " declined alternative item proposal for requisition #{$req->id}.",
+                'severity'   => 'warning',
+                'metadata'   => ['requisition_id' => $req->id],
+                'ip_address' => $request->ip(),
+            ]);
+
+            // Notify admins and requester
+            $admins = User::where('is_admin', true)->where('is_active', true)->get();
+            foreach ($admins as $admin) {
+                $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #ef4444;border-radius:12px;background:rgba(239,68,68,0.05);'>";
+                $msg .= "<b style='color:#ef4444;'>❌ ALTERNATIVE ITEM DECLINED — Ref: #{$req->id}</b><br><br>";
+                $msg .= "Department <b>{$req->department}</b> has <b>DECLINED</b> the proposed alternative items. Requisition has been marked as declined.<br><br>";
+                $msg .= "<b>Department Head Notes:</b> " . e($request->notes ?: 'None') . "<br><br>";
+                $msg .= "</div>";
+
+                Message::create([
+                    'sender_id'    => auth()->id(),
+                    'receiver_id'  => $admin->id,
+                    'message'      => $msg,
+                    'is_automated' => true,
+                ]);
+            }
+
+            if ($req->requested_by) {
+                $msg  = "<div class='personnel-view requisition-status-msg' style='padding:15px;border:1px solid #ef4444;border-radius:12px;background:rgba(239,68,68,0.02);'>";
+                $msg .= "<b style='color:#ef4444;'>📋 REQUISITION DECLINED (Alternative Declined)</b><br><br>";
+                $msg .= "Your store requisition (Ref: #{$req->id}) has been declined because the department head declined the alternative item proposed by stores.<br><br>";
+                $msg .= "</div>";
+
+                Message::create([
+                    'sender_id'    => auth()->id(),
+                    'receiver_id'  => $req->requested_by,
+                    'message'      => $msg,
+                    'is_automated' => true,
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Your response to the alternative item proposal has been saved and processed successfully.',
+        ]);
+    }
+
+    /**
+     * Daily check for overdue and due temporary items, issuing alerts.
+     */
+    public static function checkOverdueTemporaryItems()
+    {
+        // 1. Fetch all active temporary items checking out
+        $activeItems = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->join('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
+            ->select('issued_items.*', 'store_requisitions.purpose', 'store_requisitions.department', 'store_requisitions.id as requisition_id', 'store_requisitions.requested_by')
+            ->where('issuances.issuance_type', 'Temporary')
+            ->where('issued_items.quantity', '>', 0)
+            ->get();
+
+        foreach ($activeItems as $item) {
+            // Check if fully returned under either remaining-qty or original-qty system
+            $returnedQty = \App\Models\ReturnedItem::where('issued_item_id', $item->id)->sum('returned_qty') ?? 0;
+            if ($item->quantity <= 0 || $returnedQty >= $item->quantity) {
+                continue;
+            }
+
+            $returnDateStr = null;
+            if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $item->purpose, $matches)) {
+                $returnDateStr = trim($matches[1]);
+            }
+            if (!$returnDateStr) {
+                continue;
+            }
+
+            try {
+                $returnDate = \Carbon\Carbon::parse($returnDateStr)->startOfDay();
+                $today = \Carbon\Carbon::now()->startOfDay();
+                $diffInDays = $today->diffInDays($returnDate, false); // false allows negative values if past due
+            } catch (\Exception $e) {
+                continue;
+            }
+
+            // Find recipient (Department Head)
+            $recipient = \App\Models\User::where('role', 'Department Head')
+                ->where('department', $item->department)
+                ->where('is_active', true)
+                ->first();
+            
+            $recipientId = $recipient ? $recipient->id : $item->requested_by;
+
+            if ($diffInDays === 3) {
+                // A: friendly countdown reminder (due in 3 days)
+                $exists = \App\Models\Message::where('receiver_id', $recipientId)
+                    ->where('is_automated', true)
+                    ->where('message', 'like', "%⏳ RETURN COUNTDOWN: 3 DAYS REMAINING%")
+                    ->where('message', 'like', "%Ref: #{$item->requisition_id}%")
+                    ->exists();
+
+                if (!$exists) {
+                    // Send reminder to Department Head
+                    $msg  = "<div class='department-view reminder-msg' style='padding:15px;border:1px solid #f59e0b;border-radius:12px;background:rgba(245,158,11,0.05);'>";
+                    $msg .= "<b style='color:#d97706;'>⏳ RETURN COUNTDOWN: 3 DAYS REMAINING — Ref: #{$item->requisition_id}</b><br><br>";
+                    $msg .= "Friendly Reminder: The temporary item <b>" . e($item->description) . "</b> collected by your department is due back in <b>3 days</b> (Expected Return Date: <b>" . e($returnDate->format('d/m/Y')) . "</b>).<br><br>";
+                    $msg .= "Please ensure the item is returned to Central Store NACOC on time.";
+                    $msg .= "</div>";
+
+                    \App\Models\Message::create([
+                        'sender_id' => 1, // System Admin
+                        'receiver_id' => $recipientId,
+                        'message' => $msg,
+                        'is_automated' => true,
+                    ]);
+
+                    // Notify Department Head (Stores) & Head of Stores
+                    $storesStaff = \App\Models\User::where(function($q) {
+                        $q->where('is_admin', true)
+                          ->orWhereIn('role', ['Main Admin', 'Store Officer', 'Dept. Head (Stores)']);
+                    })->where('is_active', true)->get();
+
+                    foreach ($storesStaff as $staff) {
+                        $adminMsg  = "<div class='admin-view notification-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
+                        $adminMsg .= "<b style='color:#10b981;'>🔔 DELIVERY NOTIFICATION: 3-DAY REMINDER SENT</b><br><br>";
+                        $adminMsg .= "The 3-day return countdown reminder for temporary item <b>" . e($item->description) . "</b> (Ref: #<b>" . e($item->requisition_id) . "</b>) has been successfully delivered to the <b>" . e($item->department) . "</b> Department Head.";
+                        $adminMsg .= "</div>";
+
+                        \App\Models\Message::create([
+                            'sender_id' => 1,
+                            'receiver_id' => $staff->id,
+                            'message' => $adminMsg,
+                            'is_automated' => true,
+                        ]);
+                    }
+                }
+            } elseif ($diffInDays < 0) {
+                // B: Overdue Return Reminder for Borrower Department Head
+                $exists = \App\Models\Message::where('receiver_id', $recipientId)
+                    ->where('is_automated', true)
+                    ->where('message', 'like', "%🚨 OVERDUE RETURN NOTICE%")
+                    ->where('message', 'like', "%Ref: #{$item->requisition_id}%")
+                    ->exists();
+
+                if (!$exists) {
+                    $msg  = "<div class='department-view reminder-msg' style='padding:15px;border:1px solid #ef4444;border-radius:12px;background:rgba(239,68,68,0.05);'>";
+                    $msg .= "<b style='color:#dc2626;'>🚨 OVERDUE RETURN NOTICE — Ref: #{$item->requisition_id}</b><br><br>";
+                    $msg .= "Attention: The expected return date (<b>" . e($returnDate->format('d/m/Y')) . "</b>) for the temporary item <b>" . e($item->description) . "</b> collected by your department has passed, and the item has not yet been returned.<br><br>";
+                    $msg .= "<span style='color:#b91c1c; font-weight:800;'>Crucial Access Blocked: Your department's requisition creation privileges have been suspended. Please return the item to the Central Store immediately to restore access.</span>";
+                    $msg .= "</div>";
+
+                    \App\Models\Message::create([
+                        'sender_id' => 1,
+                        'receiver_id' => $recipientId,
+                        'message' => $msg,
+                        'is_automated' => true,
+                    ]);
+                }
+
+                // Notify OTHER Department Heads
+                $otherDeptHeads = \App\Models\User::where('role', 'Department Head')
+                    ->where('department', '!=', $item->department)
+                    ->where('is_active', true)
+                    ->get();
+
+                foreach ($otherDeptHeads as $otherHead) {
+                    $headExists = \App\Models\Message::where('receiver_id', $otherHead->id)
+                        ->where('is_automated', true)
+                        ->where('message', 'like', "%⚠️ DEPARTMENT SUSPENSION WARNING%")
+                        ->where('message', 'like', "%Ref: #{$item->requisition_id}%")
+                        ->exists();
+
+                    if (!$headExists) {
+                        $otherHeadMsg  = "<div class='department-view warning-msg' style='padding:15px;border:1px solid #f59e0b;border-radius:12px;background:rgba(245,158,11,0.05);'>";
+                        $otherHeadMsg .= "<b style='color:#d97706;'>⚠️ DEPARTMENT SUSPENSION WARNING — Ref: #{$item->requisition_id}</b><br><br>";
+                        $otherHeadMsg .= "Please note: The <b>" . e($item->department) . "</b> department's requisition privileges have been suspended due to an overdue temporary loan for item: <b>" . e($item->description) . "</b>.<br><br>";
+                        $otherHeadMsg .= "Ensure your own department's temporary loans are returned within their designated expected dates to prevent similar access lockout.";
+                        $otherHeadMsg .= "</div>";
+
+                        \App\Models\Message::create([
+                            'sender_id' => 1,
+                            'receiver_id' => $otherHead->id,
+                            'message' => $otherHeadMsg,
+                            'is_automated' => true,
+                        ]);
+                    }
+                }
+
+                // Notify Logistics/Stores Staff (Main Admin, Store Officer, Dept. Head (Stores))
+                $storesStaff = \App\Models\User::where(function($q) {
+                    $q->where('is_admin', true)
+                      ->orWhereIn('role', ['Main Admin', 'Store Officer', 'Dept. Head (Stores)']);
+                })->where('is_active', true)->get();
+
+                foreach ($storesStaff as $staff) {
+                    $staffExists = \App\Models\Message::where('receiver_id', $staff->id)
+                        ->where('is_automated', true)
+                        ->where('message', 'like', "%🚨 SYSTEM LOCKOUT EXCEPTION%")
+                        ->where('message', 'like', "%Ref: #{$item->requisition_id}%")
+                        ->exists();
+
+                    if (!$staffExists) {
+                        $staffMsg  = "<div class='admin-view notification-msg' style='padding:15px;border:1px solid #ef4444;border-radius:12px;background:rgba(239,68,68,0.05);'>";
+                        $staffMsg .= "<b style='color:#dc2626;'>🚨 SYSTEM LOCKOUT EXCEPTION — Ref: #{$item->requisition_id}</b><br><br>";
+                        $staffMsg .= "An overdue return has been detected for temporary item <b>" . e($item->description) . "</b> (Ref: #<b>" . e($item->requisition_id) . "</b>) which was due on <b>" . e($returnDate->format('d/m/Y')) . "</b>.<br><br>";
+                        $staffMsg .= "The borrowing department (<b>" . e($item->department) . "</b>) has been locked out of requisition privileges. Please initiate asset recovery procedures immediately.";
+                        $staffMsg .= "</div>";
+
+                        \App\Models\Message::create([
+                            'sender_id' => 1,
+                            'receiver_id' => $staff->id,
+                            'message' => $staffMsg,
+                            'is_automated' => true,
+                        ]);
+                    }
+                }
+            }
+        }
     }
 }

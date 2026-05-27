@@ -137,6 +137,47 @@
                     </div>
                 </div>
 
+                @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head']) || auth()->user()->is_admin)
+                <div style="margin-top: 3rem; border-top: 1px solid var(--border-color); padding-top: 2.5rem; margin-bottom: 2.5rem;">
+                    <h3 style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; letter-spacing: -0.02em;">
+                        <i data-lucide="signature" style="color: var(--primary); width: 22px;"></i>
+                        Official Digital Signature
+                    </h3>
+                    <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.5rem; font-weight: 600;">Upload an image of your signature (transparent PNG format recommended). This signature will be used to automatically sign official collection receipts and SRA vouchers.</p>
+                    
+                    <div style="display: grid; grid-template-columns: 280px 1fr; gap: 2.5rem; align-items: center; background: var(--bg-main); border: 2px dashed var(--border-color); border-radius: 24px; padding: 2rem;" class="signature-upload-container">
+                        <!-- Signature Preview Box -->
+                        <div style="width: 100%; height: 120px; background: white; border: 1.5px solid var(--border-color); border-radius: 16px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.01);" id="signature-preview-box">
+                            @if(auth()->user()->signature)
+                                <img src="{{ Storage::url(auth()->user()->signature) }}" style="max-width: 90%; max-height: 90%; object-fit: contain;" id="user-signature-img">
+                            @else
+                                <div style="text-align: center; color: var(--text-muted);" id="user-signature-placeholder">
+                                    <i data-lucide="edit-3" style="width: 28px; margin: 0 auto 6px; display: block; opacity: 0.4;"></i>
+                                    <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">No Signature Uploaded</span>
+                                </div>
+                            @endif
+                        </div>
+                        
+                        <!-- Upload Controls -->
+                        <div>
+                            <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+                                <button type="button" class="save-btn" onclick="document.getElementById('signature-file-upload').click()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; background: var(--primary); color: white; width: auto; height: auto; border-radius: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                                    <i data-lucide="upload-cloud" style="width: 16px;"></i>
+                                    Upload Signature
+                                </button>
+                                <input type="file" id="signature-file-upload" accept="image/*" style="display: none;" onchange="uploadSignatureFile(this)">
+                                
+                                <button type="button" id="remove-sig-btn" class="modern-action-btn secondary" onclick="removeSignatureImage()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; border-color: rgba(239, 68, 68, 0.2); color: #ef4444; width: auto; height: auto; border-radius: 14px; display: {{ auth()->user()->signature ? 'inline-flex' : 'none' }}; align-items: center; gap: 8px; cursor: pointer;">
+                                    <i data-lucide="trash-2" style="width: 16px;"></i>
+                                    Remove Signature
+                                </button>
+                            </div>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; display: block;">Supports PNG, JPG, or JPEG. Transparent PNG is highly recommended. Max size: 5MB.</span>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <div style="background: rgba(99, 102, 241, 0.05); padding: 2rem; border-radius: 20px; border: 1px solid rgba(99, 102, 241, 0.1);">
                     <div style="display: flex; gap: 1rem; align-items: center;">
                         <i data-lucide="info" style="color: var(--primary); width: 24px;"></i>
@@ -613,7 +654,7 @@
         btn.innerHTML = 'Updating Profile...';
 
         try {
-            const res = await fetch("{{ route('settings.update', [], false) }}", {
+            const res = await fetch("{{ route('settings.update') }}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({
@@ -709,7 +750,7 @@
         }
 
         try {
-            const res = await fetch("{{ route('settings.password', [], false) }}", {
+            const res = await fetch("{{ route('settings.password') }}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                 body: JSON.stringify({
@@ -790,7 +831,7 @@
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
         try {
-            const res = await fetch("{{ route('settings.avatar', [], false) }}", {
+            const res = await fetch("{{ route('settings.avatar') }}", {
                 method: 'POST',
                 headers: { 
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -852,6 +893,123 @@
         } catch (e) {
             showToast('Connection Error', 'Could not transmit image array.', 'error');
             btn.innerHTML = orgHtml;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    }
+
+    async function uploadSignatureFile(input) {
+        if (!input.files || !input.files[0]) return;
+        
+        const file = input.files[0];
+        
+        // Client-side size check (max 5MB)
+        const maxSizeMB = 5; 
+        if (file.size > maxSizeMB * 1024 * 1024) {
+            showToast('File Too Large', `Please select an image smaller than ${maxSizeMB}MB.`, 'error');
+            input.value = ''; 
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('signature', file);
+        
+        const btn = input.previousElementSibling;
+        const orgHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin" style="width: 16px;"></i> Uploading...`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        try {
+            const res = await fetch("{{ route('settings.signature') }}", {
+                method: 'POST',
+                headers: { 
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json' 
+                },
+                body: formData
+            });
+
+            const textResponse = await res.text();
+            let data;
+            try {
+                const jsonMatch = textResponse.match(/\{.*\}/s);
+                const jsonClean = jsonMatch ? jsonMatch[0] : textResponse;
+                data = JSON.parse(jsonClean);
+            } catch (err) {
+                const snippet = textResponse.substring(0, 100).replace(/<[^>]*>/g, '');
+                showToast('Server Error', `Upload failed. Snippet: ${snippet}`, 'error');
+                btn.innerHTML = orgHtml;
+                btn.disabled = false;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                return;
+            }
+            
+            if (res.ok && data.success) {
+                showToast('Signature Updated', data.message, 'success');
+                
+                // Dynamically update preview
+                const previewBox = document.getElementById('signature-preview-box');
+                previewBox.innerHTML = `<img src="${data.url}?t=${new Date().getTime()}" style="max-width: 90%; max-height: 90%; object-fit: contain;" id="user-signature-img">`;
+                
+                // Show remove button
+                document.getElementById('remove-sig-btn').style.display = 'inline-flex';
+            } else {
+                let serverError = data.message || 'Image rejected by validation.';
+                if (data.errors && data.errors.signature) {
+                    serverError = data.errors.signature[0];
+                }
+                showToast('Upload Failed', serverError, 'error');
+            }
+        } catch (e) {
+            showToast('Connection Error', 'Could not transmit image array.', 'error');
+        } finally {
+            btn.innerHTML = orgHtml;
+            btn.disabled = false;
+            input.value = ''; // Clear value
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    }
+
+    async function removeSignatureImage() {
+        if (!confirm('Are you sure you want to remove your digital signature?')) return;
+        
+        const btn = document.getElementById('remove-sig-btn');
+        const orgHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin" style="width: 16px;"></i> Removing...`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        try {
+            const res = await fetch("{{ route('settings.signature.remove') }}", {
+                method: 'POST',
+                headers: { 
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('Signature Removed', data.message, 'success');
+                
+                // Reset preview
+                const previewBox = document.getElementById('signature-preview-box');
+                previewBox.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted);" id="user-signature-placeholder">
+                        <i data-lucide="edit-3" style="width: 28px; margin: 0 auto 6px; display: block; opacity: 0.4;"></i>
+                        <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">No Signature Uploaded</span>
+                    </div>
+                `;
+                
+                // Hide remove button
+                btn.style.display = 'none';
+            } else {
+                showToast('Action Failed', data.message || 'Could not complete request.', 'error');
+            }
+        } catch (e) {
+            showToast('Connection Error', 'Could not reach deletion node.', 'error');
+        } finally {
+            btn.innerHTML = orgHtml;
+            btn.disabled = false;
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     }

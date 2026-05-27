@@ -43,6 +43,46 @@ class TempRequisitionerController extends Controller
     }
 
     /**
+     * Check if a department has any overdue temporary loans.
+     */
+    public static function hasOverdueReturn($department)
+    {
+        if (empty($department)) {
+            return false;
+        }
+
+        $activeItems = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->join('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
+            ->select('issued_items.id', 'issued_items.quantity', 'store_requisitions.purpose')
+            ->where('issuances.issuance_type', 'Temporary')
+            ->where('store_requisitions.department', $department)
+            ->where('issued_items.quantity', '>', 0)
+            ->get();
+
+        foreach ($activeItems as $item) {
+            // Check if fully returned under either remaining-qty or original-qty system
+            $returnedQty = \App\Models\ReturnedItem::where('issued_item_id', $item->id)->sum('returned_qty') ?? 0;
+            if ($item->quantity <= 0 || $returnedQty >= $item->quantity) {
+                continue;
+            }
+
+            if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $item->purpose, $matches)) {
+                try {
+                    $returnDate = \Carbon\Carbon::parse(trim($matches[1]))->startOfDay();
+                    $today = \Carbon\Carbon::now()->startOfDay();
+                    if ($today->gt($returnDate)) {
+                        return true;
+                    }
+                } catch (\Exception $e) {
+                    continue;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * POST /dept-head/temp-requisitioners
      * Create a temporary requisitioner account for a staff member.
      */
@@ -58,6 +98,13 @@ class TempRequisitionerController extends Controller
         $isStoresHead = (strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0);
         if ($isStoresHead) {
             return response()->json(['success' => false, 'message' => 'Stores Department Head cannot provision temporary requisitioner accounts.'], 403);
+        }
+
+        if (self::hasOverdueReturn($user->department)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Provisioning suspended: Your department has an overdue temporary requisition return. Please return the outstanding assets to Central Store to restore access.'
+            ], 403);
         }
 
         $request->validate([

@@ -102,6 +102,45 @@ class SettingsController extends Controller
         
         return response()->json(['success' => false, 'message' => 'Upload failed.']);
     }
+
+    public function updateSignature(Request $request)
+    {
+        $request->validate([
+            'signature' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
+        ]);
+
+        $user = auth()->user();
+
+        if ($request->hasFile('signature')) {
+            if ($user->signature) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->signature);
+            }
+            $path = $request->file('signature')->store('signatures', 'public');
+            $user->update(['signature' => $path]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Signature Image Uploaded Successfully',
+                'url' => \Illuminate\Support\Facades\Storage::url($path)
+            ]);
+        }
+        
+        return response()->json(['success' => false, 'message' => 'Upload failed.']);
+    }
+
+    public function removeSignature()
+    {
+        $user = auth()->user();
+        if ($user->signature) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($user->signature);
+            $user->update(['signature' => null]);
+        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Signature Image Removed Successfully'
+        ]);
+    }
+
     public function messages()
     {
         // Self-heal: Mark all unread messages for the logged-in user as read when they visit the Comms Hub

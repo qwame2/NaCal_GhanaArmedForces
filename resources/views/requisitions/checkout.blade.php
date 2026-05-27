@@ -13,6 +13,8 @@
 
     <!-- CSS Assets -->
     <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
@@ -22,6 +24,8 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="{{ asset('js/sweetalert2@11.js') }}"></script>
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 
 
@@ -536,7 +540,52 @@
             padding: 8px 15px 4px !important;
             background: var(--bg-main) !important;
         }
+
+        /* Flatpickr calendar visibility fix */
+        .flatpickr-calendar {
+            z-index: 99999 !important;
+            position: absolute !important;
+        }
+        .flatpickr-calendar .flatpickr-months,
+        .flatpickr-calendar .flatpickr-innerContainer,
+        .flatpickr-calendar .flatpickr-rContainer {
+            position: relative;
+            z-index: 99999 !important;
+        }
+        /* Month & year dropdown selects inside the calendar */
+        .flatpickr-monthDropdown-months,
+        .flatpickr-monthDropdown-month,
+        .numInputWrapper input,
+        .numInputWrapper {
+            z-index: 100000 !important;
+            position: relative !important;
+        }
+        /* Native browser select dropdown rendered by the OS — must be above everything */
+        .flatpickr-monthDropdown-months option {
+            z-index: 100001 !important;
+        }
+        .flatpickr-day.selected,
+        .flatpickr-day.selected:hover {
+            background: var(--store-orange) !important;
+            border-color: var(--store-orange) !important;
+        }
+        .flatpickr-day:hover {
+            background: var(--store-orange-light) !important;
+        }
+        .flatpickr-months .flatpickr-month,
+        .flatpickr-weekdays,
+        span.flatpickr-weekday {
+            background: var(--store-orange) !important;
+            color: #fff !important;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months,
+        .flatpickr-current-month input.cur-year {
+            background: transparent !important;
+            color: #1e293b !important;
+            font-weight: 700 !important;
+        }
     </style>
+
 </head>
 <body>
 
@@ -600,7 +649,7 @@
                 @csrf
                 <div>
                     <label class="form-label">Full Name *</label>
-                    <input type="text" id="requesterName" class="form-input" value="{{ auth()->user()->name }}" required placeholder="Your full name...">
+                    <input type="text" id="requesterName" class="form-input" value="{{ auth()->user()->name }}" readonly style="background: var(--bg-card); cursor: not-allowed;" required placeholder="Your full name...">
                 </div>
 
                 <div>
@@ -608,60 +657,48 @@
                     <input type="text" id="rankTitle" class="form-input" placeholder="e.g. Sergeant, Staff Officer...">
                 </div>
 
+
                 <div>
                     <label class="form-label">Department / Unit *</label>
-                    <select id="department" class="form-input" required>
-                        <option value="">-- Select Department --</option>
-                        <optgroup label="INVESTIGATIONS & INTELLIGENCE DIRECTORATE">
-                            <option value="Intelligence Department">Intelligence Department</option>
-                            <option value="Investigations Department">Investigations Department</option>
-                            <option value="Forensic Science Department">Forensic Science Department</option>
-                            <option value="Asset recovery & Management Department">Asset recovery & Management Department</option>
-                            <option value="Strategic Intelligence Oversight Department">Strategic Intelligence Oversight Department</option>
-                        </optgroup>
-                        <optgroup label="LICENSING & REGULATORY DIRECTORATE">
-                            <option value="Cannabis Regulations Department">Cannabis Regulations Department</option>
-                            <option value="Precursor Diversion Department">Precursor Diversion Department</option>
-                        </optgroup>
-                        <optgroup label="DRUG DEMAND REDUCTION DIRECTORATE">
-                            <option value="Drug Education & Prevention Department">Drug Education & Prevention Department</option>
-                            <option value="Rehabilitation & Social Re-integration Department">Rehabilitation & Social Re-integration Department</option>
-                            <option value="Harm Reduction Department">Harm Reduction Department</option>
-                            <option value="Alternative Livelihoods Development Department">Alternative Livelihoods Development Department</option>
-                        </optgroup>
-                        <optgroup label="OPERATIONS AND ENFORCEMENT DIRECTORATE">
-                            <option value="Canine Operations Department">Canine Operations Department</option>
-                        </optgroup>
-                        <optgroup label="FINANCE DIRECTORATE">
-                            <option value="Accounts & Budget Department">Accounts & Budget Department</option>
-                            <option value="Payroll & Pension Department">Payroll & Pension Department</option>
-                        </optgroup>
-                        <optgroup label="RESEARCH POLICY & PLANNING DIRECTORATE">
-                            <option value="Research Policy Planning Monitoring & Evaluation Department">Research Policy Planning Monitoring & Evaluation Department</option>
-                            <option value="Professional Standards Department">Professional Standards Department</option>
-                        </optgroup>
-                        <optgroup label="ADMINISTRATION DIRECTORATE">
-                            <option value="General Services Department">General Services Department</option>
-                            <option value="ICT Department">ICT Department</option>
-                            <option value="Transport Department">Transport Department</option>
-                            <option value="Procurement Department">Procurement Department</option>
-                            <option value="Project Management Department">Project Management Department</option>
-                        </optgroup>
-                        <optgroup label="HUMAN RESOURCE DIRECTORATE">
-                            <option value="Human Resource Management Department">Human Resource Management Department</option>
-                            <option value="Welfare Department">Welfare Department</option>
-                            <option value="Religious Affairs Department">Religious Affairs Department</option>
-                        </optgroup>
-                        <optgroup label="TRAINING & DEVELOPMENT DIRECTORATE">
-                            <option value="Internal & External Training Department">Internal & External Training Department</option>
-                        </optgroup>
-                        <optgroup label="PUBLIC AFFAIRS AND INTERNATIONAL RELATIONS">
-                            <option value="Public Affairs Department">Public Affairs Department</option>
-                            <option value="International Relations Department">International Relations Department</option>
-                            <option value="Material Development Department">Material Development Department</option>
-                            <option value="Client Service Department">Client Service Department</option>
-                        </optgroup>
-                    </select>
+                    @php
+                        $authUser = auth()->user();
+
+                        // Clean: treat "-- Select Department --" or whitespace-only as empty
+                        $rawDept = trim($authUser->department ?? '');
+                        $userDepartment = (str_starts_with($rawDept, '--') || $rawDept === '') ? '' : $rawDept;
+
+                        // Fallback: pull from sponsoring Department Head's department
+                        if (empty($userDepartment) && !empty($authUser->sponsored_by)) {
+                            $sponsor = \App\Models\User::find($authUser->sponsored_by);
+                            $userDepartment = trim($sponsor?->department ?? '');
+                        }
+
+                        // Auto-heal: save the resolved department back to the user if it was missing
+                        if (!empty($userDepartment) && $userDepartment !== $authUser->department) {
+                            $authUser->department = $userDepartment;
+                            $authUser->save();
+                        }
+                    @endphp
+                    <div style="position: relative;">
+                        <input
+                            type="text"
+                            id="department"
+                            class="form-input"
+                            value="{{ $userDepartment }}"
+                            readonly
+                            style="background: var(--bg-card); cursor: not-allowed; color: var(--text-main); padding-right: 2.5rem; font-weight: 700;"
+                            title="Department is assigned by your Department Head and cannot be changed."
+                            placeholder="Not assigned — contact your Department Head"
+                        >
+                        <span style="position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </span>
+                    </div>
+                    @if(empty($userDepartment))
+                        <p style="font-size: 0.7rem; color: #ef4444; font-weight: 700; margin-top: 4px;">
+                            ⚠ No department assigned. Please contact your Department Head.
+                        </p>
+                    @endif
                 </div>
 
                 <div>
@@ -690,7 +727,7 @@
 
                 <div id="return-date-container" style="display: none;">
                     <label class="form-label">Expected Return Date *</label>
-                    <input type="date" id="returnDate" class="form-input" min="{{ date('Y-m-d', strtotime('+1 day')) }}">
+                    <input type="text" id="returnDate" class="form-input" placeholder="dd/mm/yy" autocomplete="off" readonly style="background: var(--bg-input, #fff); cursor: pointer;">
                 </div>
 
                 <div>
@@ -937,12 +974,16 @@
             loadCart();
             lucide.createIcons();
 
-            // Initialize Select2 on the department dropdown with default prefilled value
-            $('#department').select2({
-                width: '100%',
-                placeholder: '-- Select Department --',
-                allowClear: true
-            }).val('{{ auth()->user()->department ?? "" }}').trigger('change');
+            // Initialize flatpickr on Expected Return Date with dd/mm/yy display
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            flatpickr('#returnDate', {
+                dateFormat: 'd/m/y',
+                minDate: tomorrow,
+                allowInput: false,
+                disableMobile: true,
+                theme: 'light'
+            });
 
             // Setup Usage Type pill interactivity
             const returnDateContainer = document.getElementById('return-date-container');

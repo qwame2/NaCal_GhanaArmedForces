@@ -33,6 +33,7 @@ class EnsureNotTempAccount
         'api.online-statuses',
         'api.user.offline',
         'settings.avatar',
+        'settings.update',
         'settings.password',
         'logout',
         'password.change',
@@ -63,6 +64,7 @@ class EnsureNotTempAccount
                 'logout',
                 'password/change',
                 'settings/avatar',
+                'settings/update',
                 'settings/password',
             ];
 

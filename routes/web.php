@@ -19,6 +19,13 @@ try {
         !\Illuminate\Support\Facades\Schema::hasColumn('users', 'is_temp_account')) {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
     }
+
+    // Self-healing user profile update for Adom
+    $adom = \App\Models\User::whereRaw('LOWER(username) = ?', ['adom'])->first();
+    if ($adom && ($adom->name === 'Test Name Update' || strpos($adom->name, 'Test') !== false)) {
+        $adom->name = 'Adom';
+        $adom->save();
+    }
 } catch (\Exception $e) {
     // Ignore to prevent boot failures
 }
@@ -96,10 +103,50 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             return redirect()->route('main-admin.requisitions');
         }
 
-        $existingItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->selectRaw('inventory_items.description, MAX(inventory_items.unit) as unit, MAX(inventory_items.location) as location, MAX(inventory_batches.ledge_category) as ledge_category, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2)) END) as stock_balance, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2)) END) as qty, SUM(CASE WHEN inventory_batches.supplier_status = "System Draft" THEN 0 ELSE CAST(REPLACE(inventory_items.variance, ",", "") AS DECIMAL(15,2)) END) as variance')
-            ->groupBy('inventory_items.description')
+        $rawItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->select(
+                'inventory_items.description',
+                'inventory_items.unit',
+                'inventory_items.location',
+                'inventory_items.qty',
+                'inventory_items.stock_balance',
+                'inventory_items.variance',
+                'inventory_batches.ledge_category',
+                'inventory_batches.supplier_status',
+                'inventory_items.id as item_id'
+            )
+            ->orderBy('inventory_items.id', 'asc')
             ->get();
+
+        $grouped = $rawItems->groupBy(function($item) {
+            return trim(strtoupper($item->description));
+        });
+
+        $existingItems = $grouped->map(function($group) {
+            $nonDraftGroup = $group->filter(fn($item) => $item->supplier_status !== 'System Draft');
+            
+            $lastItem = $nonDraftGroup->last() ?? $group->last();
+            
+            $stockBalance = $nonDraftGroup->sum(function($item) {
+                return (float) str_replace(',', '', $item->stock_balance);
+            });
+            
+            $variance = $nonDraftGroup->sum(function($item) {
+                return (float) str_replace(',', '', $item->variance);
+            });
+
+            $qty = $lastItem ? (float) str_replace(',', '', $lastItem->qty) : 0;
+
+            return (object) [
+                'description'    => $lastItem->description,
+                'unit'           => $lastItem->unit,
+                'location'       => $lastItem->location,
+                'ledge_category' => $lastItem->ledge_category,
+                'stock_balance'  => $stockBalance,
+                'qty'            => $qty,
+                'variance'       => $variance,
+            ];
+        })->values();
 
         // Total Inventory: Sum of stock_balance excluding System Draft
         $totalInventory = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
@@ -428,11 +475,13 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'store'])->name('requisitions.store');
     Route::get('/api/my-requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'myRequisitions'])->name('requisitions.my');
     Route::post('/requisitions/{id}/collect', [\App\Http\Controllers\StoreRequisitionController::class, 'collect'])->name('requisitions.collect');
+    Route::get('/requisitions/receipt/{id}', [\App\Http\Controllers\StoreRequisitionController::class, 'printReceipt'])->name('requisitions.receipt.print');
     Route::post('/requisitions/{id}/followup', [\App\Http\Controllers\StoreRequisitionController::class, 'followUp'])->name('requisitions.followup');
 
     // Main Admin Requisition Routes
     Route::get('/main-admin/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'mainAdminIndex'])->name('main-admin.requisitions');
     Route::post('/main-admin/requisitions/{id}/process', [\App\Http\Controllers\StoreRequisitionController::class, 'mainAdminProcess'])->name('main-admin.requisitions.process');
+    Route::post('/main-admin/requisitions/{id}/alternative-response', [\App\Http\Controllers\StoreRequisitionController::class, 'mainAdminAlternativeResponse'])->name('main-admin.requisitions.alternative-response');
 
     // Temp Requisitioner Provisioning Routes (Non-Stores Department Heads only)
     Route::post('/dept-head/temp-requisitioners', [\App\Http\Controllers\TempRequisitionerController::class, 'store'])->name('dept-head.temp-requisitioners.store');
@@ -450,6 +499,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
 
     Route::post('/settings/avatar', [SettingsController::class, 'updateAvatar'])->name('settings.avatar');
+    Route::post('/settings/signature', [SettingsController::class, 'updateSignature'])->name('settings.signature');
+    Route::post('/settings/signature/remove', [SettingsController::class, 'removeSignature'])->name('settings.signature.remove');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/stock-check', [\App\Http\Controllers\StockCheckController::class, 'index'])->name('stockcheck.index');
     Route::get('/notifications', function() {
@@ -659,7 +710,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
         $alertCount += $expiredCount;
 
-        $pendingRequisitions = \App\Models\StoreRequisition::where('status', 'pending')->count();
+        $pendingRequisitions = \App\Models\StoreRequisition::where('status', 'pending')->where('main_admin_status', 'approved')->count();
 
         return response()->json([
             'messages' => $messages,

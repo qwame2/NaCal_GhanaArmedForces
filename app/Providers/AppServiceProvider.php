@@ -20,9 +20,26 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
+                if (!\App\Models\Setting::where('key', 'stores_dept_head_approval_categories')->exists()) {
+                    \App\Models\Setting::create([
+                        'key' => 'stores_dept_head_approval_categories',
+                        'value' => '[]',
+                        'type' => 'json',
+                        'group' => 'inventory',
+                        'description' => 'Categories of items that require Department Head (Stores) approval before going to the Head of Stores.'
+                    ]);
+                }
+            }
+
             if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'service_number')) {
                 \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
                     $table->string('service_number')->nullable();
+                });
+            }
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'signature')) {
+                \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('signature')->nullable();
                 });
             }
             if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'origin_approved_by')) {
@@ -66,6 +83,28 @@ class AppServiceProvider extends ServiceProvider
             if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'origin_admin_status')) {
                 \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
                     $table->string('origin_admin_status')->default('pending');
+                });
+            }
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'alternative_status')) {
+                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('alternative_status')->nullable();
+                });
+            }
+
+            if (!\Illuminate\Support\Facades\Schema::hasTable('receipts')) {
+                \Illuminate\Support\Facades\Schema::create('receipts', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->id();
+                    $table->unsignedBigInteger('requisition_id')->unique();
+                    $table->string('receipt_number')->unique();
+                    $table->string('collector_name');
+                    $table->string('collector_contact');
+                    $table->string('collector_location');
+                    $table->timestamp('collected_at');
+                    $table->unsignedBigInteger('issued_by');
+                    $table->string('approved_by_dept_head')->nullable();
+                    $table->string('approved_by_stores_head')->nullable();
+                    $table->text('items_json');
+                    $table->timestamps();
                 });
             }
 

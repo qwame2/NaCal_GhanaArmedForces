@@ -15,6 +15,7 @@ class ReturnController extends Controller
 {
     public function index(Request $request)
     {
+        \App\Http\Controllers\StoreRequisitionController::checkOverdueTemporaryItems();
         $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
             abort(403, 'Unauthorized. Access restricted to Department Head (Stores) and Store Officers.');
@@ -72,6 +73,7 @@ class ReturnController extends Controller
                 'issuances.issuance_date', 
                 'issuances.issuance_type',
                 'store_requisitions.collector_name',
+                'store_requisitions.purpose',
                 'confirming_officers.name as confirming_officer_name',
                 DB::raw('COALESCE(NULLIF(issued_items.unit, ""), inv_units.unit) as actual_unit')
             )

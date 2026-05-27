@@ -21,4 +21,9 @@ class Issuance extends Model
     {
         return $this->hasMany(IssuedItem::class);
     }
+
+    public function requisition()
+    {
+        return $this->belongsTo(StoreRequisition::class, 'requisition_id');
+    }
 }

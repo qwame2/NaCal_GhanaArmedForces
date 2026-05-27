@@ -639,6 +639,8 @@ class AdminController extends Controller
                 // If the setting is boolean, handle checkbox uncheck logic
                 if ($setting->type === 'boolean') {
                     $setting->value = $value ? 'true' : 'false';
+                } elseif (is_array($value)) {
+                    $setting->value = json_encode($value);
                 } else {
                     $setting->value = $value;
                 }
@@ -664,6 +666,15 @@ class AdminController extends Controller
             if (!$request->has($boolSetting->key)) {
                 $boolSetting->value = 'false';
                 $boolSetting->save();
+            }
+        }
+
+        // Handle stores_dept_head_approval_categories multi-select clear
+        if (!$request->has('stores_dept_head_approval_categories')) {
+            $catSetting = \App\Models\Setting::where('key', 'stores_dept_head_approval_categories')->first();
+            if ($catSetting) {
+                $catSetting->value = json_encode([]);
+                $catSetting->save();
             }
         }
 

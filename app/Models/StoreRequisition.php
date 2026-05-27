@@ -33,8 +33,10 @@ class StoreRequisition extends Model
         'usage_type',
         'collector_name',
         'collector_contact',
+        'collector_location',
         'origin_admin_status',
         'origin_approved_by',
+        'alternative_status',
     ];
 
     protected $casts = [
@@ -45,6 +47,11 @@ class StoreRequisition extends Model
     public function items()
     {
         return $this->hasMany(StoreRequisitionItem::class, 'requisition_id');
+    }
+
+    public function receipt()
+    {
+        return $this->hasOne(Receipt::class, 'requisition_id');
     }
 
     public function requester()
@@ -74,6 +81,12 @@ class StoreRequisition extends Model
     public function getStatusBadgeAttribute(): array
     {
         if ($this->status === 'pending') {
+            if ($this->alternative_status === 'proposed') {
+                return ['label' => 'Alt Proposed - Awaiting Dept response', 'color' => '#ea580c', 'bg' => 'rgba(234,88,12,0.1)'];
+            }
+            if ($this->alternative_status === 'agreed') {
+                return ['label' => 'Alt Agreed - Ready to Commit', 'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.1)'];
+            }
             if (($this->origin_admin_status ?? 'pending') === 'pending') {
                 return ['label' => 'Awaiting Dept Head Approval', 'color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'];
             }

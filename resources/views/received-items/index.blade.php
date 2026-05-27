@@ -280,6 +280,20 @@
             50% { transform: scale(1.05); opacity: 0.8; }
             100% { transform: scale(1); opacity: 1; }
         }
+        @keyframes blink-red {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
     </style>
 
     <!-- Results Table -->
@@ -357,7 +371,13 @@
                         <td data-label="Entry Date" style="padding: 1.25rem 1.5rem; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; font-weight: 700;">{{ \Carbon\Carbon::parse($item->entry_date)->format('d/m/y H:i') }}</td>
                         <td data-label="Received Date" style="padding: 1.25rem 1.5rem; color: var(--primary); font-weight: 700;">{{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('d/m/y') : '-' }}</td>
                         <td data-label="Description" style="padding: 1.25rem 1.5rem;">
-                            <div style="font-weight: 700; color: var(--text-main);">{{ $item->description }} <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $item->unit ?? 'Package Types' }})</span></div>
+                            <div style="font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                                <span>{{ $item->description }}</span>
+                                <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $item->unit ?? 'Package Types' }})</span>
+                                @if($item->hasOverdueTemporaryLoan())
+                                    <span class="overdue-dot" title="This item is overdue for return" style="display:inline-block; width:8px; height:8px; background-color:#ef4444; border-radius:50%; margin-left:6px; box-shadow:0 0 0 rgba(239,68,68,0.7); animation:blink-red 1.2s infinite;" data-bs-toggle="tooltip"></span>
+                                @endif
+                            </div>
                             <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Batch #{{ $item->batch_id }}</div>
                         </td>
                         <td data-label="Category" style="padding: 1.25rem 1.5rem;">

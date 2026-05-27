@@ -4,6 +4,21 @@
     $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
 @endphp
 <style>
+    :root {
+        --store-orange: #f97316;
+        --store-orange-hover: #ea580c;
+        --store-orange-light: rgba(249, 115, 22, 0.08);
+        --store-indigo: #6366f1;
+        --store-indigo-hover: #4f46e5;
+        --store-indigo-light: rgba(99, 102, 241, 0.08);
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-muted: #64748b;
+        --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
+        --shadow-hover: 0 30px 60px -15px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.05);
+    }
+
     .req-stat-card {
         background: var(--bg-card);
         border-radius: 16px;
@@ -356,6 +371,406 @@
         border-color: var(--primary);
         box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
     }
+
+    /* --- CARD REQUISITION LIST VIEW --- */
+    .history-item-box {
+        border: 2px solid #fdba74;
+        border-radius: 24px;
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+        background: var(--bg-card);
+        box-shadow: var(--shadow-premium);
+        position: relative;
+        transition: all 0.25s ease;
+    }
+
+    .history-item-box:hover {
+        box-shadow: var(--shadow-hover);
+        border-color: var(--store-orange);
+    }
+
+    .history-item-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .history-ref {
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: #ea580c;
+        background: rgba(234, 88, 12, 0.08);
+        padding: 5px 12px;
+        border-radius: 99px;
+        display: inline-block;
+    }
+
+    .history-meta-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .history-status-pills {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        border-radius: 99px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    /* --- STYLISH STEPPER TIMELINE --- */
+    .order-tracker {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        background: var(--bg-main);
+        padding: 1.25rem 2rem;
+        border-radius: 18px;
+        margin: 1.25rem 0;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .tracker-progress-line {
+        position: absolute;
+        top: 50%;
+        left: 4rem;
+        right: 4rem;
+        height: 3px;
+        background: var(--border-color);
+        z-index: 1;
+        transform: translateY(-50%);
+    }
+
+    .tracker-step {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 6px;
+    }
+
+    .tracker-dot {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--bg-card);
+        border: 2px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+
+    .tracker-label {
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    /* Timeline Step States */
+    .tracker-step.completed .tracker-dot {
+        background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+        border-color: var(--success-color);
+        color: white;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+    }
+
+    .tracker-step.completed .tracker-label {
+        color: var(--success-color);
+    }
+
+    .tracker-step.active .tracker-dot {
+        background: linear-gradient(135deg, var(--store-orange) 0%, var(--store-orange-hover) 100%);
+        border-color: var(--store-orange);
+        color: white;
+        animation: pulse-orange-stepper 2s infinite;
+    }
+
+    .tracker-step.active .tracker-label {
+        color: var(--store-orange);
+    }
+
+    .tracker-step.declined .tracker-dot {
+        background: linear-gradient(135deg, var(--danger-color) 0%, #b91c1c 100%);
+        border-color: var(--danger-color);
+        color: white;
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+    }
+
+    .tracker-step.declined .tracker-label {
+        color: var(--danger-color);
+    }
+
+    @keyframes pulse-orange-stepper {
+        0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
+        70% { box-shadow: 0 0 0 8px rgba(249, 115, 22, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+    }
+
+    /* Premium Responsive Table Styles */
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        box-shadow: var(--shadow-premium);
+        margin-bottom: 2rem;
+    }
+
+    .oversight-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        min-width: 1100px;
+    }
+
+    .oversight-table th {
+        padding: 1.25rem 1.5rem;
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        background: rgba(15, 23, 42, 0.01);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .oversight-table td {
+        padding: 1.25rem 1.5rem;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.88rem;
+        color: var(--text-main);
+    }
+
+    .oversight-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .oversight-row {
+        transition: all 0.2s ease;
+    }
+
+    .oversight-row:hover {
+        background: rgba(99, 102, 241, 0.02);
+    }
+
+    /* Table Stepper/Tracker */
+    .mini-tracker {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        position: relative;
+        width: 100%;
+        max-width: 160px;
+        margin-top: 6px;
+    }
+
+    .mini-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .mini-dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--bg-main);
+        border: 2px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        transition: all 0.25s ease;
+    }
+
+    .mini-step.completed .mini-dot {
+        background: var(--success-color);
+        border-color: var(--success-color);
+        color: white;
+    }
+
+    .mini-step.active .mini-dot {
+        background: var(--store-orange);
+        border-color: var(--store-orange);
+        color: white;
+        box-shadow: 0 0 8px rgba(249, 115, 22, 0.35);
+    }
+
+    .mini-step.declined .mini-dot {
+        background: var(--danger-color);
+        border-color: var(--danger-color);
+        color: white;
+    }
+
+    .mini-line {
+        flex: 1;
+        height: 2px;
+        background: var(--border-color);
+        position: relative;
+        z-index: 1;
+    }
+
+    .mini-line.completed {
+        background: var(--success-color);
+    }
+
+    .mini-label {
+        font-size: 0.6rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        margin-top: 2px;
+    }
+
+    .mini-step.completed .mini-label {
+        color: var(--success-color);
+    }
+
+    .mini-step.active .mini-label {
+        color: var(--store-orange);
+    }
+
+    .mini-step.declined .mini-label {
+        color: var(--danger-color);
+    }
+
+    /* Inline Items styling */
+    .table-item-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--text-main);
+        background: var(--bg-main);
+        border: 1px solid var(--border-color);
+        padding: 4px 10px;
+        border-radius: 8px;
+        margin: 2px;
+    }
+
+    .table-item-qty {
+        color: var(--store-orange);
+        font-weight: 800;
+    }
+
+    .table-item-approved {
+        color: var(--success-color);
+        font-weight: 800;
+    }
+
+    .purpose-quote-inline {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-top: 4px;
+    }
+
+    @media(max-width: 768px) {
+        .oversight-table, .oversight-table thead, .oversight-table tbody, .oversight-table th, .oversight-table td, .oversight-table tr {
+            display: block;
+        }
+        .oversight-table thead {
+            display: none;
+        }
+        .oversight-table tr {
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            background: var(--bg-card);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-premium);
+        }
+        .oversight-table td {
+            border: none;
+            padding: 0.65rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.88rem;
+            text-align: right;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .oversight-table td:last-child {
+            border-bottom: none;
+            justify-content: center;
+            padding-top: 1rem;
+        }
+        .oversight-table td::before {
+            content: attr(data-label);
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            text-align: left;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        .mini-tracker {
+            max-width: 100% !important;
+            justify-content: flex-end;
+        }
+    }
+
+    @media(max-width: 768px) {
+        .order-tracker {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+        .tracker-progress-line {
+            left: 2.5rem;
+            top: 2rem;
+            bottom: 2rem;
+            width: 3px;
+            height: calc(100% - 4rem);
+            transform: none;
+        }
+        .tracker-step {
+            flex-direction: row;
+            text-align: left;
+            gap: 1rem;
+        }
+    }
 </style>
 
 <div style="padding:2rem;">
@@ -401,6 +816,15 @@
     {{-- Staff Access Provisioning (Non-Stores Department Heads only) --}}
     @if(!$isStoresHead)
     <div id="provisioningSection" style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);padding:1.75rem;margin-bottom:2rem;box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+        @if(!empty($hasOverdueReturn))
+        <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.25); border-radius:12px; padding:1rem 1.25rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:12px; color:#ef4444;">
+            <i data-lucide="alert-triangle" style="width:20px; height:20px; flex-shrink:0; color:#ef4444;"></i>
+            <span style="font-weight:800; font-size:0.88rem;">
+                <strong>ACCESS SUSPENDED:</strong> Your department currently has overdue temporary assets. Access to provision temporary requisitioner accounts is suspended until all overdue items are officially logged as returned.
+            </span>
+        </div>
+        @endif
+
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
             <div style="display:flex;align-items:center;gap:0.85rem;">
                 <div style="width:42px;height:42px;background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.1));border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(16,185,129,0.2);">
@@ -411,10 +835,17 @@
                     <div style="font-size:1rem;font-weight:800;color:var(--text-main);margin-top:1px;">Staff Access Provisioning</div>
                 </div>
             </div>
+            @if(!empty($hasOverdueReturn))
+            <button id="openProvisionModal" disabled title="Requisition privileges suspended due to overdue temporary assets." style="display:flex;align-items:center;gap:0.5rem;padding:0.65rem 1.25rem;background:#94a3b8;border:none;border-radius:10px;color:#fff;font-weight:700;font-size:.82rem;cursor:not-allowed;box-shadow:none;">
+                <i data-lucide="lock" style="width:16px;height:16px;"></i>
+                Create Temp Requisitioner (Suspended)
+            </button>
+            @else
             <button id="openProvisionModal" onclick="openProvisionModal()" style="display:flex;align-items:center;gap:0.5rem;padding:0.65rem 1.25rem;background:linear-gradient(135deg,#10b981,#059669);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px rgba(16,185,129,0.25);">
                 <i data-lucide="plus-circle" style="width:16px;height:16px;"></i>
                 Create Temp Requisitioner
             </button>
+            @endif
         </div>
 
         {{-- Active Temp Accounts Table --}}
@@ -565,116 +996,233 @@
             </a>
             @endif
         </form>
-    </div>
-
-    {{-- Tabular Requisition List --}}
-    <div style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);overflow:hidden; box-shadow:0 15px 30px rgba(0,0,0,0.02);">
-        <table style="width:100%;border-collapse:collapse;">
-            <thead style="background:var(--bg-main);">
+    {{-- Card Requisition List --}}
+    <div class="table-container">
+        <table class="oversight-table">
+            <thead>
                 <tr>
-                    <th style="padding:1.25rem 1.5rem;text-align:left;font-size:.72rem;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;">Ref ID</th>
-                    <th style="padding:1.25rem 1.5rem;text-align:left;font-size:.72rem;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;">Department / Requester</th>
-                    <th style="padding:1.25rem 1.5rem;text-align:left;font-size:.72rem;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;">Items</th>
-                    <th style="padding:1.25rem 1.5rem;text-align:center;font-size:.72rem;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;">Priority</th>
-                    <th style="padding:1.25rem 1.5rem;text-align:center;font-size:.72rem;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;">My Review Status</th>
-                    <th style="padding:1.25rem 1.5rem;text-align:left;font-size:.72rem;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;">Collection Details</th>
-                    <th style="padding:1.25rem 1.5rem;text-align:left;font-size:.72rem;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;">Submission Date</th>
-                    <th style="padding:1.25rem 1.5rem;text-align:center;font-size:.72rem;font-weight:900;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em; width: 180px;">Review Control</th>
+                    <th style="width: 15%;">Requisition Ref</th>
+                    <th style="width: 20%;">Department & Requester</th>
+                    <th style="width: 25%;">Requested Items</th>
+                    <th style="width: 20%;">Purpose / Return Date</th>
+                    <th style="width: 12%;">Timeline Status</th>
+                    <th style="width: 8%; text-align: center;">Action</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($requisitions as $req)
-                @php
-                    $pb = $req->priority_badge;
-                    $status = $isStoresHead ? $req->main_admin_status : $req->origin_admin_status;
+                    @php
+                        $pb = $req->priority_badge;
+                        $status = $isStoresHead ? $req->main_admin_status : $req->origin_admin_status;
+                        $generalStatusBadge = $req->status_badge;
+                        $utb = $req->usage_type_badge;
+                    @endphp
+                    <tr class="oversight-row animate-slide-up">
+                        <td data-label="Requisition Ref">
+                            <span class="history-ref" style="margin-bottom: 6px; display: inline-block;">{{ $req->unique_id ?: ('REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT)) }}</span>
+                            <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                <span class="status-pill" style="background: {{ $utb['bg'] }}; color: {{ $utb['color'] }}; font-size: 0.62rem; padding: 2px 8px;">
+                                    {{ $utb['label'] }}
+                                </span>
+                                <span class="status-pill" style="background: {{ $pb['bg'] }}; color: {{ $pb['color'] }}; font-size: 0.62rem; padding: 2px 8px;">
+                                    {{ $pb['label'] }}
+                                </span>
+                            </div>
+                        </td>
 
-                    if ($status === 'approved') {
-                        $sb = ['label' => 'Approved', 'bg' => 'rgba(16, 185, 129, 0.1)', 'color' => '#10b981'];
-                    } elseif ($status === 'declined') {
-                        $sb = ['label' => 'Declined', 'bg' => 'rgba(239, 68, 68, 0.1)', 'color' => '#ef4444'];
-                    } else {
-                        $sb = ['label' => 'Awaiting Me', 'bg' => 'rgba(245, 158, 11, 0.1)', 'color' => '#f59e0b'];
-                    }
-                @endphp
-                <tr class="req-table-row">
-                    <td style="padding:1.25rem 1.5rem; font-family: monospace; font-weight: 800; color: var(--primary);">
-                        {{ $req->unique_id ?: ('REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT)) }}
-                    </td>
-                    <td style="padding:1.25rem 1.5rem;">
-                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                            <div style="font-size:.9rem;font-weight:800;color:var(--text-main);">{{ $req->department }}</div>
-                            @php $utb = $req->usage_type_badge; @endphp
-                            <span class="pill" style="background:{{ $utb['bg'] }}; color:{{ $utb['color'] }}; font-size: 0.6rem; padding: 2px 6px; border-radius: 6px; font-weight:800; text-transform:none; letter-spacing:0;">{{ $utb['label'] }}</span>
-                        </div>
-                        <div style="font-size:.75rem;color:var(--text-muted);font-weight:600;">{{ $req->requester_name }}{{ $req->rank_or_title ? ' · '.$req->rank_or_title : '' }}</div>
-                        @if($isStoresHead && $req->origin_approved_by)
-                            <div style="font-size:0.7rem; color:#10b981; font-weight:700; margin-top:4px; display:inline-flex; align-items:center; gap:3px; background:rgba(16,185,129,0.06); padding:2px 8px; border-radius:6px; border:1px solid rgba(16,185,129,0.15);">
-                                <i data-lucide="shield-check" style="width:11px; height:11px;"></i> Approved by: {{ $req->origin_approved_by }}
+                        <td data-label="Department & Requester">
+                            <div style="font-weight: 800; color: var(--text-main);">{{ $req->requester_name }}{{ $req->rank_or_title ? ' (' . $req->rank_or_title . ')' : '' }}</div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;">
+                                Dept: <strong style="color: var(--text-main);">{{ $req->department }}</strong>
                             </div>
-                        @endif
-                    </td>
-                    <td style="padding:1.25rem 1.5rem;">
-                        <div style="display:flex;flex-wrap:wrap;gap:4px;">
-                            @foreach($req->items->take(3) as $item)
-                            <span style="font-size:.7rem;font-weight:700;color:var(--text-main);background:var(--bg-main);border:1px solid var(--border-color);padding:2px 8px;border-radius:6px;">
-                                {{ Str::limit($item->description, 20) }} ({{ number_format($item->quantity_requested,0) }})
-                            </span>
-                            @endforeach
-                            @if($req->items->count() > 3)
-                            <span style="font-size:.7rem;font-weight:700;color:#4f46e5;background:rgba(79,70,229,.1);padding:2px 8px;border-radius:6px;">+{{ $req->items->count()-3 }} more</span>
+                            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">
+                                <i data-lucide="calendar" style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 2px;"></i>{{ $req->created_at->format('d/m/y H:i') }}
+                            </div>
+                        </td>
+
+                        <td data-label="Requested Items">
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                @foreach($req->items as $item)
+                                    @php
+                                        $approvedVal = $item->quantity_approved !== null ? (float)$item->quantity_approved : null;
+                                        $altApprovedVal = $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : 0;
+                                    @endphp
+                                    <span class="table-item-pill" title="{{ $item->description }}">
+                                        {{ Str::limit($item->description, 20) }}
+                                        <span class="table-item-qty">— {{ number_format($item->quantity_requested, 0) }} {{ $item->unit }}</span>
+                                        @if($approvedVal !== null)
+                                            <span class="table-item-approved">({{ number_format($approvedVal + $altApprovedVal, 0) }})</span>
+                                        @endif
+                                    </span>
+                                @endforeach
+                            </div>
+                        </td>
+
+                        <td data-label="Purpose / Return Date">
+                            @php
+                                $purposeText = $req->purpose;
+                                $returnDateHtml = '';
+                                $dateMatch = [];
+                                if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $purposeText, $dateMatch)) {
+                                    $rawDate = trim($dateMatch[1]);
+                                    $formattedDate = $rawDate;
+                                    try {
+                                        $dateObj = \Carbon\Carbon::parse($rawDate);
+                                        $formattedDate = $dateObj->format('d/m/y');
+                                    } catch (\Exception $e) {
+                                        $parts = explode('-', $rawDate);
+                                        if (count($parts) === 3 && strlen($parts[0]) === 4) {
+                                            $formattedDate = $parts[2] . '/' . $parts[1] . '/' . substr($parts[0], 2);
+                                        }
+                                    }
+                                    $returnDateHtml = '<div style="margin-top: 4px;"><span class="status-pill" style="background: rgba(234, 88, 12, 0.08); color: #ea580c; border: 1px solid rgba(234, 88, 12, 0.2); font-size: 0.65rem; padding: 2px 8px;">🔄 Due back: ' . $formattedDate . '</span></div>';
+                                    $purposeText = trim(preg_replace('/\[Expected Return Date:\s*[^\]]+\]/i', '', $purposeText));
+                                }
+                            @endphp
+                            <div class="purpose-quote-inline" title="{{ $purposeText }}" style="display: flex; align-items: flex-start; gap: 4px;">
+                                <i data-lucide="quote" style="width: 10px; height: 10px; color: var(--store-orange); transform: scaleX(-1); flex-shrink: 0; margin-top: 3px;"></i>
+                                <span>{{ $purposeText }}</span>
+                            </div>
+                            {!! $returnDateHtml !!}
+                        </td>
+
+                        <td data-label="Timeline / Status">
+                            @php
+                                $isCollected = !is_null($req->collected_at);
+                                $isDeclined = $req->status === 'declined' || $req->origin_admin_status === 'declined' || $req->main_admin_status === 'declined';
+                                $isPartially = $req->status === 'partially_approved';
+                                $isApproved = $req->status === 'approved';
+
+                                $completedSteps = 1;
+                                $activeStep = 2;
+
+                                if ($isCollected) {
+                                    $completedSteps = 4;
+                                } elseif ($isApproved || $isPartially) {
+                                    $completedSteps = 3;
+                                    $activeStep = 4;
+                                } elseif ($isDeclined) {
+                                    $completedSteps = 1;
+                                    $activeStep = 2;
+                                } else {
+                                    if ($req->origin_admin_status === 'approved') {
+                                        $completedSteps = 2;
+                                        $activeStep = 3;
+                                    } else {
+                                        $completedSteps = 1;
+                                        $activeStep = 2;
+                                    }
+                                }
+                            @endphp
+                            <div style="font-weight: 800; font-size: 0.72rem; text-transform: uppercase; color: {{ $isDeclined ? '#ef4444' : ($isCollected ? '#10b981' : '#6366f1') }}; display: flex; align-items: center; gap: 4px;">
+                                <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: {{ $isDeclined ? '#ef4444' : ($isCollected ? '#10b981' : '#6366f1') }};"></span>
+                                {{ $generalStatusBadge['label'] }}
+                            </div>
+                            <div class="mini-tracker">
+                                <div class="mini-step completed" title="Submitted">
+                                    <span class="mini-dot"><i data-lucide="file-text" style="width: 8px; height: 8px;"></i></span>
+                                </div>
+                                <div class="mini-line completed"></div>
+
+                                @php
+                                    $step2Class = '';
+                                    if ($completedSteps >= 2) {
+                                        $step2Class = 'completed';
+                                    } elseif ($isDeclined) {
+                                        $step2Class = 'declined';
+                                    } elseif ($activeStep === 2) {
+                                        $step2Class = 'active';
+                                    }
+                                @endphp
+                                <div class="mini-step {{ $step2Class }}" title="{{ $isDeclined ? 'Declined' : 'Under Review' }}">
+                                    <span class="mini-dot"><i data-lucide="{{ $isDeclined ? 'x' : 'activity' }}" style="width: 8px; height: 8px;"></i></span>
+                                </div>
+                                <div class="mini-line {{ $completedSteps >= 2 ? 'completed' : '' }}"></div>
+
+                                @php
+                                    $step3Class = '';
+                                    if ($completedSteps >= 3) {
+                                        $step3Class = 'completed';
+                                    } elseif ($activeStep === 3) {
+                                        $step3Class = 'active';
+                                    }
+                                @endphp
+                                <div class="mini-step {{ $step3Class }}" title="{{ $isPartially ? 'Partially Approved' : 'Approved' }}">
+                                    <span class="mini-dot"><i data-lucide="{{ $isPartially ? 'alert-triangle' : 'check' }}" style="width: 8px; height: 8px;"></i></span>
+                                </div>
+                                <div class="mini-line {{ $completedSteps >= 3 ? 'completed' : '' }}"></div>
+
+                                @php
+                                    $step4Class = '';
+                                    if ($completedSteps >= 4) {
+                                        $step4Class = 'completed';
+                                    } elseif ($activeStep === 4) {
+                                        $step4Class = 'active';
+                                    }
+                                @endphp
+                                <div class="mini-step {{ $step4Class }}" title="Collection">
+                                    <span class="mini-dot"><i data-lucide="package-open" style="width: 8px; height: 8px;"></i></span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td data-label="Action" style="text-align: center; white-space: nowrap;">
+                            @if(($req->alternative_status ?? '') === 'proposed')
+                                <button onclick="openRequisitionModal({{ $req->id }})"
+                                    style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: rgba(249, 115, 22, 0.08); border: 1.5px solid rgba(249, 115, 22, 0.2); color: var(--store-orange); padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;"
+                                    onmouseover="this.style.background='var(--store-orange)'; this.style.color='white';"
+                                    onmouseout="this.style.background='rgba(249, 115, 22, 0.08)'; this.style.color='var(--store-orange)';">
+                                    <i data-lucide="shuffle" style="width: 14px; height: 14px;"></i> Pending Alt
+                                </button>
+                            @elseif($status === 'pending')
+                                <button onclick="openRequisitionModal({{ $req->id }})"
+                                    style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: rgba(16, 185, 129, 0.08); border: 1.5px solid rgba(16, 185, 129, 0.2); color: #10b981; padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;"
+                                    onmouseover="this.style.background='#10b981'; this.style.color='white';"
+                                    onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981';">
+                                    <i data-lucide="shield-alert" style="width: 14px; height: 14px;"></i> Review
+                                </button>
+                            @elseif(($status === 'approved' && $req->status === 'pending') || (in_array($req->status, ['approved', 'partially_approved']) && is_null($req->collected_at)))
+                                <button onclick="sendFollowUp({{ $req->id }}, this)"
+                                    style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: rgba(245, 158, 11, 0.08); border: 1.5px solid rgba(245, 158, 11, 0.2); color: var(--warning-color); padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;"
+                                    onmouseover="this.style.background='var(--warning-color)'; this.style.color='white';"
+                                    onmouseout="this.style.background='rgba(245, 158, 11, 0.08)'; this.style.color='var(--warning-color)';">
+                                    <i data-lucide="bell" style="width: 14px; height: 14px;"></i> Follow Up
+                                </button>
+                            @elseif(in_array($req->status, ['approved', 'partially_approved']) && !is_null($req->collected_at))
+                                <button onclick="openRequisitionModal({{ $req->id }})"
+                                    style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: rgba(249, 115, 22, 0.08); border: 1.5px solid rgba(249, 115, 22, 0.2); color: var(--store-orange); padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;"
+                                    onmouseover="this.style.background='var(--store-orange)'; this.style.color='white';"
+                                    onmouseout="this.style.background='rgba(249, 115, 22, 0.08)'; this.style.color='var(--store-orange)';">
+                                    <i data-lucide="truck" style="width: 14px; height: 14px;"></i> Track
+                                </button>
+                            @else
+                                <button onclick="openRequisitionModal({{ $req->id }})"
+                                    style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: rgba(99, 102, 241, 0.08); border: 1.5px solid rgba(99, 102, 241, 0.2); color: #4f46e5; padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;"
+                                    onmouseover="this.style.background='#4f46e5'; this.style.color='white';"
+                                    onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='#4f46e5';">
+                                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i> View
+                                </button>
                             @endif
-                        </div>
-                    </td>
-                    <td style="padding:1.25rem 1.5rem;text-align:center;"><span class="pill" style="background:{{ $pb['bg'] }};color:{{ $pb['color'] }};">{{ $pb['label'] }}</span></td>
-                    <td style="padding:1.25rem 1.5rem;text-align:center;"><span class="pill" style="background:{{ $sb['bg'] }};color:{{ $sb['color'] }};">● {{ $sb['label'] }}</span></td>
-                    <td style="padding:1.25rem 1.5rem;">
-                        @if($req->collected_at)
-                            <div style="font-size:0.85rem; font-weight:800; color:var(--text-main); display:flex; align-items:center; gap:6px;">
-                                <i data-lucide="user" style="width:12px; height:12px; color:#10b981;"></i>
-                                {{ $req->collector_name }}
-                            </div>
-                            <div style="font-size:0.7rem; color:var(--text-muted); font-weight:600; margin-top:2px;">
-                                Issued by: <span style="font-weight:800; color:#4f46e5;">{{ $req->collector->name ?? 'Store Officer' }}</span>
-                            </div>
-                            <div style="font-size:0.65rem; color:#94a3b8; font-weight:600; margin-top:2px;">
-                                {{ $req->collected_at->format('d/m/y H:i') }}
-                            </div>
-                        @else
-                            <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted); background:var(--bg-main); padding:3px 8px; border-radius:6px; border:1px dashed var(--border-color); display:inline-flex; align-items:center; gap:4px;">
-                                <i data-lucide="clock" style="width:11px; height:11px;"></i> Awaiting Collection
-                            </span>
-                        @endif
-                    </td>
-                    <td style="padding:1.25rem 1.5rem;font-size:.78rem;color:var(--text-muted);font-weight:600;">{{ $req->created_at->format('d/m/y') }}<br>{{ $req->created_at->format('H:i') }}</td>
-                    <td style="padding:1.25rem 1.5rem;text-align:center;">
-                        @if($status === 'pending')
-                            <button onclick="openRequisitionModal({{ $req->id }})"
-                                style="background:rgba(16,185,129,.1);color:#10b981;border:none;padding:.55rem 1.25rem;border-radius:12px;font-weight:900;font-size:.8rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s; border: 1px solid rgba(16, 185, 129, 0.25);" onmouseover="this.style.background='#10b981';this.style.color='white'" onmouseout="this.style.background='rgba(16,185,129,.1)';this.style.color='#10b981'">
-                                <i data-lucide="shield-alert" style="width:15px;"></i> Review & Verify
-                            </button>
-                        @else
-                            <button onclick="openRequisitionModal({{ $req->id }})"
-                                style="background:rgba(99,102,241,.1);color:#4f46e5;border:none;padding:.55rem 1.25rem;border-radius:12px;font-weight:800;font-size:.8rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s; border: 1px solid rgba(99, 102, 241, 0.25);" onmouseover="this.style.background='#4f46e5';this.style.color='white'" onmouseout="this.style.background='rgba(99,102,241,.1)';this.style.color='#4f46e5'">
-                                <i data-lucide="eye" style="width:15px;"></i> View
-                            </button>
-                        @endif
-                    </td>
-                </tr>
+                        </td>
+                    </tr>
                 @empty
-                <tr>
-                    <td colspan="8" style="padding:4rem;text-align:center;color:var(--text-muted);">
-                        <i data-lucide="inbox" style="width:40px;margin-bottom:1rem;opacity:.25; color:#10b981;"></i>
-                        <h4 style="font-weight:900;color:var(--text-main); margin:0;">All Caught Up!</h4>
-                        <p style="font-size:.85rem; margin-top:6px;">No requisitions matches your current filter.</p>
-                    </td>
-                </tr>
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 5rem 2rem; border-bottom: none;">
+                            <div style="text-align:center; color:var(--text-muted);">
+                                <i data-lucide="inbox" style="width:40px; height:40px; margin: 0 auto 1rem auto; opacity:.25; color:#10b981; display:block;"></i>
+                                <h4 style="font-weight:900;color:var(--text-main); margin:0;">All Caught Up!</h4>
+                                <p style="font-size:.85rem; margin-top:6px;">No requisitions matches your current filter.</p>
+                            </div>
+                        </td>
+                    </tr>
                 @endforelse
             </tbody>
         </table>
+    </div>
 
         {{-- Pagination --}}
         @if($requisitions->hasPages())
-        <div style="padding: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; background: var(--bg-card); border-radius: 0 0 20px 20px;">
+        <div style="padding: 1.5rem; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; background: var(--bg-card); border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04);">
             <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
                 Showing
                 <span style="color: var(--text-main); font-weight: 900;">{{ $requisitions->firstItem() ?? 0 }}</span>
@@ -772,9 +1320,20 @@
             const rawDate = dateMatch[1].trim();
             let formattedDate = rawDate;
             try {
-                const dateObj = new Date(rawDate);
-                if (!isNaN(dateObj.getTime())) {
-                    formattedDate = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+                const dateParts = rawDate.split('-');
+                if (dateParts.length === 3 && dateParts[0].length === 4) {
+                    const y = dateParts[0].substring(2);
+                    const m = dateParts[1];
+                    const d = dateParts[2];
+                    formattedDate = `${d}/${m}/${y}`;
+                } else {
+                    const dateObj = new Date(rawDate);
+                    if (!isNaN(dateObj.getTime())) {
+                        const day = String(dateObj.getDate()).padStart(2, '0');
+                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const year = String(dateObj.getFullYear()).substring(2);
+                        formattedDate = `${day}/${month}/${year}`;
+                    }
                 }
             } catch(e) {}
             returnDateBannerHtml = `
@@ -831,14 +1390,99 @@
         // Render Requested Items
         const rows = data.items.map(item => {
             const requested = parseFloat(item.quantity_requested) || 0;
+            let approved = item.quantity_approved !== null ? parseFloat(item.quantity_approved) : null;
+            const altApproved = item.alternative_quantity_approved !== null ? parseFloat(item.alternative_quantity_approved) : 0;
+            
+            if (approved === 0 && altApproved > 0 && (data.alternative_status === 'agreed' || data.alternative_status === 'proposed')) {
+                approved = Math.max(0, requested - altApproved);
+            }
+            
+            const totalApproved = approved !== null ? (approved + altApproved) : null;
+
             const stockInfo = item.stock_sufficient ?
                 `<span style="color:#10b981;font-size:.7rem;font-weight:700;">✔ Sufficient Stock</span>` :
                 `<span style="color:#ef4444;font-size:.7rem;font-weight:700;">⚠ Short Stock</span>`;
 
-            const stockLine = isStoresHead ? 
-                ` · Stock: ${parseFloat(item.current_stock).toLocaleString()} (${stockInfo})` : 
+            const stockLine = isStoresHead ?
+                ` · Stock: ${parseFloat(item.current_stock).toLocaleString()} (${stockInfo})` :
                 '';
 
+            // If stores has approved/processed the requisition items, show full tracking details
+            if (totalApproved !== null) {
+                const pct = requested > 0 ? Math.min(Math.round((totalApproved / requested) * 100), 100) : 0;
+                let fulfillBadgeBg = 'rgba(16, 185, 129, 0.1)';
+                let fulfillBadgeColor = '#10b981';
+                let fulfillLabel = `${pct}% Fulfill`;
+
+                if (totalApproved === 0) {
+                    fulfillBadgeBg = 'rgba(239, 68, 68, 0.1)';
+                    fulfillBadgeColor = '#ef4444';
+                    fulfillLabel = 'Declined';
+                } else if (totalApproved < requested) {
+                    fulfillBadgeBg = 'rgba(245, 158, 11, 0.1)';
+                    fulfillBadgeColor = '#f59e0b';
+                    fulfillLabel = `${pct}% Reduced`;
+                }
+
+                return `
+                <div class="item-decision-card" style="border-bottom: 1px solid var(--border-color); padding: 1.5rem; background: var(--bg-card); display:flex; flex-direction:column; gap:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; width:100%;">
+                        <div>
+                            ${item.alternative_description ? `
+                                <div style="font-size:.95rem;font-weight:800;color:var(--text-main); display:flex; align-items:center; gap:6px;">
+                                    <span>${item.description}</span>
+                                    <span style="font-size:0.75rem; font-weight:800; color:#10b981;">(Approved: ${approved.toLocaleString()} ${item.unit})</span>
+                                </div>
+                                <div style="font-size:.92rem;font-weight:800;color:var(--store-orange); display:flex; align-items:center; gap:6px; margin-top:4px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:2px;"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3 14 10"/><path d="M3 21 10 14"/></svg>
+                                    Alternative: ${item.alternative_description}
+                                    <span style="font-size:0.75rem; font-weight:800;">(${data.alternative_status === 'proposed' ? 'Pending Approval' : 'Approved'}: ${altApproved.toLocaleString()} ${item.unit})</span>
+                                </div>
+                                ${data.alternative_status === 'proposed' && (requested - approved - altApproved) > 0 ? `
+                                <div style="font-size:.92rem;font-weight:800;color:var(--text-muted); display:flex; align-items:center; gap:6px; margin-top:4px; opacity:0.85;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                    ${item.description}
+                                    <span style="font-size:0.75rem; font-weight:800;">(Pending Approval: ${(requested - approved - altApproved).toLocaleString()} ${item.unit})</span>
+                                </div>
+                                ` : ''}
+                            ` : `
+                                <div style="font-size:.95rem;font-weight:800;color:var(--text-main);">${item.description}</div>
+                            `}
+                            <div style="font-size:.75rem;color:var(--text-muted);font-weight:600;margin-top:4px;">
+                                Unit: ${item.unit}${stockLine}
+                            </div>
+                        </div>
+                        <span class="pill" style="background:${fulfillBadgeBg}; color:${fulfillBadgeColor}; font-weight:800; font-size:0.68rem; padding:3px 10px; border-radius:99px;">${fulfillLabel}</span>
+                    </div>
+
+                    <div class="item-card-panel" style="background:var(--bg-main); border-radius:12px; padding:1rem 1.25rem; display:flex; align-items:center; justify-content:space-between; gap:1.5rem; flex-wrap:wrap; border:1px solid var(--border-color); width:100%; box-sizing:border-box;">
+                        <div style="flex:1; min-width:80px;">
+                            <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;">Requested</div>
+                            <div style="font-size:1.1rem;font-weight:800;color:var(--text-main);margin-top:2px;">${requested.toLocaleString()}</div>
+                        </div>
+
+                        <div style="flex:1; min-width:80px;">
+                            <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;">Approved</div>
+                            <div style="font-size:1.15rem;font-weight:900;color:${totalApproved === 0 ? '#ef4444' : '#10b981'};margin-top:2px;">${totalApproved.toLocaleString()}</div>
+                        </div>
+
+                        <div style="flex:2; min-width:180px;">
+                            <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:6px;">Fulfillment Progress</div>
+                            <div style="background:rgba(0,0,0,0.05); height:6px; border-radius:10px; overflow:hidden; width:100%;">
+                                <div style="height:100%; width: ${pct}%; background:${approved === 0 ? '#ef4444' : (approved < requested ? '#f59e0b' : 'linear-gradient(90deg, #4f46e5 0%, #10b981 100%)')}; border-radius:10px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${item.remarks ? `
+                    <div style="background:rgba(0,0,0,0.015); border:1.5px dashed var(--border-color); border-radius:10px; padding:0.75rem 1rem; margin-top:0.25rem;">
+                        <span style="font-size:0.65rem; font-weight:900; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px; letter-spacing:0.04em;">Store Remarks</span>
+                        <p style="margin:0; font-size:0.8rem; color:var(--text-main); font-style:italic; line-height:1.4;">"${item.remarks}"</p>
+                    </div>` : ''}
+                </div>`;
+            }
+
+            // Otherwise, default pending item rows
             return `
             <div class="item-decision-card">
                 <div class="item-card-header">
@@ -874,37 +1518,84 @@
         </div>`;
 
         // Check if processed already
-        let isProcessed = isStoresHead ? (data.main_admin_status !== 'pending') : (data.origin_admin_status !== 'pending');
+        let isProcessed = isStoresHead ? (data.main_admin_status !== 'pending') : (data.origin_admin_status !== 'pending' && data.alternative_status !== 'proposed');
         let decisionHtml = '';
 
         if (!isProcessed) {
-            // Render decision actions
-            decisionHtml = `
-            <div class="decision-area animate-slide-up">
-                <div style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display:flex; align-items:center; gap:6px;">
-                    <i data-lucide="message-square" style="width: 14px; color: var(--primary);"></i>
-                    Oversight Decision Form
-                </div>
-                <textarea id="decisionNotes" class="decision-text-area" placeholder="Enter notes or comments regarding this decision (Optional notes for Head, required reason if declining)..."></textarea>
+            if (data.alternative_status === 'proposed' && !isStoresHead) {
+                // Render alternative proposal review buttons with Yes/No choices and comment box
+                decisionHtml = `
+                <div class="decision-area animate-slide-up" style="background: rgba(249, 115, 22, 0.04); border: 1.5px dashed rgba(249, 115, 22, 0.2); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                    <div style="font-size: 0.72rem; font-weight: 800; color: var(--store-orange); text-transform: uppercase; letter-spacing: 0.05em; display:flex; align-items:center; gap:6px;">
+                        <i data-lucide="shuffle" style="width: 14px; color: var(--store-orange);"></i>
+                        Alternative Item Proposal
+                    </div>
+                    <div style="font-size: 0.88rem; color: var(--text-main); font-weight: 700; line-height: 1.5;">
+                        The Head of Stores has proposed alternative items for this requisition. Please review the item breakdown above. Do you agree to accept the alternative item allocations?
+                    </div>
+                    
+                    <div style="display: flex; gap: 1.5rem; align-items: center; margin-top: 0.25rem; margin-bottom: 0.25rem;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 800; color: var(--text-main);">
+                            <input type="radio" name="altAgreement" id="altAgreeYes" value="yes" onchange="checkAltOptions()" style="width: 18px; height: 18px; accent-color: #10b981; cursor: pointer;">
+                            Yes
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 800; color: var(--text-main);">
+                            <input type="radio" name="altAgreement" id="altAgreeNo" value="no" onchange="checkAltOptions()" style="width: 18px; height: 18px; accent-color: #ef4444; cursor: pointer;">
+                            No
+                        </label>
+                    </div>
 
-                <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
-                    <button onclick="processDecision('declined')" style="flex:1; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.25); padding: 0.75rem; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';">
-                        <i data-lucide="x-circle" style="width: 18px;"></i>
-                        Decline Request
-                    </button>
-                    <button onclick="processDecision('approved')" style="flex:1.5; background: #10b981; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);" onmouseover="this.style.background='#059669';" onmouseout="this.style.background='#10b981';">
-                        <i data-lucide="check-circle" style="width: 18px;"></i>
-                        Approve & Escalate
-                    </button>
-                </div>
-            </div>`;
+                    <textarea id="decisionNotes" class="decision-text-area" oninput="checkAltOptions()" placeholder="Enter optional comments or feedback regarding this alternative decision..."></textarea>
+
+                    <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+                        <button id="declineAltBtn" onclick="processAlternativeResponse('decline')" disabled style="flex:1; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.25); padding: 0.75rem; border-radius: 12px; font-weight: 800; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; opacity: 0.4;" onmouseover="if(!this.disabled){this.style.background='#ef4444'; this.style.color='white';}" onmouseout="if(!this.disabled){this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';}">
+                            <i data-lucide="x-circle" style="width: 18px;"></i>
+                            Decline Alternative
+                        </button>
+                        <button id="agreeAltBtn" onclick="processAlternativeResponse('agree')" disabled style="flex:1.5; background: #10b981; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; opacity: 0.4; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);" onmouseover="if(!this.disabled)this.style.background='#059669';" onmouseout="if(!this.disabled)this.style.background='#10b981';">
+                            <i data-lucide="check-circle" style="width: 18px;"></i>
+                            Agree to Alternative
+                        </button>
+                    </div>
+                </div>`;
+            } else {
+                // Render standard decision actions
+                decisionHtml = `
+                <div class="decision-area animate-slide-up">
+                    <div style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display:flex; align-items:center; gap:6px;">
+                        <i data-lucide="message-square" style="width: 14px; color: var(--primary);"></i>
+                        Oversight Decision Form
+                    </div>
+                    <textarea id="decisionNotes" class="decision-text-area" placeholder="Enter notes or comments regarding this decision (Optional notes for Head, required reason if declining)..."></textarea>
+
+                    <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+                        <button onclick="processDecision('declined')" style="flex:1; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.25); padding: 0.75rem; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';">
+                            <i data-lucide="x-circle" style="width: 18px;"></i>
+                            Decline Request
+                        </button>
+                        <button onclick="processDecision('approved')" style="flex:1.5; background: #10b981; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);" onmouseover="this.style.background='#059669';" onmouseout="this.style.background='#10b981';">
+                            <i data-lucide="check-circle" style="width: 18px;"></i>
+                            Approve & Escalate
+                        </button>
+                    </div>
+                </div>`;
+            }
         } else {
             // Render decision log status
             const statusVal = isStoresHead ? data.main_admin_status : data.origin_admin_status;
             let decisionLabel = statusVal === 'approved' ? 'APPROVED & ESCALATED' : 'DECLINED';
             let decisionColor = statusVal === 'approved' ? '#10b981' : '#ef4444';
-            let decisionBg = statusVal === 'approved' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)';
-            let decisionBorder = statusVal === 'approved' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+            
+            if (data.alternative_status === 'agreed') {
+                decisionLabel = 'ALTERNATIVE ITEM AGREED';
+                decisionColor = '#10b981';
+            } else if (data.alternative_status === 'declined') {
+                decisionLabel = 'ALTERNATIVE PROPOSAL DECLINED';
+                decisionColor = '#ef4444';
+            }
+
+            let decisionBg = decisionColor === '#10b981' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)';
+            let decisionBorder = decisionColor === '#10b981' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
 
             decisionHtml = `
             <div style="background: ${decisionBg}; border: 1.5px dashed ${decisionBorder}; border-radius: 16px; padding: 1.25rem; margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
@@ -932,6 +1623,108 @@
             </div>`;
         }
 
+        // Stores Feedback Details
+        let storesFeedbackHtml = '';
+        if (data.status !== 'pending') {
+            let storeStatusLabel = 'PROCESSING';
+            let storeStatusColor = '#6366f1';
+            let storeStatusBg = 'rgba(99, 102, 241, 0.05)';
+            let storeStatusBorder = 'rgba(99, 102, 241, 0.2)';
+
+            if (data.status === 'approved') {
+                storeStatusLabel = 'STORES APPROVED';
+                storeStatusColor = '#10b981';
+                storeStatusBg = 'rgba(16, 185, 129, 0.05)';
+                storeStatusBorder = 'rgba(16, 185, 129, 0.2)';
+            } else if (data.status === 'partially_approved') {
+                storeStatusLabel = 'STORES PARTIALLY APPROVED';
+                storeStatusColor = '#f59e0b';
+                storeStatusBg = 'rgba(245, 158, 11, 0.05)';
+                storeStatusBorder = 'rgba(245, 158, 11, 0.2)';
+            } else if (data.status === 'declined') {
+                storeStatusLabel = 'STORES DECLINED';
+                storeStatusColor = '#ef4444';
+                storeStatusBg = 'rgba(239, 68, 68, 0.05)';
+                storeStatusBorder = 'rgba(239, 68, 68, 0.2)';
+            }
+
+            storesFeedbackHtml = `
+            <div style="background: ${storeStatusBg}; border: 1.5px dashed ${storeStatusBorder}; border-radius: 16px; padding: 1.25rem; margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px dashed ${storeStatusBorder}; padding-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width:34px; height:34px; background:${storeStatusColor}15; color:${storeStatusColor}; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                            <i data-lucide="package" style="width:16px;"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Central Store Decision</h4>
+                        </div>
+                    </div>
+                    <span class="pill" style="background:${storeStatusBg}; color:${storeStatusColor}; font-weight:800; font-size:0.7rem; padding:4px 10px;">${storeStatusLabel}</span>
+                </div>
+                ${data.admin_notes ? `
+                <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.75rem 1rem;">
+                    <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Store Officer Notes</div>
+                    <div style="font-size:0.9rem; font-weight:700; color:var(--text-main); font-style: italic;">"${data.admin_notes}"</div>
+                </div>` : ''}
+                ${data.decline_reason ? `
+                <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.75rem 1rem;">
+                    <div style="font-size:0.68rem; font-weight:800; color:#ef4444; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Reason for Decline</div>
+                    <div style="font-size:0.9rem; font-weight:700; color:#7f1d1d;">${data.decline_reason}</div>
+                </div>` : ''}
+            </div>`;
+        }
+
+        // Collector Information
+        let collectorInfoHtml = '';
+        if (['approved', 'partially_approved'].includes(data.status)) {
+            if (data.collected_at) {
+                collectorInfoHtml = `
+                <div style="background:rgba(16,185,129,0.03); border:1.5px dashed rgba(16,185,129,0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; flex-direction:column; gap:1rem;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px dashed rgba(16,185,129,0.15); padding-bottom:8px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="width:34px; height:34px; background:rgba(16,185,129,0.08); color:#10b981; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                                <i data-lucide="package-check" style="width:16px;"></i>
+                            </div>
+                            <div>
+                                <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Physical Collection Log</h4>
+                                <p style="margin:0; font-size:0.75rem; color:var(--text-muted);">Items have been physically issued and collected</p>
+                            </div>
+                        </div>
+                        <span class="pill" style="background:rgba(16,185,129,0.1); color:#10b981; font-weight:800; font-size:0.7rem; padding:4px 10px;">COLLECTED</span>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem;">
+                            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Collector Name</div>
+                            <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collector_name || 'N/A'}</div>
+                        </div>
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem;">
+                            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Collector Contact</div>
+                            <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collector_contact || 'N/A'}</div>
+                        </div>
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem; grid-column: span 2;">
+                            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Location</div>
+                            <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collector_location || 'N/A'}</div>
+                        </div>
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem;">
+                            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Confirmed By (Store Staff)</div>
+                            <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collected_by_name || 'Store Staff'}</div>
+                        </div>
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem;">
+                            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Collection Date & Time</div>
+                            <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collected_at || 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>`;
+            } else {
+                collectorInfoHtml = `
+                <div style="background:rgba(245, 158, 11, 0.03); border:1.5px dashed rgba(245, 158, 11, 0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; align-items:center; gap:10px; color:#d97706; font-weight:800; font-size:0.85rem;">
+                    <i data-lucide="clock" style="width:16px; height:16px; color:#d97706; flex-shrink:0;"></i>
+                    <span>Status: Requisition is approved by stores. Awaiting physical collection by staff.</span>
+                </div>`;
+            }
+        }
+
         document.getElementById('modalBody').innerHTML = `
         ${profileGridHtml}
 
@@ -943,14 +1736,27 @@
 
         ${itemRowsHtml}
         ${decisionHtml}
+        ${storesFeedbackHtml}
+        ${collectorInfoHtml}
         `;
 
-        document.getElementById('modalFooter').innerHTML = `
+        let footerHtml = `
         <button onclick="closeModal()" style="background:var(--bg-main); color:var(--text-main); border:1.5px solid var(--border-color); padding:.75rem 1.5rem; border-radius:12px; font-weight:800; cursor:pointer; font-size:.88rem; transition:0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='var(--bg-main)'">
             Close Panel
         </button>`;
 
+        if (data.collected_at) {
+            footerHtml = `
+            <a href="{{ request()->getBasePath() }}/requisitions/receipt/${id}" target="_blank"
+                style="background:rgba(99, 102, 241, 0.08); border: 1.5px solid rgba(99, 102, 241, 0.2); color: #4f46e5; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#4f46e5'; this.style.color='white';" onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='#4f46e5';">
+                <i data-lucide="printer" style="width: 16px;"></i> Print Collection Receipt
+            </a>` + footerHtml;
+        }
+
+        document.getElementById('modalFooter').innerHTML = footerHtml;
+
         lucide.createIcons();
+        checkAltOptions();
     }
 
     async function processDecision(decision) {
@@ -1039,6 +1845,140 @@
 
     function closeModal() {
         document.getElementById('reqModal').classList.remove('open');
+    }
+
+    function checkAltOptions() {
+        const radioYes = document.getElementById('altAgreeYes');
+        const radioNo = document.getElementById('altAgreeNo');
+        const textarea = document.getElementById('decisionNotes');
+        const agreeBtn = document.getElementById('agreeAltBtn');
+        const declineBtn = document.getElementById('declineAltBtn');
+        
+        if (!agreeBtn || !declineBtn) return;
+
+        const hasComment = textarea && textarea.value.trim().length > 0;
+
+        if (hasComment) {
+            // Enable both buttons
+            agreeBtn.disabled = false;
+            agreeBtn.style.opacity = '1';
+            agreeBtn.style.cursor = 'pointer';
+            
+            declineBtn.disabled = false;
+            declineBtn.style.opacity = '1';
+            declineBtn.style.cursor = 'pointer';
+        } else {
+            // Evaluate based on radios
+            if (radioYes && radioYes.checked) {
+                // Yes selected: Enable agree, disable decline
+                agreeBtn.disabled = false;
+                agreeBtn.style.opacity = '1';
+                agreeBtn.style.cursor = 'pointer';
+                
+                declineBtn.disabled = true;
+                declineBtn.style.opacity = '0.4';
+                declineBtn.style.cursor = 'not-allowed';
+            } else if (radioNo && radioNo.checked) {
+                // No selected: Disable agree, enable decline
+                agreeBtn.disabled = true;
+                agreeBtn.style.opacity = '0.4';
+                agreeBtn.style.cursor = 'not-allowed';
+                
+                declineBtn.disabled = false;
+                declineBtn.style.opacity = '1';
+                declineBtn.style.cursor = 'pointer';
+            } else {
+                // Nothing selected and no comment: Disable both!
+                agreeBtn.disabled = true;
+                agreeBtn.style.opacity = '0.4';
+                agreeBtn.style.cursor = 'not-allowed';
+                
+                declineBtn.disabled = true;
+                declineBtn.style.opacity = '0.4';
+                declineBtn.style.cursor = 'not-allowed';
+            }
+        }
+    }
+
+    async function processAlternativeResponse(response) {
+        const notes = document.getElementById('decisionNotes').value.trim();
+
+        if (response === 'decline' && !notes) {
+            Swal.fire({
+                title: 'Declination Reason Required',
+                text: 'Please record a reason for declining the alternative item proposal in the feedback form.',
+                icon: 'warning',
+                confirmButtonColor: '#4f46e5'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: response === 'agree' ? 'Agree to Alternative Item?' : 'Decline Alternative Item?',
+            text: response === 'agree' ?
+                'This will confirm your department\'s agreement to the alternative item proposal. Requisition will return to stores for final allocation.' :
+                'This will decline the alternative item proposal and fully decline the requisition.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: response === 'agree' ? 'Yes, Agree' : 'Yes, Decline',
+            cancelButtonText: 'Abort',
+            confirmButtonColor: response === 'agree' ? '#10b981' : '#ef4444',
+            cancelButtonColor: '#ef4444',
+            customClass: {
+                confirmButton: 'premium-swal-btn',
+                cancelButton: 'premium-swal-cancel-btn'
+            }
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Submitting Response...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                try {
+                    const res = await fetch(`{{ url('/main-admin/requisitions') }}/${currentReqId}/alternative-response`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            response: response,
+                            notes: notes
+                        })
+                    });
+
+                    const responseData = await res.json();
+
+                    if (responseData.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: responseData.message || 'Alternative response processed successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#10b981'
+                        }).then(() => {
+                            closeModal();
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Failure!',
+                            text: responseData.message || 'An error occurred during submission.',
+                            icon: 'error',
+                            confirmButtonColor: '#4f46e5'
+                        });
+                    }
+                } catch (e) {
+                    Swal.fire({
+                        title: 'Failure!',
+                        text: 'Critical communication sync error.',
+                        icon: 'error',
+                        confirmButtonColor: '#4f46e5'
+                    });
+                }
+            }
+        });
     }
 
     // =====================================================================
@@ -1246,11 +2186,71 @@
     }
     @endif
 
+    async function sendFollowUp(id, btn) {
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader" style="width: 14px; animation: spin 1s linear infinite; vertical-align: middle;"></i> Sending...`;
+        lucide.createIcons();
+
+        try {
+            const response = await fetch(`/requisitions/${id}/followup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Follow Up Sent!',
+                    text: data.message,
+                    confirmButtonColor: 'var(--store-orange)'
+                });
+                btn.innerHTML = `<i data-lucide="check" style="width: 14px;"></i> Reminder Sent`;
+                btn.style.background = 'rgba(100, 116, 139, 0.05)';
+                btn.style.borderColor = 'rgba(100, 116, 139, 0.1)';
+                btn.style.color = 'var(--text-muted)';
+                btn.style.cursor = 'not-allowed';
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Unable to Follow Up',
+                    text: data.message,
+                    confirmButtonColor: 'var(--store-orange)'
+                });
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+            lucide.createIcons();
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Network Error',
+                text: 'An error occurred while sending the follow-up reminder.',
+                confirmButtonColor: 'var(--store-orange)'
+            });
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+            lucide.createIcons();
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
         @if(!$isStoresHead)
         loadTempAccounts();
         @endif
+
+        // Auto-open specific requisition if open_id is present in query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const openId = urlParams.get('open_id');
+        if (openId) {
+            openRequisitionModal(parseInt(openId));
+        }
     });
 </script>
 @endsection

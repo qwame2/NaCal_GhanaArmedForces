@@ -981,6 +981,10 @@
                             <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Collector Contact</div>
                             <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collector_contact || 'N/A'}</div>
                         </div>
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem; grid-column: span 2;">
+                            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Collection Destination / Location</div>
+                            <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collector_location || 'N/A'}</div>
+                        </div>
                         <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem;">
                             <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Confirmed By (Store Staff)</div>
                             <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collected_by_name || 'N/A'}</div>
@@ -1012,6 +1016,10 @@
                         <div style="position:relative; display:flex; align-items:center;">
                             <i data-lucide="phone" style="position:absolute; left:12px; color:var(--text-muted); width:16px; height:16px; pointer-events:none;"></i>
                             <input type="text" id="modalCollectorContact" oninput="validateModalCollectorInputs()" placeholder="Collector Contact Number *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 4px rgba(16, 185, 129, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
+                        </div>
+                        <div style="position:relative; display:flex; align-items:center; grid-column: span 2;">
+                            <i data-lucide="map-pin" style="position:absolute; left:12px; color:var(--text-muted); width:16px; height:16px; pointer-events:none;"></i>
+                            <input type="text" id="modalCollectorLocation" oninput="validateModalCollectorInputs()" placeholder="Collection Destination / Location *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 4px rgba(16, 185, 129, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
                         </div>
                     </div>
                 </div>`;
@@ -1084,6 +1092,12 @@
                         <i data-lucide="info" style="width:14px; height:14px;"></i> Awaiting Physical Collection (Officer Only)
                     </span>` + footerHtml;
                 }
+            } else {
+                footerHtml = `
+                <a href="{{ request()->getBasePath() }}/requisitions/receipt/${id}" target="_blank"
+                    style="background:rgba(99, 102, 241, 0.08); border: 1.5px solid rgba(99, 102, 241, 0.2); color: #4f46e5; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#4f46e5'; this.style.color='white';" onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='#4f46e5';">
+                    <i data-lucide="printer" style="width: 16px;"></i> Print Collection Receipt
+                </a>` + footerHtml;
             }
         }
 
@@ -1094,14 +1108,16 @@
     function validateModalCollectorInputs() {
         const nameInput = document.getElementById('modalCollectorName');
         const contactInput = document.getElementById('modalCollectorContact');
+        const locationInput = document.getElementById('modalCollectorLocation');
         const confirmBtn = document.getElementById('modalConfirmBtn');
         
-        if (!nameInput || !contactInput || !confirmBtn) return;
+        if (!nameInput || !contactInput || !locationInput || !confirmBtn) return;
         
         const nameVal = nameInput.value.trim();
         const contactVal = contactInput.value.trim();
+        const locationVal = locationInput.value.trim();
         
-        if (nameVal && contactVal) {
+        if (nameVal && contactVal && locationVal) {
             confirmBtn.disabled = false;
             confirmBtn.style.background = '#10b981';
             confirmBtn.style.color = 'white';
@@ -1130,24 +1146,28 @@
         const isModalOpen = modal && modal.classList.contains('open');
         const modalNameInput = document.getElementById('modalCollectorName');
         const modalContactInput = document.getElementById('modalCollectorContact');
+        const modalLocationInput = document.getElementById('modalCollectorLocation');
 
         let collector_name = '';
         let collector_contact = '';
+        let collector_location = '';
 
-        if (isModalOpen && modalNameInput && modalContactInput) {
+        if (isModalOpen && modalNameInput && modalContactInput && modalLocationInput) {
             // Triggered from modal
             collector_name = modalNameInput.value.trim();
             collector_contact = modalContactInput.value.trim();
+            collector_location = modalLocationInput.value.trim();
 
-            if (!collector_name || !collector_contact) {
+            if (!collector_name || !collector_contact || !collector_location) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Required Fields Missing',
-                    text: 'Please enter the Collector Name and Contact Number inside the Collector Information section before confirming collection.',
+                    text: 'Please enter the Collector Name, Contact Number, and Location inside the Collector Information section before confirming collection.',
                     confirmButtonColor: '#10b981'
                 });
                 if (!collector_name) modalNameInput.style.borderColor = '#ef4444';
                 if (!collector_contact) modalContactInput.style.borderColor = '#ef4444';
+                if (!collector_location) modalLocationInput.style.borderColor = '#ef4444';
                 return;
             }
 
@@ -1156,7 +1176,8 @@
                 html: `Confirm physical collection of items for store requisition <b>#${id}</b>?<br><br>` +
                       `<div style="text-align:left; background:var(--bg-main); border:1px solid var(--border-color); border-radius:12px; padding:12px; font-size:0.85rem;">` +
                       `<b>Collector Name:</b> ${collector_name}<br>` +
-                      `<b>Collector Contact:</b> ${collector_contact}` +
+                      `<b>Collector Contact:</b> ${collector_contact}<br>` +
+                      `<b>Collection Location/Destination:</b> ${collector_location}` +
                       `</div>`,
                 icon: 'question',
                 showCancelButton: true,
@@ -1166,7 +1187,7 @@
                 cancelButtonColor: '#94a3b8'
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    await executeCollectionFetch(id, btn, collector_name, collector_contact);
+                    await executeCollectionFetch(id, btn, collector_name, collector_contact, collector_location);
                 }
             });
 
@@ -1177,7 +1198,8 @@
                 html:
                     '<p style="font-size:0.85rem; margin-bottom:15px; color:var(--text-muted);">Please enter the details of the person physically collecting the items.</p>' +
                     '<input id="swal-input-name" class="swal2-input" placeholder="Collector Full Name" style="margin-top:0; margin-bottom:12px; width:80%; font-family:inherit; font-size:0.88rem; font-weight:700;">' +
-                    '<input id="swal-input-contact" class="swal2-input" placeholder="Collector Contact Number" style="margin-top:0; width:80%; font-family:inherit; font-size:0.88rem; font-weight:700;">',
+                    '<input id="swal-input-contact" class="swal2-input" placeholder="Collector Contact Number" style="margin-top:0; margin-bottom:12px; width:80%; font-family:inherit; font-size:0.88rem; font-weight:700;">' +
+                    '<input id="swal-input-location" class="swal2-input" placeholder="Collection Location/Destination" style="margin-top:0; width:80%; font-family:inherit; font-size:0.88rem; font-weight:700;">',
                 focusConfirm: false,
                 showCancelButton: true,
                 confirmButtonText: 'Confirm Collection',
@@ -1187,21 +1209,22 @@
                 preConfirm: () => {
                     const name = document.getElementById('swal-input-name').value.trim();
                     const contact = document.getElementById('swal-input-contact').value.trim();
-                    if (!name || !contact) {
-                        Swal.showValidationMessage('Please fill out both Collector Name and Contact Number');
+                    const location = document.getElementById('swal-input-location').value.trim();
+                    if (!name || !contact || !location) {
+                        Swal.showValidationMessage('Please fill out Collector Name, Contact Number, and Location');
                         return false;
                     }
-                    return { name: name, contact: contact };
+                    return { name: name, contact: contact, location: location };
                 }
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    await executeCollectionFetch(id, btn, result.value.name, result.value.contact);
+                    await executeCollectionFetch(id, btn, result.value.name, result.value.contact, result.value.location);
                 }
             });
         }
     }
 
-    async function executeCollectionFetch(id, btn, collector_name, collector_contact) {
+    async function executeCollectionFetch(id, btn, collector_name, collector_contact, collector_location) {
         const originalHTML = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;"></div> Processing...';
@@ -1215,7 +1238,8 @@
                 },
                 body: JSON.stringify({
                     collector_name: collector_name,
-                    collector_contact: collector_contact
+                    collector_contact: collector_contact,
+                    collector_location: collector_location
                 })
             });
 
@@ -1225,9 +1249,16 @@
                 Swal.fire({
                     icon: 'success',
                     title: 'Collection Confirmed',
-                    text: data.message,
-                    confirmButtonColor: '#10b981'
-                }).then(() => {
+                    text: data.message + ' Would you like to view or print the official physical collection receipt now?',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Print Receipt',
+                    cancelButtonText: 'Dismiss',
+                    confirmButtonColor: '#4f46e5',
+                    cancelButtonColor: '#94a3b8'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.open(`{{ request()->getBasePath() }}/requisitions/receipt/${id}`, '_blank');
+                    }
                     location.reload();
                 });
             } else {

@@ -1379,7 +1379,7 @@
                     }
 
                     try {
-                        const res = await fetch("{{ route('settings.update', [], false) }}", {
+                        const res = await fetch("{{ route('settings.update') }}", {
                             method: 'POST',
                             headers: { 
                                 'Content-Type': 'application/json', 
@@ -1388,14 +1388,26 @@
                             },
                             body: JSON.stringify({ name, email, phone, department, role, service_number })
                         });
-                        const data = await res.json();
+                        const text = await res.text();
+                        let data;
+                        try {
+                            data = JSON.parse(text);
+                        } catch (err) {
+                            console.error('Non-JSON response:', text);
+                            const match = text.match(/<title>(.*?)<\/title>/i);
+                            const pageTitle = match ? match[1] : 'Unknown Server Error';
+                            Swal.showValidationMessage('Server returned error: ' + pageTitle + ' (Status ' + res.status + ')');
+                            return false;
+                        }
+                        
                         if (!res.ok || !data.success) {
                             Swal.showValidationMessage(data.message || 'Profile sync failed.');
                             return false;
                         }
                         return data;
                     } catch (e) {
-                        Swal.showValidationMessage('Network node transmission error.');
+                        console.error('Profile Save Error:', e);
+                        Swal.showValidationMessage('Network node transmission error: ' + e.message);
                         return false;
                     }
                 }
@@ -1438,7 +1450,7 @@
                 `;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
 
-                const res = await fetch("{{ route('settings.avatar', [], false) }}", {
+                const res = await fetch("{{ route('settings.avatar') }}", {
                     method: 'POST',
                     headers: { 
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',

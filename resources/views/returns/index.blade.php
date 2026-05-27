@@ -107,6 +107,7 @@
                     <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900; border-bottom: 2px solid var(--bg-main);">
                         <th style="padding: 0 1.5rem 1rem;">Asset Breakdown</th>
                         <th style="padding: 0 1.5rem 1rem;">Holder Information</th>
+                        <th style="padding: 0 1.5rem 1rem;">Returning Date</th>
                         <th style="padding: 0 1.5rem 1rem;">Collector</th>
                         <th style="padding: 0 1.5rem 1rem;">Head of Stores</th>
                         <th style="padding: 0 1.5rem 1rem;">Store Officer</th>
@@ -137,6 +138,43 @@
                         </td>
                         <td style="padding: 1.75rem 1.5rem;">
                             <div style="font-weight: 850; color: var(--text-main); font-size: 1.05rem;">{{ $item->beneficiary }}</div>
+                        </td>
+                        <td style="padding: 1.75rem 1.5rem;">
+                            @php
+                                $purposeText = $item->purpose;
+                                $returnDateFormatted = 'N/A';
+                                $isOverdue = false;
+                                $dateMatch = [];
+                                if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $purposeText, $dateMatch)) {
+                                    $rawDate = trim($dateMatch[1]);
+                                    $returnDateFormatted = $rawDate;
+                                    try {
+                                        $dateObj = \Carbon\Carbon::parse($rawDate)->startOfDay();
+                                        $returnDateFormatted = $dateObj->format('d/m/y');
+                                        $isOverdue = \Carbon\Carbon::now()->startOfDay()->gt($dateObj);
+                                    } catch (\Exception $e) {
+                                        $parts = explode('-', $rawDate);
+                                        if (count($parts) === 3 && strlen($parts[0]) === 4) {
+                                            $returnDateFormatted = $parts[2] . '/' . $parts[1] . '/' . substr($parts[0], 2);
+                                        }
+                                    }
+                                }
+                            @endphp
+                            @if($returnDateFormatted !== 'N/A')
+                                @if($isOverdue)
+                                    <span class="status-pill" style="background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.8rem; font-weight: 800; padding: 4px 10px; border-radius: 89px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 0 10px rgba(239,68,68,0.15); animation: blink-red 2s infinite;">
+                                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                                        {{ $returnDateFormatted }}
+                                    </span>
+                                @else
+                                    <span class="status-pill" style="background: rgba(245, 158, 11, 0.08); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.2); font-size: 0.8rem; font-weight: 800; padding: 4px 10px; border-radius: 89px; display: inline-flex; align-items: center; gap: 4px;">
+                                        <i data-lucide="calendar" style="width: 12px; height: 12px;"></i>
+                                        {{ $returnDateFormatted }}
+                                    </span>
+                                @endif
+                            @else
+                                <span style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600;">Permanent</span>
+                            @endif
                         </td>
                         <td style="padding: 1.75rem 1.5rem;">
                             @if(!empty($item->collector_name))
@@ -220,6 +258,32 @@
                 <div style="background: var(--bg-main); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem;">
                     <div style="font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Holder</div>
                     <div style="color: var(--text-main); font-weight: 850; font-size: 1.05rem;">{{ $item->beneficiary }}</div>
+                    @php
+                        $purposeText = $item->purpose;
+                        $returnDateFormatted = 'N/A';
+                        $isOverdue = false;
+                        $dateMatch = [];
+                        if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $purposeText, $dateMatch)) {
+                            $rawDate = trim($dateMatch[1]);
+                            $returnDateFormatted = $rawDate;
+                            try {
+                                $dateObj = \Carbon\Carbon::parse($rawDate)->startOfDay();
+                                $returnDateFormatted = $dateObj->format('d/m/y');
+                                $isOverdue = \Carbon\Carbon::now()->startOfDay()->gt($dateObj);
+                            } catch (\Exception $e) {
+                                $parts = explode('-', $rawDate);
+                                if (count($parts) === 3 && strlen($parts[0]) === 4) {
+                                    $returnDateFormatted = $parts[2] . '/' . $parts[1] . '/' . substr($parts[0], 2);
+                                }
+                            }
+                        }
+                    @endphp
+                    @if($returnDateFormatted !== 'N/A')
+                    <div style="font-size: 0.75rem; font-weight: 800; color: {{ $isOverdue ? '#ef4444' : '#d97706' }}; margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                        <i data-lucide="calendar" style="width: 12px; height: 12px;"></i>
+                        Returning Date: {{ $returnDateFormatted }} {{ $isOverdue ? '(Overdue)' : '' }}
+                    </div>
+                    @endif
                     @if(!empty($item->collector_name))
                     <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-top: 6px; display: flex; align-items: center; gap: 4px;">
                         <i data-lucide="user" style="width: 12px; height: 12px;"></i>
@@ -388,7 +452,13 @@
                     </div>
                     <div class="form-group-premium" style="grid-column: span 2;">
                         <label>Item Status / State Description <span style="color: #ef4444;">*</span></label>
-                        <textarea name="remarks" required placeholder="Describe the physical condition or operational state of the item upon recovery..." style="width: 100%; height: 100px; padding: 1.25rem; border: 1px solid var(--border-color); border-radius: 18px; background: var(--bg-main); color: var(--text-main); font-family: inherit; font-weight: 600; font-size: 0.95rem; resize: none; outline: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'"></textarea>
+                        <select name="remarks" required class="premium-select-input">
+                            <option value="" disabled selected>Select recovered item condition...</option>
+                            <option value="Good / Fully Functional">Good / Fully Functional (Perfect condition, ready for re-issuance)</option>
+                            <option value="Fair / Serviceable">Fair / Serviceable (Minor signs of wear, operational)</option>
+                            <option value="Damaged / Needs Repair">Damaged / Needs Repair (Defective/broken, requires maintenance)</option>
+                            <option value="Obsolete / Written Off">Obsolete / Written Off (Damaged beyond repair, scrap)</option>
+                        </select>
                     </div>
                 </div>
 
@@ -453,6 +523,34 @@
 </div>
 
 <style>
+    /* Premium Styled Dropdown */
+    .premium-select-input {
+        width: 100%;
+        padding: 1.25rem 1.5rem;
+        border-radius: 18px;
+        border: 2px solid var(--border-color);
+        background: var(--bg-main);
+        color: var(--text-main);
+        font-weight: 850;
+        font-size: 1.05rem;
+        outline: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1.5rem center;
+        background-size: 1.2rem;
+    }
+
+    .premium-select-input:focus {
+        border-color: #f59e0b;
+        background-color: var(--bg-card);
+        box-shadow: 0 12px 25px rgba(245, 158, 11, 0.08);
+    }
+
     /* Additional Professional Report Print Styles */
     .professional-report {
         font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -1204,6 +1302,12 @@
             opacity: 1;
             transform: scale(1) translateY(0);
         }
+    }
+
+    @keyframes blink-red {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
     }
 </style>
 

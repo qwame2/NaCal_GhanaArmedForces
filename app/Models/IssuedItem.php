@@ -33,4 +33,31 @@ class IssuedItem extends Model
         }
         return $value ?: 'units';
     }
+
+    /**
+     * Check if this specific issued item is overdue for return.
+     */
+    public function isOverdue()
+    {
+        if (!$this->issuance || $this->issuance->issuance_type !== 'Temporary' || $this->quantity <= 0) {
+            return false;
+        }
+
+        $requisition = $this->issuance->requisition;
+        if (!$requisition) {
+            return false;
+        }
+
+        if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $requisition->purpose, $matches)) {
+            try {
+                $returnDate = \Carbon\Carbon::parse(trim($matches[1]))->startOfDay();
+                $today = \Carbon\Carbon::now()->startOfDay();
+                return $today->gt($returnDate);
+            } catch (\Exception $e) {
+                return false;
+            }
+        }
+
+        return false;
+    }
 }
