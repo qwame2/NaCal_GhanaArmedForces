@@ -43,6 +43,14 @@ class EnsureNotTempAccount
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check() && Auth::user()->is_temp_account) {
+            if (!Auth::user()->is_active) {
+                $user = Auth::user();
+                $user->update(['is_online' => false]);
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect()->route('login')->with('error', 'Access Suspended: Your department currently has overdue temporary assets. Active temporary accounts are suspended.');
+            }
             $routeName = $request->route()?->getName();
 
             // Allow explicitly permitted named routes

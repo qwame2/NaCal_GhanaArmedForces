@@ -1649,4 +1649,103 @@ class StoreRequisitionController extends Controller
             }
         }
     }
+
+    public function overdueAssets(Request $request)
+    {
+        self::checkOverdueTemporaryItems();
+
+        $user = auth()->user();
+        $isStoresHead = ($user->role === 'Main Admin' || strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0);
+
+        // Fetch all temporary issued items
+        $query = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->join('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
+            ->select(
+                'issued_items.id as issued_item_id',
+                'issued_items.description',
+                'issued_items.ledge_category',
+                'issued_items.quantity as qty_issued',
+                'store_requisitions.purpose',
+                'store_requisitions.department',
+                'store_requisitions.id as requisition_id',
+                'store_requisitions.requester_name',
+                'store_requisitions.created_at as req_created',
+                'issuances.issuance_date'
+            )
+            ->where('issuances.issuance_type', 'Temporary')
+            ->where('issued_items.quantity', '>', 0);
+
+        // If not stores head, restrict to the user's department
+        if (!$isStoresHead) {
+            $query->where('store_requisitions.department', $user->department);
+        }
+
+        $allIssuedItems = $query->orderBy('issuances.created_at', 'desc')->get();
+
+        $overdueItems = collect();
+        $dueSoonItems = collect();
+
+        $ledgeMap = Setting::getCategories();
+
+        foreach ($allIssuedItems as $item) {
+            $returnedQty = \App\Models\ReturnedItem::where('issued_item_id', $item->issued_item_id)->sum('returned_qty') ?? 0;
+            $outstandingQty = $item->qty_issued - $returnedQty;
+
+            // Only show items with outstanding quantities to return
+            if ($outstandingQty <= 0) {
+                continue;
+            }
+
+            $returnDate = null;
+            if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $item->purpose, $matches)) {
+                try {
+                    $returnDate = \App\Models\Setting::parseExpectedReturnDate(trim($matches[1]))->startOfDay();
+                } catch (\Exception $e) {
+                    // Ignore
+                }
+            }
+
+            if (!$returnDate) {
+                if ($item->req_created) {
+                    $returnDate = \Carbon\Carbon::parse($item->req_created)->startOfDay();
+                } else {
+                    $returnDate = \Carbon\Carbon::now()->startOfDay();
+                }
+            }
+
+            $today = \Carbon\Carbon::now()->startOfDay();
+            $diffInDays = $today->diffInDays($returnDate, false); // Negative if overdue (returnDate < today)
+
+            $itemData = (object) [
+                'issued_item_id' => $item->issued_item_id,
+                'requisition_id' => $item->requisition_id,
+                'description'    => $item->description,
+                'category'       => $ledgeMap[$item->ledge_category] ?? "Category {$item->ledge_category}",
+                'qty_issued'     => $item->qty_issued,
+                'qty_returned'   => $returnedQty,
+                'qty_outstanding'=> $outstandingQty,
+                'expected_return'=> $returnDate->format('d/m/Y'),
+                'department'     => $item->department,
+                'requester_name' => $item->requester_name,
+                'issuance_date'  => $item->issuance_date ? \Carbon\Carbon::parse($item->issuance_date)->format('d/m/Y') : '-',
+                'days_diff'      => $diffInDays,
+            ];
+
+            if ($diffInDays < 0) {
+                // Return date is in the past -> Overdue!
+                $overdueItems->push($itemData);
+            } else {
+                // Return date is in the future or today -> Due Soon!
+                $dueSoonItems->push($itemData);
+            }
+        }
+
+        // Sort overdue items by severity (most overdue first, which has lowest negative diffInDays)
+        $overdueItems = $overdueItems->sortBy('days_diff')->values();
+        // Sort due soon items by closest due date first (lowest positive diffInDays)
+        $dueSoonItems = $dueSoonItems->sortBy('days_diff')->values();
+
+        return view('requisitions.overdue', compact('overdueItems', 'dueSoonItems', 'isStoresHead'));
+    }
 }
+

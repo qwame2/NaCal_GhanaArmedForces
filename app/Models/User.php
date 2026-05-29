@@ -80,6 +80,24 @@ class User extends Authenticatable
         return $this->belongsTo(User::class, 'sponsored_by');
     }
 
+    public function getIsActiveAttribute($value)
+    {
+        if ($this->is_temp_account) {
+            if (\App\Http\Controllers\TempRequisitionerController::hasOverdueReturn($this->department)) {
+                return false;
+            }
+        }
+        return (bool)$value;
+    }
+
+    public function getIsOnlineAttribute($value)
+    {
+        if (!$this->is_active) {
+            return false;
+        }
+        return (bool)$value;
+    }
+
     public function getSecurityStatus(): array
     {
         return ['label' => 'Verified', 'color' => '#10b981'];

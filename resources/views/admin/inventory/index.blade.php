@@ -372,11 +372,8 @@
                             <td>
                                 @php
                                     $expectedDates = $item->getExpectedReturnDates();
-                                    $returnDates = $item->getReturnDates();
-                                    $hasOverdue = $item->hasOverdueTemporaryLoan();
-                                    $hasActiveExpected = $expectedDates->isNotEmpty();
                                 @endphp
-                                @if($hasActiveExpected || $returnDates->isNotEmpty())
+                                @if($expectedDates->isNotEmpty())
                                     <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
                                         @foreach($expectedDates as $ed)
                                             @php
@@ -384,22 +381,30 @@
                                                 $isPastDue = $todayStr >= $ed['date_str'];
                                             @endphp
                                             @if($isPastDue)
-                                                <span style="font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap; border: 1.5px solid rgba(239,68,68,0.3); animation: blink-bg-red 1.5s infinite; display: inline-flex; align-items: center; gap: 4px;" title="Overdue for Return">
-                                                    <i data-lucide="alert-circle" style="width: 10px; height: 10px;"></i>
-                                                    {{ $ed['formatted'] }}
-                                                </span>
+                                                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                                    <span style="font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap; border: 1.5px solid rgba(239,68,68,0.3); animation: blink-bg-red 1.5s infinite; display: inline-flex; align-items: center; gap: 4px;" title="Overdue / Due for Return">
+                                                        <i data-lucide="alert-circle" style="width: 10px; height: 10px;"></i>
+                                                        {{ $ed['formatted'] }}
+                                                    </span>
+                                                    @if(!empty($ed['department']))
+                                                        <span style="font-size: 0.65rem; font-weight: 800; color: #ef4444; background: rgba(239, 68, 68, 0.08); padding: 2px 6px; border-radius: 4px; text-transform: uppercase; border: 1px solid rgba(239,68,68,0.15);">
+                                                            Dept: {{ $ed['department'] }}
+                                                        </span>
+                                                    @endif
+                                                </div>
                                             @else
-                                                <span style="font-size: 0.7rem; font-weight: 800; color: #15803d; background: #f0fdf4; border: 1.5px solid #bbf7d0; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;" title="Temporary Loan Active">
-                                                    <i data-lucide="clock" style="width: 10px; height: 10px;"></i>
-                                                    {{ $ed['formatted'] }}
-                                                </span>
+                                                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                                    <span style="font-size: 0.7rem; font-weight: 800; color: #15803d; background: #f0fdf4; border: 1.5px solid #bbf7d0; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;" title="Expected Return Date">
+                                                        <i data-lucide="clock" style="width: 10px; height: 10px;"></i>
+                                                        {{ $ed['formatted'] }}
+                                                    </span>
+                                                    @if(!empty($ed['department']))
+                                                        <span style="font-size: 0.65rem; font-weight: 800; color: #15803d; background: rgba(21, 128, 61, 0.08); padding: 2px 6px; border-radius: 4px; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.15);">
+                                                            Dept: {{ $ed['department'] }}
+                                                        </span>
+                                                    @endif
+                                                </div>
                                             @endif
-                                        @endforeach
-
-                                        @foreach($returnDates as $rd)
-                                            <span style="font-size: 0.7rem; font-weight: 800; color: #b45309; background: #fef3c7; border: 1.5px solid #fde68a; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap;">
-                                                {{ $rd }}
-                                            </span>
                                         @endforeach
                                     </div>
                                 @else

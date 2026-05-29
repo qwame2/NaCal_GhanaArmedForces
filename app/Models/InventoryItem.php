@@ -133,7 +133,7 @@ class InventoryItem extends Model
         
         $activeLoans = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->join('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
-            ->select('issued_items.id', 'issued_items.quantity', 'store_requisitions.purpose', 'store_requisitions.created_at')
+            ->select('issued_items.id', 'issued_items.quantity', 'store_requisitions.purpose', 'store_requisitions.created_at', 'store_requisitions.department')
             ->where('issuances.issuance_type', 'Temporary')
             ->where('issued_items.quantity', '>', 0)
             ->where(\DB::raw('LOWER(TRIM(issued_items.description))'), '=', strtolower(trim($this->description)))
@@ -162,7 +162,8 @@ class InventoryItem extends Model
             if ($dateObj) {
                 $dates[] = [
                     'formatted' => $dateObj->format('d/m/y'),
-                    'date_str' => $dateObj->format('Y-m-d')
+                    'date_str' => $dateObj->format('Y-m-d'),
+                    'department' => $loan->department
                 ];
             }
         }

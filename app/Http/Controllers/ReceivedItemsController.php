@@ -168,6 +168,7 @@ class ReceivedItemsController extends Controller
             // Keep page loading resilient
         }
 
+
         $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
             abort(403, 'Unauthorized. Access restricted to Department Head (Stores) and Store Officers.');

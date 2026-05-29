@@ -115,6 +115,9 @@ class AuthController extends Controller
 
         // SECURITY ENFORCEMENT: Block already deactivated accounts immediately
         if ($targetUser && !$targetUser->is_active) {
+            if ($targetUser->is_temp_account && \App\Http\Controllers\TempRequisitionerController::hasOverdueReturn($targetUser->department)) {
+                return back()->with('error', 'Access Suspended: Your department currently has overdue temporary assets. Active temporary accounts are suspended.')->withInput();
+            }
             return back()->with('error', 'wrong password or username account has been deactivated see admin to activate your account')->withInput();
         }
 

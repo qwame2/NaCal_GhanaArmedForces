@@ -533,6 +533,11 @@
         70% { box-shadow: 0 0 0 8px rgba(249, 115, 22, 0); }
         100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
     }
+    @keyframes alertPulse {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+        70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
 
     /* Premium Responsive Table Styles */
     .table-container {
@@ -817,11 +822,23 @@
     @if(!$isStoresHead)
     <div id="provisioningSection" style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);padding:1.75rem;margin-bottom:2rem;box-shadow:0 4px 20px rgba(0,0,0,0.04);">
         @if(!empty($hasOverdueReturn))
-        <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.25); border-radius:12px; padding:1rem 1.25rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:12px; color:#ef4444;">
-            <i data-lucide="alert-triangle" style="width:20px; height:20px; flex-shrink:0; color:#ef4444;"></i>
-            <span style="font-weight:800; font-size:0.88rem;">
-                <strong>ACCESS SUSPENDED:</strong> Your department currently has overdue temporary assets. Access to provision temporary requisitioner accounts is suspended until all overdue items are officially logged as returned.
-            </span>
+        <div style="background: linear-gradient(135deg, rgba(254, 242, 242, 0.65) 0%, rgba(254, 226, 226, 0.35) 100%); border-left: 5px solid #ef4444; border-top: 1px solid rgba(239, 68, 68, 0.1); border-right: 1px solid rgba(239, 68, 68, 0.1); border-bottom: 1px solid rgba(239, 68, 68, 0.1); border-radius: 16px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 1.25rem; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.05); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+            <div style="width: 40px; height: 40px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; animation: alertPulse 2s infinite;">
+                <i data-lucide="alert-triangle" style="width: 20px; height: 20px; color: #ef4444;"></i>
+            </div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 0.25rem;">
+                <div style="font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 900; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.03em;">
+                    Access Suspended
+                </div>
+                <div style="font-size: 0.85rem; color: #7f1d1d; font-weight: 600; line-height: 1.5;">
+                    Your department currently has overdue temporary assets. Access to provision temporary requisitioner accounts is suspended until all overdue items are officially logged as returned.
+                </div>
+                <div style="margin-top: 0.85rem;">
+                    <a href="{{ route('requisitions.overdue') }}" style="display: inline-flex; align-items: center; gap: 8px; padding: 0.6rem 1.2rem; font-size: 0.78rem; font-weight: 850; color: white; background: #ef4444; border-radius: 10px; text-decoration: none; border: 1px solid rgba(239, 68, 68, 0.2); transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);" onmouseover="this.style.background='#dc2626'; this.style.boxShadow='0 6px 20px rgba(239, 68, 68, 0.35)'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#ef4444'; this.style.boxShadow='0 4px 15px rgba(239, 68, 68, 0.25)'; this.style.transform='translateY(0)';">
+                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i> View Overdue Assets
+                    </a>
+                </div>
+            </div>
         </div>
         @endif
 
