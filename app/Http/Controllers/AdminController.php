@@ -768,6 +768,7 @@ class AdminController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
+        // 1. Query approved/completed EditRequest records
         $query = \App\Models\EditRequest::with('user')
             ->where('request_type', 'edit_submission')
             ->whereIn('status', ['approved', 'completed']);
@@ -783,7 +784,48 @@ class AdminController extends Controller
             $query->whereDate('updated_at', '<=', $request->date_to);
         }
 
-        $history = $query->orderBy('updated_at', 'desc')->paginate(10);
+        $editRequests = $query->get();
+
+        // 2. Query SystemLog user account/profile/security changes
+        $logQuery = \App\Models\SystemLog::with('user')
+            ->whereIn('action', [
+                'CREATE_USER', 'UPDATE_USER', 'UPDATE_PROFILE', 'CHANGE_PASSWORD', 
+                'PASSWORD_SYNCED', 'SELF_DEACTIVATION', 'AUTHORIZATION', 
+                'TOGGLE_USER_STATUS', 'PERMISSION_CHANGE', 'CREATE_TEMP_REQUISITIONER', 
+                'REVOKE_TEMP_REQUISITIONER', 'REGENERATE_OTP'
+            ]);
+
+        if ($request->has('user_id') && $request->user_id) {
+            $logQuery->where('user_id', $request->user_id);
+        }
+
+        if ($request->has('date_from') && $request->date_from) {
+            $logQuery->whereDate('updated_at', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $logQuery->whereDate('updated_at', '<=', $request->date_to);
+        }
+
+        $systemLogs = $logQuery->get();
+
+        // 3. Merge and sort descending
+        $merged = $editRequests->merge($systemLogs)->sortByDesc(function ($item) {
+            return $item->updated_at;
+        });
+
+        // 4. Manually paginate
+        $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+        $perPage = 10;
+        $currentPageItems = $merged->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+        $history = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentPageItems,
+            $merged->count(),
+            $perPage,
+            $currentPage,
+            ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+        );
+
         $users = User::all();
         
         $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
