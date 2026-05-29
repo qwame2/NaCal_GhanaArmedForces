@@ -1081,14 +1081,14 @@
                     showToast('Recovery Updated', `Recovery has been ${status}.`, 'success');
                 } else {
                     showToast('Update Failed', data.message || 'Error processing recovery', 'error');
-                    btnElement.innerText = status === 'approved' ? 'Approve Re-integration' : 'Reject Recovery';
+                    btnElement.innerText = status === 'approved' ? 'Approve Re-integration' : 'Reject';
                     btnElement.disabled = false;
                 }
             })
             .catch(err => {
                 /* console print removed */
                 showToast('System Error', 'Could not complete the re-integration process.', 'error');
-                btnElement.innerText = status === 'approved' ? 'Approve Re-integration' : 'Reject Recovery';
+                btnElement.innerText = status === 'approved' ? 'Approve Re-integration' : 'Reject';
                 btnElement.disabled = false;
             });
     }
@@ -1202,7 +1202,7 @@
             footerHtml = `
                 <div id="oversight-recovery-actions-${reqId}" style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0;">
                     <button onclick="window.processRecoveryApproval(${reqId}, 'rejected', this)" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
-                        <i data-lucide="x-circle" style="width: 18px;"></i> Reject Recovery
+                        <i data-lucide="x-circle" style="width: 18px;"></i> Reject
                     </button>
                     <button onclick="window.processRecoveryApproval(${reqId}, 'approved', this)" style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
                         <i data-lucide="check-circle" style="width: 18px;"></i> Approve Re-integration
@@ -1255,11 +1255,11 @@
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Beneficiary</span>
                         <span style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">${item.beneficiary}</span>
                     </div>
-                    <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
+                    <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Return Quantity</span>
-                        <div style="display: flex; align-items: baseline; gap: 6px;">
-                            <span style="font-size: 2rem; font-weight: 900; color: #10b981;">${item.return_qty}</span>
-                            <span style="font-size: 0.85rem; font-weight: 700; color: #64748b;">of ${item.issued_qty} ${item.unit || 'units'}</span>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap;">
+                            <span style="font-size: 2.25rem; font-weight: 900; color: #10b981; line-height: 1;">${item.return_qty}</span>
+                            <span style="font-size: 1rem; font-weight: 800; color: #64748b;">of ${item.issued_qty} <span style="text-transform: uppercase; font-size: 0.85rem;">${item.unit || 'units'}</span></span>
                         </div>
                     </div>
                 </div>
