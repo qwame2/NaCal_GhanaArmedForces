@@ -48,16 +48,45 @@ class IssuedItem extends Model
             return false;
         }
 
+        $returnDate = null;
         if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $requisition->purpose, $matches)) {
             try {
-                $returnDate = \Carbon\Carbon::parse(trim($matches[1]))->startOfDay();
-                $today = \Carbon\Carbon::now()->startOfDay();
-                return $today->gt($returnDate);
+                $returnDate = \App\Models\Setting::parseExpectedReturnDate(trim($matches[1]))->format('Y-m-d');
             } catch (\Exception $e) {
-                return false;
+                // Ignore
             }
         }
 
-        return false;
+        if (!$returnDate) {
+            $returnDate = $requisition->created_at->format('Y-m-d');
+        }
+
+        $today = \Carbon\Carbon::now()->format('Y-m-d');
+        return $today >= $returnDate;
+    }
+
+    /**
+     * Get the parsed expected return date for this issued item.
+     */
+    public function getExpectedReturnDate()
+    {
+        if (!$this->issuance || $this->issuance->issuance_type !== 'Temporary' || $this->quantity <= 0) {
+            return null;
+        }
+
+        $requisition = $this->issuance->requisition;
+        if (!$requisition) {
+            return null;
+        }
+
+        if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $requisition->purpose, $matches)) {
+            try {
+                return \App\Models\Setting::parseExpectedReturnDate(trim($matches[1]));
+            } catch (\Exception $e) {
+                // Ignore
+            }
+        }
+
+        return $requisition->created_at;
     }
 }

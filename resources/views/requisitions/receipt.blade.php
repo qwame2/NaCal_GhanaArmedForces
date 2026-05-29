@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Collection Voucher - {{ $receipt->receipt_number }}</title>
+    <title>Collection Voucher - {{ str_replace('-LEGACY', '', $receipt->receipt_number) }}</title>
     <!-- Google Fonts for Premium Look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -512,7 +512,7 @@
                 </div>
                 <div class="voucher-title-box">
                     <div class="voucher-badge">Issue & Release Voucher</div>
-                    <div class="voucher-number">{{ $receipt->receipt_number }}</div>
+                    <div class="voucher-number">{{ str_replace('-LEGACY', '', $receipt->receipt_number) }}</div>
                     <div class="receipt-date">
                         Date Released: {{ $receipt->collected_at ? $receipt->collected_at->format('d M Y, H:i') : now()->format('d M Y, H:i') }}
                     </div>
@@ -524,7 +524,7 @@
                 <!-- Column 1: Requester Profile -->
                 <div class="dashboard-card">
                     <div class="dashboard-card-title">
-                        👤 REQUISITIONER PARAMETERS
+                        REQUISITIONER PARAMETERS
                     </div>
                     <div class="dashboard-row">
                         <span class="dashboard-label">Officer:</span>
@@ -551,7 +551,7 @@
                 <!-- Column 2: Release Authorization -->
                 <div class="dashboard-card">
                     <div class="dashboard-card-title">
-                        🔑 LOGISTICS AUTHORIZATION
+                        LOGISTICS AUTHORIZATION
                     </div>
                     <div class="dashboard-row">
                         <span class="dashboard-label">Requisition Ref:</span>
@@ -592,7 +592,7 @@
                 <!-- Column 3: Physical Release Log -->
                 <div class="dashboard-card">
                     <div class="dashboard-card-title">
-                        📦 PHYSICAL COLLECTION LOG
+                        PHYSICAL COLLECTION LOG
                     </div>
                     <div class="dashboard-row">
                         <span class="dashboard-label">Collector:</span>
@@ -622,7 +622,7 @@
                 <!-- Requisition Narrative -->
                 <div class="text-block-card">
                     <div class="text-block-title">
-                        📝 REQUISITION PURPOSE / JUSTIFICATION NARRATIVE
+                        REQUISITION PURPOSE / JUSTIFICATION NARRATIVE
                     </div>
                     <p class="text-block-content">
                         "{{ $req->purpose }}"
@@ -632,7 +632,7 @@
                 <!-- Stores Remarks -->
                 <div class="text-block-card" style="border-left-color: var(--success);">
                     <div class="text-block-title">
-                        💬 LOGISTICS DECISION EVALUATION & STORES REMARKS
+                        LOGISTICS DECISION EVALUATION & STORES REMARKS
                     </div>
                     <p class="text-block-content">
                         @if(!empty($req->admin_notes))
@@ -694,7 +694,6 @@
                                 <div class="item-title">{{ $item['description'] }}</div>
                                 @if(!empty($item['alternative_description']) && $altApproved > 0)
                                     <div class="item-alternative">
-                                        <span>↪</span>
                                         <strong>Alternative Approved:</strong> {{ $item['alternative_description'] }} 
                                         ({{ $altApproved }} {{ $item['unit'] ?? 'units' }})
                                     </div>

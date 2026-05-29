@@ -234,4 +234,31 @@ class Setting extends Model
 
         return min($physicalStock, $remainingLimit);
     }
+
+    /**
+     * Robust expected return date parser supporting both 2-digit and 4-digit years in d/m/y format.
+     */
+    public static function parseExpectedReturnDate($dateStr)
+    {
+        $dateStr = trim(str_replace('/', '-', $dateStr));
+        $parts = explode('-', $dateStr);
+        if (count($parts) === 3) {
+            $day = intval($parts[0]);
+            $month = intval($parts[1]);
+            $year = intval($parts[2]);
+            
+            if ($year < 100) {
+                $year += 2000;
+            }
+            
+            try {
+                return \Carbon\Carbon::createFromDate($year, $month, $day)->startOfDay();
+            } catch (\Exception $e) {
+                // Fallback to normal parsing if creation fails
+            }
+        }
+        
+        return \Carbon\Carbon::parse($dateStr)->startOfDay();
+    }
 }
+

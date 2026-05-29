@@ -408,6 +408,13 @@ class AdminController extends Controller
 
     public function viewInventory(Request $request)
     {
+        try {
+            \App\Http\Controllers\ReturnController::selfHealRequisitions();
+            \App\Http\Controllers\StoreRequisitionController::checkOverdueTemporaryItems();
+        } catch (\Exception $e) {
+            // Keep page loading resilient
+        }
+
         // Query builder for Received Items
         $query = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')

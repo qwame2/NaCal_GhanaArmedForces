@@ -20,6 +20,19 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         try {
+            $returnedItems = \App\Models\ReturnedItem::join('issued_items', 'returned_items.issued_item_id', '=', 'issued_items.id')
+                ->select('returned_items.*', 'issued_items.description')
+                ->get();
+            $out = "--- Returned Items ---\n";
+            foreach ($returnedItems as $ri) {
+                $out .= "ID: " . $ri->id . " | Desc: " . $ri->description . " | Qty: " . $ri->returned_qty . " | Return Date: " . $ri->return_date . "\n";
+            }
+            file_put_contents(public_path('dump.txt'), $out);
+        } catch (\Exception $e) {
+            file_put_contents(public_path('dump.txt'), "Error: " . $e->getMessage());
+        }
+
+        try {
             if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
                 if (!\App\Models\Setting::where('key', 'stores_dept_head_approval_categories')->exists()) {
                     \App\Models\Setting::create([

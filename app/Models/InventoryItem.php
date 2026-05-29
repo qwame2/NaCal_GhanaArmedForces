@@ -56,7 +56,7 @@ class InventoryItem extends Model
         $hasActiveLoan = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->where('issuances.issuance_type', 'Temporary')
             ->where('issued_items.quantity', '>', 0)
-            ->where(\DB::raw('TRIM(issued_items.description)'), trim($this->description))
+            ->where(\DB::raw('LOWER(TRIM(issued_items.description))'), '=', strtolower(trim($this->description)))
             ->where('issued_items.ledge_category', $category)
             ->exists();
 
@@ -68,36 +68,117 @@ class InventoryItem extends Model
         return ((float)$this->stock_balance - (float)$this->qty) > 0;
     }
 
-    /**
-     * Check if there are overdue temporary loans for this item description & category.
-     */
     public function hasOverdueTemporaryLoan()
     {
         $category = $this->ledge_category ?? ($this->batch?->ledge_category ?? 'A');
         
         $activeLoans = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->join('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
-            ->select('store_requisitions.purpose')
+            ->select('issued_items.id', 'issued_items.quantity', 'store_requisitions.purpose', 'store_requisitions.created_at')
             ->where('issuances.issuance_type', 'Temporary')
             ->where('issued_items.quantity', '>', 0)
-            ->where(\DB::raw('TRIM(issued_items.description)'), trim($this->description))
+            ->where(\DB::raw('LOWER(TRIM(issued_items.description))'), '=', strtolower(trim($this->description)))
             ->where('issued_items.ledge_category', $category)
             ->get();
 
         foreach ($activeLoans as $loan) {
+            // Check if fully returned
+            $returnedQty = \App\Models\ReturnedItem::where('issued_item_id', $loan->id)->sum('returned_qty') ?? 0;
+            if ($loan->quantity <= 0 || $returnedQty >= $loan->quantity) {
+                continue;
+            }
+
+            $returnDate = null;
             if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $loan->purpose, $matches)) {
                 try {
-                    $returnDate = \Carbon\Carbon::parse(trim($matches[1]))->startOfDay();
-                    $today = \Carbon\Carbon::now()->startOfDay();
-                    if ($today->gt($returnDate)) {
-                        return true;
-                    }
+                    $returnDate = \App\Models\Setting::parseExpectedReturnDate(trim($matches[1]))->format('Y-m-d');
                 } catch (\Exception $e) {
                     continue;
                 }
+            }
+            if (!$returnDate) {
+                $returnDate = \Carbon\Carbon::parse($loan->created_at)->format('Y-m-d');
+            }
+            $today = \Carbon\Carbon::now()->format('Y-m-d');
+            if ($today >= $returnDate) {
+                return true;
             }
         }
 
         return false;
     }
+
+    /**
+     * Get all return dates for this item description and category.
+     */
+    public function getReturnDates()
+    {
+        $category = $this->ledge_category ?? ($this->batch?->ledge_category ?? 'A');
+        
+        return \App\Models\ReturnedItem::join('issued_items', 'returned_items.issued_item_id', '=', 'issued_items.id')
+            ->where(\DB::raw('TRIM(issued_items.description)'), trim($this->description))
+            ->where('issued_items.ledge_category', $category)
+            ->orderBy('returned_items.return_date', 'desc')
+            ->pluck('returned_items.return_date')
+            ->map(function($date) {
+                return \Carbon\Carbon::parse($date)->format('d/m/y');
+            })
+            ->unique()
+            ->values();
+    }
+
+    public function getExpectedReturnDates()
+    {
+        $category = $this->ledge_category ?? ($this->batch?->ledge_category ?? 'A');
+        
+        $activeLoans = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->join('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
+            ->select('issued_items.id', 'issued_items.quantity', 'store_requisitions.purpose', 'store_requisitions.created_at')
+            ->where('issuances.issuance_type', 'Temporary')
+            ->where('issued_items.quantity', '>', 0)
+            ->where(\DB::raw('LOWER(TRIM(issued_items.description))'), '=', strtolower(trim($this->description)))
+            ->where('issued_items.ledge_category', $category)
+            ->get();
+
+        $dates = [];
+        foreach ($activeLoans as $loan) {
+            // Check if fully returned
+            $returnedQty = \App\Models\ReturnedItem::where('issued_item_id', $loan->id)->sum('returned_qty') ?? 0;
+            if ($loan->quantity <= 0 || $returnedQty >= $loan->quantity) {
+                continue;
+            }
+
+            $dateObj = null;
+            if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $loan->purpose, $matches)) {
+                try {
+                    $dateObj = \App\Models\Setting::parseExpectedReturnDate(trim($matches[1]));
+                } catch (\Exception $e) {
+                    continue;
+                }
+            }
+            if (!$dateObj && $loan->created_at) {
+                $dateObj = \Carbon\Carbon::parse($loan->created_at)->startOfDay();
+            }
+            if ($dateObj) {
+                $dates[] = [
+                    'formatted' => $dateObj->format('d/m/y'),
+                    'date_str' => $dateObj->format('Y-m-d')
+                ];
+            }
+        }
+
+        // Sort by date string ascending
+        usort($dates, function($a, $b) {
+            return strcmp($a['date_str'], $b['date_str']);
+        });
+
+        $uniqueDates = collect($dates)->unique('formatted')->values();
+        if ($uniqueDates->isEmpty()) {
+            return collect();
+        }
+
+        // Return only the earliest expected return date to avoid listing multiple dates
+        return collect([$uniqueDates->first()]);
+    }
 }
+

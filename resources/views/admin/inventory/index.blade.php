@@ -18,6 +18,23 @@
         .tab-trigger { padding: 0.8rem 1rem !important; font-size: 0.7rem !important; gap: 8px !important; flex: 1 !important; justify-content: center !important; }
         .tab-trigger i { width: 14px !important; }
     }
+    @keyframes blink-bg-red {
+        0% {
+            background-color: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        50% {
+            background-color: #ef4444;
+            border-color: #ef4444;
+            color: #ffffff;
+        }
+        100% {
+            background-color: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+    }
 </style>
 <div class="animate-slide-up">
     <div class="page-header" style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
@@ -286,6 +303,7 @@
                             <th>Supplier</th>
                             <th>Donor</th>
                             <th>Status</th>
+                            <th>Return Date</th>
                             <th>Received Qty</th>
                             <th>Stock Balance</th>
                             <th>Variance</th>
@@ -323,7 +341,9 @@
                                 <div style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">Rec'd: {{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('d/m/y') : 'N/A' }}</div>
                             </td>
                             <td>
-                                <div style="font-weight: 700; color: #1e293b;">{{ $item->description }}</div>
+                                <div style="font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                                    <span>{{ $item->description }}</span>
+                                </div>
                                 <div style="font-size: 0.7rem; color: #64748b; font-weight: 800; display: flex; align-items: center; gap: 8px;">
                                     <span>BATCH #{{ $item->batch_id }}</span>
                                     @if($item->location)
@@ -347,6 +367,43 @@
                                     <span style="font-size: 0.65rem; font-weight: 900; color: white; background: #ef4444; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">PARTIAL</span>
                                 @else
                                     <span style="font-size: 0.65rem; font-weight: 900; color: white; background: #10b981; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">FULL</span>
+                                @endif
+                            </td>
+                            <td>
+                                @php
+                                    $expectedDates = $item->getExpectedReturnDates();
+                                    $returnDates = $item->getReturnDates();
+                                    $hasOverdue = $item->hasOverdueTemporaryLoan();
+                                    $hasActiveExpected = $expectedDates->isNotEmpty();
+                                @endphp
+                                @if($hasActiveExpected || $returnDates->isNotEmpty())
+                                    <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                        @foreach($expectedDates as $ed)
+                                            @php
+                                                $todayStr = \Carbon\Carbon::now()->format('Y-m-d');
+                                                $isPastDue = $todayStr >= $ed['date_str'];
+                                            @endphp
+                                            @if($isPastDue)
+                                                <span style="font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap; border: 1.5px solid rgba(239,68,68,0.3); animation: blink-bg-red 1.5s infinite; display: inline-flex; align-items: center; gap: 4px;" title="Overdue for Return">
+                                                    <i data-lucide="alert-circle" style="width: 10px; height: 10px;"></i>
+                                                    {{ $ed['formatted'] }}
+                                                </span>
+                                            @else
+                                                <span style="font-size: 0.7rem; font-weight: 800; color: #15803d; background: #f0fdf4; border: 1.5px solid #bbf7d0; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;" title="Temporary Loan Active">
+                                                    <i data-lucide="clock" style="width: 10px; height: 10px;"></i>
+                                                    {{ $ed['formatted'] }}
+                                                </span>
+                                            @endif
+                                        @endforeach
+
+                                        @foreach($returnDates as $rd)
+                                            <span style="font-size: 0.7rem; font-weight: 800; color: #b45309; background: #fef3c7; border: 1.5px solid #fde68a; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap;">
+                                                {{ $rd }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">-</span>
                                 @endif
                             </td>
                             <td style="font-weight: 800; color: #0f172a;">{{ $item->qty }}</td>
@@ -379,7 +436,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="11" style="padding: 4rem; text-align: center; color: #94a3b8;">No inventory records discovered in the master category.</td>
+                            <td colspan="12" style="padding: 4rem; text-align: center; color: #94a3b8;">No inventory records discovered in the master category.</td>
                         </tr>
                         @endforelse
                     </tbody>

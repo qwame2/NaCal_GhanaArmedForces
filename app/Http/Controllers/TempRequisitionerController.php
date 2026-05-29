@@ -53,7 +53,7 @@ class TempRequisitionerController extends Controller
 
         $activeItems = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->join('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
-            ->select('issued_items.id', 'issued_items.quantity', 'store_requisitions.purpose')
+            ->select('issued_items.id', 'issued_items.quantity', 'store_requisitions.purpose', 'store_requisitions.created_at')
             ->where('issuances.issuance_type', 'Temporary')
             ->where('store_requisitions.department', $department)
             ->where('issued_items.quantity', '>', 0)
@@ -66,16 +66,22 @@ class TempRequisitionerController extends Controller
                 continue;
             }
 
+            $returnDate = null;
             if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $item->purpose, $matches)) {
                 try {
-                    $returnDate = \Carbon\Carbon::parse(trim($matches[1]))->startOfDay();
-                    $today = \Carbon\Carbon::now()->startOfDay();
-                    if ($today->gt($returnDate)) {
-                        return true;
-                    }
+                    $returnDate = \App\Models\Setting::parseExpectedReturnDate(trim($matches[1]))->format('Y-m-d');
                 } catch (\Exception $e) {
                     continue;
                 }
+            }
+
+            if (!$returnDate) {
+                $returnDate = \Carbon\Carbon::parse($item->created_at)->format('Y-m-d');
+            }
+
+            $today = \Carbon\Carbon::now()->format('Y-m-d');
+            if ($today >= $returnDate) {
+                return true;
             }
         }
 

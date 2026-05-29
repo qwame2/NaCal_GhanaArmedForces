@@ -297,7 +297,7 @@ class ReturnController extends Controller
         }
     }
 
-    private function selfHealRequisitions()
+    public static function selfHealRequisitions()
     {
         if (!Schema::hasColumn('issuances', 'requisition_id')) {
             try {

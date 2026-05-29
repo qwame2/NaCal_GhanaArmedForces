@@ -151,7 +151,7 @@
                                     try {
                                         $dateObj = \Carbon\Carbon::parse($rawDate)->startOfDay();
                                         $returnDateFormatted = $dateObj->format('d/m/y');
-                                        $isOverdue = \Carbon\Carbon::now()->startOfDay()->gt($dateObj);
+                                        $isOverdue = \Carbon\Carbon::now()->format('Y-m-d') >= $dateObj->format('Y-m-d');
                                     } catch (\Exception $e) {
                                         $parts = explode('-', $rawDate);
                                         if (count($parts) === 3 && strlen($parts[0]) === 4) {
@@ -162,8 +162,8 @@
                             @endphp
                             @if($returnDateFormatted !== 'N/A')
                                 @if($isOverdue)
-                                    <span class="status-pill" style="background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.8rem; font-weight: 800; padding: 4px 10px; border-radius: 89px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 0 10px rgba(239,68,68,0.15); animation: blink-red 2s infinite;">
-                                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                                    <span class="status-pill" style="font-size: 0.8rem; font-weight: 800; padding: 4px 10px; border-radius: 89px; display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid rgba(239,68,68,0.3); animation: blink-bg-red 1.5s infinite;" title="Overdue for Return">
+                                        <i data-lucide="alert-circle" style="width: 12px; height: 12px;"></i>
                                         {{ $returnDateFormatted }}
                                     </span>
                                 @else
@@ -269,7 +269,7 @@
                             try {
                                 $dateObj = \Carbon\Carbon::parse($rawDate)->startOfDay();
                                 $returnDateFormatted = $dateObj->format('d/m/y');
-                                $isOverdue = \Carbon\Carbon::now()->startOfDay()->gt($dateObj);
+                                $isOverdue = \Carbon\Carbon::now()->format('Y-m-d') >= $dateObj->format('Y-m-d');
                             } catch (\Exception $e) {
                                 $parts = explode('-', $rawDate);
                                 if (count($parts) === 3 && strlen($parts[0]) === 4) {
@@ -1304,10 +1304,22 @@
         }
     }
 
-    @keyframes blink-red {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    @keyframes blink-bg-red {
+        0% {
+            background-color: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        50% {
+            background-color: #ef4444;
+            border-color: #ef4444;
+            color: #ffffff;
+        }
+        100% {
+            background-color: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
     }
 </style>
 

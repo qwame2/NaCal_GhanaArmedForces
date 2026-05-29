@@ -280,18 +280,21 @@
             50% { transform: scale(1.05); opacity: 0.8; }
             100% { transform: scale(1); opacity: 1; }
         }
-        @keyframes blink-red {
+        @keyframes blink-bg-red {
             0% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+                background-color: rgba(239, 68, 68, 0.15);
+                border-color: rgba(239, 68, 68, 0.3);
+                color: #ef4444;
             }
-            70% {
-                transform: scale(1);
-                box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+            50% {
+                background-color: #ef4444;
+                border-color: #ef4444;
+                color: #ffffff;
             }
             100% {
-                transform: scale(0.95);
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+                background-color: rgba(239, 68, 68, 0.15);
+                border-color: rgba(239, 68, 68, 0.3);
+                color: #ef4444;
             }
         }
     </style>
@@ -349,6 +352,7 @@
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Supplier / Donor</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Delivery Status</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Return Date</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Received Qty</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Bal.</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
@@ -374,9 +378,6 @@
                             <div style="font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
                                 <span>{{ $item->description }}</span>
                                 <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $item->unit ?? 'Package Types' }})</span>
-                                @if($item->hasOverdueTemporaryLoan())
-                                    <span class="overdue-dot" title="This item is overdue for return" style="display:inline-block; width:8px; height:8px; background-color:#ef4444; border-radius:50%; margin-left:6px; box-shadow:0 0 0 rgba(239,68,68,0.7); animation:blink-red 1.2s infinite;" data-bs-toggle="tooltip"></span>
-                                @endif
                             </div>
                             <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Batch #{{ $item->batch_id }}</div>
                         </td>
@@ -423,6 +424,34 @@
                             <span style="font-size: 0.7rem; font-weight: 900; color: white; background: {{ $statusColor }}; padding: 0.35rem 0.8rem; border-radius: 8px; text-transform: uppercase; box-shadow: 0 4px 10px {{ $statusColor }}30; letter-spacing: 0.5px;">
                                 {{ $displayStatus }}
                             </span>
+                        </td>
+                        <td data-label="Return Date" style="padding: 1.25rem 1.5rem;">
+                            @php
+                                $expectedDates = $item->getExpectedReturnDates();
+                            @endphp
+                            @if($expectedDates->isNotEmpty())
+                                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                    @foreach($expectedDates as $ed)
+                                        @php
+                                            $todayStr = \Carbon\Carbon::now()->format('Y-m-d');
+                                            $isPastDue = $todayStr >= $ed['date_str'];
+                                        @endphp
+                                        @if($isPastDue)
+                                            <span style="font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap; border: 1.5px solid rgba(239,68,68,0.3); animation: blink-bg-red 1.5s infinite; display: inline-flex; align-items: center; gap: 4px;" title="Overdue / Due for Return">
+                                                <i data-lucide="alert-circle" style="width: 10px; height: 10px;"></i>
+                                                {{ $ed['formatted'] }}
+                                            </span>
+                                        @else
+                                            <span style="font-size: 0.7rem; font-weight: 800; color: #15803d; background: #f0fdf4; border: 1.5px solid #bbf7d0; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;" title="Expected Return Date">
+                                                <i data-lucide="clock" style="width: 10px; height: 10px;"></i>
+                                                {{ $ed['formatted'] }}
+                                            </span>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            @else
+                                <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">-</span>
+                            @endif
                         </td>
                         <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ $item->qty ?? '0' }}</td>
                         <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">{{ $item->stock_balance }}</td>
@@ -493,7 +522,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="{{ in_array(auth()->user()->role, ['Main Admin', 'Department Head']) ? 10 : 11 }}" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
+            <td colspan="{{ in_array(auth()->user()->role, ['Main Admin', 'Department Head']) ? 11 : 12 }}" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; margin: 0 auto;">
                     <div style="background: rgba(99, 102, 241, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(99, 102, 241, 0.2); animation: pulse 2s infinite;">
                         <i data-lucide="package-search" style="width: 44px; stroke-width: 1.5px;"></i>

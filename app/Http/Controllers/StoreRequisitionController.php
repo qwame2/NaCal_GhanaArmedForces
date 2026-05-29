@@ -388,7 +388,7 @@ class StoreRequisitionController extends Controller
         // Self-healing legacy fallback: if no receipt record exists, synthesize one transiently
         if (!$receipt) {
             $receiptCount = \App\Models\Receipt::count() + 1;
-            $receiptNumber = 'RCP-' . date('Y', strtotime($req->collected_at)) . '-' . str_pad($receiptCount, 5, '0', STR_PAD_LEFT) . '-LEGACY';
+            $receiptNumber = 'RCP-' . date('Y', strtotime($req->collected_at)) . '-' . str_pad($receiptCount, 5, '0', STR_PAD_LEFT);
 
             $itemsSnapshot = $req->items->map(function($item) {
                 return [
@@ -1479,7 +1479,7 @@ class StoreRequisitionController extends Controller
         // 1. Fetch all active temporary items checking out
         $activeItems = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->join('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
-            ->select('issued_items.*', 'store_requisitions.purpose', 'store_requisitions.department', 'store_requisitions.id as requisition_id', 'store_requisitions.requested_by')
+            ->select('issued_items.*', 'store_requisitions.purpose', 'store_requisitions.department', 'store_requisitions.id as requisition_id', 'store_requisitions.requested_by', 'store_requisitions.created_at as req_created')
             ->where('issuances.issuance_type', 'Temporary')
             ->where('issued_items.quantity', '>', 0)
             ->get();
@@ -1491,16 +1491,24 @@ class StoreRequisitionController extends Controller
                 continue;
             }
 
-            $returnDateStr = null;
+            $returnDate = null;
             if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $item->purpose, $matches)) {
-                $returnDateStr = trim($matches[1]);
+                try {
+                    $returnDate = \App\Models\Setting::parseExpectedReturnDate(trim($matches[1]));
+                } catch (\Exception $e) {
+                    // Ignore
+                }
             }
-            if (!$returnDateStr) {
-                continue;
+
+            if (!$returnDate) {
+                if ($item->req_created) {
+                    $returnDate = \Carbon\Carbon::parse($item->req_created)->startOfDay();
+                } else {
+                    $returnDate = \Carbon\Carbon::now()->startOfDay();
+                }
             }
 
             try {
-                $returnDate = \Carbon\Carbon::parse($returnDateStr)->startOfDay();
                 $today = \Carbon\Carbon::now()->startOfDay();
                 $diffInDays = $today->diffInDays($returnDate, false); // false allows negative values if past due
             } catch (\Exception $e) {
@@ -1558,7 +1566,7 @@ class StoreRequisitionController extends Controller
                         ]);
                     }
                 }
-            } elseif ($diffInDays < 0) {
+            } elseif ($diffInDays <= 0) {
                 // B: Overdue Return Reminder for Borrower Department Head
                 $exists = \App\Models\Message::where('receiver_id', $recipientId)
                     ->where('is_automated', true)
