@@ -325,9 +325,16 @@
         .main-wrapper {
             flex: 1;
             margin-left: 280px;
-            padding: 0 4rem 4rem 4rem;
+            padding: 0 2.5rem 4rem 2.5rem;
+            min-width: 0;
             position: relative;
             transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Content width cap — prevents extreme stretching on ultrawide monitors */
+        .main-wrapper > *:not(header) {
+            max-width: 1600px;
+            width: 100%;
         }
 
         /* Mobile Trigger */
@@ -358,7 +365,7 @@
             }
             .main-wrapper {
                 margin-left: 0;
-                padding: 0 1.5rem 2rem 1.5rem;
+                padding: 0 1.25rem 2rem 1.25rem;
             }
             .mobile-nav-toggle {
                 display: flex;
@@ -616,6 +623,8 @@
             }
             .main-wrapper.sidebar-minimized {
                 margin-left: 80px !important;
+                padding-left: 2.5rem !important;
+                padding-right: 2.5rem !important;
             }
         }
     </style>

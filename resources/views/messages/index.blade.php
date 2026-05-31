@@ -318,7 +318,6 @@
                 let html = '';
 
                 data.forEach(msg => {
-                    // Skip admin-only messages — not for personnel view
                     const isDeleteLog = msg.message && (
                         msg.message.includes('DELETE REQUEST LOG') ||
                         msg.message.includes('delete-req-msg') ||
@@ -330,7 +329,13 @@
                         msg.message.includes('REQUEST APPROVED') ||
                         msg.message.includes('REQUEST REJECTED')
                     );
-                    if (isDeleteLog) return;
+                    const isAltProposal = msg.message && (
+                        msg.message.includes('SUGGESTED QUANTITY PROPOSED') || 
+                        msg.message.includes('ALTERNATIVE ITEM PROPOSED') || 
+                        msg.message.includes('suggested quantities') ||
+                        msg.message.includes('alternative items')
+                    );
+                    if (isDeleteLog || isAltProposal) return;
 
                     const isMe = msg.sender_id == {{ auth()->id() }};
                     const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

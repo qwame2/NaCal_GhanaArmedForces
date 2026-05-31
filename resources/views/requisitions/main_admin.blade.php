@@ -2,6 +2,22 @@
 @section('content')
 @php
     $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+    if (!$isStoresHead) {
+        $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+        if ($isBackup) {
+            $primaryOnline = \App\Models\User::where(function($q) {
+                    $q->where('role', 'Main Admin')
+                      ->orWhere('role', 'Dept. Head (Stores)')
+                      ->orWhereIn('department', ['Stores', 'Store']);
+                })
+                ->where('is_online', true)
+                ->where('is_active', true)
+                ->exists();
+            if (!$primaryOnline) {
+                $isStoresHead = true;
+            }
+        }
+    }
 @endphp
 <style>
     :root {
@@ -786,6 +802,15 @@
             <div style="font-size:.7rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->role) }} · Department Head Hub</div>
             <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Oversight & Approvals</h1>
             <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">{{ $isStoresHead ? 'Second-tier review of requisitions approved by originating department heads.' : 'First-tier review and approval of store requisitions from your department (' . (auth()->user()->department ?? 'N/A') . ').' }}</p>
+            @php
+                $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
+            @endphp
+            @if($isBackupActive)
+                <div style="margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 99px; background: rgba(249, 115, 22, 0.08); border: 1px solid rgba(249, 115, 22, 0.2); color: #f97316; font-size: 0.75rem; font-weight: 800;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #f97316; animation: alertPulse 2s infinite;"></span>
+                    <span>ACTING AS STORES DEPARTMENT HEAD (DELEGATED AUTHORITY)</span>
+                </div>
+            @endif
         </div>
         <button onclick="window.location.reload()" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--text-main); border-radius:12px; border: 1px solid var(--border-color);">
             <i data-lucide="refresh-cw" style="width: 18px;"></i>

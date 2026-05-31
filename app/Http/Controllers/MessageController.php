@@ -115,6 +115,18 @@ class MessageController extends Controller
         $query = Message::where('is_archived', false)->where('receiver_id', $authId)
             ->whereNull('read_at');
 
+        // Exclude suggested quantities / alternative proposals for everyone
+        $query->where(function($q) {
+            $q->where('is_automated', false)
+              ->orWhere(function($sq) {
+                  $sq->where('is_automated', true)
+                     ->where('message', 'not like', '%SUGGESTED QUANTITY PROPOSED%')
+                     ->where('message', 'not like', '%ALTERNATIVE ITEM PROPOSED%')
+                     ->where('message', 'not like', '%suggested quantities%')
+                     ->where('message', 'not like', '%alternative items%');
+              });
+        });
+
         // If the user is not an administrator, exclude skipped administrative logs
         if (auth()->check() && !auth()->user()->is_admin) {
             $query->where(function($q) {
@@ -147,6 +159,18 @@ class MessageController extends Controller
     {
         $query = Message::where('is_archived', false)->where('receiver_id', auth()->id())
             ->whereNull('read_at');
+
+        // Exclude suggested quantities / alternative proposals for everyone
+        $query->where(function($q) {
+            $q->where('is_automated', false)
+              ->orWhere(function($sq) {
+                  $sq->where('is_automated', true)
+                     ->where('message', 'not like', '%SUGGESTED QUANTITY PROPOSED%')
+                     ->where('message', 'not like', '%ALTERNATIVE ITEM PROPOSED%')
+                     ->where('message', 'not like', '%suggested quantities%')
+                     ->where('message', 'not like', '%alternative items%');
+              });
+        });
 
         // If the user is not an administrator, exclude skipped administrative logs
         if (auth()->check() && !auth()->user()->is_admin) {

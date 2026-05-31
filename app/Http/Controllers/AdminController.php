@@ -36,8 +36,18 @@ class AdminController extends Controller
                     }
                 }
             ],
-            'role'       => 'required|string|in:Department Head,Main Admin,Officer,Requisitioner',
+            'role'       => 'required|string|in:Department Head,Main Admin,Officer,Requisitioner,Dept Head HR,Head of Welfare',
             'department' => 'nullable|string|max:255',
+            'rank'       => [
+                'nullable',
+                'string',
+                'in:SNCO,NCO',
+                function ($attribute, $value, $fail) use ($request) {
+                    if (in_array($request->role, ['Dept Head HR', 'Head of Welfare', 'Main Admin']) && empty($value)) {
+                        $fail('Please select a Rank (SNCO / NCO).');
+                    }
+                }
+            ],
         ]);
 
         // Determine department based on role
@@ -45,6 +55,14 @@ class AdminController extends Controller
         if ($role === 'Main Admin') {
             $department = 'Stores';
             $isAdmin    = true;
+        } elseif ($role === 'Dept Head HR') {
+            $role = 'Department Head';
+            $department = 'Human Resource Management Department';
+            $isAdmin = false;
+        } elseif ($role === 'Head of Welfare') {
+            $role = 'Department Head';
+            $department = 'Welfare Department';
+            $isAdmin = false;
         } elseif ($role === 'Department Head') {
             $department = $request->department;
             if (!$department) {
@@ -62,6 +80,7 @@ class AdminController extends Controller
             'password'           => Hash::make($request->password),
             'department'         => $department,
             'role'               => $role,
+            'rank'               => $request->rank,
             'is_admin'           => $isAdmin,
             'is_active'          => true,
             'must_change_password' => true,
@@ -611,7 +630,19 @@ class AdminController extends Controller
 
         $allDonors = $donorNames1->concat($donorNames2)->filter()->unique()->values();
 
-        return view('admin.inventory.index', compact('receivedItems', 'partialCount', 'itemAggregates', 'issuances', 'returnedItems', 'ledgeMap', 'allSuppliers', 'allDonors'));
+        // Compute Low Stock Items for the monitor card
+        $allItemAggregates = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.stock_balance) as total_available')
+            ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
+            ->get();
+
+        $lowStockItems = $allItemAggregates->filter(function ($item) {
+            $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
+            return (float) $item->total_available <= $threshold;
+        })->sortBy('total_available')->values();
+
+        return view('admin.inventory.index', compact('receivedItems', 'partialCount', 'itemAggregates', 'issuances', 'returnedItems', 'ledgeMap', 'allSuppliers', 'allDonors', 'lowStockItems'));
     }
 
     public function settings()

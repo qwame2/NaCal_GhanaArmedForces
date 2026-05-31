@@ -210,6 +210,22 @@ class AppServiceProvider extends ServiceProvider
                     
                     // Main Admin count of pending requisitions awaiting review
                     $isStoresHead = (strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+                    if (!$isStoresHead) {
+                        $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+                        if ($isBackup) {
+                            $primaryOnline = \App\Models\User::where(function($q) {
+                                    $q->where('role', 'Main Admin')
+                                      ->orWhere('role', 'Dept. Head (Stores)')
+                                      ->orWhereIn('department', ['Stores', 'Store']);
+                                })
+                                ->where('is_online', true)
+                                ->where('is_active', true)
+                                ->exists();
+                            if (!$primaryOnline) {
+                                $isStoresHead = true;
+                            }
+                        }
+                    }
                     if ($isStoresHead) {
                         $mainRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
                             ->where('origin_admin_status', 'approved')

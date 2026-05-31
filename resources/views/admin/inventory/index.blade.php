@@ -53,7 +53,138 @@
         </div>
     </div>
 
-    <!-- Luxury Oversight Pill Bar -->
+    {{-- ═══════════════════════ LOW STOCK MONITOR ═══════════════════════ --}}
+    @if($lowStockItems->count() > 0)
+    @php
+        $outOfStock  = $lowStockItems->filter(fn($i) => (float)$i->total_available <= 0)->count();
+        $critical    = $lowStockItems->filter(function($i) {
+            $t = \App\Models\Setting::getItemThreshold($i->description, $i->ledge_category);
+            $pct = $t > 0 ? ((float)$i->total_available / $t) * 100 : 0;
+            return (float)$i->total_available > 0 && $pct <= 25;
+        })->count();
+        $lowOnly = $lowStockItems->count() - $outOfStock - $critical;
+    @endphp
+    <div id="low-stock-monitor" style="margin-bottom: 2rem;">
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
+
+            {{-- Top summary strip --}}
+            <div style="display: grid; grid-template-columns: 1fr 1fr auto auto auto; align-items: center; gap: 0; border-bottom: 1px solid #f1f5f9;">
+
+                {{-- Title --}}
+                <div style="padding: 1.25rem 1.75rem; display: flex; align-items: center; gap: 12px; border-right: 1px solid #f1f5f9;">
+                    <div style="width: 36px; height: 36px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="trending-down" style="width: 18px; height: 18px; color: #ef4444;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.9rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">Low Stock Monitor</div>
+                        <div style="font-size: 0.7rem; font-weight: 600; color: #94a3b8; margin-top: 1px;">
+                            <span style="display: inline-flex; align-items: center; gap: 4px;">
+                                <span style="width: 5px; height: 5px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite;"></span>
+                                {{ $lowStockItems->count() }} item{{ $lowStockItems->count() !== 1 ? 's' : '' }} flagged
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Spacer --}}
+                <div style="padding: 1.25rem 1.75rem; border-right: 1px solid #f1f5f9;"></div>
+
+                {{-- Out of Stock count --}}
+                <div style="padding: 1.25rem 1.5rem; text-align: center; border-right: 1px solid #f1f5f9;">
+                    <div style="font-size: 1.5rem; font-weight: 950; color: #7f1d1d; letter-spacing: -0.04em; line-height: 1;">{{ $outOfStock }}</div>
+                    <div style="font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px;">Out of Stock</div>
+                </div>
+
+                {{-- Critical count --}}
+                <div style="padding: 1.25rem 1.5rem; text-align: center; border-right: 1px solid #f1f5f9;">
+                    <div style="font-size: 1.5rem; font-weight: 950; color: #b91c1c; letter-spacing: -0.04em; line-height: 1;">{{ $critical }}</div>
+                    <div style="font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px;">Critical</div>
+                </div>
+
+                {{-- Low count --}}
+                <div style="padding: 1.25rem 1.5rem; text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: 950; color: #dc2626; letter-spacing: -0.04em; line-height: 1;">{{ $lowOnly }}</div>
+                    <div style="font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px;">Low</div>
+                </div>
+            </div>
+
+            {{-- Table list --}}
+            <div style="max-height: 340px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #e2e8f0 transparent;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #fafcff;">
+                        <th style="padding: 0.75rem 1.75rem; text-align: left; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #f1f5f9;">#</th>
+                        <th style="padding: 0.75rem 1rem; text-align: left; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #f1f5f9;">Item Description</th>
+                        <th style="padding: 0.75rem 1rem; text-align: left; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #f1f5f9;">Category</th>
+                        <th style="padding: 0.75rem 1rem; text-align: center; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #f1f5f9;">Status</th>
+                        <th style="padding: 0.75rem 1rem; text-align: right; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #f1f5f9;">Available</th>
+                        <th style="padding: 0.75rem 1rem; text-align: right; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #f1f5f9;">Threshold</th>
+                        <th style="padding: 0.75rem 1.75rem; text-align: right; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #f1f5f9;">Fill Level</th>
+                    </tr>
+                </thead>
+                <style>
+                    #low-stock-monitor thead th { position: sticky; top: 0; z-index: 2; }
+                    #low-stock-monitor div::-webkit-scrollbar { width: 5px; }
+                    #low-stock-monitor div::-webkit-scrollbar-track { background: transparent; }
+                    #low-stock-monitor div::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+                    #low-stock-monitor div::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+                </style>
+                <tbody>
+                    @foreach($lowStockItems as $idx => $lowItem)
+                    @php
+                        $threshold    = \App\Models\Setting::getItemThreshold($lowItem->description, $lowItem->ledge_category);
+                        $stock        = (float) $lowItem->total_available;
+                        $pct          = $threshold > 0 ? min(100, round(($stock / $threshold) * 100)) : 0;
+                        $isOut        = $stock <= 0;
+                        $isCritical   = !$isOut && $pct <= 25;
+                        $statusLabel  = $isOut ? 'Out of Stock' : ($isCritical ? 'Critical' : 'Low');
+                        $badgeColor   = $isOut ? '#7f1d1d' : ($isCritical ? '#b91c1c' : '#dc2626');
+                        $badgeBg      = $isOut ? '#fee2e2' : ($isCritical ? '#fecaca' : '#fef2f2');
+                        $barColor     = $isOut ? '#fca5a5' : ($isCritical ? '#f87171' : '#fca5a5');
+                        $catName      = $ledgeMap[$lowItem->ledge_category] ?? $lowItem->ledge_category;
+                    @endphp
+                    <tr style="border-bottom: 1px solid #f8fafc; transition: background 0.15s;" onmouseover="this.style.background='#fafcff'" onmouseout="this.style.background=''">
+                        <td style="padding: 0.9rem 1.75rem; font-size: 0.72rem; font-weight: 800; color: #cbd5e1;">{{ str_pad($idx + 1, 2, '0', STR_PAD_LEFT) }}</td>
+                        <td style="padding: 0.9rem 1rem; font-size: 0.85rem; font-weight: 700; color: #1e293b; max-width: 260px;">{{ $lowItem->description }}</td>
+                        <td style="padding: 0.9rem 1rem;">
+                            <span style="font-size: 0.68rem; font-weight: 800; color: #64748b; background: #f1f5f9; padding: 3px 10px; border-radius: 6px;">{{ $catName }}</span>
+                        </td>
+                        <td style="padding: 0.9rem 1rem; text-align: center;">
+                            <span style="font-size: 0.65rem; font-weight: 900; color: {{ $badgeColor }}; background: {{ $badgeBg }}; padding: 3px 10px; border-radius: 6px; letter-spacing: 0.04em; border: 1px solid {{ $badgeColor }}20;">{{ $statusLabel }}</span>
+                        </td>
+                        <td style="padding: 0.9rem 1rem; text-align: right; font-size: 0.88rem; font-weight: 900; color: {{ $badgeColor }}; font-variant-numeric: tabular-nums;">{{ number_format($stock) }}</td>
+                        <td style="padding: 0.9rem 1rem; text-align: right; font-size: 0.8rem; font-weight: 700; color: #94a3b8; font-variant-numeric: tabular-nums;">{{ number_format($threshold) }}</td>
+                        <td style="padding: 0.9rem 1.75rem;">
+                            <div style="display: flex; align-items: center; gap: 10px; justify-content: flex-end;">
+                                <div style="width: 90px; height: 5px; background: #f1f5f9; border-radius: 10px; overflow: hidden; flex-shrink: 0;">
+                                    <div style="height: 100%; width: {{ $pct }}%; background: {{ $barColor }}; border-radius: 10px;"></div>
+                                </div>
+                                <span style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; min-width: 30px; text-align: right;">{{ $pct }}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            </div>
+
+            {{-- Footer --}}
+            <div style="padding: 1rem 1.75rem; background: #fafcff; border-top: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 0.72rem; font-weight: 700; color: #94a3b8;">
+                    {{ $lowStockItems->count() }} flagged item{{ $lowStockItems->count() !== 1 ? 's' : '' }} — scroll to view all
+                </span>
+                <a href="{{ route('admin.inventory') }}?stock_level=low" style="display: inline-flex; align-items: center; gap: 6px; color: #4f46e5; text-decoration: none; font-size: 0.78rem; font-weight: 800; padding: 7px 16px; border-radius: 10px; border: 1px solid #e0e7ff; background: #eef2ff; transition: 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'">
+                    <i data-lucide="arrow-right" style="width: 13px; height: 13px;"></i>
+                    View All Low Stock
+                </a>
+            </div>
+
+
+        </div>
+    </div>
+    @endif
+
+    {{-- ═════════════════════ LUXURY OVERSIGHT PILL BAR ═════════════════════ --}}
     <div class="filter-pill" style="margin: -1.5rem 2rem 2.5rem 2rem; background: white; padding: 8px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; display: flex; align-items: center; gap: 8px; position: relative; z-index: 10;">
         <form action="{{ route('admin.inventory') }}" method="GET" onsubmit="event.preventDefault(); performLiveUpdate();" style="display: flex; align-items: center; width: 100%; gap: 4px; flex-wrap: inherit;">
             <!-- Segment 1: Search -->

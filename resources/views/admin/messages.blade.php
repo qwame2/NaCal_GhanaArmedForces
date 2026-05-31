@@ -551,8 +551,14 @@
                     const isSraApproval = msg.message && (msg.message.includes('sra-approval-msg') || msg.message.includes('sra-approval-card') || msg.message.includes('SRA APPROVAL REQUIRED'));
                     const isEditReq = msg.message && (msg.message.includes('edit-req-msg') || msg.message.includes('AUTHORIZATION REQUIRED'));
                     const isSubmissionStatus = msg.message && (msg.message.includes('ENTRY SUBMISSION LOGGED') || msg.message.includes('RECOVERY SUBMITTED') || msg.message.includes('REMAINDER SUBMITTED') || msg.message.includes('DISBURSEMENT REQUEST LOGGED'));
+                    const isAltProposal = msg.message && (
+                        msg.message.includes('SUGGESTED QUANTITY PROPOSED') || 
+                        msg.message.includes('ALTERNATIVE ITEM PROPOSED') || 
+                        msg.message.includes('suggested quantities') ||
+                        msg.message.includes('alternative items')
+                    );
 
-                    if (msg.is_automated && !isSraApproval && !isEditReq && (isStrictlyPersonnel || isSubmissionStatus)) {
+                    if (msg.is_automated && (isAltProposal || (!isSraApproval && !isEditReq && (isStrictlyPersonnel || isSubmissionStatus)))) {
                         return;
                     }
 

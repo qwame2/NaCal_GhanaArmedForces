@@ -125,7 +125,18 @@
                             @elseif($user->role === 'Main Admin')
                                 <div class="clearance-pill dept-head">
                                     <div class="dot"></div>
-                                    Department Head
+                                    Department Head {{ $user->rank ? '(' . $user->rank . ')' : '' }}
+                                </div>
+                            @elseif($user->role === 'Department Head')
+                                <div class="clearance-pill dept-head">
+                                    <div class="dot"></div>
+                                    @if($user->department === 'Human Resource Management Department')
+                                        Dept Head HR {{ $user->rank ? '(' . $user->rank . ')' : '' }}
+                                    @elseif($user->department === 'Welfare Department')
+                                        Head of Welfare {{ $user->rank ? '(' . $user->rank . ')' : '' }}
+                                    @else
+                                        Department Head {{ $user->rank ? '(' . $user->rank . ')' : '' }}
+                                    @endif
                                 </div>
                             @elseif($user->role === 'Officer')
                                 <div class="clearance-pill store-officer">
@@ -166,6 +177,7 @@
                                         phone: '{{ $user->phone ?? 'Not Provided' }}',
                                         department: '{{ $user->department ?? 'UNASSIGNED' }}',
                                         role: '{{ $user->role }}',
+                                        rank: '{{ $user->rank ?? '' }}',
                                         last_login: '{{ $user->last_login_at ? $user->last_login_at->format('d/m/y H:i') : 'No record' }}',
                                         last_logout: '{{ $user->last_logout_at ? $user->last_logout_at->format('d/m/y H:i') : 'No record' }}',
                                         status: '{{ $user->is_active ? 'ACTIVE' : 'DEACTIVATED' }}',
@@ -980,6 +992,8 @@
                             <select name="role" id="swal-role-select" class="premium-select-input" required onchange="handleRoleChange(this)">
                                 <option value="Department Head">Dept. Head</option>
                                 <option value="Main Admin">Dept. Head (Stores)</option>
+                                <option value="Dept Head HR">Dept. Head (HR)</option>
+                                <option value="Head of Welfare">Head of Welfare</option>
                                 <option value="Officer">Store Officer</option>
                             </select>
                         </div>
@@ -1040,6 +1054,17 @@
                         </div>
                     </div>
 
+                    <div id="swal-rank-group" style="display: none; margin-bottom: 1.5rem;">
+                        <div class="swal-input-group">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Rank <span style="color: #ef4444;">*</span></label>
+                            <select name="rank" id="swal-rank-select" class="premium-select-input">
+                                <option value="">-- Select Rank --</option>
+                                <option value="SNCO">SNCO</option>
+                                <option value="NCO">NCO</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div id="swal-custom-dept-group" style="display:none; margin-bottom: 1.5rem;">
                         <div class="swal-input-group">
                             <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Custom Department Name <span style="color: #ef4444;">*</span></label>
@@ -1088,6 +1113,7 @@
                 const role = document.getElementById('swal-role-select').value;
                 const deptSelect = document.getElementById('swal-department-select');
                 const customInput = document.getElementById('swal-custom-dept-input');
+                const rankSelect = document.getElementById('swal-rank-select');
 
                 // If Department Head, validate department is set
                 if (role === 'Department Head') {
@@ -1111,6 +1137,14 @@
                     }
                 }
 
+                // If Department Head roles, validate rank is set
+                if (role === 'Dept Head HR' || role === 'Head of Welfare' || role === 'Main Admin') {
+                    if (!rankSelect.value) {
+                        Swal.showValidationMessage('Please select a Rank (SNCO / NCO).');
+                        return false;
+                    }
+                }
+
                 const form = document.getElementById('addPersonnelForm');
                 if (!form.checkValidity()) {
                     form.reportValidity();
@@ -1130,6 +1164,18 @@
         const deptGroup = document.getElementById('swal-department-group');
         const deptSelect = document.getElementById('swal-department-select');
         const customGroup = document.getElementById('swal-custom-dept-group');
+        const rankGroup = document.getElementById('swal-rank-group');
+        const rankSelect = document.getElementById('swal-rank-select');
+
+        // Toggle Rank Dropdown for HR, Welfare, and Stores department heads
+        if (role === 'Dept Head HR' || role === 'Head of Welfare' || role === 'Main Admin') {
+            rankGroup.style.display = 'block';
+            rankSelect.required = true;
+        } else {
+            rankGroup.style.display = 'none';
+            rankSelect.required = false;
+            rankSelect.value = '';
+        }
 
         if (role === 'Department Head') {
             deptGroup.style.display = 'block';
@@ -1153,6 +1199,38 @@
                 storesField.id = 'swal-stores-dept-hidden';
                 storesField.value = 'Stores';
                 document.getElementById('addPersonnelForm').appendChild(storesField);
+            }
+        } else if (role === 'Dept Head HR') {
+            deptGroup.style.display = 'none';
+            customGroup.style.display = 'none';
+            deptSelect.required = false;
+            deptSelect.name = '';
+            let storesField = document.getElementById('swal-stores-dept-hidden');
+            if (!storesField) {
+                storesField = document.createElement('input');
+                storesField.type = 'hidden';
+                storesField.name = 'department';
+                storesField.id = 'swal-stores-dept-hidden';
+                storesField.value = 'Human Resource Management Department';
+                document.getElementById('addPersonnelForm').appendChild(storesField);
+            } else {
+                storesField.value = 'Human Resource Management Department';
+            }
+        } else if (role === 'Head of Welfare') {
+            deptGroup.style.display = 'none';
+            customGroup.style.display = 'none';
+            deptSelect.required = false;
+            deptSelect.name = '';
+            let storesField = document.getElementById('swal-stores-dept-hidden');
+            if (!storesField) {
+                storesField = document.createElement('input');
+                storesField.type = 'hidden';
+                storesField.name = 'department';
+                storesField.id = 'swal-stores-dept-hidden';
+                storesField.value = 'Welfare Department';
+                document.getElementById('addPersonnelForm').appendChild(storesField);
+            } else {
+                storesField.value = 'Welfare Department';
             }
         } else {
             deptGroup.style.display = 'none';
@@ -1447,6 +1525,7 @@
                             <div class="profile-badges">
                                 <span class="profile-username-badge">@${user.username}</span>
                                 <span class="profile-id-badge">ID: ${(user.id || '').toString().padStart(5, '0')}</span>
+                                ${user.rank ? `<span class="profile-id-badge" style="background: #eef2ff; color: #4338ca; border-color: #c7d2fe;">Rank: ${user.rank}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -1506,7 +1585,7 @@
                             <div class="card-content">
                                 <span class="card-label">Access Level</span>
                                 <span class="role-badge-pill ${user.role.toLowerCase() === 'admin' ? 'admin' : 'staff'}">
-                                    ${user.role.toUpperCase()}
+                                    ${(user.role === 'Department Head' && user.department === 'Human Resource Management Department') ? 'DEPT HEAD HR' : ((user.role === 'Department Head' && user.department === 'Welfare Department') ? 'HEAD OF WELFARE' : user.role.toUpperCase())}
                                 </span>
                             </div>
                         </div>

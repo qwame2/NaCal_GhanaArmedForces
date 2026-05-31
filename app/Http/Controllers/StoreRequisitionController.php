@@ -1069,6 +1069,22 @@ class StoreRequisitionController extends Controller
         if (!in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) abort(403);
 
         $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (!$isStoresHead) {
+            $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+            if ($isBackup) {
+                $primaryOnline = \App\Models\User::where(function($q) {
+                        $q->where('role', 'Main Admin')
+                          ->orWhere('role', 'Dept. Head (Stores)')
+                          ->orWhereIn('department', ['Stores', 'Store']);
+                    })
+                    ->where('is_online', true)
+                    ->where('is_active', true)
+                    ->exists();
+                if (!$primaryOnline) {
+                    $isStoresHead = true;
+                }
+            }
+        }
 
         $query = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])
             ->orderByRaw("FIELD(priority, 'urgent', 'normal', 'low')")
@@ -1183,6 +1199,22 @@ class StoreRequisitionController extends Controller
         $req = StoreRequisition::findOrFail($id);
 
         $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (!$isStoresHead) {
+            $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+            if ($isBackup) {
+                $primaryOnline = \App\Models\User::where(function($q) {
+                        $q->where('role', 'Main Admin')
+                          ->orWhere('role', 'Dept. Head (Stores)')
+                          ->orWhereIn('department', ['Stores', 'Store']);
+                    })
+                    ->where('is_online', true)
+                    ->where('is_active', true)
+                    ->exists();
+                if (!$primaryOnline) {
+                    $isStoresHead = true;
+                }
+            }
+        }
 
         if (!$isStoresHead) {
             // Originating department head check
@@ -1716,6 +1748,22 @@ class StoreRequisitionController extends Controller
 
         $user = auth()->user();
         $isStoresHead = ($user->role === 'Main Admin' || strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0);
+        if (!$isStoresHead) {
+            $isBackup = ($user->role === 'Department Head' && in_array($user->department, ['Human Resource Management Department', 'Welfare Department']));
+            if ($isBackup) {
+                $primaryOnline = \App\Models\User::where(function($q) {
+                        $q->where('role', 'Main Admin')
+                          ->orWhere('role', 'Dept. Head (Stores)')
+                          ->orWhereIn('department', ['Stores', 'Store']);
+                    })
+                    ->where('is_online', true)
+                    ->where('is_active', true)
+                    ->exists();
+                if (!$primaryOnline) {
+                    $isStoresHead = true;
+                }
+            }
+        }
 
         // Fetch all temporary issued items
         $query = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
