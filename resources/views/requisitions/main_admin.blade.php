@@ -794,7 +794,7 @@
     </div>
 
     {{-- Stats Cards --}}
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;margin-bottom:2rem;">
+    <div id="oversight-stats-container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;margin-bottom:2rem;">
         <div class="req-stat-card">
             <div style="width:48px;height:48px;background:rgba(99,102,241,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:24px;color:#6366f1;"></i></div>
             <div>
@@ -1014,8 +1014,9 @@
             @endif
         </form>
     {{-- Card Requisition List --}}
-    <div class="table-container">
-        <table class="oversight-table">
+    <div id="oversight-table-wrapper">
+        <div class="table-container">
+            <table class="oversight-table">
             <thead>
                 <tr>
                     <th style="width: 15%;">Requisition Ref</th>
@@ -1189,7 +1190,7 @@
                                     style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: rgba(249, 115, 22, 0.08); border: 1.5px solid rgba(249, 115, 22, 0.2); color: var(--store-orange); padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;"
                                     onmouseover="this.style.background='var(--store-orange)'; this.style.color='white';"
                                     onmouseout="this.style.background='rgba(249, 115, 22, 0.08)'; this.style.color='var(--store-orange)';">
-                                    <i data-lucide="shuffle" style="width: 14px; height: 14px;"></i> Pending Alt
+                                    <i data-lucide="shuffle" style="width: 14px; height: 14px;"></i> Pending Qty Suggestion
                                 </button>
                             @elseif($status === 'pending')
                                 <button onclick="openRequisitionModal({{ $req->id }})"
@@ -1278,6 +1279,7 @@
             </div>
         </div>
         @endif
+    </div>
     </div>
 </div>
 
@@ -1540,15 +1542,15 @@
 
         if (!isProcessed) {
             if (data.alternative_status === 'proposed' && !isStoresHead) {
-                // Render alternative proposal review buttons with Yes/No choices and comment box
+                // Render suggested quantity proposal review buttons with Yes/No choices and comment box
                 decisionHtml = `
                 <div class="decision-area animate-slide-up" style="background: rgba(249, 115, 22, 0.04); border: 1.5px dashed rgba(249, 115, 22, 0.2); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
                     <div style="font-size: 0.72rem; font-weight: 800; color: var(--store-orange); text-transform: uppercase; letter-spacing: 0.05em; display:flex; align-items:center; gap:6px;">
                         <i data-lucide="shuffle" style="width: 14px; color: var(--store-orange);"></i>
-                        Alternative Item Proposal
+                        Suggested Quantity Proposal
                     </div>
                     <div style="font-size: 0.88rem; color: var(--text-main); font-weight: 700; line-height: 1.5;">
-                        The Head of Stores has proposed alternative items for this requisition. Please review the item breakdown above. Do you agree to accept the alternative item allocations?
+                        The Head of Stores has suggested modified quantities for this requisition. Please review the item breakdown above. Do you agree to accept the suggested quantity allocations?
                     </div>
                     
                     <div style="display: flex; gap: 1.5rem; align-items: center; margin-top: 0.25rem; margin-bottom: 0.25rem;">
@@ -1562,16 +1564,31 @@
                         </label>
                     </div>
 
-                    <textarea id="decisionNotes" class="decision-text-area" oninput="checkAltOptions()" placeholder="Enter optional comments or feedback regarding this alternative decision..."></textarea>
+                    <!-- Options when selecting No -->
+                    <div id="noOptionSection" style="display: none; flex-direction: column; gap: 0.75rem; border-left: 3px solid #ef4444; padding-left: 1.25rem; margin-top: 0.25rem; margin-bottom: 0.25rem; transition: all 0.3s ease;">
+                        <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">Choose an action:</div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.88rem; font-weight: 700; color: var(--text-main);">
+                                <input type="radio" name="noActionType" id="noActionCancel" value="cancel" onchange="checkAltOptions()" style="width: 16px; height: 16px; accent-color: #ef4444; cursor: pointer;">
+                                Cancel this Requisition Request
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.88rem; font-weight: 700; color: var(--text-main);">
+                                <input type="radio" name="noActionType" id="noActionComment" value="comment" onchange="checkAltOptions()" style="width: 16px; height: 16px; accent-color: #ef4444; cursor: pointer;">
+                                Add a Comment / Feedback
+                            </label>
+                        </div>
+                    </div>
+
+                    <textarea id="decisionNotes" class="decision-text-area" style="display: none;" oninput="checkAltOptions()" placeholder="Enter your comments or feedback regarding the suggested quantity decision..."></textarea>
 
                     <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
                         <button id="declineAltBtn" onclick="processAlternativeResponse('decline')" disabled style="flex:1; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.25); padding: 0.75rem; border-radius: 12px; font-weight: 800; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; opacity: 0.4;" onmouseover="if(!this.disabled){this.style.background='#ef4444'; this.style.color='white';}" onmouseout="if(!this.disabled){this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';}">
                             <i data-lucide="x-circle" style="width: 18px;"></i>
-                            Decline Alternative
+                            <span id="declineAltBtnText">Decline Suggested Qty</span>
                         </button>
                         <button id="agreeAltBtn" onclick="processAlternativeResponse('agree')" disabled style="flex:1.5; background: #10b981; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; opacity: 0.4; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);" onmouseover="if(!this.disabled)this.style.background='#059669';" onmouseout="if(!this.disabled)this.style.background='#10b981';">
                             <i data-lucide="check-circle" style="width: 18px;"></i>
-                            Agree to Alternative
+                            Agree to Suggested Qty
                         </button>
                     </div>
                 </div>`;
@@ -1604,10 +1621,10 @@
             let decisionColor = statusVal === 'approved' ? '#10b981' : '#ef4444';
             
             if (data.alternative_status === 'agreed') {
-                decisionLabel = 'ALTERNATIVE ITEM AGREED';
+                decisionLabel = 'SUGGESTED QUANTITY AGREED';
                 decisionColor = '#10b981';
             } else if (data.alternative_status === 'declined') {
-                decisionLabel = 'ALTERNATIVE PROPOSAL DECLINED';
+                decisionLabel = 'SUGGESTED QUANTITY DECLINED';
                 decisionColor = '#ef4444';
             }
 
@@ -1867,79 +1884,132 @@
     function checkAltOptions() {
         const radioYes = document.getElementById('altAgreeYes');
         const radioNo = document.getElementById('altAgreeNo');
+        const noOptionSection = document.getElementById('noOptionSection');
+        const noActionCancel = document.getElementById('noActionCancel');
+        const noActionComment = document.getElementById('noActionComment');
         const textarea = document.getElementById('decisionNotes');
+        
         const agreeBtn = document.getElementById('agreeAltBtn');
         const declineBtn = document.getElementById('declineAltBtn');
+        const declineText = document.getElementById('declineAltBtnText');
         
         if (!agreeBtn || !declineBtn) return;
 
-        const hasComment = textarea && textarea.value.trim().length > 0;
-
-        if (hasComment) {
-            // Enable both buttons
+        if (radioYes && radioYes.checked) {
+            // YES selected: Hide 'No' options and textarea
+            if (noOptionSection) noOptionSection.style.display = 'none';
+            if (textarea) textarea.style.display = 'none';
+            
             agreeBtn.disabled = false;
             agreeBtn.style.opacity = '1';
             agreeBtn.style.cursor = 'pointer';
             
-            declineBtn.disabled = false;
-            declineBtn.style.opacity = '1';
-            declineBtn.style.cursor = 'pointer';
-        } else {
-            // Evaluate based on radios
-            if (radioYes && radioYes.checked) {
-                // Yes selected: Enable agree, disable decline
-                agreeBtn.disabled = false;
-                agreeBtn.style.opacity = '1';
-                agreeBtn.style.cursor = 'pointer';
-                
-                declineBtn.disabled = true;
-                declineBtn.style.opacity = '0.4';
-                declineBtn.style.cursor = 'not-allowed';
-            } else if (radioNo && radioNo.checked) {
-                // No selected: Disable agree, enable decline
-                agreeBtn.disabled = true;
-                agreeBtn.style.opacity = '0.4';
-                agreeBtn.style.cursor = 'not-allowed';
+            declineBtn.disabled = true;
+            declineBtn.style.opacity = '0.4';
+            declineBtn.style.cursor = 'not-allowed';
+            if (declineText) declineText.textContent = 'Decline Suggested Qty';
+        } else if (radioNo && radioNo.checked) {
+            // NO selected: Show 'No' options, disable Agree button
+            if (noOptionSection) noOptionSection.style.display = 'flex';
+            
+            agreeBtn.disabled = true;
+            agreeBtn.style.opacity = '0.4';
+            agreeBtn.style.cursor = 'not-allowed';
+            
+            if (noActionCancel && noActionCancel.checked) {
+                // Cancel selected: Hide comment box, enable Decline/Cancel button
+                if (textarea) textarea.style.display = 'none';
                 
                 declineBtn.disabled = false;
                 declineBtn.style.opacity = '1';
                 declineBtn.style.cursor = 'pointer';
+                if (declineText) declineText.textContent = 'Cancel Requisition Request';
+            } else if (noActionComment && noActionComment.checked) {
+                // Comment selected: Show comment box, enable Decline only if comment is filled
+                if (textarea) textarea.style.display = 'block';
+                if (declineText) declineText.textContent = 'Decline & Send Feedback';
+                
+                const hasComment = textarea && textarea.value.trim().length > 0;
+                if (hasComment) {
+                    declineBtn.disabled = false;
+                    declineBtn.style.opacity = '1';
+                    declineBtn.style.cursor = 'pointer';
+                } else {
+                    declineBtn.disabled = true;
+                    declineBtn.style.opacity = '0.4';
+                    declineBtn.style.cursor = 'not-allowed';
+                }
             } else {
-                // Nothing selected and no comment: Disable both!
-                agreeBtn.disabled = true;
-                agreeBtn.style.opacity = '0.4';
-                agreeBtn.style.cursor = 'not-allowed';
+                // No action selected yet: Hide comment box, disable Decline button
+                if (textarea) textarea.style.display = 'none';
                 
                 declineBtn.disabled = true;
                 declineBtn.style.opacity = '0.4';
                 declineBtn.style.cursor = 'not-allowed';
+                if (declineText) declineText.textContent = 'Decline Suggested Qty';
             }
+        } else {
+            // Nothing selected: Hide everything, disable both buttons
+            if (noOptionSection) noOptionSection.style.display = 'none';
+            if (textarea) textarea.style.display = 'none';
+            
+            agreeBtn.disabled = true;
+            agreeBtn.style.opacity = '0.4';
+            agreeBtn.style.cursor = 'not-allowed';
+            
+            declineBtn.disabled = true;
+            declineBtn.style.opacity = '0.4';
+            declineBtn.style.cursor = 'not-allowed';
+            if (declineText) declineText.textContent = 'Decline Suggested Qty';
         }
     }
 
     async function processAlternativeResponse(response) {
         const notes = document.getElementById('decisionNotes').value.trim();
+        const noActionCancel = document.getElementById('noActionCancel');
+        const noActionComment = document.getElementById('noActionComment');
 
-        if (response === 'decline' && !notes) {
-            Swal.fire({
-                title: 'Declination Reason Required',
-                text: 'Please record a reason for declining the alternative item proposal in the feedback form.',
-                icon: 'warning',
-                confirmButtonColor: '#4f46e5'
-            });
-            return;
+        const isCancelling = noActionCancel && noActionCancel.checked;
+        const isDecliningWithComment = noActionComment && noActionComment.checked;
+
+        if (response === 'decline') {
+            if (isDecliningWithComment && !notes) {
+                Swal.fire({
+                    title: 'Feedback Required',
+                    text: 'Please enter a comment or feedback regarding this decision in the text area.',
+                    icon: 'warning',
+                    confirmButtonColor: '#4f46e5'
+                });
+                return;
+            }
+        }
+
+        let confirmTitle = 'Agree to Suggested Quantity?';
+        let confirmText = 'This will confirm your department\'s agreement to the suggested quantity proposal. Requisition will return to stores for final allocation.';
+        let confirmBtnText = 'Yes, Agree';
+        let confirmColor = '#10b981';
+
+        if (response === 'decline') {
+            confirmColor = '#ef4444';
+            if (isCancelling) {
+                confirmTitle = 'Cancel Requisition Request?';
+                confirmText = 'This will fully cancel and decline the requisition request.';
+                confirmBtnText = 'Yes, Cancel Request';
+            } else {
+                confirmTitle = 'Decline & Send Feedback?';
+                confirmText = 'This will decline the suggested quantity proposal and cancel the requisition with your feedback.';
+                confirmBtnText = 'Yes, Decline';
+            }
         }
 
         Swal.fire({
-            title: response === 'agree' ? 'Agree to Alternative Item?' : 'Decline Alternative Item?',
-            text: response === 'agree' ?
-                'This will confirm your department\'s agreement to the alternative item proposal. Requisition will return to stores for final allocation.' :
-                'This will decline the alternative item proposal and fully decline the requisition.',
+            title: confirmTitle,
+            text: confirmText,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonText: response === 'agree' ? 'Yes, Agree' : 'Yes, Decline',
+            confirmButtonText: confirmBtnText,
             cancelButtonText: 'Abort',
-            confirmButtonColor: response === 'agree' ? '#10b981' : '#ef4444',
+            confirmButtonColor: confirmColor,
             cancelButtonColor: '#ef4444',
             customClass: {
                 confirmButton: 'premium-swal-btn',
@@ -2203,6 +2273,18 @@
     }
     @endif
 
+    const sentFollowUps = new Set();
+
+    function applyFollowUpSentStyle(btn) {
+        if (!btn) return;
+        btn.innerHTML = `<i data-lucide="check" style="width: 14px;"></i> Reminder Sent`;
+        btn.style.background = 'rgba(100, 116, 139, 0.05)';
+        btn.style.borderColor = 'rgba(100, 116, 139, 0.1)';
+        btn.style.color = 'var(--text-muted)';
+        btn.style.cursor = 'not-allowed';
+        btn.disabled = true;
+    }
+
     async function sendFollowUp(id, btn) {
         const originalHTML = btn.innerHTML;
         btn.disabled = true;
@@ -2221,17 +2303,14 @@
             const data = await response.json();
 
             if (data.success) {
+                sentFollowUps.add(id);
                 Swal.fire({
                     icon: 'success',
                     title: 'Follow Up Sent!',
                     text: data.message,
                     confirmButtonColor: 'var(--store-orange)'
                 });
-                btn.innerHTML = `<i data-lucide="check" style="width: 14px;"></i> Reminder Sent`;
-                btn.style.background = 'rgba(100, 116, 139, 0.05)';
-                btn.style.borderColor = 'rgba(100, 116, 139, 0.1)';
-                btn.style.color = 'var(--text-muted)';
-                btn.style.cursor = 'not-allowed';
+                applyFollowUpSentStyle(btn);
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -2269,5 +2348,93 @@
             openRequisitionModal(parseInt(openId));
         }
     });
+
+    // Helper to normalize HTML content for stable comparison (ignores Lucide icon expansions and whitespace differences)
+    function getNormalizedHTML(element) {
+        if (!element) return '';
+        const clone = element.cloneNode(true);
+        
+        // Remove all icon elements to prevent Lucide translation differences from causing false change detection
+        clone.querySelectorAll('svg, i, [data-lucide]').forEach(el => el.remove());
+        
+        // Normalize all follow-up buttons to prevent differences in "Follow Up" vs "Reminder Sent" states from triggering a false update
+        clone.querySelectorAll('button[onclick*="sendFollowUp"]').forEach(btn => {
+            const placeholder = document.createElement('button');
+            placeholder.className = 'follow-up-placeholder';
+            btn.parentNode.replaceChild(placeholder, btn);
+        });
+        
+        return clone.innerHTML.replace(/\s+/g, ' ').trim();
+    }
+
+    // Auto silent refresh every 10 seconds to show all requests without page reload
+    setInterval(async () => {
+        const reqModal = document.getElementById('reqModal');
+        const provisionModal = document.getElementById('provisionModal');
+        const regenModal = document.getElementById('regenModal');
+        
+        const isModalOpen = (reqModal && reqModal.classList.contains('open')) ||
+                            (provisionModal && provisionModal.classList.contains('open')) ||
+                            (regenModal && regenModal.classList.contains('open'));
+                            
+        const isSwalOpen = typeof Swal !== 'undefined' && Swal.isVisible();
+        
+        if (isModalOpen || isSwalOpen) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(window.location.href);
+            if (!response.ok) return;
+            const html = await response.text();
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            let updated = false;
+            
+            // Update stats cards
+            const newStats = doc.getElementById('oversight-stats-container');
+            const currentStats = document.getElementById('oversight-stats-container');
+            if (newStats && currentStats) {
+                const normNewStats = getNormalizedHTML(newStats);
+                const normCurStats = getNormalizedHTML(currentStats);
+                if (normNewStats !== normCurStats) {
+                    currentStats.innerHTML = newStats.innerHTML;
+                    updated = true;
+                }
+            }
+            
+            // Update table & pagination wrapper
+            const newTable = doc.getElementById('oversight-table-wrapper');
+            const currentTable = document.getElementById('oversight-table-wrapper');
+            if (newTable && currentTable) {
+                const normNewTable = getNormalizedHTML(newTable);
+                const normCurTable = getNormalizedHTML(currentTable);
+                if (normNewTable !== normCurTable) {
+                    // Remove animate-slide-up class from the fetched table rows to prevent layout flashing/blinking
+                    newTable.querySelectorAll('.animate-slide-up').forEach(el => {
+                        el.classList.remove('animate-slide-up');
+                    });
+                    currentTable.innerHTML = newTable.innerHTML;
+                    
+                    // Reapply local "Reminder Sent" states to the newly loaded buttons if applicable
+                    sentFollowUps.forEach(id => {
+                        const btn = currentTable.querySelector(`button[onclick*="sendFollowUp(${id},"]`);
+                        if (btn) {
+                            applyFollowUpSentStyle(btn);
+                        }
+                    });
+                    
+                    updated = true;
+                }
+            }
+            
+            if (updated && typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        } catch (e) {
+            console.error('Silent refresh failed:', e);
+        }
+    }, 10000);
 </script>
 @endsection

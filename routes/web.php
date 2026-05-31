@@ -509,6 +509,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/settings/signature', [SettingsController::class, 'updateSignature'])->name('settings.signature');
     Route::post('/settings/signature/remove', [SettingsController::class, 'removeSignature'])->name('settings.signature.remove');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/api/reports/data', [ReportController::class, 'data'])->name('api.reports.data');
+
     Route::get('/stock-check', [\App\Http\Controllers\StockCheckController::class, 'index'])->name('stockcheck.index');
     Route::get('/notifications', function() {
         return view('notifications');
@@ -521,10 +523,11 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/api/total-unread', [\App\Http\Controllers\MessageController::class, 'getTotalUnreadCount'])->name('api.total-unread');
     Route::get('/api/online-statuses', [\App\Http\Controllers\MessageController::class, 'getOnlineStatuses'])->name('api.online-statuses');
     Route::get('/api/user/permissions', function() {
+        $is_admin = (bool)auth()->user()->is_admin;
         return response()->json([
-            'can_generate_reports' => (bool)auth()->user()->can_generate_reports,
-            'can_add_inventory' => (bool)auth()->user()->can_add_inventory,
-            'can_operate_logistics' => (bool)auth()->user()->can_operate_logistics,
+            'can_generate_reports' => $is_admin || (bool)auth()->user()->can_generate_reports,
+            'can_add_inventory' => $is_admin || (bool)auth()->user()->can_add_inventory,
+            'can_operate_logistics' => $is_admin || (bool)auth()->user()->can_operate_logistics,
         ]);
     })->name('api.user.permissions');
 
@@ -950,6 +953,41 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             return back()->with('error', 'Category, keywords, and a valid limit are required.');
         }
 
+        // Validate that limit does not exceed stock balance
+        $stockItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->selectRaw('inventory_items.description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+            ->groupBy('inventory_items.description')
+            ->get();
+
+        foreach ($keywords as $kw) {
+            $kwLower = strtolower(trim($kw));
+            if (empty($kwLower)) continue;
+
+            $stock = null;
+            foreach ($stockItems as $item) {
+                $descClean = strtolower(trim($item->description));
+                if ($descClean === $kwLower) {
+                    $stock = (float)$item->total_stock;
+                    break;
+                }
+            }
+
+            if ($stock === null) {
+                foreach ($stockItems as $item) {
+                    $descClean = strtolower(trim($item->description));
+                    if (str_contains($descClean, $kwLower) || str_contains($kwLower, $descClean)) {
+                        $stock = (float)$item->total_stock;
+                        break;
+                    }
+                }
+            }
+
+            if ($stock !== null && $limit > $stock) {
+                return back()->with('error', "The request limit ({$limit}) cannot exceed the current stock balance of \"{$kw}\" ({$stock} units).");
+            }
+        }
+
         $setting = \App\Models\Setting::firstOrCreate(
             ['key' => 'item_request_limits'],
             ['value' => '{}', 'type' => 'json', 'group' => 'inventory', 'description' => 'Keyword-to-limit mapping for item request limits.']
@@ -989,7 +1027,6 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/admin/settings/supplier-registry', function(\Illuminate\Http\Request $request) {
         if (!auth()->user()->is_admin) abort(403);
         $namesStr = trim($request->input('name'));
-        $delivery_person = trim($request->input('delivery_person'));
         $phone = trim($request->input('phone'));
         $email = trim($request->input('email'));
         $address = trim($request->input('address'));
@@ -1006,7 +1043,6 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             \App\Models\Supplier::updateOrCreate(
                 ['name' => $name],
                 [
-                    'delivery_person' => $delivery_person,
                     'phone' => $phone,
                     'email' => $email,
                     'address' => $address,

@@ -82,6 +82,38 @@ class StoreRequisitionController extends Controller
             'items.*.remarks'            => 'nullable|string|max:500',
         ]);
 
+        // Enforce Item Request Limits
+        foreach ($request->items as $item) {
+            if (empty($item['description'])) continue;
+            
+            $description = trim($item['description']);
+            $category = $item['category'] ?? null;
+            $requestedQty = (float)$item['quantity_requested'];
+
+            // Calculate physical stock
+            $stockQuery = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->whereRaw('TRIM(inventory_items.description) = ?', [$description]);
+            
+            if (is_null($category)) {
+                $stockQuery->whereNull('inventory_batches.ledge_category');
+            } else {
+                $stockQuery->where('inventory_batches.ledge_category', $category);
+            }
+
+            $physicalStock = (float) $stockQuery->sum(\DB::raw('CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))'));
+
+            // Calculate available stock applying the limit
+            $availableStock = Setting::getAvailableStock($description, $physicalStock, $category);
+
+            if ($requestedQty > $availableStock) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Available stock for this item is restricted to {$availableStock}."
+                ], 422);
+            }
+        }
+
         $isStoresDept = (strcasecmp($request->department, 'Stores') === 0 || strcasecmp($request->department, 'Store') === 0);
         $requisition = StoreRequisition::create([
             'requester_name' => $request->requester_name,
@@ -733,8 +765,8 @@ class StoreRequisitionController extends Controller
             SystemLog::create([
                 'user_id'    => auth()->id(),
                 'event_type' => 'REQUISITION',
-                'action'     => 'PROPOSE_ALTERNATIVE',
-                'description'=> "Administrator " . auth()->user()->name . " proposed alternative items for store requisition #{$req->id} from department: {$req->department}.",
+                'action'     => 'PROPOSE_SUGGESTED_QTY',
+                'description'=> "Administrator " . auth()->user()->name . " proposed suggested quantities for store requisition #{$req->id} from department: {$req->department}.",
                 'severity'   => 'info',
                 'metadata'   => ['requisition_id' => $req->id],
                 'ip_address' => $request->ip(),
@@ -748,15 +780,15 @@ class StoreRequisitionController extends Controller
             
             $priorityLabel = strtoupper($req->priority);
             $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #ea580c;border-radius:12px;background:rgba(234,88,12,0.05);'>";
-            $msg .= "<b style='color:#ea580c;'>🔔 ALTERNATIVE ITEM PROPOSED — Ref: #{$req->id}</b><br><br>";
-            $msg .= "The Head of Stores has proposed alternative items for your department's store requisition Ref: #<b>{$req->id}</b>.<br><br>";
+            $msg .= "<b style='color:#ea580c;'>🔔 SUGGESTED QUANTITY PROPOSED — Ref: #{$req->id}</b><br><br>";
+            $msg .= "The Head of Stores has suggested modified quantities for your department's store requisition Ref: #<b>{$req->id}</b>.<br><br>";
             $msg .= "<b>Requester:</b> {$req->requester_name}<br>";
             $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br>";
             if ($request->filled('admin_notes')) {
                 $msg .= "<b>Stores Notes:</b> " . e($request->admin_notes) . "<br><br>";
             }
-            $msg .= "Please review the proposed alternative items and either <b>Agree</b> or <b>Decline</b> the proposal.<br><br>";
-            $msg .= "<a href='" . route('main-admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#ea580c;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Alternative Proposal</a>";
+            $msg .= "Please review the suggested quantities and either <b>Agree</b> or <b>Decline</b> the proposal.<br><br>";
+            $msg .= "<a href='" . route('main-admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#ea580c;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Quantity Suggestion</a>";
             $msg .= "</div>";
 
             foreach ($deptHeads as $head) {
@@ -770,7 +802,7 @@ class StoreRequisitionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Alternative item proposal sent successfully to the department head of {$req->department}.",
+                'message' => "Suggested quantity proposal sent successfully to the department head of {$req->department}.",
             ]);
         }
 
@@ -1393,7 +1425,7 @@ class StoreRequisitionController extends Controller
                 'user_id'    => auth()->id(),
                 'event_type' => 'REQUISITION',
                 'action'     => 'ALT_ITEM_AGREED',
-                'description'=> "Department Head " . auth()->user()->name . " agreed to alternative item proposal for requisition #{$req->id}.",
+                'description'=> "Department Head " . auth()->user()->name . " agreed to suggested quantity proposal for requisition #{$req->id}.",
                 'severity'   => 'info',
                 'metadata'   => ['requisition_id' => $req->id],
                 'ip_address' => $request->ip(),
@@ -1403,8 +1435,8 @@ class StoreRequisitionController extends Controller
             $admins = User::where('is_admin', true)->where('is_active', true)->get();
             foreach ($admins as $admin) {
                 $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
-                $msg .= "<b style='color:#10b981;'>✅ ALTERNATIVE ITEM AGREED — Ref: #{$req->id}</b><br><br>";
-                $msg .= "Department <b>{$req->department}</b> has <b>AGREED</b> to the proposed alternative items.<br><br>";
+                $msg .= "<b style='color:#10b981;'>✅ SUGGESTED QUANTITY AGREED — Ref: #{$req->id}</b><br><br>";
+                $msg .= "Department <b>{$req->department}</b> has <b>AGREED</b> to the suggested quantities.<br><br>";
                 $msg .= "<b>Department Head Notes:</b> " . e($request->notes ?: 'None') . "<br><br>";
                 $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Proceed to Commit Decision</a>";
                 $msg .= "</div>";
@@ -1417,9 +1449,24 @@ class StoreRequisitionController extends Controller
                 ]);
             }
         } else {
+            // Determine if the requisition requires Stores Department Head approval
+            $storesApprovalCategories = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
+            if (!is_array($storesApprovalCategories)) {
+                $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
+            }
+            $requiresStoresDeptHeadApproval = false;
+            foreach ($req->items as $item) {
+                if (in_array($item->category, $storesApprovalCategories)) {
+                    $requiresStoresDeptHeadApproval = true;
+                    break;
+                }
+            }
+
             $req->alternative_status = 'declined';
             $req->status = 'declined';
-            $req->decline_reason = 'Department declined alternative item proposal. ' . ($request->notes ? 'Notes: ' . $request->notes : '');
+            $req->origin_admin_status = 'declined';
+            $req->main_admin_status = 'declined';
+            $req->decline_reason = 'Department declined suggested quantity proposal. ' . ($request->notes ? 'Notes: ' . $request->notes : '');
             $req->save();
 
             // Log
@@ -1427,24 +1474,37 @@ class StoreRequisitionController extends Controller
                 'user_id'    => auth()->id(),
                 'event_type' => 'REQUISITION',
                 'action'     => 'ALT_ITEM_DECLINED',
-                'description'=> "Department Head " . auth()->user()->name . " declined alternative item proposal for requisition #{$req->id}.",
+                'description'=> "Department Head " . auth()->user()->name . " declined suggested quantity proposal for requisition #{$req->id}.",
                 'severity'   => 'warning',
                 'metadata'   => ['requisition_id' => $req->id],
                 'ip_address' => $request->ip(),
             ]);
 
-            // Notify admins and requester
-            $admins = User::where('is_admin', true)->where('is_active', true)->get();
-            foreach ($admins as $admin) {
+            // Notify admins and selectively the main admin (Stores Department Head)
+            // Head of stores (admin) always gets notified
+            $recipients = User::where('is_admin', true)->where('is_active', true)->get()->keyBy('id');
+
+            // Stores Department Head (main-admin) gets notified if allowed to approve
+            if ($requiresStoresDeptHeadApproval) {
+                $storesHeads = User::whereIn('role', ['Main Admin', 'Department Head'])
+                    ->where(fn($q) => $q->where('department', 'Stores')->orWhere('department', 'Store'))
+                    ->where('is_active', true)
+                    ->get();
+                foreach ($storesHeads as $head) {
+                    $recipients->put($head->id, $head);
+                }
+            }
+
+            foreach ($recipients as $recipient) {
                 $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #ef4444;border-radius:12px;background:rgba(239,68,68,0.05);'>";
-                $msg .= "<b style='color:#ef4444;'>❌ ALTERNATIVE ITEM DECLINED — Ref: #{$req->id}</b><br><br>";
-                $msg .= "Department <b>{$req->department}</b> has <b>DECLINED</b> the proposed alternative items. Requisition has been marked as declined.<br><br>";
+                $msg .= "<b style='color:#ef4444;'>❌ SUGGESTED QUANTITY DECLINED — Ref: #{$req->id}</b><br><br>";
+                $msg .= "Department <b>{$req->department}</b> has <b>DECLINED</b> the suggested quantities. Requisition has been marked as declined.<br><br>";
                 $msg .= "<b>Department Head Notes:</b> " . e($request->notes ?: 'None') . "<br><br>";
                 $msg .= "</div>";
 
                 Message::create([
                     'sender_id'    => auth()->id(),
-                    'receiver_id'  => $admin->id,
+                    'receiver_id'  => $recipient->id,
                     'message'      => $msg,
                     'is_automated' => true,
                 ]);
@@ -1452,8 +1512,8 @@ class StoreRequisitionController extends Controller
 
             if ($req->requested_by) {
                 $msg  = "<div class='personnel-view requisition-status-msg' style='padding:15px;border:1px solid #ef4444;border-radius:12px;background:rgba(239,68,68,0.02);'>";
-                $msg .= "<b style='color:#ef4444;'>📋 REQUISITION DECLINED (Alternative Declined)</b><br><br>";
-                $msg .= "Your store requisition (Ref: #{$req->id}) has been declined because the department head declined the alternative item proposed by stores.<br><br>";
+                $msg .= "<b style='color:#ef4444;'>📋 REQUISITION DECLINED (Suggested Quantity Declined)</b><br><br>";
+                $msg .= "Your store requisition (Ref: #{$req->id}) has been declined because the department head declined the suggested quantity proposed by stores.<br><br>";
                 $msg .= "</div>";
 
                 Message::create([
@@ -1467,7 +1527,7 @@ class StoreRequisitionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Your response to the alternative item proposal has been saved and processed successfully.',
+            'message' => $request->response === 'agree' ? 'Suggested quantity proposal accepted. Requisition returned to stores.' : 'Suggested quantity proposal declined. Requisition marked as declined.',
         ]);
     }
 

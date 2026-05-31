@@ -134,13 +134,21 @@ class Setting extends Model
     public static function getItemThreshold($description, $category = null)
     {
         $rules = self::get('item_threshold_rules', []);
+        if (is_string($rules)) {
+            $rules = json_decode($rules, true);
+        }
+        if (!is_array($rules)) {
+            $rules = [];
+        }
         $descLower = strtolower(trim($description));
 
         foreach ($rules as $keyword => $rule) {
-            if (str_contains($descLower, strtolower(trim($keyword)))) {
+            $keywordLower = strtolower(trim($keyword));
+            $pattern = '/\b' . preg_quote($keywordLower, '/') . '\b/i';
+            if (preg_match($pattern, $descLower)) {
                 $ruleCat = $rule['category'] ?? null;
                 // Match category if specified
-                if ($ruleCat && $category && $ruleCat !== $category) {
+                if ($ruleCat && $category && strcasecmp(trim($ruleCat), trim($category)) !== 0) {
                     continue;
                 }
                 return (int)($rule['threshold'] ?? $rule);
@@ -157,10 +165,18 @@ class Setting extends Model
     public static function getItemUnit($description)
     {
         $rules = self::get('item_unit_rules', []);
+        if (is_string($rules)) {
+            $rules = json_decode($rules, true);
+        }
+        if (!is_array($rules)) {
+            $rules = [];
+        }
         $descLower = strtolower(trim($description));
 
         foreach ($rules as $keyword => $rule) {
-            if (str_contains($descLower, strtolower(trim($keyword)))) {
+            $keywordLower = strtolower(trim($keyword));
+            $pattern = '/\b' . preg_quote($keywordLower, '/') . '\b/i';
+            if (preg_match($pattern, $descLower)) {
                 return is_array($rule) ? ($rule['unit'] ?? 'units') : $rule;
             }
         }
@@ -174,12 +190,20 @@ class Setting extends Model
     public static function getItemRequestLimit($description, $category = null)
     {
         $limits = self::get('item_request_limits', []);
+        if (is_string($limits)) {
+            $limits = json_decode($limits, true);
+        }
+        if (!is_array($limits)) {
+            $limits = [];
+        }
         $descLower = strtolower(trim($description));
 
         foreach ($limits as $keyword => $rule) {
-            if (str_contains($descLower, strtolower(trim($keyword)))) {
+            $keywordLower = strtolower(trim($keyword));
+            $pattern = '/\b' . preg_quote($keywordLower, '/') . '\b/i';
+            if (preg_match($pattern, $descLower)) {
                 $ruleCat = $rule['category'] ?? null;
-                if ($ruleCat && $category && $ruleCat !== $category) {
+                if ($ruleCat && $category && strcasecmp(trim($ruleCat), trim($category)) !== 0) {
                     continue;
                 }
                 return (int)($rule['limit'] ?? $rule);
@@ -200,12 +224,20 @@ class Setting extends Model
 
         // Find the matched keyword rule to use for counting
         $limits = self::get('item_request_limits', []);
+        if (is_string($limits)) {
+            $limits = json_decode($limits, true);
+        }
+        if (!is_array($limits)) {
+            $limits = [];
+        }
         $descLower = strtolower(trim($description));
         $matchedKeyword = null;
         foreach ($limits as $keyword => $rule) {
-            if (str_contains($descLower, strtolower(trim($keyword)))) {
+            $keywordLower = strtolower(trim($keyword));
+            $pattern = '/\b' . preg_quote($keywordLower, '/') . '\b/i';
+            if (preg_match($pattern, $descLower)) {
                 $ruleCat = $rule['category'] ?? null;
-                if ($ruleCat && $category && $ruleCat !== $category) {
+                if ($ruleCat && $category && strcasecmp(trim($ruleCat), trim($category)) !== 0) {
                     continue;
                 }
                 $matchedKeyword = $keyword;
@@ -221,13 +253,26 @@ class Setting extends Model
         $query = \App\Models\StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
             ->whereIn('store_requisitions.status', ['approved', 'partially_approved']);
 
-        $originalSum = (float) $query->clone()
-            ->where(\DB::raw('LOWER(store_requisition_items.description)'), 'LIKE', '%' . $keywordLower . '%')
-            ->sum('store_requisition_items.quantity_approved');
+        // Fetch all items from approved/partially approved requisitions to filter using regex in PHP
+        $items = $query->select(
+            'store_requisition_items.description',
+            'store_requisition_items.quantity_approved',
+            'store_requisition_items.alternative_description',
+            'store_requisition_items.alternative_quantity_approved'
+        )->get();
 
-        $alternativeSum = (float) $query->clone()
-            ->where(\DB::raw('LOWER(store_requisition_items.alternative_description)'), 'LIKE', '%' . $keywordLower . '%')
-            ->sum('store_requisition_items.alternative_quantity_approved');
+        $pattern = '/\b' . preg_quote($keywordLower, '/') . '\b/i';
+        $originalSum = 0.0;
+        $alternativeSum = 0.0;
+
+        foreach ($items as $dbItem) {
+            if ($dbItem->description && preg_match($pattern, $dbItem->description)) {
+                $originalSum += (float) $dbItem->quantity_approved;
+            }
+            if ($dbItem->alternative_description && preg_match($pattern, $dbItem->alternative_description)) {
+                $alternativeSum += (float) $dbItem->alternative_quantity_approved;
+            }
+        }
 
         $givenOut = $originalSum + $alternativeSum;
         $remainingLimit = max(0, $limit - $givenOut);

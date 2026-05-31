@@ -1,27 +1,140 @@
-@extends('layouts.dashboard')
+@extends(auth()->user()->is_admin ? 'layouts.admin' : 'layouts.dashboard')
+
+@section('title', 'Analytical Reports')
 
 @section('content')
-<div class="animate-slide-up report-container" style="position: relative;">
-    <div class="page-header header-mesh" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; padding: 2.5rem; border-radius: 28px; border: 1px solid var(--border-color); box-shadow: 0 10px 40px rgba(0,0,0,0.03); position: relative; overflow: hidden; background: var(--bg-card);">
-        <div style="position: absolute; top: -100px; right: -50px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 60%); z-index: 0;"></div>
-        <div style="position: relative; z-index: 1;">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: rgba(99, 102, 241, 0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.35rem 1rem; border-radius: 99px; text-transform: uppercase;">Reporting Engine</span>
-                <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700;">Verification & Validation Tool</span>
-            </div>
-            <h2 style="font-size: 2.5rem; font-weight: 950; color: var(--text-main); margin: 0; letter-spacing: -0.04em;">Analytical <span style="color: var(--primary);">Reports</span></h2>
-            <p style="color: var(--text-muted); font-size: 1rem; font-weight: 600; margin-top: 6px;">Aggregate logistics data across multiple time periods for official verification.</p>
-        </div>
 
-        <div style="display: flex; gap: 1rem; position: relative; z-index: 1;">
-            <!-- Period Controls -->
-            <div class="period-toggle-group {{ !auth()->user()->can_generate_reports ? 'restricted-btn' : '' }}">
-                <a href="{{ auth()->user()->can_generate_reports ? route('reports.index', ['period' => 'daily']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'daily' ? 'active' : '' }}">Daily</a>
-                <a href="{{ auth()->user()->can_generate_reports ? route('reports.index', ['period' => 'monthly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'monthly' ? 'active' : '' }}">Monthly</a>
-                <a href="{{ auth()->user()->can_generate_reports ? route('reports.index', ['period' => 'yearly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'yearly' ? 'active' : '' }}">Yearly</a>
+
+<div class="animate-slide-up report-container" style="position: relative;">
+    <div class="page-header rpt-hero" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; padding: 2.5rem; border-radius: 28px; border: 1px solid var(--border-color); position: relative; overflow: hidden; background: var(--bg-card);">
+        <!-- Decorative orbs -->
+        <div class="rpt-orb rpt-orb-1"></div>
+        <div class="rpt-orb rpt-orb-2"></div>
+        <div class="rpt-orb rpt-orb-3"></div>
+        <div style="position: relative; z-index: 1;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                <span class="rpt-engine-badge">Reporting Engine</span>
+                <span class="rpt-divider-dot"></span>
+                <span style="color: var(--text-muted); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.01em;">Verification &amp; Validation Tool</span>
+            </div>
+            <h2 class="rpt-hero-title">Analytical <span class="rpt-hero-accent">Reports</span></h2>
+            <p class="rpt-hero-sub">Aggregate logistics data across multiple time periods for official verification.</p>
+        </div>
+        <div style="display: flex; gap: 1rem; position: relative; z-index: 1; flex-wrap: wrap; align-items: center;">
+            <div class="period-toggle-group {{ !(auth()->user()->is_admin || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
+                <a href="{{ (auth()->user()->is_admin || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'daily']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'daily' ? 'active' : '' }}">Daily</a>
+                <a href="{{ (auth()->user()->is_admin || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'monthly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'monthly' ? 'active' : '' }}">Monthly</a>
+                <a href="{{ (auth()->user()->is_admin || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'yearly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'yearly' ? 'active' : '' }}">Yearly</a>
+                <a href="javascript:void(0)" id="custom-period-btn" onclick="toggleCustomDateBar()" class="period-btn {{ $period === 'custom' ? 'active' : '' }}">Custom Range</a>
             </div>
         </div>
     </div>
+
+    <!-- Filter Bar -->
+    <div class="report-filter-card glass-card hide-in-print">
+        <form method="GET" action="{{ route('reports.index') }}" id="report-filter-form">
+            <input type="hidden" name="period" id="form-period-input" value="{{ $period }}">
+
+            <!-- Custom Date Range Panel -->
+            <div id="custom-date-bar" class="date-range-panel {{ $period === 'custom' ? 'is-open' : '' }}">
+                <div class="date-range-inner">
+                    <div class="date-range-header">
+                        <div class="date-range-header-left">
+                            <span class="date-range-icon-wrap">
+                                <i data-lucide="calendar-range" style="width:18px;height:18px;"></i>
+                            </span>
+                            <div>
+                                <div class="date-range-title">Custom Date Range</div>
+                                <div class="date-range-subtitle">Filter report data between any two dates</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <button type="button" id="reset-date-btn" onclick="resetCustomDates()" class="date-reset-btn" style="display: {{ ($rawStartDate || $rawEndDate) ? 'inline-flex' : 'none' }};">
+                                <i data-lucide="rotate-ccw" style="width:11px;height:11px;"></i> Reset Dates
+                            </button>
+                            <div class="date-range-badge">CUSTOM</div>
+                        </div>
+                    </div>
+                    <div class="date-inputs-row">
+                        <div class="date-input-group">
+                            <label for="start-date-input" class="date-input-label">
+                                <i data-lucide="play-circle" style="width:12px;height:12px;"></i> From
+                            </label>
+                            <div class="date-input-wrapper">
+                                <i data-lucide="calendar" class="date-input-icon"></i>
+                                <input type="date" id="start-date-input" name="start_date" value="{{ $rawStartDate }}" class="date-input-field">
+                            </div>
+                        </div>
+                        <div class="date-range-arrow">
+                            <div class="arrow-line"></div>
+                            <div class="arrow-dot">
+                                <i data-lucide="arrow-right" style="width:14px;height:14px;color:#6366f1;"></i>
+                            </div>
+                            <div class="arrow-line"></div>
+                        </div>
+                        <div class="date-input-group">
+                            <label for="end-date-input" class="date-input-label">
+                                <i data-lucide="stop-circle" style="width:12px;height:12px;"></i> To
+                            </label>
+                            <div class="date-input-wrapper">
+                                <i data-lucide="calendar" class="date-input-icon"></i>
+                                <input type="date" id="end-date-input" name="end_date" value="{{ $rawEndDate }}" class="date-input-field">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Item Filter Row -->
+            <div class="item-filter-panel">
+                <!-- Panel Header -->
+                <div class="item-filter-header">
+                    <div class="item-filter-header-left">
+                        <span class="item-filter-icon-wrap">
+                            <i data-lucide="package-search" style="width:17px;height:17px;"></i>
+                        </span>
+                        <div>
+                            <div class="item-filter-title">Filter by Item(s)</div>
+                            <div class="item-filter-subtitle">Select one or multiple items — leave blank to include all inventory</div>
+                        </div>
+                    </div>
+                    @if(!empty($selectedItems))
+                        <span class="item-filter-count-badge">{{ count($selectedItems) }} selected</span>
+                    @else
+                        <span class="item-filter-all-badge">All Items</span>
+                    @endif
+                </div>
+
+                <!-- Selector + Actions -->
+                <div class="item-filter-body">
+                    <div class="item-selector-wrap">
+                        <select name="items[]" id="items-select" class="select2" multiple style="width: 100%;">
+                            @foreach($groupedItems as $groupName => $descriptions)
+                                <optgroup label="{{ $groupName }}">
+                                    @foreach($descriptions as $desc)
+                                        <option value="{{ $desc }}" {{ in_array($desc, $selectedItems) ? 'selected' : '' }}>{{ $desc }}</option>
+                                    @endforeach
+                                </optgroup>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button type="submit" class="filter-apply-btn {{ !(auth()->user()->is_admin || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
+                            <i data-lucide="bar-chart-2" style="width:16px;height:16px;"></i>
+                            <span>Generate Report</span>
+                        </button>
+                        @if(!empty($selectedItems) || $period === 'custom')
+                            <a href="{{ route('reports.index', ['period' => 'monthly']) }}" class="filter-clear-btn">
+                                <i data-lucide="rotate-ccw" style="width:15px;height:15px;"></i>
+                                <span>Reset</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
 
     <!-- Generated Report Title Bar -->
     <div class="print-header" style="display: none; margin-bottom: 2rem; border-bottom: 4px solid #1e3a8a; padding-bottom: 20px; text-align: center;">
@@ -39,175 +152,283 @@
 
     <div class="print-actions-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
         <h3 class="print-date-label" style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin: 0;">{{ $dateLabel }}</h3>
-        <button onclick="{{ auth()->user()->can_generate_reports ? 'triggerPrintMode()' : '' }}" class="btn-primary {{ !auth()->user()->can_generate_reports ? 'restricted-btn' : '' }}" style="padding: 0.75rem 1.5rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.25);">
+        <button onclick="{{ (auth()->user()->is_admin || auth()->user()->can_generate_reports) ? 'triggerPrintMode()' : '' }}" class="btn-primary {{ !(auth()->user()->is_admin || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}" style="padding: 0.75rem 1.5rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.25);">
             <i data-lucide="printer" style="width: 18px;"></i> Export or Print
         </button>
     </div>
 
+    <!-- ═══════════════ LIVE-UPDATED CONTENT AREA ═══════════════ -->
+    <div id="report-content-area" style="position: relative;">
+
+    <div class="stats-charts-print-layout">
     <!-- Quick Stats -->
     <div class="stats-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
-        <div class="glass-card stat-card">
-            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+        <div class="glass-card stat-card stat-card-received">
+            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(6,182,212,0.1)); color: #10b981; box-shadow: 0 8px 20px rgba(16,185,129,0.18);">
                 <i data-lucide="package-plus"></i>
             </div>
             <div style="flex: 1;">
-                <div class="stat-label">Total Received Vol.</div>
-                <div class="stat-value">{{ number_format((float)$totalReceivedQty) }} <span class="stat-unit">Package Types</span></div>
-                <div class="stat-subtitle">Across {{ $totalReceivedBatches }} Registered Batches</div>
+                <div class="stat-label">Total Received</div>
+                <div class="stat-value" style="color: #10b981;">{{ number_format((float)$totalReceivedQty) }} <span class="stat-unit">Units</span></div>
+                <div class="stat-subtitle">{{ $totalReceivedBatches }} Registered Batches</div>
             </div>
         </div>
 
-        <div class="glass-card stat-card">
-            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+        <div class="glass-card stat-card stat-card-issued">
+            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,191,36,0.1)); color: #f59e0b; box-shadow: 0 8px 20px rgba(245,158,11,0.18);">
                 <i data-lucide="package-minus"></i>
             </div>
             <div style="flex: 1;">
-                <div class="stat-label">Total Issued Vol.</div>
-                <div class="stat-value">{{ number_format((float)$totalIssuedQty) }} <span class="stat-unit">Package Types</span></div>
-                <div class="stat-subtitle">Across {{ $totalIssuedBatches }} Disbursement Records</div>
+                <div class="stat-label">Total Issued</div>
+                <div class="stat-value" style="color: #f59e0b;">{{ number_format((float)$totalIssuedQty) }} <span class="stat-unit">Units</span></div>
+                <div class="stat-subtitle">{{ $totalIssuedBatches }} Disbursement Records</div>
             </div>
         </div>
 
-        <div class="glass-card stat-card">
-            <div class="stat-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+        <div class="glass-card stat-card stat-card-net">
+            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); color: #6366f1; box-shadow: 0 8px 20px rgba(99,102,241,0.18);">
                 <i data-lucide="activity"></i>
             </div>
             <div style="flex: 1;">
                 <div class="stat-label">Net Movement</div>
-                <div class="stat-value" style="color: var(--primary);">{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }} <span class="stat-unit">Package Types</span></div>
-                <div class="stat-subtitle">Theoretical Surplus in Period</div>
+                <div class="stat-value" style="color: #6366f1;">{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }} <span class="stat-unit">Units</span></div>
+                <div class="stat-subtitle">Period Surplus (Received − Issued)</div>
             </div>
         </div>
     </div>
 
-    <!-- Customizable Report Writer -->
-    <div style="margin-bottom: 3rem; position: relative;">
-        <div class="narrative-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;" class="hide-in-print">
-            <div>
-                <h4 style="font-size: 1.1rem; font-weight: 900; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px;">
-                    <i data-lucide="pen-tool" style="width: 20px; color: var(--primary);"></i>
-                    Verification Narrative
-                </h4>
-                <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; margin: 4px 0 0;">Add custom contextual remarks to be included in the final print generation.</p>
-            </div>
-            <div style="display: flex; gap: 0.75rem;">
-                <button type="button" onclick="{{ auth()->user()->can_generate_reports ? 'autoGenerateReport()' : '' }}" class="btn-primary {{ !auth()->user()->can_generate_reports ? 'restricted-btn' : '' }}" style="padding: 0.5rem 1rem; border-radius: 12px; border: none; background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                    <i data-lucide="sparkles" style="width: 16px;"></i> Auto-Generate
-                </button>
-                <button type="button" onclick="{{ auth()->user()->can_generate_reports ? 'clearNarrative()' : '' }}" class="btn-secondary {{ !auth()->user()->can_generate_reports ? 'restricted-btn' : '' }}" style="padding: 0.5rem 1.25rem; border-radius: 12px; border: none; background: rgba(239, 68, 68, 0.08); color: #ef4444; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'; this.style.transform='translateY(0)'">
-                    <i data-lucide="rotate-ccw" style="width: 16px;"></i> Clear Setup
-                </button>
+    <!-- Analytics Charts Section - Stock Receipts / Single Item -->
+    <div class="glass-card print-chart-card rpt-chart-card received-chart-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); margin-bottom: 2.5rem; background: var(--bg-card); {{ ($totalReceivedQty > 0 || $totalIssuedQty > 0) ? '' : 'display: none;' }}">
+        <div class="rpt-section-header" style="margin-bottom: 1.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="rpt-section-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <i data-lucide="bar-chart-2" style="width:17px;height:17px;"></i>
+                </span>
+                <div>
+                    <div style="font-size: 1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.01em;">Stock Receipts Visualization</div>
+                </div>
             </div>
         </div>
-        
-        <div class="composer-container">
-            <textarea id="reportNarrative" class="modern-textarea" placeholder="Start typing organizational goals, transaction anomalies, budget summaries, or operational conclusions for this period..."></textarea>
-            <div id="printNarrativeView" class="print-only"></div>
+
+        <div style="display: flex; flex-direction: column; gap: 2.5rem;">
+            <div id="single-item-chart-wrap" style="{{ count($selectedItems) === 1 ? '' : 'display: none;' }}">
+                <div class="rpt-chart-group">
+                    <div class="rpt-chart-label" style="color: var(--text-muted);">Operations Volume — {{ count($selectedItems) === 1 ? head($selectedItems) : '' }}</div>
+                    <div id="single-item-bar-chart" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <div id="received-chart-wrap" style="{{ (count($selectedItems) !== 1 && $totalReceivedQty > 0 && $receivedDistribution->count() > 0) ? '' : 'display: none;' }}">
+                <div class="rpt-chart-group">
+                    <div class="rpt-chart-label" style="color: #10b981;">
+                        <span class="rpt-chart-dot" style="background:#10b981;"></span>
+                        Stock Receipts — Top {{ $receivedDistribution->count() }} Items
+                    </div>
+                    <div id="received-bar-chart" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div> {{-- /.stats-charts-print-layout --}}
+
+    <!-- Analytics Charts Section - Disbursements -->
+    <div class="glass-card print-chart-card rpt-chart-card issued-chart-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); margin-bottom: 2.5rem; background: var(--bg-card); {{ (count($selectedItems) !== 1 && $totalIssuedQty > 0 && $issuedDistribution->count() > 0) ? '' : 'display: none;' }}">
+        <div class="rpt-section-header" style="margin-bottom: 1.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="rpt-section-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                    <i data-lucide="bar-chart-2" style="width:17px;height:17px;"></i>
+                </span>
+                <div>
+                    <div style="font-size: 1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.01em;">Disbursements Visualization</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 2.5rem;">
+            <div id="issued-chart-wrap" style="width: 100%;">
+                <div class="rpt-chart-group">
+                    <div class="rpt-chart-label" style="color: #f59e0b;">
+                        <span class="rpt-chart-dot" style="background:#f59e0b;"></span>
+                        Disbursements — Top {{ $issuedDistribution->count() }} Items
+                    </div>
+                    <div id="issued-bar-chart" style="width: 100%;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Detail Grids -->
-    <div style="display: grid; grid-template-columns: 1fr; gap: 2.5rem;" class="detail-grids">
-        
-        <!-- Receivals Activity -->
-        <div class="glass-card print-table-wrapper" style="padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border-color);">
-            <h4 style="font-size: 1.1rem; font-weight: 800; color: #10b981; margin: 0 0 1rem; display: flex; align-items: center; gap: 8px; border-bottom: 2px dashed rgba(16, 185, 129, 0.2); padding-bottom: 12px; text-transform: uppercase;">
-                <i data-lucide="arrow-down-circle"></i> Stock Receipts Log
-            </h4>
-            
-            @if($recentReceivals->count() > 0)
-                <div style="max-height: 400px; overflow-y: auto;" class="custom-scroll table-responsive">
-                    <table class="formal-table" style="width: 100%; text-align: left; border-collapse: collapse;">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Category</th>
-                                <th>Item Description</th>
-                                <th>Supplier / Source</th>
-                                <th style="text-align: right;">Quantity</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($recentReceivals as $rec)
-                            <tr>
-                                <td data-label="Date" style="white-space: nowrap;">{{ \Carbon\Carbon::parse($rec->entry_date)->format('d/m/y') }}</td>
-                                <td data-label="Category">
-                                    <span style="font-size: 0.7rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-weight: 700;">
-                                        {{ $ledgeMap[$rec->ledge_category] ?? 'Category ' . $rec->ledge_category }}
+
+
+    <!-- Combined Inventory Movement Ledger -->
+    @php
+        // Merge both collections, normalise fields, then sort by date desc
+        $allTransactions = $recentReceivals->map(function($r) use ($ledgeMap) {
+            return [
+                'date_received' => $r->entry_date,
+                'date_issued'   => null,
+                'type'          => 'Received',
+                'category'      => $ledgeMap[$r->ledge_category] ?? ('Category ' . $r->ledge_category),
+                'description'   => $r->description,
+                'ref'           => preg_replace('/\s\[.*\]$/', '', $r->supplier_name ?: 'System'),
+                'ref_label'     => 'Supplier / Source',
+                'quantity'      => $r->qty ?? 0,
+                'stock_bal'     => $r->stock_balance ?? '—',
+                'variance'      => $r->variance ?? '—',
+                'status'        => '—',
+                'department'    => '—',
+            ];
+        })->merge($recentIssues->map(function($i) use ($ledgeMap) {
+            return [
+                'date_received' => $i->received_date,
+                'date_issued'   => $i->entry_date,
+                'type'          => 'Issued',
+                'category'      => $ledgeMap[$i->ledge_category] ?? ('Category ' . $i->ledge_category),
+                'description'   => $i->description,
+                'ref'           => $i->beneficiary ?? '—',
+                'ref_label'     => 'Beneficiary / Dept.',
+                'quantity'      => $i->quantity ?? 0,
+                'stock_bal'     => '—',
+                'variance'      => '—',
+                'status'        => $i->issuance_type ?? 'Permanent',
+                'department'    => $i->department ?? '—',
+            ];
+        }))->sortByDesc(function($item) {
+            return $item['date_received'] ?: $item['date_issued'];
+        })->values();
+    @endphp
+
+    <div class="glass-card print-table-wrapper unified-ledger-card rpt-log-card" style="border-radius: 24px; border: 1px solid var(--border-color); overflow: hidden;">
+
+        {{-- Card Header --}}
+        <div class="unified-ledger-header">
+            <div class="unified-ledger-header-left">
+                <span class="unified-ledger-icon">
+                    <i data-lucide="book-open" style="width:18px;height:18px;"></i>
+                </span>
+                <div>
+                    <div class="unified-ledger-title">Inventory Movement Log</div>
+                    <div class="unified-ledger-subtitle">Combined receipts &amp; disbursements sorted chronologically</div>
+                </div>
+            </div>
+            <div class="unified-ledger-meta">
+                <span class="unified-ledger-meta-item received-meta">
+                    <i data-lucide="arrow-down-circle" style="width:12px;height:12px;"></i>
+                    {{ $recentReceivals->count() }} Receipts
+                </span>
+                <span class="unified-ledger-meta-item issued-meta">
+                    <i data-lucide="arrow-up-circle" style="width:12px;height:12px;"></i>
+                    {{ $recentIssues->count() }} Issued
+                </span>
+                <span class="unified-ledger-meta-item total-meta">
+                    {{ $allTransactions->count() }} Total Records
+                </span>
+            </div>
+        </div>
+
+        {{-- Table --}}
+        <div id="table-container" class="custom-scroll table-responsive" style="overflow-x: auto; {{ $allTransactions->count() > 0 ? '' : 'display: none;' }}">
+            <table class="formal-table unified-table rpt-unified-table" style="width: 100%; min-width: 900px;">
+                <thead>
+                    <tr>
+                        <th style="width: 105px;">Date Received</th>
+                        <th style="width: 105px;">Date Issued</th>
+                        <th style="width: 115px; text-align:center;">Type</th>
+                        <th style="width: 120px;">Category</th>
+                        <th>Item(s)</th>
+                        <th style="width: 105px; text-align:center;">Status</th>
+                        <th style="width: 140px;">Department</th>
+                        <th style="width: 150px;">Supplier</th>
+                        <th style="text-align:right; width: 70px;">Qty</th>
+                        <th style="text-align:right; width: 85px;">Stock Bal.</th>
+                        <th style="text-align:right; width: 75px;">Variance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($allTransactions as $row)
+                    <tr class="ledger-row ledger-row-{{ strtolower($row['type']) }}">
+                        <td data-label="Date Received" class="ledger-date">
+                            {{ $row['date_received'] ? \Carbon\Carbon::parse($row['date_received'])->format('d M Y') : '—' }}
+                        </td>
+                        <td data-label="Date Issued" class="ledger-date">
+                            {{ $row['date_issued'] ? \Carbon\Carbon::parse($row['date_issued'])->format('d M Y') : '—' }}
+                        </td>
+                        <td data-label="Type" style="text-align:center;">
+                            @if($row['type'] === 'Received')
+                                <span class="type-badge received-badge">
+                                    <i data-lucide="arrow-down-circle" style="width:12px;height:12px;"></i>
+                                    Received
+                                </span>
+                            @else
+                                <span class="type-badge issued-badge">
+                                    <i data-lucide="arrow-up-circle" style="width:12px;height:12px;"></i>
+                                    Issued
+                                </span>
+                            @endif
+                        </td>
+                        <td data-label="Category">
+                            <span class="cat-badge">{{ $row['category'] }}</span>
+                        </td>
+                        <td data-label="Item(s)" class="item-desc">{{ $row['description'] }}</td>
+                        <td data-label="Status" style="text-align:center;">
+                            @if($row['type'] === 'Issued')
+                                @if($row['status'] === 'Temporary')
+                                    <span style="font-size: 0.72rem; font-weight: 800; color: #b45309; background: rgba(245,158,11,0.12); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(245,158,11,0.25); text-transform: uppercase; letter-spacing: 0.03em;">
+                                        Temporary
                                     </span>
-                                </td>
-                                <td data-label="Item Description" style="font-weight: 600;">{{ $rec->description }}</td>
-                                <td data-label="Supplier / Source">{{ preg_replace('/\s\[.*\]$/', '', $rec->supplier_name ?: 'System') }}</td>
-                                <td data-label="Quantity" style="text-align: right; font-weight: 800; color: #10b981;">{{ $rec->qty }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
-                    <em>No receipts located for this period.</em>
-                </div>
-            @endif
-        </div>
-
-        <!-- Issue Activity -->
-        <div class="glass-card print-table-wrapper" style="padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border-color);">
-            <h4 style="font-size: 1.1rem; font-weight: 800; color: #f59e0b; margin: 0 0 1rem; display: flex; align-items: center; gap: 8px; border-bottom: 2px dashed rgba(245, 158, 11, 0.2); padding-bottom: 12px; text-transform: uppercase;">
-                <i data-lucide="arrow-up-circle"></i> Disbursement & Allocations
-            </h4>
-
-            @if($recentIssues->count() > 0)
-                <div style="max-height: 400px; overflow-y: auto;" class="custom-scroll table-responsive">
-                    <table class="formal-table" style="width: 100%; text-align: left; border-collapse: collapse;">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Category</th>
-                                <th>Item Description</th>
-                                <th>Beneficiary / Department</th>
-                                <th style="text-align: right;">Quantity</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($recentIssues as $iss)
-                            <tr>
-                                <td data-label="Date" style="white-space: nowrap;">{{ \Carbon\Carbon::parse($iss->entry_date)->format('d/m/y') }}</td>
-                                <td data-label="Category">
-                                    <span style="font-size: 0.7rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-weight: 700;">
-                                        {{ $ledgeMap[$iss->ledge_category] ?? 'Category ' . $iss->ledge_category }}
+                                @else
+                                    <span style="font-size: 0.72rem; font-weight: 800; color: #1e3a8a; background: rgba(99,102,241,0.08); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(99,102,241,0.2); text-transform: uppercase; letter-spacing: 0.03em;">
+                                        Permanent
                                     </span>
-                                </td>
-                                <td data-label="Item Description" style="font-weight: 600;">{{ $iss->description }}</td>
-                                <td data-label="Beneficiary">{{ $iss->beneficiary }}</td>
-                                <td data-label="Quantity" style="text-align: right; font-weight: 800; color: #f59e0b;">{{ $iss->quantity }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
-                    <em>No disbursements processed.</em>
-                </div>
-            @endif
+                                @endif
+                            @else
+                                <span style="color: var(--text-muted);">—</span>
+                            @endif
+                        </td>
+                        <td data-label="Department">
+                            @if($row['type'] === 'Issued' && $row['department'] !== '—')
+                                <span style="font-weight: 800; color: var(--text-main); text-transform: uppercase; font-size: 0.76rem; letter-spacing: 0.02em;">{{ $row['department'] }}</span>
+                            @else
+                                <span style="color: var(--text-muted);">—</span>
+                            @endif
+                        </td>
+                        <td data-label="Supplier">
+                            @if($row['type'] === 'Received')
+                                {{ $row['ref'] }}
+                            @else
+                                <span style="color: var(--text-muted);">—</span>
+                            @endif
+                        </td>
+                        <td data-label="Qty" style="text-align:right;" class="qty-cell qty-{{ strtolower($row['type']) }}">
+                            {{ is_numeric($row['quantity']) ? number_format((float)$row['quantity']) : $row['quantity'] }}
+                        </td>
+                        <td data-label="Stock Bal." class="bal-cell" style="text-align:right;">{{ $row['stock_bal'] }}</td>
+                        <td data-label="Variance" class="variance-cell" style="text-align:right;">{{ $row['variance'] }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr class="ledger-totals-row">
+                        <td colspan="8" style="font-weight:900; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.05em; padding: 14px 20px;">
+                            Period Totals
+                        </td>
+                        <td style="text-align:right; font-weight:900; color: var(--primary); padding: 14px 20px;" colspan="3">
+                            ↓ {{ number_format((float)$totalReceivedQty) }} received &nbsp;|&nbsp;
+                            ↑ {{ number_format((float)$totalIssuedQty) }} issued
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
-    </div>
 
-    <!-- Electronic Overprint Signage (Print Mode Only) -->
-    <div class="print-only print-footer" style="display: none; margin-top: 50px;">
-        <div style="display: flex; justify-content: space-between;">
-            <div style="text-align: center; width: 250px;">
-                <div style="border-bottom: 1px solid #000; height: 50px;"></div>
-                <div style="font-size: 10pt; margin-top: 5px;">Report Composer / Author</div>
-                <div style="font-size: 10pt; font-weight: bold;">{{ auth()->user()->name }}</div>
-            </div>
-            <div style="text-align: center; width: 250px;">
-                <div style="border-bottom: 1px solid #000; height: 50px;"></div>
-                <div style="font-size: 10pt; margin-top: 5px;">Head of Logistics</div>
-            </div>
+        <div id="no-transactions-placeholder" style="padding: 3rem; text-align: center; color: var(--text-muted); {{ $allTransactions->count() > 0 ? 'display: none;' : '' }}">
+            <i data-lucide="inbox" style="width: 40px; height: 40px; margin: 0 auto 1rem; display: block; opacity: 0.3;"></i>
+            <em>No transactions recorded for this period.</em>
         </div>
-        <div style="text-align: center; margin-top: 30px; font-size: 8pt; color: #555;">
+    </div> {{-- /.unified-ledger-card --}}
+
+    </div> {{-- /#report-content-area --}}
+    <div class="print-only print-footer" style="display: none; margin-top: 30px;">
+        <div style="text-align: center; font-size: 8pt; color: #555;">
             Generated from NACOC Secure Framework at {{ date('H:i T, d/m/y') }}
         </div>
     </div>
@@ -215,6 +436,463 @@
 </div>
 
 <style>
+    /* ══════════════════════════════════════════════
+       HERO HEADER
+    ══════════════════════════════════════════════ */
+    .rpt-hero { box-shadow: 0 8px 40px rgba(99,102,241,0.06), 0 2px 8px rgba(0,0,0,0.03); }
+    .rpt-orb {
+        position: absolute; border-radius: 50%; pointer-events: none; z-index: 0;
+        animation: rptOrbFloat 8s ease-in-out infinite;
+    }
+    .rpt-orb-1 {
+        width: 320px; height: 320px; top: -140px; right: -60px;
+        background: radial-gradient(circle, rgba(99,102,241,0.13) 0%, transparent 65%);
+        animation-delay: 0s;
+    }
+    .rpt-orb-2 {
+        width: 200px; height: 200px; bottom: -80px; right: 200px;
+        background: radial-gradient(circle, rgba(16,185,129,0.09) 0%, transparent 65%);
+        animation-delay: 3s;
+    }
+    .rpt-orb-3 {
+        width: 150px; height: 150px; top: -40px; left: 300px;
+        background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 65%);
+        animation-delay: 5s;
+    }
+    @keyframes rptOrbFloat {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        50%       { transform: translate(8px, -12px) scale(1.03); }
+    }
+    .rpt-engine-badge {
+        background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1));
+        color: #6366f1;
+        font-size: 0.68rem; font-weight: 900;
+        padding: 0.3rem 0.9rem; border-radius: 99px;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        border: 1px solid rgba(99,102,241,0.2);
+    }
+    .rpt-divider-dot {
+        width: 4px; height: 4px; border-radius: 50%;
+        background: var(--text-muted); opacity: 0.4; flex-shrink: 0;
+    }
+    .rpt-hero-title {
+        font-size: 2.6rem; font-weight: 950;
+        color: var(--text-main); margin: 0;
+        letter-spacing: -0.045em; line-height: 1.1;
+    }
+    .rpt-hero-accent {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .rpt-hero-sub {
+        color: var(--text-muted); font-size: 0.95rem;
+        font-weight: 600; margin-top: 8px;
+    }
+
+    /* ══════════════════════════════════════════════
+       STAT CARDS
+    ══════════════════════════════════════════════ */
+    .stat-card-received { border-top: 3px solid rgba(16,185,129,0.5) !important; }
+    .stat-card-issued   { border-top: 3px solid rgba(245,158,11,0.5) !important; }
+    .stat-card-net      { border-top: 3px solid rgba(99,102,241,0.5) !important; }
+    .stat-card {
+        position: relative; overflow: hidden;
+        transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease;
+    }
+    .stat-card::after {
+        content: '';
+        position: absolute; inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.02) 100%);
+        pointer-events: none;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px) scale(1.01) !important;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.08) !important;
+    }
+
+    /* ══════════════════════════════════════════════
+       SECTION HEADER SHARED
+    ══════════════════════════════════════════════ */
+    .rpt-section-icon {
+        width: 38px; height: 38px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        color: white; flex-shrink: 0;
+        box-shadow: 0 4px 14px rgba(99,102,241,0.3);
+    }
+
+    /* ══════════════════════════════════════════════
+       CHART CARD
+    ══════════════════════════════════════════════ */
+    .rpt-chart-card {
+        background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-main) 100%) !important;
+    }
+    .rpt-chart-group { position: relative; }
+    .rpt-chart-label {
+        display: inline-flex; align-items: center; gap: 8px;
+        font-size: 0.76rem; font-weight: 900;
+        text-transform: uppercase; letter-spacing: 0.06em;
+        margin-bottom: 1rem;
+        padding: 0.3rem 0.9rem 0.3rem 0.4rem;
+        border-radius: 99px;
+        background: rgba(255,255,255,0.04);
+    }
+    .rpt-chart-dot {
+        display: inline-block; width: 8px; height: 8px;
+        border-radius: 50%; flex-shrink: 0;
+    }
+    .rpt-chart-divider {
+        border: none;
+        border-top: 1px dashed var(--border-color);
+        margin: 0.5rem 0;
+    }
+
+    /* ══════════════════════════════════════════════
+       UNIFIED INVENTORY LOG
+    ══════════════════════════════════════════════ */
+    .unified-ledger-card { margin-bottom: 2.5rem; }
+    .rpt-log-card { box-shadow: 0 4px 30px rgba(0,0,0,0.04) !important; }
+    .unified-ledger-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem 1.75rem;
+        background: linear-gradient(135deg, rgba(99,102,241,0.07) 0%, rgba(16,185,129,0.04) 100%);
+        border-bottom: 1px solid var(--border-color);
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    .unified-ledger-header-left { display: flex; align-items: center; gap: 0.85rem; }
+    .unified-ledger-icon {
+        width: 42px; height: 42px; border-radius: 13px;
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        display: flex; align-items: center; justify-content: center;
+        color: white; box-shadow: 0 6px 16px rgba(99,102,241,0.32); flex-shrink: 0;
+    }
+    .unified-ledger-title { font-size: 1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.01em; }
+    .unified-ledger-subtitle { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-top: 2px; }
+    .unified-ledger-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .unified-ledger-meta-item {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 0.7rem; font-weight: 800; padding: 0.3rem 0.8rem;
+        border-radius: 99px; letter-spacing: 0.03em;
+    }
+    .received-meta  { background: rgba(16,185,129,0.1);  color: #059669; border: 1px solid rgba(16,185,129,0.25); }
+    .issued-meta    { background: rgba(245,158,11,0.1);  color: #b45309; border: 1px solid rgba(245,158,11,0.25); }
+    .total-meta     { background: rgba(99,102,241,0.08); color: #4f46e5; border: 1px solid rgba(99,102,241,0.2);  }
+
+    /* TABLE */
+    .rpt-unified-table thead tr th {
+        background: linear-gradient(180deg, rgba(99,102,241,0.07) 0%, rgba(99,102,241,0.03) 100%) !important;
+        font-size: 0.7rem !important; padding: 13px 14px !important; white-space: nowrap;
+        border-bottom: 2px solid rgba(99,102,241,0.12) !important;
+    }
+    .ledger-row td { padding: 11px 14px !important; font-size: 0.87rem !important; vertical-align: middle; }
+    /* Zebra striping */
+    .rpt-unified-table tbody tr:nth-child(even) td { background: rgba(99,102,241,0.018) !important; }
+    .ledger-row-received { border-left: 3px solid #10b981 !important; }
+    .ledger-row-received:hover td { background: rgba(16,185,129,0.05) !important; }
+    .ledger-row-issued   { border-left: 3px solid #f59e0b !important; }
+    .ledger-row-issued:hover td   { background: rgba(245,158,11,0.05) !important; }
+
+    .type-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 0.73rem; font-weight: 800; letter-spacing: 0.02em;
+        padding: 4px 11px; border-radius: 99px; white-space: nowrap;
+    }
+    .received-badge { background: rgba(16,185,129,0.12); color: #059669; border: 1px solid rgba(16,185,129,0.28); }
+    .issued-badge   { background: rgba(245,158,11,0.12);  color: #b45309; border: 1px solid rgba(245,158,11,0.28);  }
+
+    .cat-badge {
+        display: inline-block; font-size: 0.67rem; font-weight: 800;
+        background: rgba(99,102,241,0.09); color: #4f46e5;
+        border: 1px solid rgba(99,102,241,0.18); padding: 2px 9px; border-radius: 7px; white-space: nowrap;
+    }
+    .ledger-date { font-weight: 700; font-size: 0.79rem !important; white-space: nowrap; color: var(--text-muted); }
+    .item-desc  { font-weight: 700 !important; color: var(--text-main) !important; }
+    .mono-cell  { font-family: 'Courier New', monospace !important; font-size: 0.8rem !important; color: var(--text-muted); }
+    .qty-cell   { font-weight: 900 !important; font-size: 0.9rem !important; }
+    .qty-received { color: #10b981 !important; }
+    .qty-issued   { color: #d97706 !important; }
+    .bal-cell   { font-weight: 700; font-size: 0.82rem !important; color: var(--text-muted); }
+    .variance-cell { font-weight: 700; font-size: 0.82rem !important; }
+    .ledger-totals-row td {
+        background: linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(16,185,129,0.04) 100%) !important;
+        border-top: 2px solid rgba(99,102,241,0.12) !important;
+        font-size: 0.85rem; color: var(--text-main);
+    }
+
+    /* ══════════════════════════════════════════════
+       PREMIUM FILTER CARD
+    ══════════════════════════════════════════════ */
+    .report-filter-card {
+        padding: 1.75rem;
+        border-radius: 24px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 2rem;
+        background: var(--bg-card);
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    /* ── Date Range Panel ── */
+    .date-range-panel {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(-8px);
+        transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1),
+                    opacity 0.3s ease,
+                    transform 0.3s ease,
+                    margin-bottom 0.3s ease;
+        margin-bottom: 0;
+    }
+    .date-range-panel.is-open {
+        max-height: 300px;
+        opacity: 1;
+        transform: translateY(0);
+        margin-bottom: 1.5rem;
+    }
+    .date-range-inner {
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid rgba(99,102,241,0.2);
+        box-shadow: 0 4px 24px rgba(99,102,241,0.08), inset 0 0 0 1px rgba(99,102,241,0.06);
+    }
+    .date-range-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.08) 100%);
+        border-bottom: 1px solid rgba(99,102,241,0.15);
+    }
+    .date-range-header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+    }
+    .date-range-icon-wrap {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 4px 12px rgba(99,102,241,0.35);
+        flex-shrink: 0;
+    }
+    .date-range-title {
+        font-size: 0.95rem;
+        font-weight: 900;
+        color: var(--text-main);
+        letter-spacing: -0.01em;
+    }
+    .date-range-subtitle {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-top: 1px;
+    }
+    .date-range-badge {
+        font-size: 0.62rem;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        color: #6366f1;
+        background: rgba(99,102,241,0.1);
+        border: 1px solid rgba(99,102,241,0.25);
+        padding: 0.3rem 0.75rem;
+        border-radius: 99px;
+    }
+
+    /* ── Date Inputs Row ── */
+    .date-inputs-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem 1.5rem;
+        background: var(--bg-card);
+        flex-wrap: wrap;
+    }
+    .date-input-group {
+        flex: 1;
+        min-width: 160px;
+    }
+    .date-input-label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--primary);
+        letter-spacing: 0.06em;
+        margin-bottom: 8px;
+    }
+    .date-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .date-input-icon {
+        position: absolute;
+        left: 14px;
+        width: 16px;
+        height: 16px;
+        color: var(--text-muted);
+        pointer-events: none;
+        z-index: 1;
+    }
+    .date-input-field {
+        width: 100%;
+        padding: 0.7rem 1rem 0.7rem 2.5rem;
+        border-radius: 14px;
+        border: 2px solid var(--border-color);
+        background: var(--bg-main);
+        color: var(--text-main);
+        font-weight: 700;
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+        box-sizing: border-box;
+    }
+    .date-input-field:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99,102,241,0.12);
+        background: var(--bg-card);
+    }
+    .date-reset-btn {
+        background: transparent;
+        border: 1px solid rgba(239, 68, 68, 0.25);
+        color: #ef4444;
+        border-radius: 99px;
+        padding: 4px 12px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+    .date-reset-btn:hover {
+        background: rgba(239, 68, 68, 0.08) !important;
+        border-color: rgba(239, 68, 68, 0.45) !important;
+        transform: translateY(-1px);
+    }
+    .date-reset-btn:active {
+        transform: translateY(0);
+    }
+    .date-range-arrow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+        padding-top: 22px; /* align with inputs after label */
+    }
+    .arrow-line {
+        width: 24px;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(99,102,241,0.2), rgba(99,102,241,0.5));
+        border-radius: 2px;
+    }
+    .arrow-dot {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(99,102,241,0.1);
+        border: 1.5px solid rgba(99,102,241,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* ── Item Filter Row ── */
+    .filter-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+    }
+    .filter-item-selector {
+        min-width: 280px;
+        flex: 1;
+    }
+    .filter-label {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.73rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.05em;
+        margin-bottom: 8px;
+    }
+    .filter-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-shrink: 0;
+    }
+    .filter-apply-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0.75rem 1.6rem;
+        border-radius: 14px;
+        border: none;
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        font-weight: 800;
+        font-size: 0.9rem;
+        cursor: pointer;
+        box-shadow: 0 6px 20px rgba(99,102,241,0.3);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        height: 44px;
+    }
+    .filter-apply-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 28px rgba(99,102,241,0.38);
+    }
+    .filter-apply-btn:active {
+        transform: translateY(0);
+    }
+    .filter-clear-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 0.75rem 1.25rem;
+        border-radius: 14px;
+        border: 1.5px solid var(--border-color);
+        background: transparent;
+        color: var(--text-muted);
+        font-weight: 800;
+        font-size: 0.88rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        height: 44px;
+        box-sizing: border-box;
+    }
+    .filter-clear-btn:hover {
+        border-color: #ef4444;
+        color: #ef4444;
+        background: rgba(239,68,68,0.06);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+        .date-range-arrow { display: none; }
+        .date-inputs-row { gap: 0.75rem; }
+        .date-range-badge { display: none; }
+        .filter-apply-btn span { display: none; }
+        .filter-clear-btn span { display: none; }
+    }
+
     /* Unique Localized CSS for Reports */
     .period-toggle-group {
         display: flex;
@@ -222,29 +900,30 @@
         border-radius: 14px;
         padding: 4px;
         border: 1px solid var(--border-color);
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
     }
 
     .period-btn {
-        padding: 0.65rem 1.75rem;
+        padding: 0.6rem 1.6rem;
         border-radius: 10px;
         font-weight: 800;
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         color: var(--text-muted);
         text-decoration: none;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
     }
 
     .period-btn.active {
-        background: var(--bg-card);
-        color: var(--primary);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-        border: 1px solid var(--border-color);
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        color: white !important;
+        box-shadow: 0 4px 14px rgba(99,102,241,0.3);
+        border: none;
     }
 
     .period-btn:not(.active):hover {
         color: var(--text-main);
-        background: rgba(99, 102, 241, 0.05);
+        background: rgba(99, 102, 241, 0.07);
     }
 
     .stat-card {
@@ -253,21 +932,16 @@
         display: flex;
         align-items: center;
         gap: 1.5rem;
-        transition: 0.3s;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 15px 40px rgba(0,0,0,0.05);
     }
 
     .stat-icon {
-        width: 60px;
-        height: 60px;
+        width: 62px;
+        height: 62px;
         border-radius: 18px;
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-shrink: 0;
     }
 
     .stat-icon i {
@@ -276,55 +950,34 @@
     }
 
     .stat-label {
-        font-size: 0.75rem;
+        font-size: 0.73rem;
         font-weight: 800;
         text-transform: uppercase;
         color: var(--text-muted);
-        letter-spacing: 0.5px;
+        letter-spacing: 0.06em;
         margin-bottom: 4px;
     }
 
     .stat-value {
-        font-size: 2.2rem;
+        font-size: 2.1rem;
         font-weight: 950;
-        color: var(--text-main);
         line-height: 1;
     }
 
     .stat-unit {
-        font-size: 1.1rem;
+        font-size: 1rem;
         color: var(--text-muted);
         font-weight: 700;
     }
 
     .stat-subtitle {
-        font-size: 0.75rem;
+        font-size: 0.73rem;
         color: var(--text-muted);
         font-weight: 600;
-        margin-top: 8px;
+        margin-top: 6px;
     }
 
-    .modern-textarea {
-        width: 100%;
-        min-height: 200px;
-        padding: 1.5rem;
-        border-radius: 18px;
-        border: 2px solid var(--border-color);
-        background: var(--bg-main);
-        color: var(--text-main);
-        font-family: 'Inter', sans-serif;
-        font-size: 1rem;
-        line-height: 1.7;
-        resize: vertical;
-        outline: none;
-        transition: all 0.3s;
-    }
 
-    .modern-textarea:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.1);
-        background: var(--bg-card);
-    }
 
     .activity-row-modern {
         display: flex;
@@ -347,25 +1000,27 @@
         overflow: hidden;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
     }
-    
+
     .formal-table th {
-        padding: 16px 20px;
+        padding: 12px 14px;
         background: rgba(99, 102, 241, 0.06);
         color: var(--text-main);
         font-weight: 800;
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         border-bottom: 2px solid var(--border-color);
         text-align: left;
+        white-space: nowrap;
     }
-    
+
     .formal-table td {
-        padding: 16px 20px;
+        padding: 11px 14px;
         border-bottom: 1px dashed var(--border-color);
         color: var(--text-main);
-        font-size: 0.95rem;
-        transition: background 0.3s ease;
+        font-size: 0.88rem;
+        transition: background 0.2s ease;
+        display: table-cell !important;
     }
 
     .formal-table tbody tr:last-child td {
@@ -392,7 +1047,7 @@
     @media (max-width: 768px) {
         .report-container { padding: 0.5rem !important; }
         .page-header { padding: 1.5rem !important; margin-bottom: 1.5rem !important; }
-        
+
         .print-actions-bar {
             flex-direction: column !important;
             align-items: flex-start !important;
@@ -400,245 +1055,680 @@
         }
         .print-actions-bar button { width: 100% !important; justify-content: center; }
 
-        .narrative-header {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            gap: 1rem !important;
-        }
-        .narrative-header div:last-child {
-            width: 100%;
-            display: grid !important;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
-        }
-        .narrative-header button { width: 100% !important; justify-content: center; padding: 0.6rem !important; font-size: 0.75rem !important; }
-        
         .stat-card { padding: 1.5rem !important; flex-direction: column; text-align: center; }
         .stat-icon { margin: 0 auto 1rem; }
         .stat-value { font-size: 1.8rem !important; }
 
-        /* FORMAL TABLE CARD VIEW */
-        .formal-table { border: none !important; border-radius: 0 !important; box-shadow: none !important; }
-        .formal-table thead { display: none !important; }
-        .formal-table tbody { display: block !important; }
-        .formal-table tr {
-            display: block !important;
-            background: var(--bg-card) !important;
-            margin-bottom: 1.5rem !important;
-            padding: 1.5rem !important;
-            border-radius: 24px !important;
-            border: 1px solid var(--border-color) !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.04) !important;
-            position: relative;
-            overflow: hidden;
-        }
-        .formal-table tr::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: var(--primary);
-        }
-        .formal-table td {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            padding: 0.75rem 0 !important;
-            border-bottom: 1px solid rgba(0,0,0,0.03) !important;
-            text-align: right !important;
-            width: 100% !important;
-            font-size: 0.9rem !important;
-        }
-        .formal-table td:last-child { border-bottom: none !important; }
-        .formal-table td::before {
-            content: attr(data-label);
-            font-weight: 800;
-            color: var(--text-muted);
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-right: 1rem;
-            text-align: left !important;
-        }
-    }
+        /* Table stays tabular — horizontal scroll on small screens */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .formal-table { min-width: 600px; }
+        .unified-table { min-width: 900px; }
 
-    /* Print Architecture */
+    /* ═══════════════════════════════════════════
+       PRINT STYLES — Clean Formal Document
+    ═══════════════════════════════════════════ */
     @media print {
-        @page { size: portrait; margin: 15mm; }
-        
-        body { 
+        @page { size: A4 landscape; margin: 0; }
+
+        /* ── Reset body ── */
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+        body {
             background: white !important;
-            zoom: 1 !important;
-            color: #1e293b !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
+            color: #0f172a !important;
+            font-family: 'Arial', sans-serif !important;
+            font-size: 9.5pt !important;
+            padding: 15mm 15mm 15mm 15mm !important;
+            box-sizing: border-box !important;
         }
 
-        .sidebar, .top-nav, .period-toggle-group, button, .zoom-controls { 
-            display: none !important; 
+        /* ── Hide all UI chrome ── */
+        .sidebar, .top-nav, .view-header, .period-toggle-group,
+        button, .zoom-controls, .report-filter-card,
+        .hide-in-print, .print-actions-bar, .unified-ledger-meta { display: none !important; }
+
+        /* ── Layout reset ── */
+        .main-wrapper, .report-container {
+            margin: 0 !important; padding: 0 !important;
+            box-shadow: none !important; background: transparent !important;
+            width: 100% !important; max-width: none !important;
         }
 
-        .main-wrapper { 
-            margin: 0 !important; 
-            padding: 0 !important; 
-            box-shadow: none !important; 
-            background: transparent !important;
+        /* ── Print header (document title block) ── */
+        .print-header { display: block !important; margin-bottom: 12px; }
+        .page-header   { display: none !important; }
+
+        .print-date-label {
+            font-size: 13pt !important;
+            color: #1e3a8a !important;
+            font-weight: bold;
+            margin-bottom: 10px;
         }
 
-        .report-container {
-            width: 100% !important;
-            max-width: none !important;
-        }
-
-        .print-header { display: block !important; }
-        .page-header { display: none !important; } 
-        .modern-textarea { display: none !important; }
-        .hide-in-print { display: none !important; }
-
-        #printNarrativeView {
-            display: block !important;
-            font-family: 'Times New Roman', serif;
-            font-size: 12pt;
-            line-height: 1.6;
-            padding: 0;
-            margin-top: 5px;
-            margin-bottom: 35px;
-            white-space: pre-line;
-            border: none !important;
-            text-align: justify;
-            color: #000 !important;
-        }
-
-        .print-date-label { 
-            color: #1e3a8a !important; 
-            font-family: 'Times New Roman', serif !important; 
-            font-size: 16pt !important; 
-            margin-bottom: 15px !important; 
-        }
-
-        /* Redesign Stats into a Formal Table-Like Row */
-        .stats-container {
+        /* ── Stats and Charts Stacked on Page 1 ── */
+        .stats-charts-print-layout {
             display: flex !important;
-            border-top: 3px solid #1e3a8a !important;
-            border-bottom: 3px solid #1e3a8a !important;
-            padding: 15px 0 !important;
-            gap: 0 !important;
-            margin-bottom: 30px !important;
-            background-color: #f8fafc !important;
+            flex-direction: column !important;
+            gap: 20px !important;
+            align-items: stretch !important;
+            margin-bottom: 20px !important;
+            page-break-inside: avoid !important;
+            page-break-after: always !important;
+            break-after: page !important;
         }
-
+        .stats-container {
+            width: 100% !important;
+            display: flex !important;
+            flex-direction: row !important;
+            border: 1.5pt solid #1e3a8a !important;
+            background: #f8fafc !important;
+            border-radius: 0 !important;
+            gap: 0 !important;
+            margin-bottom: 0 !important;
+        }
         .stat-card {
-            flex: 1;
-            padding: 0 15px !important;
+            flex: 1 !important;
+            padding: 12px 10px !important;
             border: none !important;
-            border-right: 1px solid #cbd5e1 !important;
+            border-right: 1pt solid #cbd5e1 !important;
             box-shadow: none !important;
             background: transparent !important;
             border-radius: 0 !important;
-            text-align: center;
+            text-align: center !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
         }
         .stat-card:last-child { border-right: none !important; }
-        .stat-card .stat-icon { display: none !important; }
-        .stat-label { color: #475569 !important; font-family: 'Arial', sans-serif; font-size: 10pt !important; margin-bottom: 5px; font-weight: bold; }
-        .stat-value { color: #1e3a8a !important; font-family: 'Times New Roman', serif; font-size: 20pt !important; font-weight: bold; }
-        .stat-subtitle { display: none !important; } /* Hide the subtitle in print to keep it clean */
+        .stat-card .stat-icon, .stat-subtitle { display: none !important; }
+        .stat-label { color: #475569 !important; font-size: 8pt !important; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .stat-value { color: #1e3a8a !important; font-size: 16pt !important; font-weight: 900; }
 
-        /* Redesign Grids into Ledgers */
-        .detail-grids {
-            display: block !important;
+        /* ── Print charts ── */
+        .print-chart-card {
+            width: 100% !important;
+            border: 1.5pt solid #1e3a8a !important;
+            padding: 15px 20px !important;
+            border-radius: 0 !important;
+            margin-bottom: 0 !important;
+            background: #f8fafc !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+        }
+        .issued-chart-card {
+            margin-top: 30px !important;
+            margin-bottom: 25px !important;
+            page-break-inside: avoid !important;
         }
 
-        .detail-grids > .glass-card {
+        /* ── Unified ledger card ── */
+        .unified-ledger-card {
             border: none !important;
             box-shadow: none !important;
-            padding: 0 !important;
-            margin-bottom: 35px !important;
             border-radius: 0 !important;
+            margin-bottom: 0 !important;
             background: transparent !important;
         }
 
-        .detail-grids h4 {
-            color: #1e3a8a !important;
-            border-bottom: 2px solid #3b82f6 !important;
-            padding-bottom: 5px !important;
-            font-family: 'Times New Roman', serif !important;
-            font-size: 14pt !important;
-            font-weight: bold;
-            margin-bottom: 10px !important;
-            border-top: none !important;
+        .unified-ledger-header {
+            background: #1e3a8a !important;
+            color: white !important;
+            padding: 8px 10px !important;
+            border: none !important;
+            border-radius: 0 !important;
+            page-break-after: avoid;
         }
-        .detail-grids h4 i { display: inline-block !important; margin-right: 5px; width: 18px; color: #ef4444 !important; }
+        .unified-ledger-icon { display: none !important; }
+        .unified-ledger-title {
+            color: white !important;
+            font-size: 11pt !important;
+            font-weight: 900 !important;
+        }
+        .unified-ledger-subtitle { color: #bfdbfe !important; font-size: 8pt !important; }
 
-        .formal-table { width: 100% !important; border-collapse: collapse !important; border: none !important; border-top: 3px solid #1e3a8a !important; border-bottom: 3px solid #1e3a8a !important; margin-top: 5px !important; }
-        .formal-table th { border: none !important; border-bottom: 2px solid #94a3b8 !important; background: transparent !important; color: #1e293b !important; font-family: 'Arial', sans-serif !important; font-size: 10pt !important; padding: 12px 8px !important; font-weight: 900 !important; text-align: left; text-transform: uppercase; }
-        .formal-table td { border: none !important; border-bottom: 1px solid #e2e8f0 !important; color: #334155 !important; font-family: 'Times New Roman', serif !important; font-size: 11pt !important; padding: 10px 8px !important; }
+        /* ── The table itself ── */
+        .table-responsive { overflow: visible !important; }
+
+        .unified-table, .formal-table {
+            width: 100% !important;
+            min-width: 0 !important;
+            border-collapse: collapse !important;
+            border: 1.5pt solid #1e3a8a !important;
+            font-size: 8.5pt !important;
+            table-layout: auto;
+            page-break-inside: auto;
+        }
+
+        .unified-table thead, .formal-table thead {
+            display: table-header-group !important; /* repeat on every printed page */
+        }
+
+        .unified-table thead tr th, .formal-table thead tr th {
+            background: #e8eef8 !important;
+            color: #1e3a8a !important;
+            font-weight: 900 !important;
+            font-size: 7.5pt !important;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding: 7px 6px !important;
+            border: 1pt solid #94a3b8 !important;
+            text-align: left !important;
+            white-space: nowrap;
+        }
+
+        .unified-table tbody tr, .formal-table tbody tr { page-break-inside: avoid; }
+
+        .ledger-row td, .formal-table td {
+            padding: 6px 6px !important;
+            border: 0.5pt solid #cbd5e1 !important;
+            color: #0f172a !important;
+            font-size: 8.5pt !important;
+            background: white !important;
+            display: table-cell !important;
+            vertical-align: middle !important;
+        }
+
+        .ledger-row-received td { background: #f0fdf4 !important; }
+        .ledger-row-issued   td { background: #fffbeb !important; }
+
+        /* Remove coloured left borders that look odd on print */
+        .ledger-row-received, .ledger-row-issued { border-left: none !important; }
+
+        /* Type badges — simplified for print */
+        .type-badge {
+            font-size: 8.5pt !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+            border: 0.5pt solid currentColor !important;
+            background: transparent !important;
+        }
+        .received-badge { color: #166534 !important; }
+        .issued-badge   { color: #92400e !important; }
+
+        .cat-badge {
+            font-size: 7pt !important;
+            padding: 1px 5px !important;
+            border-radius: 3px !important;
+            background: #eff6ff !important;
+            color: #1d4ed8 !important;
+            border: 0.5pt solid #bfdbfe !important;
+        }
+
+        /* Totals footer */
+        .ledger-totals-row td {
+            background: #e8eef8 !important;
+            border: 1pt solid #94a3b8 !important;
+            font-weight: 900 !important;
+            color: #1e3a8a !important;
+            font-size: 9pt !important;
+            padding: 8px 6px !important;
+        }
+
+        /* Quantity colours survive print */
+        .qty-received { color: #166534 !important; }
+        .qty-issued   { color: #92400e !important; }
+
+        /* Muted helper cells */
+        .ledger-date, .mono-cell, .bal-cell { color: #334155 !important; }
+
+        /* Remove glass card styling */
+        .glass-card, .print-table-wrapper {
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            padding: 0 !important;
+            margin-bottom: 20px !important;
+        }
         .custom-scroll { max-height: none !important; overflow: visible !important; }
-        .print-table-wrapper { border: none !important; padding: 0 !important; margin-bottom: 30px !important; border-radius: 0 !important; }
 
-        .print-footer { display: block !important; page-break-inside: avoid; margin-top: 60px !important; }
+        /* ── Signature footer ── */
+        .print-footer { display: block !important; page-break-inside: avoid; margin-top: 40px !important; }
     }
 </style>
 
 <script>
-    function triggerPrintMode() {
-        const narrativeContents = document.getElementById('reportNarrative').value;
-        const printView = document.getElementById('printNarrativeView');
+    function toggleCustomDateBar() {
+        const bar = document.getElementById('custom-date-bar');
+        const periodInput = document.getElementById('form-period-input');
+        const customBtn = document.getElementById('custom-period-btn');
 
-        if (narrativeContents.trim() === '') {
-            printView.innerHTML = "<em>No narrative supplied for this time period.</em>";
+        const isOpen = bar.classList.contains('is-open');
+        if (isOpen) {
+            bar.classList.remove('is-open');
+            periodInput.value = 'monthly';
+            customBtn.classList.remove('active');
         } else {
-            // Escape HTML and preserve line breaks visually
-            const safeContent = narrativeContents.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            printView.innerHTML = `<strong>Remark's:</strong><br>` + safeContent;
-        }
+            bar.classList.add('is-open');
+            periodInput.value = 'custom';
+            customBtn.classList.add('active');
 
-        // Trigger native print flow
+            // Remove active from other period buttons
+            document.querySelectorAll('.period-toggle-group .period-btn').forEach(btn => {
+                if (btn !== customBtn) btn.classList.remove('active');
+            });
+
+            // Focus start date for UX after animation
+            setTimeout(() => document.getElementById('start-date-input').focus(), 350);
+        }
+    }
+
+    function triggerPrintMode() {
         window.print();
     }
 
-    function autoGenerateReport() {
-        const periodLabel = "{{ $period === 'daily' ? 'today' : ($period === 'monthly' ? 'this month' : 'this year') }}";
-        const totalRec = "{{ number_format((float)$totalReceivedQty) }}";
-        const totalIss = "{{ number_format((float)$totalIssuedQty) }}";
-        const recBatches = "{{ $totalReceivedBatches }}";
-        const issBatches = "{{ $totalIssuedBatches }}";
-        const netMovement = "{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }}";
-        const dateStamp = "{{ \Carbon\Carbon::now()->format('d/m/y') }}";
+    /* ─────────────────────────────────────────────────────────────
+       REAL-TIME CUSTOM DATE RANGE — auto-submit on both dates set
+    ───────────────────────────────────────────────────────────── */
+    (function () {
+        const startInput  = document.getElementById('start-date-input');
+        const endInput    = document.getElementById('end-date-input');
+        const form        = document.getElementById('report-filter-form');
+        const periodInput = document.getElementById('form-period-input');
 
-        const template = `EXECUTIVE LOGISTICS SUMMARY - ${dateStamp}
+        if (!startInput || !endInput || !form) return;
 
-During this reporting period (${periodLabel}), the logistics and inventory framework processed significant asset movements crucial to our operational readiness.
+        let debounceTimer = null;
 
-RECEIPTS & ACQUISITIONS:
-We successfully recorded the inbound reception of ${totalRec} package types distributed across ${recBatches} discrete batches. These acquisitions have been formally logged into the secure Category system, ensuring our reserves remain adequately stocked.
+        // ── Tiny "Updating…" pill appended inside the date panel
+        const pill = document.createElement('div');
+        pill.id = 'date-update-pill';
+        pill.innerHTML = `
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                 style="animation: dateSpinAnim 0.7s linear infinite;">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+            Updating report…`;
+        Object.assign(pill.style, {
+            display: 'none', alignItems: 'center', gap: '7px',
+            fontSize: '0.78rem', fontWeight: '800', color: '#6366f1',
+            background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)',
+            borderRadius: '99px', padding: '5px 13px', marginTop: '10px',
+            width: 'fit-content', marginLeft: 'auto', marginRight: 'auto'
+        });
 
-DISBURSEMENTS & ALLOCATIONS:
-In support of ongoing operations and departmental requirements, the logistics division issued a total of ${totalIss} package types spanning ${issBatches} distinct disbursement events. All allocations were verified against authorized requisitions to maintain strict supply chain integrity.
+        // Insert pill below the date inputs row
+        const dateInputsRow = document.querySelector('.date-inputs-row');
+        if (dateInputsRow) dateInputsRow.insertAdjacentElement('afterend', pill);
 
-OVERALL THEORETICAL STOCK STATUS:
-Factoring in the aggregation of ${totalRec} incoming package types against the ${totalIss} allocated package types, the facility noted a net functional surplus of ${netMovement} package types for ${periodLabel}. This metric solidifies our adherence to conservative Category retention protocols.
+        function isValidRange() {
+            const s = startInput.value, e = endInput.value;
+            return s && e && new Date(s) <= new Date(e);
+        }
 
-CONCLUSION:
-No gross anomalies or unaccounted systemic variances were detected during this reporting window. The inventory ecosystem remains balanced, verifiable, and prepared for subsequent logistical cycles.
+        function setInputState(valid) {
+            const s = startInput, e = endInput;
+            if (valid) {
+                s.style.borderColor = '#10b981'; s.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.12)';
+                e.style.borderColor = '#10b981'; e.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.12)';
+            } else if (s.value && e.value) {
+                e.style.borderColor = '#ef4444'; e.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.12)';
+            } else {
+                [s, e].forEach(el => { el.style.borderColor = ''; el.style.boxShadow = ''; });
+            }
+        }
 
-- Automatically generated by NACOC Intelligence System`;
+        function trySubmit() {
+            if (!isValidRange()) return;
+            periodInput.value = 'custom';
+            pill.style.display = 'inline-flex';
 
-        const textarea = document.getElementById('reportNarrative');
-        textarea.value = template;
-        
-        textarea.style.transition = 'all 0.3s ease';
-        textarea.style.borderColor = '#10b981';
-        
-        setTimeout(() => {
-            textarea.style.borderColor = 'var(--border-color)';
-        }, 1500);
-    }
+            const params = new URLSearchParams({
+                period:     'custom',
+                start_date: startInput.value,
+                end_date:   endInput.value,
+            });
 
-    function clearNarrative() {
-        document.getElementById('reportNarrative').value = '';
-    }
+            // Collect selected items from Select2
+            const itemsSelect = document.getElementById('items-select');
+            if (itemsSelect) {
+                Array.from(itemsSelect.selectedOptions).forEach(opt => {
+                    params.append('items[]', opt.value);
+                });
+            }
+
+            // Show loading shimmer over content area
+            const contentArea = document.getElementById('report-content-area');
+            if (contentArea) {
+                contentArea.style.opacity   = '0.45';
+                contentArea.style.pointerEvents = 'none';
+                contentArea.style.transition = 'opacity 0.25s ease';
+            }
+
+            fetch('{{ route("reports.index") }}?' + params.toString(), {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('Response error');
+                return r.json();
+            })
+            .then(data => applyUpdate(data))
+            .catch(() => {
+                // On error, fall back to full page submit
+                form.submit();
+            })
+            .finally(() => {
+                pill.style.display = 'none';
+                if (contentArea) {
+                    contentArea.style.opacity      = '1';
+                    contentArea.style.pointerEvents = '';
+                }
+            });
+        }
+
+        /* ── Apply the JSON data to the DOM ── */
+        function applyUpdate(d) {
+            const fmt = n => Number(n).toLocaleString();
+
+            // 1. Date label
+            const lbl = document.querySelector('.print-date-label');
+            if (lbl) lbl.textContent = d.dateLabel;
+
+            // 2. Stat cards
+            const statVals = document.querySelectorAll('.stat-value');
+            if (statVals[0]) statVals[0].innerHTML = fmt(d.totalReceivedQty) + ' <span class="stat-unit">Units</span>';
+            if (statVals[1]) statVals[1].innerHTML = fmt(d.totalIssuedQty)   + ' <span class="stat-unit">Units</span>';
+            if (statVals[2]) statVals[2].innerHTML = fmt(Math.max(0, d.totalReceivedQty - d.totalIssuedQty)) + ' <span class="stat-unit">Units</span>';
+
+            const statSubs = document.querySelectorAll('.stat-subtitle');
+            if (statSubs[0]) statSubs[0].textContent = d.totalReceivedBatches + ' Registered Batches';
+            if (statSubs[1]) statSubs[1].textContent = d.totalIssuedBatches   + ' Disbursement Records';
+
+            // 3. Ledger meta badges
+            const metas = document.querySelectorAll('.unified-ledger-meta-item');
+            if (metas[0]) metas[0].innerHTML = iconSvg('arrow-down-circle') + ' ' + d.allTransactions.filter(t => t.type === 'Received').length + ' Receipts';
+            if (metas[1]) metas[1].innerHTML = iconSvg('arrow-up-circle')   + ' ' + d.allTransactions.filter(t => t.type === 'Issued').length   + ' Issued';
+            if (metas[2]) metas[2].innerHTML = d.allTransactions.length + ' Total Records';
+
+            // 4. Charts — destroy + recreate
+            rebuildCharts(d);
+
+            // 5. Table body
+            rebuildTable(d.allTransactions, d.totalReceivedQty, d.totalIssuedQty);
+        }
+
+        function iconSvg(name) {
+            const paths = {
+                'arrow-down-circle': '<circle cx="12" cy="12" r="10"/><path d="M8 12l4 4 4-4"/><path d="M12 8v8"/>',
+                'arrow-up-circle':   '<circle cx="12" cy="12" r="10"/><path d="M16 12l-4-4-4 4"/><path d="M12 16V8"/>',
+            };
+            return `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                     ${paths[name] || ''}</svg>`;
+        }
+
+        /* Destroy and recreate ApexCharts with new data */
+        let _activeCharts = window._reportCharts || [];
+        function rebuildCharts(d) {
+            _activeCharts.forEach(c => { try { c.destroy(); } catch(e) {} });
+            _activeCharts = [];
+            window._reportCharts = _activeCharts;
+
+            const theme   = localStorage.getItem('theme') || 'light';
+            const isDark  = theme === 'dark';
+            const txtColor = isDark ? '#f8fafc' : '#0f172a';
+
+            const barDefaults = {
+                chart: { type: 'bar', background: 'transparent', foreColor: txtColor, toolbar: { show: false } },
+                plotOptions: { bar: { horizontal: true, borderRadius: 8, borderRadiusApplication: 'end', barHeight: '60%', distributed: true } },
+                dataLabels: { enabled: true, style: { fontSize: '11px', fontWeight: 800, fontFamily: 'Inter, sans-serif', colors: ['#fff'] }, formatter: v => v.toLocaleString() },
+                grid: { borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } },
+                xaxis: { labels: { style: { fontSize: '11px', fontWeight: 700, fontFamily: 'Inter, sans-serif' }, formatter: v => v.toLocaleString() }, axisBorder: { show: false }, axisTicks: { show: false } },
+                yaxis: { labels: { style: { fontSize: '11px', fontWeight: 700, fontFamily: 'Inter, sans-serif', colors: txtColor }, maxWidth: 180 } },
+                legend: { show: false },
+                tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: v => v.toLocaleString() + ' units' } }
+            };
+
+            const recCard = document.querySelector('.received-chart-card');
+            const issCard = document.querySelector('.issued-chart-card');
+
+            const singleWrap = document.getElementById('single-item-chart-wrap');
+            const recWrap    = document.getElementById('received-chart-wrap');
+
+            const hasReceived = d.receivedDistribution && d.receivedDistribution.length > 0;
+            const hasIssued   = d.issuedDistribution && d.issuedDistribution.length > 0;
+
+            if (d.selectedItemsCount === 1) {
+                if (recCard) recCard.style.display = '';
+                if (issCard) issCard.style.display = 'none';
+
+                if (singleWrap) singleWrap.style.display = '';
+                if (recWrap)    recWrap.style.display = 'none';
+
+                const singleEl = document.getElementById('single-item-bar-chart');
+                if (singleEl && typeof ApexCharts !== 'undefined') {
+                    singleEl.innerHTML = '';
+                    const c = new ApexCharts(singleEl, Object.assign({}, barDefaults, {
+                        chart: Object.assign({}, barDefaults.chart, { height: 160 }),
+                        series: [{ name: 'Quantity', data: [parseFloat(d.totalReceivedQty), parseFloat(d.totalIssuedQty)] }],
+                        xaxis: Object.assign({}, barDefaults.xaxis, { categories: ['Received', 'Issued'] }),
+                        colors: ['#10b981', '#f59e0b'],
+                        plotOptions: Object.assign({}, barDefaults.plotOptions, {
+                            bar: Object.assign({}, barDefaults.plotOptions.bar, { barHeight: '55%' })
+                        })
+                    }));
+                    c.render();
+                    _activeCharts.push(c);
+                }
+            } else {
+                if (singleWrap) singleWrap.style.display = 'none';
+                if (recWrap)    recWrap.style.display = '';
+
+                if (hasReceived) {
+                    if (recCard) recCard.style.display = '';
+                    const recEl = document.getElementById('received-bar-chart');
+                    if (recEl && typeof ApexCharts !== 'undefined') {
+                        recEl.innerHTML = '';
+                        const recLabels = d.receivedDistribution.map(r => r.description);
+                        const recData   = d.receivedDistribution.map(r => parseFloat(r.total_qty));
+                        const recColors = ['#6366f1','#818cf8','#4f46e5','#7c3aed','#8b5cf6','#a78bfa','#4338ca','#3730a3','#06b6d4','#0ea5e9'];
+                        const c = new ApexCharts(recEl, Object.assign({}, barDefaults, {
+                            chart: Object.assign({}, barDefaults.chart, { height: Math.max(220, recLabels.length * 42) }),
+                            series: [{ name: 'Received', data: recData }],
+                            xaxis: Object.assign({}, barDefaults.xaxis, { categories: recLabels }),
+                            colors: recColors.slice(0, recLabels.length),
+                        }));
+                        c.render();
+                        _activeCharts.push(c);
+                    }
+                } else {
+                    if (recCard) recCard.style.display = 'none';
+                }
+
+                if (hasIssued) {
+                    if (issCard) issCard.style.display = '';
+                    const issEl = document.getElementById('issued-bar-chart');
+                    if (issEl && typeof ApexCharts !== 'undefined') {
+                        issEl.innerHTML = '';
+                        const issLabels = d.issuedDistribution.map(r => r.description);
+                        const issData   = d.issuedDistribution.map(r => parseFloat(r.total_qty));
+                        const issColors = ['#f59e0b','#fbbf24','#d97706','#b45309','#ef4444','#f87171','#dc2626','#10b981','#06b6d4','#ec4899'];
+                        const c = new ApexCharts(issEl, Object.assign({}, barDefaults, {
+                            chart: Object.assign({}, barDefaults.chart, { height: Math.max(220, issLabels.length * 42) }),
+                            series: [{ name: 'Issued', data: issData }],
+                            xaxis: Object.assign({}, barDefaults.xaxis, { categories: issLabels }),
+                            colors: issColors.slice(0, issLabels.length),
+                        }));
+                        c.render();
+                        _activeCharts.push(c);
+                    }
+                } else {
+                    if (issCard) issCard.style.display = 'none';
+                }
+            }
+        }
+
+        /* Rebuild the movement log table rows from JSON */
+        function rebuildTable(rows, totalRec, totalIss) {
+            const tableContainer = document.getElementById('table-container');
+            const placeholder    = document.getElementById('no-transactions-placeholder');
+            const tbody          = document.querySelector('.rpt-unified-table tbody');
+            const tfoot          = document.querySelector('.rpt-unified-table tfoot .ledger-totals-row');
+
+            if (!tbody) return;
+
+            if (!rows || rows.length === 0) {
+                if (tableContainer) tableContainer.style.display = 'none';
+                if (placeholder) placeholder.style.display = 'block';
+            } else {
+                if (tableContainer) tableContainer.style.display = '';
+                if (placeholder) placeholder.style.display = 'none';
+
+                tbody.innerHTML = rows.map((row, idx) => {
+                    const drec = row.date_received ? fmtDate(row.date_received) : '—';
+                    const diss = row.date_issued   ? fmtDate(row.date_issued)   : '—';
+                    const isRec = row.type === 'Received';
+                    const typeBadge = isRec
+                        ? `<span class="type-badge received-badge">${iconSvg('arrow-down-circle')} Received</span>`
+                        : `<span class="type-badge issued-badge">${iconSvg('arrow-up-circle')} Issued</span>`;
+
+                    let statusCell = '—';
+                    if (!isRec) {
+                        statusCell = row.status === 'Temporary'
+                            ? `<span style="font-size:0.72rem;font-weight:800;color:#b45309;background:rgba(245,158,11,0.12);padding:3px 8px;border-radius:6px;border:1px solid rgba(245,158,11,0.25);text-transform:uppercase;">Temporary</span>`
+                            : `<span style="font-size:0.72rem;font-weight:800;color:#1e3a8a;background:rgba(99,102,241,0.08);padding:3px 8px;border-radius:6px;border:1px solid rgba(99,102,241,0.2);text-transform:uppercase;">Permanent</span>`;
+                    }
+
+                    const deptCell = (!isRec && row.department && row.department !== '—')
+                        ? `<span style="font-weight:800;color:var(--text-main);text-transform:uppercase;font-size:0.76rem;">${esc(row.department)}</span>`
+                        : `<span style="color:var(--text-muted);">—</span>`;
+
+                    const supplierCell = isRec ? esc(row.ref) : `<span style="color:var(--text-muted);">—</span>`;
+                    const qtyClass = isRec ? 'qty-received' : 'qty-issued';
+                    const qty = isNaN(row.quantity) ? row.quantity : Number(row.quantity).toLocaleString();
+
+                    return `<tr class="ledger-row ledger-row-${isRec ? 'received' : 'issued'}">
+                        <td class="ledger-date">${drec}</td>
+                        <td class="ledger-date">${diss}</td>
+                        <td style="text-align:center;">${typeBadge}</td>
+                        <td><span class="cat-badge">${esc(row.category)}</span></td>
+                        <td class="item-desc">${esc(row.description)}</td>
+                        <td style="text-align:center;">${statusCell}</td>
+                        <td>${deptCell}</td>
+                        <td>${supplierCell}</td>
+                        <td class="qty-cell ${qtyClass}" style="text-align:right;">${qty}</td>
+                        <td class="bal-cell" style="text-align:right;">${esc(String(row.stock_bal))}</td>
+                        <td class="variance-cell" style="text-align:right;">${esc(String(row.variance))}</td>
+                    </tr>`;
+                }).join('');
+            }
+
+            // Update totals footer
+            if (tfoot) {
+                tfoot.cells[1].innerHTML = `↓ ${Number(totalRec).toLocaleString()} received &nbsp;|&nbsp; ↑ ${Number(totalIss).toLocaleString()} issued`;
+            }
+
+            // Re-run lucide icon replacement on new SVGs
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function fmtDate(str) {
+            if (!str) return '—';
+            try {
+                const d = new Date(str);
+                return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            } catch(e) { return str; }
+        }
+
+        function esc(s) {
+            return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        function onDateChange() {
+            clearTimeout(debounceTimer);
+            const valid = isValidRange();
+            setInputState(valid);
+
+            const resetBtn = document.getElementById('reset-date-btn');
+            if (resetBtn) {
+                if (startInput.value || endInput.value) {
+                    resetBtn.style.display = 'inline-flex';
+                } else {
+                    resetBtn.style.display = 'none';
+                }
+            }
+
+            if (valid) {
+                debounceTimer = setTimeout(trySubmit, 600);
+            }
+        }
+
+        window.resetCustomDates = function() {
+            if (startInput) startInput.value = '';
+            if (endInput) endInput.value = '';
+
+            setInputState(false);
+
+            const resetBtn = document.getElementById('reset-date-btn');
+            if (resetBtn) resetBtn.style.display = 'none';
+
+            periodInput.value = 'monthly';
+
+            document.querySelectorAll('.period-toggle-group .period-btn').forEach(btn => {
+                if (btn.textContent.trim() === 'Monthly') {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            const bar = document.getElementById('custom-date-bar');
+            if (bar) bar.classList.remove('is-open');
+
+            const params = new URLSearchParams({
+                period: 'monthly'
+            });
+
+            const itemsSelect = document.getElementById('items-select');
+            if (itemsSelect) {
+                Array.from(itemsSelect.selectedOptions).forEach(opt => {
+                    params.append('items[]', opt.value);
+                });
+            }
+
+            const contentArea = document.getElementById('report-content-area');
+            if (contentArea) {
+                contentArea.style.opacity   = '0.45';
+                contentArea.style.pointerEvents = 'none';
+                contentArea.style.transition = 'opacity 0.25s ease';
+            }
+
+            fetch('{{ route("reports.index") }}?' + params.toString(), {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => {
+                if (!r.ok) throw new Error('Response error');
+                return r.json();
+            })
+            .then(data => applyUpdate(data))
+            .catch(() => {
+                form.submit();
+            })
+            .finally(() => {
+                if (contentArea) {
+                    contentArea.style.opacity      = '1';
+                    contentArea.style.pointerEvents = '';
+                }
+            });
+        };
+
+        startInput.addEventListener('change', onDateChange);
+        endInput.addEventListener('change',   onDateChange);
+        startInput.addEventListener('input',  onDateChange);
+        endInput.addEventListener('input',    onDateChange);
+
+        // Real-Time Select2 Interceptor
+        if (typeof $ !== 'undefined' && $.fn.select2) {
+            $('#items-select').on('change', function() {
+                if (periodInput.value === 'custom' && isValidRange()) {
+                    onDateChange();
+                }
+            });
+        }
+    })();
+
 
     // Real-Time Analytics Lockdown Engine
     function syncPermissionState() {
@@ -648,7 +1738,7 @@ No gross anomalies or unaccounted systemic variances were detected during this r
             .then(response => response.json())
             .then(data => {
                 const canReport = data.can_generate_reports;
-                
+
                 if (!canReport) {
                     /* console print removed */
                     // Disable all interaction points and add tooltip
@@ -686,5 +1776,522 @@ No gross anomalies or unaccounted systemic variances were detected during this r
         cursor: not-allowed !important;
         filter: saturate(0) !important;
     }
+
+    /* Spinner used by the real-time date update pill */
+    @keyframes dateSpinAnim {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ══════════════════════════════════════════════
+       ITEM FILTER PANEL
+    ══════════════════════════════════════════════ */
+    .item-filter-panel {
+        border-radius: 20px;
+        border: 1px solid rgba(99,102,241,0.18);
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(99,102,241,0.07);
+    }
+    .item-filter-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(6,182,212,0.06) 100%);
+        border-bottom: 1px solid rgba(99,102,241,0.12);
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .item-filter-header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+    }
+    .item-filter-icon-wrap {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #10b981, #06b6d4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        flex-shrink: 0;
+    }
+    .item-filter-title {
+        font-size: 0.95rem;
+        font-weight: 900;
+        color: var(--text-main);
+        letter-spacing: -0.01em;
+    }
+    .item-filter-subtitle {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-top: 1px;
+    }
+    .item-filter-count-badge {
+        font-size: 0.7rem;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        color: #10b981;
+        background: rgba(16,185,129,0.1);
+        border: 1px solid rgba(16,185,129,0.25);
+        padding: 0.3rem 0.85rem;
+        border-radius: 99px;
+        white-space: nowrap;
+    }
+    .item-filter-all-badge {
+        font-size: 0.7rem;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        color: var(--text-muted);
+        background: var(--bg-main);
+        border: 1px solid var(--border-color);
+        padding: 0.3rem 0.85rem;
+        border-radius: 99px;
+        white-space: nowrap;
+    }
+    .item-filter-body {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: 1.25rem 1.5rem;
+        background: var(--bg-card);
+        flex-wrap: wrap;
+    }
+    .item-selector-wrap {
+        flex: 1;
+        min-width: 260px;
+    }
+
+    /* ════════════════════════════════════════════════════════
+       PREMIUM SELECT2 — with Category Group Styling
+    ════════════════════════════════════════════════════════ */
+
+    /* ── Input shell (the multi-select box) ── */
+    .select2-container--default .select2-selection--multiple {
+        border: 2px solid var(--border-color) !important;
+        background: var(--bg-main) !important;
+        border-radius: 14px !important;
+        padding: 6px 10px !important;
+        min-height: 52px !important;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease !important;
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        gap: 5px !important;
+        cursor: text !important;
+    }
+    .select2-container--default.select2-container--focus .select2-selection--multiple,
+    .select2-container--default.select2-container--open .select2-selection--multiple {
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 4px rgba(16,185,129,0.12) !important;
+        background: var(--bg-card) !important;
+    }
+
+    /* ── Selected tag chips ── */
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        background: linear-gradient(135deg, rgba(16,185,129,0.14), rgba(6,182,212,0.09)) !important;
+        border: 1.5px solid rgba(16,185,129,0.32) !important;
+        color: #059669 !important;
+        border-radius: 10px !important;
+        padding: 4px 10px 4px 8px !important;
+        font-weight: 800 !important;
+        font-size: 0.77rem !important;
+        letter-spacing: 0.01em !important;
+        margin: 0 !important;
+        transition: all 0.2s ease !important;
+        line-height: 1.5 !important;
+        box-shadow: 0 2px 6px rgba(16,185,129,0.1) !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice:hover {
+        background: rgba(16,185,129,0.2) !important;
+        border-color: rgba(16,185,129,0.5) !important;
+        box-shadow: 0 3px 10px rgba(16,185,129,0.18) !important;
+    }
+
+    /* ── Remove × on chips ── */
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: rgba(5,150,105,0.5) !important;
+        font-weight: 900 !important;
+        font-size: 0.9rem !important;
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        line-height: 1 !important;
+        order: -1 !important;
+        transition: color 0.15s ease !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        color: #ef4444 !important;
+        background: transparent !important;
+    }
+
+    /* ── Placeholder text ── */
+    .select2-container--default .select2-selection--multiple .select2-selection__placeholder {
+        color: var(--text-muted) !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* ── Inline search field ── */
+    .select2-container--default .select2-search--inline .select2-search__field {
+        color: var(--text-main) !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
+        background: transparent !important;
+        margin: 0 !important;
+        padding: 0 4px !important;
+    }
+    .select2-container--default .select2-search--inline .select2-search__field::placeholder {
+        color: var(--text-muted) !important;
+        opacity: 0.7;
+    }
+
+    /* ══════════════════════════════════════════════
+       DROPDOWN PANEL
+    ══════════════════════════════════════════════ */
+    .select2-dropdown {
+        border: 1.5px solid rgba(16,185,129,0.2) !important;
+        border-radius: 18px !important;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.14),
+                    0 4px 16px rgba(0,0,0,0.06),
+                    0 0 0 1px rgba(16,185,129,0.05) !important;
+        overflow: hidden !important;
+        background: var(--bg-card) !important;
+        margin-top: 8px !important;
+    }
+
+    /* ── Search bar at top of dropdown ── */
+    .select2-container--default .select2-search--dropdown {
+        padding: 12px 12px 10px !important;
+        border-bottom: 1px solid var(--border-color) !important;
+        background: var(--bg-main) !important;
+        position: relative !important;
+    }
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border: 2px solid var(--border-color) !important;
+        border-radius: 11px !important;
+        padding: 9px 12px 9px 38px !important;
+        background: var(--bg-card) !important;
+        color: var(--text-main) !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 0.88rem !important;
+        outline: none !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: 12px center !important;
+        background-size: 14px !important;
+    }
+    .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 3px rgba(16,185,129,0.12) !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") !important;
+    }
+
+    /* ══════════════════════════════════════════════
+       CATEGORY GROUP HEADERS (optgroup labels)
+    ══════════════════════════════════════════════ */
+    .select2-results__options {
+        padding: 6px 6px 8px !important;
+        max-height: 280px !important;
+        overflow-y: auto !important;
+    }
+
+    /* The category group label row */
+    .select2-results__group {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 10px 10px 6px 12px !important;
+        font-size: 0.67rem !important;
+        font-weight: 900 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+        color: #6366f1 !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+        cursor: default !important;
+        margin-top: 4px !important;
+        position: relative !important;
+    }
+    /* Left accent bar on category labels */
+    .select2-results__group::before {
+        content: '' !important;
+        display: inline-block !important;
+        width: 3px !important;
+        height: 14px !important;
+        background: linear-gradient(180deg, #6366f1, #8b5cf6) !important;
+        border-radius: 2px !important;
+        flex-shrink: 0 !important;
+    }
+    /* Horizontal rule after the label text */
+    .select2-results__group::after {
+        content: '' !important;
+        flex: 1 !important;
+        height: 1px !important;
+        background: linear-gradient(90deg, rgba(99,102,241,0.2), transparent) !important;
+        margin-left: 4px !important;
+    }
+
+    /* ══════════════════════════════════════════════
+       ITEM ROWS inside groups
+    ══════════════════════════════════════════════ */
+    /* Items nested under a group */
+    .select2-results__option[role="option"] {
+        border-radius: 9px !important;
+        padding: 9px 12px 9px 22px !important;
+        font-weight: 600 !important;
+        font-size: 0.875rem !important;
+        color: var(--text-main) !important;
+        transition: background 0.15s ease, color 0.15s ease, padding-left 0.15s ease !important;
+        margin-bottom: 1px !important;
+        position: relative !important;
+    }
+
+    /* Hover state */
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(6,182,212,0.06)) !important;
+        color: #059669 !important;
+        padding-left: 26px !important;
+    }
+
+    /* Selected state */
+    .select2-container--default .select2-results__option[aria-selected="true"] {
+        background: linear-gradient(135deg, rgba(16,185,129,0.13), rgba(6,182,212,0.08)) !important;
+        color: #059669 !important;
+        font-weight: 800 !important;
+    }
+    /* Checkmark for selected items */
+    .select2-container--default .select2-results__option[aria-selected="true"]::after {
+        content: '✓' !important;
+        position: absolute !important;
+        right: 12px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        font-size: 0.78rem !important;
+        color: #10b981 !important;
+        font-weight: 900 !important;
+    }
+
+    /* Hover+selected */
+    .select2-container--default .select2-results__option--highlighted[aria-selected="true"] {
+        background: linear-gradient(135deg, rgba(16,185,129,0.18), rgba(6,182,212,0.1)) !important;
+    }
+
+    /* ── "No results" state ── */
+    .select2-container--default .select2-results__option--disabled,
+    .select2-results__message {
+        color: var(--text-muted) !important;
+        font-style: italic !important;
+        text-align: center !important;
+        padding: 1.5rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* ── Custom scrollbar inside dropdown ── */
+    .select2-results__options::-webkit-scrollbar { width: 5px; }
+    .select2-results__options::-webkit-scrollbar-track { background: transparent; }
+    .select2-results__options::-webkit-scrollbar-thumb {
+        background: rgba(99,102,241,0.2); border-radius: 99px;
+    }
+    .select2-results__options::-webkit-scrollbar-thumb:hover {
+        background: rgba(99,102,241,0.4);
+    }
 </style>
 @endsection
+
+@push('scripts')
+    @if(auth()->user()->is_admin)
+        <script src="{{ asset('js/apexcharts.js') }}"></script>
+    @endif
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Select2 Initialization — with category + item search
+            if (typeof $ !== 'undefined' && $.fn.select2) {
+                $('#items-select').select2({
+                    placeholder: "Search by category or item name...",
+                    allowClear: true,
+                    closeOnSelect: false,
+
+                    // Custom matcher: search both item text AND optgroup label
+                    matcher: function(params, data) {
+                        // No search term → show everything
+                        if (!params.term || $.trim(params.term) === '') {
+                            return data;
+                        }
+
+                        const term = params.term.toLowerCase();
+                        const text = (data.text || '').toLowerCase();
+
+                        // ── Match on the optgroup label itself
+                        //    → return the group with ALL its children visible
+                        if (data.children && data.children.length > 0) {
+                            if (text.indexOf(term) > -1) {
+                                // Group name matches → show entire group
+                                return data;
+                            }
+                            // Filter children individually
+                            const matchedChildren = data.children.filter(function(child) {
+                                return (child.text || '').toLowerCase().indexOf(term) > -1;
+                            });
+                            if (matchedChildren.length > 0) {
+                                // Return a copy with only matched children
+                                return $.extend({}, data, { children: matchedChildren });
+                            }
+                            return null;
+                        }
+
+                        // ── Match on individual item text
+                        if (text.indexOf(term) > -1) {
+                            return data;
+                        }
+
+                        return null;
+                    }
+                });
+            }
+
+            // ApexCharts Rendering
+            const theme = localStorage.getItem('theme') || 'light';
+            const isDark = theme === 'dark';
+            const textColor = isDark ? '#f8fafc' : '#0f172a';
+            const chartColors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#a855f7', '#ec4899', '#3b82f6', '#14b8a6', '#f43f5e'];
+
+            @if($totalReceivedQty > 0 || $totalIssuedQty > 0)
+
+                // Shared bar chart defaults
+                const barDefaults = {
+                    chart: {
+                        type: 'bar',
+                        background: 'transparent',
+                        foreColor: textColor,
+                        toolbar: { show: false },
+                        animations: { enabled: true, speed: 600, animateGradually: { enabled: true, delay: 60 } }
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: true,
+                            borderRadius: 8,
+                            borderRadiusApplication: 'end',
+                            barHeight: '60%',
+                            distributed: true,
+                        }
+                    },
+                    dataLabels: {
+                        enabled: true,
+                        style: { fontSize: '11px', fontWeight: 800, fontFamily: 'Inter, sans-serif', colors: ['#fff'] },
+                        formatter: (val) => val.toLocaleString(),
+                        dropShadow: { enabled: false }
+                    },
+                    grid: {
+                        borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+                        xaxis: { lines: { show: true } },
+                        yaxis: { lines: { show: false } }
+                    },
+                    xaxis: {
+                        labels: {
+                            style: { fontSize: '11px', fontWeight: 700, fontFamily: 'Inter, sans-serif' },
+                            formatter: (val) => val.toLocaleString()
+                        },
+                        axisBorder: { show: false },
+                        axisTicks: { show: false }
+                    },
+                    yaxis: {
+                        labels: {
+                            style: { fontSize: '11px', fontWeight: 700, fontFamily: 'Inter, sans-serif', colors: textColor },
+                            maxWidth: 180
+                        }
+                    },
+                    legend: { show: false },
+                    tooltip: {
+                        theme: isDark ? 'dark' : 'light',
+                        y: { formatter: (val) => val.toLocaleString() + ' units' }
+                    }
+                };
+
+                const charts = window._reportCharts || [];
+                window._reportCharts = charts;
+
+                @if(count($selectedItems) === 1)
+                    const singleBarOptions = Object.assign({}, barDefaults, {
+                        chart: Object.assign({}, barDefaults.chart, { height: 160 }),
+                        series: [{ name: 'Quantity', data: [{{ (float)$totalReceivedQty }}, {{ (float)$totalIssuedQty }}] }],
+                        xaxis: Object.assign({}, barDefaults.xaxis, { categories: ['Received', 'Issued'] }),
+                        colors: ['#10b981', '#f59e0b'],
+                        plotOptions: Object.assign({}, barDefaults.plotOptions, {
+                            bar: Object.assign({}, barDefaults.plotOptions.bar, { barHeight: '55%' })
+                        })
+                    });
+                    const singleChart = new ApexCharts(document.querySelector('#single-item-bar-chart'), singleBarOptions);
+                    singleChart.render();
+                    charts.push(singleChart);
+                @else
+                    @if($totalReceivedQty > 0 && $receivedDistribution->count() > 0)
+                        const recLabels = @json($receivedDistribution->pluck('description'));
+                        const recData   = @json($receivedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
+                        const recBarH   = Math.max(220, recLabels.length * 42);
+                        const recColors = ['#6366f1','#818cf8','#4f46e5','#7c3aed','#8b5cf6','#a78bfa','#4338ca','#3730a3','#06b6d4','#0ea5e9'];
+                        const recOptions = Object.assign({}, barDefaults, {
+                            chart: Object.assign({}, barDefaults.chart, { height: recBarH }),
+                            series: [{ name: 'Received', data: recData }],
+                            xaxis: Object.assign({}, barDefaults.xaxis, { categories: recLabels }),
+                            colors: recColors.slice(0, recLabels.length),
+                        });
+                        const recChart = new ApexCharts(document.querySelector('#received-bar-chart'), recOptions);
+                        recChart.render();
+                        charts.push(recChart);
+                    @endif
+
+                    @if($totalIssuedQty > 0 && $issuedDistribution->count() > 0)
+                        const issLabels = @json($issuedDistribution->pluck('description'));
+                        const issData   = @json($issuedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
+                        const issBarH   = Math.max(220, issLabels.length * 42);
+                        const issColors = ['#f59e0b','#fbbf24','#d97706','#b45309','#ef4444','#f87171','#dc2626','#10b981','#06b6d4','#ec4899'];
+                        const issOptions = Object.assign({}, barDefaults, {
+                            chart: Object.assign({}, barDefaults.chart, { height: issBarH }),
+                            series: [{ name: 'Issued', data: issData }],
+                            xaxis: Object.assign({}, barDefaults.xaxis, { categories: issLabels }),
+                            colors: issColors.slice(0, issLabels.length),
+                        });
+                        const issChart = new ApexCharts(document.querySelector('#issued-bar-chart'), issOptions);
+                        issChart.render();
+                        charts.push(issChart);
+                    @endif
+                @endif
+
+                // Handle dark-to-light theme changes during printing for chart visibility
+                window.addEventListener('beforeprint', () => {
+                    charts.forEach(chart => {
+                        chart.updateOptions({
+                            chart: { foreColor: '#0f172a' },
+                            grid: { borderColor: 'rgba(0,0,0,0.06)' },
+                            yaxis: { labels: { style: { colors: '#0f172a' } } }
+                        }, false, false);
+                    });
+                });
+
+                window.addEventListener('afterprint', () => {
+                    charts.forEach(chart => {
+                        chart.updateOptions({
+                            chart: { foreColor: textColor },
+                            grid: { borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' },
+                            yaxis: { labels: { style: { colors: textColor } } }
+                        }, false, false);
+                    });
+                });
+            @endif
+        });
+    </script>
+@endpush

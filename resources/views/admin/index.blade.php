@@ -107,7 +107,7 @@
                         <td>
                             <div class="identity-cell">
                                 <div class="avatar-capsule">
-                                    <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}">
+                                    <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}">
                                     <span class="status-dot-mini {{ $user->is_online ? 'online' : 'offline' }}"></span>
                                 </div>
                                 <div class="id-meta">
@@ -169,7 +169,7 @@
                                         last_login: '{{ $user->last_login_at ? $user->last_login_at->format('d/m/y H:i') : 'No record' }}',
                                         last_logout: '{{ $user->last_logout_at ? $user->last_logout_at->format('d/m/y H:i') : 'No record' }}',
                                         status: '{{ $user->is_active ? 'ACTIVE' : 'DEACTIVATED' }}',
-                                        avatar: '{{ $user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) }}'
+                                        avatar: '{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}'
                                     })"
                                     style="border: 1px solid #e0e7ff; color: #4f46e5; background: #f5f3ff;"
                                     onmouseover="this.style.background='#4f46e5'; this.style.color='white'"

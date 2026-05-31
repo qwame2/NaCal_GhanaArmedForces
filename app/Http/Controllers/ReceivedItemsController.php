@@ -43,6 +43,7 @@ class ReceivedItemsController extends Controller
             'supplier_status' => $data['supplier_status'],
             'donor_name' => $data['donor_name'] ?? null,
             'acquisition_type' => $data['acquisition_type'],
+            'delivery_person' => $data['delivery_person'] ?? null,
             'entry_date' => $data['entry_date'],
             'arrival_date' => $data['arrival_date'],
             'approval_status' => 'pending',
@@ -102,12 +103,14 @@ class ReceivedItemsController extends Controller
 
         // Attach delivery person to proposed batch
         $cleanSupplier = trim(preg_replace('/\[.*?\]/', '', $data['supplier_name'] ?? ''));
-        $deliveryPerson = '';
-        foreach ($suppliersRegistry as $supplier) {
-            if (strcasecmp(trim($supplier->name), $cleanSupplier) === 0 || (isset($data['supplier_name']) && strcasecmp(trim($supplier->name), trim($data['supplier_name'])) === 0)) {
-                $data['supplier_name'] = $supplier->name;
-                $deliveryPerson = $supplier->delivery_person ?? '';
-                break;
+        $deliveryPerson = $data['delivery_person'] ?? '';
+        if (empty($deliveryPerson)) {
+            foreach ($suppliersRegistry as $supplier) {
+                if (strcasecmp(trim($supplier->name), $cleanSupplier) === 0 || (isset($data['supplier_name']) && strcasecmp(trim($supplier->name), trim($data['supplier_name'])) === 0)) {
+                    $data['supplier_name'] = $supplier->name;
+                    $deliveryPerson = $supplier->delivery_person ?? '';
+                    break;
+                }
             }
         }
         $data['delivery_person'] = $deliveryPerson;

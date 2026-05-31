@@ -21,6 +21,7 @@ class InventoryController extends Controller
             'supplier_status' => 'required|string',
             'donor_name' => 'nullable|string',
             'acquisition_type' => 'required|string',
+            'delivery_person' => 'nullable|string',
             'entry_date' => 'required',
             'arrival_date' => 'required|date',
             'items' => 'required|array|min:1',
@@ -135,6 +136,37 @@ class InventoryController extends Controller
                 $itemData = $item;
                 unset($itemData['ledge_balance']);
                 $batch->items()->create($itemData);
+            }
+
+            // Update the supplier's delivery person in the database and registry if configured
+            if (!empty($validated['supplier_name']) && !empty($validated['delivery_person'])) {
+                $cleanSupplier = trim(preg_replace('/\s\[.*\]$/', '', $validated['supplier_name']));
+                $supplierModel = \App\Models\Supplier::where('name', $cleanSupplier)
+                    ->orWhere('name', $validated['supplier_name'])
+                    ->first();
+                if ($supplierModel) {
+                    $supplierModel->update([
+                        'delivery_person' => trim($validated['delivery_person'])
+                    ]);
+                    
+                    // Also update in settings registry
+                    $setting = \App\Models\Setting::where('key', 'suppliers_registry')->first();
+                    if ($setting) {
+                        $registry = json_decode($setting->value ?? '{}', true) ?? [];
+                        $updatedRegistry = false;
+                        foreach ($registry as $key => &$details) {
+                            if (strcasecmp(trim($key), $cleanSupplier) === 0 || strcasecmp(trim($key), trim($validated['supplier_name'])) === 0) {
+                                $details['delivery_person'] = trim($validated['delivery_person']);
+                                $updatedRegistry = true;
+                                break;
+                            }
+                        }
+                        if ($updatedRegistry) {
+                            $setting->value = json_encode($registry);
+                            $setting->save();
+                        }
+                    }
+                }
             }
 
             DB::commit();

@@ -81,6 +81,7 @@
                     const to = document.getElementsByName('date_to')[0].value;
                     
                     const perPage = document.getElementsByName('per_page')[0].value;
+                    const stockLevel = document.getElementById('stock-level-input').value;
                     
                     const container = document.getElementById('oversight-container');
                     if (!container) return;
@@ -95,6 +96,8 @@
                     url.searchParams.set('date_from', from);
                     url.searchParams.set('date_to', to);
                     url.searchParams.set('per_page', perPage);
+                    url.searchParams.set('stock_level', stockLevel);
+
 
                     fetch(url, {
                         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -146,7 +149,7 @@
             </script>
 
             <!-- Segment 2: Custom Luxury Category Dropdown -->
-            <div style="flex: 1; position: relative; display: flex; align-items: center; padding: 0 1.5rem; border-right: 1px solid #f1f5f9; cursor: pointer; height: 50px;" id="cat-trigger" onclick="toggleCatMenu(event)">
+            <div class="filter-segment" style="flex: 1; position: relative; display: flex; align-items: center; padding: 0 1.5rem; border-right: 1px solid #f1f5f9; cursor: pointer; height: 50px;" id="cat-trigger" onclick="toggleCatMenu(event)">
                 <i data-lucide="layers" style="width: 18px; color: #94a3b8; margin-right: 12px;"></i>
                 <div style="flex: 1; font-size: 0.85rem; font-weight: 800; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                     <span id="selected-cat-label">{{ $ledgeMap[request('category')] ?? 'All Categories' }}</span>
@@ -173,19 +176,64 @@
                 </div>
             </div>
 
+            <!-- Segment 2.5: Custom Luxury Stock Level Dropdown -->
+            <div class="filter-segment" style="flex: 1; position: relative; display: flex; align-items: center; padding: 0 1.5rem; border-right: 1px solid #f1f5f9; cursor: pointer; height: 50px;" id="stock-trigger" onclick="toggleStockMenu(event)">
+                <i data-lucide="trending-up" style="width: 18px; color: #94a3b8; margin-right: 12px;"></i>
+                <div style="flex: 1; font-size: 0.85rem; font-weight: 800; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    <span id="selected-stock-label">
+                        @if(request('stock_level') == 'in_stock')
+                            In Stock
+                        @elseif(request('stock_level') == 'low')
+                            Low Stock
+                        @else
+                            All Stock Levels
+                        @endif
+                    </span>
+                </div>
+                <i data-lucide="chevron-down" id="stock-chevron" style="width: 14px; color: #cbd5e1; transition: 0.3s;"></i>
+                
+                <!-- Hidden Input for Form -->
+                <input type="hidden" name="stock_level" id="stock-level-input" value="{{ request('stock_level') }}">
+
+                <!-- Luxury Dropdown Menu -->
+                <div id="stock-menu" style="display: none; position: absolute; top: calc(100% + 15px); left: 0; width: 280px; background: white; border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); border: 1px solid #f1f5f9; padding: 8px; z-index: 100; animation: slideDown 0.3s ease;">
+                    <div style="padding: 10px 15px; font-size: 0.7rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid #f8fafc; margin-bottom: 5px;">Select Stock Level</div>
+                    
+                    <div onclick="selectStock(event, '', 'All Stock Levels')" class="stock-opt" style="padding: 12px 15px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #64748b; transition: 0.2s; display: flex; align-items: center; gap: 10px;">
+                        <span style="width: 8px; height: 8px; background: #94a3b8; border-radius: 50%;"></span>
+                        All Stock Levels
+                    </div>
+
+                    <div onclick="selectStock(event, 'in_stock', 'In Stock')" class="stock-opt" style="padding: 12px 15px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #1e293b; transition: 0.2s; display: flex; align-items: center; gap: 10px;">
+                        <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>
+                        In Stock
+                    </div>
+
+                    <div onclick="selectStock(event, 'low', 'Low Stock')" class="stock-opt" style="padding: 12px 15px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #1e293b; transition: 0.2s; display: flex; align-items: center; gap: 10px;">
+                        <span style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></span>
+                        Low Stock
+                    </div>
+                </div>
+            </div>
+
             <style>
-                .cat-opt:hover { background: #f8fafc; color: var(--primary) !important; padding-left: 20px !important; }
+                .cat-opt:hover, .stock-opt:hover { background: #f8fafc; color: var(--primary) !important; padding-left: 20px !important; }
                 @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
             </style>
 
             <script>
                 function toggleCatMenu(e) {
                     e.stopPropagation();
+                    // Close Stock Menu first
+                    const stockMenu = document.getElementById('stock-menu');
+                    if (stockMenu) stockMenu.style.display = 'none';
+                    const stockChevron = document.getElementById('stock-chevron');
+                    if (stockChevron) stockChevron.style.transform = 'rotate(0deg)';
+
                     const menu = document.getElementById('cat-menu');
                     const chevron = document.getElementById('cat-chevron');
                     const isVisible = menu.style.display === 'block';
                     
-                    // Close all other menus if any
                     menu.style.display = isVisible ? 'none' : 'block';
                     chevron.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
                 }
@@ -203,9 +251,45 @@
                     }
                 }
 
+                function toggleStockMenu(e) {
+                    e.stopPropagation();
+                    // Close Category Menu first
+                    const catMenu = document.getElementById('cat-menu');
+                    if (catMenu) catMenu.style.display = 'none';
+                    const catChevron = document.getElementById('cat-chevron');
+                    if (catChevron) catChevron.style.transform = 'rotate(0deg)';
+
+                    const menu = document.getElementById('stock-menu');
+                    const chevron = document.getElementById('stock-chevron');
+                    const isVisible = menu.style.display === 'block';
+                    
+                    menu.style.display = isVisible ? 'none' : 'block';
+                    chevron.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+                }
+
+                function selectStock(e, value, label) {
+                    if (e) e.stopPropagation();
+                    document.getElementById('stock-level-input').value = value;
+                    document.getElementById('selected-stock-label').innerText = label;
+                    document.getElementById('stock-menu').style.display = 'none';
+                    document.getElementById('stock-chevron').style.transform = 'rotate(0deg)';
+                    
+                    // Trigger Live Update
+                    if (typeof performLiveUpdate === 'function') {
+                        performLiveUpdate();
+                    }
+                }
+
                 window.onclick = function() {
-                    document.getElementById('cat-menu').style.display = 'none';
-                    document.getElementById('cat-chevron').style.transform = 'rotate(0deg)';
+                    const catMenu = document.getElementById('cat-menu');
+                    if (catMenu) catMenu.style.display = 'none';
+                    const catChevron = document.getElementById('cat-chevron');
+                    if (catChevron) catChevron.style.transform = 'rotate(0deg)';
+
+                    const stockMenu = document.getElementById('stock-menu');
+                    if (stockMenu) stockMenu.style.display = 'none';
+                    const stockChevron = document.getElementById('stock-chevron');
+                    if (stockChevron) stockChevron.style.transform = 'rotate(0deg)';
                 };
             </script>
 
@@ -291,24 +375,22 @@
             </button>
         </div>
 
-        <!-- Received Items Tab -->
         <div id="content-received" class="tab-content active">
-            <div style="padding: 1.5rem; overflow-x: auto;">
-                <table class="audit-table" style="min-width: 1400px;">
+            <div class="table-scroll-wrapper" style="padding: 1.5rem; overflow-x: auto;">
+                <table class="activity-table" style="width: 100%; min-width: 1500px; border-collapse: collapse;">
                     <thead>
-                        <tr>
-                            <th>Entry / Received</th>
-                            <th>Description</th>
-                            <th>Category</th>
-                            <th>Supplier</th>
-                            <th>Donor</th>
-                            <th>Status</th>
-                            <th>Return Date</th>
-                            <th>Received Qty</th>
-                            <th>Stock Balance</th>
-                            <th>Variance</th>
-                            <th>System Health</th>
-                            <th>Item Health</th>
+                        <tr style="background: rgba(0,0,0,0.02); text-align: left;">
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Entry Date</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Received Date</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Description</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Supplier / Donor</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Delivery Status</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Return Date</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Received Qty</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Bal.</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Level</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -317,59 +399,66 @@
                             $agg = $itemAggregates[$item->description] ?? null;
                             $totalQty = $agg ? (float)$agg->total_received_qty : 0;
                             $totalStock = $agg ? (float)$agg->total_available : 0;
-                            $percentage = ($totalQty > 0) ? ($totalStock / $totalQty) * 100 : 0;
-
-                            $hStatus = 'IN STOCK';
-                            $hColor = '#10b981';
-                            if ($totalStock <= 0 || $totalQty <= 0) {
-                                $hStatus = 'OUT OF STOCK';
-                                $hColor = '#ef4444';
-                            } elseif ($percentage <= 50) {
-                                $hStatus = 'LOW STOCK';
-                                $hColor = '#ef4444';
-                            } elseif ($percentage <= 70) {
-                                $hStatus = 'WARNING';
-                                $hColor = '#f59e0b';
-                            }
-
-                            $isPartial = str_contains(strtolower($item->supplier_status), 'partial') || str_contains(strtolower($item->supplier_name), '[partial deliv');
-                            $cleanSupplier = $item->supplier_name;
                         @endphp
-                        <tr class="item-row inventory-row" data-item-id="{{ $item->id }}" data-batch-id="{{ $item->batch_id }}" data-is-partial="{{ $isPartial ? 'true' : 'false' }}">
-                            <td>
-                                <div style="font-weight: 800; color: #0f172a;">{{ \Carbon\Carbon::parse($item->entry_date)->format('d/m/y') }}</div>
-                                <div style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">Rec'd: {{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('d/m/y') : 'N/A' }}</div>
+                        <tr class="activity-row" data-item-id="{{ $item->id }}" data-batch-id="{{ $item->batch_id }}" style="border-top: 1px solid var(--border-color);">
+                            <td data-label="Entry Date" style="padding: 1.25rem 1.5rem; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; font-weight: 700;">
+                                {{ \Carbon\Carbon::parse($item->entry_date)->format('d/m/y H:i') }}
                             </td>
-                            <td>
-                                <div style="font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                            <td data-label="Received Date" style="padding: 1.25rem 1.5rem; color: var(--primary); font-weight: 700;">
+                                {{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('d/m/y') : '-' }}
+                            </td>
+                            <td data-label="Description" style="padding: 1.25rem 1.5rem;">
+                                <div style="font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
                                     <span>{{ $item->description }}</span>
+                                    <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $item->unit ?? 'Package Types' }})</span>
                                 </div>
-                                <div style="font-size: 0.7rem; color: #64748b; font-weight: 800; display: flex; align-items: center; gap: 8px;">
-                                    <span>BATCH #{{ $item->batch_id }}</span>
-                                    @if($item->location)
-                                        <span style="color: #4f46e5; display: inline-flex; align-items: center; gap: 2px;">
-                                            <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i> {{ $item->location }}
-                                        </span>
-                                    @endif
-                                </div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Batch #{{ $item->batch_id }}</div>
                             </td>
-                            <td>
-                                <span class="category-tag">
+                            <td data-label="Category" style="padding: 1.25rem 1.5rem;">
+                                <span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
                                     {{ $ledgeMap[$item->ledge_category] ?? "Category " . $item->ledge_category }}
                                 </span>
                             </td>
-                            <td><div style="font-weight: 600; color: #475569;">{{ $cleanSupplier ?: '-' }}</div></td>
-                            <td><div style="font-weight: 600; color: #475569;">{{ $item->donor_name ?: '-' }}</div></td>
-                            <td>
-                                 @if($item->hasActiveTemporaryLoan())
-                                     <span style="font-size: 0.65rem; font-weight: 900; color: white; background: #f59e0b; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">ISSUED OUT</span>
-                                @elseif($isPartial)
-                                    <span style="font-size: 0.65rem; font-weight: 900; color: white; background: #ef4444; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">PARTIAL</span>
+                            @php
+                                $cleanSupplier = $item->supplier_name;
+                                $acquisitionType = $item->acquisition_type ?? 'Supplier';
+                                $donorName = $item->donor_name ?? '-';
+                                
+                                $dbStatus = strtoupper($item->supplier_status ?: 'FULL DELIVERY');
+                                $isDbPartialDelivery = ($dbStatus === 'PARTIAL DELIVERY' || str_contains($dbStatus, 'PARTIAL'));
+                                
+                                $isIssuedOut = $item->hasActiveTemporaryLoan();
+                                if ($isIssuedOut) {
+                                    $displayStatus = 'ISSUED OUT';
+                                    $statusColor = '#f59e0b';
+                                } else {
+                                    $displayStatus = $dbStatus;
+                                    $statusColor = '#94a3b8';
+                                    if ($acquisitionType === 'Donor' || $displayStatus === 'DONOR') {
+                                        $statusColor = '#8b5cf6';
+                                        $displayStatus = 'DONOR';
+                                    } elseif ($displayStatus === 'FULL DELIVERY' || str_contains($displayStatus, 'FULL')) {
+                                        $statusColor = '#10b981';
+                                        $displayStatus = 'FULL DELIVERY';
+                                    } elseif ($displayStatus === 'PARTIAL DELIVERY' || str_contains($displayStatus, 'PARTIAL')) {
+                                        $statusColor = '#ef4444';
+                                        $displayStatus = 'PARTIAL DELIVERY';
+                                    }
+                                }
+                            @endphp
+                            <td data-label="Supplier / Donor" style="padding: 1.25rem 1.5rem; color: var(--text-main);">
+                                @if($acquisitionType === 'Donor')
+                                    <div style="font-weight: 800; color: #8b5cf6;">{{ $donorName }}</div>
                                 @else
-                                    <span style="font-size: 0.65rem; font-weight: 900; color: white; background: #10b981; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">FULL</span>
+                                    <div>{{ $cleanSupplier ?: '-' }}</div>
                                 @endif
                             </td>
-                            <td>
+                            <td data-label="Delivery Status" style="padding: 1.25rem 1.5rem;">
+                                <span style="font-size: 0.7rem; font-weight: 900; color: white; background: {{ $statusColor }}; padding: 0.35rem 0.8rem; border-radius: 8px; text-transform: uppercase; box-shadow: 0 4px 10px {{ $statusColor }}30; letter-spacing: 0.5px;">
+                                    {{ $displayStatus }}
+                                </span>
+                            </td>
+                            <td data-label="Return Date" style="padding: 1.25rem 1.5rem;">
                                 @php
                                     $expectedDates = $item->getExpectedReturnDates();
                                 @endphp
@@ -411,42 +500,65 @@
                                     <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">-</span>
                                 @endif
                             </td>
-                            <td style="font-weight: 800; color: #0f172a;">{{ $item->qty }}</td>
-                            <td style="font-weight: 800; color: #0f172a;">{{ $item->stock_balance }}</td>
-                            <td>
-                                <span style="font-weight: 800; color: {{ (float)$item->variance < 0 ? '#ef4444' : ((float)$item->variance > 0 ? '#10b981' : '#94a3b8') }};">
-                                    {{ (float)$item->variance > 0 ? '+' : '' }}{{ $item->variance }}
+                            <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">
+                                {{ $item->qty ?? '0' }}
+                            </td>
+                            <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">
+                                {{ $item->stock_balance }}
+                            </td>
+                            <td data-label="Variance" style="padding: 1.25rem 1.5rem;">
+                                <span style="font-weight: 800; color: {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '#10b981' : (is_numeric($item->variance) && (float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">
+                                    {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '+' : '' }}{{ $item->variance }}
                                 </span>
                             </td>
-                            <td>
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <div style="display: flex; align-items: center; gap: 6px;">
-                                        <span style="font-size: 0.6rem; font-weight: 900; color: white; background: {{ $hColor }}; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">{{ $hStatus }}</span>
-                                        <span style="font-size: 0.75rem; font-weight: 800; color: {{ $hColor }};">{{ round($percentage) }}%</span>
-                                    </div>
-                                    <div style="font-size: 0.7rem; font-weight: 800; color: #64748b;">{{ number_format($totalQty) }} Avail</div>
-                                </div>
-                            </td>
-                            <td>
+                            <td data-label="Stock Level" style="padding: 1.25rem 1.5rem;">
                                 @php
                                     $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
                                     $isItemLow = $totalStock <= $threshold;
+                                    $itemHealthStatus = $isItemLow ? 'LOW STOCK' : 'IN STOCK';
                                     $itemHealthColor = $isItemLow ? '#ef4444' : '#10b981';
                                 @endphp
-                                <div style="display: flex; align-items: center; gap: 4px;">
-                                    <span style="font-size: 0.6rem; font-weight: 900; color: white; background: {{ $itemHealthColor }}; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">{{ $isItemLow ? 'LOW' : 'GOOD' }}</span>
-                                    <i data-lucide="{{ $isItemLow ? 'alert-triangle' : 'check-circle' }}" style="width: 14px; color: {{ $itemHealthColor }};"></i>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <span style="font-size: 0.6rem; font-weight: 900; color: white; background: {{ $itemHealthColor }}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; width: fit-content; text-transform: uppercase;">{{ $itemHealthStatus }}</span>
+                                        <i data-lucide="{{ $isItemLow ? 'alert-circle' : 'check-circle' }}" style="width: 14px; color: {{ $itemHealthColor }};"></i>
+                                    </div>
+                                    <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-main);">
+                                        {{ number_format($totalStock) }} <span style="font-size: 0.65rem; color: var(--text-muted);">Available</span>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="12" style="padding: 4rem; text-align: center; color: #94a3b8;">No inventory records discovered in the master category.</td>
+                            <td colspan="11" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
+                                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; margin: 0 auto;">
+                                    <div style="background: rgba(99, 102, 241, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(99, 102, 241, 0.2); animation: pulse 2s infinite;">
+                                        <i data-lucide="package-search" style="width: 44px; stroke-width: 1.5px;"></i>
+                                    </div>
+                                    <div style="max-width: 500px; text-align: center;">
+                                        <h4 style="font-size: 1.75rem; font-weight: 950; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.04em;">No Records Discovered</h4>
+                                        <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; font-weight: 500;">Your inventory ledger is currently empty or no items match your current search filters. Try broadening your criteria or record a new batch.</p>
+
+                                        <div style="margin-top: 2.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                                            <a href="{{ route('admin.inventory') }}" class="glass-card" style="padding: 0.85rem 1.75rem; border-radius: 14px; text-decoration: none; font-size: 0.95rem; color: var(--text-main); font-weight: 800; transition: all 0.3s; border: 1.5px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; background: var(--bg-card);">
+                                                <i data-lucide="refresh-ccw" style="width: 18px;"></i>
+                                                Reset Filters
+                                            </a>
+                                            <button onclick="window.location.href='/'" class="btn-primary" style="padding: 0.85rem 1.75rem; border-radius: 14px; border: none; font-size: 0.95rem; background: var(--primary-gradient); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 12px 24px -6px rgba(99, 102, 241, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                                <i data-lucide="plus-circle" style="width: 20px;"></i>
+                                                New Inventory Entry
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+
 
             <!-- Pagination Module -->
             <div style="padding: 1.5rem 2rem; background: #fafcff; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
@@ -619,6 +731,146 @@
     }
     .audit-table td { padding: 1.5rem; border-bottom: 1px solid #f8fafc; vertical-align: top; }
     .audit-table tr:hover { background: #fcfdfe; }
+
+    .activity-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .activity-table th { 
+        padding: 1.25rem 1.5rem; 
+        font-size: 0.7rem; 
+        font-weight: 900; 
+        color: #94a3b8; 
+        text-transform: uppercase; 
+        letter-spacing: 0.1em;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .activity-table td { padding: 1.5rem; border-bottom: 1px solid #f8fafc; vertical-align: top; }
+    .activity-table tr:hover { background: #fcfdfe; }
+
+    /* Mobile Card View for Stock Receipts Log */
+    @media (max-width: 768px) {
+        .table-scroll-wrapper {
+            overflow-x: visible !important;
+            padding: 0 !important;
+        }
+        .activity-table {
+            min-width: 100% !important;
+        }
+        .activity-table thead {
+            display: none;
+        }
+        .activity-table tbody {
+            display: block;
+        }
+        .activity-table tr {
+            display: block;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem !important;
+            background: var(--bg-card) !important;
+            border-radius: 24px !important;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.04) !important;
+            border: 1px solid var(--border-color) !important;
+            position: relative;
+        }
+        .activity-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.85rem 0 !important;
+            border-bottom: 1px dashed var(--border-color) !important;
+            border-radius: 0 !important;
+            width: 100% !important;
+            text-align: right;
+        }
+        .activity-table td:last-child {
+            border-bottom: none !important;
+            padding-top: 1.25rem !important;
+        }
+        .activity-table td::before {
+            content: attr(data-label);
+            font-weight: 850;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .activity-table td > div,
+        .activity-table td > span {
+            text-align: right;
+            max-width: 60%;
+        }
+    }
+    /* PREMIUM SAMSUNG CARD VIEW - STOCK RECEIPTS LOG */
+    @media (max-width: 768px) {
+        .table-scroll-wrapper {
+            overflow-x: visible !important;
+            padding: 0.5rem !important;
+        }
+        .activity-table {
+            min-width: 100% !important;
+            border-spacing: 0 1rem !important;
+            border-collapse: separate !important;
+        }
+        .activity-table thead {
+            display: none;
+        }
+        .activity-table tbody {
+            display: block;
+        }
+        .activity-table tr {
+            display: block;
+            margin-bottom: 2rem;
+            padding: 1.75rem !important;
+            background: var(--bg-card) !important;
+            border-radius: 32px !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06) !important;
+            border: 1px solid var(--border-color) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Samsung-style left accent bar */
+        .activity-table tr::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background: var(--primary);
+        }
+        .activity-table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0 !important;
+            border-bottom: 1px solid rgba(0,0,0,0.03) !important;
+            border-radius: 0 !important;
+            width: 100% !important;
+        }
+        .activity-table td:last-child {
+            border-bottom: none !important;
+            padding-top: 1.5rem !important;
+            justify-content: center !important;
+        }
+        .activity-table td::before {
+            content: attr(data-label);
+            font-weight: 800;
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .activity-table td > div,
+        .activity-table td > span {
+            text-align: right;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+        .activity-table td[data-label="Description"] > div:first-child {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+    }
+
 
     .id-badge { background: #f1f5f9; color: #475569; padding: 4px 8px; border-radius: 6px; font-weight: 800; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
     .category-tag { background: rgba(79, 70, 229, 0.05); color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; }

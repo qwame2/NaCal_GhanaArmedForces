@@ -497,6 +497,37 @@ class EditRequestController extends Controller
                         'metadata' => ['batch_id' => $batch->id],
                         'ip_address' => request()->ip()
                     ]);
+
+                    // Update the supplier's delivery person in the database and registry if configured
+                    if (!empty($data['supplier_name']) && !empty($data['delivery_person'])) {
+                        $cleanSupplier = trim(preg_replace('/\s\[.*\]$/', '', $data['supplier_name']));
+                        $supplierModel = \App\Models\Supplier::where('name', $cleanSupplier)
+                            ->orWhere('name', $data['supplier_name'])
+                            ->first();
+                        if ($supplierModel) {
+                            $supplierModel->update([
+                                'delivery_person' => trim($data['delivery_person'])
+                            ]);
+                            
+                            // Also update in settings registry
+                            $setting = \App\Models\Setting::where('key', 'suppliers_registry')->first();
+                            if ($setting) {
+                                    $registry = json_decode($setting->value ?? '{}', true) ?? [];
+                                    $updatedRegistry = false;
+                                    foreach ($registry as $key => &$details) {
+                                        if (strcasecmp(trim($key), $cleanSupplier) === 0 || strcasecmp(trim($key), trim($data['supplier_name'])) === 0) {
+                                            $details['delivery_person'] = trim($data['delivery_person']);
+                                            $updatedRegistry = true;
+                                            break;
+                                        }
+                                    }
+                                    if ($updatedRegistry) {
+                                        $setting->value = json_encode($registry);
+                                        $setting->save();
+                                    }
+                            }
+                        }
+                    }
                 }
 
                 \Illuminate\Support\Facades\DB::commit();

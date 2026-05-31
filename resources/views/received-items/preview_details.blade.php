@@ -9,12 +9,14 @@
     $provider = $isDonor ? ($batch->donor_name ?: trim(preg_replace('/\[.*?\]/', '', $batch->supplier_name ?? ''))) : trim(preg_replace('/\[.*?\]/', '', $batch->supplier_name ?? ''));
 
     $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
-    $deliveryPerson = '';
-    foreach ($suppliersRegistry as $k => $v) {
-        if (strcasecmp(trim($k), trim($provider)) === 0 || (!empty($batch->supplier_name) && strcasecmp(trim($k), trim($batch->supplier_name)) === 0)) {
-            $provider = $k;
-            $deliveryPerson = $v['delivery_person'] ?? '';
-            break;
+    $deliveryPerson = $batch->delivery_person ?? '';
+    if (empty($deliveryPerson)) {
+        foreach ($suppliersRegistry as $k => $v) {
+            if (strcasecmp(trim($k), trim($provider)) === 0 || (!empty($batch->supplier_name) && strcasecmp(trim($k), trim($batch->supplier_name)) === 0)) {
+                $provider = $k;
+                $deliveryPerson = $v['delivery_person'] ?? '';
+                break;
+            }
         }
     }
 @endphp

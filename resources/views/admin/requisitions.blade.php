@@ -1261,7 +1261,7 @@
                                 data-stock="${parseFloat(item.current_stock)}"
                                 data-index="${i}"
                                 value="${defaultOriginalApproved}"
-                                min="0" step="0.01"
+                                min="0" max="${parseFloat(item.quantity_requested)}" step="0.01"
                                 oninput="onQtyChange(${i})">
                             <button type="button" class="qty-btn" onclick="adjustQty(${i}, 1)">+</button>
                         </div>
@@ -1283,41 +1283,11 @@
 
                             <div id="quick-tags-${i}" style="display:none;">
                                 <span class="quick-tag" onclick="fillQuickReason(${i}, 'Reduce Allocation')">Reduce Allocation</span>
-                                <span class="quick-tag" onclick="showAlternativeDropdown(${i})">Alternative Available</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Alternative Item Selector -->
-                    <div class="alternative-selector-box" id="alt-selector-box-${i}" style="display:${isAltAgreed ? 'block' : 'none'}; flex-basis:100%; width:100%; margin-top:12px; padding-top:12px; border-top:1px dashed var(--border-color);">
-                        <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.02em; display:block; margin-bottom:6px;">Specify Alternative Item</span>
-                        <div style="position:relative; display:inline-block; width:100%; max-width:400px; margin-bottom:8px;">
-                            <i data-lucide="shuffle" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--store-orange); pointer-events:none; z-index:10;"></i>
-                            <select class="alternative-item-select" id="alt-select-${i}" onchange="selectAlternative(${i}, this.value)" style="margin-bottom:0; padding:10px 12px 10px 36px; height:auto; border-radius:12px; width:100%; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-main); color:var(--text-main); outline:none; transition:all 0.25s ease; cursor:pointer;-webkit-appearance:none;-moz-appearance:none;appearance:none; background-image:url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"%2364748b\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"6 9 12 15 18 9\"></polyline></svg>'); background-repeat:no-repeat; background-position:right 12px center; background-size:16px; padding-right:36px;">
-                                ${alternativeOptions}
-                            </select>
-                        </div>
-                        <div id="alt-stock-info-${i}" style="font-size:0.75rem; font-weight:800; color:var(--store-orange); margin-top:4px; margin-bottom:8px; display:${isAltAgreed ? 'inline-flex' : 'none'}; background:rgba(249, 115, 22, 0.04); border:1px solid rgba(249, 115, 22, 0.12); padding:6px 12px; border-radius:8px; align-items:center; gap:6px;">
-                            ${isAltAgreed ? `<i data-lucide="info" style="width:14px;height:14px;flex-shrink:0;"></i>Alternative Stock: <b>${altStock.toLocaleString()} ${altUnit}</b> available` : ''}
-                        </div>
-
-                        <!-- Alternative Quantity Spinner -->
-                        <div class="alt-qty-container" id="alt-qty-container-${i}" style="display:${isAltAgreed ? 'flex' : 'none'}; align-items:center; gap:10px; margin-top:8px;">
-                            <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.02em;">Alternative Allocation</span>
-                            <div class="qty-spinner" style="border-color:var(--store-orange);">
-                                <button type="button" class="qty-btn" style="color:var(--store-orange);" onclick="adjustAltQty(${i}, -1)">−</button>
-                                <input type="number" class="alt-approved-qty-input"
-                                    id="alt-qty-${i}"
-                                    data-index="${i}"
-                                    value="${isAltAgreed ? parseFloat(item.alternative_quantity_approved) : 0}"
-                                    max="${isAltAgreed ? altStock : ''}"
-                                    min="0" step="0.01"
-                                    oninput="onAltQtyChange(${i})">
-                                <button type="button" class="qty-btn" style="color:var(--store-orange);" onclick="adjustAltQty(${i}, 1)">+</button>
-                            </div>
-                            <span style="font-size:.78rem;color:var(--text-muted);font-weight:700;" id="alt-unit-lbl-${i}">${isAltAgreed ? altUnit : item.unit}</span>
-                        </div>
-                    </div>
+                    <!-- Alternative Item Selector Box Removed -->
                 </div>
             </div>`;
             });
@@ -1610,6 +1580,8 @@
         let currentVal = parseFloat(qtyInput.value) || 0;
         let newVal = currentVal + dir;
         if (newVal < 0) newVal = 0;
+        const requested = parseFloat(qtyInput.dataset.requested) || 0;
+        if (newVal > requested) newVal = requested;
         qtyInput.value = parseFloat(newVal.toFixed(2));
         onQtyChange(idx);
     }
@@ -1620,136 +1592,6 @@
         if (reasonInput) {
             reasonInput.value = text;
         }
-        // Reset alternative selector if any other reason is selected
-        const altBox = document.getElementById(`alt-selector-box-${idx}`);
-        if (altBox) {
-            altBox.style.display = 'none';
-            const altSelect = document.getElementById(`alt-select-${idx}`);
-            if (altSelect) {
-                altSelect.value = '';
-                const qtyInput = document.getElementById(`qty-${idx}`);
-                const altQtyInput = document.getElementById(`alt-qty-${idx}`);
-                const altQtyContainer = document.getElementById(`alt-qty-container-${idx}`);
-                const descText = document.getElementById(`item-desc-text-${idx}`);
-                const origDesc = currentReqData.items[idx].description;
-                document.getElementById(`alt-stock-info-${idx}`).style.display = 'none';
-                if (altQtyContainer) altQtyContainer.style.display = 'none';
-                if (altQtyInput) {
-                    altQtyInput.value = 0;
-                    altQtyInput.removeAttribute('max');
-                }
-                qtyInput.value = qtyInput.dataset.requested;
-                descText.innerHTML = origDesc;
-            }
-        }
-    }
-
-    function showAlternativeDropdown(idx) {
-        const altBox = document.getElementById(`alt-selector-box-${idx}`);
-        const reasonInput = document.getElementById(`reason-${idx}`);
-        if (altBox) {
-            altBox.style.display = 'block';
-        }
-        if (reasonInput) {
-            reasonInput.value = 'Alternative item approved: ';
-            reasonInput.style.display = 'block';
-        }
-        const quickTags = document.getElementById(`quick-tags-${idx}`);
-        if (quickTags) {
-            quickTags.style.display = 'block';
-        }
-        const reasonOk = document.getElementById(`reason-ok-${idx}`);
-        if (reasonOk) {
-            reasonOk.style.display = 'none';
-        }
-        updateStatusBar();
-    }
-
-    function selectAlternative(idx, val) {
-        const altSelect = document.getElementById(`alt-select-${idx}`);
-        const reasonInput = document.getElementById(`reason-${idx}`);
-        const stockInfo = document.getElementById(`alt-stock-info-${idx}`);
-        const qtyInput = document.getElementById(`qty-${idx}`);
-        const altQtyInput = document.getElementById(`alt-qty-${idx}`);
-        const altQtyContainer = document.getElementById(`alt-qty-container-${idx}`);
-        const altUnitLbl = document.getElementById(`alt-unit-lbl-${idx}`);
-        const descText = document.getElementById(`item-desc-text-${idx}`);
-        const origDesc = currentReqData.items[idx].description;
-        const requested = parseFloat(qtyInput.dataset.requested) || 0;
-
-        if (val) {
-            const selectedOpt = altSelect.options[altSelect.selectedIndex];
-            const stock = parseFloat(selectedOpt.dataset.stock) || 0;
-            const unit = selectedOpt.dataset.unit || 'units';
-
-            // Show stock info
-            stockInfo.style.display = 'inline-flex';
-            stockInfo.innerHTML = `<i data-lucide="info" style="width:14px;height:14px;flex-shrink:0;"></i>Alternative Stock: <b>${stock.toLocaleString()} ${unit}</b> available`;
-
-            // Show alternative qty spinner
-            if (altQtyContainer) altQtyContainer.style.display = 'flex';
-            if (altUnitLbl) altUnitLbl.textContent = unit;
-
-            // Set max approved limit for alternative quantity
-            // Set max approved limit for alternative quantity
-            let actualAltQty = 0;
-            if (altQtyInput) {
-                altQtyInput.max = stock;
-                // Default alternative quantity to: Math.max(0, requested - original_approved) capped by alternative stock
-                const originalApproved = parseFloat(qtyInput.value) || 0;
-                const defaultAltQty = Math.max(0, requested - originalApproved);
-                actualAltQty = parseFloat(Math.min(defaultAltQty, stock).toFixed(2));
-                altQtyInput.value = actualAltQty;
-            }
-
-            // Set remark automatically
-            reasonInput.value = `Alternative Approved: ${val} (ALT-${actualAltQty} ${unit})`;
-            reasonInput.style.display = 'block';
-
-            // Update description display
-            descText.innerHTML = `<span>${origDesc}</span> <span style="color:var(--store-orange); font-weight:800; margin-left:6px;"><i data-lucide="shuffle" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px;"></i>Alternative: ${val}</span>`;
-        } else {
-            stockInfo.style.display = 'none';
-            if (altQtyContainer) altQtyContainer.style.display = 'none';
-            if (altQtyInput) {
-                altQtyInput.value = 0;
-                altQtyInput.removeAttribute('max');
-            }
-            reasonInput.value = '';
-            descText.innerHTML = origDesc;
-        }
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-        updateStatusBar();
-    }
-
-    function adjustAltQty(idx, dir) {
-        const qtyInput = document.getElementById(`alt-qty-${idx}`);
-        if (!qtyInput || qtyInput.disabled) return;
-        let currentVal = parseFloat(qtyInput.value) || 0;
-        let newVal = currentVal + dir;
-        if (newVal < 0) newVal = 0;
-        qtyInput.value = parseFloat(newVal.toFixed(2));
-        onAltQtyChange(idx);
-    }
-
-    function onAltQtyChange(idx) {
-        const qtyInput = document.getElementById(`alt-qty-${idx}`);
-        const maxVal = parseFloat(qtyInput.max);
-        if (!isNaN(maxVal) && parseFloat(qtyInput.value) > maxVal) {
-            qtyInput.value = maxVal;
-        }
-
-        // Update remarks with quantity dynamically
-        const altSelect = document.getElementById(`alt-select-${idx}`);
-        const reasonInput = document.getElementById(`reason-${idx}`);
-        if (altSelect && altSelect.value && reasonInput) {
-            const val = altSelect.value;
-            const qty = parseFloat(qtyInput.value) || 0;
-            const selectedOpt = altSelect.options[altSelect.selectedIndex];
-            const unit = selectedOpt ? (selectedOpt.dataset.unit || 'units') : 'units';
-            reasonInput.value = `Alternative Approved: ${val} (ALT-${qty} ${unit})`;
-        }
-        updateStatusBar();
     }
 
     // Toggle item approval on checkbox/switch change
@@ -1793,7 +1635,12 @@
         const reasonOk = document.getElementById(`reason-ok-${idx}`);
         const quickTags = document.getElementById(`quick-tags-${idx}`);
         const requested = parseFloat(qtyInput.dataset.requested);
-        const approved = parseFloat(qtyInput.value) || 0;
+        let approved = parseFloat(qtyInput.value) || 0;
+
+        if (approved > requested) {
+            approved = requested;
+            qtyInput.value = requested;
+        }
 
         if (approved < requested && approved > 0) {
             reasonInput.style.display = 'block';
@@ -1823,26 +1670,14 @@
 
         checkboxes.forEach((chk, i) => {
             const qtyEl = document.getElementById(`qty-${i}`);
-            const altSelect = document.getElementById(`alt-select-${i}`);
-            const altQtyEl = document.getElementById(`alt-qty-${i}`);
-
             const requested = parseFloat(qtyEl?.dataset.requested || 0);
             const originalStock = parseFloat(qtyEl?.dataset.stock || 0);
 
-            // Determine active stock limit based on alternative select
             let stockLimit = originalStock;
             let approvedQty = 0;
 
             if (chk.checked) {
-                if (altSelect && altSelect.value) {
-                    // Alternative is active
-                    const selectedOpt = altSelect.options[altSelect.selectedIndex];
-                    stockLimit = parseFloat(selectedOpt?.dataset.stock || 0);
-                    approvedQty = parseFloat(altQtyEl?.value || 0);
-                } else {
-                    // Original is active
-                    approvedQty = parseFloat(qtyEl?.value || 0);
-                }
+                approvedQty = parseFloat(qtyEl?.value || 0);
 
                 // Validate
                 const row = document.getElementById(`item-row-${i}`);
@@ -1941,14 +1776,6 @@
         const banner = document.getElementById('stockWarningBanner');
         const submitBtn = document.getElementById('submitDecisionBtn');
 
-        let hasAlternativeSelected = false;
-        checkboxes.forEach((chk, i) => {
-            const altSelect = document.getElementById(`alt-select-${i}`);
-            if (chk.checked && altSelect && altSelect.value) {
-                hasAlternativeSelected = true;
-            }
-        });
-
         if (hasExceededStock) {
             if (banner) banner.style.display = 'flex';
             if (submitBtn) {
@@ -1968,7 +1795,7 @@
         }
 
         if (submitBtn) {
-            if (hasAlternativeSelected) {
+            if (cntReduced > 0) {
                 if (currentReqData && currentReqData.alternative_status === 'proposed') {
                     submitBtn.disabled = true;
                     submitBtn.style.opacity = '0.5';
@@ -1977,7 +1804,7 @@
                 } else if (currentReqData && currentReqData.alternative_status === 'agreed') {
                     submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision`;
                 } else {
-                    submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Send Alt Item to ${currentReqData.department}`;
+                    submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Send Suggested Qty to ${currentReqData.department}`;
                 }
             } else {
                 submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision`;
@@ -1998,27 +1825,27 @@
             bar.style.border = '1px solid rgba(239,68,68,.2)';
             icon.textContent = '⛔';
             text.innerHTML = 'Approval blocked — <b>allocation exceeds available stock</b>';
-        } else if (currentReqData && currentReqData.alternative_status === 'agreed' && hasAlternativeSelected) {
+        } else if (currentReqData && currentReqData.alternative_status === 'agreed' && cntReduced > 0) {
             bar.className = 'all-approved';
             bar.style.background = 'rgba(16,185,129,.12)';
             bar.style.color = '#065f46';
             bar.style.border = '1px solid rgba(16,185,129,.25)';
             icon.textContent = '✅';
-            text.innerHTML = 'Department has <b>agreed</b> to alternative item proposal. Proceed to Commit.';
-        } else if (currentReqData && currentReqData.alternative_status === 'proposed' && hasAlternativeSelected) {
+            text.innerHTML = 'Department has <b>agreed</b> to suggested quantity proposal. Proceed to Commit.';
+        } else if (currentReqData && currentReqData.alternative_status === 'proposed' && cntReduced > 0) {
             bar.className = 'partial';
             bar.style.background = 'rgba(245,158,11,.12)';
             bar.style.color = '#92400e';
             bar.style.border = '1px solid rgba(245,158,11,.25)';
             icon.textContent = '⏳';
-            text.innerHTML = 'Alternative proposed. <b>Awaiting department response...</b>';
-        } else if (hasAlternativeSelected) {
+            text.innerHTML = 'Suggested quantity proposed. <b>Awaiting department response...</b>';
+        } else if (cntReduced > 0) {
             bar.className = 'partial';
             bar.style.background = 'rgba(245,158,11,.12)';
             bar.style.color = '#92400e';
             bar.style.border = '1px solid rgba(245,158,11,.25)';
             icon.textContent = '🔀';
-            text.innerHTML = 'Alternative item selected. <b>Click button below to propose to department</b>';
+            text.innerHTML = 'Quantity reduced. <b>Click button below to suggest new quantity to department</b>';
         } else if (allDeclined) {
             bar.className = 'all-declined';
             bar.style.background = 'rgba(239,68,68,.1)';
@@ -2066,9 +1893,8 @@
         let allFullApproval = true;
         checkboxes.forEach((chk, i) => {
             const qtyEl = document.getElementById(`qty-${i}`);
-            const altQtyEl = document.getElementById(`alt-qty-${i}`);
             const requested = parseFloat(qtyEl?.dataset.requested || 0);
-            const approved = (parseFloat(qtyEl?.value) || 0) + (altQtyEl ? (parseFloat(altQtyEl.value) || 0) : 0);
+            const approved = chk.checked ? (parseFloat(qtyEl?.value) || 0) : 0;
             if (chk.checked && approved > 0) allDeclined = false;
             if (!chk.checked || approved < requested) allFullApproval = false;
         });
@@ -2080,24 +1906,24 @@
     async function submitDecision() {
         const status = computeStatus();
         const items = [];
+        let cntReduced = 0;
         
-        let hasAlternativeSelected = false;
         document.querySelectorAll('.approved-qty-input').forEach((inp, i) => {
             const chk = document.getElementById(`chk-${i}`);
             const reason = document.getElementById(`reason-${i}`)?.value || '';
-            const altSelect = document.getElementById(`alt-select-${i}`);
-            const altQtyInput = document.getElementById(`alt-qty-${i}`);
+            const requested = parseFloat(inp.dataset.requested || 0);
+            const approved = chk && !chk.checked ? 0 : (parseFloat(inp.value) || 0);
             
-            if (chk && chk.checked && altSelect && altSelect.value) {
-                hasAlternativeSelected = true;
+            if (chk && chk.checked && approved > 0 && approved < requested) {
+                cntReduced++;
             }
             
             items.push({
                 id: parseInt(inp.dataset.itemId),
-                quantity_approved: chk && !chk.checked ? 0 : (parseFloat(inp.value) || 0),
+                quantity_approved: approved,
                 remarks: reason,
-                alternative_description: altSelect ? (altSelect.value || null) : null,
-                alternative_quantity_approved: altQtyInput ? (parseFloat(altQtyInput.value) || 0) : 0
+                alternative_description: null,
+                alternative_quantity_approved: 0
             });
         });
 
@@ -2105,10 +1931,10 @@
         const declineReason = document.getElementById('declineReason')?.value || '';
         const btn = document.getElementById('submitDecisionBtn');
 
-        // Propose alternative flow
+        // Propose suggested quantity flow
         let finalStatus = status;
         let altStatus = null;
-        if (hasAlternativeSelected && (!currentReqData || currentReqData.alternative_status !== 'agreed')) {
+        if (cntReduced > 0 && (!currentReqData || currentReqData.alternative_status !== 'agreed')) {
             finalStatus = 'pending';
             altStatus = 'proposed';
         }
@@ -2150,8 +1976,8 @@
         } else {
             showToast('Error', data.message || 'Failed to process decision.', 'error');
             btn.disabled = false;
-            if (hasAlternativeSelected && (!currentReqData || currentReqData.alternative_status !== 'agreed')) {
-                btn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Send Alt Item to ${currentReqData.department}`;
+            if (cntReduced > 0 && (!currentReqData || currentReqData.alternative_status !== 'agreed')) {
+                btn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Send Suggested Qty to ${currentReqData.department}`;
             } else {
                 btn.innerHTML = '<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision';
             }

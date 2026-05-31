@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Head Panel | Strategic Registry</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>Head of Stores | Strategic Registry</title>
+    <link href="{{ asset('css/css2.css') }}" rel="stylesheet">
     <script src="{{ asset('js/lucide.min.js') }}"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
+    <link href="{{ asset('css/vendor/select2.min.css') }}" rel="stylesheet" />
+    <script src="{{ asset('js/vendor/select2.min.js') }}"></script>
+    <script src="{{ asset('js/sweetalert2@11.js') }}"></script>
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     <style>
         :root {
@@ -149,6 +149,7 @@
             z-index: 1000;
             box-shadow: var(--shadow-sidebar);
             border-right: 1px solid rgba(0,0,0,0.02);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .sidebar-brand {
@@ -209,7 +210,7 @@
             padding: 0 1rem;
             overflow-y: auto;
         }
-        
+
         /* Custom Scrollbar for nav-scroller */
         .nav-scroller::-webkit-scrollbar {
             width: 4px;
@@ -531,19 +532,113 @@
 
         .pulse-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: shadow-pulse 2s infinite; }
         @keyframes shadow-pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+
+        /* Minimize button styling */
+        .sidebar-minimize-btn {
+            display: none !important;
+        }
+
+        /* Sidebar Minimized State */
+        @media (min-width: 1025px) {
+            .sidebar-minimize-btn {
+                display: flex !important;
+                position: absolute;
+                right: -14px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: white !important;
+                border: 1px solid var(--border-color) !important;
+                width: 28px !important;
+                height: 28px !important;
+                border-radius: 50% !important;
+                align-items: center;
+                justify-content: center;
+                color: #64748b !important;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+                z-index: 1001;
+            }
+            .sidebar-minimize-btn:hover {
+                color: var(--primary) !important;
+                background: #f8fafc !important;
+                border-color: var(--primary-glow) !important;
+                transform: translateY(-50%) scale(1.05);
+            }
+            .sidebar.minimized {
+                width: 80px !important;
+            }
+            .sidebar.minimized .brand-text,
+            .sidebar.minimized .nav-label,
+            .sidebar.minimized .nav-link span,
+            .sidebar.minimized .sidebar-footer .user-meta,
+            .sidebar.minimized .sidebar-footer form {
+                display: none !important;
+            }
+            .sidebar.minimized .sidebar-brand {
+                padding: 2rem 0.5rem !important;
+                justify-content: center !important;
+            }
+            .sidebar.minimized .brand-icon {
+                margin: 0 !important;
+            }
+            .sidebar.minimized .nav-scroller {
+                padding: 0 0.5rem !important;
+            }
+            .sidebar.minimized .nav-link {
+                padding: 0.85rem !important;
+                justify-content: center !important;
+                gap: 0 !important;
+            }
+            .sidebar.minimized .sidebar-footer {
+                padding: 1.5rem 0.5rem !important;
+            }
+            .sidebar.minimized .profile-pill {
+                padding: 0 !important;
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                justify-content: center !important;
+            }
+            .sidebar.minimized .profile-pill a {
+                justify-content: center !important;
+                gap: 0 !important;
+                flex: none !important;
+                width: 100% !important;
+            }
+            .sidebar.minimized .avatar-wrap {
+                margin: 0 !important;
+                width: 36px !important;
+                height: 36px !important;
+            }
+            .sidebar.minimized .nav-link span[id^="sidebar-badge-"] {
+                display: none !important;
+            }
+            .main-wrapper.sidebar-minimized {
+                margin-left: 80px !important;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <aside class="sidebar" id="sidebar">
+        <script>
+            if (localStorage.getItem('sidebar-minimized') === 'true') {
+                document.getElementById('sidebar').classList.add('minimized');
+            }
+        </script>
         <div class="sidebar-brand">
             <div class="brand-icon" style="background: transparent; box-shadow: none;">
                 <img src="{{ asset('img/NACOC.png') }}" alt="{{ \App\Models\Setting::get('organization_name', 'NACOC') }} Logo" style="width: 100%; height: 100%; object-fit: contain;">
             </div>
-            <div class="brand-text">
-                <h1>{{ \App\Models\Setting::get('organization_name', 'ADMIN CORE') }}</h1>
+            <div class="brand-text" style="flex: 1; min-width: 0;">
+                <h1 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ \App\Models\Setting::get('organization_name', 'ADMIN CORE') }}</h1>
                 <span>Strategic Access</span>
             </div>
+            <button type="button" class="sidebar-minimize-btn" id="sidebar-minimize-btn" title="Minimize Sidebar">
+                <i data-lucide="chevron-left" id="minimize-icon" style="width: 16px; height: 16px;"></i>
+            </button>
             <button class="mobile-sidebar-close" id="mobile-sidebar-close">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
@@ -568,6 +663,12 @@
                     <a href="{{ route('admin.inventory') }}" class="nav-link {{ request()->routeIs('admin.inventory') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.27 6.96 8.73 5.05 8.73-5.05"/><path d="M12 22.08V12"/></svg>
                         <span>Inventory Oversight</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/><path d="M12 13v5"/><path d="M16 13v5"/><path d="M8 13v5"/></svg>
+                        <span>Report Generation</span>
                     </a>
                 </li>
                 <li>
@@ -657,7 +758,7 @@
             <div class="profile-pill" style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                 <a href="{{ route('settings.index') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; flex: 1; min-width: 0;">
                     <div class="avatar-wrap">
-                        <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div class="user-meta">
                         <span class="u-name">{{ auth()->user()->name }}</span>
@@ -674,7 +775,12 @@
         </div>
     </aside>
 
-    <main class="main-wrapper">
+    <main class="main-wrapper" id="main-wrapper">
+        <script>
+            if (localStorage.getItem('sidebar-minimized') === 'true') {
+                document.getElementById('main-wrapper').classList.add('sidebar-minimized');
+            }
+        </script>
         <header class="view-header">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button class="mobile-nav-toggle" id="mobile-toggle">
@@ -751,6 +857,32 @@
     </main>
 
     <script>
+        // Sidebar Minimize Toggle
+        const minimizeBtn = document.getElementById('sidebar-minimize-btn');
+        const mainWrapper = document.getElementById('main-wrapper');
+        const minimizeIcon = document.getElementById('minimize-icon');
+
+        // Set initial icon based on state
+        if (localStorage.getItem('sidebar-minimized') === 'true') {
+            if (minimizeIcon) {
+                minimizeIcon.setAttribute('data-lucide', 'chevron-right');
+            }
+        }
+
+        if (minimizeBtn && mainWrapper) {
+            minimizeBtn.addEventListener('click', () => {
+                const sidebarEl = document.getElementById('sidebar');
+                const isMinimized = sidebarEl.classList.toggle('minimized');
+                mainWrapper.classList.toggle('sidebar-minimized', isMinimized);
+                localStorage.setItem('sidebar-minimized', isMinimized ? 'true' : 'false');
+
+                if (minimizeIcon) {
+                    minimizeIcon.setAttribute('data-lucide', isMinimized ? 'chevron-right' : 'chevron-left');
+                    if (window.lucide) lucide.createIcons();
+                }
+            });
+        }
+
         lucide.createIcons();
 
         // Mobile Sidebar Toggle
@@ -769,7 +901,7 @@
                 sidebar.classList.remove('active');
                 overlay.classList.remove('active');
             });
-            
+
             if (mobileClose) {
                 mobileClose.addEventListener('click', () => {
                     sidebar.classList.remove('active');
@@ -1216,7 +1348,7 @@
             function updateBadge(id, count) {
                 const badge = document.getElementById(id);
                 if (!badge) return;
-                
+
                 if (count > 0) {
                     if (badge.style.display === 'none' || badge.textContent.trim() !== count.toString()) {
                         badge.style.display = 'inline-block';
@@ -1245,7 +1377,7 @@
                     updateBadge('sidebar-badge-password', data.password_requests);
                     updateBadge('sidebar-badge-alerts', data.alerts);
                     updateBadge('sidebar-badge-requisitions', data.pending_requisitions);
-                    
+
                     // Also update the global header message badge if it exists
                     const globalUnreadBadge = document.getElementById('global-unread-badge');
                     if (globalUnreadBadge) {
@@ -1262,7 +1394,7 @@
 
             // Start polling every 15 seconds
             setInterval(pollSidebarCounts, 15000);
-            
+
             // Wait a few seconds to do the first poll
             setTimeout(pollSidebarCounts, 3000);
         })();

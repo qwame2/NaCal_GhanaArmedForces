@@ -918,6 +918,8 @@
 
                 jQuery('#ledgeSelect').val('').trigger('change');
                 jQuery('#supplierNameSelect').val('').trigger('change');
+                jQuery('#deliveryPersonInput').val('');
+                jQuery('#deliveryPersonGroup').hide();
                 jQuery('#supplierStatusSelect').val('').trigger('change');
                 jQuery('#isDonorCheckbox').prop('checked', false);
                 jQuery('#deliveryStatusGroup').show();
@@ -1030,16 +1032,27 @@
         const itemDetails = $('#itemDetails');
 
         // Database Items from Backend (All item descriptions, units, and ledge categories mapped to UPPERCASE/trimmed)
-        const existingDBItems = JSON.parse(document.getElementById('inventory-data').textContent || '[]').map(item => {
-            return {
-                ...item,
-                description: (item.description || '').toUpperCase().trim(),
-                unit: (item.unit || '').toUpperCase().trim(),
-                location: (item.location || '').toUpperCase().trim(),
-                ledge_category: (item.ledge_category || '').toUpperCase().trim()
-            };
-        });
-        const globalTotalStock = {{ $totalInventory }};
+        let existingDBItems = [];
+        try {
+            const inventoryDataEl = document.getElementById('inventory-data');
+            if (inventoryDataEl) {
+                const parsed = JSON.parse(inventoryDataEl.textContent || '[]');
+                if (Array.isArray(parsed)) {
+                    existingDBItems = parsed.filter(Boolean).map(item => {
+                        return {
+                            ...item,
+                            description: (item.description || '').toUpperCase().trim(),
+                            unit: (item.unit || '').toUpperCase().trim(),
+                            location: (item.location || '').toUpperCase().trim(),
+                            ledge_category: (item.ledge_category || '').toUpperCase().trim()
+                        };
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Error parsing inventory-data:", e);
+        }
+        const globalTotalStock = {{ (int)($totalInventory ?? 0) }};
 
         // Load admin-defined unit rules for auto-fill
         window._unitRules = {};
@@ -1070,7 +1083,7 @@
         ledgeSelect.select2({
             placeholder: 'Search and Select Category',
             width: '100%',
-            dropdownParent: modal
+            dropdownParent: $('#newEntryModal')
         });
 
         // Open Modal Listener (jQuery way)
@@ -1091,6 +1104,11 @@
             // Check Supplier/Donor Name
             if (!$('#supplierNameSelect').val()) {
                 missingFields.push("Supplier/Donor Name");
+            }
+            
+            // Check Delivery Person if visible
+            if ($('#deliveryPersonGroup').is(':visible') && !$('#deliveryPersonInput').val().trim()) {
+                missingFields.push("Delivery Person Name");
             }
             
             // Check Delivery Status (only if not donor)
@@ -1190,6 +1208,7 @@
                 supplier_status: supplierStatus,
                 donor_name: donorName || null,
                 acquisition_type: acquisitionType,
+                delivery_person: $('#deliveryPersonGroup').is(':visible') ? ($('#deliveryPersonInput').val() || '').trim() : null,
                 entry_date: $('#entryDate').val(),
                 arrival_date: $('#arrivalDate').val(),
                 items: items
@@ -1259,47 +1278,51 @@
         });
 
         // Handle Ledge Selection
-        ledgeSelect.on('change', function() {
-            const selectedLedge = ($(this).val() || '').toUpperCase().trim();
-            if (selectedLedge) {
-                // Keep Ledge on Top, Show Batch Controls below it
-                $('#qtyControl').show().animate({
-                    opacity: 1
-                }, 400);
-                $('#supplierControl').show().animate({
-                    opacity: 1
-                }, 400);
-                $('#dateControl').show().animate({
-                    opacity: 1
-                }, 400);
+        ledgeSelect.on('change select2:select', function() {
+            try {
+                const selectedLedge = ($(this).val() || '').toUpperCase().trim();
+                if (selectedLedge) {
+                    // Keep Ledge on Top, Show Batch Controls below it
+                    $('#qtyControl').show().animate({
+                        opacity: 1
+                    }, 400);
+                    $('#supplierControl').show().animate({
+                        opacity: 1
+                    }, 400);
+                    $('#dateControl').show().animate({
+                        opacity: 1
+                    }, 400);
 
-                itemDetails.slideDown(400);
-                $('#modalFooter').fadeIn(400);
+                    itemDetails.slideDown(400);
+                    $('#modalFooter').fadeIn(400);
 
-                // Update any existing item dropdowns to reflect the new ledge category
-                $('.item-select-dynamic').each(function() {
-                    const $select = $(this);
-                    const currentVal = $select.val();
-                    const filtered = existingDBItems.filter(item => (item.ledge_category || '').toUpperCase().trim() === selectedLedge);
+                    // Update any existing item dropdowns to reflect the new ledge category
+                    $('.item-select-dynamic').each(function() {
+                        const $select = $(this);
+                        const currentVal = $select.val();
+                        const filtered = (existingDBItems || []).filter(item => item && (item.ledge_category || '').toUpperCase().trim() === selectedLedge);
 
-                    let optionsHtml = '<option value=""></option>';
-                    filtered.forEach(item => {
-                        optionsHtml += `<option value="${item.description}">${item.description}</option>`;
+                        let optionsHtml = '<option value=""></option>';
+                        filtered.forEach(item => {
+                            optionsHtml += `<option value="${item.description}">${item.description}</option>`;
+                        });
+
+                        $select.html(optionsHtml);
+                        $select.val(null).trigger('change.select2').trigger('change');
                     });
 
-                    $select.html(optionsHtml);
-                    $select.val(null).trigger('change.select2').trigger('change');
-                });
-
-                if ($('#itemsContainer').children().length === 0) {
-                    renderItemRows(1);
+                    if ($('#itemsContainer').children().length === 0) {
+                        renderItemRows(1);
+                    }
+                } else {
+                    $('#qtyControl').hide().css('opacity', 0);
+                    $('#supplierControl').hide().css('opacity', 0);
+                    $('#dateControl').hide().css('opacity', 0);
+                    itemDetails.slideUp(400);
+                    $('#modalFooter').fadeOut(400);
                 }
-            } else {
-                $('#qtyControl').hide().css('opacity', 0);
-                $('#supplierControl').hide().css('opacity', 0);
-                $('#dateControl').hide().css('opacity', 0);
-                itemDetails.slideUp(400);
-                $('#modalFooter').fadeOut(400);
+            } catch (err) {
+                console.error("Error in ledge selection handler:", err);
             }
         });
 
@@ -1308,7 +1331,7 @@
             if (!append) container.empty();
 
             const selectedLedge = ($('#ledgeSelect').val() || '').toUpperCase().trim();
-            const filteredItems = existingDBItems.filter(item => (item.ledge_category || '').toUpperCase().trim() === selectedLedge);
+            const filteredItems = (existingDBItems || []).filter(item => item && (item.ledge_category || '').toUpperCase().trim() === selectedLedge);
 
             for (let i = 0; i < count; i++) {
                 const currentRows = container.children('.item-entry-row').length;
@@ -1455,7 +1478,7 @@
                 // Handle Item Selection to show previous data explicitly
                 $row.on('change', '.item-select-dynamic', function() {
                     const selectedDesc = ($(this).val() || '').trim().toUpperCase();
-                    const prevData = existingDBItems.find(item => item.description === selectedDesc);
+                    const prevData = (existingDBItems || []).find(item => item && item.description === selectedDesc);
 
                     // Auto-fill unit and location based on admin-defined unit rules or existing item data
                     const $unitInput = $row.find('.row-unit');
@@ -1833,8 +1856,8 @@
         const suppliersRegistry = @json(\App\Models\Setting::get('suppliers_registry', []));
         $('#supplierNameSelect').on('change', function() {
             const name = $(this).val();
-            const detailsDiv = $('#selectedSupplierDetails');
-            const contentDiv = $('#supplierDetailsContent');
+            const deliveryGroup = $('#deliveryPersonGroup');
+            const deliveryInput = $('#deliveryPersonInput');
             
             let details = null;
             if (name) {
@@ -1848,16 +1871,12 @@
             }
             
             if (details) {
-                let html = '';
-                if (details.delivery_person) {
-                    html += `<div style="display: flex; align-items: center; gap: 6px;"><i data-lucide="user" style="width: 12px; color: var(--text-muted);"></i> <strong>Delivery Person:</strong> ${details.delivery_person}</div>`;
-                }
-                
-                contentDiv.html(html);
-                if (window.lucide) lucide.createIcons();
-                detailsDiv.slideDown(250);
+                // Show the delivery person input box and prefill it
+                deliveryInput.val(details.delivery_person || '');
+                deliveryGroup.slideDown(250);
             } else {
-                detailsDiv.slideUp(200);
+                deliveryGroup.slideUp(200);
+                deliveryInput.val('');
             }
         });
 
@@ -1928,6 +1947,9 @@
                         setTimeout(() => {
                             $('#isDonorCheckbox').prop('checked', isDonor).trigger('change');
                             $('#supplierNameSelect').val(cleanSupplier).trigger('change');
+                            if (batch.delivery_person) {
+                                $('#deliveryPersonInput').val(batch.delivery_person);
+                            }
                             if (!isDonor) {
                                 $('#supplierStatusSelect').val(batch.supplier_status || 'Full Delivery').trigger('change');
                             }
@@ -2025,6 +2047,9 @@
                             $('#supplierNameSelect').append(new Option(cleanVal, cleanVal, true, true));
                         }
                         $('#supplierNameSelect').val(cleanVal).trigger('change');
+                        if (payload.delivery_person) {
+                            $('#deliveryPersonInput').val(payload.delivery_person);
+                        }
 
                         if (!isDonor && payload.supplier_status) {
                             $('#supplierStatusSelect').val(payload.supplier_status).trigger('change');
@@ -2212,12 +2237,12 @@
                                     <option value="{{ $supplier }}">{{ $supplier }}</option>
                                     @endforeach
                                 </select>
-                                <div id="selectedSupplierDetails" style="display: none; margin-top: 0.75rem; background: var(--bg-main); border: 1.5px solid var(--border-color); padding: 0.85rem 1.1rem; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
-                                    <div style="font-size: 0.72rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
-                                        <i data-lucide="info" style="width: 12px; height: 12px;"></i> Supplier Details
-                                    </div>
-                                    <div id="supplierDetailsContent" style="display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; font-weight: 600; color: var(--text-main);">
-                                    </div>
+                                <div id="deliveryPersonGroup" style="display: none; margin-top: 0.75rem;">
+                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                                        <i data-lucide="user" style="width: 14px; color: var(--primary);"></i>
+                                        Delivery Person Name <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                    </label>
+                                    <input type="text" id="deliveryPersonInput" class="form-control" placeholder="Enter delivery person's name" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
                                 </div>
                                 <div style="margin-top: 0.75rem; display: flex; align-items: center; justify-content: space-between; background: var(--bg-main); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: 12px; transition: all 0.3s ease;">
                                     <div style="display: flex; flex-direction: column; gap: 2px;">

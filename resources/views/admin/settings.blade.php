@@ -1476,15 +1476,28 @@
                                                     <div style="font-weight: 800; font-size: 0.82rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $keyword }}">{{ $keyword }}</div>
                                                     @php
                                                         $displayUnit = \App\Models\Setting::getItemUnit($keyword);
-                                                        // Calculate given out qty
+                                                                                        // Calculate given out qty using word boundaries
                                                         $query = \App\Models\StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
                                                             ->whereIn('store_requisitions.status', ['approved', 'partially_approved']);
-                                                        $originalSum = (float) $query->clone()
-                                                            ->where(\DB::raw('LOWER(store_requisition_items.description)'), 'LIKE', '%' . strtolower(trim($keyword)) . '%')
-                                                            ->sum('store_requisition_items.quantity_approved');
-                                                        $alternativeSum = (float) $query->clone()
-                                                            ->where(\DB::raw('LOWER(store_requisition_items.alternative_description)'), 'LIKE', '%' . strtolower(trim($keyword)) . '%')
-                                                            ->sum('store_requisition_items.alternative_quantity_approved');
+                                                        $items = $query->select(
+                                                            'store_requisition_items.description',
+                                                            'store_requisition_items.quantity_approved',
+                                                            'store_requisition_items.alternative_description',
+                                                            'store_requisition_items.alternative_quantity_approved'
+                                                        )->get();
+
+                                                        $pattern = '/\b' . preg_quote(strtolower(trim($keyword)), '/') . '\b/i';
+                                                        $originalSum = 0.0;
+                                                        $alternativeSum = 0.0;
+
+                                                        foreach ($items as $dbItem) {
+                                                            if ($dbItem->description && preg_match($pattern, $dbItem->description)) {
+                                                                $originalSum += (float) $dbItem->quantity_approved;
+                                                            }
+                                                            if ($dbItem->alternative_description && preg_match($pattern, $dbItem->alternative_description)) {
+                                                                $alternativeSum += (float) $dbItem->alternative_quantity_approved;
+                                                            }
+                                                        }
                                                         $givenOut = $originalSum + $alternativeSum;
                                                     @endphp
                                                     <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">Limit: {{ $limit }} {{ $displayUnit }}</div>
@@ -1661,10 +1674,7 @@
                                 <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Supplier Name(s) (Company)</label>
                                 <input type="text" name="name" id="supplierNameInput" class="cfg-text-input" placeholder="e.g. Acme Corp, Apex Ltd (comma-separated for multiple)" required>
                             </div>
-                            <div>
-                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Delivery Person Name</label>
-                                <input type="text" name="delivery_person" id="supplierDeliveryPersonInput" class="cfg-text-input" placeholder="e.g. John Doe">
-                            </div>
+
                             <div>
                                 <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Contact Phone Number</label>
                                 <input type="text" name="phone" id="supplierPhoneInput" class="cfg-text-input" placeholder="e.g. +233 2400000">
@@ -2025,6 +2035,40 @@
                 showLimitStock(lastSelected);
             }
         });
+
+        // Validate request limit against stock balance on submit
+        $('#limitForm').on('submit', function(e) {
+            const limit = parseFloat(document.getElementById('limitVal').value) || 0;
+            const keywords = $('#limitKeyword').val() || [];
+            
+            for (let i = 0; i < keywords.length; i++) {
+                const keyword = keywords[i];
+                let stock = null;
+                const kwClean = keyword.toLowerCase().trim();
+                
+                if (stockByKeyword[kwClean] !== undefined) {
+                    stock = stockByKeyword[kwClean];
+                } else {
+                    for (const [k, v] of Object.entries(stockByKeyword)) {
+                        if (k.includes(kwClean) || kwClean.includes(k)) { 
+                            stock = v; 
+                            break; 
+                        }
+                    }
+                }
+                
+                if (stock !== null && limit > stock) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Limit Exceeds Stock Balance',
+                        text: `The request limit (${limit}) cannot exceed the current stock balance of "${keyword}" (${stock} units).`,
+                        confirmButtonColor: '#6366f1'
+                    });
+                    return false;
+                }
+            }
+        });
     });
 
     // Global: show stock balance for a given keyword in the Add Request Limit form
@@ -2121,7 +2165,7 @@
         document.getElementById('supplierNameInput').readOnly = true;
         document.getElementById('supplierNameInput').style.background = '#f8fafc';
 
-        document.getElementById('supplierDeliveryPersonInput').value = delivery_person;
+
         document.getElementById('supplierPhoneInput').value = phone;
         document.getElementById('supplierEmailInput').value = email;
         document.getElementById('supplierAddressInput').value = address;

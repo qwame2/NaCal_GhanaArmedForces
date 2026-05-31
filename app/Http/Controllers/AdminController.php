@@ -454,9 +454,6 @@ class AdminController extends Controller
         $partialQuery = clone $query;
         $partialCount = $partialQuery->where('inventory_batches.supplier_name', 'LIKE', '%[Partial Deliv%')->count();
 
-        $perPage = $request->input('per_page', 15);
-        $receivedItems = $query->orderBy('inventory_batches.entry_date', 'desc')->paginate($perPage);
-
         // Fetch aggregate totals for item status display (System Health metrics)
         $itemAggregates = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
@@ -464,6 +461,39 @@ class AdminController extends Controller
             ->groupBy('inventory_items.description')
             ->get()
             ->keyBy('description');
+
+        $perPage = $request->input('per_page', 15);
+        
+        if ($request->has('stock_level') && in_array($request->stock_level, ['low', 'in_stock'])) {
+            $allItems = $query->orderBy('inventory_batches.entry_date', 'desc')->get();
+            $filtered = $allItems->filter(function($item) use ($itemAggregates, $request) {
+                $agg = $itemAggregates[$item->description] ?? null;
+                $totalStock = $agg ? (float)$agg->total_available : 0;
+                $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
+                $isItemLow = $totalStock <= $threshold;
+
+                if ($request->stock_level === 'low') {
+                    return $isItemLow;
+                } else {
+                    return !$isItemLow;
+                }
+            });
+
+            $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+            $currentItems = $filtered->slice(($currentPage - 1) * $perPage, $perPage)->values()->all();
+            
+            $receivedItems = new \Illuminate\Pagination\LengthAwarePaginator(
+                $currentItems,
+                $filtered->count(),
+                $perPage,
+                $currentPage,
+                ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+            );
+            $receivedItems->appends($request->all());
+        } else {
+            $receivedItems = $query->orderBy('inventory_batches.entry_date', 'desc')->paginate($perPage);
+        }
+
 
         // Fetch and filter Issuances in real time
         $issuancesQuery = IssuedItem::with('issuance')

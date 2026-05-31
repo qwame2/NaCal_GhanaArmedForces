@@ -39,7 +39,7 @@
             <div class="m-row" data-user-id="{{ $user->id }}">
                 <div class="col-id">
                     <div class="m-avatar">
-                        <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random' }}" alt="">
+                        <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
                         <span class="m-pulse {{ $user->is_active ? 'online' : 'offline' }}"></span>
                     </div>
                     <div class="m-identity">

@@ -1141,6 +1141,10 @@
     }
 
     @media (max-width: 1100px) {
+        #filter-form {
+            min-width: 100% !important;
+        }
+
         .search-container-premium {
             width: 300px;
         }

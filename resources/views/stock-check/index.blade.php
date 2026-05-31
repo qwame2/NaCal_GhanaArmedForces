@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="animate-slide-up">
-    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.5rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
                 @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
@@ -85,31 +85,31 @@
                         $statusText = $stock <= 0 ? 'Out of Stock' : ($stock <= $threshold ? 'Low Stock' : 'Stable');
                     @endphp
                     <tr class="activity-row" style="border-top: 1px solid var(--border-color);">
-                        <td style="padding: 1.25rem 1.5rem; text-align: center; vertical-align: middle;">
+                        <td data-label="Select" style="padding: 1.25rem 1.5rem; text-align: center; vertical-align: middle;">
                             <input type="checkbox" class="item-checkbox" data-description="{{ $item->description }}" data-stock="{{ $stock }}" data-received="{{ $received }}" data-variance="{{ $variance }}" data-unit="{{ $item->unit ?: 'Package Types' }}" onchange="updateBatchSelection()" style="width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; border-radius: 4px;">
                         </td>
-                        <td style="padding: 1.25rem 1.5rem;">
+                        <td data-label="Description" style="padding: 1.25rem 1.5rem;">
                             <div style="font-weight: 700; color: var(--text-main); font-size: 1.05rem;">{{ $item->description }}</div>
                         </td>
-                        <td style="padding: 1.25rem 1.5rem;">
+                        <td data-label="Category" style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
                                 {{ $ledgeMap[$item->ledge_category] ?? "Category " . $item->ledge_category }}
                             </span>
                         </td>
-                        <td style="padding: 1.25rem 1.5rem; color: var(--text-muted); font-weight: 600;">{{ $item->unit ?: 'Package Types' }}</td>
-                        <td style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ number_format($received) }}</td>
-                        <td style="padding: 1.25rem 1.5rem; font-weight: 800; color: var(--text-main); font-size: 1.1rem;">{{ number_format($stock) }}</td>
-                        <td style="padding: 1.25rem 1.5rem;">
+                        <td data-label="Package Type" style="padding: 1.25rem 1.5rem; color: var(--text-muted); font-weight: 600;">{{ $item->unit ?: 'Package Types' }}</td>
+                        <td data-label="Total Received" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ number_format($received) }}</td>
+                        <td data-label="Current Balance" style="padding: 1.25rem 1.5rem; font-weight: 800; color: var(--text-main); font-size: 1.1rem;">{{ number_format($stock) }}</td>
+                        <td data-label="Variance" style="padding: 1.25rem 1.5rem;">
                             <span style="font-weight: 800; color: {{ $variance > 0 ? '#10b981' : ($variance < 0 ? '#ef4444' : '#94a3b8') }};">
                                 {{ $variance > 0 ? '+' : '' }}{{ number_format($variance) }}
                             </span>
                         </td>
-                        <td style="padding: 1.25rem 1.5rem;">
+                        <td data-label="Status" style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.7rem; font-weight: 900; color: white; background: {{ $statusColor }}; padding: 0.35rem 0.8rem; border-radius: 8px; text-transform: uppercase;">
                                 {{ $statusText }}
                             </span>
                         </td>
-                        <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                        <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right;">
                             <button onclick="openStockCheckModal('{{ addslashes($item->description) }}', 0, {{ $stock }}, '{{ $variance }}', '{{ $received }}')" class="glass-btn-sm" style="background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                                 <i data-lucide="shield-check" style="width: 16px;"></i>
                                 Verify
@@ -359,6 +359,84 @@
 }
 .btn-icon.danger { color: #ef4444; }
 .btn-icon:hover { background: var(--bg-card); color: var(--primary); }
+
+/* Premium Responsive Table to Mobile Cards */
+@media (max-width: 768px) {
+    .table-scroll-wrapper {
+        overflow-x: visible !important;
+        padding: 0.5rem !important;
+    }
+    .activity-table {
+        min-width: 100% !important;
+        border-spacing: 0 1rem !important;
+        border-collapse: separate !important;
+    }
+    .activity-table thead {
+        display: none;
+    }
+    .activity-table tbody {
+        display: block;
+    }
+    .activity-table tr {
+        display: block;
+        margin-bottom: 2rem;
+        padding: 1.75rem !important;
+        background: var(--bg-card) !important;
+        border-radius: 32px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.06) !important;
+        border: 1px solid var(--border-color) !important;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    /* Samsung-style left accent bar */
+    .activity-table tr::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px;
+        background: var(--primary);
+    }
+    .activity-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0 !important;
+        border-bottom: 1px solid rgba(0,0,0,0.03) !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+    }
+    .activity-table td[data-label="Select"] {
+        justify-content: space-between !important;
+    }
+    .activity-table td:last-child {
+        border-bottom: none !important;
+        padding-top: 1.5rem !important;
+        justify-content: center !important;
+    }
+    .activity-table td::before {
+        content: attr(data-label);
+        font-weight: 800;
+        color: var(--text-muted);
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+    .activity-table td > div,
+    .activity-table td > span {
+        text-align: right;
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+    .activity-table td[data-label="Description"] > div:first-child {
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: var(--primary);
+        text-align: right;
+    }
+}
 </style>
 
 <script>

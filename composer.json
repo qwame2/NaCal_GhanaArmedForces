@@ -11,6 +11,7 @@
         "laravel/tinker": "^2.10.1"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^4.2",
         "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
@@ -31,6 +32,7 @@
             "Tests\\": "tests/"
         }
     },
+
     "scripts": {
         "setup": [
             "composer install",
@@ -39,6 +41,13 @@
             "@php artisan migrate --force",
             "npm install",
             "npm run build"
+        ],
+        "clear-all": [
+            "php artisan config:clear",
+            "php artisan cache:clear",
+            "php artisan route:clear",
+            "php artisan view:clear",
+            "php artisan optimize"
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",

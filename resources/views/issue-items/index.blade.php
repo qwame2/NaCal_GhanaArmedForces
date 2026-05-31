@@ -9,7 +9,7 @@
         <div style="position: absolute; bottom: -50px; left: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%); z-index: 0;"></div>
 
         <div style="position: relative; z-index: 1;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.5rem;">
                 <div>
                     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
                         @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
@@ -73,7 +73,7 @@
     </div>
 
     <!-- Live Filters Container -->
-    <div class="glass-card" style="border-radius: 28px; padding: 2.5rem 3rem; border: 1px solid var(--border-color); margin-bottom: 3rem;">
+    <div class="glass-card filters-card" style="border-radius: 28px; padding: 2.5rem 3rem; border: 1px solid var(--border-color); margin-bottom: 3rem;">
         <form method="GET" action="{{ route('issueitems') }}" id="filter-form" style="display: flex; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem; width: 100%;">
             <!-- Live Search -->
             <div style="flex: 2; min-width: 300px;">
@@ -134,7 +134,7 @@
     </div>
 
     <!-- Data Registry View -->
-    <div class="glass-card" style="border-radius: 32px; padding: 3rem 4rem; border: 1px solid var(--border-color); min-height: 500px; margin-bottom: 3rem;">
+    <div class="glass-card registry-card" style="border-radius: 32px; padding: 3rem 4rem; border: 1px solid var(--border-color); min-height: 500px; margin-bottom: 3rem;">
         <div id="logTableContainer">
             @if($issuedItems->count() > 0)
             <div class="table-scroll-wrapper" style="width: 100%; overflow-x: auto; padding-bottom: 1.5rem;">
@@ -297,6 +297,28 @@
         box-shadow: 0 4px 10px rgba(0,0,0,0.03);
     }
     @media (max-width: 768px) {
+        .header-mesh {
+            padding: 2rem 1.5rem !important;
+            margin-bottom: 2rem !important;
+            border-radius: 24px !important;
+        }
+        .header-mesh h1 {
+            font-size: 2.2rem !important;
+        }
+        .filters-card {
+            padding: 1.5rem !important;
+            border-radius: 20px !important;
+            margin-bottom: 2rem !important;
+        }
+        .registry-card {
+            padding: 1.5rem !important;
+            border-radius: 24px !important;
+            margin-bottom: 2rem !important;
+        }
+        .table-scroll-wrapper {
+            overflow-x: visible !important;
+            padding: 0.5rem !important;
+        }
         .responsive-log-table { min-width: auto !important; border-spacing: 0 1.5rem !important; border-collapse: separate !important; }
         .responsive-log-table thead { display: none; }
         .responsive-log-table tbody { display: block; }
@@ -340,8 +362,8 @@
             text-transform: uppercase;
             letter-spacing: 0.1em;
         }
-        .responsive-log-table td div,
-        .responsive-log-table td span { text-align: right; font-weight: 700; font-size: 1rem; }
+        .responsive-log-table td > div,
+        .responsive-log-table td > span { text-align: right; font-weight: 700; font-size: 0.95rem; }
     }
     @keyframes blink-bg-red {
         0% {

@@ -6,26 +6,20 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Checkout Cart | Central Store</title>
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Local Font Assets -->
+    <link href="{{ asset('css/css2.css') }}" rel="stylesheet">
 
     <!-- CSS Assets -->
     <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
-    <!-- Flatpickr CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('css/vendor/select2.min.css') }}" rel="stylesheet" />
 
     <!-- Scripts -->
     <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
     <!-- Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="{{ asset('js/vendor/select2.min.js') }}"></script>
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="{{ asset('js/sweetalert2@11.js') }}"></script>
-    <!-- Flatpickr JS -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 
 
@@ -720,14 +714,14 @@
                         <label class="usage-pill-label" data-value="temporary">
                             <input type="radio" name="usage_type" value="temporary" style="display: none;">
                             <i data-lucide="calendar" class="pill-icon"></i>
-                            <span>Temporary</span>
+                            <span>Loan</span>
                         </label>
                     </div>
                 </div>
 
                 <div id="return-date-container" style="display: none;">
                     <label class="form-label">Expected Return Date *</label>
-                    <input type="text" id="returnDate" class="form-input" placeholder="dd/mm/yy" autocomplete="off" readonly style="background: var(--bg-input, #fff); cursor: pointer;">
+                    <input type="date" id="returnDate" class="form-input" style="background: var(--bg-input, #fff); cursor: pointer;">
                 </div>
 
                 <div>
@@ -804,7 +798,7 @@
                                     <i data-lucide="plus" style="width: 12px;"></i>
                                 </button>
                             </div>
-                           
+
                         </div>
 
                         <textarea class="cart-item-remarks"
@@ -883,11 +877,34 @@
             e.preventDefault();
             if (cart.length === 0) return;
 
+            // Sync current input quantities from DOM to cart
+            const qtyInputs = document.querySelectorAll('.qty-val');
+            qtyInputs.forEach((input, idx) => {
+                const val = parseFloat(input.value) || 0;
+                cart[idx].quantity_requested = val;
+            });
+            saveCart();
+
+            // Validate that quantity does not exceed the remaining limit (total_stock)
+            for (let i = 0; i < cart.length; i++) {
+                const qty = parseFloat(cart[i].quantity_requested) || 0;
+                const maxVal = parseFloat(cart[i].total_stock) || 0;
+                if (qty > maxVal) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Limit Exceeded',
+                        text: `Available stock for this item is restricted to ${maxVal}.`,
+                        confirmButtonColor: 'var(--store-orange)'
+                    });
+                    return;
+                }
+            }
+
             const usageType = document.querySelector('input[name="usage_type"]:checked').value;
             let finalPurpose = document.getElementById('purpose').value;
-            
+
             if (usageType === 'temporary') {
-                const retDate = document.getElementById('returnDate').value;
+                let retDate = document.getElementById('returnDate').value;
                 if (!retDate) {
                     Swal.fire({
                         icon: 'warning',
@@ -896,6 +913,10 @@
                         confirmButtonColor: 'var(--store-orange)'
                     });
                     return;
+                }
+                const parts = retDate.split('-');
+                if (parts.length === 3) {
+                    retDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
                 }
                 finalPurpose += `\n\n[Expected Return Date: ${retDate}]`;
             }
@@ -974,16 +995,13 @@
             loadCart();
             lucide.createIcons();
 
-            // Initialize flatpickr on Expected Return Date with dd/mm/yy display
+            // Initialize Expected Return Date min date natively
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
-            flatpickr('#returnDate', {
-                dateFormat: 'd/m/y',
-                minDate: tomorrow,
-                allowInput: false,
-                disableMobile: true,
-                theme: 'light'
-            });
+            const yyyy = tomorrow.getFullYear();
+            const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+            const dd = String(tomorrow.getDate()).padStart(2, '0');
+            document.getElementById('returnDate').min = `${yyyy}-${mm}-${dd}`;
 
             // Setup Usage Type pill interactivity
             const returnDateContainer = document.getElementById('return-date-container');

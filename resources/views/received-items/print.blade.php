@@ -5,41 +5,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voucher #{{ $batch->id }} - NACOC Inventory</title>
+    
+    <!-- Local Fonts for Premium Offline Look -->
+    <link href="{{ asset('css/css2.css') }}" rel="stylesheet">
+
     <style>
         :root {
-            --print-primary: #1e293b;
+            --print-primary: #0f172a;
+            --print-secondary: #475569;
             --print-border: #e2e8f0;
-            --print-accent: #6366f1;
+            --print-accent: #4f46e5;
+            --print-bg-subtle: #f8fafc;
         }
 
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             color: var(--print-primary);
-            line-height: 1.6;
-            padding: 50px;
+            line-height: 1.5;
+            padding: 40px;
             background: #fff;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Prevent dangling headings */
+        h1, h2, h3, h4, h5, h6 {
+            page-break-after: avoid;
+            margin-top: 0;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            border-bottom: 4px solid var(--print-primary);
-            padding-bottom: 25px;
-            margin-bottom: 40px;
+            border-bottom: 3px solid var(--print-primary);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
         }
 
         .brand-section h1 {
             margin: 0;
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 900;
-            letter-spacing: -1px;
+            letter-spacing: -0.5px;
             color: var(--print-primary);
         }
 
         .brand-section p {
-            margin: 5px 0 0;
-            font-size: 14px;
+            margin: 4px 0 0;
+            font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 2px;
             color: var(--print-accent);
@@ -51,20 +65,22 @@
         }
 
         .voucher-meta div {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
-            color: #64748b;
+            color: var(--print-secondary);
+            letter-spacing: 1px;
         }
 
         .voucher-id {
             font-size: 18px;
             font-weight: 900;
             color: var(--print-primary);
+            margin-top: 2px;
         }
 
         .doc-title {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .doc-title h2 {
@@ -72,79 +88,109 @@
             font-size: 20px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 4px;
-            border-bottom: 2px solid var(--print-primary);
-            padding-bottom: 10px;
+            letter-spacing: 3px;
+            border-bottom: 3px solid var(--print-accent);
+            padding-bottom: 8px;
+            color: var(--print-primary);
         }
 
         .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
+            gap: 24px;
+            margin-bottom: 30px;
+            page-break-inside: avoid;
         }
 
         .info-card {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 20px;
+            background: var(--print-bg-subtle);
+            border-radius: 10px;
+            padding: 18px;
             border: 1px solid var(--print-border);
+            border-left: 4px solid var(--print-accent);
         }
 
         .info-card h3 {
-            margin: 0 0 15px;
+            margin: 0 0 12px;
             font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #64748b;
+            letter-spacing: 1.5px;
+            color: var(--print-secondary);
+            font-weight: 800;
         }
 
         .info-line {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            border-bottom: 1px dashed rgba(226, 232, 240, 0.6);
+            padding-bottom: 6px;
+        }
+
+        .info-line:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
         }
 
         .info-label {
             font-weight: 600;
-            color: #475569;
+            color: var(--print-secondary);
         }
 
         .info-value {
-            font-weight: 800;
+            font-weight: 700;
             color: var(--print-primary);
+        }
+
+        /* High Fidelity Table Styles */
+        .table-section {
+            margin-bottom: 35px;
         }
 
         table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            margin-bottom: 50px;
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
             border: 1px solid var(--print-border);
         }
 
+        thead {
+            display: table-header-group;
+        }
+
+        tr {
+            page-break-inside: avoid;
+        }
+
         th {
             background: #f1f5f9;
-            padding: 12px 6px;
+            padding: 10px 14px;
             font-size: 10px;
             text-transform: uppercase;
-            font-weight: 900;
+            font-weight: 800;
             letter-spacing: 0.5px;
             text-align: left;
-            color: #475569;
+            color: var(--print-secondary);
+            border-bottom: 2px solid var(--print-border);
         }
 
         td {
-            padding: 12px 6px;
-            font-size: 11px;
+            padding: 10px 14px;
+            font-size: 12px;
             border-top: 1px solid var(--print-border);
+            color: var(--print-primary);
+        }
+
+        tr:nth-child(even) td {
+            background: rgba(248, 250, 252, 0.5);
         }
 
         .row-sn {
-            font-weight: 900;
+            font-weight: 800;
             color: #94a3b8;
             text-align: center;
         }
@@ -154,23 +200,25 @@
             color: var(--print-primary);
         }
 
-        .row-qty {
-            font-weight: 800;
-            color: #059669;
-            text-align: center;
-        }
-
-        .row-bal {
-            font-weight: 800;
+        .remarks-box {
+            margin-top: 25px;
+            padding: 16px 20px;
+            border-left: 4px solid var(--print-accent);
+            background: #fdf2f8; /* subtle rose tint */
+            font-size: 13px;
+            line-height: 1.6;
             color: var(--print-primary);
-            text-align: center;
+            border-radius: 0 8px 8px 0;
+            page-break-inside: avoid;
         }
 
+        /* Signatures block */
         .footer {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 40px;
-            margin-top: 80px;
+            margin-top: 50px;
+            page-break-inside: avoid;
         }
 
         .sign-box {
@@ -178,27 +226,27 @@
         }
 
         .sign-line {
-            border-top: 2px solid var(--print-primary);
-            margin-top: 60px;
-            padding-top: 10px;
-            font-size: 12px;
-            font-weight: 900;
+            border-top: 1.5px solid var(--print-primary);
+            margin-top: 50px;
+            padding-top: 8px;
+            font-size: 11px;
+            font-weight: 800;
             text-transform: uppercase;
-        }
-
-        .remarks-box {
-            margin-top: 40px;
-            padding: 20px;
-            border-left: 4px solid var(--print-accent);
-            background: #fdf2f8;
-            /* Very subtle tint */
-            font-size: 14px;
-            font-style: italic;
+            color: var(--print-primary);
+            letter-spacing: 0.5px;
         }
 
         @media print {
+            @page {
+                size: A4 portrait;
+                margin: 20mm 20mm 20mm 20mm;
+            }
+
             body {
-                padding: 0;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: #fff !important;
+                counter-reset: page;
             }
 
             .print-btn {
@@ -206,29 +254,35 @@
             }
 
             .info-card {
-                background: #fff !important;
+                background: var(--print-bg-subtle) !important;
             }
+
         }
 
+        /* Screen Only Floating Print Button */
         .print-btn {
             position: fixed;
             bottom: 30px;
             right: 30px;
-            padding: 15px 30px;
+            padding: 14px 28px;
             background: var(--print-accent);
             color: #fff;
             border: none;
             cursor: pointer;
-            font-weight: 900;
+            font-weight: 800;
+            font-size: 12px;
             border-radius: 50px;
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: all 0.3s;
+            transition: all 0.25s ease;
+            z-index: 9999;
         }
 
         .print-btn:hover {
-            transform: scale(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(79, 70, 229, 0.5);
+            background: #4338ca;
         }
     </style>
 </head>
@@ -334,67 +388,124 @@
         </div>
     </div>
 
-    <div class="narrative-section" style="margin-bottom: 40px;">
-        <h3 style="font-size: 15px; font-weight: 900; text-transform: uppercase; border-bottom: 2px solid var(--print-primary); padding-bottom: 8px; margin-bottom: 20px; letter-spacing: 2px;">Itemized Verification Narrative</h3>
+    <!-- Itemized Verification Ledger Table -->
+    <div class="table-section">
+        <h3 style="font-size: 14px; font-weight: 800; text-transform: uppercase; border-bottom: 2px solid var(--print-primary); padding-bottom: 6px; margin-bottom: 15px; letter-spacing: 1.5px;">Itemized Verification Ledger</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 50px; text-align: center;">S/N</th>
+                    <th>Item Description</th>
+                    <th style="width: 100px; text-align: center;">Unit</th>
+                    <th style="width: 100px; text-align: center;">Expected Qty</th>
+                    <th style="width: 100px; text-align: center;">Verified Qty</th>
+                    <th style="width: 100px; text-align: center;">Variance</th>
+                    <th style="width: 140px; text-align: center;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($batch->items as $index => $item)
+                @php
+                    $expected = floatval($item->qty);
+                    $verified = floatval($item->stock_balance);
+                    $variance = floatval($item->variance);
+
+                    $statusText = 'Verified Match';
+                    $statusColor = '#059669'; // Green
+                    $statusBg = 'rgba(5, 150, 105, 0.06)';
+
+                    if ($variance < 0) {
+                        $statusText = 'Shortage (' . $variance . ')';
+                        $statusColor = '#dc2626'; // Red
+                        $statusBg = 'rgba(220, 38, 38, 0.06)';
+                    } elseif ($variance > 0) {
+                        $statusText = 'Surplus (+' . $variance . ')';
+                        $statusColor = '#2563eb'; // Blue
+                        $statusBg = 'rgba(37, 99, 235, 0.06)';
+                    }
+                @endphp
+                <tr>
+                    <td class="row-sn">{{ $index + 1 }}</td>
+                    <td class="row-desc">{{ $item->description }}</td>
+                    <td style="text-align: center; color: var(--print-secondary); font-weight: 500;">{{ $item->unit ?? 'Pcs' }}</td>
+                    <td style="text-align: center; font-weight: 600; color: var(--print-secondary);">{{ $expected }}</td>
+                    <td style="text-align: center; font-weight: 700;">{{ $verified }}</td>
+                    <td style="text-align: center; font-weight: 700; color: {{ $variance < 0 ? '#dc2626' : ($variance > 0 ? '#2563eb' : '#059669') }};">
+                        {{ $variance > 0 ? '+' : '' }}{{ $variance }}
+                    </td>
+                    <td style="text-align: center;">
+                        <span style="display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: {{ $statusColor }}; background: {{ $statusBg }}; border: 1px solid {{ $statusColor }}33;">
+                            {{ $statusText }}
+                        </span>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Selective Field Notes & Forensic Audit Log -->
+    @php
+        $hasRemarksOrHistory = false;
+        foreach($batch->items as $item) {
+            $itemHistory = $history->filter(function($log) use ($item) {
+                return isset($log->metadata['item_changes'][$item->id]);
+            });
+            if ($item->remarks || $itemHistory->count() > 0) {
+                $hasRemarksOrHistory = true;
+                break;
+            }
+        }
+    @endphp
+
+    @if($hasRemarksOrHistory)
+    <div style="margin-bottom: 30px; page-break-inside: avoid;">
+        <h3 style="font-size: 14px; font-weight: 800; text-transform: uppercase; border-bottom: 2px solid var(--print-primary); padding-bottom: 6px; margin-bottom: 15px; letter-spacing: 1.5px;">Field Inspection & Revision Log</h3>
         
         @foreach($batch->items as $index => $item)
         @php
-            $expected = floatval($item->qty);
-            $variance = floatval($item->variance);
-            
-            $varText = 'no variance';
-            if ($variance < 0) {
-                $varText = 'a shortage of ' . abs($variance);
-            } elseif ($variance > 0) {
-                $varText = 'a surplus of ' . $variance;
-            }
-
-            $remarks = $item->remarks ?: 'No extraordinary conditions or operational remarks were documented for this line item during the inspection.';
+            $itemHistory = $history->filter(function($log) use ($item) {
+                return isset($log->metadata['item_changes'][$item->id]);
+            });
         @endphp
-        <div style="margin-bottom: 25px; padding: 20px; background: #f8fafc; border: 1px solid var(--print-border); border-radius: 12px; page-break-inside: avoid;">
-            <div style="font-weight: 900; font-size: 14px; margin-bottom: 12px; color: var(--print-primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
-                Scope {{ $index + 1 }} &bull; {{ strtoupper($item->description) }} ({{ $item->unit ?? 'Package Types' }})
-            </div>
-            <p style="margin: 0 0 15px; font-size: 13px; color: #334155; line-height: 1.8; text-align: justify;">
-                The logistics personnel formally presented <strong>{{ $item->qty ?? '0' }} package types</strong> for reception. 
-                A rigorous count conducted on the floor yielded <strong>{{ $item->stock_balance }} package types</strong> formally registered into the active stock baseline in verified condition.
-                This operation culminated in <strong>{{ $varText }}</strong> package types when matched against the authorized delivered quantity.
-            </p>
-            <div style="background: rgba(99, 102, 241, 0.05); padding: 12px 15px; border-radius: 8px; border-left: 3px solid var(--print-accent); font-size: 12px; color: #475569; font-style: italic;">
-                <strong>Verification Field Note:</strong> {{ $remarks }}
-            </div>
 
-            {{-- Forensic Revision History --}}
-            @php
-                $itemHistory = $history->filter(function($log) use ($item) {
-                    return isset($log->metadata['item_changes'][$item->id]);
-                });
-            @endphp
+        @if($item->remarks || $itemHistory->count() > 0)
+        <div style="margin-bottom: 15px; padding: 14px 18px; background: var(--print-bg-subtle); border: 1px solid var(--print-border); border-left: 4px solid var(--print-accent); border-radius: 8px; page-break-inside: avoid;">
+            <div style="font-weight: 800; font-size: 12px; margin-bottom: 8px; color: var(--print-primary); display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">
+                <span>Line {{ $index + 1 }} &bull; {{ strtoupper($item->description) }}</span>
+                <span style="color: var(--print-secondary); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Verification Field Note</span>
+            </div>
+            
+            @if($item->remarks)
+            <div style="margin-bottom: 8px; font-size: 12px; color: var(--print-secondary); line-height: 1.5;">
+                <strong>Remarks:</strong> <span style="font-style: italic; color: var(--print-primary);">"{{ $item->remarks }}"</span>
+            </div>
+            @endif
 
             @if($itemHistory->count() > 0)
-            <div style="margin-top: 15px; padding: 15px; background: #fffbeb; border: 1.5px dashed #d97706; border-radius: 10px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 12px; font-weight: 900; color: #d97706; text-transform: uppercase;">
-                    <span>Revision History Detected</span>
+            <div style="margin-top: 10px; padding: 10px 14px; background: #fffbeb; border: 1px dashed #d97706; border-radius: 6px;">
+                <div style="font-size: 10px; font-weight: 800; color: #b45309; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">
+                    Forensic Revision Log
                 </div>
                 @foreach($itemHistory as $log)
-                <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(217, 119, 6, 0.1);">
-                    <div style="font-size: 11px; font-weight: 700; color: #92400e; margin-bottom: 5px;">Updated on: {{ \Carbon\Carbon::parse($log->created_at)->format('d/m/y H:i') }}</div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px;">
-                        @foreach($log->metadata['item_changes'][$item->id] as $field => $vals)
-                        <div style="font-size: 11px; color: #334155;">
-                            <strong style="text-transform: capitalize;">{{ str_replace('_', ' ', $field) }}:</strong>
-                            <span style="color: #ef4444; text-decoration: line-through;">{{ $vals['old'] }}</span>
-                            <span style="color: #10b981; font-weight: 800;">&rarr; {{ $vals['new'] }}</span>
-                        </div>
-                        @endforeach
-                    </div>
+                <div style="font-size: 11px; color: #475569; margin-bottom: 4px; border-bottom: 1px dashed rgba(217, 119, 6, 0.1); padding-bottom: 4px;">
+                    <span style="font-weight: 700; color: #92400e;">[{{ \Carbon\Carbon::parse($log->created_at)->format('d/m/y H:i') }}]:</span>
+                    @foreach($log->metadata['item_changes'][$item->id] as $field => $vals)
+                    <span style="margin-right: 12px; display: inline-block;">
+                        <strong style="text-transform: capitalize;">{{ str_replace('_', ' ', $field) }}:</strong>
+                        <span style="color: #ef4444; text-decoration: line-through;">{{ $vals['old'] }}</span> &rarr;
+                        <span style="color: #059669; font-weight: 700;">{{ $vals['new'] }}</span>
+                    </span>
+                    @endforeach
                 </div>
                 @endforeach
             </div>
             @endif
         </div>
+        @endif
         @endforeach
     </div>
+    @endif
 
     <div class="remarks-box">
         <strong>FINAL VERIFICATION DECLARATION:</strong><br>
@@ -416,9 +527,6 @@
         </div>
     </div>
 
-    <div style="position: fixed; bottom: 20px; left: 40px; font-size: 10px; color: #999;">
-        Generated by NACOC Inventory System on {{ date('d/m/y H:i') }}
-    </div>
 
 </body>
 

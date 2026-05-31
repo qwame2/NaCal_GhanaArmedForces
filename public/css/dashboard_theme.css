@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
 :root {
     --primary: #6366f1;
     --primary-light: #818cf8;
@@ -147,10 +145,12 @@ body {
     }
 
     .sidebar.collapsed .logo-container h1,
+    .sidebar.collapsed .logo-container > div:last-child,
     .sidebar.collapsed .sidebar-branding-subtitle,
     .sidebar.collapsed .nav-section-title,
     .sidebar.collapsed .nav-link span,
-    .sidebar.collapsed .user-profile-card div,
+    .sidebar.collapsed .user-profile-card > div:not(:first-child),
+    .sidebar.collapsed .user-profile-card form,
     .sidebar.collapsed .user-profile-card button {
         display: block !important;
     }
@@ -255,10 +255,12 @@ body {
 }
 
 .sidebar.collapsed .logo-container h1,
+.sidebar.collapsed .logo-container > div:last-child,
 .sidebar.collapsed .sidebar-branding-subtitle,
 .sidebar.collapsed .nav-section-title,
 .sidebar.collapsed .nav-link span,
-.sidebar.collapsed .user-profile-card div,
+.sidebar.collapsed .user-profile-card > div:not(:first-child),
+.sidebar.collapsed .user-profile-card form,
 .sidebar.collapsed .user-profile-card button {
     display: none !important;
 }

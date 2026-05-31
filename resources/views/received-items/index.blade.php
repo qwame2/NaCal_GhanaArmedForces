@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="animate-slide-up">
-    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.5rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
                 @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
@@ -2921,7 +2921,7 @@
             <html>
                 <head>
                     <title>Narcotics Control Commission | Transaction Log</title>
-                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+                    <link href="{{ asset('css/css2.css') }}" rel="stylesheet">
                     <style>
                         @page { size: A4; margin: 20mm 15mm 20mm 15mm; }
                         body { padding: 0; margin: 0; font-family: 'Inter', sans-serif; color: #1a1a1a; line-height: 1.4; }
