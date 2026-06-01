@@ -9,19 +9,19 @@
             <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-main); margin-bottom: 0.25rem;">System <span style="color: var(--primary);">Archive</span></h2>
             <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500;">Access archived communications and system activity records.</p>
         </div>
-        
+
         <div style="display: flex; gap: 1rem; background: #fff; padding: 0.5rem; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.02); flex-wrap: wrap;">
-            <a href="{{ route('admin.archive', ['type' => 'messages']) }}" 
+            <a href="{{ route('admin.archive', ['type' => 'messages']) }}"
                style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s; {{ $type === 'messages' ? 'background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);' : 'color: var(--text-muted);' }}">
                <i data-lucide="message-square" style="width: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i> Archived Messages
             </a>
-            <a href="{{ route('admin.archive', ['type' => 'logs']) }}" 
+            <a href="{{ route('admin.archive', ['type' => 'logs']) }}"
                style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s; {{ $type === 'logs' ? 'background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);' : 'color: var(--text-muted);' }}">
                <i data-lucide="activity" style="width: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i> Archived Logs
             </a>
-            <a href="{{ route('admin.archive', ['type' => 'disbursements']) }}" 
+            <a href="{{ route('admin.archive', ['type' => 'disbursements']) }}"
                style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s; {{ $type === 'disbursements' ? 'background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);' : 'color: var(--text-muted);' }}">
-               <i data-lucide="package-2" style="width: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i> Archived Disbursements
+               <i data-lucide="package-2" style="width: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i> Archived Issuance
             </a>
         </div>
     </div>
@@ -31,7 +31,7 @@
         <div style="background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(25px); padding: 0.75rem 1rem; border-radius: 100px; border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255,255,255,0.6); display: flex; align-items: center; gap: 0.5rem; width: fit-content; max-width: 95%;">
             <form action="{{ route('admin.archive') }}" method="GET" style="display: flex; align-items: center; gap: 0.5rem;">
                 <input type="hidden" name="type" value="{{ $type }}">
-                
+
                 <!-- Search Zone -->
                 <div style="display: flex; align-items: center; background: #fff; padding: 0.6rem 1.25rem; border-radius: 100px; border: 1px solid #f1f5f9; box-shadow: 0 2px 5px rgba(0,0,0,0.02); min-width: 280px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#f1f5f9'">
                     <i data-lucide="search" style="width: 16px; color: var(--primary); margin-right: 12px;"></i>
@@ -48,9 +48,9 @@
                         <input type="date" name="start_date" value="{{ $startDate }}" onchange="this.form.submit()"
                                style="border: none; outline: none; background: transparent; font-weight: 900; color: var(--text-main); font-size: 0.8rem; cursor: pointer;">
                     </div>
-                    
+
                     <div style="color: #cbd5e1;"><i data-lucide="arrow-right" style="width: 12px;"></i></div>
-                    
+
                     <div style="display: flex; align-items: center; gap: 6px;">
                         <input type="date" name="end_date" value="{{ $endDate }}" onchange="this.form.submit()"
                                style="border: none; outline: none; background: transparent; font-weight: 900; color: var(--text-main); font-size: 0.8rem; cursor: pointer;">
@@ -192,10 +192,10 @@
                         </td>
                         <td style="padding: 1.75rem 2rem; text-align: right;">
                             <div style="display: flex; gap: 8px; justify-content: flex-end;">
-                                <button type="button" 
+                                <button type="button"
                                         onclick="showArchivedMessageDetail(`{!! addslashes($msg->message) !!}`, '{{ $msg->sender->name ?? 'System' }}', '{{ $msg->updated_at->format('d/m/y H:i') }}', '{{ $context }}')"
-                                        style="background: white; color: var(--text-main); border: 1.5px solid #e2e8f0; padding: 0.6rem 1rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;" 
-                                        onmouseover="this.style.borderColor='var(--primary)'; this.style.background='#f8fafc'" 
+                                        style="background: white; color: var(--text-main); border: 1.5px solid #e2e8f0; padding: 0.6rem 1rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 0.8rem;"
+                                        onmouseover="this.style.borderColor='var(--primary)'; this.style.background='#f8fafc'"
                                         onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='white'">
                                     <i data-lucide="eye" style="width: 15px;"></i> View
                                 </button>
@@ -284,13 +284,13 @@
                         <td style="padding: 1.5rem 2rem; text-align: right;">
                             <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
                                 @if($log->metadata)
-                                <button type="button" 
-                                    data-metadata="{{ json_encode($log->metadata) }}" 
-                                    data-event="{{ $log->event_type }}" 
-                                    data-action="{{ $log->action }}" 
+                                <button type="button"
+                                    data-metadata="{{ json_encode($log->metadata) }}"
+                                    data-event="{{ $log->event_type }}"
+                                    data-action="{{ $log->action }}"
                                     data-user-name="{{ $log->user ? $log->user->name : 'System Auto' }}"
                                     data-user-avatar="{{ $log->user && $log->user->avatar ? asset('storage/' . $log->user->avatar) : '' }}"
-                                    onclick="viewLogDetails(this)" 
+                                    onclick="viewLogDetails(this)"
                                     style="background: white; border: 1.5px solid #edf2f7; color: var(--text-main); padding: 0.6rem 1rem; border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 6px;" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='#f8fafc'" onmouseout="this.style.borderColor='#edf2f7'; this.style.background='white'">
                                     <i data-lucide="info" style="width: 14px;"></i> Details
                                 </button>
@@ -326,12 +326,12 @@
                 <thead style="position: sticky; top: 0; z-index: 20; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px); box-shadow: 0 1px 0 var(--border-color);">
                     <tr>
                         <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Timeline</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Asset Breakdown</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Items</th>
                         <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Storage Location</th>
                         <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Destination</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Qty Disbursed</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Authority</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right; white-space: nowrap;">Allocation Status</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Qty Issued</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Approval</th>
+                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right; white-space: nowrap;">Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -340,7 +340,7 @@
                         $t = $item->created_at;
                         $dateStr = $t ? $t->format('d/m/y') : '';
                         $timeStr = $t ? $t->format('H:i') : '';
-                        
+
                         $statusBadge = '';
                         if ($item->quantity === 0 && $item->issuance_type === 'Temporary') {
                             $statusBadge = '<span class="status-badge" style="background: rgba(100, 116, 139, 0.1); color: var(--text-muted); font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em; border: 1px dashed rgba(100, 116, 139, 0.3);">RETURNED</span>';
@@ -373,7 +373,7 @@
                             {{ $item->beneficiary }}
                         </td>
                         <td style="padding: 1.5rem 2rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main);">
-                            {{ number_format($item->quantity) }} 
+                            {{ number_format($item->quantity) }}
                             <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
                                 {{ $item->unit ?: 'Package Types' }}
                             </span>
@@ -446,28 +446,28 @@
     .detail-label { font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
     .detail-value { font-size: 1rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.01em; }
     .detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; }
-    
+
     /* Premium Glassmorphic Pagination */
     .custom-pagination nav { display: flex; justify-content: center; }
     .custom-pagination ul.pagination { display: flex; gap: 0.5rem; list-style: none; padding: 0; margin: 0; align-items: center; }
-    .custom-pagination .page-item .page-link { 
-        display: flex; align-items: center; justify-content: center; 
-        min-width: 48px; height: 48px; border-radius: 16px; 
-        background: white; border: 1.5px solid #edf2f7; 
-        color: var(--text-main); font-weight: 900; text-decoration: none; 
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+    .custom-pagination .page-item .page-link {
+        display: flex; align-items: center; justify-content: center;
+        min-width: 48px; height: 48px; border-radius: 16px;
+        background: white; border: 1.5px solid #edf2f7;
+        color: var(--text-main); font-weight: 900; text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         font-size: 0.95rem; box-shadow: 0 4px 10px rgba(0,0,0,0.02);
     }
-    .custom-pagination .page-item.active .page-link { 
-        background: var(--primary); color: white; 
-        border-color: var(--primary); 
+    .custom-pagination .page-item.active .page-link {
+        background: var(--primary); color: white;
+        border-color: var(--primary);
         box-shadow: 0 10px 25px rgba(79, 70, 229, 0.25);
         transform: scale(1.1);
         z-index: 10;
     }
-    .custom-pagination .page-item:not(.active):not(.disabled) .page-link:hover { 
-        border-color: var(--primary); 
-        color: var(--primary); 
+    .custom-pagination .page-item:not(.active):not(.disabled) .page-link:hover {
+        border-color: var(--primary);
+        color: var(--primary);
         transform: translateY(-4px);
         background: #f5f3ff;
         box-shadow: 0 8px 20px rgba(79, 70, 229, 0.1);
@@ -511,7 +511,7 @@
         document.getElementById('modalMessageDate').textContent = date;
         document.getElementById('modalMessageContext').textContent = context;
         document.getElementById('modalMessageBody').innerHTML = content;
-        
+
         document.getElementById('messageDetailModal').style.display = 'flex';
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
@@ -529,13 +529,13 @@
 
         document.getElementById('modalEventTitle').textContent = eventType + ' Audit Record';
         document.getElementById('modalEventAction').textContent = action;
-        
+
         const contentDiv = document.getElementById('modalMetadataContent');
         contentDiv.innerHTML = '';
 
         try {
             const dataObj = typeof metadataStr === 'string' ? JSON.parse(metadataStr) : metadataStr;
-            
+
             let html = `
                 <div class="detail-card" style="display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem; background: #f8fafc; border: 1px solid var(--border-color); box-shadow: none;">
                     ${userAvatar ? `<img src="${userAvatar}" style="width: 54px; height: 54px; border-radius: 16px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">` : `<div style="width: 54px; height: 54px; border-radius: 16px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 900; box-shadow: 0 4px 10px rgba(79,70,229,0.2);">${userName.charAt(0)}</div>`}
@@ -554,7 +554,7 @@
                 if (typeof value === 'object' && value !== null) {
                     displayValue = JSON.stringify(value, null, 2);
                 }
-                
+
                 html += `
                     <div class="detail-card">
                         <div class="detail-label">${cleanKey}</div>

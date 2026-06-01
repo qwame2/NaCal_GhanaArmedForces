@@ -1,7 +1,7 @@
 
 @extends('layouts.admin')
 
-@section('title', 'Access Control Matrix')
+@section('title', 'Premission')
 
 @section('content')
 <div class="view-header" style="margin-bottom: 3rem;">
@@ -13,7 +13,7 @@
                 </p>
             </div>
         </div>
-        
+
         <div style="flex: 0 1 450px;">
             <div class="search-vault">
                 <i data-lucide="search"></i>
@@ -27,13 +27,13 @@
 <div class="permissions-matrix-wrapper">
     <div class="matrix-table">
         <div class="m-header">
-            <div class="col-id">Operational Identity</div>
-            <div class="col-ctrl">Inventory Entry</div>
+            <div class="col-id">Users</div>
+            <div class="col-ctrl">Item Entry</div>
             <div class="col-ctrl">Logistics Ops</div>
-            <div class="col-ctrl">Analytics Access</div>
+            <div class="col-ctrl">Report Access</div>
             <div class="col-stat">Clearance Status</div>
         </div>
-        
+
         <div class="m-body" id="matrixBody">
             @foreach($users as $user)
             <div class="m-row" data-user-id="{{ $user->id }}">
@@ -47,7 +47,7 @@
                         <span class="m-handle">@ {{ $user->username }}</span>
                     </div>
                 </div>
-                
+
                 <div class="col-ctrl">
                     <div class="toggle-group-wrap">
                         <label class="luxe-toggle" title="Toggle Inventory Entry">
@@ -57,12 +57,12 @@
                             </div>
                         </label>
                         <div class="toggle-text">
-                            <span class="t-main">Registry</span>
-                            <span class="t-sub">Add/Edit Items</span>
+                            <span class="t-main">Add/Edit Items</span>
+                            <span class="t-sub"></span>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-ctrl">
                     <div class="toggle-group-wrap">
                         <label class="luxe-toggle" title="Toggle Logistics Operations">
@@ -72,12 +72,12 @@
                             </div>
                         </label>
                         <div class="toggle-text">
-                            <span class="t-main">Logistics</span>
-                            <span class="t-sub">Issue & Return</span>
+                            <span class="t-main">Issue & Return</span>
+                            <span class="t-sub"></span>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-ctrl">
                     <div class="toggle-group-wrap">
                         <label class="luxe-toggle" title="Toggle Analytics Access">
@@ -87,12 +87,12 @@
                             </div>
                         </label>
                         <div class="toggle-text">
-                            <span class="t-main">Analytics</span>
-                            <span class="t-sub">View Reports</span>
+                            <span class="t-main">View Reports</span>
+                            <span class="t-sub"></span>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-stat">
                     <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
                         <i data-lucide="{{ $user->is_active ? 'shield-check' : 'shield-alert' }}"></i>
@@ -254,7 +254,7 @@
     }
 
     .m-identity { display: flex; flex-direction: column; gap: 2px; }
-    
+
     .m-name {
         margin: 0;
         font-size: 0.95rem;
@@ -387,11 +387,11 @@
     function filterPersonnel() {
         const term = document.getElementById('personnelSearch').value.toLowerCase();
         const rows = document.querySelectorAll('.m-row');
-        
+
         rows.forEach(row => {
             const name = row.querySelector('.m-name').textContent.toLowerCase();
             const username = row.querySelector('.m-handle').textContent.toLowerCase();
-            
+
             if (name.includes(term) || username.includes(term)) {
                 row.style.display = 'flex';
                 row.style.animation = 'fadeUp 0.3s ease';
@@ -416,9 +416,9 @@
         const userId = row.getAttribute('data-user-id');
         const value = checkbox.checked ? 1 : 0;
         const knob = checkbox.nextElementSibling.querySelector('.luxe-knob');
-        
+
         row.classList.add('syncing-row');
-        
+
         fetch('{{ route("admin.permissions.update", [], false) }}', {
             method: 'POST',
             headers: {

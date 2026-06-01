@@ -1046,16 +1046,15 @@
     /* Modal Architecture */
     .modal-backdrop {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
         background: rgba(2, 6, 23, 0.7);
         backdrop-filter: blur(12px);
         display: none;
         align-items: center;
         justify-content: center;
-        z-index: 1000;
+        z-index: 99999 !important;
         padding: 2rem;
     }
 

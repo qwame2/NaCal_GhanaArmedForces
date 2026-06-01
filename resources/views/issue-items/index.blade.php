@@ -15,15 +15,15 @@
                         @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
                             <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · Department Head Hub</span>
                         @else
-                            <span class="inventory-badge">Issue</span>
+                            <span class="inventory-badge">Issuance</span>
                         @endif
                         <div style="width: 4px; height: 4px; background: var(--text-muted); border-radius: 50%; opacity: 0.5;"></div>
                         <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
                             <i data-lucide="shield" style="width: 14px; color: var(--primary);"></i> Operations Verified
                         </span>
                     </div>
-                    <h1 style="margin: 0; font-size: 3rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em; line-height: 1;">Issue <span class="gradient-text">Inventory</span></h1>
-                    <p style="margin: 12px 0 0; color: var(--text-muted); font-size: 1.1rem; font-weight: 500; opacity: 0.8;">Full tracking registry of all inventory items given out (disbursed or collected requisitions) across the logistics network.</p>
+                    <h1 style="margin: 0; font-size: 3rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.05em; line-height: 1;">Issued <span class="gradient-text">Items</span></h1>
+                    <p style="margin: 12px 0 0; color: var(--text-muted); font-size: 1.1rem; font-weight: 500; opacity: 0.8;">Full tracking of all items given out (issued or collected requisitions) across the system.</p>
                 </div>
             </div>
         </div>
@@ -36,7 +36,7 @@
                 <i data-lucide="package-2" style="width: 32px; height: 32px;"></i>
             </div>
             <div>
-                <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Total Disbursed</div>
+                <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Total Issued</div>
                 <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ number_format($stats['total_disbursed']) }} <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Items</span></div>
             </div>
         </div>
@@ -46,7 +46,7 @@
                 <i data-lucide="check-square" style="width: 32px; height: 32px;"></i>
             </div>
             <div>
-                <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Permanent Allocations</div>
+                <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Permanently Issued</div>
                 <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ number_format($stats['permanent_allocations']) }} <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Items</span></div>
             </div>
         </div>
@@ -56,7 +56,7 @@
                 <i data-lucide="clock" style="width: 32px; height: 32px;"></i>
             </div>
             <div>
-                <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Temporary Loans</div>
+                <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Issued on Loan</div>
                 <div style="font-size: 2rem; font-weight: 950; color: var(--text-main); line-height: 1;">{{ number_format($stats['temporary_loans']) }} <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Items</span></div>
             </div>
         </div>
@@ -77,10 +77,10 @@
         <form method="GET" action="{{ route('issueitems') }}" id="filter-form" style="display: flex; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem; width: 100%;">
             <!-- Live Search -->
             <div style="flex: 2; min-width: 300px;">
-                <label style="display: block; font-size: 0.72rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Search Logs</label>
+                <label style="display: block; font-size: 0.72rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Search items</label>
                 <div style="position: relative;">
                     <i data-lucide="search" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6;"></i>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by asset, destination department, or authority..." style="width: 100%; padding: 1rem 1rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; transition: all 0.3s; font-size: 0.95rem;" autocomplete="off">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by item, department, or authority..." style="width: 100%; padding: 1rem 1rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; transition: all 0.3s; font-size: 0.95rem;" autocomplete="off">
                 </div>
             </div>
 
@@ -101,7 +101,7 @@
 
             <!-- Allocation Type Filter -->
             <div style="flex: 1; min-width: 180px;">
-                <label style="display: block; font-size: 0.72rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Allocation Type</label>
+                <label style="display: block; font-size: 0.72rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Issue Type</label>
                 <div style="position: relative;">
                     <i data-lucide="clipboard-check" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6; pointer-events: none;"></i>
                     <select name="type" onchange="this.form.submit()" style="width: 100%; padding: 1rem 1.25rem 1rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; cursor: pointer; font-size: 0.95rem; appearance: none; transition: all 0.3s;">
@@ -115,7 +115,7 @@
 
             <!-- Date Filter -->
             <div style="flex: 1; min-width: 180px;">
-                <label style="display: block; font-size: 0.72rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Disbursement Date</label>
+                <label style="display: block; font-size: 0.72rem; font-weight: 900; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;">Issued Date</label>
                 <div style="position: relative;">
                     <i data-lucide="calendar" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 18px; color: var(--primary); opacity: 0.6; pointer-events: none;"></i>
                     <input type="date" name="date" value="{{ request('date') }}" onchange="this.form.submit()" style="width: 100%; padding: 1.02rem 1.25rem 1.02rem 3.25rem; border-radius: 16px; border: 2px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-weight: 700; outline: none; cursor: pointer; font-size: 0.95rem; transition: all 0.3s;">
@@ -398,7 +398,7 @@
                     searchInput.form.submit();
                 }, 600); // 600ms debounce
             });
-            
+
             // Set cursor to the end of the text on load if focused
             if (document.activeElement === searchInput || searchInput.value) {
                 const val = searchInput.value;

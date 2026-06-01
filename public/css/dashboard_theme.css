@@ -51,7 +51,7 @@
 body {
     background-color: var(--bg-main);
     color: var(--text-main);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Outfit', sans-serif;
     line-height: 1.5;
     overflow-x: hidden;
 }
@@ -498,7 +498,7 @@ body {
 /* Advanced Grid for Stats */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
     margin-bottom: 2.5rem;
 }
@@ -733,7 +733,7 @@ button,
 .btn-primary,
 .btn-secondary {
     transition: var(--transition) !important;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Outfit', sans-serif;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -994,13 +994,15 @@ button:active {
 /* New Entry Modal Styles */
 .modal-overlay {
     position: fixed;
-    inset: 0;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
     background: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(8px);
     display: none;
     align-items: flex-end; /* Anchored to bottom */
     justify-content: center;
-    z-index: 2000;
+    z-index: 99999 !important;
     padding: 0;
     animation: fadeIn 0.3s ease-out;
     overflow-y: hidden; /* Sheet handles its own scroll */
@@ -1633,9 +1635,6 @@ button:active {
 }
 
 @media (max-width: 768px) {
-    .stats-grid > .stat-card:last-child {
-        grid-column: span 2 !important;
-    }
 
     .low-stock-popover {
         position: fixed !important;

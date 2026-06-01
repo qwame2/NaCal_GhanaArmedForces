@@ -37,6 +37,7 @@
     <title>{{ \App\Models\Setting::get('organization_name', 'NACOC') }} | Advanced Inventory System</title>
 
     <!-- CSS -->
+    <link href="{{ asset('css/css2.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/vendor/select2.min.css') }}" />
 
@@ -808,6 +809,12 @@
         document.addEventListener('mouseover', (e) => {
             const target = e.target.closest('[data-tooltip]');
             if (target) {
+                // Prevent duplicate tooltips: skip JS tooltip if target is inside a collapsed sidebar
+                const sidebar = target.closest('.sidebar');
+                if (sidebar && sidebar.classList.contains('collapsed')) {
+                    return;
+                }
+
                 const text = target.getAttribute('data-tooltip');
                 if (!text) return;
 

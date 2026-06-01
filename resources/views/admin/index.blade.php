@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'User Info')
+@section('title', 'User Details')
 
 @section('content')
 <div class="command-center">
@@ -52,7 +52,7 @@
                         <i data-lucide="shield-check"></i>
                     </div>
                     <div class="registry-title-stack">
-                        <h3 class="vault-title">User Info</h3>
+                        <h3 class="vault-title">User Details</h3>
                         <div class="status-indicator-pill">
                             <span class="live-pulse"></span>
                             SECURE & UPDATED
@@ -77,7 +77,7 @@
                     <div class="search-icon-wrap">
                         <i data-lucide="search"></i>
                     </div>
-                    <input type="text" id="registrySearch" placeholder="Search registry...">
+                    <input type="text" id="registrySearch" placeholder="Search user...">
                     <div class="shortcut-hint">
                         <span class="key-group">
                             <span class="key">Ctrl</span>
@@ -253,11 +253,11 @@
 <style>
     /* Precision Metrics Styles */
     .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 3.5rem; }
-    
+
     @media (max-width: 1024px) {
         .metrics-row { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
     }
-    
+
     @media (max-width: 768px) {
         .metrics-row { grid-template-columns: 1fr; }
         .vault-toolbar { flex-direction: column !important; align-items: flex-start !important; gap: 1rem; padding: 1.5rem !important; }
@@ -568,7 +568,7 @@
         gap: 1.5rem;
         font-family: 'Outfit', sans-serif;
     }
-    
+
     .profile-header-banner {
         display: flex;
         align-items: center;
@@ -580,7 +580,7 @@
         position: relative;
         overflow: hidden;
     }
-    
+
     .profile-header-banner::before {
         content: '';
         position: absolute;
@@ -599,7 +599,7 @@
         height: 80px;
         flex-shrink: 0;
     }
-    
+
     .profile-avatar {
         width: 100%;
         height: 100%;
@@ -608,7 +608,7 @@
         border: 4px solid white;
         box-shadow: 0 10px 25px rgba(79, 70, 229, 0.15);
     }
-    
+
     .profile-status-ring {
         position: absolute;
         bottom: -4px;
@@ -625,14 +625,14 @@
     .profile-status-ring.offline {
         background: #ef4444;
     }
-    
+
     .profile-title-group {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
         text-align: left;
     }
-    
+
     .profile-name {
         margin: 0;
         font-size: 1.5rem;
@@ -641,14 +641,14 @@
         letter-spacing: -0.03em;
         line-height: 1.2;
     }
-    
+
     .profile-badges {
         display: flex;
         align-items: center;
         gap: 8px;
         flex-wrap: wrap;
     }
-    
+
     .profile-username-badge {
         font-size: 0.75rem;
         font-weight: 800;
@@ -659,7 +659,7 @@
         text-transform: lowercase;
         border: 1px solid rgba(79, 70, 229, 0.1);
     }
-    
+
     .profile-id-badge {
         font-size: 0.75rem;
         font-weight: 800;
@@ -669,19 +669,19 @@
         border-radius: 8px;
         border: 1px solid #e2e8f0;
     }
-    
+
     .details-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1.25rem;
     }
-    
+
     @media (max-width: 550px) {
         .details-grid {
             grid-template-columns: 1fr;
         }
     }
-    
+
     .details-card {
         background: white;
         border: 1px solid #e2e8f0;
@@ -693,13 +693,13 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.006);
     }
-    
+
     .details-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.05);
         border-color: rgba(79, 70, 229, 0.3);
     }
-    
+
     .card-icon-box {
         width: 42px;
         height: 42px;
@@ -710,21 +710,21 @@
         flex-shrink: 0;
         transition: all 0.3s;
     }
-    
+
     .card-icon-box i {
         width: 18px;
         height: 18px;
     }
-    
+
     .email-icon { background: #eef2ff; color: #4f46e5; }
     .phone-icon { background: #ecfdf5; color: #10b981; }
     .dept-icon { background: #faf5ff; color: #a855f7; }
     .role-icon { background: #fff7ed; color: #f97316; }
-    
+
     .details-card:hover .card-icon-box {
         transform: scale(1.05);
     }
-    
+
     .card-content {
         flex: 1;
         display: flex;
@@ -733,7 +733,7 @@
         text-align: left;
         min-width: 0;
     }
-    
+
     .card-label {
         font-size: 0.68rem;
         font-weight: 800;
@@ -741,18 +741,18 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
-    
+
     .card-value {
         font-size: 0.9rem;
         font-weight: 800;
         color: #1e293b;
         word-break: break-all;
     }
-    
+
     .card-value.highlighted-text {
         color: #4f46e5;
     }
-    
+
     .card-value-wrap {
         display: flex;
         align-items: center;
@@ -760,7 +760,7 @@
         gap: 8px;
         width: 100%;
     }
-    
+
     .btn-copy-action, .btn-call-action {
         background: #f1f5f9;
         border: none;
@@ -775,17 +775,17 @@
         flex-shrink: 0;
         transition: all 0.2s;
     }
-    
+
     .btn-copy-action:hover, .btn-call-action:hover {
         background: #4f46e5;
         color: white;
     }
-    
+
     .btn-copy-action i, .btn-call-action i {
         width: 14px;
         height: 14px;
     }
-    
+
     .role-badge-pill {
         display: inline-flex;
         align-items: center;
@@ -796,19 +796,19 @@
         letter-spacing: 0.02em;
         width: fit-content;
     }
-    
+
     .role-badge-pill.admin {
         background: #fef2f2;
         color: #ef4444;
         border: 1px solid rgba(239, 68, 68, 0.1);
     }
-    
+
     .role-badge-pill.staff {
         background: #f0fdf4;
         color: #15803d;
         border: 1px solid rgba(21, 128, 61, 0.1);
     }
-    
+
     .session-timeline-card {
         background: #f8fafc;
         border: 1px solid #e2e8f0;
@@ -818,7 +818,7 @@
         flex-direction: column;
         gap: 1.25rem;
     }
-    
+
     .timeline-title {
         margin: 0;
         font-size: 0.85rem;
@@ -831,13 +831,13 @@
         letter-spacing: 0.05em;
         text-align: left;
     }
-    
+
     .timeline-title i {
         width: 16px;
         height: 16px;
         color: #4f46e5;
     }
-    
+
     .timeline-flow {
         display: flex;
         align-items: center;
@@ -845,7 +845,7 @@
         position: relative;
         gap: 1rem;
     }
-    
+
     @media (max-width: 500px) {
         .timeline-flow {
             flex-direction: column;
@@ -856,7 +856,7 @@
             display: none;
         }
     }
-    
+
     .timeline-node {
         display: flex;
         align-items: center;
@@ -864,7 +864,7 @@
         flex: 1;
         text-align: left;
     }
-    
+
     .node-icon-box {
         width: 36px;
         height: 36px;
@@ -877,28 +877,28 @@
         color: #64748b;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
     }
-    
+
     .node-icon-box i {
         width: 16px;
         height: 16px;
     }
-    
+
     .login-node .node-icon-box {
         color: #10b981;
         border-color: rgba(16, 185, 129, 0.2);
     }
-    
+
     .logout-node .node-icon-box {
         color: #64748b;
         border-color: #e2e8f0;
     }
-    
+
     .node-details {
         display: flex;
         flex-direction: column;
         gap: 2px;
     }
-    
+
     .node-label {
         font-size: 0.65rem;
         font-weight: 800;
@@ -906,21 +906,21 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
-    
+
     .node-time {
         font-size: 0.85rem;
         font-weight: 850;
         color: #1e293b;
         font-family: monospace;
     }
-    
+
     .timeline-connector {
         flex: 1;
         height: 2px;
         background: repeating-linear-gradient(to right, #cbd5e1 0px, #cbd5e1 4px, transparent 4px, transparent 8px);
         max-width: 100px;
     }
-    
+
     .status-summary-bar {
         display: flex;
         align-items: center;
@@ -931,18 +931,18 @@
         color: #64748b;
         text-align: left;
     }
-    
+
     .status-indicator-dot {
         width: 8px;
         height: 8px;
         border-radius: 50%;
     }
-    
+
     .status-indicator-dot.active {
         background: #10b981;
         box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
     }
-    
+
     .status-indicator-dot.inactive {
         background: #ef4444;
         box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
@@ -971,7 +971,7 @@
         const randomPass = 'Auth' + Math.floor(1000 + Math.random() * 9000);
 
         Swal.fire({
-            title: '<div style="display: flex; align-items: center; gap: 15px; text-align: left;"><div style="width: 48px; height: 48px; background: #eef2ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #4338ca;"><i data-lucide="user-plus"></i></div><div><div style="font-size: 1.25rem; font-weight: 950; color: #0f172a;">Register User</div><div style="font-size: 0.75rem; color: #64748b; font-weight: 700; margin-top: 2px;">STRATEGIC COMMAND PROVISIONING</div></div></div>',
+            title: '<div style="display: flex; align-items: center; gap: 15px; text-align: left;"><div style="width: 48px; height: 48px; background: #eef2ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #4338ca;"><i data-lucide="user-plus"></i></div><div><div style="font-size: 1.25rem; font-weight: 950; color: #0f172a;">Register User</div><div style="font-size: 0.75rem; color: #64748b; font-weight: 700; margin-top: 2px;"></div></div></div>',
             html: `
                 <form id="addPersonnelForm" action="{{ route('admin.users.store') }}" method="POST" style="text-align: left; padding: 1rem 0.5rem;">
                     @csrf
@@ -1086,7 +1086,7 @@
                 </form>
             `,
             showCancelButton: true,
-            confirmButtonText: 'Initialize Registry',
+            confirmButtonText: 'Save',
             cancelButtonText: 'Abort',
             confirmButtonColor: '#4f46e5',
             cancelButtonColor: '#f1f5f9',
@@ -1248,6 +1248,22 @@
                 document.getElementById('addPersonnelForm').appendChild(storesField);
             } else {
                 storesField.value = 'Internal Audit';
+            }
+        } else if (role === 'Officer') {
+            deptGroup.style.display = 'none';
+            customGroup.style.display = 'none';
+            deptSelect.required = false;
+            deptSelect.name = '';
+            let storesField = document.getElementById('swal-stores-dept-hidden');
+            if (!storesField) {
+                storesField = document.createElement('input');
+                storesField.type = 'hidden';
+                storesField.name = 'department';
+                storesField.id = 'swal-stores-dept-hidden';
+                storesField.value = 'Store';
+                document.getElementById('addPersonnelForm').appendChild(storesField);
+            } else {
+                storesField.value = 'Store';
             }
         } else {
             deptGroup.style.display = 'none';

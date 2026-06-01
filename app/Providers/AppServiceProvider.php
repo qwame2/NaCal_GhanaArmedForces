@@ -162,6 +162,15 @@ class AppServiceProvider extends ServiceProvider
             } catch (\Exception $ex) {
                 // Ignore
             }
+
+            // Ensure all existing Store Officer (role: Officer) accounts have department set to 'Store'
+            try {
+                \App\Models\User::where('role', 'Officer')->where(function($q) {
+                    $q->whereNull('department')->orWhere('department', '!=', 'Store');
+                })->update(['department' => 'Store']);
+            } catch (\Exception $ex) {
+                // Ignore
+            }
         } catch (\Exception $e) {
             // Ignore
         }

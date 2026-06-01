@@ -22,7 +22,7 @@
     <style>
         :root {
             --font-display: 'Outfit', sans-serif;
-            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --font-sans: 'Outfit', sans-serif;
             
             --store-orange: #f97316;
             --store-orange-hover: #ea580c;
@@ -627,7 +627,7 @@
             padding: 1.75rem 2rem !important;
             box-shadow: 0 40px 100px -20px rgba(0,0,0,0.15) !important;
             border: 1px solid rgba(255,255,255,0.8) !important;
-            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            font-family: 'Outfit', sans-serif !important;
         }
         .premium-swal-btn {
             height: 48px !important;
@@ -1254,7 +1254,7 @@
                     </div>
                 `,
                 html: `
-                    <div style="text-align: left; padding: 1rem 0.5rem; font-family: 'Plus Jakarta Sans', sans-serif;">
+                    <div style="text-align: left; padding: 1rem 0.5rem; font-family: 'Outfit', sans-serif;">
                         
                         <!-- Avatar Upload Area -->
                         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 1.25rem;">

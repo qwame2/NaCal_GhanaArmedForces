@@ -1,6 +1,6 @@
 @extends(auth()->user()->is_admin ? 'layouts.admin' : 'layouts.dashboard')
 
-@section('title', 'Analytical Reports')
+@section('title', 'Reports')
 
 @section('content')
 
@@ -17,15 +17,15 @@
                 <span class="rpt-divider-dot"></span>
                 <span style="color: var(--text-muted); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.01em;">Verification &amp; Validation Tool</span>
             </div>
-            <h2 class="rpt-hero-title">Analytical <span class="rpt-hero-accent">Reports</span></h2>
-            <p class="rpt-hero-sub">Aggregate logistics data across multiple time periods for official verification.</p>
+            <h2 class="rpt-hero-title"><span class="rpt-hero-accent">Reports</span></h2>
+            <p class="rpt-hero-sub">Collect data from different time periods for official review.</p>
         </div>
         <div style="display: flex; gap: 1rem; position: relative; z-index: 1; flex-wrap: wrap; align-items: center;">
             <div class="period-toggle-group {{ !(auth()->user()->is_admin || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
                 <a href="{{ (auth()->user()->is_admin || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'daily']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'daily' ? 'active' : '' }}">Daily</a>
                 <a href="{{ (auth()->user()->is_admin || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'monthly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'monthly' ? 'active' : '' }}">Monthly</a>
                 <a href="{{ (auth()->user()->is_admin || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'yearly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'yearly' ? 'active' : '' }}">Yearly</a>
-                <a href="javascript:void(0)" id="custom-period-btn" onclick="toggleCustomDateBar()" class="period-btn {{ $period === 'custom' ? 'active' : '' }}">Custom Range</a>
+                <a href="javascript:void(0)" id="custom-period-btn" onclick="toggleCustomDateBar()" class="period-btn {{ $period === 'custom' ? 'active' : '' }}">Choose dates</a>
             </div>
         </div>
     </div>
@@ -170,7 +170,7 @@
             <div style="flex: 1;">
                 <div class="stat-label">Total Received</div>
                 <div class="stat-value" style="color: #10b981;">{{ number_format((float)$totalReceivedQty) }} <span class="stat-unit">Units</span></div>
-                <div class="stat-subtitle">{{ $totalReceivedBatches }} Registered Batches</div>
+                <div class="stat-subtitle">{{ $totalReceivedBatches }} Received Batches</div>
             </div>
         </div>
 
@@ -181,7 +181,7 @@
             <div style="flex: 1;">
                 <div class="stat-label">Total Issued</div>
                 <div class="stat-value" style="color: #f59e0b;">{{ number_format((float)$totalIssuedQty) }} <span class="stat-unit">Units</span></div>
-                <div class="stat-subtitle">{{ $totalIssuedBatches }} Disbursement Records</div>
+                <div class="stat-subtitle">{{ $totalIssuedBatches }} Issued Records</div>
             </div>
         </div>
 
@@ -231,7 +231,7 @@
     </div>
     </div> {{-- /.stats-charts-print-layout --}}
 
-    <!-- Analytics Charts Section - Disbursements -->
+    <!-- Analytics Charts Section - Issuance -->
     <div class="glass-card print-chart-card rpt-chart-card issued-chart-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); margin-bottom: 2.5rem; background: var(--bg-card); {{ (count($selectedItems) !== 1 && $totalIssuedQty > 0 && $issuedDistribution->count() > 0) ? '' : 'display: none;' }}">
         <div class="rpt-section-header" style="margin-bottom: 1.75rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -239,7 +239,7 @@
                     <i data-lucide="bar-chart-2" style="width:17px;height:17px;"></i>
                 </span>
                 <div>
-                    <div style="font-size: 1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.01em;">Disbursements Visualization</div>
+                    <div style="font-size: 1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.01em;">Issuance Visualization</div>
                 </div>
             </div>
         </div>
@@ -249,7 +249,7 @@
                 <div class="rpt-chart-group">
                     <div class="rpt-chart-label" style="color: #f59e0b;">
                         <span class="rpt-chart-dot" style="background:#f59e0b;"></span>
-                        Disbursements — Top {{ $issuedDistribution->count() }} Items
+                        Issuance — Top {{ $issuedDistribution->count() }} Items
                     </div>
                     <div id="issued-bar-chart" style="width: 100%;"></div>
                 </div>
@@ -306,8 +306,8 @@
                     <i data-lucide="book-open" style="width:18px;height:18px;"></i>
                 </span>
                 <div>
-                    <div class="unified-ledger-title">Inventory Movement Log</div>
-                    <div class="unified-ledger-subtitle">Combined receipts &amp; disbursements sorted chronologically</div>
+                    <div class="unified-ledger-title">Item(s) Report</div>
+                    <div class="unified-ledger-subtitle"> Received &amp; Issued items in order of date</div>
                 </div>
             </div>
             <div class="unified-ledger-meta">
@@ -1433,12 +1433,12 @@
             if (statVals[2]) statVals[2].innerHTML = fmt(Math.max(0, d.totalReceivedQty - d.totalIssuedQty)) + ' <span class="stat-unit">Units</span>';
 
             const statSubs = document.querySelectorAll('.stat-subtitle');
-            if (statSubs[0]) statSubs[0].textContent = d.totalReceivedBatches + ' Registered Batches';
-            if (statSubs[1]) statSubs[1].textContent = d.totalIssuedBatches   + ' Disbursement Records';
+            if (statSubs[0]) statSubs[0].textContent = d.totalReceivedBatches + ' Received Batches';
+            if (statSubs[1]) statSubs[1].textContent = d.totalIssuedBatches   + ' Issued Records';
 
             // 3. Ledger meta badges
             const metas = document.querySelectorAll('.unified-ledger-meta-item');
-            if (metas[0]) metas[0].innerHTML = iconSvg('arrow-down-circle') + ' ' + d.allTransactions.filter(t => t.type === 'Received').length + ' Receipts';
+            if (metas[0]) metas[0].innerHTML = iconSvg('arrow-down-circle') + ' ' + d.allTransactions.filter(t => t.type === 'Received').length + ' Received';
             if (metas[1]) metas[1].innerHTML = iconSvg('arrow-up-circle')   + ' ' + d.allTransactions.filter(t => t.type === 'Issued').length   + ' Issued';
             if (metas[2]) metas[2].innerHTML = d.allTransactions.length + ' Total Records';
 

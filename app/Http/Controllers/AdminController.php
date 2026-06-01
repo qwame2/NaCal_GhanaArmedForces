@@ -73,6 +73,9 @@ class AdminController extends Controller
                 return back()->withErrors(['department' => 'Department is required for a Department Head.'])->withInput();
             }
             $isAdmin = false;
+        } elseif ($role === 'Officer') {
+            $department = 'Store';
+            $isAdmin = false;
         } else {
             $department = $request->department;
             $isAdmin    = false;
@@ -214,10 +217,15 @@ class AdminController extends Controller
             }
         }
 
+        $department = $request->department;
+        if ($request->role === 'Officer') {
+            $department = 'Store';
+        }
+
         $user->update([
             'name' => $request->name,
             'role' => $request->role,
-            'department' => $request->department,
+            'department' => $department,
             'is_admin' => $request->role === 'Admin',
             'is_temp_account' => $request->role === 'Auditor',
         ]);
@@ -314,7 +322,7 @@ class AdminController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
-        $users = User::where('is_admin', false)->where('role', '!=', 'Requisitioner')->get();
+        $users = User::where('is_admin', false)->where('role', 'Officer')->get();
         return view('admin.permissions', compact('users'));
     }
 

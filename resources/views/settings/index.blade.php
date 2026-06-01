@@ -485,9 +485,10 @@
     .save-btn:hover { transform: translateY(-5px); box-shadow: 0 20px 45px rgba(79, 70, 229, 0.45); }
 
     .modal-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        position: fixed; top: 0; left: 0;
+        width: 100vw !important; height: 100vh !important; inset: 0 !important;
         background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
-        display: flex; align-items: center; justify-content: center; z-index: 1000;
+        display: flex; align-items: center; justify-content: center; z-index: 99999 !important;
         animation: fadeIn 0.3s ease;
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

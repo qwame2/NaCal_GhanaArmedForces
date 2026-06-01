@@ -38,10 +38,12 @@
 
     .modal-overlay {
         position: fixed;
-        inset: 0;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
         background: rgba(15, 23, 42, 0.45);
         backdrop-filter: blur(6px);
-        z-index: 3000;
+        z-index: 99999 !important;
         display: none;
         align-items: center;
         justify-content: center;

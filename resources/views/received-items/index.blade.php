@@ -8,9 +8,9 @@
                 @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
                     <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · Department Head Hub</span>
                 @else
-                    <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Inventory Log</span>
+                    <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Item Records</span>
                 @endif
-                <span style="color: var(--text-muted); font-size: 0.85rem;">Historical Records</span>
+                <span style="color: var(--text-muted); font-size: 0.85rem;"></span>
             </div>
             <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main);">Received <span style="color: var(--primary);">Items</span></h2>
             <p style="color: var(--text-muted);">View all items received into the inventory system.</p>
@@ -390,10 +390,10 @@
                         $cleanSupplier = $item->supplier_name;
                         $acquisitionType = $item->acquisition_type ?? 'Supplier';
                         $donorName = $item->donor_name ?? '-';
-                        
+
                         $dbStatus = strtoupper($item->supplier_status ?: 'FULL DELIVERY');
                         $isDbPartialDelivery = ($dbStatus === 'PARTIAL DELIVERY' || str_contains($dbStatus, 'PARTIAL'));
-                        
+
                         $isIssuedOut = $item->hasActiveTemporaryLoan();
                         if ($isIssuedOut) {
                             $displayStatus = 'ISSUED OUT';
@@ -1182,16 +1182,15 @@
     /* Modal Architecture */
     .modal-backdrop {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
         background: rgba(2, 6, 23, 0.7);
         backdrop-filter: blur(12px);
         display: none;
         align-items: center;
         justify-content: center;
-        z-index: 1000;
+        z-index: 99999 !important;
         padding: 2rem;
     }
 
@@ -3346,14 +3345,14 @@ function toggleEditSourceFields() {
 function recalcEditVariance(input) {
     const row = input.closest('.edit-item-card');
     const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
-    
-    // We update both the variance and the hidden stock balance 
+
+    // We update both the variance and the hidden stock balance
     // because usually an edit to an entry is to correct the actual quantity received
     const stockInput = row.querySelector('.item-stock-balance');
     if (stockInput) {
         stockInput.value = qty;
     }
-    
+
     const stock = parseFloat(stockInput.value) || 0;
     const variance = stock - qty;
 
@@ -3417,7 +3416,7 @@ async function submitEditBatch() {
         const itemId = row.querySelector('.item-id').value;
         const itemQty = row.querySelector('.item-qty').value;
         const itemStock = row.querySelector('.item-stock-balance')?.value || itemQty;
-        
+
         items.push({
             id: itemId,
             description: row.querySelector('.item-description').value,

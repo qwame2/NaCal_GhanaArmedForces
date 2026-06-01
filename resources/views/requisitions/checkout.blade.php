@@ -26,7 +26,7 @@
     <style>
         :root {
             --font-display: 'Outfit', sans-serif;
-            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --font-sans: 'Outfit', sans-serif;
 
             --store-orange: #f97316;
             --store-orange-hover: #ea580c;

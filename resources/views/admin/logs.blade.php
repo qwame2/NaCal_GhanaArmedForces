@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 
-@section('title', 'System Logs')
+@section('title', 'System Activities')
 
 @section('content')
 <div class="animate-slide-up">
     <div class="page-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
         <div>
-            <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-main); margin-bottom: 0.25rem;">System <span style="color: var(--primary);">Logs</span></h2>
+            <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-main); margin-bottom: 0.25rem;">System <span style="color: var(--primary);">Activities</span></h2>
             <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500; display: flex; align-items: center; gap: 0.75rem;">
                 View all system activities.
                 <span style="display: inline-flex; align-items: center; gap: 0.4rem; background: #f1f5f9; padding: 0.25rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 800; color: #475569;">
@@ -43,7 +43,7 @@
                         <i data-lucide="alert-circle" style="width: 18px;"></i>
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: column;">
-                        <label style="font-size: 0.6rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Severity Level</label>
+                        <label style="font-size: 0.6rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Status Level</label>
                         <select name="severity" onchange="this.form.submit()" style="width: 100%; background: transparent; border: none; padding: 0 20px 0 0; color: var(--text-main); font-weight: 800; font-size: 0.95rem; outline: none; cursor: pointer; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right center; background-size: 14px;">
                             <option value="">All Levels</option>
                             <option value="info" {{ request('severity') == 'info' ? 'selected' : '' }}>Information</option>
@@ -72,7 +72,7 @@
             </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
                 <button type="submit" class="btn-primary" style="padding: 0.85rem 2rem; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(79,70,229,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(79,70,229,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(79,70,229,0.2)'">
-                    <i data-lucide="search" style="width: 16px; display: inline-block; vertical-align: text-bottom; margin-right: 4px;"></i> Scan Logs
+                    <i data-lucide="search" style="width: 16px; display: inline-block; vertical-align: text-bottom; margin-right: 4px;"></i> 
                 </button>
                 @if(request()->hasAny(['severity', 'event_type']) && (request('severity') != '' || request('event_type') != ''))
                 <a href="{{ route('admin.logs') }}" style="padding: 0.85rem 1.5rem; color: #ef4444; background: #fef2f2; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 800; transition: all 0.3s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">Reset</a>
@@ -95,7 +95,7 @@
                     <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Activity Type</th>
                     <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Staff Member</th>
                     <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Activity Details</th>
-                    <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Severity</th>
+                    <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Status Level</th>
                     <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; text-align: right;">Options</th>
                 </tr>
             </thead>
@@ -163,13 +163,13 @@
                     <td style="padding: 1.25rem 2rem; text-align: right;">
                         <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center;">
                             @if($log->metadata)
-                            <button type="button" 
-                                data-metadata="{{ json_encode($log->metadata) }}" 
-                                data-event="{{ $log->event_type }}" 
-                                data-action="{{ $log->action }}" 
+                            <button type="button"
+                                data-metadata="{{ json_encode($log->metadata) }}"
+                                data-event="{{ $log->event_type }}"
+                                data-action="{{ $log->action }}"
                                 data-user-name="{{ $log->user ? $log->user->name : 'System Auto' }}"
                                 data-user-avatar="{{ $log->user && $log->user->avatar ? asset('storage/' . $log->user->avatar) : '' }}"
-                                onclick="viewLogDetails(this)" 
+                                onclick="viewLogDetails(this)"
                                 class="btn-details">
                                 <i data-lucide="info"></i> Details
                             </button>
@@ -205,11 +205,11 @@
         <div style="padding: 1.5rem 2rem; background: rgba(0,0,0,0.015); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
             <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
                 <div>Showing <span style="font-weight: 800; color: var(--text-main);">{{ $logs->firstItem() ?? 0 }}</span> to <span style="font-weight: 800; color: var(--text-main);">{{ $logs->lastItem() ?? 0 }}</span> of <span style="font-weight: 800; color: var(--text-main);">{{ $logs->total() }}</span> events</div>
-                
+
                 <form action="{{ route('admin.logs') }}" method="GET" style="display: flex; align-items: center; gap: 0.75rem; border-left: 2px solid #e2e8f0; padding-left: 1.25rem;">
                     @if(request('severity')) <input type="hidden" name="severity" value="{{ request('severity') }}"> @endif
                     @if(request('event_type')) <input type="hidden" name="event_type" value="{{ request('event_type') }}"> @endif
-                    
+
                     <span style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: var(--text-muted);">Rows per page:</span>
                     <select name="per_page" onchange="this.form.submit()" style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.35rem 1rem 0.35rem 0.5rem; font-size: 0.8rem; font-weight: 800; color: var(--primary); outline: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#e2e8f0'">
                         <option value="5" {{ request('per_page') == 5 ? 'selected' : '' }}>5</option>
@@ -252,7 +252,7 @@
     .bottom-sheet-overlay.active {
         opacity: 1;
     }
-    
+
     .bottom-sheet {
         position: fixed;
         bottom: 0;
@@ -443,7 +443,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         const selectAll = document.getElementById('selectAllLogs');
         const checkboxes = document.querySelectorAll('.log-checkbox');
-        
+
         if (selectAll) {
             selectAll.addEventListener('change', function() {
                 checkboxes.forEach(cb => {
@@ -460,17 +460,17 @@
         checkboxes.forEach(cb => {
             cb.addEventListener('change', function() {
                 if (!this.checked) {
-                    // We don't hide individual ones immediately if unchecked, 
+                    // We don't hide individual ones immediately if unchecked,
                     // but we ensure the master is unchecked
                     selectAll.checked = false;
                 }
-                
+
                 const checkedCount = document.querySelectorAll('.log-checkbox:checked').length;
                 if (checkedCount === checkboxes.length && checkboxes.length > 0) {
                     selectAll.checked = true;
                 }
-                
-                // If all are unchecked manually, hide them? 
+
+                // If all are unchecked manually, hide them?
                 // Let's keep them visible if at least one is checked, or if master was clicked.
                 if (checkedCount === 0 && !selectAll.checked) {
                     checkboxes.forEach(c => c.classList.remove('visible'));
@@ -491,10 +491,10 @@
             });
             return;
         }
-        
+
         Swal.fire({
             title: 'Archive Selected Logs?',
-            text: `You are about to move ${checked.length} system logs to the archive. They will be hidden from this active view.`,
+            text: `You are about to move ${checked.length} system activities to the archive. They will be hidden from this active view.`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: 'var(--primary)',
@@ -538,7 +538,7 @@
 
                 fetch(`{{ url('/admin/archive/log') }}/${id}`, {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
@@ -582,13 +582,13 @@
 
         document.getElementById('modalEventTitle').textContent = eventType + ' Event Details';
         document.getElementById('modalEventAction').textContent = action;
-        
+
         const contentDiv = document.getElementById('modalMetadataContent');
         contentDiv.innerHTML = '';
 
         try {
             const dataObj = typeof metadataStr === 'string' ? JSON.parse(metadataStr) : metadataStr;
-            
+
             // Render Personnel Card at the top
             let html = `
                 <div class="detail-card" style="display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem; background: rgba(0,0,0,0.015); border: 1px solid var(--border-color); box-shadow: none;">
@@ -600,7 +600,7 @@
                 </div>
                 <div class="detail-grid">
             `;
-            
+
             if (action === 'ADD_INVENTORY') {
                 html += `
                     <div class="detail-card">
@@ -616,7 +616,7 @@
                         <div class="detail-value">${dataObj.source_name || 'N/A'}</div>
                     </div>
                 </div>`;
-                
+
                 if (dataObj.items_added && Array.isArray(dataObj.items_added)) {
                     html += '<h4 style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase;">Items Processed in this Event</h4>';
                     html += '<table class="items-table"><thead><tr><th>Description</th><th>Package Type</th><th>Stock Bal.</th><th>Rec. Qty</th><th>Variance</th></tr></thead><tbody>';
@@ -624,7 +624,7 @@
                         const variance = parseFloat(item.variance || 0);
                         const varColor = variance > 0 ? '#10b981' : (variance < 0 ? '#ef4444' : 'inherit');
                         const varPrefix = variance > 0 ? '+' : '';
-                        
+
                         html += `<tr>
                             <td style="font-weight: 800; color: var(--primary);">${item.description}</td>
                             <td>${item.unit || '-'}</td>
@@ -635,7 +635,7 @@
                     });
                     html += '</tbody></table>';
                 }
-            } 
+            }
             else if (action === 'ISSUE_ITEM') {
                 html += `
                     <div class="detail-card">
@@ -651,7 +651,7 @@
                         <div class="detail-value">${dataObj.issuance_type || 'N/A'}</div>
                     </div>
                 </div>`;
-                
+
                 if (dataObj.items_issued && Array.isArray(dataObj.items_issued)) {
                     html += '<h4 style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase;">Items Issued</h4>';
                     html += '<table class="items-table"><thead><tr><th>Category</th><th>Description</th><th>Quantity Issued</th></tr></thead><tbody>';
@@ -680,7 +680,7 @@
                         <div class="detail-value">${dataObj.return_date ? new Date(dataObj.return_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : 'N/A'}</div>
                     </div>
                 </div>`;
-                
+
                 html += '<h4 style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase;">Return Processing Log</h4>';
                 html += '<table class="items-table"><thead><tr><th>Item Description</th><th>Returned Qty</th><th>Condition / Remarks</th></tr></thead><tbody>';
                 html += `<tr>
@@ -705,7 +705,7 @@
                             <div style="font-size: 0.85rem;">
                                 ${Object.entries(dataObj.batch_changes).map(([field, val]) => `
                                     <div style="margin-bottom: 4px;">
-                                        <span style="font-weight: 800; text-transform: capitalize;">${field.replace('_', ' ')}:</span> 
+                                        <span style="font-weight: 800; text-transform: capitalize;">${field.replace('_', ' ')}:</span>
                                         <span style="color: var(--primary); font-weight: 900;">${val}</span>
                                     </div>
                                 `).join('')}
@@ -718,7 +718,7 @@
                 if (dataObj.item_changes && Object.keys(dataObj.item_changes).length > 0) {
                     html += '<h4 style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase; display: flex; align-items: center; gap: 8px;"><i data-lucide="edit-3" style="width: 14px; color: #f59e0b;"></i> Granular Item Revisions</h4>';
                     html += '<table class="items-table"><thead><tr><th>Item ID</th><th>Field</th><th>Original State</th><th>New State</th></tr></thead><tbody>';
-                    
+
                     Object.entries(dataObj.item_changes).forEach(([itemId, changes]) => {
                         Object.entries(changes).forEach(([field, vals], fIdx) => {
                             html += `<tr>
@@ -748,18 +748,18 @@
         } catch(e) {
             contentDiv.innerHTML = `<pre style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.2); color: var(--danger); font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap; font-family: monospace;">Error parsing details data:\n\n${metadataStr}</pre>`;
         }
-        
+
         // Show Bottom Sheet safely
         const overlay = document.getElementById('logBottomSheetOverlay');
         const sheet = document.getElementById('logBottomSheet');
-        
+
         overlay.style.display = 'block';
         // Force browser to acknowledge the display block before animating opacity
-        void overlay.offsetWidth; 
-        
+        void overlay.offsetWidth;
+
         overlay.classList.add('active');
         sheet.classList.add('active');
-        
+
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
@@ -768,10 +768,10 @@
     function closeLogModal() {
         const overlay = document.getElementById('logBottomSheetOverlay');
         const sheet = document.getElementById('logBottomSheet');
-        
+
         overlay.classList.remove('active');
         sheet.classList.remove('active');
-        
+
         setTimeout(() => {
             overlay.style.display = 'none';
         }, 300);

@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 
-@section('title', 'Inventory Edit History')
+@section('title', 'History')
 
 @section('content')
 <div class="animate-slide-up">
     <div class="page-header" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
         <div>
-            <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-main); margin-bottom: 0.25rem;">Inventory <span style="color: var(--primary);">Edit History</span></h2>
+            <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-main); margin-bottom: 0.25rem;">System <span style="color: var(--primary);">History</span></h2>
             <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500; display: flex; align-items: center; gap: 0.75rem;">
                 Audit log and change tracking of modified inventory items.
             </p>
@@ -91,7 +91,7 @@
                     <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(79, 70, 229, 0.08); background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.01); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';">
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
                             <div style="display: flex; align-items: center; gap: 1rem;">
-                                <div style="width: 42px; height: 42px; border-radius: 12px; 
+                                <div style="width: 42px; height: 42px; border-radius: 12px;
                                     @if(in_array($record->action, ['CREATE_USER', 'CREATE_TEMP_REQUISITIONER']))
                                         background: rgba(16, 185, 129, 0.08); color: #10b981;
                                     @elseif(in_array($record->action, ['UPDATE_USER', 'UPDATE_PROFILE', 'TOGGLE_USER_STATUS', 'PERMISSION_CHANGE', 'REGENERATE_OTP']))
@@ -102,7 +102,7 @@
                                         background: rgba(239, 68, 68, 0.08); color: #ef4444;
                                     @endif
                                     display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.25rem;">
-                                    
+
                                     @if(in_array($record->action, ['CREATE_USER', 'CREATE_TEMP_REQUISITIONER']))
                                         <i data-lucide="user-plus" style="width: 20px;"></i>
                                     @elseif(in_array($record->action, ['UPDATE_USER', 'UPDATE_PROFILE']))
@@ -154,9 +154,9 @@
                                     </p>
                                 </div>
                             </div>
-                            
+
                             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <span style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 800; 
+                                <span style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 800;
                                     @if($record->severity === 'critical')
                                         background: #fef2f2; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.15);
                                     @elseif($record->severity === 'warning')
@@ -169,7 +169,7 @@
                             </div>
                         </div>
 
-                        <div style="background: #f8fafc; border-left: 4px solid 
+                        <div style="background: #f8fafc; border-left: 4px solid
                             @if(in_array($record->action, ['CREATE_USER', 'CREATE_TEMP_REQUISITIONER']))
                                 #10b981
                             @elseif(in_array($record->action, ['UPDATE_USER', 'UPDATE_PROFILE', 'TOGGLE_USER_STATUS', 'PERMISSION_CHANGE', 'REGENERATE_OTP']))
@@ -187,11 +187,11 @@
                     @php
                         $orig = json_decode($record->original_payload, true);
                         $new = json_decode($record->payload, true);
-                        
+
                         // Diff tracking
                         $batchChanges = [];
                         $itemChanges = [];
-                        
+
                         if (is_array($orig) && is_array($new)) {
                             // Compare batch fields
                             $fields = [
@@ -202,7 +202,7 @@
                                 'supplier_status' => 'Delivery Status',
                                 'donor_name' => 'Donor Name'
                             ];
-                            
+
                             foreach ($fields as $field => $label) {
                                 $oldVal = $orig[$field] ?? '';
                                 $newVal = $new[$field] ?? '';
@@ -218,11 +218,11 @@
                                     ];
                                 }
                             }
-                            
+
                             // Compare items
                             $origItems = collect($orig['items'] ?? [])->keyBy('id');
                             $newItems = collect($new['items'] ?? [])->keyBy('id');
-                            
+
                             foreach ($newItems as $itemId => $newItem) {
                                 if ($origItems->has($itemId)) {
                                     $origItem = $origItems->get($itemId);
@@ -249,7 +249,7 @@
                                     ];
                                 }
                             }
-                            
+
                             foreach ($origItems as $itemId => $origItem) {
                                 if (!$newItems->has($itemId)) {
                                     $itemChanges[] = [
@@ -275,7 +275,7 @@
                                     </p>
                                 </div>
                             </div>
-                            
+
                             <div style="display: flex; align-items: center; gap: 0.75rem;">
                                 <span style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 800; background: #eef2ff; color: var(--primary); border: 1px solid rgba(79, 70, 229, 0.15);">
                                     <i data-lucide="check-circle" style="width: 12px;"></i> committed
@@ -395,7 +395,7 @@
                 @endif
             @endforeach
         </div>
-        
+
         <!-- Pagination -->
         <div style="margin-top: 4rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
             <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); display: flex; align-items: center; gap: 8px; background: white; padding: 0.5rem 1.25rem; border-radius: 100px; border: 1.5px solid #edf2f7; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
@@ -413,24 +413,24 @@
     /* Premium Glassmorphic Pagination */
     .custom-pagination nav { display: flex; justify-content: center; }
     .custom-pagination ul.pagination { display: flex; gap: 0.5rem; list-style: none; padding: 0; margin: 0; align-items: center; }
-    .custom-pagination .page-item .page-link { 
-        display: flex; align-items: center; justify-content: center; 
-        min-width: 48px; height: 48px; border-radius: 16px; 
-        background: white; border: 1.5px solid #edf2f7; 
-        color: var(--text-main); font-weight: 900; text-decoration: none; 
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+    .custom-pagination .page-item .page-link {
+        display: flex; align-items: center; justify-content: center;
+        min-width: 48px; height: 48px; border-radius: 16px;
+        background: white; border: 1.5px solid #edf2f7;
+        color: var(--text-main); font-weight: 900; text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         font-size: 0.95rem; box-shadow: 0 4px 10px rgba(0,0,0,0.02);
     }
-    .custom-pagination .page-item.active .page-link { 
-        background: var(--primary); color: white; 
-        border-color: var(--primary); 
+    .custom-pagination .page-item.active .page-link {
+        background: var(--primary); color: white;
+        border-color: var(--primary);
         box-shadow: 0 10px 25px rgba(79, 70, 229, 0.25);
         transform: scale(1.1);
         z-index: 10;
     }
-    .custom-pagination .page-item:not(.active):not(.disabled) .page-link:hover { 
-        border-color: var(--primary); 
-        color: var(--primary); 
+    .custom-pagination .page-item:not(.active):not(.disabled) .page-link:hover {
+        border-color: var(--primary);
+        color: var(--primary);
         transform: translateY(-4px);
         background: #f5f3ff;
         box-shadow: 0 8px 20px rgba(79, 70, 229, 0.1);

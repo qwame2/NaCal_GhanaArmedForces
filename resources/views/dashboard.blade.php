@@ -212,20 +212,6 @@
             </div>
         </div>
 
-        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #ef4444; animation-delay: 0.4s;">
-            <div class="stat-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
-                <i data-lucide="alert-octagon"></i>
-            </div>
-            <div class="stat-info">
-                <span class="stat-label">Expired Items</span>
-                <span class="stat-value">{{ number_format($expiredCount) }}</span>
-                <div class="stat-trend" style="color: {{ $expiredCount > 0 ? '#ef4444' : '#10b981' }};">
-                    <i data-lucide="{{ $expiredCount > 0 ? 'alert-circle' : 'check-circle' }}" style="width: 14px;"></i>
-                    {{ $expiredCount > 0 ? 'Immediate action required' : 'Inventory healthy' }}
-                </div>
-            </div>
-        </div>
-
         @php
         $isLedgeCritical = count($lowStockLedges) > 0;
         $ledgeAlertMsg = '';
@@ -379,8 +365,8 @@
 <!-- Recent Activity Table -->
 <div class="glass-card pop-in float-card" style="border-bottom: 4px solid var(--accent); animation-delay: 0.7s; overflow: visible;">
     <div class="card-title" style="flex-wrap: wrap; gap: 1rem;">
-        <span>Recent Stock Transactions</span>
-        <button onclick="window.location.href='{{ route('receiveditems') }}'" class="btn-secondary" style="border: none; background: var(--bg-main); color: var(--primary); padding: 0.5rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">View All Transactions</button>
+        <span>Recent Stock Received</span>
+        <button onclick="window.location.href='{{ route('receiveditems') }}'" class="btn-secondary" style="border: none; background: var(--bg-main); color: var(--primary); padding: 0.5rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">View All Received Items</button>
     </div>
 
     <style>
@@ -622,7 +608,7 @@
             sparkline: {
                 enabled: false
             },
-            fontFamily: 'Plus Jakarta Sans, sans-serif',
+            fontFamily: 'Outfit, sans-serif',
             background: 'transparent'
         },
         theme: {
@@ -820,7 +806,7 @@
         },
         legend: {
             position: 'bottom',
-            fontFamily: 'Plus Jakarta Sans',
+            fontFamily: 'Outfit',
             fontSize: '12px',
             markers: {
                 radius: 12,

@@ -19,15 +19,15 @@
                 @else
                     <span class="status-badge-premium">
                         <i data-lucide="refresh-cw" style="width: 12px;"></i>
-                        Recovery Node
+                        Recovery
                     </span>
                 @endif
-                <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                <!-- <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
                     <i data-lucide="shield" style="width: 14px; color: #f59e0b;"></i> System Verified
-                </span>
+                </span> -->
             </div>
-            <h1 style="margin: 0; font-size: 3.5rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.06em; line-height: 1;">Return <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Log</span></h1>
-            <p style="margin: 15px 0 0; color: var(--text-muted); font-size: 1.15rem; font-weight: 600; max-width: 600px; line-height: 1.6;">Re-integrate issued assets back into the primary store. Monitor outstanding allocations in real-time.</p>
+            <h1 style="margin: 0; font-size: 3.5rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.06em; line-height: 1;">Return <span style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Item(s)</span></h1>
+            <p style="margin: 15px 0 0; color: var(--text-muted); font-size: 1.15rem; font-weight: 600; max-width: 600px; line-height: 1.6;">Return issued items to main store. Track what's still out in real time.</p>
         </div>
 
         <div style="display: flex; gap: 1rem;">
@@ -79,7 +79,7 @@
             <h3 style="margin: 0; font-size: 2rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.02em;">Outstanding Allocations</h3>
             <p style="margin: 8px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
                 <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 10px #f59e0b;"></span>
-                Tracking {{ $stats['total_active_holdings'] }} active holdings across the logistics network
+                Tracking {{ $stats['total_active_holdings'] }} active holdings
             </p>
         </div>
 
@@ -105,16 +105,16 @@
             <table style="width: 100%; border-collapse: separate; border-spacing: 0 1.25rem;">
                 <thead>
                     <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900; border-bottom: 2px solid var(--bg-main);">
-                        <th style="padding: 0 1.5rem 1rem;">Asset Breakdown</th>
-                        <th style="padding: 0 1.5rem 1rem;">Holder Information</th>
+                        <th style="padding: 0 1.5rem 1rem;">Items</th>
+                        <th style="padding: 0 1.5rem 1rem;">Holder Info</th>
                         <th style="padding: 0 1.5rem 1rem;">Returning Date</th>
                         <th style="padding: 0 1.5rem 1rem;">Collector</th>
                         <th style="padding: 0 1.5rem 1rem;">Head of Stores</th>
                         <th style="padding: 0 1.5rem 1rem;">Store Officer</th>
-                        <th style="padding: 0 1.5rem 1rem;">Classification</th>
-                        <th style="padding: 0 1.5rem 1rem;">Allocation Balance</th>
+                        <th style="padding: 0 1.5rem 1rem;">Catergory</th>
+                        <th style="padding: 0 1.5rem 1rem;">Balance</th>
                         @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
-                        <th style="padding: 0 1.5rem 1rem; text-align: right;">Action Control</th>
+                        <th style="padding: 0 1.5rem 1rem; text-align: right;">Action</th>
                         @endif
                     </tr>
                 </thead>
@@ -798,10 +798,12 @@
     /* Modal Styling */
     .modal-backdrop-premium {
         position: fixed;
-        inset: 0;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
         background: rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(12px);
-        z-index: 2000;
+        z-index: 99999 !important;
         display: none;
         align-items: center;
         justify-content: center;
@@ -816,7 +818,7 @@
 
     /* Ensure SweetAlert is always on top of premium modals */
     .swal2-container {
-        z-index: 10000 !important;
+        z-index: 999999 !important;
     }
 
     .modal-container-premium {
@@ -1333,7 +1335,7 @@
     function openReturnModal(item) {
         document.getElementById('modal_item_id').value = item.id;
         document.getElementById('modal_item_desc').innerText = item.description;
-        
+
         let details = 'Held by: ' + item.beneficiary;
         if (item.collector_name) {
             details += ' (Collector: ' + item.collector_name + ')';
@@ -1393,7 +1395,7 @@
                     searchInput.form.submit();
                 }, 600); // 600ms debounce
             });
-            
+
             // Set cursor to the end of the text on load if focused
             if (document.activeElement === searchInput || searchInput.value) {
                 const val = searchInput.value;
@@ -1498,7 +1500,7 @@
                                 <th style="padding: 0 1rem 0.5rem;">Return Date</th>
                                 <th style="padding: 0 1rem 0.5rem;">Original Issue Date</th>
                                 <th style="padding: 0 1rem 0.5rem;">Item Description</th>
-                                <th style="padding: 0 1rem 0.5rem;">Classification</th>
+                                <th style="padding: 0 1rem 0.5rem;">Catergory</th>
                                 <th style="padding: 0 1rem 0.5rem;">Recipient</th>
                                 <th style="padding: 0 1rem 0.5rem;">Collector</th>
                                 <th style="padding: 0 1rem 0.5rem;">Head of Stores</th>

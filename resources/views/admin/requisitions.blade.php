@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 @section('content')
+
+@section('title', 'Requisitions')
 <style>
     .req-stat-card {
         background: var(--bg-card);
@@ -38,10 +40,12 @@
 
     .modal-overlay {
         position: fixed;
-        inset: 0;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
         background: rgba(15, 23, 42, 0.45);
         backdrop-filter: blur(6px);
-        z-index: 3000;
+        z-index: 99999 !important;
         display: none;
         align-items: center;
         justify-content: center;
@@ -1151,7 +1155,7 @@
         <div class="profile-card">
             <div class="profile-avatar" style="background:rgba(16, 185, 129, 0.08); color:#10b981; border-color:rgba(16,185,129,0.15);"><i data-lucide="building" style="width:20px;height:20px;"></i></div>
             <div style="flex:1; min-width:0;">
-                <div style="font-size:.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;letter-spacing:0.04em;">Originating Department</div>
+                <div style="font-size:.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;letter-spacing:0.04em;">Requesting Department</div>
                 <div style="font-size:1.05rem;font-weight:900;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${data.department}">${data.department}</div>
                 <div style="font-size:.78rem;color:var(--text-muted);font-weight:600;margin-top:2px;">
                     <i data-lucide="calendar" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:3px;"></i>Submitted ${data.created_at}
@@ -1182,16 +1186,16 @@
                 const itemCategory = item.category ? item.category.trim().toLowerCase() : '';
                 const isAltAgreed = (data.alternative_status === 'agreed' && item.alternative_description);
                 const altApprovedQty = item.alternative_quantity_approved !== null ? parseFloat(item.alternative_quantity_approved) : 0;
-                
+
                 let defaultOriginalApproved = parseFloat(item.quantity_requested);
                 if (item.quantity_approved !== null) {
                     defaultOriginalApproved = parseFloat(item.quantity_approved);
                 }
-                
+
                 if (isAltAgreed && defaultOriginalApproved === 0 && altApprovedQty > 0) {
                     defaultOriginalApproved = Math.max(0, parseFloat(item.quantity_requested) - altApprovedQty);
                 }
-                
+
                 let altStock = 0;
                 let altUnit = item.unit;
                 if (isAltAgreed && data.alternatives) {
@@ -1397,7 +1401,7 @@
                         </div>
                         <span class="pill" style="background:rgba(16,185,129,0.1); color:#10b981; font-weight:800; font-size:0.7rem; padding:4px 10px;">COLLECTED</span>
                     </div>
-                    
+
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
                         <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem;">
                             <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Collector Name</div>
@@ -1907,17 +1911,17 @@
         const status = computeStatus();
         const items = [];
         let cntReduced = 0;
-        
+
         document.querySelectorAll('.approved-qty-input').forEach((inp, i) => {
             const chk = document.getElementById(`chk-${i}`);
             const reason = document.getElementById(`reason-${i}`)?.value || '';
             const requested = parseFloat(inp.dataset.requested || 0);
             const approved = chk && !chk.checked ? 0 : (parseFloat(inp.value) || 0);
-            
+
             if (chk && chk.checked && approved > 0 && approved < requested) {
                 cntReduced++;
             }
-            
+
             items.push({
                 id: parseInt(inp.dataset.itemId),
                 quantity_approved: approved,
@@ -2022,7 +2026,7 @@
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             const newTable = doc.getElementById('requisitions-table-container');
-            
+
             if (newTable) {
                 container.innerHTML = newTable.innerHTML;
             }
@@ -2060,7 +2064,7 @@
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
                         const newTable = doc.getElementById('requisitions-table-container');
-                        
+
                         if (newTable) {
                             container.innerHTML = newTable.innerHTML;
                         }

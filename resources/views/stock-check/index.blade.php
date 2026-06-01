@@ -136,7 +136,7 @@
 </div>
 
 <!-- Reused Stock Verification Modal from Received Items -->
-<div id="stockCheckModal" class="modal-backdrop" style="display: none; align-items: center; justify-content: center; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); z-index: 2000; transition: opacity 0.3s ease;">
+<div id="stockCheckModal" class="modal-backdrop" style="display: none; align-items: center; justify-content: center; position: fixed; inset: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); z-index: 99999 !important; transition: opacity 0.3s ease;">
     <div class="modal-content glass-card animate-scale-up" style="max-width: 800px; width: 95%; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25); padding: 2rem; position: relative;">
         
         <div class="modal-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem;">
@@ -294,13 +294,15 @@
 }
 .modal-backdrop {
     position: fixed;
-    inset: 0;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
     background: rgba(0,0,0,0.5);
     backdrop-filter: blur(4px);
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 2000;
+    z-index: 99999 !important;
 }
 .modal-content {
     background: var(--bg-card);

@@ -77,10 +77,12 @@
 
     .modal-overlay {
         position: fixed;
-        inset: 0;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
         background: rgba(15, 23, 42, 0.45);
         backdrop-filter: blur(6px);
-        z-index: 3000;
+        z-index: 99999 !important;
         display: none;
         align-items: center;
         justify-content: center;
@@ -902,7 +904,7 @@
     </div>
 
     {{-- Provision Modal --}}
-    <div id="provisionModal" class="modal-overlay" style="z-index:5000;">
+    <div id="provisionModal" class="modal-overlay" style="z-index:99999 !important;">
         <div class="modal-box" style="max-width:480px;">
             <div style="padding:1.5rem 1.75rem;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;">
                 <div style="display:flex;align-items:center;gap:.75rem;">
@@ -971,7 +973,7 @@
     </div>
 
     {{-- Regenerate OTP Modal --}}
-    <div id="regenModal" class="modal-overlay" style="z-index:5001;">
+    <div id="regenModal" class="modal-overlay" style="z-index:100000 !important;">
         <div class="modal-box" style="max-width:420px;">
             <div style="padding:1.5rem;text-align:center;">
                 <div style="width:50px;height:50px;background:rgba(245,158,11,0.12);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
