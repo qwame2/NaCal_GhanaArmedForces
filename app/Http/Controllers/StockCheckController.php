@@ -125,21 +125,15 @@ class StockCheckController extends Controller
                     $msgContent .= "<p style='margin: 0; font-size: 0.75rem; color: #64748b; font-weight: 600;'>Pending Verification Approval</p>";
                     $msgContent .= "</div></div>";
 
-                    $msgContent .= "<div style='display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;'>";
+                    $msgContent .= "<div style='display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;'>";
                     $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Verifier:</b> " . auth()->user()->name . "</span></div>";
-                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Item:</b> {$description}</span></div>";
-                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Physical Count:</b> {$physicalCount}</span></div>";
-                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>System Stock:</b> {$currentStock}</span></div>";
-                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><span style='font-size: 0.85rem; color: " . ($variance < 0 ? '#ef4444' : '#10b981') . ";'><b style='color: #0f172a;'>Discrepancy:</b> " . ($variance > 0 ? '+' : '') . "{$variance}</span></div>";
-                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Condition:</b> {$condition}</span></div>";
-                    $msgContent .= "<div style='display: flex; align-items: flex-start; gap: 8px;'><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Remarks:</b> {$remarks}</span></div>";
                     $msgContent .= "</div>";
 
                     $msgContent .= "<div id='verification-actions-{$editReq->id}' style='display: flex; flex-direction: column; gap: 8px;'>";
-                    $msgContent .= "<div style='display: grid; grid-template-columns: 1fr 1fr; gap: 8px;'>";
-                    $msgContent .= "<button onclick='window.processVerificationApproval({$editReq->id}, \"approved\", this)' style='background: #10b981; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>Approve</button>";
-                    $msgContent .= "<button onclick='window.processVerificationApproval({$editReq->id}, \"rejected\", this)' style='background: #ef4444; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>Reject</button>";
-                    $msgContent .= "</div></div></div>";
+                    $msgContent .= "<button class='reconciliation-preview-btn' data-reconciliation-req-id='{$editReq->id}' style='width: 100%; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;'>";
+                    $msgContent .= "<svg style='width: 15px; height: 15px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'></path><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'></path></svg>";
+                    $msgContent .= "Preview Details</button>";
+                    $msgContent .= "</div></div>";
 
                     foreach ($admins as $admin) {
                         Message::create([
@@ -291,29 +285,15 @@ class StockCheckController extends Controller
                     $msgContent .= "<p style='margin: 0; font-size: 0.75rem; color: #64748b; font-weight: 600;'>Pending " . count($stagedItems) . " Items Approval</p>";
                     $msgContent .= "</div></div>";
 
-                    $msgContent .= "<div style='margin-bottom: 20px; max-height: 250px; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 10px;'>";
-                    $msgContent .= "<table style='width:100%; border-collapse:collapse; font-size:0.8rem; text-align:left;'>";
-                    $msgContent .= "<thead style='background:#f8fafc; border-bottom:1px solid #e2e8f0;'><tr style='color:#475569;'>";
-                    $msgContent .= "<th style='padding:8px;'>Item</th><th style='padding:8px;'>Sys</th><th style='padding:8px;'>Phys</th><th style='padding:8px;'>Var</th><th style='padding:8px;'>Cond</th>";
-                    $msgContent .= "</tr></thead><tbody>";
-
-                    foreach ($stagedItems as $si) {
-                        $varStyle = $si['variance'] === 0 ? 'color:#10b981;' : ($si['variance'] > 0 ? 'color:#6366f1;' : 'color:#ef4444;');
-                        $msgContent .= "<tr style='border-bottom:1px solid #f1f5f9; color:#475569;'>";
-                        $msgContent .= "<td style='padding:8px; font-weight:700; color:#0f172a;'>{$si['description']}</td>";
-                        $msgContent .= "<td style='padding:8px;'>{$si['current_stock']}</td>";
-                        $msgContent .= "<td style='padding:8px; font-weight:700; color:#0f172a;'>{$si['physical_count']}</td>";
-                        $msgContent .= "<td style='padding:8px; font-weight:800; {$varStyle}'>" . ($si['variance'] > 0 ? '+' : '') . "{$si['variance']}</td>";
-                        $msgContent .= "<td style='padding:8px;'>{$si['condition']}</td>";
-                        $msgContent .= "</tr>";
-                    }
-                    $msgContent .= "</tbody></table></div>";
+                    $msgContent .= "<div style='display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;'>";
+                    $msgContent .= "<div style='display: flex; align-items: center; gap: 8px;'><span style='font-size: 0.85rem; color: #475569;'><b style='color: #0f172a;'>Verifier:</b> " . auth()->user()->name . "</span></div>";
+                    $msgContent .= "</div>";
 
                     $msgContent .= "<div id='verification-actions-{$editReq->id}' style='display: flex; flex-direction: column; gap: 8px;'>";
-                    $msgContent .= "<div style='display: grid; grid-template-columns: 1fr 1fr; gap: 8px;'>";
-                    $msgContent .= "<button onclick='window.processVerificationApproval({$editReq->id}, \"approved\", this)' style='background: #10b981; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>Approve Batch</button>";
-                    $msgContent .= "<button onclick='window.processVerificationApproval({$editReq->id}, \"rejected\", this)' style='background: #ef4444; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px;'>Reject Batch</button>";
-                    $msgContent .= "</div></div></div>";
+                    $msgContent .= "<button class='reconciliation-preview-btn' data-reconciliation-req-id='{$editReq->id}' style='width: 100%; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;'>";
+                    $msgContent .= "<svg style='width: 15px; height: 15px;' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'></path><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'></path></svg>";
+                    $msgContent .= "Preview Batch Details</button>";
+                    $msgContent .= "</div></div>";
 
                     foreach ($admins as $admin) {
                         Message::create([

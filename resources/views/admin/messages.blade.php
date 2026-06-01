@@ -133,7 +133,7 @@
         max-width: 1240px;
         height: 85vh;
         background: #f8fafc;
-        z-index: 10001;
+        z-index: 100000 !important;
         box-shadow: 0 30px 100px rgba(15, 23, 42, 0.3), 0 0 0 1px rgba(15, 23, 42, 0.05);
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         display: flex;
@@ -156,7 +156,7 @@
         inset: 0;
         background: rgba(15, 23, 42, 0.6);
         backdrop-filter: blur(12px);
-        z-index: 10000;
+        z-index: 99999 !important;
         display: none;
         opacity: 0;
         transition: opacity 0.3s ease;
@@ -550,6 +550,7 @@
                     const isStrictlyPersonnel = msg.message && msg.message.includes('personnel-view') && !msg.message.includes('admin-view');
                     const isSraApproval = msg.message && (msg.message.includes('sra-approval-msg') || msg.message.includes('sra-approval-card') || msg.message.includes('SRA APPROVAL REQUIRED'));
                     const isEditReq = msg.message && (msg.message.includes('edit-req-msg') || msg.message.includes('AUTHORIZATION REQUIRED'));
+                    const isReconciliation = msg.message && (msg.message.includes('STOCK RECONCILIATION') || msg.message.includes('BATCH STOCK RECONCILIATION') || msg.message.includes('verification-approval-card'));
                     const isSubmissionStatus = msg.message && (msg.message.includes('ENTRY SUBMISSION LOGGED') || msg.message.includes('RECOVERY SUBMITTED') || msg.message.includes('REMAINDER SUBMITTED') || msg.message.includes('DISBURSEMENT REQUEST LOGGED'));
                     const isAltProposal = msg.message && (
                         msg.message.includes('SUGGESTED QUANTITY PROPOSED') || 
@@ -558,8 +559,57 @@
                         msg.message.includes('alternative items')
                     );
 
-                    if (msg.is_automated && (isAltProposal || (!isSraApproval && !isEditReq && (isStrictlyPersonnel || isSubmissionStatus)))) {
+                    if (msg.is_automated && (isAltProposal || (!isSraApproval && !isEditReq && !isReconciliation && (isStrictlyPersonnel || isSubmissionStatus)))) {
                         return;
+                    }
+
+                    // Dynamically simplify Stock Reconciliation approval cards for previous legacy messages in the database
+                    if (isReconciliation && msg.message) {
+                        try {
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = msg.message;
+
+                            const actionsDiv = tempDiv.querySelector('[id^="verification-actions-"]');
+                            if (actionsDiv) {
+                                const reqId = actionsDiv.id.replace('verification-actions-', '');
+
+                                // Remove details sections
+                                tempDiv.querySelectorAll('table').forEach(tbl => {
+                                    const parentTbl = tbl.closest('div');
+                                    if (parentTbl) parentTbl.remove();
+                                    else tbl.remove();
+                                });
+
+                                const detailsContainer = tempDiv.querySelector('div[style*="flex-direction: column"][style*="gap: 10px"]');
+                                if (detailsContainer) {
+                                    const lines = detailsContainer.querySelectorAll('div');
+                                    lines.forEach((line, idx) => {
+                                        if (idx > 0) { // Keep only Verifier (first item)
+                                            line.remove();
+                                        }
+                                    });
+                                    detailsContainer.style.marginBottom = '15px';
+                                }
+
+                                const hasStatusBadge = actionsDiv.querySelector('div[style*="font-weight: 900"], div[style*="font-weight: 950"]') || 
+                                                       actionsDiv.textContent.includes('VERIFICATION APPROVED') || 
+                                                       actionsDiv.textContent.includes('VERIFICATION REJECTED');
+
+                                if (!hasStatusBadge) {
+                                    const isBatch = msg.message.includes('BATCH');
+                                    const btnLabel = isBatch ? 'Preview Batch Details' : 'Preview Details';
+                                    actionsDiv.innerHTML = `
+                                        <button class="reconciliation-preview-btn" data-reconciliation-req-id="${reqId}" style="width: 100%; background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
+                                            <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'></path><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'></path></svg>
+                                            ${btnLabel}
+                                        </button>
+                                    `;
+                                }
+                            }
+                            msg.message = tempDiv.innerHTML;
+                        } catch (e) {
+                            /* console print removed */
+                        }
                     }
 
                     // Dynamically simplify SRA/Remainder approval cards for previous legacy messages in the database
@@ -1154,6 +1204,11 @@
             const btns = actionsDiv.querySelectorAll('button');
             btns.forEach(b => b.disabled = true);
         }
+        const sideActionsDiv = document.getElementById(`oversight-verification-actions-${id}`);
+        if (sideActionsDiv) {
+            const btns = sideActionsDiv.querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+        }
 
         btnElement.innerHTML = '<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Processing...';
         if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -1176,27 +1231,51 @@
             })
             .then(data => {
                 if (data.success) {
-                    const actionsDiv = document.getElementById(`verification-actions-${id}`);
-                    if (actionsDiv) {
-                        const color = status === 'approved' ? '#10b981' : '#dc2626';
-                        const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
-                        actionsDiv.innerHTML = `<div style="padding: 12px 20px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 900; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
+                    const color = status === 'approved' ? '#10b981' : '#dc2626';
+                    const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+                    const htmlBadge = `<div style="padding: 12px 20px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 900; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
                         <i data-lucide="${status === 'approved' ? 'check-circle' : 'alert-circle'}" style="width: 16px;"></i> VERIFICATION ${status.toUpperCase()}
                     </div>`;
-                        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+                    if (actionsDiv) {
+                        actionsDiv.innerHTML = htmlBadge;
                     }
+                    if (sideActionsDiv) {
+                        sideActionsDiv.innerHTML = htmlBadge;
+                    }
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
                     showToast('Inventory Reconciled', `Stock verification has been ${status}.`, 'success');
+
+                    if (sideActionsDiv) {
+                        setTimeout(() => {
+                            window.closeOversightPanel();
+                        }, 1200);
+                    }
                 } else {
                     showToast('Update Failed', data.message || 'Error processing verification', 'error');
+                    if (actionsDiv) {
+                        const btns = actionsDiv.querySelectorAll('button');
+                        btns.forEach(b => b.disabled = false);
+                    }
+                    if (sideActionsDiv) {
+                        const btns = sideActionsDiv.querySelectorAll('button');
+                        btns.forEach(b => b.disabled = false);
+                    }
                     btnElement.innerText = status === 'approved' ? 'Approve' : 'Reject';
-                    btnElement.disabled = false;
                 }
             })
             .catch(err => {
                 /* console print removed */
                 showToast('System Error', 'Could not complete the verification process.', 'error');
+                if (actionsDiv) {
+                    const btns = actionsDiv.querySelectorAll('button');
+                    btns.forEach(b => b.disabled = false);
+                }
+                if (sideActionsDiv) {
+                    const btns = sideActionsDiv.querySelectorAll('button');
+                    btns.forEach(b => b.disabled = false);
+                }
                 btnElement.innerText = status === 'approved' ? 'Approve' : 'Reject';
-                btnElement.disabled = false;
             });
     }
 
@@ -1302,14 +1381,21 @@
     }
 
     window.showRecoveryPreview = function(reqId, btn) {
+        if (typeof window.ensureOversightElementsRelocated === 'function') window.ensureOversightElementsRelocated();
         if (btn) {
             btn.disabled = true;
             btn.innerHTML = `<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Loading...`;
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        fetch(`{{ url('/api/edit-requests') }}/${reqId}/recovery-preview`)
-            .then(res => res.json())
+        fetch(`{{ url('/api/edit-requests') }}/${reqId}/recovery-preview`, {
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error(`Recovery fetch failed: ${res.status}`);
+                return res.json();
+            })
             .then(data => {
                 if (btn) {
                     btn.disabled = false;
@@ -1328,6 +1414,194 @@
                 showToast('Error', 'Could not fetch recovery details.', 'error');
             });
     };
+
+    window.showReconciliationPreview = function(reqId, btn) {
+        if (typeof window.ensureOversightElementsRelocated === 'function') window.ensureOversightElementsRelocated();
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Loading...`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        fetch(`{{ url('/api/edit-requests') }}/${reqId}/reconciliation-preview`, {
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error(`Preview fetch failed: ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                if (btn) {
+                    btn.disabled = false;
+                    const isBatch = data.request_type === 'batch_stock_verification';
+                    btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> ${isBatch ? 'Preview Batch Details' : 'Preview Details'}`;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+                _renderReconciliationSheet(data, reqId);
+            })
+            .catch(err => {
+                showToast('Error', 'Could not fetch reconciliation details.', 'error');
+                if (btn) {
+                    btn.disabled = false;
+                    const isBatch = btn.textContent.includes('Batch');
+                    btn.innerHTML = `<i data-lucide="eye" style="width:15px;"></i> ${isBatch ? 'Preview Batch Details' : 'Preview Details'}`;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+            });
+    };
+
+    function _renderReconciliationSheet(data, reqId) {
+        let footerHtml = '';
+        if (data.status === 'pending') {
+            footerHtml = `
+                <div id="oversight-verification-actions-${reqId}" style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0;">
+                    <button onclick="window.processVerificationApproval(${reqId}, 'rejected', this)" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                        <i data-lucide="x-circle" style="width: 18px;"></i> Reject
+                    </button>
+                    <button onclick="window.processVerificationApproval(${reqId}, 'approved', this)" style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                        <i data-lucide="check-circle" style="width: 18px;"></i> Approve Reconciliation
+                    </button>
+                </div>
+            `;
+        } else {
+            const isApproved = data.status === 'approved';
+            const color = isApproved ? '#10b981' : '#dc2626';
+            const bgColor = isApproved ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
+            const labelText = isApproved ? 'VERIFICATION APPROVED' : 'VERIFICATION REJECTED';
+            footerHtml = `
+                <div style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: center; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0;">
+                    <div style="padding: 12px 24px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 950; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;">
+                        <i data-lucide="${isApproved ? 'check-circle' : 'alert-circle'}" style="width: 18px;"></i> ${labelText}
+                    </div>
+                </div>
+            `;
+        }
+
+        let bodyHtml = '';
+        if (data.request_type === 'stock_verification') {
+            const payload = data.payload;
+            const variance = parseFloat(payload.variance);
+            const varColor = variance === 0 ? '#10b981' : (variance > 0 ? '#4f46e5' : '#ef4444');
+            const varBg = variance === 0 ? 'rgba(16, 185, 129, 0.06)' : (variance > 0 ? 'rgba(79, 70, 229, 0.06)' : 'rgba(239, 68, 68, 0.06)');
+            const varBorder = variance === 0 ? 'rgba(16, 185, 129, 0.2)' : (variance > 0 ? 'rgba(79, 70, 229, 0.2)' : 'rgba(239, 68, 68, 0.2)');
+            const varSign = variance > 0 ? '+' : '';
+
+            bodyHtml = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; background: #fff; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
+                    <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; grid-column: span 2;">
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Item Description</span>
+                        <span style="font-size: 1.1rem; font-weight: 900; color: #0f172a; line-height: 1.4;">${payload.description}</span>
+                    </div>
+                    <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Condition</span>
+                        <span style="font-size: 1rem; font-weight: 800; color: #4f46e5; background: rgba(79, 70, 229, 0.1); padding: 4px 12px; border-radius: 8px; display: inline-block;">${payload.condition}</span>
+                    </div>
+                    <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">System Stock</span>
+                        <span style="font-size: 1.5rem; font-weight: 900; color: #64748b;">${payload.current_stock}</span>
+                    </div>
+                    <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Physical Count</span>
+                        <span style="font-size: 1.5rem; font-weight: 900; color: #0f172a;">${payload.physical_count}</span>
+                    </div>
+                    <div style="background: ${varBg}; padding: 1.25rem; border-radius: 16px; border: 1px solid ${varBorder};">
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: ${varColor}; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Discrepancy / Variance</span>
+                        <span style="font-size: 1.5rem; font-weight: 900; color: ${varColor};">${varSign}${payload.variance}</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding: 1.5rem; background: #fff; border-radius: 20px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="message-square" style="width: 14px;"></i> Verifier Remarks
+                    </div>
+                    <div style="font-size: 0.95rem; color: #475569; font-weight: 500; font-style: italic; line-height: 1.6; border-left: 3px solid #f59e0b; padding-left: 15px;">
+                        ${payload.remarks || '-- No specific notes provided --'}
+                    </div>
+                </div>
+            `;
+        } else {
+            const items = data.payload.items || [];
+            let rowsHtml = '';
+            items.forEach(si => {
+                const variance = parseFloat(si.variance);
+                const varStyle = variance === 0 ? 'color:#10b981;' : (variance > 0 ? 'color:#4f46e5;' : 'color:#ef4444;');
+                const varSign = variance > 0 ? '+' : '';
+                rowsHtml += `
+                    <tr style="border-bottom: 1px solid #e2e8f0; color: #475569;">
+                        <td style="padding: 12px; font-weight: 700; color: #0f172a;">${si.description}</td>
+                        <td style="padding: 12px;">${si.current_stock}</td>
+                        <td style="padding: 12px; font-weight: 700; color: #0f172a;">${si.physical_count}</td>
+                        <td style="padding: 12px; font-weight: 800; ${varStyle}">${varSign}${si.variance}</td>
+                        <td style="padding: 12px;"><span style="font-size: 0.8rem; font-weight: 700; color: #4f46e5; background: rgba(79, 70, 229, 0.08); padding: 4px 10px; border-radius: 6px;">${si.condition}</span></td>
+                        <td style="padding: 12px; font-style: italic; font-size: 0.85rem; max-width: 250px; word-break: break-word;">${si.remarks || '--'}</td>
+                    </tr>
+                `;
+            });
+
+            bodyHtml = `
+                <div style="background: #fff; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.02); overflow: hidden;">
+                    <div style="max-height: 450px; overflow-y: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
+                            <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 10;">
+                                <tr style="color: #475569; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">
+                                    <th style="padding: 16px 12px;">Item</th>
+                                    <th style="padding: 16px 12px;">System Stock</th>
+                                    <th style="padding: 16px 12px;">Physical Count</th>
+                                    <th style="padding: 16px 12px;">Variance</th>
+                                    <th style="padding: 16px 12px;">Condition</th>
+                                    <th style="padding: 16px 12px;">Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        const isBatch = data.request_type === 'batch_stock_verification';
+        const title = isBatch ? 'Batch Stock Reconciliation' : 'Stock Reconciliation';
+        const iconName = isBatch ? 'clipboard-list' : 'check-square';
+        const iconGradient = isBatch ? 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)';
+        const iconShadow = '0 10px 25px rgba(59, 130, 246, 0.3)';
+
+        const html = `
+            <div style="background: white; padding: 3.5rem 3rem 2.5rem 3rem; border-bottom: 1px solid #e2e8f0; position: relative;">
+                <button onclick="window.closeOversightPanel()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
+                    <i data-lucide="x" style="width: 18px;"></i>
+                </button>
+
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div style="width: 64px; height: 64px; background: ${iconGradient}; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: ${iconShadow};">
+                        <i data-lucide="${iconName}" style="width: 32px; height: 32px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Strategic Stock Oversight</div>
+                        <h2 style="margin: 0; font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -0.03em;">${title}</h2>
+                        <p style="margin: 4px 0 0; font-size: 0.95rem; color: #64748b; font-weight: 500;">Submitted by <b>${data.personnel}</b></p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding: 2.5rem 3rem; flex: 1; overflow-y: auto; background: #f8fafc;">
+                ${bodyHtml}
+            </div>
+
+            ${footerHtml}
+        `;
+
+        document.getElementById('oversightPanelContent').innerHTML = html;
+        document.getElementById('oversightOverlay').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('oversightOverlay').classList.add('show');
+            document.getElementById('oversightSidePanel').classList.add('open');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }, 10);
+    }
+
 
     window.processEditRequest = function(id, status, btnElement) {
         if (status === 'canceled') {
@@ -1580,13 +1854,23 @@
         });
     }
 
-    // ---- Init: move the sheet to <body> so position:fixed works correctly ----
+    // ---- Init: move the sheets to <body> so position:fixed works correctly ----
     // CSS transforms on parent containers break position:fixed — moving to body escapes this.
+    window.ensureOversightElementsRelocated = function() {
+        const overlay = document.getElementById('oversightOverlay');
+        const panel = document.getElementById('oversightSidePanel');
+        if (overlay && panel && overlay.parentNode !== document.body) {
+            document.body.appendChild(overlay);
+            document.body.appendChild(panel);
+        }
+    };
+
     (function() {
         const sheet = document.getElementById('remainderPreviewSheet');
         if (sheet && sheet.parentElement !== document.body) {
             document.body.appendChild(sheet);
         }
+        window.ensureOversightElementsRelocated();
     })();
 
     // Helper to render the bottom sheet given preview data from the API
@@ -1787,6 +2071,7 @@
     //  1. Old messages: onclick='window.showRemainderPreview(this)' — receives the button element
     //  2. New messages: event delegation below passes (reqId, btnEl)
     window.showRemainderPreview = function(reqIdOrBtn, btnEl) {
+        if (typeof window.ensureOversightElementsRelocated === 'function') window.ensureOversightElementsRelocated();
         let reqId, btn;
 
         if (reqIdOrBtn && typeof reqIdOrBtn === 'object' && reqIdOrBtn.nodeType) {
@@ -1864,6 +2149,7 @@
     };
 
     window.showEntryPreview = function(reqId, btn) {
+        if (typeof window.ensureOversightElementsRelocated === 'function') window.ensureOversightElementsRelocated();
         if (window._entryPreviewLoading) return;
 
         window._entryPreviewLoading = true;
@@ -2485,6 +2771,17 @@
                 return;
             }
         }
+
+        const recBtn = e.target.closest('button.reconciliation-preview-btn, a.reconciliation-preview-btn, [data-reconciliation-req-id]');
+        if (recBtn) {
+            e.preventDefault();
+            const reqId = recBtn.getAttribute('data-reconciliation-req-id');
+            if (reqId) {
+                e.stopPropagation();
+                window.showReconciliationPreview(reqId, recBtn);
+                return;
+            }
+        }
     });
 
     // Spin keyframe for loading indicator
@@ -2669,5 +2966,15 @@
             });
         });
     };
+
+    // Relocate oversight elements to body to ensure fixed overlay covers viewport without parent transforms clipping it
+    document.addEventListener('DOMContentLoaded', function() {
+        const overlay = document.getElementById('oversightOverlay');
+        const panel = document.getElementById('oversightSidePanel');
+        if (overlay && panel) {
+            document.body.appendChild(overlay);
+            document.body.appendChild(panel);
+        }
+    });
 </script>
 @endsection

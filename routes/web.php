@@ -1208,6 +1208,29 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         ]);
     })->name('api.recovery-preview');
 
+    // Reconciliation Preview API — returns preview data for a stock verification request
+    Route::get('/api/edit-requests/{id}/reconciliation-preview', function ($id) {
+        if (!auth()->user()->is_admin) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $editReq = \App\Models\EditRequest::with('user')->findOrFail($id);
+
+        if (!in_array($editReq->request_type, ['stock_verification', 'batch_stock_verification'])) {
+            return response()->json(['error' => 'Not a reconciliation request'], 400);
+        }
+
+        $payload = json_decode($editReq->payload, true);
+
+        return response()->json([
+            'personnel' => $editReq->user->name ?? 'Unknown',
+            'status'    => $editReq->status,
+            'request_type' => $editReq->request_type,
+            'payload'   => $payload
+        ]);
+    })->name('api.reconciliation-preview');
+
+
     // Returns Routes
     Route::post('/returns/purge', [ReturnController::class, 'purge'])->name('returns.purge');
     Route::get('/returns', [ReturnController::class, 'index'])->name('returns.index');

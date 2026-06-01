@@ -10,7 +10,7 @@
         :root {
             --system-zoom: 1;
         }
-        
+
         body {
             zoom: var(--system-zoom);
             min-height: 100vh;
@@ -110,9 +110,9 @@
                 </li>
             @elseif(in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
                 <li class="nav-item">
-                    <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" data-tooltip="Oversight Requisitions">
+                    <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" data-tooltip="Review Requests">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                        <span>Oversight Requisitions</span>
+                        <span>Review Requests</span>
                         @php $mainReqsCount = $mainRequisitionsCount ?? 0; @endphp
                         <span id="sidebar-badge-main-reqs"
                               style="background: #10b981; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $mainReqsCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
@@ -346,7 +346,7 @@
             // Apply zoom using CSS variable and direct style for compatibility
             document.documentElement.style.setProperty('--system-zoom', window.currentZoom);
             document.body.style.zoom = window.currentZoom;
-            
+
             // For Firefox fallback
             if (navigator.userAgent.indexOf('Firefox') !== -1) {
                 document.body.style.transform = `scale(${window.currentZoom})`;
@@ -357,10 +357,10 @@
 
             const display = document.getElementById('zoom-display');
             if (display) display.innerText = Math.round(window.currentZoom * 100) + '%';
-            
+
             // Update settings UI if present
             if (typeof updateSettingsZoomUI === 'function') updateSettingsZoomUI();
-            
+
             localStorage.setItem('system-zoom', window.currentZoom);
         }
 
@@ -556,12 +556,12 @@
                 notificationBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const isVisible = notificationDropdown.style.display === 'block';
-                    
+
                     // Close other dropdowns if any
                     if (typeof searchResults !== 'undefined') searchResults.style.display = 'none';
-                    
+
                     notificationDropdown.style.display = isVisible ? 'none' : 'block';
-                    
+
                     if (!isVisible) {
                         notificationBtn.style.background = 'var(--bg-card)';
                         notificationBtn.style.transform = 'scale(0.95)';
@@ -648,7 +648,7 @@
                                 }
                                 if (typeof lucide !== 'undefined') lucide.createIcons();
                             }
-                            
+
                             const headerBadge = dropdown.querySelector('span[style*="background: var(--primary)"]');
                             if (headerBadge) {
                                 headerBadge.innerText = data.count + ' New';
@@ -679,9 +679,9 @@
 
                 fetch("{{ route('api.notifications.dismiss', [], false) }}", {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({ description: description })
                 })
@@ -820,26 +820,26 @@
 
                 tooltipEl.textContent = text;
                 tooltipEl.classList.add('visible');
-                
+
                 // Position calculation
                 const rect = target.getBoundingClientRect();
                 const tooltipRect = tooltipEl.getBoundingClientRect();
-                
+
                 let top = rect.top - tooltipRect.height - 12;
                 let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
-                
+
                 // Boundary checks
                 tooltipEl.classList.remove('place-bottom');
                 if (top < 10) {
                     top = rect.bottom + 12;
                     tooltipEl.classList.add('place-bottom');
                 }
-                
+
                 if (left < 10) left = 10;
                 if (left + tooltipRect.width > window.innerWidth - 10) {
                     left = window.innerWidth - tooltipRect.width - 10;
                 }
-                
+
                 tooltipEl.style.top = top + 'px';
                 tooltipEl.style.left = left + 'px';
             }
@@ -853,7 +853,7 @@
 
         // Initialize on load
         document.addEventListener('DOMContentLoaded', initTooltips);
-        
+
         // Watch for dynamic DOM changes (AJAX results, Modals, etc)
         const tooltipObserver = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
@@ -862,7 +862,7 @@
         });
         tooltipObserver.observe(document.body, { childList: true, subtree: true });
     </script>
-    
+
     <style>
         .global-premium-tooltip {
             position: fixed;
