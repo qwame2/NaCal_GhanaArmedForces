@@ -1068,7 +1068,7 @@
        PRINT STYLES — Clean Formal Document
     ═══════════════════════════════════════════ */
     @media print {
-        @page { size: A4 landscape; margin: 0; }
+        @page { size: A4 landscape; margin: 15mm; }
 
         /* ── Reset body ── */
         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -1078,7 +1078,7 @@
             color: #0f172a !important;
             font-family: 'Arial', sans-serif !important;
             font-size: 9.5pt !important;
-            padding: 15mm 15mm 15mm 15mm !important;
+            padding: 0 !important;
             box-sizing: border-box !important;
         }
 

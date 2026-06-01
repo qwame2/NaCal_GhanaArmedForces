@@ -99,6 +99,11 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             return redirect()->route('admin.index')->with('warning', 'Strategic Oversight required. Redirecting to Command Center.');
         }
 
+        // Redirect Auditors to their designated page
+        if (auth()->user()->role === 'Auditor') {
+            return redirect()->route('auditor.dashboard');
+        }
+
         // Redirect Requisitioners to their designated page
         if (auth()->user()->role === 'Requisitioner') {
             return redirect()->route('requisitions.index');
@@ -490,6 +495,10 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/main-admin/requisitions/{id}/alternative-response', [\App\Http\Controllers\StoreRequisitionController::class, 'mainAdminAlternativeResponse'])->name('main-admin.requisitions.alternative-response');
     Route::get('/overdue-assets', [\App\Http\Controllers\StoreRequisitionController::class, 'overdueAssets'])->name('requisitions.overdue');
 
+    // Auditor Routes
+    Route::get('/auditor', [\App\Http\Controllers\AuditorController::class, 'index'])->name('auditor.dashboard');
+    Route::get('/auditor/print', [\App\Http\Controllers\AuditorController::class, 'printReport'])->name('auditor.print');
+
     // Temp Requisitioner Provisioning Routes (Non-Stores Department Heads only)
     Route::post('/dept-head/temp-requisitioners', [\App\Http\Controllers\TempRequisitionerController::class, 'store'])->name('dept-head.temp-requisitioners.store');
     Route::delete('/dept-head/temp-requisitioners/{id}', [\App\Http\Controllers\TempRequisitionerController::class, 'destroy'])->name('dept-head.temp-requisitioners.destroy');
@@ -512,6 +521,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/api/reports/data', [ReportController::class, 'data'])->name('api.reports.data');
 
     Route::get('/stock-check', [\App\Http\Controllers\StockCheckController::class, 'index'])->name('stockcheck.index');
+    Route::get('/stock-check/batch', [\App\Http\Controllers\StockCheckController::class, 'batchView'])->name('stockcheck.batch');
     Route::get('/notifications', function() {
         return view('notifications');
     })->name('notifications.index');
@@ -1220,9 +1230,59 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             ->where('issued_items.quantity', '>', 0)
             ->sum('issued_items.quantity');
 
+        // Retrieve active temporary loan details
+        $loanDetails = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->leftJoin('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
+            ->where('issued_items.description', $description)
+            ->where('issuances.issuance_type', 'Temporary')
+            ->where('issued_items.quantity', '>', 0)
+            ->select(
+                'issued_items.id as issued_item_id',
+                'issued_items.quantity',
+                'issued_items.unit',
+                'issuances.beneficiary',
+                'issuances.authority',
+                'issuances.issuance_date',
+                'store_requisitions.purpose',
+                'store_requisitions.created_at as requisition_created_at',
+                'store_requisitions.department'
+            )
+            ->get();
+
+        $loans = [];
+        foreach ($loanDetails as $loan) {
+            $returnDateStr = null;
+            if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $loan->purpose, $matches)) {
+                try {
+                    $returnDateStr = \App\Models\Setting::parseExpectedReturnDate(trim($matches[1]))->format('Y-m-d');
+                } catch (\Exception $e) {}
+            }
+            if (!$returnDateStr && $loan->requisition_created_at) {
+                $returnDateStr = \Carbon\Carbon::parse($loan->requisition_created_at)->format('Y-m-d');
+            }
+            $isOverdue = false;
+            if ($returnDateStr) {
+                $isOverdue = \Carbon\Carbon::now()->format('Y-m-d') >= $returnDateStr;
+            }
+
+            $loans[] = [
+                'issued_item_id' => $loan->issued_item_id,
+                'quantity' => $loan->quantity,
+                'unit' => $loan->unit ?: 'units',
+                'beneficiary' => $loan->beneficiary,
+                'authority' => $loan->authority,
+                'issuance_date' => $loan->issuance_date,
+                'expected_return_date' => $returnDateStr ? \Carbon\Carbon::parse($returnDateStr)->format('d/m/Y') : 'N/A',
+                'department' => $loan->department,
+                'is_overdue' => $isOverdue,
+                'purpose' => $loan->purpose
+            ];
+        }
+
         return response()->json([
             'batches' => $items,
-            'on_loan' => $onLoan
+            'on_loan' => $onLoan,
+            'loans' => $loans
         ]);
     })->name('api.item-audit-details');
 

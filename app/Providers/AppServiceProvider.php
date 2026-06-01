@@ -56,6 +56,11 @@ class AppServiceProvider extends ServiceProvider
                     // Ignore
                 }
             }
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'stores_approved_by')) {
+                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('stores_approved_by')->nullable();
+                });
+            }
             if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'rank')) {
                 \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
                     $table->string('rank')->nullable();
@@ -128,6 +133,34 @@ class AppServiceProvider extends ServiceProvider
                 }
             } catch (\Exception $ex) {
                 // Ignore backfill errors on migration
+            }
+
+            // Backfill stores_approved_by for existing approved requisitions
+            try {
+                $needsBackfillStores = \App\Models\StoreRequisition::whereNull('stores_approved_by')
+                    ->where('main_admin_status', 'approved')
+                    ->get();
+                foreach ($needsBackfillStores as $req) {
+                    $storesHead = \App\Models\User::whereIn('role', ['Main Admin', 'Department Head'])
+                        ->where(fn($q) => $q->where('department', 'Stores')->orWhere('department', 'Store'))
+                        ->first();
+                    if ($storesHead) {
+                        $req->stores_approved_by = $storesHead->name;
+                        $req->save();
+                    } else {
+                        $req->stores_approved_by = "Stores Department Head";
+                        $req->save();
+                    }
+                }
+            } catch (\Exception $ex) {
+                // Ignore backfill errors on migration
+            }
+
+            // Ensure all existing Auditor accounts have is_temp_account set to true
+            try {
+                \App\Models\User::where('role', 'Auditor')->where('is_temp_account', false)->update(['is_temp_account' => true]);
+            } catch (\Exception $ex) {
+                // Ignore
             }
         } catch (\Exception $e) {
             // Ignore

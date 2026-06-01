@@ -72,6 +72,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function getIsTempAccountAttribute($value)
+    {
+        return $this->role === 'Auditor' ? true : (bool)$value;
+    }
+
     /**
      * The Department Head who created this temporary account.
      */

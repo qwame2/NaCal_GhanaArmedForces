@@ -36,7 +36,7 @@ class AdminController extends Controller
                     }
                 }
             ],
-            'role'       => 'required|string|in:Department Head,Main Admin,Officer,Requisitioner,Dept Head HR,Head of Welfare',
+            'role'       => 'required|string|in:Department Head,Main Admin,Officer,Requisitioner,Dept Head HR,Head of Welfare,Auditor',
             'department' => 'nullable|string|max:255',
             'rank'       => [
                 'nullable',
@@ -63,6 +63,10 @@ class AdminController extends Controller
             $role = 'Department Head';
             $department = 'Welfare Department';
             $isAdmin = false;
+        } elseif ($role === 'Auditor') {
+            $role = 'Auditor';
+            $department = 'Internal Audit';
+            $isAdmin = false;
         } elseif ($role === 'Department Head') {
             $department = $request->department;
             if (!$department) {
@@ -82,6 +86,7 @@ class AdminController extends Controller
             'role'               => $role,
             'rank'               => $request->rank,
             'is_admin'           => $isAdmin,
+            'is_temp_account'    => ($role === 'Auditor'),
             'is_active'          => true,
             'must_change_password' => true,
         ]);
@@ -214,6 +219,7 @@ class AdminController extends Controller
             'role' => $request->role,
             'department' => $request->department,
             'is_admin' => $request->role === 'Admin',
+            'is_temp_account' => $request->role === 'Auditor',
         ]);
 
         // Log the update

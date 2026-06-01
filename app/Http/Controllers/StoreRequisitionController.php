@@ -1262,6 +1262,7 @@ class StoreRequisitionController extends Controller
                 }
             } else {
                 $req->main_admin_status = 'approved';
+                $req->stores_approved_by = auth()->user()->name;
                 $actionName = 'MAIN_ADMIN_APPROVE';
                 $logDesc = "Stores Department Head " . auth()->user()->name . " approved store requisition #{$req->id} from {$req->department}. Passed to Head of Stores (Admin) for final processing.";
             }

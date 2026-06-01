@@ -43,6 +43,9 @@ class EnsureNotTempAccount
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check() && Auth::user()->is_temp_account) {
+            if (Auth::user()->role === 'Auditor') {
+                return $next($request);
+            }
             if (!Auth::user()->is_active) {
                 $user = Auth::user();
                 $user->update(['is_online' => false]);

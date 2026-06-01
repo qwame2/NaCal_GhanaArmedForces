@@ -994,6 +994,7 @@
                                 <option value="Main Admin">Dept. Head (Stores)</option>
                                 <option value="Dept Head HR">Dept. Head (HR)</option>
                                 <option value="Head of Welfare">Head of Welfare</option>
+                                <option value="Auditor">Auditor</option>
                                 <option value="Officer">Store Officer</option>
                             </select>
                         </div>
@@ -1231,6 +1232,22 @@
                 document.getElementById('addPersonnelForm').appendChild(storesField);
             } else {
                 storesField.value = 'Welfare Department';
+            }
+        } else if (role === 'Auditor') {
+            deptGroup.style.display = 'none';
+            customGroup.style.display = 'none';
+            deptSelect.required = false;
+            deptSelect.name = '';
+            let storesField = document.getElementById('swal-stores-dept-hidden');
+            if (!storesField) {
+                storesField = document.createElement('input');
+                storesField.type = 'hidden';
+                storesField.name = 'department';
+                storesField.id = 'swal-stores-dept-hidden';
+                storesField.value = 'Internal Audit';
+                document.getElementById('addPersonnelForm').appendChild(storesField);
+            } else {
+                storesField.value = 'Internal Audit';
             }
         } else {
             deptGroup.style.display = 'none';

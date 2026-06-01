@@ -24,6 +24,8 @@ class AuthController extends Controller
 
             if ($user->is_admin) {
                 return redirect()->route('admin.index');
+            } elseif ($user->role === 'Auditor') {
+                return redirect()->route('auditor.dashboard');
             } elseif (in_array($user->role, ['Main Admin', 'Department Head'])) {
                 return redirect()->route('main-admin.requisitions');
             } else {
@@ -233,6 +235,8 @@ class AuthController extends Controller
             if ($target === 'admin') {
                 if ($user->is_admin) {
                     return redirect()->route('admin.index');
+                } elseif ($user->role === 'Auditor') {
+                    return redirect()->route('auditor.dashboard');
                 } elseif (in_array($user->role, ['Main Admin', 'Department Head'])) {
                     return redirect()->route('main-admin.requisitions');
                 } else {
@@ -247,6 +251,9 @@ class AuthController extends Controller
             if ($target === 'user') {
                 if ($user->is_admin) {
                     return redirect()->route('admin.index');
+                }
+                if ($user->role === 'Auditor') {
+                    return redirect()->route('auditor.dashboard');
                 }
                 if ($user->role === 'Requisitioner') {
                     return redirect()->route('requisitions.index');
@@ -270,6 +277,8 @@ class AuthController extends Controller
             // Default fallback based on role
             if ($user->is_admin) {
                 return redirect()->route('admin.index');
+            } elseif ($user->role === 'Auditor') {
+                return redirect()->route('auditor.dashboard');
             } elseif ($user->role === 'Requisitioner') {
                 return redirect()->route('requisitions.index');
             } elseif (in_array($user->role, ['Main Admin', 'Department Head'])) {

@@ -348,4 +348,66 @@ class StockCheckController extends Controller
             return response()->json(['success' => false, 'message' => 'Batch verification failed: ' . $e->getMessage()], 500);
         }
     }
+
+    public function batchView(Request $request)
+    {
+        $descriptions = $request->input('descriptions', []);
+        if (empty($descriptions)) {
+            return redirect()->route('stockcheck.index')->with('error', 'No items selected for batch verification.');
+        }
+
+        $ledgeMap = $this->getLedgeMap();
+
+        // Fetch aggregate totals for selected items
+        $items = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->whereIn('inventory_items.description', $descriptions)
+            ->selectRaw('
+                inventory_items.description, 
+                inventory_batches.ledge_category,
+                MAX(inventory_items.unit) as unit,
+                SUM(inventory_items.stock_balance) as total_available,
+                SUM(inventory_items.qty) as total_received,
+                SUM(inventory_items.variance) as total_variance
+            ')
+            ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
+            ->orderBy('inventory_items.description', 'asc')
+            ->get();
+
+        // Retrieve active temporary loan details
+        $loans = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->leftJoin('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
+            ->whereIn('issued_items.description', $descriptions)
+            ->where('issuances.issuance_type', 'Temporary')
+            ->where('issued_items.quantity', '>', 0)
+            ->select(
+                'issued_items.id as issued_item_id',
+                'issued_items.description as item_desc',
+                'issued_items.quantity',
+                'issued_items.unit',
+                'issuances.beneficiary',
+                'issuances.authority',
+                'issuances.issuance_date',
+                'store_requisitions.purpose',
+                'store_requisitions.created_at as requisition_created_at',
+                'store_requisitions.department'
+            )
+            ->get()
+            ->map(function($loan) {
+                $returnDateStr = null;
+                if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $loan->purpose, $matches)) {
+                    try {
+                        $returnDateStr = \App\Models\Setting::parseExpectedReturnDate(trim($matches[1]))->format('Y-m-d');
+                    } catch (\Exception $e) {}
+                }
+                if (!$returnDateStr && $loan->requisition_created_at) {
+                    $returnDateStr = \Carbon\Carbon::parse($loan->requisition_created_at)->format('Y-m-d');
+                }
+                $loan->is_overdue = $returnDateStr ? (\Carbon\Carbon::now()->format('Y-m-d') >= $returnDateStr) : false;
+                $loan->expected_return_date = $returnDateStr ? \Carbon\Carbon::parse($returnDateStr)->format('d/m/Y') : 'N/A';
+                return $loan;
+            });
+
+        return view('stock-check.batch', compact('items', 'ledgeMap', 'loans'));
+    }
 }
