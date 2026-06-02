@@ -129,21 +129,50 @@
         }
 
         @media print {
-            body {
-                padding: 10px;
+            @page {
+                size: A4 portrait;
+                margin: 12mm 10mm;
             }
+
+            html, body {
+                height: auto !important;
+                overflow: visible !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
             .no-print {
-                display: none;
+                display: none !important;
             }
+
             .page-break {
                 page-break-before: always;
-                height: 40px; /* Spacing at the top of subsequent pages */
+                break-before: page;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
                 display: block;
+            }
+
+            table {
+                page-break-inside: auto;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            thead {
+                display: table-header-group;
             }
         }
     </style>
 </head>
-<body>
+<body onload="window.print();">
 
     {{-- Floating Print Button for Screen Mode --}}
     <div class="no-print" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">

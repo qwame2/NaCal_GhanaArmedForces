@@ -545,6 +545,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/settings/signature', [SettingsController::class, 'updateSignature'])->name('settings.signature');
     Route::post('/settings/signature/remove', [SettingsController::class, 'removeSignature'])->name('settings.signature.remove');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/print', [ReportController::class, 'printReport'])->name('reports.print');
+
     Route::get('/api/reports/data', [ReportController::class, 'data'])->name('api.reports.data');
 
     Route::get('/stock-check', [\App\Http\Controllers\StockCheckController::class, 'index'])->name('stockcheck.index');

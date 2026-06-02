@@ -239,18 +239,21 @@
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 20mm 20mm 20mm 20mm;
+                margin: 15mm 15mm 15mm 15mm;
             }
 
-            body {
+            html, body {
+                height: auto !important;
+                overflow: visible !important;
                 padding: 0 !important;
                 margin: 0 !important;
                 background: #fff !important;
-                counter-reset: page;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
 
             .print-btn {
-                display: none;
+                display: none !important;
             }
 
             .info-card {
@@ -287,7 +290,7 @@
     </style>
 </head>
 
-<body>
+<body onload="window.print();">
     <button class="print-btn" onclick="window.print()">Print Document</button>
 
     <div class="header">

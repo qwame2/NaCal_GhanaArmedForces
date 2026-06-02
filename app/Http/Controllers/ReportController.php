@@ -388,4 +388,128 @@ class ReportController extends Controller
             'selectedItemsCount'  => count($selectedItems),
         ]);
     }
+    public function printReport(Request $request)
+    {
+        $period = $request->query('period', 'monthly');
+
+        $startDate = Carbon::now();
+        $endDate   = Carbon::now();
+        $dateLabel = 'General Report';
+
+        $rawStartDate = $request->query('start_date', '');
+        $rawEndDate   = $request->query('end_date', '');
+
+        if ($period === 'custom' && $rawStartDate && $rawEndDate) {
+            $startDate = Carbon::parse($rawStartDate)->startOfDay();
+            $endDate   = Carbon::parse($rawEndDate)->endOfDay();
+            $dateLabel = 'Custom Range: ' . $startDate->format('d M Y') . ' – ' . $endDate->format('d M Y');
+        } elseif ($period === 'daily') {
+            $startDate = Carbon::now()->startOfDay();
+            $endDate   = Carbon::now()->endOfDay();
+            $dateLabel = 'Daily Activity Report — ' . $startDate->format('F j, Y');
+        } elseif ($period === 'monthly') {
+            $startDate = Carbon::now()->startOfMonth();
+            $endDate   = Carbon::now()->endOfMonth();
+            $dateLabel = 'Monthly Overview Report — ' . $startDate->format('F Y');
+        } elseif ($period === 'yearly') {
+            $startDate = Carbon::now()->startOfYear();
+            $endDate   = Carbon::now()->endOfYear();
+            $dateLabel = 'Annual Summary Report — ' . $startDate->format('Y');
+        }
+
+        $ledgeMap = \App\Models\Setting::getCategories();
+
+        $selectedItems = $request->query('items', []);
+        if (is_string($selectedItems)) {
+            $selectedItems = array_filter(array_map('trim', explode(',', $selectedItems)));
+        }
+
+        $receivedQuery = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->whereBetween('inventory_batches.entry_date', [$startDate, $endDate]);
+
+        $issuedQuery = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->whereBetween('issuances.issuance_date', [$startDate, $endDate]);
+
+        if (!empty($selectedItems)) {
+            $receivedQuery->whereIn('inventory_items.description', $selectedItems);
+            $issuedQuery->whereIn('issued_items.description', $selectedItems);
+        }
+
+        $totalReceivedQty   = $receivedQuery->sum('inventory_items.qty');
+        $totalIssuedQty     = $issuedQuery->sum('issued_items.quantity');
+        $totalReceivedBatches = (clone $receivedQuery)->distinct('inventory_batches.id')->count('inventory_batches.id');
+        $totalIssuedBatches   = (clone $issuedQuery)->distinct('issuances.id')->count('issuances.id');
+
+        $receivedDistribution = (clone $receivedQuery)
+            ->select('inventory_items.description', \DB::raw('SUM(inventory_items.qty) as total_qty'))
+            ->groupBy('inventory_items.description')
+            ->orderBy('total_qty', 'desc')
+            ->get();
+
+        $issuedDistribution = (clone $issuedQuery)
+            ->select('issued_items.description', \DB::raw('SUM(issued_items.quantity) as total_qty'))
+            ->groupBy('issued_items.description')
+            ->orderBy('total_qty', 'desc')
+            ->get();
+
+        $hasRequisitionId = \Illuminate\Support\Facades\Schema::hasColumn('issuances', 'requisition_id');
+        $hasSivNo         = \Illuminate\Support\Facades\Schema::hasColumn('issuances', 'siv_no');
+
+        $recentReceivalsQuery = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->whereBetween('inventory_batches.entry_date', [$startDate, $endDate]);
+
+        $recentIssuesQuery = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->whereBetween('issuances.issuance_date', [$startDate, $endDate]);
+
+        if (!empty($selectedItems)) {
+            $recentReceivalsQuery->whereIn('inventory_items.description', $selectedItems);
+            $recentIssuesQuery->whereIn('issued_items.description', $selectedItems);
+        }
+
+        if ($hasRequisitionId) {
+            $recentIssuesQuery->leftJoin('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id');
+        }
+
+        $recentReceivals = $recentReceivalsQuery
+            ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.supplier_name', 'inventory_batches.ledge_category')
+            ->orderBy('inventory_batches.entry_date', 'desc')
+            ->limit(500)
+            ->get();
+
+        $recentIssues = $recentIssuesQuery
+            ->select(
+                'issued_items.*',
+                'issuances.issuance_date as entry_date',
+                'issuances.beneficiary',
+                'issuances.issuance_type',
+                $hasRequisitionId ? 'store_requisitions.department as department' : \DB::raw('NULL as department'),
+                $hasSivNo ? 'issuances.siv_no' : \DB::raw('NULL as siv_no'),
+                'issued_items.ledge_category'
+            )
+            ->orderBy('issuances.issuance_date', 'desc')
+            ->limit(500)
+            ->get();
+
+        $user = auth()->user();
+
+        return view('reports.print', compact(
+            'dateLabel',
+            'period',
+            'startDate',
+            'endDate',
+            'totalReceivedQty',
+            'totalIssuedQty',
+            'totalReceivedBatches',
+            'totalIssuedBatches',
+            'recentReceivals',
+            'recentIssues',
+            'receivedDistribution',
+            'issuedDistribution',
+            'ledgeMap',
+            'selectedItems',
+            'user'
+        ));
+    }
 }

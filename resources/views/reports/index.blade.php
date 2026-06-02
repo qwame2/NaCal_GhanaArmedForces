@@ -1315,7 +1315,10 @@
     }
 
     function triggerPrintMode() {
-        window.print();
+        // Build a URL to the dedicated print view, preserving current query params
+        const params = new URLSearchParams(window.location.search);
+        const printUrl = '{{ route("reports.print") }}?' + params.toString();
+        window.open(printUrl, '_blank');
     }
 
     /* ─────────────────────────────────────────────────────────────
