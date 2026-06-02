@@ -77,13 +77,17 @@
                 $isDonor = ($acqType === 'Donor' || str_contains($supplierNameStr, '[Donor Action]') || str_contains($supplierNameStr, '[Donation]'));
                 $provider = $isDonor ? ($batch->donor_name ?: trim(preg_replace('/\[.*?\]/', '', $supplierNameStr))) : trim(preg_replace('/\[.*?\]/', '', $supplierNameStr));
 
-                $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
-                $deliveryPerson = '';
-                foreach ($suppliersRegistry as $k => $v) {
-                    if (strcasecmp(trim($k), trim($provider)) === 0 || ($batch->supplier_name && strcasecmp(trim($k), trim($batch->supplier_name)) === 0)) {
-                        $provider = $k;
-                        $deliveryPerson = $v['delivery_person'] ?? '';
-                        break;
+                $deliveryPerson = $batch->delivery_person ?? '';
+                $deliveryPhone = $batch->delivery_phone ?? '';
+                if (empty($deliveryPerson)) {
+                    $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
+                    foreach ($suppliersRegistry as $k => $v) {
+                        if (strcasecmp(trim($k), trim($provider)) === 0 || ($batch->supplier_name && strcasecmp(trim($k), trim($batch->supplier_name)) === 0)) {
+                            $provider = $k;
+                            $deliveryPerson = $v['delivery_person'] ?? '';
+                            $deliveryPhone = $v['delivery_phone'] ?? '';
+                            break;
+                        }
                     }
                 }
 
@@ -107,6 +111,10 @@
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Delivery Person</span>
                     <span style="color: var(--text-main); font-weight: 700;">{{ $deliveryPerson ?: 'N/A' }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Delivery Person Phone</span>
+                    <span style="color: var(--text-main); font-weight: 700;">{{ $deliveryPhone ?: 'N/A' }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Supply Status</span>

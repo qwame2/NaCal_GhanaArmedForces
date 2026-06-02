@@ -10,11 +10,13 @@
 
     $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
     $deliveryPerson = $batch->delivery_person ?? '';
+    $deliveryPhone = $batch->delivery_phone ?? '';
     if (empty($deliveryPerson)) {
         foreach ($suppliersRegistry as $k => $v) {
             if (strcasecmp(trim($k), trim($provider)) === 0 || (!empty($batch->supplier_name) && strcasecmp(trim($k), trim($batch->supplier_name)) === 0)) {
                 $provider = $k;
                 $deliveryPerson = $v['delivery_person'] ?? '';
+                $deliveryPhone = $v['delivery_phone'] ?? '';
                 break;
             }
         }
@@ -49,6 +51,10 @@
                     <div>
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Delivery Person</span>
                         <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $deliveryPerson ?: 'N/A' }}</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Delivery Person Phone</span>
+                        <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $deliveryPhone ?: 'N/A' }}</span>
                     </div>
                     <div>
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Supply Status</span>

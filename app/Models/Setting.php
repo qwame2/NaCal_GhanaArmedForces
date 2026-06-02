@@ -30,6 +30,7 @@ class Setting extends Model
                 return \App\Models\Supplier::all()->keyBy('name')->map(function($supplier) {
                     return [
                         'delivery_person' => $supplier->delivery_person,
+                        'delivery_phone' => $supplier->delivery_phone,
                         'phone' => $supplier->phone,
                         'email' => $supplier->email,
                         'address' => $supplier->address,

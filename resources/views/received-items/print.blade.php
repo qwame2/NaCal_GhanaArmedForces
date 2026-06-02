@@ -342,13 +342,17 @@
                 
                 $entityDisplay = $isDonor ? $donorName : trim(preg_replace('/\[.*?\]/', '', $supplierNameStr));
 
-                $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
-                $deliveryPerson = '';
-                foreach ($suppliersRegistry as $k => $v) {
-                    if (strcasecmp(trim($k), trim($entityDisplay)) === 0 || ($supplierName && strcasecmp(trim($k), trim($supplierName)) === 0)) {
-                        $entityDisplay = $k;
-                        $deliveryPerson = $v['delivery_person'] ?? '';
-                        break;
+                $deliveryPerson = $batch->delivery_person ?? '';
+                $deliveryPhone = $batch->delivery_phone ?? '';
+                if (empty($deliveryPerson)) {
+                    $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
+                    foreach ($suppliersRegistry as $k => $v) {
+                        if (strcasecmp(trim($k), trim($entityDisplay)) === 0 || ($supplierName && strcasecmp(trim($k), trim($supplierName)) === 0)) {
+                            $entityDisplay = $k;
+                            $deliveryPerson = $v['delivery_person'] ?? '';
+                            $deliveryPhone = $v['delivery_phone'] ?? '';
+                            break;
+                        }
                     }
                 }
 
@@ -368,6 +372,10 @@
             <div class="info-line">
                 <span class="info-label">Delivery Person</span>
                 <span class="info-value">{{ $deliveryPerson ?: 'N/A' }}</span>
+            </div>
+            <div class="info-line">
+                <span class="info-label">Delivery Person Phone</span>
+                <span class="info-value">{{ $deliveryPhone ?: 'N/A' }}</span>
             </div>
             <div class="info-line">
                 <span class="info-label">Transaction Type</span>

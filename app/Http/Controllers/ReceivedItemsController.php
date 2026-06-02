@@ -27,6 +27,7 @@ class ReceivedItemsController extends Controller
 
     public function preview($id)
     {
+        \App\Models\InventoryBatch::selfHealSchema();
         $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
             abort(403, 'Unauthorized.');
@@ -72,6 +73,7 @@ class ReceivedItemsController extends Controller
 
     public function previewApi($id)
     {
+        \App\Models\InventoryBatch::selfHealSchema();
         $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -101,19 +103,22 @@ class ReceivedItemsController extends Controller
             return response()->json($response);
         }
 
-        // Attach delivery person to proposed batch
+        // Attach delivery person and phone to proposed batch
         $cleanSupplier = trim(preg_replace('/\[.*?\]/', '', $data['supplier_name'] ?? ''));
         $deliveryPerson = $data['delivery_person'] ?? '';
+        $deliveryPhone = $data['delivery_phone'] ?? '';
         if (empty($deliveryPerson)) {
             foreach ($suppliersRegistry as $supplier) {
                 if (strcasecmp(trim($supplier->name), $cleanSupplier) === 0 || (isset($data['supplier_name']) && strcasecmp(trim($supplier->name), trim($data['supplier_name'])) === 0)) {
                     $data['supplier_name'] = $supplier->name;
                     $deliveryPerson = $supplier->delivery_person ?? '';
+                    $deliveryPhone = $supplier->delivery_phone ?? '';
                     break;
                 }
             }
         }
         $data['delivery_person'] = $deliveryPerson;
+        $data['delivery_phone'] = $deliveryPhone;
 
         // Add total_in_system to items
         if (isset($data['items']) && is_array($data['items'])) {
@@ -140,14 +145,17 @@ class ReceivedItemsController extends Controller
                 // Attach delivery person to previous batch
                 $origClean = trim(preg_replace('/\[.*?\]/', '', $originalBatch->supplier_name ?? ''));
                 $origDelivery = '';
+                $origPhone = '';
                 foreach ($suppliersRegistry as $supplier) {
                     if (strcasecmp(trim($supplier->name), $origClean) === 0 || strcasecmp(trim($supplier->name), trim($originalBatch->supplier_name)) === 0) {
                         $originalBatch->supplier_name = $supplier->name;
                         $origDelivery = $supplier->delivery_person ?? '';
+                        $origPhone = $supplier->delivery_phone ?? '';
                         break;
                     }
                 }
                 $originalBatch->delivery_person = $origDelivery;
+                $originalBatch->delivery_phone = $origPhone;
 
                 foreach ($originalBatch->items as $origItem) {
                     $origItem->total_in_system = \App\Models\InventoryItem::where('description', $origItem->description)
@@ -407,6 +415,8 @@ class ReceivedItemsController extends Controller
             'donor_name' => 'nullable|string',
             'acquisition_type' => 'required|string',
             'arrival_date' => 'required|date',
+            'delivery_person' => 'nullable|string',
+            'delivery_phone' => ['nullable', 'string', 'regex:/^(N\/A|\d{10})$/i'],
             'items' => 'required|array',
             'items.*.id' => 'required|exists:inventory_items,id',
             'items.*.description' => 'required|string',
@@ -423,11 +433,11 @@ class ReceivedItemsController extends Controller
             $batch = InventoryBatch::with('items')->findOrFail($id);
 
             // Capture Original State for Forensic Audit
-            $originalBatch = $batch->only(['arrival_date', 'ledge_category', 'acquisition_type', 'supplier_name', 'supplier_status', 'donor_name']);
+            $originalBatch = $batch->only(['arrival_date', 'ledge_category', 'acquisition_type', 'supplier_name', 'supplier_status', 'donor_name', 'delivery_person', 'delivery_phone']);
             $originalItems = $batch->items->mapWithKeys(function($item) {
                 return [$item->id => $item->only(['description', 'unit', 'qty', 'stock_balance', 'variance', 'remarks'])];
             });
-
+ 
             $origPayloadArray = [
                 'arrival_date' => $batch->arrival_date ? explode(' ', $batch->arrival_date)[0] : '',
                 'ledge_category' => $batch->ledge_category,
@@ -435,6 +445,8 @@ class ReceivedItemsController extends Controller
                 'supplier_name' => $batch->supplier_name,
                 'supplier_status' => $batch->supplier_status ?? 'Full Delivery',
                 'donor_name' => $batch->donor_name,
+                'delivery_person' => $batch->delivery_person,
+                'delivery_phone' => $batch->delivery_phone,
                 'items' => $batch->items->map(function($i) {
                     return [
                         'id' => $i->id,
@@ -447,7 +459,7 @@ class ReceivedItemsController extends Controller
                     ];
                 })->toArray()
             ];
-
+ 
             $newPayloadArray = [
                 'arrival_date' => $validated['arrival_date'],
                 'ledge_category' => $validated['ledge_category'],
@@ -455,6 +467,8 @@ class ReceivedItemsController extends Controller
                 'supplier_name' => $validated['supplier_name'],
                 'supplier_status' => $validated['supplier_status'],
                 'donor_name' => $validated['donor_name'],
+                'delivery_person' => $validated['delivery_person'] ?? null,
+                'delivery_phone' => $validated['delivery_phone'] ?? null,
                 'items' => collect($validated['items'])->map(function($i) {
                     return [
                         'id' => $i['id'],
@@ -467,7 +481,7 @@ class ReceivedItemsController extends Controller
                     ];
                 })->toArray()
             ];
-
+ 
             $batch->update([
                 'ledge_category' => $validated['ledge_category'],
                 'supplier_name' => $validated['supplier_name'],
@@ -475,6 +489,8 @@ class ReceivedItemsController extends Controller
                 'donor_name' => $validated['donor_name'],
                 'acquisition_type' => $validated['acquisition_type'],
                 'arrival_date' => $validated['arrival_date'],
+                'delivery_person' => $validated['delivery_person'] ?? null,
+                'delivery_phone' => $validated['delivery_phone'] ?? null,
             ]);
 
             $itemChanges = [];
@@ -573,6 +589,7 @@ class ReceivedItemsController extends Controller
 
     public function show(Request $request, $id)
     {
+        \App\Models\InventoryBatch::selfHealSchema();
         $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
             abort(403, 'Unauthorized.');
@@ -599,6 +616,7 @@ class ReceivedItemsController extends Controller
 
     public function print($id)
     {
+        \App\Models\InventoryBatch::selfHealSchema();
         $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
             abort(403, 'Unauthorized.');

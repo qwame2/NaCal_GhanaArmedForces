@@ -1,0 +1,87 @@
+=== DIAGNOSTICS ===
+Time: 2026-06-02 06:55:28
+Field: id | Type: bigint(20) unsigned | Null: NO | Key: PRI
+Field: ledge_category | Type: varchar(255) | Null: NO | Key: MUL
+Field: supplier_name | Type: varchar(255) | Null: YES | Key: 
+Field: supplier_status | Type: varchar(255) | Null: YES | Key: MUL
+Field: donor_name | Type: varchar(255) | Null: YES | Key: 
+Field: acquisition_type | Type: varchar(255) | Null: NO | Key: 
+Field: entry_date | Type: timestamp | Null: NO | Key: 
+Field: arrival_date | Type: datetime | Null: YES | Key: 
+Field: delivery_phone | Type: varchar(255) | Null: YES | Key: 
+Field: delivery_person | Type: varchar(255) | Null: YES | Key: 
+Field: recorded_by | Type: bigint(20) unsigned | Null: YES | Key: MUL
+Field: created_at | Type: timestamp | Null: YES | Key: 
+Field: updated_at | Type: timestamp | Null: YES | Key: 
+Field: approval_status | Type: varchar(255) | Null: NO | Key: 
+Field: approved_by | Type: bigint(20) unsigned | Null: YES | Key: MUL
+Field: approved_at | Type: timestamp | Null: YES | Key: 
+
+=== LAST 5 BATCHES ===
+ID: 34 | AcqType: Supplier | Supplier: MTN | Donor:  | DeliveryPerson: Adomako | DeliveryPhone: 0243020045 | Status: approved
+ID: 33 | AcqType: Donor | Supplier:  | Donor: NANA KOJO | DeliveryPerson: Adomako | DeliveryPhone: 0243020045 | Status: approved
+ID: 32 | AcqType: Supplier | Supplier: MTN | Donor:  | DeliveryPerson: Adomako | DeliveryPhone: 0243020045 | Status: approved
+ID: 31 | AcqType: Donor | Supplier:  | Donor: NANA KOJO | DeliveryPerson:  | DeliveryPhone:  | Status: approved
+ID: 30 | AcqType: Supplier | Supplier: MTN | Donor:  | DeliveryPerson:  | DeliveryPhone:  | Status: approved
+
+=== LARAVEL LOG LAST 60 LINES ===
+#26 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Foundation/Http/Middleware/VerifyCsrfToken->handle(Object(Illuminate/Http/Request), Object(Closure))
+#27 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(48): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#28 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/View/Middleware/ShareErrorsFromSession->handle(Object(Illuminate/Http/Request), Object(Closure))
+#29 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(120): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#30 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(63): Illuminate/Session/Middleware/StartSession->handleStatefulRequest(Object(Illuminate/Http/Request), Object(Illuminate/Session/Store), Object(Closure))
+#31 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Session/Middleware/StartSession->handle(Object(Illuminate/Http/Request), Object(Closure))
+#32 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(36): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#33 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse->handle(Object(Illuminate/Http/Request), Object(Closure))
+#34 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(74): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#35 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Cookie/Middleware/EncryptCookies->handle(Object(Illuminate/Http/Request), Object(Closure))
+#36 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#37 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Routing/Router.php(821): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#38 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Routing/Router.php(800): Illuminate/Routing/Router->runRouteWithinStack(Object(Illuminate/Routing/Route), Object(Illuminate/Http/Request))
+#39 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Routing/Router.php(764): Illuminate/Routing/Router->runRoute(Object(Illuminate/Http/Request), Object(Illuminate/Routing/Route))
+#40 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Routing/Router.php(753): Illuminate/Routing/Router->dispatchToRoute(Object(Illuminate/Http/Request))
+#41 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate/Routing/Router->dispatch(Object(Illuminate/Http/Request))
+#42 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Foundation/Http/Kernel->Illuminate/Foundation/Http/{closure}(Object(Illuminate/Http/Request))
+#43 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#44 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#45 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull->handle(Object(Illuminate/Http/Request), Object(Closure))
+#46 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#47 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#48 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Foundation/Http/Middleware/TrimStrings->handle(Object(Illuminate/Http/Request), Object(Closure))
+#49 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#50 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Http/Middleware/ValidatePostSize->handle(Object(Illuminate/Http/Request), Object(Closure))
+#51 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(109): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#52 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance->handle(Object(Illuminate/Http/Request), Object(Closure))
+#53 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#54 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Http/Middleware/HandleCors->handle(Object(Illuminate/Http/Request), Object(Closure))
+#55 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#56 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Http/Middleware/TrustProxies->handle(Object(Illuminate/Http/Request), Object(Closure))
+#57 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php(22): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#58 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks->handle(Object(Illuminate/Http/Request), Object(Closure))
+#59 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php(26): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#60 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Http/Middleware/ValidatePathEncoding->handle(Object(Illuminate/Http/Request), Object(Closure))
+#61 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#62 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#63 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate/Foundation/Http/Kernel->sendRequestThroughRouter(Object(Illuminate/Http/Request))
+#64 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1220): Illuminate/Foundation/Http/Kernel->handle(Object(Illuminate/Http/Request))
+#65 C:/xampp/htdocs/NaCal/public/index.php(20): Illuminate/Foundation/Application->handleRequest(Object(Illuminate/Http/Request))
+#66 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(23): require_once('C://xampp//htdocs...')
+#67 {main}
+"} 
+[2026-06-02 06:34:13] local.ERROR: require(C:\xampp\htdocs\NaCal\bootstrap\cache\routes-v7.php): Failed to open stream: No such file or directory {"exception":"[object] (ErrorException(code: 0): require(C:\\xampp\\htdocs\\NaCal\\bootstrap\\cache\\routes-v7.php): Failed to open stream: No such file or directory at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Support/Providers/RouteServiceProvider.php:150)
+[stacktrace]
+#0 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(258): Illuminate/Foundation/Bootstrap/HandleExceptions->handleError(2, 'require(C://xamp...', 'C://xampp//htdocs...', 150)
+#1 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Support/Providers/RouteServiceProvider.php(150): Illuminate/Foundation/Bootstrap/HandleExceptions->Illuminate/Foundation/Bootstrap/{closure}(2, 'require(C://xamp...', 'C://xampp//htdocs...', 150)
+#2 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Support/Providers/RouteServiceProvider.php(150): require('C://xampp//htdocs...')
+#3 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1194): Illuminate/Foundation/Support/Providers/RouteServiceProvider->Illuminate/Foundation/Support/Providers/{closure}(Object(Illuminate/Foundation/Application))
+#4 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1137): Illuminate/Foundation/Application->fireAppCallbacks(Array)
+#5 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/BootProviders.php(17): Illuminate/Foundation/Application->boot()
+#6 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(342): Illuminate/Foundation/Bootstrap/BootProviders->bootstrap(Object(Illuminate/Foundation/Application))
+#7 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(186): Illuminate/Foundation/Application->bootstrapWith(Array)
+#8 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(170): Illuminate/Foundation/Http/Kernel->bootstrap()
+#9 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate/Foundation/Http/Kernel->sendRequestThroughRouter(Object(Illuminate/Http/Request))
+#10 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1220): Illuminate/Foundation/Http/Kernel->handle(Object(Illuminate/Http/Request))
+#11 C:/xampp/htdocs/NaCal/public/index.php(20): Illuminate/Foundation/Application->handleRequest(Object(Illuminate/Http/Request))
+#12 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(23): require_once('C://xampp//htdocs...')
+#13 {main}
+"} 

@@ -12,8 +12,15 @@
     }
 
     @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(16px); }
-        to   { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* Premium Custom Scrollbar */
@@ -21,13 +28,16 @@
         width: 6px;
         height: 6px;
     }
+
     .custom-scrollbar::-webkit-scrollbar-track {
         background: transparent;
     }
+
     .custom-scrollbar::-webkit-scrollbar-thumb {
         background: #cbd5e1;
         border-radius: 3px;
     }
+
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
         background: #94a3b8;
     }
@@ -70,22 +80,25 @@
         background: white;
         outline: none;
         transition: 0.25s;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     }
 
     .cfg-search-wrap input:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(79,70,229,0.1);
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
     }
 
-    .cfg-search-wrap input::placeholder { color: #94a3b8; font-weight: 500; }
+    .cfg-search-wrap input::placeholder {
+        color: #94a3b8;
+        font-weight: 500;
+    }
 
     /* ── Section Cards ── */
     .cfg-card {
         background: white;
         border-radius: 28px;
         border: 1px solid #f1f5f9;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
         overflow: hidden;
     }
 
@@ -109,7 +122,10 @@
         flex-shrink: 0;
     }
 
-    .cfg-icon-box i { width: 22px; height: 22px; }
+    .cfg-icon-box i {
+        width: 22px;
+        height: 22px;
+    }
 
     .cfg-card-header h3 {
         font-size: 1.1rem;
@@ -145,7 +161,7 @@
         flex-wrap: wrap !important;
         padding: 4px 10px !important;
         transition: all 0.2s ease !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.01) !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01) !important;
     }
 
     .select2-container--default.select2-container--focus .select2-selection--multiple {
@@ -239,7 +255,7 @@
     .select2-dropdown {
         border: 1px solid #edf2f7 !important;
         border-radius: 12px !important;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
         overflow: hidden !important;
         z-index: 9999 !important;
     }
@@ -269,7 +285,9 @@
         margin: 2px 0 0;
     }
 
-    .cfg-card-body { padding: 2rem; }
+    .cfg-card-body {
+        padding: 2rem;
+    }
 
     /* ── Settings Grid ── */
     .cfg-grid {
@@ -293,7 +311,7 @@
     .cfg-item:hover {
         background: white;
         border-color: #c7d2fe;
-        box-shadow: 0 8px 24px rgba(79,70,229,0.07);
+        box-shadow: 0 8px 24px rgba(79, 70, 229, 0.07);
         transform: translateY(-2px);
     }
 
@@ -334,11 +352,25 @@
         transition: 0.3s;
     }
 
-    .toggle-pill.on  { background: #dcfce7; color: #16a34a; }
-    .toggle-pill.off { background: #f1f5f9; color: #94a3b8; }
+    .toggle-pill.on {
+        background: #dcfce7;
+        color: #16a34a;
+    }
 
-    .cfg-toggle-label { position: relative; display: inline-block; cursor: pointer; }
-    .cfg-toggle-label input { display: none; }
+    .toggle-pill.off {
+        background: #f1f5f9;
+        color: #94a3b8;
+    }
+
+    .cfg-toggle-label {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .cfg-toggle-label input {
+        display: none;
+    }
 
     .cfg-toggle-track {
         display: block;
@@ -359,12 +391,17 @@
         height: 22px;
         background: white;
         border-radius: 50%;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    .cfg-toggle-label input:checked + .cfg-toggle-track { background: #4f46e5; }
-    .cfg-toggle-label input:checked + .cfg-toggle-track::after { transform: translateX(24px); }
+    .cfg-toggle-label input:checked+.cfg-toggle-track {
+        background: #4f46e5;
+    }
+
+    .cfg-toggle-label input:checked+.cfg-toggle-track::after {
+        transform: translateX(24px);
+    }
 
     /* ── Number Input ── */
     .cfg-number-input {
@@ -383,7 +420,7 @@
 
     .cfg-number-input:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(79,70,229,0.1);
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
     }
 
     /* ── Text Input ── */
@@ -403,7 +440,7 @@
 
     .cfg-text-input:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(79,70,229,0.1);
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
     }
 
     /* ── Category Badges ── */
@@ -424,7 +461,10 @@
         transition: 0.3s;
     }
 
-    .cat-badge:hover { border-color: #a7f3d0; background: #f0fdf4; }
+    .cat-badge:hover {
+        border-color: #a7f3d0;
+        background: #f0fdf4;
+    }
 
     .cat-code-pill {
         width: 34px;
@@ -461,8 +501,15 @@
         align-items: center;
     }
 
-    .cat-del-btn:hover { color: #ef4444; transform: scale(1.1); }
-    .cat-del-btn i { width: 16px; height: 16px; }
+    .cat-del-btn:hover {
+        color: #ef4444;
+        transform: scale(1.1);
+    }
+
+    .cat-del-btn i {
+        width: 16px;
+        height: 16px;
+    }
 
     /* ── New Category Form ── */
     .cat-form-card {
@@ -470,7 +517,7 @@
         border: 1.5px solid #f1f5f9;
         border-radius: 22px;
         padding: 1.75rem;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.02);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
     }
 
     .cat-form-card h5 {
@@ -491,16 +538,16 @@
     .cfg-save-bar {
         position: sticky;
         bottom: 1.5rem;
-        background: rgba(255,255,255,0.85);
+        background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(16px);
-        border: 1px solid rgba(79,70,229,0.12);
+        border: 1px solid rgba(79, 70, 229, 0.12);
         border-radius: 20px;
         padding: 1rem 1.5rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
-        box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
         z-index: 50;
     }
 
@@ -513,7 +560,10 @@
         gap: 6px;
     }
 
-    .cfg-save-bar span i { width: 15px; color: #f59e0b; }
+    .cfg-save-bar span i {
+        width: 15px;
+        color: #f59e0b;
+    }
 
     .btn-cfg-save {
         display: flex;
@@ -528,12 +578,21 @@
         font-size: 0.9rem;
         cursor: pointer;
         transition: 0.25s;
-        box-shadow: 0 8px 20px rgba(79,70,229,0.25);
+        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
     }
 
-    .btn-cfg-save:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(79,70,229,0.35); }
-    .btn-cfg-save:active { transform: scale(0.97); }
-    .btn-cfg-save i { width: 18px; }
+    .btn-cfg-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(79, 70, 229, 0.35);
+    }
+
+    .btn-cfg-save:active {
+        transform: scale(0.97);
+    }
+
+    .btn-cfg-save i {
+        width: 18px;
+    }
 
     .btn-cfg-add {
         display: flex;
@@ -551,11 +610,17 @@
         justify-content: center;
         transition: 0.25s;
         margin-top: 1rem;
-        box-shadow: 0 6px 16px rgba(16,185,129,0.25);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
     }
 
-    .btn-cfg-add:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(16,185,129,0.3); }
-    .btn-cfg-add i { width: 18px; }
+    .btn-cfg-add:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 22px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-cfg-add i {
+        width: 18px;
+    }
 
     /* ── OTP Expiry Block ── */
     .otp-preset-btn {
@@ -569,31 +634,40 @@
         cursor: pointer;
         transition: all 0.2s;
     }
-    .otp-preset-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
-    .otp-preset-btn.active { background: #4f46e5; color: white; border-color: #4f46e5; }
+
+    .otp-preset-btn:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+
+    .otp-preset-btn.active {
+        background: #4f46e5;
+        color: white;
+        border-color: #4f46e5;
+    }
 
     /* ── Stores Dept Head Workflow Redesign ── */
     .workflow-card-modern {
         background: white;
         border-radius: 28px;
         border: 1.5px solid #e2e8f0;
-        box-shadow: 0 10px 30px rgba(79,70,229,0.03);
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.03);
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         overflow: hidden;
         margin-bottom: 2rem;
     }
-    
+
     .workflow-card-modern:hover {
         border-color: #c7d2fe;
-        box-shadow: 0 16px 40px rgba(79,70,229,0.06);
+        box-shadow: 0 16px 40px rgba(79, 70, 229, 0.06);
     }
-    
+
     .workflow-cat-grid-modern {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
         gap: 1.25rem;
     }
-    
+
     .workflow-cat-card-modern {
         background: #f8fafc;
         border: 2px solid #edf2f7;
@@ -608,41 +682,41 @@
         overflow: hidden;
         user-select: none;
     }
-    
+
     .workflow-cat-card-modern:hover {
         border-color: #cbd5e1;
         transform: translateY(-2px);
         background: #ffffff;
-        box-shadow: 0 6px 15px rgba(0,0,0,0.02);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.02);
     }
-    
+
     .workflow-cat-card-modern.active {
         background: linear-gradient(145deg, #f5f7ff 0%, #edf1ff 100%);
         border-color: #4f46e5;
-        box-shadow: 0 8px 24px rgba(79,70,229,0.06);
+        box-shadow: 0 8px 24px rgba(79, 70, 229, 0.06);
     }
-    
+
     .workflow-cat-card-modern.active:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(79,70,229,0.1);
+        box-shadow: 0 12px 28px rgba(79, 70, 229, 0.1);
     }
-    
+
     .workflow-cat-card-modern .corner-glow {
         position: absolute;
         top: -20px;
         right: -20px;
         width: 50px;
         height: 50px;
-        background: radial-gradient(circle, rgba(79,70,229,0.2) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(79, 70, 229, 0.2) 0%, transparent 70%);
         opacity: 0;
         transition: opacity 0.25s ease;
         pointer-events: none;
     }
-    
+
     .workflow-cat-card-modern.active .corner-glow {
         opacity: 1;
     }
-    
+
     .workflow-cat-card-modern .cat-circle {
         width: 38px;
         height: 38px;
@@ -658,14 +732,14 @@
         transition: all 0.25s ease;
         flex-shrink: 0;
     }
-    
+
     .workflow-cat-card-modern.active .cat-circle {
         background: linear-gradient(135deg, #4f46e5, #3730a3);
         color: #ffffff;
         border-color: transparent;
-        box-shadow: 0 4px 8px rgba(79,70,229,0.18);
+        box-shadow: 0 4px 8px rgba(79, 70, 229, 0.18);
     }
-    
+
     .workflow-cat-card-modern .status-label {
         font-size: 0.7rem;
         font-weight: 700;
@@ -673,11 +747,11 @@
         margin-top: 2px;
         transition: color 0.25s;
     }
-    
+
     .workflow-cat-card-modern.active .status-label {
         color: #4f46e5;
     }
-    
+
     .workflow-cat-card-modern .indicator-dot {
         width: 22px;
         height: 22px;
@@ -691,13 +765,13 @@
         flex-shrink: 0;
         margin-left: auto;
     }
-    
+
     .workflow-cat-card-modern.active .indicator-dot {
         background: #4f46e5;
         border-color: #4f46e5;
-        box-shadow: 0 2px 6px rgba(79,70,229,0.25);
+        box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
     }
-    
+
     .flow-line {
         flex: 1;
         height: 3px;
@@ -705,16 +779,16 @@
         background: #cbd5e1;
         margin-top: -20px;
     }
-    
+
     .flow-line.active {
         background: #4f46e5;
-        box-shadow: 0 0 8px rgba(79,70,229,0.25);
+        box-shadow: 0 0 8px rgba(79, 70, 229, 0.25);
     }
-    
+
     .flow-line.dashed {
         background: repeating-linear-gradient(to right, #cbd5e1 0px, #cbd5e1 6px, transparent 6px, transparent 12px);
     }
-    
+
     .flow-node-icon {
         width: 48px;
         height: 48px;
@@ -725,7 +799,7 @@
         font-weight: 900;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    
+
     .flow-node-badge {
         font-size: 0.6rem;
         font-weight: 800;
@@ -756,372 +830,372 @@
 
 
         @if($settings->isEmpty())
-            <div class="cfg-card" style="padding: 5rem 2rem; text-align: center;">
-                <div style="width: 96px; height: 96px; background: #f1f5f9; border-radius: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;">
-                    <i data-lucide="database" style="width: 40px; height: 40px; color: #94a3b8;"></i>
-                </div>
-                <h3 style="font-weight: 900; font-size: 1.4rem; color: #0f172a; margin-bottom: 0.5rem;">No Configuration Found</h3>
-                <p style="color: #64748b; font-size: 0.9rem; font-weight: 600; max-width: 360px; margin: 0 auto 1.5rem; line-height: 1.6;">Run <code>php artisan migrate --seed</code> to populate the global settings registry.</p>
+        <div class="cfg-card" style="padding: 5rem 2rem; text-align: center;">
+            <div style="width: 96px; height: 96px; background: #f1f5f9; border-radius: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;">
+                <i data-lucide="database" style="width: 40px; height: 40px; color: #94a3b8;"></i>
             </div>
+            <h3 style="font-weight: 900; font-size: 1.4rem; color: #0f172a; margin-bottom: 0.5rem;">No Configuration Found</h3>
+            <p style="color: #64748b; font-size: 0.9rem; font-weight: 600; max-width: 360px; margin: 0 auto 1.5rem; line-height: 1.6;">Run <code>php artisan migrate --seed</code> to populate the global settings registry.</p>
+        </div>
         @else
-            <form action="{{ route('admin.settings.update') }}" method="POST" id="core-configs">
-                @csrf
+        <form action="{{ route('admin.settings.update') }}" method="POST" id="core-configs">
+            @csrf
 
-                @foreach($settings as $group => $groupSettings)
-                    @php if($group === 'inventory') continue; @endphp
+            @foreach($settings as $group => $groupSettings)
+            @php if($group === 'inventory') continue; @endphp
 
-                    @php
-                        $colorMap = [
-                            'security' => ['color' => '#ef4444', 'bg' => 'linear-gradient(135deg,#ef4444,#dc2626)', 'icon' => 'shield-alert'],
-                            'inventory' => ['color' => '#10b981', 'bg' => 'linear-gradient(135deg,#10b981,#059669)', 'icon' => 'package'],
-                            'system'   => ['color' => '#f59e0b', 'bg' => 'linear-gradient(135deg,#f59e0b,#d97706)', 'icon' => 'server'],
-                        ];
-                        $meta = $colorMap[$group] ?? ['color' => '#4f46e5', 'bg' => 'linear-gradient(135deg,#4f46e5,#3730a3)', 'icon' => 'settings'];
-                    @endphp
+            @php
+            $colorMap = [
+            'security' => ['color' => '#ef4444', 'bg' => 'linear-gradient(135deg,#ef4444,#dc2626)', 'icon' => 'shield-alert'],
+            'inventory' => ['color' => '#10b981', 'bg' => 'linear-gradient(135deg,#10b981,#059669)', 'icon' => 'package'],
+            'system' => ['color' => '#f59e0b', 'bg' => 'linear-gradient(135deg,#f59e0b,#d97706)', 'icon' => 'server'],
+            ];
+            $meta = $colorMap[$group] ?? ['color' => '#4f46e5', 'bg' => 'linear-gradient(135deg,#4f46e5,#3730a3)', 'icon' => 'settings'];
+            @endphp
 
-                    <div class="cfg-card" style="margin-bottom: 1.5rem;">
-                        <div class="cfg-card-header">
-                            <div class="cfg-icon-box" style="background: {{ $meta['bg'] }};">
-                                <i data-lucide="{{ $meta['icon'] }}"></i>
-                            </div>
-                            <div>
-                                <h3>{{ ucfirst($group) }} Settings</h3>
-                                <p>Manage {{ $group }} settings and system limits.</p>
-                            </div>
-                        </div>
-                        <div class="cfg-card-body">
-                            <div class="cfg-grid">
-                                @foreach($groupSettings as $setting)
-                                    @php if(in_array($setting->key, ['strict_audit_logging','enable_strict_audit_logging','approval_timeout_minutes','item_unit_rules','ledge_categories','reporting_enabled','allow_personnel_registration','low_stock_threshold','item_threshold_rules','otp_expiry_hours','otp_expiry_minutes'])) continue; @endphp
-                                    <div class="cfg-item">
-                                        <p class="cfg-item-label">{{ ucwords(str_replace('_', ' ', $setting->key)) }}</p>
+            <div class="cfg-card" style="margin-bottom: 1.5rem;">
+                <div class="cfg-card-header">
+                    <div class="cfg-icon-box" style="background: {{ $meta['bg'] }};">
+                        <i data-lucide="{{ $meta['icon'] }}"></i>
+                    </div>
+                    <div>
+                        <h3>{{ ucfirst($group) }} Settings</h3>
+                        <p>Manage {{ $group }} settings and system limits.</p>
+                    </div>
+                </div>
+                <div class="cfg-card-body">
+                    <div class="cfg-grid">
+                        @foreach($groupSettings as $setting)
+                        @php if(in_array($setting->key, ['strict_audit_logging','enable_strict_audit_logging','approval_timeout_minutes','item_unit_rules','ledge_categories','reporting_enabled','allow_personnel_registration','low_stock_threshold','item_threshold_rules','otp_expiry_hours','otp_expiry_minutes'])) continue; @endphp
+                        <div class="cfg-item">
+                            <p class="cfg-item-label">{{ ucwords(str_replace('_', ' ', $setting->key)) }}</p>
 
-                                        @if($setting->type === 'boolean')
-                                            <div class="toggle-row">
-                                                <span class="toggle-pill {{ $setting->value === 'true' ? 'on' : 'off' }}" id="pill_{{ $setting->key }}">
-                                                    {{ $setting->value === 'true' ? 'Active' : 'Inactive' }}
-                                                </span>
-                                                <label class="cfg-toggle-label" title="Toggle {{ ucwords(str_replace('_',' ',$setting->key)) }}">
-                                                    <input type="checkbox" name="{{ $setting->key }}" value="true"
-                                                        {{ $setting->value === 'true' ? 'checked' : '' }}
-                                                        onchange="
+                            @if($setting->type === 'boolean')
+                            <div class="toggle-row">
+                                <span class="toggle-pill {{ $setting->value === 'true' ? 'on' : 'off' }}" id="pill_{{ $setting->key }}">
+                                    {{ $setting->value === 'true' ? 'Active' : 'Inactive' }}
+                                </span>
+                                <label class="cfg-toggle-label" title="Toggle {{ ucwords(str_replace('_',' ',$setting->key)) }}">
+                                    <input type="checkbox" name="{{ $setting->key }}" value="true"
+                                        {{ $setting->value === 'true' ? 'checked' : '' }}
+                                        onchange="
                                                             const pill = document.getElementById('pill_{{ $setting->key }}');
                                                             if(this.checked){ pill.textContent='Active'; pill.className='toggle-pill on'; }
                                                             else { pill.textContent='Inactive'; pill.className='toggle-pill off'; }
                                                         ">
-                                                    <span class="cfg-toggle-track"></span>
-                                                </label>
-                                            </div>
-                                        @elseif($setting->type === 'integer')
-                                            <input type="number" id="setting_{{ $setting->key }}" name="{{ $setting->key }}" value="{{ $setting->value }}" class="cfg-number-input">
-                                        @else
-                                            <input type="text" id="setting_{{ $setting->key }}" name="{{ $setting->key }}" value="{{ $setting->value }}" class="cfg-text-input">
-                                        @endif
-
-                                        @if($setting->description)
-                                            <p class="cfg-item-desc">{{ $setting->description }}</p>
-                                        @endif
-                                    </div>
-                                @endforeach
-
-                                {{-- OTP Expiry — inject inside the grid for Security Protocols --}}
-                                @if($group === 'security')
-                                @php $otpExpiry = \App\Models\Setting::firstOrCreate(
-                                    ['key' => 'otp_expiry_minutes'],
-                                    ['value' => '1440', 'type' => 'integer', 'group' => 'security', 'label' => 'OTP Expiry (Minutes)', 'description' => 'Number of minutes before a generated recovery OTP expires and becomes invalid.']
-                                ); @endphp
-                                <div class="cfg-item" style="grid-column: span 2; max-width: 800px;">
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                                        <i data-lucide="timer" style="width: 18px; color: #4f46e5;"></i>
-                                        <p class="cfg-item-label" style="margin: 0;">Recovery OTP Expiration (Minutes)</p>
-                                    </div>
-                                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
-                                        <input type="number" name="otp_expiry_minutes" id="setting_otp_expiry_minutes" value="{{ $otpExpiry->value }}" min="3" max="10080" class="cfg-number-input" style="max-width: 120px;" oninput="updateOtpPreview(this.value)">
-                                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                                            @foreach([3 => '3 mins', 15 => '15 mins', 30 => '30 mins', 60 => '1 hr', 360 => '6 hrs', 1440 => '24 hrs'] as $val => $label)
-                                            <button type="button" class="otp-preset-btn {{ $otpExpiry->value == $val ? 'active' : '' }}" onclick="setOtpExpiry({{ $val }}, this)">{{ $label }}</button>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                    <p class="cfg-item-desc" id="otp-preview-text">Set how long an admin-issued OTP remains valid. Currently set to expire <strong>{{ $otpExpiry->value }} minute{{ $otpExpiry->value == 1 ? '' : 's' }}</strong> after it has been generated.</p>
-                                </div>
-                                @endif
-
+                                    <span class="cfg-toggle-track"></span>
+                                </label>
                             </div>
-                        </div>{{-- /cfg-card-body --}}
-                    </div>{{-- /cfg-card --}}
-                @endforeach
-
-                {{-- Stores Department Head Approval Workflow --}}
-                <div class="workflow-card-modern">
-                    @php
-                        $selectedCats = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
-                        if (!is_array($selectedCats)) {
-                            $selectedCats = json_decode($selectedCats, true) ?? [];
-                        }
-                    @endphp
-                    <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
-                        <div style="display: flex; align-items: center; gap: 1.25rem;">
-                            <div class="cfg-icon-box" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); box-shadow: 0 8px 20px rgba(79,70,229,0.15); width: 50px; height: 50px; border-radius: 16px;">
-                                <i data-lucide="shield-check" style="width: 24px; height: 24px; color: white;"></i>
-                            </div>
-                            <div>
-                                <h3 style="font-weight: 950; font-size: 1.25rem; color: #0f172a; margin: 0; letter-spacing: -0.03em;">Stores Dept. Head Approval Workflow</h3>
-                                <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review by the Department Head (Stores).</p>
-                            </div>
-                        </div>
-                        <span id="workflow-active-badge" style="background: rgba(79,70,229,0.08); color: #4f46e5; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(79,70,229,0.15); box-shadow: 0 2px 4px rgba(79,70,229,0.02); transition: all 0.3s ease;">
-                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #4f46e5; transition: all 0.3s ease;" id="workflow-badge-dot"></span>
-                            <span id="workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($selectedCats) }}</span>
-                        </span>
-                    </div>
-                    <div class="cfg-card-body" style="padding: 2.5rem; background: #ffffff;">
-                        <input type="hidden" name="stores_dept_head_approval_categories_present" value="1">
-                        
-                        <!-- Hidden real multi-select to preserve native settings submission -->
-                        <select name="stores_dept_head_approval_categories[]" id="stores_dept_head_approval_categories" multiple="multiple" style="display: none;">
-                            @foreach($categories ?? [] as $code => $name)
-                                <option value="{{ $code }}" {{ in_array($code, $selectedCats) ? 'selected' : '' }}>{{ $code }}</option>
-                            @endforeach
-                        </select>
-
-                        <div style="display: flex; flex-direction: column; gap: 2rem;">
-                            
-                            <!-- Premium Interactive Card Selection Grid -->
-                            <div class="workflow-cat-grid-modern">
-                                @foreach($categories ?? [] as $code => $name)
-                                    @php $isActive = in_array($code, $selectedCats); @endphp
-                                    <div class="workflow-cat-card-modern {{ $isActive ? 'active' : '' }}" 
-                                         onclick="toggleWorkflowCategory('{{ $code }}', this)">
-                                        
-                                        <!-- Glowing corner accent for active state -->
-                                        <div class="corner-glow"></div>
-                                        
-                                        <!-- Category Code Circle -->
-                                        <div class="cat-circle">
-                                            {{ $code }}
-                                        </div>
-
-                                        <!-- Name & Status -->
-                                        <div style="flex: 1; min-width: 0;">
-                                            <div style="font-weight: 850; font-size: 0.88rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $name }}</div>
-                                            <div class="status-label">
-                                                {{ $isActive ? 'Requires Stores Head' : 'Bypasses Stores Head' }}
-                                            </div>
-                                        </div>
-
-                                        <!-- Indicator Circle -->
-                                        <div class="indicator-dot">
-                                            <i data-lucide="check" style="width: 11px; height: 11px; color: white; display: {{ $isActive ? 'block' : 'none' }};"></i>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-
-                            <!-- Workflow Explainer Graphic and Logic Info Card -->
-                            <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
-                                
-                                <!-- Sleek Gradient Alert Card -->
-                                <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.03) 0%, rgba(99, 102, 241, 0.01) 100%); 
-                                            border: 1.5px solid #edf2f7; 
-                                            border-radius: 24px; 
-                                            padding: 1.75rem 2rem; 
-                                            display: flex; 
-                                            gap: 1.25rem; 
-                                            align-items: flex-start;">
-                                    <div style="width: 42px; height: 42px; background: rgba(79,70,229,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #4f46e5; flex-shrink: 0; margin-top: 2px;">
-                                        <i data-lucide="info" style="width: 20px; height: 20px;"></i>
-                                    </div>
-                                    <div style="flex: 1;">
-                                        <h5 style="margin: 0 0 6px 0; font-size: 0.95rem; font-weight: 850; color: #1e293b; letter-spacing: -0.010em;">Smart Routing Protocol Active</h5>
-                                        <p style="margin: 0; font-size: 0.8rem; color: #475569; line-height: 1.6; font-weight: 600;">
-                                            When item categories are configured above, any submitted requisition containing matching items will be routed for manual review by the <strong>Department Head (Stores)</strong> prior to final confirmation. Requisitions consisting solely of bypassed categories skip the Stores Department Head approval stage completely, saving processing time and avoiding administration bottlenecks.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Dynamic Mini Infographic Visualizer Card -->
-                                <div style="background: linear-gradient(to bottom, #fafbff, #ffffff); border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
-                                    <div style="font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; text-align: center; margin-bottom: 0.25rem;">Live Approval Routing Pathway</div>
-                                    
-                                    <div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%; padding: 0.5rem 0;" class="flow-nodes-container">
-                                        
-                                        <!-- Origin Node -->
-                                        <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 85px;">
-                                            <div class="flow-node-icon" style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; box-shadow: 0 4px 12px rgba(79,70,229,0.15);">
-                                                <i data-lucide="user-check" style="width: 18px; height: 18px;"></i>
-                                            </div>
-                                            <span style="font-size: 0.72rem; font-weight: 850; color: #1e293b; white-space: nowrap;">Origin Head</span>
-                                            <span class="flow-node-badge" style="background: #e0e7ff; color: #4f46e5;">Required</span>
-                                        </div>
-
-                                        <!-- Connector 1 -->
-                                        <div id="flow-line-1" class="flow-line {{ count($selectedCats) > 0 ? 'active' : 'dashed' }}"></div>
-
-                                        <!-- Stores Head Node -->
-                                        <div id="flow-node-stores" class="flow-node {{ count($selectedCats) > 0 ? 'active' : 'bypass' }}" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 85px;">
-                                            @if(count($selectedCats) > 0)
-                                                <div class="flow-node-icon" style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; box-shadow: 0 6px 15px rgba(79,70,229,0.2);">
-                                                    <i data-lucide="package" style="width: 18px; height: 18px;"></i>
-                                                </div>
-                                                <span class="flow-node-label" style="font-size: 0.72rem; font-weight: 855; color: #1e293b; text-decoration: none;">Stores Head</span>
-                                                <span class="flow-node-badge" style="background: rgba(79, 70, 229, 0.1); color: #4f46e5;">Required</span>
-                                            @else
-                                                <div class="flow-node-icon" style="background: #f8fafc; border: 2.5px solid #cbd5e1; color: #64748b; box-shadow: none;">
-                                                    <i data-lucide="package" style="width: 18px; height: 18px;"></i>
-                                                </div>
-                                                <span class="flow-node-label" style="font-size: 0.72rem; font-weight: 855; color: #94a3b8; text-decoration: line-through;">Stores Head</span>
-                                                <span class="flow-node-badge" style="background: #fef2f2; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.1);">Bypassed</span>
-                                            @endif
-                                        </div>
-
-                                        <!-- Connector 2 -->
-                                        <div id="flow-line-2" class="flow-line {{ count($selectedCats) > 0 ? 'active' : 'dashed' }}"></div>
-
-                                        <!-- Head of Stores Node -->
-                                        <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 85px;">
-                                            <div class="flow-node-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.15);">
-                                                <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
-                                            </div>
-                                            <span style="font-size: 0.72rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
-                                            <span class="flow-node-badge" style="background: #d1fae5; color: #065f46;">Final Sign</span>
-                                        </div>
-
-                                    </div>
-                                    
-                                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; line-height: 1.45; text-align: center; background: #f8fafc; border-radius: 12px; padding: 8px 12px; border: 1px solid #f1f5f9; transition: all 0.3s ease;" id="workflow-helper-hint">
-                                        @if(count($selectedCats) > 0)
-                                            Route routes through <strong>Stores Department Head</strong> for <strong style="color: #4f46e5;">{{ count($selectedCats) }}</strong> selected categories.
-                                        @else
-                                            Currently bypassing intermediate step due to settings configuration.
-                                        @endif
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Sticky Save Bar --}}
-                <div class="cfg-save-bar">
-                    <span><i data-lucide="info"></i> Unsaved changes will be lost on navigation.</span>
-                    <button type="submit" class="btn-cfg-save">
-                        <i data-lucide="save"></i> Save Settings
-                    </button>
-                </div>
-            </form>
-            @endif
-
-            {{-- Head of Stores Digital Signature Upload Card --}}
-            <div class="cfg-card" id="head-stores-signature" style="margin-bottom: 2rem;">
-                <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9;">
-                    <div style="display: flex; align-items: center; gap: 1.25rem;">
-                        <div class="cfg-icon-box" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 8px 20px rgba(245,158,11,0.15); width: 50px; height: 50px; border-radius: 16px;">
-                            <i data-lucide="signature" style="width: 24px; height: 24px; color: white;"></i>
-                        </div>
-                        <div>
-                            <h3 style="font-weight: 950; font-size: 1.25rem; color: #0f172a; margin: 0; letter-spacing: -0.03em;">Head of Stores Digital Signature</h3>
-                            <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Upload your official signature image to authorize and automatically sign collection receipts.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="cfg-card-body" style="padding: 2.5rem; background: #ffffff;">
-                    <div style="display: grid; grid-template-columns: 280px 1fr; gap: 2.5rem; align-items: center;">
-                        <!-- Signature Preview Box -->
-                        <div style="width: 100%; height: 130px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 20px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;" id="signature-preview-box-admin">
-                            @if(auth()->user()->signature)
-                                <img src="{{ Storage::url(auth()->user()->signature) }}" style="max-width: 90%; max-height: 90%; object-fit: contain;" id="user-signature-img-admin">
+                            @elseif($setting->type === 'integer')
+                            <input type="number" id="setting_{{ $setting->key }}" name="{{ $setting->key }}" value="{{ $setting->value }}" class="cfg-number-input">
                             @else
-                                <div style="text-align: center; color: #64748b;" id="user-signature-placeholder-admin">
-                                    <i data-lucide="edit-3" style="width: 32px; margin: 0 auto 6px; display: block; opacity: 0.4; color: #4f46e5;"></i>
-                                    <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">No Signature Uploaded</span>
-                                </div>
+                            <input type="text" id="setting_{{ $setting->key }}" name="{{ $setting->key }}" value="{{ $setting->value }}" class="cfg-text-input">
+                            @endif
+
+                            @if($setting->description)
+                            <p class="cfg-item-desc">{{ $setting->description }}</p>
                             @endif
                         </div>
-                        
-                        <!-- Upload Controls -->
-                        <div>
-                            <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
-                                <button type="button" class="btn-cfg-save" onclick="document.getElementById('signature-file-upload-admin').click()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; width: auto; height: auto; border-radius: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; font-weight: 900; box-shadow: 0 4px 10px rgba(79,70,229,0.15);">
-                                    <i data-lucide="upload-cloud" style="width: 16px;"></i>
-                                    Upload Signature Image
-                                </button>
-                                <input type="file" id="signature-file-upload-admin" accept="image/*" style="display: none;" onchange="uploadSignatureFileAdmin(this)">
-                                
-                                <button type="button" id="remove-sig-btn-admin" class="otp-preset-btn" onclick="removeSignatureImageAdmin()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; border: 1.5px solid rgba(239, 68, 68, 0.2); color: #ef4444; width: auto; height: auto; border-radius: 14px; display: {{ auth()->user()->signature ? 'inline-flex' : 'none' }}; align-items: center; gap: 8px; cursor: pointer; background: white; font-weight: 800; border-radius: 12px;">
-                                    <i data-lucide="trash-2" style="width: 16px;"></i>
-                                    Remove Signature
-                                </button>
+                        @endforeach
+
+                        {{-- OTP Expiry — inject inside the grid for Security Protocols --}}
+                        @if($group === 'security')
+                        @php $otpExpiry = \App\Models\Setting::firstOrCreate(
+                        ['key' => 'otp_expiry_minutes'],
+                        ['value' => '1440', 'type' => 'integer', 'group' => 'security', 'label' => 'OTP Expiry (Minutes)', 'description' => 'Number of minutes before a generated recovery OTP expires and becomes invalid.']
+                        ); @endphp
+                        <div class="cfg-item" style="grid-column: span 2; max-width: 800px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                                <i data-lucide="timer" style="width: 18px; color: #4f46e5;"></i>
+                                <p class="cfg-item-label" style="margin: 0;">Recovery OTP Expiration (Minutes)</p>
                             </div>
-                            <span style="font-size: 0.72rem; color: #64748b; font-weight: 600; display: block; margin-top: 4px;">Supports PNG, JPG, or JPEG. Transparent PNG is highly recommended for official audit receipt formatting. Max size: 5MB.</span>
+                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+                                <input type="number" name="otp_expiry_minutes" id="setting_otp_expiry_minutes" value="{{ $otpExpiry->value }}" min="3" max="10080" class="cfg-number-input" style="max-width: 120px;" oninput="updateOtpPreview(this.value)">
+                                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                    @foreach([3 => '3 mins', 15 => '15 mins', 30 => '30 mins', 60 => '1 hr', 360 => '6 hrs', 1440 => '24 hrs'] as $val => $label)
+                                    <button type="button" class="otp-preset-btn {{ $otpExpiry->value == $val ? 'active' : '' }}" onclick="setOtpExpiry({{ $val }}, this)">{{ $label }}</button>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <p class="cfg-item-desc" id="otp-preview-text">Set how long an admin-issued OTP remains valid. Currently set to expire <strong>{{ $otpExpiry->value }} minute{{ $otpExpiry->value == 1 ? '' : 's' }}</strong> after it has been generated.</p>
+                        </div>
+                        @endif
+
+                    </div>
+                </div>{{-- /cfg-card-body --}}
+            </div>{{-- /cfg-card --}}
+            @endforeach
+
+            {{-- Stores Department Head Approval Workflow --}}
+            <div class="workflow-card-modern">
+                @php
+                $selectedCats = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
+                if (!is_array($selectedCats)) {
+                $selectedCats = json_decode($selectedCats, true) ?? [];
+                }
+                @endphp
+                <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1.25rem;">
+                        <div class="cfg-icon-box" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); box-shadow: 0 8px 20px rgba(79,70,229,0.15); width: 50px; height: 50px; border-radius: 16px;">
+                            <i data-lucide="shield-check" style="width: 24px; height: 24px; color: white;"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-weight: 950; font-size: 1.25rem; color: #0f172a; margin: 0; letter-spacing: -0.03em;">Stores Dept. Head Approval Workflow</h3>
+                            <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review by the Department Head (Stores).</p>
+                        </div>
+                    </div>
+                    <span id="workflow-active-badge" style="background: rgba(79,70,229,0.08); color: #4f46e5; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(79,70,229,0.15); box-shadow: 0 2px 4px rgba(79,70,229,0.02); transition: all 0.3s ease;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #4f46e5; transition: all 0.3s ease;" id="workflow-badge-dot"></span>
+                        <span id="workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($selectedCats) }}</span>
+                    </span>
+                </div>
+                <div class="cfg-card-body" style="padding: 2.5rem; background: #ffffff;">
+                    <input type="hidden" name="stores_dept_head_approval_categories_present" value="1">
+
+                    <!-- Hidden real multi-select to preserve native settings submission -->
+                    <select name="stores_dept_head_approval_categories[]" id="stores_dept_head_approval_categories" multiple="multiple" style="display: none;">
+                        @foreach($categories ?? [] as $code => $name)
+                        <option value="{{ $code }}" {{ in_array($code, $selectedCats) ? 'selected' : '' }}>{{ $code }}</option>
+                        @endforeach
+                    </select>
+
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+
+                        <!-- Premium Interactive Card Selection Grid -->
+                        <div class="workflow-cat-grid-modern">
+                            @foreach($categories ?? [] as $code => $name)
+                            @php $isActive = in_array($code, $selectedCats); @endphp
+                            <div class="workflow-cat-card-modern {{ $isActive ? 'active' : '' }}"
+                                onclick="toggleWorkflowCategory('{{ $code }}', this)">
+
+                                <!-- Glowing corner accent for active state -->
+                                <div class="corner-glow"></div>
+
+                                <!-- Category Code Circle -->
+                                <div class="cat-circle">
+                                    {{ $code }}
+                                </div>
+
+                                <!-- Name & Status -->
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-weight: 850; font-size: 0.88rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $name }}</div>
+                                    <div class="status-label">
+                                        {{ $isActive ? 'Requires Stores Head' : 'Bypasses Stores Head' }}
+                                    </div>
+                                </div>
+
+                                <!-- Indicator Circle -->
+                                <div class="indicator-dot">
+                                    <i data-lucide="check" style="width: 11px; height: 11px; color: white; display: {{ $isActive ? 'block' : 'none' }};"></i>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Workflow Explainer Graphic and Logic Info Card -->
+                        <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
+
+                            <!-- Sleek Gradient Alert Card -->
+                            <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.03) 0%, rgba(99, 102, 241, 0.01) 100%);
+                                            border: 1.5px solid #edf2f7;
+                                            border-radius: 24px;
+                                            padding: 1.75rem 2rem;
+                                            display: flex;
+                                            gap: 1.25rem;
+                                            align-items: flex-start;">
+                                <div style="width: 42px; height: 42px; background: rgba(79,70,229,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #4f46e5; flex-shrink: 0; margin-top: 2px;">
+                                    <i data-lucide="info" style="width: 20px; height: 20px;"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <h5 style="margin: 0 0 6px 0; font-size: 0.95rem; font-weight: 850; color: #1e293b; letter-spacing: -0.010em;">Smart Routing Protocol Active</h5>
+                                    <p style="margin: 0; font-size: 0.8rem; color: #475569; line-height: 1.6; font-weight: 600;">
+                                        When item categories are configured above, any submitted requisition containing matching items will be routed for manual review by the <strong>Department Head (Stores)</strong> prior to final confirmation. Requisitions consisting solely of bypassed categories skip the Stores Department Head approval stage completely, saving processing time and avoiding administration bottlenecks.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Mini Infographic Visualizer Card -->
+                            <div style="background: linear-gradient(to bottom, #fafbff, #ffffff); border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
+                                <div style="font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; text-align: center; margin-bottom: 0.25rem;">Live Approval Routing Pathway</div>
+
+                                <div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%; padding: 0.5rem 0;" class="flow-nodes-container">
+
+                                    <!-- Origin Node -->
+                                    <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 85px;">
+                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; box-shadow: 0 4px 12px rgba(79,70,229,0.15);">
+                                            <i data-lucide="user-check" style="width: 18px; height: 18px;"></i>
+                                        </div>
+                                        <span style="font-size: 0.72rem; font-weight: 850; color: #1e293b; white-space: nowrap;">Dept. Head</span>
+                                        <span class="flow-node-badge" style="background: #e0e7ff; color: #4f46e5;">Required</span>
+                                    </div>
+
+                                    <!-- Connector 1 -->
+                                    <div id="flow-line-1" class="flow-line {{ count($selectedCats) > 0 ? 'active' : 'dashed' }}"></div>
+
+                                    <!-- Stores Head Node -->
+                                    <div id="flow-node-stores" class="flow-node {{ count($selectedCats) > 0 ? 'active' : 'bypass' }}" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 85px;">
+                                        @if(count($selectedCats) > 0)
+                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; box-shadow: 0 6px 15px rgba(79,70,229,0.2);">
+                                            <i data-lucide="package" style="width: 18px; height: 18px;"></i>
+                                        </div>
+                                        <span class="flow-node-label" style="font-size: 0.72rem; font-weight: 855; color: #1e293b; text-decoration: none;">Head of Admin</span>
+                                        <span class="flow-node-badge" style="background: rgba(79, 70, 229, 0.1); color: #4f46e5;">Required</span>
+                                        @else
+                                        <div class="flow-node-icon" style="background: #f8fafc; border: 2.5px solid #cbd5e1; color: #64748b; box-shadow: none;">
+                                            <i data-lucide="package" style="width: 18px; height: 18px;"></i>
+                                        </div>
+                                        <span class="flow-node-label" style="font-size: 0.72rem; font-weight: 855; color: #94a3b8; text-decoration: line-through;">Head of Admin</span>
+                                        <span class="flow-node-badge" style="background: #fef2f2; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.1);">Bypassed</span>
+                                        @endif
+                                    </div>
+
+                                    <!-- Connector 2 -->
+                                    <div id="flow-line-2" class="flow-line {{ count($selectedCats) > 0 ? 'active' : 'dashed' }}"></div>
+
+                                    <!-- Head of Stores Node -->
+                                    <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 85px;">
+                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.15);">
+                                            <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                                        </div>
+                                        <span style="font-size: 0.72rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
+                                        <span class="flow-node-badge" style="background: #d1fae5; color: #065f46;">Final Sign</span>
+                                    </div>
+
+                                </div>
+
+                                <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; line-height: 1.45; text-align: center; background: #f8fafc; border-radius: 12px; padding: 8px 12px; border: 1px solid #f1f5f9; transition: all 0.3s ease;" id="workflow-helper-hint">
+                                    @if(count($selectedCats) > 0)
+                                    Route routes through <strong>Stores Department Head</strong> for <strong style="color: #4f46e5;">{{ count($selectedCats) }}</strong> selected categories.
+                                    @else
+                                    Currently bypassing intermediate step due to settings configuration.
+                                    @endif
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Category Management --}}
-            <div class="cfg-card" id="category-configs">
-                <div class="cfg-card-header">
-                    <div class="cfg-icon-box" style="background: linear-gradient(135deg,#10b981,#059669);">
-                        <i data-lucide="tags"></i>
+            {{-- Sticky Save Bar --}}
+            <div class="cfg-save-bar">
+                <span><i data-lucide="info"></i> Unsaved changes will be lost on navigation.</span>
+                <button type="submit" class="btn-cfg-save">
+                    <i data-lucide="save"></i> Save Settings
+                </button>
+            </div>
+        </form>
+        @endif
+
+        {{-- Head of Stores Digital Signature Upload Card --}}
+        <div class="cfg-card" id="head-stores-signature" style="margin-bottom: 2rem;">
+            <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9;">
+                <div style="display: flex; align-items: center; gap: 1.25rem;">
+                    <div class="cfg-icon-box" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 8px 20px rgba(245,158,11,0.15); width: 50px; height: 50px; border-radius: 16px;">
+                        <i data-lucide="signature" style="width: 24px; height: 24px; color: white;"></i>
                     </div>
                     <div>
-                        <h3>Item Categories</h3>
-                        <p>Manage category codes for the inventory system.</p>
-                    </div>
-                </div>
-                <div class="cfg-card-body">
-                    <div style="display: grid; grid-template-columns: 1fr 320px; gap: 2rem; align-items: start;">
-
-                        {{-- Existing Categories --}}
-                        <div>
-                            <p style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 1rem; display: flex; align-items: center; gap: 6px;">
-                                <i data-lucide="list" style="width: 14px;"></i> Category Codes
-                            </p>
-                            <div class="cat-grid">
-                                @forelse($categories ?? [] as $code => $name)
-                                    <div class="cat-badge">
-                                        <div class="cat-code-pill">{{ $code }}</div>
-                                        <span class="cat-name" title="{{ $name }}">{{ $name }}</span>
-                                        <form action="{{ route('admin.settings.category.destroy', $code) }}" method="POST" onsubmit="return confirm('Remove category {{ $code }}?');" style="margin: 0;">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="cat-del-btn">
-                                                <i data-lucide="x"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                @empty
-                                    <div style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; padding: 1rem 0;">No categories registered yet.</div>
-                                @endforelse
-                            </div>
-                        </div>
-
-                        {{-- Add New Category --}}
-                        <div class="cat-form-card">
-                            <h5>Add New Category</h5>
-                            <p>Register a new ledger code for inventory tracking.</p>
-                            <form action="{{ route('admin.settings.category') }}" method="POST">
-                                @csrf
-                                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                    <div>
-                                        <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Code</label>
-                                        <input type="text" name="category_code" class="cfg-text-input" placeholder="e.g. M" required maxlength="3" style="text-transform: uppercase; font-size: 1.1rem; font-weight: 900; text-align: center;">
-                                    </div>
-                                    <div>
-                                        <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Category Name</label>
-                                        <input type="text" name="category_name" class="cfg-text-input" placeholder="e.g. Medical Assets" required>
-                                    </div>
-                                    <button type="submit" class="btn-cfg-add">
-                                        <i data-lucide="plus-circle"></i> Register Category
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
+                        <h3 style="font-weight: 950; font-size: 1.25rem; color: #0f172a; margin: 0; letter-spacing: -0.03em;">Head of Stores Digital Signature</h3>
+                        <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Upload your official signature image to authorize and automatically sign collection receipts.</p>
                     </div>
                 </div>
             </div>
+            <div class="cfg-card-body" style="padding: 2.5rem; background: #ffffff;">
+                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 2.5rem; align-items: center;">
+                    <!-- Signature Preview Box -->
+                    <div style="width: 100%; height: 130px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 20px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;" id="signature-preview-box-admin">
+                        @if(auth()->user()->signature)
+                        <img src="{{ Storage::url(auth()->user()->signature) }}" style="max-width: 90%; max-height: 90%; object-fit: contain;" id="user-signature-img-admin">
+                        @else
+                        <div style="text-align: center; color: #64748b;" id="user-signature-placeholder-admin">
+                            <i data-lucide="edit-3" style="width: 32px; margin: 0 auto 6px; display: block; opacity: 0.4; color: #4f46e5;"></i>
+                            <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">No Signature Uploaded</span>
+                        </div>
+                        @endif
+                    </div>
+
+                    <!-- Upload Controls -->
+                    <div>
+                        <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+                            <button type="button" class="btn-cfg-save" onclick="document.getElementById('signature-file-upload-admin').click()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; width: auto; height: auto; border-radius: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; font-weight: 900; box-shadow: 0 4px 10px rgba(79,70,229,0.15);">
+                                <i data-lucide="upload-cloud" style="width: 16px;"></i>
+                                Upload Signature Image
+                            </button>
+                            <input type="file" id="signature-file-upload-admin" accept="image/*" style="display: none;" onchange="uploadSignatureFileAdmin(this)">
+
+                            <button type="button" id="remove-sig-btn-admin" class="otp-preset-btn" onclick="removeSignatureImageAdmin()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; border: 1.5px solid rgba(239, 68, 68, 0.2); color: #ef4444; width: auto; height: auto; border-radius: 14px; display: {{ auth()->user()->signature ? 'inline-flex' : 'none' }}; align-items: center; gap: 8px; cursor: pointer; background: white; font-weight: 800; border-radius: 12px;">
+                                <i data-lucide="trash-2" style="width: 16px;"></i>
+                                Remove Signature
+                            </button>
+                        </div>
+                        <span style="font-size: 0.72rem; color: #64748b; font-weight: 600; display: block; margin-top: 4px;">Supports PNG, JPG, or JPEG. Transparent PNG is highly recommended for official audit receipt formatting. Max size: 5MB.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Category Management --}}
+        <div class="cfg-card" id="category-configs">
+            <div class="cfg-card-header">
+                <div class="cfg-icon-box" style="background: linear-gradient(135deg,#10b981,#059669);">
+                    <i data-lucide="tags"></i>
+                </div>
+                <div>
+                    <h3>Item Categories</h3>
+                    <p>Manage category codes for the inventory system.</p>
+                </div>
+            </div>
+            <div class="cfg-card-body">
+                <div style="display: grid; grid-template-columns: 1fr 320px; gap: 2rem; align-items: start;">
+
+                    {{-- Existing Categories --}}
+                    <div>
+                        <p style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 1rem; display: flex; align-items: center; gap: 6px;">
+                            <i data-lucide="list" style="width: 14px;"></i> Category Codes
+                        </p>
+                        <div class="cat-grid">
+                            @forelse($categories ?? [] as $code => $name)
+                            <div class="cat-badge">
+                                <div class="cat-code-pill">{{ $code }}</div>
+                                <span class="cat-name" title="{{ $name }}">{{ $name }}</span>
+                                <form action="{{ route('admin.settings.category.destroy', $code) }}" method="POST" onsubmit="return confirm('Remove category {{ $code }}?');" style="margin: 0;">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="cat-del-btn">
+                                        <i data-lucide="x"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            @empty
+                            <div style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; padding: 1rem 0;">No categories registered yet.</div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    {{-- Add New Category --}}
+                    <div class="cat-form-card">
+                        <h5>Add New Category</h5>
+                        <p>Register a new ledger code for inventory tracking.</p>
+                        <form action="{{ route('admin.settings.category') }}" method="POST">
+                            @csrf
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div>
+                                    <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Code</label>
+                                    <input type="text" name="category_code" class="cfg-text-input" placeholder="e.g. M" required maxlength="3" style="text-transform: uppercase; font-size: 1.1rem; font-weight: 900; text-align: center;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Category Name</label>
+                                    <input type="text" name="category_name" class="cfg-text-input" placeholder="e.g. Medical Assets" required>
+                                </div>
+                                <button type="submit" class="btn-cfg-add">
+                                    <i data-lucide="plus-circle"></i> Register Category
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- Item Package Type Rules --}}
@@ -1151,66 +1225,66 @@
                         <i data-lucide="list" style="width: 14px;"></i> Active Package Type Rules
                     </p>
                     @php
-                        $unitRules = json_decode(\App\Models\Setting::where('key','item_unit_rules')->value('value') ?? '{}', true) ?? [];
-                        $groupedRules = [];
-                        foreach ($unitRules as $keyword => $data) {
-                            $cat = is_array($data) ? $data['category'] : 'Uncategorized';
-                            $unit = is_array($data) ? $data['unit'] : $data;
-                            $loc = is_array($data) ? ($data['location'] ?? 'Not Specified') : 'Not Specified';
-                            $groupedRules[$cat][$keyword] = [
-                                'unit' => $unit,
-                                'location' => $loc
-                            ];
-                        }
+                    $unitRules = json_decode(\App\Models\Setting::where('key','item_unit_rules')->value('value') ?? '{}', true) ?? [];
+                    $groupedRules = [];
+                    foreach ($unitRules as $keyword => $data) {
+                    $cat = is_array($data) ? $data['category'] : 'Uncategorized';
+                    $unit = is_array($data) ? $data['unit'] : $data;
+                    $loc = is_array($data) ? ($data['location'] ?? 'Not Specified') : 'Not Specified';
+                    $groupedRules[$cat][$keyword] = [
+                    'unit' => $unit,
+                    'location' => $loc
+                    ];
+                    }
                     @endphp
                     @if(empty($groupedRules))
-                        <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
-                            <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
-                            <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No unit rules defined yet. Add rules on the right.</p>
-                        </div>
+                    <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
+                        <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
+                        <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No unit rules defined yet. Add rules on the right.</p>
+                    </div>
                     @else
-                        <div class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;" id="rulesContainer">
-                            @foreach($groupedRules as $catCode => $rulesGroup)
-                                <div class="unit-rule-group">
-                                    <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
-                                        <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
-                                        {{ $categories[$catCode] ?? 'Uncategorized' }}
-                                    </h6>
-                                    <div class="custom-scrollbar" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 0.25rem;">
-                                        @foreach($rulesGroup as $keyword => $ruleData)
-                                            @php
-                                                $unit = $ruleData['unit'];
-                                                $loc = $ruleData['location'];
-                                            @endphp
-                                            <div class="unit-rule-card" data-keyword="{{ strtolower($keyword) }}" style="display: flex; align-items: center; gap: 10px; padding: 0.75rem 1rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s;">
-                                                <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#f59e0b,#d97706); color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
-                                                    {{ strtoupper(substr($keyword, 0, 2)) }}
-                                                </div>
-                                                <div style="flex: 1; min-width: 0;">
-                                                    <div style="font-weight: 800; font-size: 0.82rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $keyword }}">{{ $keyword }}</div>
-                                                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">→ {{ $unit }}</div>
-                                                    <div style="font-size: 0.65rem; font-weight: 600; color: #4f46e5; margin-top: 2px; display: flex; align-items: center; gap: 4px;">
-                                                        <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i> {{ $loc }}
-                                                    </div>
-                                                </div>
-                                                <div style="display: flex; gap: 4px;">
-                                                    <button type="button" onclick="populateUnitForm('{{ $keyword }}', '{{ $unit }}', '{{ $catCode }}', '{{ $loc }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
-                                                        <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
-                                                    </button>
-                                                    <form action="{{ route('admin.settings.unit-rule.destroy') }}" method="POST" onsubmit="return confirm('Remove rule for \'{{ $keyword }}\'?');" style="margin: 0;">
-                                                        @csrf @method('DELETE')
-                                                        <input type="hidden" name="keyword" value="{{ $keyword }}">
-                                                        <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Rule">
-                                                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        @endforeach
+                    <div class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;" id="rulesContainer">
+                        @foreach($groupedRules as $catCode => $rulesGroup)
+                        <div class="unit-rule-group">
+                            <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
+                                <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
+                                {{ $categories[$catCode] ?? 'Uncategorized' }}
+                            </h6>
+                            <div class="custom-scrollbar" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 0.25rem;">
+                                @foreach($rulesGroup as $keyword => $ruleData)
+                                @php
+                                $unit = $ruleData['unit'];
+                                $loc = $ruleData['location'];
+                                @endphp
+                                <div class="unit-rule-card" data-keyword="{{ strtolower($keyword) }}" style="display: flex; align-items: center; gap: 10px; padding: 0.75rem 1rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s;">
+                                    <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#f59e0b,#d97706); color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
+                                        {{ strtoupper(substr($keyword, 0, 2)) }}
+                                    </div>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="font-weight: 800; font-size: 0.82rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $keyword }}">{{ $keyword }}</div>
+                                        <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">→ {{ $unit }}</div>
+                                        <div style="font-size: 0.65rem; font-weight: 600; color: #4f46e5; margin-top: 2px; display: flex; align-items: center; gap: 4px;">
+                                            <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i> {{ $loc }}
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 4px;">
+                                        <button type="button" onclick="populateUnitForm('{{ $keyword }}', '{{ $unit }}', '{{ $catCode }}', '{{ $loc }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
+                                            <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
+                                        </button>
+                                        <form action="{{ route('admin.settings.unit-rule.destroy') }}" method="POST" onsubmit="return confirm('Remove rule for \'{{ $keyword }}\'?');" style="margin: 0;">
+                                            @csrf @method('DELETE')
+                                            <input type="hidden" name="keyword" value="{{ $keyword }}">
+                                            <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Rule">
+                                                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
-                            @endforeach
+                                @endforeach
+                            </div>
                         </div>
+                        @endforeach
+                    </div>
                     @endif
                 </div>
 
@@ -1226,7 +1300,7 @@
                                 <select name="category" id="unitCategory" class="cfg-text-input" required style="cursor: pointer;">
                                     <option value="">Select Category...</option>
                                     @foreach($categories ?? [] as $code => $name)
-                                        <option value="{{ $code }}">[{{ $code }}] {{ $name }}</option>
+                                    <option value="{{ $code }}">[{{ $code }}] {{ $name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -1255,26 +1329,26 @@
                             <div>
                                 <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Store Location</label>
                                 @php
-                                    $defaultLocations = [
-                                        'Main Store',
-                                        'Pharmacy Store',
-                                        'Stationery Store',
-                                        'Cleaning Store',
-                                        'IT & Equipment Store',
-                                        'Safety Store'
-                                    ];
-                                    $dbLocations = \App\Models\InventoryItem::whereNotNull('location')
-                                        ->where('location', '!=', '')
-                                        ->where('location', '!=', 'Not Specified')
-                                        ->distinct()
-                                        ->pluck('location')
-                                        ->toArray();
-                                    $allLocations = array_unique(array_merge($defaultLocations, $dbLocations));
+                                $defaultLocations = [
+                                'Main Store',
+                                'Pharmacy Store',
+                                'Stationery Store',
+                                'Cleaning Store',
+                                'IT & Equipment Store',
+                                'Safety Store'
+                                ];
+                                $dbLocations = \App\Models\InventoryItem::whereNotNull('location')
+                                ->where('location', '!=', '')
+                                ->where('location', '!=', 'Not Specified')
+                                ->distinct()
+                                ->pluck('location')
+                                ->toArray();
+                                $allLocations = array_unique(array_merge($defaultLocations, $dbLocations));
                                 @endphp
                                 <select name="location" id="unitLocation" class="cfg-text-input select2-location" required style="cursor: pointer;">
                                     <option value=""></option>
                                     @foreach($allLocations as $loc)
-                                        <option value="{{ $loc }}">{{ $loc }}</option>
+                                    <option value="{{ $loc }}">{{ $loc }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -1321,58 +1395,58 @@
                         <i data-lucide="list" style="width: 14px;"></i> Active Threshold Rules
                     </p>
                     @php
-                        $thresholdRules = json_decode(\App\Models\Setting::where('key','item_threshold_rules')->value('value') ?? '{}', true) ?? [];
-                        $groupedThresholds = [];
-                        foreach ($thresholdRules as $keyword => $data) {
-                            $cat = is_array($data) ? $data['category'] : 'Uncategorized';
-                            $threshold = is_array($data) ? $data['threshold'] : $data;
-                            $groupedThresholds[$cat][$keyword] = $threshold;
-                        }
+                    $thresholdRules = json_decode(\App\Models\Setting::where('key','item_threshold_rules')->value('value') ?? '{}', true) ?? [];
+                    $groupedThresholds = [];
+                    foreach ($thresholdRules as $keyword => $data) {
+                    $cat = is_array($data) ? $data['category'] : 'Uncategorized';
+                    $threshold = is_array($data) ? $data['threshold'] : $data;
+                    $groupedThresholds[$cat][$keyword] = $threshold;
+                    }
                     @endphp
                     @if(empty($groupedThresholds))
-                        <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
-                            <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
-                            <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No threshold rules defined yet. Add rules on the right.</p>
-                        </div>
+                    <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
+                        <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
+                        <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No threshold rules defined yet. Add rules on the right.</p>
+                    </div>
                     @else
-                        <div class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;" id="thresholdsContainer">
-                            @foreach($groupedThresholds as $catCode => $thresholdsGroup)
-                                <div class="threshold-rule-group">
-                                    <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
-                                        <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
-                                        {{ $categories[$catCode] ?? 'Uncategorized' }}
-                                    </h6>
-                                    <div class="custom-scrollbar" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 0.25rem;">
-                                        @foreach($thresholdsGroup as $keyword => $threshold)
-                                            <div class="threshold-rule-card" data-keyword="{{ strtolower($keyword) }}" style="display: flex; align-items: center; gap: 10px; padding: 0.75rem 1rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s;">
-                                                <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#ef4444,#dc2626); color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
-                                                    <i data-lucide="bell" style="width: 14px;"></i>
-                                                </div>
-                                                <div style="flex: 1; min-width: 0;">
-                                                    <div style="font-weight: 800; font-size: 0.82rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $keyword }}">{{ $keyword }}</div>
-                                                    @php
-                                                        $displayUnit = \App\Models\Setting::getItemUnit($keyword);
-                                                    @endphp
-                                                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">Min: {{ $threshold }} {{ $displayUnit }}</div>
-                                                </div>
-                                                <div style="display: flex; gap: 4px;">
-                                                    <button type="button" onclick="populateThresholdForm('{{ $keyword }}', {{ $threshold }}, '{{ $catCode }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
-                                                        <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
-                                                    </button>
-                                                    <form action="{{ route('admin.settings.threshold-rule.destroy') }}" method="POST" onsubmit="return confirm('Remove threshold rule for \'{{ $keyword }}\'?');" style="margin: 0;">
-                                                        @csrf @method('DELETE')
-                                                        <input type="hidden" name="keyword" value="{{ $keyword }}">
-                                                        <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Rule">
-                                                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        @endforeach
+                    <div class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;" id="thresholdsContainer">
+                        @foreach($groupedThresholds as $catCode => $thresholdsGroup)
+                        <div class="threshold-rule-group">
+                            <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
+                                <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
+                                {{ $categories[$catCode] ?? 'Uncategorized' }}
+                            </h6>
+                            <div class="custom-scrollbar" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 0.25rem;">
+                                @foreach($thresholdsGroup as $keyword => $threshold)
+                                <div class="threshold-rule-card" data-keyword="{{ strtolower($keyword) }}" style="display: flex; align-items: center; gap: 10px; padding: 0.75rem 1rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s;">
+                                    <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#ef4444,#dc2626); color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
+                                        <i data-lucide="bell" style="width: 14px;"></i>
+                                    </div>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="font-weight: 800; font-size: 0.82rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $keyword }}">{{ $keyword }}</div>
+                                        @php
+                                        $displayUnit = \App\Models\Setting::getItemUnit($keyword);
+                                        @endphp
+                                        <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">Min: {{ $threshold }} {{ $displayUnit }}</div>
+                                    </div>
+                                    <div style="display: flex; gap: 4px;">
+                                        <button type="button" onclick="populateThresholdForm('{{ $keyword }}', {{ $threshold }}, '{{ $catCode }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
+                                            <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
+                                        </button>
+                                        <form action="{{ route('admin.settings.threshold-rule.destroy') }}" method="POST" onsubmit="return confirm('Remove threshold rule for \'{{ $keyword }}\'?');" style="margin: 0;">
+                                            @csrf @method('DELETE')
+                                            <input type="hidden" name="keyword" value="{{ $keyword }}">
+                                            <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Rule">
+                                                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
-                            @endforeach
+                                @endforeach
+                            </div>
                         </div>
+                        @endforeach
+                    </div>
                     @endif
                 </div>
 
@@ -1388,7 +1462,7 @@
                                 <select name="category" id="thresholdCategory" class="cfg-text-input" required style="cursor: pointer;">
                                     <option value="">Select Category...</option>
                                     @foreach($categories ?? [] as $code => $name)
-                                        <option value="{{ $code }}">[{{ $code }}] {{ $name }}</option>
+                                    <option value="{{ $code }}">[{{ $code }}] {{ $name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -1445,82 +1519,82 @@
                         <i data-lucide="list" style="width: 14px;"></i> Active Request Limits
                     </p>
                     @php
-                        $requestLimits = json_decode(\App\Models\Setting::where('key','item_request_limits')->value('value') ?? '{}', true) ?? [];
-                        $groupedLimits = [];
-                        foreach ($requestLimits as $keyword => $data) {
-                            $cat = is_array($data) ? $data['category'] : 'Uncategorized';
-                            $limit = is_array($data) ? $data['limit'] : $data;
-                            $groupedLimits[$cat][$keyword] = $limit;
-                        }
+                    $requestLimits = json_decode(\App\Models\Setting::where('key','item_request_limits')->value('value') ?? '{}', true) ?? [];
+                    $groupedLimits = [];
+                    foreach ($requestLimits as $keyword => $data) {
+                    $cat = is_array($data) ? $data['category'] : 'Uncategorized';
+                    $limit = is_array($data) ? $data['limit'] : $data;
+                    $groupedLimits[$cat][$keyword] = $limit;
+                    }
                     @endphp
                     @if(empty($groupedLimits))
-                        <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
-                            <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
-                            <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No request limits defined yet. Add rules on the right.</p>
-                        </div>
+                    <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
+                        <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
+                        <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No request limits defined yet. Add rules on the right.</p>
+                    </div>
                     @else
-                        <div class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;" id="limitsContainer">
-                            @foreach($groupedLimits as $catCode => $limitsGroup)
-                                <div class="limit-rule-group">
-                                    <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
-                                        <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
-                                        {{ $categories[$catCode] ?? 'Uncategorized' }}
-                                    </h6>
-                                    <div class="custom-scrollbar" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 0.25rem;">
-                                        @foreach($limitsGroup as $keyword => $limit)
-                                            <div class="limit-rule-card" data-keyword="{{ strtolower($keyword) }}" style="display: flex; align-items: center; gap: 10px; padding: 0.75rem 1rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s;">
-                                                <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#6366f1,#4f46e5); color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
-                                                    <i data-lucide="ban" style="width: 14px;"></i>
-                                                </div>
-                                                <div style="flex: 1; min-width: 0;">
-                                                    <div style="font-weight: 800; font-size: 0.82rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $keyword }}">{{ $keyword }}</div>
-                                                    @php
-                                                        $displayUnit = \App\Models\Setting::getItemUnit($keyword);
-                                                                                        // Calculate given out qty using word boundaries
-                                                        $query = \App\Models\StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
-                                                            ->whereIn('store_requisitions.status', ['approved', 'partially_approved']);
-                                                        $items = $query->select(
-                                                            'store_requisition_items.description',
-                                                            'store_requisition_items.quantity_approved',
-                                                            'store_requisition_items.alternative_description',
-                                                            'store_requisition_items.alternative_quantity_approved'
-                                                        )->get();
+                    <div class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;" id="limitsContainer">
+                        @foreach($groupedLimits as $catCode => $limitsGroup)
+                        <div class="limit-rule-group">
+                            <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
+                                <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
+                                {{ $categories[$catCode] ?? 'Uncategorized' }}
+                            </h6>
+                            <div class="custom-scrollbar" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 0.25rem;">
+                                @foreach($limitsGroup as $keyword => $limit)
+                                <div class="limit-rule-card" data-keyword="{{ strtolower($keyword) }}" style="display: flex; align-items: center; gap: 10px; padding: 0.75rem 1rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s;">
+                                    <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#6366f1,#4f46e5); color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
+                                        <i data-lucide="ban" style="width: 14px;"></i>
+                                    </div>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="font-weight: 800; font-size: 0.82rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $keyword }}">{{ $keyword }}</div>
+                                        @php
+                                        $displayUnit = \App\Models\Setting::getItemUnit($keyword);
+                                        // Calculate given out qty using word boundaries
+                                        $query = \App\Models\StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
+                                        ->whereIn('store_requisitions.status', ['approved', 'partially_approved']);
+                                        $items = $query->select(
+                                        'store_requisition_items.description',
+                                        'store_requisition_items.quantity_approved',
+                                        'store_requisition_items.alternative_description',
+                                        'store_requisition_items.alternative_quantity_approved'
+                                        )->get();
 
-                                                        $pattern = '/\b' . preg_quote(strtolower(trim($keyword)), '/') . '\b/i';
-                                                        $originalSum = 0.0;
-                                                        $alternativeSum = 0.0;
+                                        $pattern = '/\b' . preg_quote(strtolower(trim($keyword)), '/') . '\b/i';
+                                        $originalSum = 0.0;
+                                        $alternativeSum = 0.0;
 
-                                                        foreach ($items as $dbItem) {
-                                                            if ($dbItem->description && preg_match($pattern, $dbItem->description)) {
-                                                                $originalSum += (float) $dbItem->quantity_approved;
-                                                            }
-                                                            if ($dbItem->alternative_description && preg_match($pattern, $dbItem->alternative_description)) {
-                                                                $alternativeSum += (float) $dbItem->alternative_quantity_approved;
-                                                            }
-                                                        }
-                                                        $givenOut = $originalSum + $alternativeSum;
-                                                    @endphp
-                                                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">Limit: {{ $limit }} {{ $displayUnit }}</div>
-                                                    <div style="font-size: 0.65rem; font-weight: 600; color: {{ $givenOut >= $limit ? 'var(--danger-color)' : 'var(--success-color)' }}; margin-top: 2px;">Given Out: {{ $givenOut }} / {{ $limit }}</div>
-                                                </div>
-                                                <div style="display: flex; gap: 4px;">
-                                                    <button type="button" onclick="populateLimitForm('{{ $keyword }}', {{ $limit }}, '{{ $catCode }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
-                                                        <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
-                                                    </button>
-                                                    <form action="{{ route('admin.settings.request-limit.destroy') }}" method="POST" onsubmit="return confirm('Remove request limit rule for \'{{ $keyword }}\'?');" style="margin: 0;">
-                                                        @csrf @method('DELETE')
-                                                        <input type="hidden" name="keyword" value="{{ $keyword }}">
-                                                        <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Limit Rule">
-                                                            <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        @endforeach
+                                        foreach ($items as $dbItem) {
+                                        if ($dbItem->description && preg_match($pattern, $dbItem->description)) {
+                                        $originalSum += (float) $dbItem->quantity_approved;
+                                        }
+                                        if ($dbItem->alternative_description && preg_match($pattern, $dbItem->alternative_description)) {
+                                        $alternativeSum += (float) $dbItem->alternative_quantity_approved;
+                                        }
+                                        }
+                                        $givenOut = $originalSum + $alternativeSum;
+                                        @endphp
+                                        <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">Limit: {{ $limit }} {{ $displayUnit }}</div>
+                                        <div style="font-size: 0.65rem; font-weight: 600; color: {{ $givenOut >= $limit ? 'var(--danger-color)' : 'var(--success-color)' }}; margin-top: 2px;">Given Out: {{ $givenOut }} / {{ $limit }}</div>
+                                    </div>
+                                    <div style="display: flex; gap: 4px;">
+                                        <button type="button" onclick="populateLimitForm('{{ $keyword }}', {{ $limit }}, '{{ $catCode }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
+                                            <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
+                                        </button>
+                                        <form action="{{ route('admin.settings.request-limit.destroy') }}" method="POST" onsubmit="return confirm('Remove request limit rule for \'{{ $keyword }}\'?');" style="margin: 0;">
+                                            @csrf @method('DELETE')
+                                            <input type="hidden" name="keyword" value="{{ $keyword }}">
+                                            <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Limit Rule">
+                                                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
-                            @endforeach
+                                @endforeach
+                            </div>
                         </div>
+                        @endforeach
+                    </div>
                     @endif
                 </div>
 
@@ -1536,7 +1610,7 @@
                                 <select name="category" id="limitCategory" class="cfg-text-input" required style="cursor: pointer;">
                                     <option value="">Select Category...</option>
                                     @foreach($categories ?? [] as $code => $name)
-                                        <option value="{{ $code }}">[{{ $code }}] {{ $name }}</option>
+                                    <option value="{{ $code }}">[{{ $code }}] {{ $name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -1604,62 +1678,67 @@
                         <i data-lucide="list" style="width: 14px;"></i> Registered Suppliers
                     </p>
                     @php
-                        $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
+                    $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
                     @endphp
                     @if(empty($suppliersRegistry))
-                        <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
-                            <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
-                            <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No suppliers registered yet. Register suppliers on the right.</p>
-                        </div>
+                    <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
+                        <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
+                        <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No suppliers registered yet. Register suppliers on the right.</p>
+                    </div>
                     @else
-                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;" id="suppliersRegistryContainer">
-                            @foreach($suppliersRegistry as $name => $details)
-                                <div class="supplier-card" data-name="{{ strtolower($name) }}" style="padding: 1.25rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 0.75rem; position: relative;">
-                                    <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
-                                        <div style="font-weight: 900; font-size: 0.95rem; color: #0f172a; line-height: 1.2;">{{ $name }}</div>
-                                        <form action="{{ route('admin.settings.supplier.destroy') }}" method="POST" onsubmit="return confirm('Remove {{ $name }} from the registry?');" style="margin: 0;">
-                                            @csrf @method('DELETE')
-                                            <input type="hidden" name="name" value="{{ $name }}">
-                                            <button type="submit" style="width: 28px; height: 28px; border-radius: 8px; background: #fff1f2; border: none; color: #f43f5e; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'">
-                                                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                    <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; font-weight: 600; color: #475569;">
-                                        @if(!empty($details['delivery_person']))
-                                            <div style="display: flex; align-items: center; gap: 6px;">
-                                                <i data-lucide="user" style="width: 12px; color: #94a3b8;"></i> <strong>Delivery:</strong> {{ $details['delivery_person'] }}
-                                            </div>
-                                        @endif
-                                        @if(!empty($details['phone']))
-                                            <div style="display: flex; align-items: center; gap: 6px;">
-                                                <i data-lucide="phone" style="width: 12px; color: #94a3b8;"></i> <strong>Phone:</strong> {{ $details['phone'] }}
-                                            </div>
-                                        @endif
-                                        @if(!empty($details['email']))
-                                            <div style="display: flex; align-items: center; gap: 6px;">
-                                                <i data-lucide="mail" style="width: 12px; color: #94a3b8;"></i> <strong>Email:</strong> {{ $details['email'] }}
-                                            </div>
-                                        @endif
-                                        @if(!empty($details['address']))
-                                            <div style="display: flex; align-items: center; gap: 6px;">
-                                                <i data-lucide="map-pin" style="width: 12px; color: #94a3b8;"></i> <strong>Address:</strong> {{ $details['address'] }}
-                                            </div>
-                                        @endif
-                                    </div>
-                                    @if(!empty($details['desc']))
-                                        <div style="font-size: 0.72rem; font-weight: 500; color: #64748b; background: #f8fafc; padding: 6px 10px; border-radius: 8px; line-height: 1.4;">
-                                            {{ $details['desc'] }}
-                                        </div>
-                                    @endif
-
-                                    {{-- Edit Button --}}
-                                    <button type="button" onclick="populateSupplierForm('{{ addslashes($name) }}', '{{ addslashes($details['delivery_person'] ?? '') }}', '{{ addslashes($details['phone'] ?? '') }}', '{{ addslashes($details['email'] ?? '') }}', '{{ addslashes($details['address'] ?? '') }}', '{{ addslashes($details['desc'] ?? '') }}')" style="position: absolute; right: 45px; top: 1.25rem; width: 28px; height: 28px; border-radius: 8px; background: #f1f5f9; border: none; color: #64748b; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
-                                        <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;" id="suppliersRegistryContainer">
+                        @foreach($suppliersRegistry as $name => $details)
+                        <div class="supplier-card" data-name="{{ strtolower($name) }}" style="padding: 1.25rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 0.75rem; position: relative;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+                                <div style="font-weight: 900; font-size: 0.95rem; color: #0f172a; line-height: 1.2;">{{ $name }}</div>
+                                <form action="{{ route('admin.settings.supplier.destroy') }}" method="POST" onsubmit="return confirm('Remove {{ $name }} from the registry?');" style="margin: 0;">
+                                    @csrf @method('DELETE')
+                                    <input type="hidden" name="name" value="{{ $name }}">
+                                    <button type="submit" style="width: 28px; height: 28px; border-radius: 8px; background: #fff1f2; border: none; color: #f43f5e; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'">
+                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                                     </button>
+                                </form>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; font-weight: 600; color: #475569;">
+                                @if(!empty($details['delivery_person']))
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="user" style="width: 12px; color: #94a3b8;"></i> <strong>Delivery Person:</strong> {{ $details['delivery_person'] }}
                                 </div>
-                            @endforeach
+                                @endif
+                                @if(!empty($details['delivery_phone']))
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="phone" style="width: 12px; color: #94a3b8;"></i> <strong>Delivery Phone:</strong> {{ $details['delivery_phone'] }}
+                                </div>
+                                @endif
+                                @if(!empty($details['phone']))
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="phone" style="width: 12px; color: #94a3b8;"></i> <strong>Company Phone:</strong> {{ $details['phone'] }}
+                                </div>
+                                @endif
+                                @if(!empty($details['email']))
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="mail" style="width: 12px; color: #94a3b8;"></i> <strong>Email:</strong> {{ $details['email'] }}
+                                </div>
+                                @endif
+                                @if(!empty($details['address']))
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="map-pin" style="width: 12px; color: #94a3b8;"></i> <strong>Address:</strong> {{ $details['address'] }}
+                                </div>
+                                @endif
+                            </div>
+                            @if(!empty($details['desc']))
+                            <div style="font-size: 0.72rem; font-weight: 500; color: #64748b; background: #f8fafc; padding: 6px 10px; border-radius: 8px; line-height: 1.4;">
+                                {{ $details['desc'] }}
+                            </div>
+                            @endif
+
+                            {{-- Edit Button --}}
+                            <button type="button" onclick="populateSupplierForm('{{ addslashes($name) }}', '{{ addslashes($details['delivery_person'] ?? '') }}', '{{ addslashes($details['phone'] ?? '') }}', '{{ addslashes($details['email'] ?? '') }}', '{{ addslashes($details['address'] ?? '') }}', '{{ addslashes($details['desc'] ?? '') }}')" style="position: absolute; right: 45px; top: 1.25rem; width: 28px; height: 28px; border-radius: 8px; background: #f1f5f9; border: none; color: #64748b; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                                <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+                            </button>
                         </div>
+                        @endforeach
+                    </div>
                     @endif
                 </div>
 
@@ -1709,8 +1788,8 @@
 </div>
 
 <script>
-    const itemsByCategory  = @json($itemsByCategory  ?? []);
-    const stockByKeyword   = @json($stockByKeyword   ?? []);
+    const itemsByCategory = @json($itemsByCategory ?? []);
+    const stockByKeyword = @json($stockByKeyword ?? []);
 
 
 
@@ -1796,7 +1875,9 @@
         if (window.lucide) lucide.createIcons();
 
         // Scroll to form
-        document.getElementById('unit-rules').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('unit-rules').scrollIntoView({
+            behavior: 'smooth'
+        });
     }
 
     function resetUnitForm() {
@@ -1842,7 +1923,9 @@
         if (window.lucide) lucide.createIcons();
 
         // Scroll to form
-        document.getElementById('threshold-rules').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('threshold-rules').scrollIntoView({
+            behavior: 'smooth'
+        });
     }
 
     function resetThresholdForm() {
@@ -1860,7 +1943,7 @@
         document.getElementById('limitFormTitle').innerText = 'Update Request Limit';
         document.getElementById('limitCategory').value = category;
         $('#limitCategory').trigger('change.select2');
-        
+
         setTimeout(() => {
             const keywordSelect = $('#limitKeyword');
             if (keywordSelect.find("option[value='" + keyword + "']").length === 0) {
@@ -1878,7 +1961,9 @@
         const icon = document.getElementById('limitSubmitIcon');
         icon.setAttribute('data-lucide', 'refresh-cw');
         if (window.lucide) lucide.createIcons();
-        document.getElementById('request-limits').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('request-limits').scrollIntoView({
+            behavior: 'smooth'
+        });
     }
 
     function resetLimitForm() {
@@ -2040,23 +2125,23 @@
         $('#limitForm').on('submit', function(e) {
             const limit = parseFloat(document.getElementById('limitVal').value) || 0;
             const keywords = $('#limitKeyword').val() || [];
-            
+
             for (let i = 0; i < keywords.length; i++) {
                 const keyword = keywords[i];
                 let stock = null;
                 const kwClean = keyword.toLowerCase().trim();
-                
+
                 if (stockByKeyword[kwClean] !== undefined) {
                     stock = stockByKeyword[kwClean];
                 } else {
                     for (const [k, v] of Object.entries(stockByKeyword)) {
-                        if (k.includes(kwClean) || kwClean.includes(k)) { 
-                            stock = v; 
-                            break; 
+                        if (k.includes(kwClean) || kwClean.includes(k)) {
+                            stock = v;
+                            break;
                         }
                     }
                 }
-                
+
                 if (stock !== null && limit > stock) {
                     e.preventDefault();
                     Swal.fire({
@@ -2075,7 +2160,10 @@
     function showLimitStock(keyword) {
         keyword = (keyword || '').toLowerCase().trim();
         const infoPanel = document.getElementById('limitStockInfo');
-        if (!keyword) { infoPanel.style.display = 'none'; return; }
+        if (!keyword) {
+            infoPanel.style.display = 'none';
+            return;
+        }
 
         // Find best match: exact first, then substring
         let stock = null;
@@ -2083,50 +2171,53 @@
             stock = stockByKeyword[keyword];
         } else {
             for (const [k, v] of Object.entries(stockByKeyword)) {
-                if (k.includes(keyword) || keyword.includes(k)) { stock = v; break; }
+                if (k.includes(keyword) || keyword.includes(k)) {
+                    stock = v;
+                    break;
+                }
             }
         }
 
-        const iconEl  = document.getElementById('limitStockIcon');
-        const valEl   = document.getElementById('limitStockValue');
+        const iconEl = document.getElementById('limitStockIcon');
+        const valEl = document.getElementById('limitStockValue');
         const badgeEl = document.getElementById('limitStockBadge');
-        const hintEl  = document.getElementById('limitStockHint');
+        const hintEl = document.getElementById('limitStockHint');
 
         if (stock === null) {
-            iconEl.style.background  = '#e2e8f0';
-            valEl.textContent        = 'No stock data found';
-            badgeEl.textContent      = 'Unknown';
+            iconEl.style.background = '#e2e8f0';
+            valEl.textContent = 'No stock data found';
+            badgeEl.textContent = 'Unknown';
             badgeEl.style.background = '#f1f5f9';
-            badgeEl.style.color      = '#64748b';
-            hintEl.textContent       = 'No inventory records match this keyword. The limit will still be applied once set.';
+            badgeEl.style.color = '#64748b';
+            hintEl.textContent = 'No inventory records match this keyword. The limit will still be applied once set.';
         } else if (stock <= 0) {
-            iconEl.style.background  = 'linear-gradient(135deg,#ef4444,#dc2626)';
-            valEl.textContent        = '0 units';
-            badgeEl.textContent      = 'Out of Stock';
+            iconEl.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+            valEl.textContent = '0 units';
+            badgeEl.textContent = 'Out of Stock';
             badgeEl.style.background = '#fee2e2';
-            badgeEl.style.color      = '#dc2626';
-            hintEl.textContent       = 'This item is currently out of stock. Setting a limit here will keep it as Unavailable on the dashboard.';
+            badgeEl.style.color = '#dc2626';
+            hintEl.textContent = 'This item is currently out of stock. Setting a limit here will keep it as Unavailable on the dashboard.';
         } else if (stock <= 5) {
-            iconEl.style.background  = 'linear-gradient(135deg,#f59e0b,#d97706)';
-            valEl.textContent        = stock + ' units available';
-            badgeEl.textContent      = 'Very Low';
+            iconEl.style.background = 'linear-gradient(135deg,#f59e0b,#d97706)';
+            valEl.textContent = stock + ' units available';
+            badgeEl.textContent = 'Very Low';
             badgeEl.style.background = '#fef3c7';
-            badgeEl.style.color      = '#d97706';
-            hintEl.textContent       = 'Stock is critically low. Consider setting a conservative limit to preserve remaining supply.';
+            badgeEl.style.color = '#d97706';
+            hintEl.textContent = 'Stock is critically low. Consider setting a conservative limit to preserve remaining supply.';
         } else if (stock <= 20) {
-            iconEl.style.background  = 'linear-gradient(135deg,#eab308,#ca8a04)';
-            valEl.textContent        = stock + ' units available';
-            badgeEl.textContent      = 'Low';
+            iconEl.style.background = 'linear-gradient(135deg,#eab308,#ca8a04)';
+            valEl.textContent = stock + ' units available';
+            badgeEl.textContent = 'Low';
             badgeEl.style.background = '#fefce8';
-            badgeEl.style.color      = '#ca8a04';
-            hintEl.textContent       = 'Stock is running low. Set a limit that reflects the quantity you wish to make available for requisitions.';
+            badgeEl.style.color = '#ca8a04';
+            hintEl.textContent = 'Stock is running low. Set a limit that reflects the quantity you wish to make available for requisitions.';
         } else {
-            iconEl.style.background  = 'linear-gradient(135deg,#10b981,#059669)';
-            valEl.textContent        = stock + ' units available';
-            badgeEl.textContent      = 'In Stock';
+            iconEl.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+            valEl.textContent = stock + ' units available';
+            badgeEl.textContent = 'In Stock';
             badgeEl.style.background = '#dcfce7';
-            badgeEl.style.color      = '#16a34a';
-            hintEl.textContent       = 'Sufficient stock available. Set your desired request limit and it will be enforced on the requisition dashboard.';
+            badgeEl.style.color = '#16a34a';
+            hintEl.textContent = 'Sufficient stock available. Set your desired request limit and it will be enforced on the requisition dashboard.';
         }
 
         infoPanel.style.display = 'block';
@@ -2179,21 +2270,23 @@
         icon.setAttribute('data-lucide', 'refresh-cw');
         if (window.lucide) lucide.createIcons();
 
-        document.getElementById('suppliers-registry').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('suppliers-registry').scrollIntoView({
+            behavior: 'smooth'
+        });
     }
 
     function toggleWorkflowCategory(code, card) {
         const select = document.getElementById('stores_dept_head_approval_categories');
         const option = select.querySelector(`option[value="${code}"]`);
-        
+
         if (!option) return;
 
         const isCurrentlyActive = card.classList.contains('active');
-        
+
         if (isCurrentlyActive) {
             // Deactivate
             card.classList.remove('active');
-            
+
             const label = card.querySelector('.status-label');
             if (label) {
                 label.textContent = 'Bypasses Stores Head';
@@ -2204,12 +2297,12 @@
                 const checkIcon = dot.querySelector('i');
                 if (checkIcon) checkIcon.style.display = 'none';
             }
-            
+
             option.selected = false;
         } else {
             // Activate
             card.classList.add('active');
-            
+
             const label = card.querySelector('.status-label');
             if (label) {
                 label.textContent = 'Requires Stores Head';
@@ -2226,7 +2319,7 @@
 
         // Trigger change event on select to ensure any listeners match
         $(select).trigger('change');
-        
+
         // Update the visual flowchart in real-time
         updateWorkflowFlowchart();
     }
@@ -2234,16 +2327,16 @@
     function updateWorkflowFlowchart() {
         const select = document.getElementById('stores_dept_head_approval_categories');
         const activeCount = $(select).val()?.length || 0;
-        
+
         // Update header badge
         const badgeText = document.getElementById('workflow-badge-text');
         const badgeDot = document.getElementById('workflow-badge-dot');
         const badgeContainer = document.getElementById('workflow-active-badge');
-        
+
         if (badgeText) {
             badgeText.textContent = `Active Categories: ${activeCount}`;
         }
-        
+
         if (activeCount > 0) {
             if (badgeDot) badgeDot.style.background = '#4f46e5';
             if (badgeContainer) {
@@ -2270,7 +2363,7 @@
             if (node) {
                 node.classList.remove('bypass');
                 node.classList.add('active');
-                
+
                 const iconBox = node.querySelector('.flow-node-icon');
                 if (iconBox) {
                     iconBox.style.background = 'linear-gradient(135deg, #4f46e5, #3730a3)';
@@ -2278,13 +2371,13 @@
                     iconBox.style.borderColor = 'transparent';
                     iconBox.style.boxShadow = '0 6px 15px rgba(79,70,229,0.2)';
                 }
-                
+
                 const label = node.querySelector('.flow-node-label');
                 if (label) {
                     label.style.color = '#1e293b';
                     label.style.textDecoration = 'none';
                 }
-                
+
                 const badge = node.querySelector('.flow-node-badge');
                 if (badge) {
                     badge.textContent = 'Required';
@@ -2293,7 +2386,7 @@
                     badge.style.borderColor = 'transparent';
                 }
             }
-            
+
             if (line1) {
                 line1.classList.remove('dashed');
                 line1.classList.add('active');
@@ -2304,7 +2397,7 @@
                 line2.classList.add('active');
                 line2.style.background = '#4f46e5';
             }
-            
+
             if (hint) {
                 hint.innerHTML = `Route routes through <strong>Stores Department Head</strong> for <strong style="color: #4f46e5;">${activeCount}</strong> selected category${activeCount == 1 ? '' : 'ies'}.`;
             }
@@ -2313,7 +2406,7 @@
             if (node) {
                 node.classList.remove('active');
                 node.classList.add('bypass');
-                
+
                 const iconBox = node.querySelector('.flow-node-icon');
                 if (iconBox) {
                     iconBox.style.background = '#f8fafc';
@@ -2321,13 +2414,13 @@
                     iconBox.style.borderColor = '#cbd5e1';
                     iconBox.style.boxShadow = 'none';
                 }
-                
+
                 const label = node.querySelector('.flow-node-label');
                 if (label) {
                     label.style.color = '#94a3b8';
                     label.style.textDecoration = 'line-through';
                 }
-                
+
                 const badge = node.querySelector('.flow-node-badge');
                 if (badge) {
                     badge.textContent = 'Bypassed';
@@ -2336,7 +2429,7 @@
                     badge.style.borderColor = 'rgba(239, 68, 68, 0.1)';
                 }
             }
-            
+
             if (line1) {
                 line1.classList.remove('active');
                 line1.classList.add('dashed');
@@ -2347,7 +2440,7 @@
                 line2.classList.add('dashed');
                 line2.style.background = '';
             }
-            
+
             if (hint) {
                 hint.innerHTML = 'Currently bypassing intermediate step due to settings configuration.';
             }
@@ -2356,22 +2449,22 @@
 
     async function uploadSignatureFileAdmin(input) {
         if (!input.files || !input.files[0]) return;
-        
+
         const file = input.files[0];
-        const maxSizeMB = 5; 
+        const maxSizeMB = 5;
         if (file.size > maxSizeMB * 1024 * 1024) {
             if (typeof showToast === 'function') {
                 showToast('File Too Large', `Please select an image smaller than ${maxSizeMB}MB.`, 'error');
             } else {
                 alert(`File Too Large: Please select an image smaller than ${maxSizeMB}MB.`);
             }
-            input.value = ''; 
+            input.value = '';
             return;
         }
 
         const formData = new FormData();
         formData.append('signature', file);
-        
+
         const btn = input.previousElementSibling;
         const orgHtml = btn.innerHTML;
         btn.disabled = true;
@@ -2381,9 +2474,9 @@
         try {
             const res = await fetch("{{ route('settings.signature') }}", {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json' 
+                    'Accept': 'application/json'
                 },
                 body: formData
             });
@@ -2406,18 +2499,18 @@
                 if (window.lucide) lucide.createIcons();
                 return;
             }
-            
+
             if (res.ok && data.success) {
                 if (typeof showToast === 'function') {
                     showToast('Signature Updated', data.message, 'success');
                 } else {
                     alert('Signature Updated: ' + data.message);
                 }
-                
+
                 // Dynamically update preview
                 const previewBox = document.getElementById('signature-preview-box-admin');
                 previewBox.innerHTML = `<img src="${data.url}?t=${new Date().getTime()}" style="max-width: 90%; max-height: 90%; object-fit: contain;" id="user-signature-img-admin">`;
-                
+
                 // Show remove button
                 document.getElementById('remove-sig-btn-admin').style.display = 'inline-flex';
             } else {
@@ -2440,14 +2533,14 @@
         } finally {
             btn.innerHTML = orgHtml;
             btn.disabled = false;
-            input.value = ''; 
+            input.value = '';
             if (window.lucide) lucide.createIcons();
         }
     }
 
     async function removeSignatureImageAdmin() {
         if (!confirm('Are you sure you want to remove your digital signature?')) return;
-        
+
         const btn = document.getElementById('remove-sig-btn-admin');
         const orgHtml = btn.innerHTML;
         btn.disabled = true;
@@ -2457,7 +2550,7 @@
         try {
             const res = await fetch("{{ route('settings.signature.remove') }}", {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Accept': 'application/json'
                 }
@@ -2469,7 +2562,7 @@
                 } else {
                     alert('Signature Removed: ' + data.message);
                 }
-                
+
                 // Reset preview
                 const previewBox = document.getElementById('signature-preview-box-admin');
                 previewBox.innerHTML = `
@@ -2478,7 +2571,7 @@
                         <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">No Signature Uploaded</span>
                     </div>
                 `;
-                
+
                 // Hide remove button
                 btn.style.display = 'none';
             } else {

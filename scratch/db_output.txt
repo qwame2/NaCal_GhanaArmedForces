@@ -1,0 +1,1 @@
+Columns: id, ledge_category, supplier_name, supplier_status, donor_name, acquisition_type, entry_date, arrival_date, delivery_phone, delivery_person, recorded_by, created_at, updated_at, approval_status, approved_by, approved_at

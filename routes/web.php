@@ -26,6 +26,32 @@ try {
         $adom->name = 'Adom';
         $adom->save();
     }
+
+    // Self-healing for delivery person / phone database columns
+    \App\Models\InventoryBatch::selfHealSchema();
+
+    try {
+        $cols = \Illuminate\Support\Facades\Schema::getColumnListing('inventory_batches');
+        file_put_contents(base_path('scratch/db_output.txt'), "Columns: " . implode(', ', $cols));
+        
+        $out = "Recent Batches:\n";
+        $batches = \App\Models\InventoryBatch::orderBy('id', 'desc')->take(10)->get();
+        foreach ($batches as $b) {
+            $out .= sprintf(
+                "ID: %d | Acq: %s | Supplier: %s | Donor: %s | DelPerson: %s | DelPhone: %s | Approved: %s\n",
+                $b->id,
+                $b->acquisition_type,
+                $b->supplier_name,
+                $b->donor_name,
+                $b->delivery_person,
+                $b->delivery_phone,
+                $b->approval_status
+            );
+        }
+        file_put_contents(base_path('scratch/batches_output.txt'), $out);
+    } catch (\Exception $ex) {
+        file_put_contents(base_path('scratch/db_output.txt'), "Error: " . $ex->getMessage());
+    }
 } catch (\Exception $e) {
     // Ignore to prevent boot failures
 }
@@ -472,6 +498,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     })->name('api.unit-rules');
 
 
+    Route::get('/inventory/create', [InventoryController::class, 'create'])->name('inventory.create');
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     Route::get('/received-items', [ReceivedItemsController::class, 'index'])->name('receiveditems');
     Route::get('/issue-items', [IssueItemsController::class, 'index'])->name('issueitems');
@@ -1490,3 +1517,6 @@ Route::get('/system/migrate', function () {
         return "Migration Failed: " . $e->getMessage();
     }
 });
+
+
+

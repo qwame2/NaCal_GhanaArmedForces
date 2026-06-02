@@ -9,6 +9,125 @@ use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller
 {
+    public function create()
+    {
+        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
+            abort(403, 'Unauthorized: Department Heads are only allowed to view received items and cannot make changes.');
+        }
+
+        if (!auth()->user()->is_admin && !auth()->user()->can_add_inventory) {
+            abort(403, 'Unauthorized: Permission Required');
+        }
+
+        \App\Models\InventoryBatch::selfHealSchema();
+
+        // Ledge mapping for display and calculations (Category standardization)
+        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
+
+        // Fetch unique suppliers and donors for the dropdown
+        $registryData = \App\Models\Setting::get('suppliers_registry', []);
+        if (is_string($registryData)) {
+            $registryData = json_decode($registryData, true) ?? [];
+        }
+        $registrySuppliers = is_array($registryData) ? array_keys($registryData) : [];
+        $dbSuppliers = \App\Models\InventoryBatch::where('acquisition_type', 'Supplier')
+            ->whereNotNull('supplier_name')
+            ->distinct()
+            ->pluck('supplier_name')
+            ->map(function($name) use ($registrySuppliers) {
+                $clean = preg_replace('/\s\[.*\]$/', '', $name);
+                foreach ($registrySuppliers as $regName) {
+                    if (strcasecmp($regName, $clean) === 0) {
+                        return $regName;
+                    }
+                }
+                return $clean;
+            })->toArray();
+        $allSuppliers = collect(array_merge($registrySuppliers, $dbSuppliers))
+            ->filter(function ($item) {
+                return strtolower(trim($item)) !== 'system';
+            })
+            ->unique(function ($item) {
+                return strtolower(trim($item));
+            })
+            ->values();
+
+        $donorNames1 = \App\Models\InventoryBatch::where('acquisition_type', 'Donor')
+            ->whereNotNull('donor_name')
+            ->distinct()
+            ->pluck('donor_name');
+
+        $donorNames2 = \App\Models\InventoryBatch::where('acquisition_type', 'Donor')
+            ->whereNotNull('supplier_name')
+            ->distinct()
+            ->pluck('supplier_name');
+
+        $allDonors = $donorNames1->concat($donorNames2)
+            ->map(function($name) {
+                return preg_replace('/\s\[.*\]$/', '', $name);
+            })
+            ->filter()
+            ->unique()
+            ->values();
+
+        $rawItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->select(
+                'inventory_items.description',
+                'inventory_items.unit',
+                'inventory_items.location',
+                'inventory_items.qty',
+                'inventory_items.stock_balance',
+                'inventory_items.variance',
+                'inventory_batches.ledge_category',
+                'inventory_batches.supplier_status',
+                'inventory_items.id as item_id'
+            )
+            ->orderBy('inventory_items.id', 'asc')
+            ->get();
+
+        $grouped = $rawItems->groupBy(function($item) {
+            return trim(strtoupper($item->description));
+        });
+
+        $existingItems = $grouped->map(function($group) {
+            $nonDraftGroup = $group->filter(fn($item) => $item->supplier_status !== 'System Draft');
+            
+            $lastItem = $nonDraftGroup->last() ?? $group->last();
+            
+            $stockBalance = $nonDraftGroup->sum(function($item) {
+                return (float) str_replace(',', '', $item->stock_balance);
+            });
+            
+            $variance = $nonDraftGroup->sum(function($item) {
+                return (float) str_replace(',', '', $item->variance);
+            });
+
+            $qty = $lastItem ? (float) str_replace(',', '', $lastItem->qty) : 0;
+
+            return (object) [
+                'description'    => $lastItem->description,
+                'unit'           => $lastItem->unit,
+                'location'       => $lastItem->location,
+                'ledge_category' => $lastItem->ledge_category,
+                'stock_balance'  => $stockBalance,
+                'qty'            => $qty,
+                'variance'       => $variance,
+            ];
+        })->values();
+
+        return view('inventory.create', compact('ledgeMap', 'allSuppliers', 'allDonors', 'existingItems'));
+    }
+
     public function store(Request $request)
     {
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
@@ -22,6 +141,7 @@ class InventoryController extends Controller
             'donor_name' => 'nullable|string',
             'acquisition_type' => 'required|string',
             'delivery_person' => 'nullable|string',
+            'delivery_phone' => ['nullable', 'string', 'regex:/^(N\/A|\d{10})$/i'],
             'entry_date' => 'required',
             'arrival_date' => 'required|date',
             'items' => 'required|array|min:1',
@@ -124,6 +244,8 @@ class InventoryController extends Controller
                 'supplier_status' => $validated['supplier_status'],
                 'donor_name' => $validated['donor_name'],
                 'acquisition_type' => $validated['acquisition_type'],
+                'delivery_person' => $validated['delivery_person'] ?? null,
+                'delivery_phone' => $validated['delivery_phone'] ?? null,
                 'entry_date' => $validated['entry_date'],
                 'arrival_date' => $validated['arrival_date'],
                 'approval_status' => 'approved',
@@ -138,16 +260,23 @@ class InventoryController extends Controller
                 $batch->items()->create($itemData);
             }
 
-            // Update the supplier's delivery person in the database and registry if configured
-            if (!empty($validated['supplier_name']) && !empty($validated['delivery_person'])) {
+            // Update the supplier's delivery person and phone in the database and registry if configured
+            if (!empty($validated['supplier_name'])) {
                 $cleanSupplier = trim(preg_replace('/\s\[.*\]$/', '', $validated['supplier_name']));
                 $supplierModel = \App\Models\Supplier::where('name', $cleanSupplier)
                     ->orWhere('name', $validated['supplier_name'])
                     ->first();
                 if ($supplierModel) {
-                    $supplierModel->update([
-                        'delivery_person' => trim($validated['delivery_person'])
-                    ]);
+                    $updateData = [];
+                    if (isset($validated['delivery_person'])) {
+                        $updateData['delivery_person'] = trim($validated['delivery_person']);
+                    }
+                    if (isset($validated['delivery_phone'])) {
+                        $updateData['delivery_phone'] = trim($validated['delivery_phone']);
+                    }
+                    if (!empty($updateData)) {
+                        $supplierModel->update($updateData);
+                    }
                     
                     // Also update in settings registry
                     $setting = \App\Models\Setting::where('key', 'suppliers_registry')->first();
@@ -156,7 +285,12 @@ class InventoryController extends Controller
                         $updatedRegistry = false;
                         foreach ($registry as $key => &$details) {
                             if (strcasecmp(trim($key), $cleanSupplier) === 0 || strcasecmp(trim($key), trim($validated['supplier_name'])) === 0) {
-                                $details['delivery_person'] = trim($validated['delivery_person']);
+                                if (isset($updateData['delivery_person'])) {
+                                    $details['delivery_person'] = $updateData['delivery_person'];
+                                }
+                                if (isset($updateData['delivery_phone'])) {
+                                    $details['delivery_phone'] = $updateData['delivery_phone'];
+                                }
                                 $updatedRegistry = true;
                                 break;
                             }

@@ -2568,7 +2568,11 @@
                                                         <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_person || s.delivery_person || 'N/A'}</div>
                                                     </div>
                                                     <div>
-                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Phone</div>
+                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Phone</div>
+                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_phone || s.delivery_phone || 'N/A'}</div>
+                                                    </div>
+                                                    <div>
+                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Company Phone</div>
                                                         <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${s.phone || 'N/A'}</div>
                                                     </div>
                                                     <div>
@@ -2686,7 +2690,14 @@
                                 <div style="display: flex; gap: 10px; align-items: flex-start;">
                                     <i data-lucide="phone" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
                                     <div>
-                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Phone</div>
+                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Delivery Phone</div>
+                                        <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.delivery_phone || 'N/A'}</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                    <i data-lucide="phone" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
+                                    <div>
+                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Company Phone</div>
                                         <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.phone || 'N/A'}</div>
                                     </div>
                                 </div>
