@@ -12,7 +12,8 @@
             color: #1e293b;
             background: white;
             font-size: 12px;
-            margin: 0;
+            margin: 0 auto;
+            max-width: 1120px;
             padding: 20px 30px;
             line-height: 1.4;
         }
@@ -99,16 +100,12 @@
             font-weight: 600;
         }
 
-        /* ── Visualization ── */
-        .visualizations-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 24px;
+        .visualization-container {
             margin-bottom: 25px;
             page-break-inside: avoid;
         }
-        .visualization-container {
-            page-break-inside: avoid;
+        #received-bar-chart, #issued-bar-chart {
+            width: 100%;
         }
         .visualization-header {
             display: flex;
@@ -332,6 +329,7 @@
                 overflow: visible !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                max-width: 100% !important;
                 background: white !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
@@ -341,9 +339,6 @@
                 display: none !important;
             }
 
-            .visualizations-grid {
-                page-break-inside: avoid;
-            }
             .visualization-container {
                 page-break-inside: avoid;
             }
@@ -402,36 +397,31 @@
         </div>
     </div>
 
-    {{-- Visualizations Grid --}}
-    @if(($totalReceivedQty > 0 && $receivedDistribution->count() > 0) || ($totalIssuedQty > 0 && $issuedDistribution->count() > 0))
-    <div class="visualizations-grid">
-        {{-- Stock Receipts Visualization --}}
-        @if($totalReceivedQty > 0 && $receivedDistribution->count() > 0)
-        <div class="visualization-container">
-            <div class="visualization-header">
-                <span class="vis-icon-wrap" style="background: #10b981;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                </span>
-                <h2>Stock Receipts Visualization</h2>
-            </div>
-            <div class="vis-sub-label green-label">● STOCK RECEIPTS — TOP {{ $receivedDistribution->count() }} ITEMS</div>
-            <div id="received-bar-chart" style="margin-left: 20px; width: calc(100% - 20px);"></div>
+    {{-- Stock Receipts Visualization --}}
+    @if($totalReceivedQty > 0 && $receivedDistribution->count() > 0)
+    <div class="visualization-container">
+        <div class="visualization-header">
+            <span class="vis-icon-wrap" style="background: #10b981;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            </span>
+            <h2>Stock Receipts Visualization</h2>
         </div>
-        @endif
+        <div class="vis-sub-label green-label">● STOCK RECEIPTS — TOP {{ $receivedDistribution->count() }} ITEMS</div>
+        <div id="received-bar-chart"></div>
+    </div>
+    @endif
 
-        {{-- Issuance Visualization --}}
-        @if($totalIssuedQty > 0 && $issuedDistribution->count() > 0)
-        <div class="visualization-container">
-            <div class="visualization-header">
-                <span class="vis-icon-wrap" style="background: #f59e0b;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                </span>
-                <h2>Issuance Visualization</h2>
-            </div>
-            <div class="vis-sub-label orange-label">● ISSUANCE — TOP {{ $issuedDistribution->count() }} ITEMS</div>
-            <div id="issued-bar-chart" style="margin-left: 20px; width: calc(100% - 20px);"></div>
+    {{-- Issuance Visualization --}}
+    @if($totalIssuedQty > 0 && $issuedDistribution->count() > 0)
+    <div class="visualization-container">
+        <div class="visualization-header">
+            <span class="vis-icon-wrap" style="background: #f59e0b;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            </span>
+            <h2>Issuance Visualization</h2>
         </div>
-        @endif
+        <div class="vis-sub-label orange-label">● ISSUANCE — TOP {{ $issuedDistribution->count() }} ITEMS</div>
+        <div id="issued-bar-chart"></div>
     </div>
     @endif
 
@@ -578,6 +568,7 @@
             const barDefaults = {
                 chart: {
                     type: 'bar',
+                    width: '100%',
                     background: 'transparent',
                     foreColor: textColor,
                     toolbar: { show: false },
@@ -601,7 +592,11 @@
                 grid: {
                     borderColor: 'rgba(0,0,0,0.06)',
                     xaxis: { lines: { show: true } },
-                    yaxis: { lines: { show: false } }
+                    yaxis: { lines: { show: false } },
+                    padding: {
+                        left: 20,
+                        right: 20
+                    }
                 },
                 xaxis: {
                     labels: {
