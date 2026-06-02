@@ -560,11 +560,12 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/api/total-unread', [\App\Http\Controllers\MessageController::class, 'getTotalUnreadCount'])->name('api.total-unread');
     Route::get('/api/online-statuses', [\App\Http\Controllers\MessageController::class, 'getOnlineStatuses'])->name('api.online-statuses');
     Route::get('/api/user/permissions', function() {
-        $is_admin = (bool)auth()->user()->is_admin;
+        $user = auth()->user();
+        $is_admin = (bool)$user->is_admin || $user->role === 'Main Admin';
         return response()->json([
-            'can_generate_reports' => $is_admin || (bool)auth()->user()->can_generate_reports,
-            'can_add_inventory' => $is_admin || (bool)auth()->user()->can_add_inventory,
-            'can_operate_logistics' => $is_admin || (bool)auth()->user()->can_operate_logistics,
+            'can_generate_reports' => $is_admin || $user->role === 'Auditor' || (bool)$user->can_generate_reports,
+            'can_add_inventory' => $is_admin || (bool)$user->can_add_inventory,
+            'can_operate_logistics' => $is_admin || (bool)$user->can_operate_logistics,
         ]);
     })->name('api.user.permissions');
 

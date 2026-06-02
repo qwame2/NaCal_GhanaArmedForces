@@ -21,10 +21,10 @@
             <p class="rpt-hero-sub">Collect data from different time periods for official review.</p>
         </div>
         <div style="display: flex; gap: 1rem; position: relative; z-index: 1; flex-wrap: wrap; align-items: center;">
-            <div class="period-toggle-group {{ !(auth()->user()->is_admin || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
-                <a href="{{ (auth()->user()->is_admin || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'daily']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'daily' ? 'active' : '' }}">Daily</a>
-                <a href="{{ (auth()->user()->is_admin || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'monthly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'monthly' ? 'active' : '' }}">Monthly</a>
-                <a href="{{ (auth()->user()->is_admin || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'yearly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'yearly' ? 'active' : '' }}">Yearly</a>
+            <div class="period-toggle-group {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
+                <a href="{{ (auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'daily']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'daily' ? 'active' : '' }}">Daily</a>
+                <a href="{{ (auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'monthly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'monthly' ? 'active' : '' }}">Monthly</a>
+                <a href="{{ (auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'yearly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'yearly' ? 'active' : '' }}">Yearly</a>
                 <a href="javascript:void(0)" id="custom-period-btn" onclick="toggleCustomDateBar()" class="period-btn {{ $period === 'custom' ? 'active' : '' }}">Choose dates</a>
             </div>
         </div>
@@ -119,7 +119,7 @@
                         </select>
                     </div>
                     <div class="filter-actions">
-                        <button type="submit" class="filter-apply-btn {{ !(auth()->user()->is_admin || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
+                        <button type="submit" class="filter-apply-btn {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
                             <i data-lucide="bar-chart-2" style="width:16px;height:16px;"></i>
                             <span>Generate Report</span>
                         </button>
@@ -152,7 +152,7 @@
 
     <div class="print-actions-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
         <h3 class="print-date-label" style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin: 0;">{{ $dateLabel }}</h3>
-        <button onclick="{{ (auth()->user()->is_admin || auth()->user()->can_generate_reports) ? 'triggerPrintMode()' : '' }}" class="btn-primary {{ !(auth()->user()->is_admin || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}" style="padding: 0.75rem 1.5rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.25);">
+        <button onclick="triggerPrintMode()" id="print-report-btn" class="btn-primary {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}" {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? 'disabled' : '' }} style="padding: 0.75rem 1.5rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.25);">
             <i data-lucide="printer" style="width: 18px;"></i> Export or Print
         </button>
     </div>
@@ -1460,11 +1460,10 @@
         }
 
         /* Destroy and recreate ApexCharts with new data */
-        let _activeCharts = window._reportCharts || [];
+        window._reportCharts = window._reportCharts || [];
         function rebuildCharts(d) {
-            _activeCharts.forEach(c => { try { c.destroy(); } catch(e) {} });
-            _activeCharts = [];
-            window._reportCharts = _activeCharts;
+            (window._reportCharts || []).forEach(c => { try { c.destroy(); } catch(e) {} });
+            window._reportCharts = [];
 
             const theme   = localStorage.getItem('theme') || 'light';
             const isDark  = theme === 'dark';
@@ -1510,7 +1509,7 @@
                         })
                     }));
                     c.render();
-                    _activeCharts.push(c);
+                    window._reportCharts.push(c);
                 }
             } else {
                 if (singleWrap) singleWrap.style.display = 'none';
@@ -1531,7 +1530,7 @@
                             colors: recColors.slice(0, recLabels.length),
                         }));
                         c.render();
-                        _activeCharts.push(c);
+                        window._reportCharts.push(c);
                     }
                 } else {
                     if (recCard) recCard.style.display = 'none';
@@ -1552,7 +1551,7 @@
                             colors: issColors.slice(0, issLabels.length),
                         }));
                         c.render();
-                        _activeCharts.push(c);
+                        window._reportCharts.push(c);
                     }
                 } else {
                     if (issCard) issCard.style.display = 'none';
@@ -2112,7 +2111,7 @@
 @endsection
 
 @push('scripts')
-    @if(auth()->user()->is_admin)
+    @if(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports)
         <script src="{{ asset('js/apexcharts.js') }}"></script>
     @endif
 
@@ -2221,76 +2220,81 @@
                     }
                 };
 
-                const charts = window._reportCharts || [];
-                window._reportCharts = charts;
+                if (typeof ApexCharts !== 'undefined') {
+                    window._reportCharts = window._reportCharts || [];
 
-                @if(count($selectedItems) === 1)
-                    const singleBarOptions = Object.assign({}, barDefaults, {
-                        chart: Object.assign({}, barDefaults.chart, { height: 160 }),
-                        series: [{ name: 'Quantity', data: [{{ (float)$totalReceivedQty }}, {{ (float)$totalIssuedQty }}] }],
-                        xaxis: Object.assign({}, barDefaults.xaxis, { categories: ['Received', 'Issued'] }),
-                        colors: ['#10b981', '#f59e0b'],
-                        plotOptions: Object.assign({}, barDefaults.plotOptions, {
-                            bar: Object.assign({}, barDefaults.plotOptions.bar, { barHeight: '55%' })
-                        })
-                    });
-                    const singleChart = new ApexCharts(document.querySelector('#single-item-bar-chart'), singleBarOptions);
-                    singleChart.render();
-                    charts.push(singleChart);
-                @else
-                    @if($totalReceivedQty > 0 && $receivedDistribution->count() > 0)
-                        const recLabels = @json($receivedDistribution->pluck('description'));
-                        const recData   = @json($receivedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
-                        const recBarH   = Math.max(220, recLabels.length * 42);
-                        const recColors = ['#6366f1','#818cf8','#4f46e5','#7c3aed','#8b5cf6','#a78bfa','#4338ca','#3730a3','#06b6d4','#0ea5e9'];
-                        const recOptions = Object.assign({}, barDefaults, {
-                            chart: Object.assign({}, barDefaults.chart, { height: recBarH }),
-                            series: [{ name: 'Received', data: recData }],
-                            xaxis: Object.assign({}, barDefaults.xaxis, { categories: recLabels }),
-                            colors: recColors.slice(0, recLabels.length),
+                    @if(count($selectedItems) === 1)
+                        const singleBarOptions = Object.assign({}, barDefaults, {
+                            chart: Object.assign({}, barDefaults.chart, { height: 160 }),
+                            series: [{ name: 'Quantity', data: [{{ (float)$totalReceivedQty }}, {{ (float)$totalIssuedQty }}] }],
+                            xaxis: Object.assign({}, barDefaults.xaxis, { categories: ['Received', 'Issued'] }),
+                            colors: ['#10b981', '#f59e0b'],
+                            plotOptions: Object.assign({}, barDefaults.plotOptions, {
+                                bar: Object.assign({}, barDefaults.plotOptions.bar, { barHeight: '55%' })
+                            })
                         });
-                        const recChart = new ApexCharts(document.querySelector('#received-bar-chart'), recOptions);
-                        recChart.render();
-                        charts.push(recChart);
+                        const singleChart = new ApexCharts(document.querySelector('#single-item-bar-chart'), singleBarOptions);
+                        singleChart.render();
+                        window._reportCharts.push(singleChart);
+                    @else
+                        @if($totalReceivedQty > 0 && $receivedDistribution->count() > 0)
+                            const recLabels = @json($receivedDistribution->pluck('description'));
+                            const recData   = @json($receivedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
+                            const recBarH   = Math.max(220, recLabels.length * 42);
+                            const recColors = ['#6366f1','#818cf8','#4f46e5','#7c3aed','#8b5cf6','#a78bfa','#4338ca','#3730a3','#06b6d4','#0ea5e9'];
+                            const recOptions = Object.assign({}, barDefaults, {
+                                chart: Object.assign({}, barDefaults.chart, { height: recBarH }),
+                                series: [{ name: 'Received', data: recData }],
+                                xaxis: Object.assign({}, barDefaults.xaxis, { categories: recLabels }),
+                                colors: recColors.slice(0, recLabels.length),
+                            });
+                            const recChart = new ApexCharts(document.querySelector('#received-bar-chart'), recOptions);
+                            recChart.render();
+                            window._reportCharts.push(recChart);
+                        @endif
+
+                        @if($totalIssuedQty > 0 && $issuedDistribution->count() > 0)
+                            const issLabels = @json($issuedDistribution->pluck('description'));
+                            const issData   = @json($issuedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
+                            const issBarH   = Math.max(220, issLabels.length * 42);
+                            const issColors = ['#f59e0b','#fbbf24','#d97706','#b45309','#ef4444','#f87171','#dc2626','#10b981','#06b6d4','#ec4899'];
+                            const issOptions = Object.assign({}, barDefaults, {
+                                chart: Object.assign({}, barDefaults.chart, { height: issBarH }),
+                                series: [{ name: 'Issued', data: issData }],
+                                xaxis: Object.assign({}, barDefaults.xaxis, { categories: issLabels }),
+                                colors: issColors.slice(0, issLabels.length),
+                            });
+                            const issChart = new ApexCharts(document.querySelector('#issued-bar-chart'), issOptions);
+                            issChart.render();
+                            window._reportCharts.push(issChart);
+                        @endif
                     @endif
 
-                    @if($totalIssuedQty > 0 && $issuedDistribution->count() > 0)
-                        const issLabels = @json($issuedDistribution->pluck('description'));
-                        const issData   = @json($issuedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
-                        const issBarH   = Math.max(220, issLabels.length * 42);
-                        const issColors = ['#f59e0b','#fbbf24','#d97706','#b45309','#ef4444','#f87171','#dc2626','#10b981','#06b6d4','#ec4899'];
-                        const issOptions = Object.assign({}, barDefaults, {
-                            chart: Object.assign({}, barDefaults.chart, { height: issBarH }),
-                            series: [{ name: 'Issued', data: issData }],
-                            xaxis: Object.assign({}, barDefaults.xaxis, { categories: issLabels }),
-                            colors: issColors.slice(0, issLabels.length),
+                    // Handle dark-to-light theme changes during printing for chart visibility
+                    window.addEventListener('beforeprint', () => {
+                        (window._reportCharts || []).forEach(chart => {
+                            try {
+                                chart.updateOptions({
+                                    chart: { foreColor: '#0f172a' },
+                                    grid: { borderColor: 'rgba(0,0,0,0.06)' },
+                                    yaxis: { labels: { style: { colors: '#0f172a' } } }
+                                }, false, false);
+                            } catch(e) {}
                         });
-                        const issChart = new ApexCharts(document.querySelector('#issued-bar-chart'), issOptions);
-                        issChart.render();
-                        charts.push(issChart);
-                    @endif
-                @endif
-
-                // Handle dark-to-light theme changes during printing for chart visibility
-                window.addEventListener('beforeprint', () => {
-                    charts.forEach(chart => {
-                        chart.updateOptions({
-                            chart: { foreColor: '#0f172a' },
-                            grid: { borderColor: 'rgba(0,0,0,0.06)' },
-                            yaxis: { labels: { style: { colors: '#0f172a' } } }
-                        }, false, false);
                     });
-                });
 
-                window.addEventListener('afterprint', () => {
-                    charts.forEach(chart => {
-                        chart.updateOptions({
-                            chart: { foreColor: textColor },
-                            grid: { borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' },
-                            yaxis: { labels: { style: { colors: textColor } } }
-                        }, false, false);
+                    window.addEventListener('afterprint', () => {
+                        (window._reportCharts || []).forEach(chart => {
+                            try {
+                                chart.updateOptions({
+                                    chart: { foreColor: textColor },
+                                    grid: { borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' },
+                                    yaxis: { labels: { style: { colors: textColor } } }
+                                }, false, false);
+                            } catch(e) {}
+                        });
                     });
-                });
+                }
             @endif
         });
     </script>
