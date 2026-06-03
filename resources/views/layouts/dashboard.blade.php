@@ -53,7 +53,7 @@
             -webkit-backdrop-filter: blur(8px) !important;
         }
     </style>
-    <title>{{ \App\Models\Setting::get('organization_name', 'NACOC') }} | Advanced Inventory System</title>
+    <title>{{ \App\Models\Setting::get('organization_name', 'NACOC') }} </title>
 
     <!-- CSS -->
     <link href="{{ asset('css/css2.css') }}" rel="stylesheet">

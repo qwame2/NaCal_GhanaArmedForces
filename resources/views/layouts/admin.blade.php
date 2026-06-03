@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Head of Stores | Strategic Registry</title>
+    <title>NSIMs-Head of Stores</title>
     <link href="{{ asset('css/css2.css') }}" rel="stylesheet">
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
