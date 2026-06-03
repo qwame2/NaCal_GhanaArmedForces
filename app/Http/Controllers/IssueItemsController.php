@@ -18,7 +18,7 @@ class IssueItemsController extends Controller
             abort(403, 'Unauthorized. Access restricted to Department Head (Stores) and Store Officers.');
         }
 
-        if (auth()->user()->is_admin) {
+        if (auth()->user()->is_admin && auth()->user()->role !== 'Main Admin') {
             return redirect()->route('admin.inventory')->with('info', 'Strategic Oversight required. Redirecting to Command Center.');
         }
 
@@ -264,62 +264,6 @@ class IssueItemsController extends Controller
 
     private function selfHealRequisitions()
     {
-        if (!\Illuminate\Support\Facades\Schema::hasColumn('issuances', 'requisition_id')) {
-            try {
-                \Illuminate\Support\Facades\Schema::table('issuances', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->unsignedBigInteger('requisition_id')->nullable();
-                });
-            } catch (\Exception $e) {
-                // Ignore if already created
-            }
-        }
-
-        // Clean up duplicates from the previous mass-assignment bug
-        \App\Models\Issuance::whereNull('requisition_id')
-            ->where(function($q) {
-                $q->where('authority', 'Requisition Approved')
-                  ->orWhere('beneficiary', 'like', '%(%');
-            })
-            ->delete();
-
-        $collectedReqs = \App\Models\StoreRequisition::with(['items', 'processor'])
-            ->whereIn('status', ['approved', 'partially_approved'])
-            ->whereNotNull('collected_at')
-            ->get();
-
-        foreach ($collectedReqs as $req) {
-            $exists = Issuance::where('requisition_id', $req->id)->exists();
-            if (!$exists) {
-                $issuance = Issuance::create([
-                    'issuance_date' => $req->collected_at->format('Y-m-d'),
-                    'beneficiary' => $req->department . ' (' . $req->requester_name . ')',
-                    'authority' => $req->processor?->name ?? 'Requisition Approved',
-                    'issuance_type' => $req->usage_type === 'temporary' ? 'Temporary' : 'Permanent',
-                    'requisition_id' => $req->id,
-                ]);
-
-                foreach ($req->items as $item) {
-                    if ($item->quantity_approved > 0) {
-                        IssuedItem::create([
-                            'issuance_id' => $issuance->id,
-                            'description' => $item->description,
-                            'ledge_category' => $item->category ?? 'A',
-                            'quantity' => $item->quantity_approved,
-                            'unit' => $item->unit,
-                        ]);
-                    }
-                    if ($item->alternative_quantity_approved > 0 && !empty($item->alternative_description)) {
-                        IssuedItem::create([
-                            'issuance_id' => $issuance->id,
-                            'description' => $item->alternative_description,
-                            'ledge_category' => $item->category ?? 'A',
-                            'quantity' => $item->alternative_quantity_approved,
-                            'unit' => $item->unit,
-                        ]);
-                    }
-                }
-            }
-        }
-
+        \App\Http\Controllers\ReturnController::selfHealRequisitions();
     }
 }

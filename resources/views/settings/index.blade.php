@@ -267,6 +267,7 @@
     </div>
 </div>
 
+@push('modals')
 <!-- Password Change Modal -->
 <div id="passwordModal" class="modal-overlay" style="display: none;">
     <div class="glass-card modal-content animate-pop-in" style="max-width: 500px; width: 90%; border-radius: 32px; padding: 3rem;">
@@ -323,6 +324,7 @@
         </div>
     </div>
 </div>
+@endpush
 
 <style>
     .header-mesh {

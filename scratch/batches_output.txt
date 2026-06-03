@@ -1,11 +1,3 @@
 Recent Batches:
-ID: 39 | Acq: Supplier | Supplier: MTN | Donor:  | DelPerson: Jojo | DelPhone: 0243020045 | Approved: approved
-ID: 38 | Acq: Supplier | Supplier: MTN | Donor:  | DelPerson: Jojo | DelPhone: 0243020045 | Approved: approved
-ID: 37 | Acq: Supplier | Supplier: MTN | Donor:  | DelPerson: Adomako | DelPhone: 0243020045 | Approved: approved
-ID: 36 | Acq: Donor | Supplier:  | Donor: NANA KOJO | DelPerson: Adomako | DelPhone: 0243020045 | Approved: approved
-ID: 35 | Acq: Donor | Supplier:  | Donor: NANA KOJO | DelPerson: Adomako | DelPhone: 0243020045 | Approved: approved
-ID: 34 | Acq: Supplier | Supplier: MTN | Donor:  | DelPerson: Adomako | DelPhone: 0243020045 | Approved: approved
-ID: 33 | Acq: Donor | Supplier:  | Donor: NANA KOJO | DelPerson: Adomako | DelPhone: 0243020045 | Approved: approved
-ID: 32 | Acq: Supplier | Supplier: MTN | Donor:  | DelPerson: Adomako | DelPhone: 0243020045 | Approved: approved
-ID: 31 | Acq: Donor | Supplier:  | Donor: NANA KOJO | DelPerson:  | DelPhone:  | Approved: approved
-ID: 30 | Acq: Supplier | Supplier: MTN | Donor:  | DelPerson:  | DelPhone:  | Approved: approved
+ID: 2 | Acq: Supplier | Supplier: Mtn | Donor:  | DelPerson: adomko | DelPhone: 0243034567 | Approved: approved
+ID: 1 | Acq: Supplier | Supplier: System | Donor:  | DelPerson:  | DelPhone:  | Approved: approved

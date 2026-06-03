@@ -6,6 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class EditRequest extends Model
 {
+    protected static function booted()
+    {
+        static::saved(function () {
+            Setting::clearInventoryCache();
+        });
+        static::deleted(function () {
+            Setting::clearInventoryCache();
+        });
+    }
+
     protected $fillable = [
         'user_id',
         'item_type',

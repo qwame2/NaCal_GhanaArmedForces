@@ -10,13 +10,32 @@ class Setting extends Model
 
     protected static $cachedSettings = [];
 
+    public static function clearInventoryCache()
+    {
+        \Illuminate\Support\Facades\Cache::forget('dashboard_metrics_data');
+        \Illuminate\Support\Facades\Cache::forget('low_stock_items_list');
+        \Illuminate\Support\Facades\Cache::forget('item_aggregates_list');
+        \Illuminate\Support\Facades\Cache::forget('global_low_stock_alerts');
+        \Illuminate\Support\Facades\Cache::forget('global_expired_alerts');
+    }
+
     protected static function booted()
     {
-        static::saved(function () {
+        static::saved(function ($setting) {
             self::$cachedSettings = [];
+            \Illuminate\Support\Facades\Cache::forget('setting_' . $setting->key);
+            if ($setting->key === 'suppliers_registry') {
+                \Illuminate\Support\Facades\Cache::forget('setting_suppliers_registry');
+            }
+            self::clearInventoryCache();
         });
-        static::deleted(function () {
+        static::deleted(function ($setting) {
             self::$cachedSettings = [];
+            \Illuminate\Support\Facades\Cache::forget('setting_' . $setting->key);
+            if ($setting->key === 'suppliers_registry') {
+                \Illuminate\Support\Facades\Cache::forget('setting_suppliers_registry');
+            }
+            self::clearInventoryCache();
         });
     }
 
@@ -27,16 +46,18 @@ class Setting extends Model
     {
         if ($key === 'suppliers_registry') {
             if (\Illuminate\Support\Facades\Schema::hasTable('suppliers')) {
-                return \App\Models\Supplier::all()->keyBy('name')->map(function($supplier) {
-                    return [
-                        'delivery_person' => $supplier->delivery_person,
-                        'delivery_phone' => $supplier->delivery_phone,
-                        'phone' => $supplier->phone,
-                        'email' => $supplier->email,
-                        'address' => $supplier->address,
-                        'desc' => $supplier->desc
-                    ];
-                })->toArray();
+                return \Illuminate\Support\Facades\Cache::remember('setting_suppliers_registry', 86400, function() {
+                    return \App\Models\Supplier::all()->keyBy('name')->map(function($supplier) {
+                        return [
+                            'delivery_person' => $supplier->delivery_person,
+                            'delivery_phone' => $supplier->delivery_phone,
+                            'phone' => $supplier->phone,
+                            'email' => $supplier->email,
+                            'address' => $supplier->address,
+                            'desc' => $supplier->desc
+                        ];
+                    })->toArray();
+                });
             }
         }
 
@@ -44,22 +65,29 @@ class Setting extends Model
             return self::$cachedSettings[$key];
         }
 
-        $setting = self::where('key', $key)->first();
-        if (!$setting) {
-            return $default;
-        }
+        $value = \Illuminate\Support\Facades\Cache::remember('setting_' . $key, 86400, function() use ($key) {
+            $setting = self::where('key', $key)->first();
+            if (!$setting) {
+                return ['__null__' => true];
+            }
 
-        $value = $setting->value;
-        switch ($setting->type) {
-            case 'boolean':
-                $value = filter_var($setting->value, FILTER_VALIDATE_BOOLEAN);
-                break;
-            case 'integer':
-                $value = (int) $setting->value;
-                break;
-            case 'json':
-                $value = json_decode($setting->value, true);
-                break;
+            $val = $setting->value;
+            switch ($setting->type) {
+                case 'boolean':
+                    $val = filter_var($setting->value, FILTER_VALIDATE_BOOLEAN);
+                    break;
+                case 'integer':
+                    $val = (int) $setting->value;
+                    break;
+                case 'json':
+                    $val = json_decode($setting->value, true);
+                    break;
+            }
+            return $val;
+        });
+
+        if (is_array($value) && isset($value['__null__'])) {
+            $value = $default;
         }
 
         self::$cachedSettings[$key] = $value;
@@ -213,6 +241,8 @@ class Setting extends Model
         return null;
     }
 
+    protected static $requestRequisitionItems = null;
+
     /**
      * Get the available stock for an item after applying the request limit.
      */
@@ -251,16 +281,20 @@ class Setting extends Model
         }
 
         $keywordLower = strtolower(trim($matchedKeyword));
-        $query = \App\Models\StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
-            ->whereIn('store_requisitions.status', ['approved', 'partially_approved']);
 
-        // Fetch all items from approved/partially approved requisitions to filter using regex in PHP
-        $items = $query->select(
-            'store_requisition_items.description',
-            'store_requisition_items.quantity_approved',
-            'store_requisition_items.alternative_description',
-            'store_requisition_items.alternative_quantity_approved'
-        )->get();
+        // Memoize the query for the duration of the current HTTP request to prevent N+1 queries in loops
+        if (self::$requestRequisitionItems === null) {
+            self::$requestRequisitionItems = \App\Models\StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
+                ->whereIn('store_requisitions.status', ['approved', 'partially_approved'])
+                ->select(
+                    'store_requisition_items.description',
+                    'store_requisition_items.quantity_approved',
+                    'store_requisition_items.alternative_description',
+                    'store_requisition_items.alternative_quantity_approved'
+                )
+                ->get();
+        }
+        $items = self::$requestRequisitionItems;
 
         $pattern = '/\b' . preg_quote($keywordLower, '/') . '\b/i';
         $originalSum = 0.0;

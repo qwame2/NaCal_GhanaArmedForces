@@ -15,4 +15,16 @@ class Supplier extends Model
         'address',
         'desc'
     ];
+
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('setting_suppliers_registry');
+            Setting::clearInventoryCache();
+        });
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('setting_suppliers_registry');
+            Setting::clearInventoryCache();
+        });
+    }
 }

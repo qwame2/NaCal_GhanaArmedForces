@@ -11,8 +11,23 @@ class InventoryBatch extends Model
 {
     use HasFactory;
 
+    protected static function booted()
+    {
+        static::saved(function () {
+            Setting::clearInventoryCache();
+        });
+        static::deleted(function () {
+            Setting::clearInventoryCache();
+        });
+    }
+
     public static function selfHealSchema()
     {
+        $cacheKey = 'inventory_batch_schema_self_healed';
+        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            return;
+        }
+
         if (Schema::hasTable('suppliers') && !Schema::hasColumn('suppliers', 'delivery_phone')) {
             try {
                 Schema::table('suppliers', function (Blueprint $table) {
@@ -41,6 +56,9 @@ class InventoryBatch extends Model
                 }
             }
         }
+
+        // Cache the successful validation for 7 days
+        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 604800);
     }
 
     protected $fillable = [

@@ -239,7 +239,7 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('unreadMessagesCount', $unreadMessagesCount);
                 
                 // Fetch Pending Password Requests Count (for Admin)
-                if (auth()->user()->is_admin) {
+                if (auth()->user()->is_admin && auth()->user()->role !== 'Main Admin') {
                     $pendingPasswordRequests = \App\Models\PasswordResetRequest::where('status', 'pending')->count();
                     $view->with('pendingPasswordRequests', $pendingPasswordRequests);
                     // Heads only see pending requisitions that have been approved by Main Admin

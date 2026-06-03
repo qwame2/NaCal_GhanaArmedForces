@@ -414,6 +414,7 @@
     </div>
 </div>
 
+@push('modals')
 <!-- Details Modal (Ported from Logs page) -->
 <div id="logDetailsModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
     <div class="glass-card animate-zoom-in" style="width: 100%; max-width: 600px; padding: 0; overflow: hidden; border-radius: 32px; box-shadow: 0 30px 60px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);">
@@ -440,6 +441,7 @@
         </div>
     </div>
 </div>
+@endpush
 
 <style>
     .detail-card { background: white; border: 1.5px solid #edf2f7; border-radius: 20px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
@@ -585,6 +587,7 @@
     }
 </script>
 
+@push('modals')
 <!-- Message Detail Modal -->
 <div id="messageDetailModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
     <div class="glass-card animate-zoom-in" style="width: 100%; max-width: 700px; padding: 0; overflow: hidden; border-radius: 32px; box-shadow: 0 30px 60px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);">
@@ -622,7 +625,7 @@
         </div>
     </div>
 </div>
-</script>
+@endpush
 <script>
     // Search Debounce Engine
     let searchTimeout;

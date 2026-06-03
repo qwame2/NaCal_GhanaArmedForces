@@ -627,6 +627,30 @@
                 padding-right: 2.5rem !important;
             }
         }
+
+        /* Fullscreen Pop-up Backdrop Blur and Overlay covering the entire screen */
+        .modal-overlay,
+        .bottom-sheet-overlay,
+        #legacyAuditModal,
+        #logDetailsModal,
+        #messageDetailModal {
+            z-index: 1000000 !important;
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: rgba(15, 23, 42, 0.5) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+        }
+        .bottom-sheet {
+            z-index: 1000001 !important;
+        }
+        .swal2-container {
+            z-index: 1000005 !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+        }
     </style>
 </head>
 <body>
@@ -1452,6 +1476,7 @@
 
 
     </script>
+    @stack('modals')
     @stack('scripts')
 </body>
 </html>

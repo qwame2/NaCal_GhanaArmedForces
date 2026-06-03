@@ -27,7 +27,7 @@ Laravel has the most extensive and thorough [documentation](https://laravel.com/
 
 If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-## Inventory Management System
+## Inventory Management System(NSIMs)
 
 This system tracks inventory stock levels and receipts across multiple batches.
 

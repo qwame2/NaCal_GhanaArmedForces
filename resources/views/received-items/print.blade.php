@@ -298,7 +298,7 @@
             <img src="{{ asset('img/NACOC1.png') }}" alt="NACOC Logo" style="height: 60px; object-fit: contain;">
             <div>
                 <h1>NACOC INVENTORY</h1>
-                <p>Management System</p>
+                <p>Management System(NSIMs)</p>
             </div>
         </div>
         <div class="voucher-meta">

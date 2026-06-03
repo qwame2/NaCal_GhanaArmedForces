@@ -6,6 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class SystemLog extends Model
 {
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('global_recent_system_logs');
+        });
+    }
+
     protected $fillable = [
         'user_id',
         'event_type',

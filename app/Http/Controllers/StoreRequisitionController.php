@@ -190,7 +190,7 @@ class StoreRequisitionController extends Controller
 
             foreach ($recipients as $recipient) {
                 // Link for admins goes to admin.requisitions; link for stores head goes to main-admin.requisitions
-                $link = ($recipient->is_admin ? route('admin.requisitions') : route('main-admin.requisitions')) . "?open_id={$requisition->id}";
+                $link = ($recipient->is_admin && $recipient->role !== 'Main Admin' ? route('admin.requisitions') : route('main-admin.requisitions')) . "?open_id={$requisition->id}";
                 $customMsg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #6366f1;border-radius:12px;background:rgba(99,102,241,0.05);'>";
                 $customMsg .= "<b style='color:#4f46e5;'>📋 NEW STORE REQUISITION — {$priorityLabel} PRIORITY</b><br><br>";
                 $customMsg .= "Department <b>{$request->department}</b> has submitted a store requisition with <b>{$itemCount} item(s)</b>.<br><br>";
@@ -534,7 +534,7 @@ class StoreRequisitionController extends Controller
                 $msg .= "Requisitioner <b>" . e($req->requester_name) . "</b> has sent a follow-up reminder regarding their pending requisition from department: <b>" . e($req->department) . "</b>.<br><br>";
             }
             $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br><br>";
-            $recipientLink = ($admin->is_admin ? route('admin.requisitions') : route('main-admin.requisitions')) . "?open_id={$req->id}";
+            $recipientLink = ($admin->is_admin && $admin->role !== 'Main Admin' ? route('admin.requisitions') : route('main-admin.requisitions')) . "?open_id={$req->id}";
             $msg .= "<a href='" . $recipientLink . "' style='display:inline-block;background:#f59e0b;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition Now</a>";
             $msg .= "</div>";
 
@@ -565,6 +565,10 @@ class StoreRequisitionController extends Controller
     public function adminIndex(Request $request)
     {
         self::checkOverdueTemporaryItems();
+        if (auth()->user()->role === 'Main Admin') {
+            return redirect()->route('main-admin.requisitions');
+        }
+
         if (!auth()->user()->is_admin) abort(403);
 
         $query = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])
@@ -1569,17 +1573,68 @@ class StoreRequisitionController extends Controller
      */
     public static function checkOverdueTemporaryItems()
     {
-        // 1. Fetch all active temporary items checking out
+        $cacheKey = 'overdue_temporary_items_checked';
+        if (\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            return;
+        }
+
+        // 1. Fetch all active temporary items checking out (using leftJoin and aggregation to check outstanding status)
         $activeItems = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->join('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
-            ->select('issued_items.*', 'store_requisitions.purpose', 'store_requisitions.department', 'store_requisitions.id as requisition_id', 'store_requisitions.requested_by', 'store_requisitions.created_at as req_created')
+            ->leftJoin('returned_items', 'issued_items.id', '=', 'returned_items.issued_item_id')
+            ->select(
+                'issued_items.*', 
+                'store_requisitions.purpose', 
+                'store_requisitions.department', 
+                'store_requisitions.id as requisition_id', 
+                'store_requisitions.requested_by', 
+                'store_requisitions.created_at as req_created'
+            )
+            ->selectRaw('COALESCE(SUM(returned_items.returned_qty), 0) as total_returned')
             ->where('issuances.issuance_type', 'Temporary')
             ->where('issued_items.quantity', '>', 0)
+            ->groupBy(
+                'issued_items.id',
+                'issued_items.issuance_id',
+                'issued_items.description',
+                'issued_items.ledge_category',
+                'issued_items.quantity',
+                'issued_items.unit',
+                'issued_items.created_at',
+                'issued_items.updated_at',
+                'store_requisitions.purpose', 
+                'store_requisitions.department', 
+                'store_requisitions.id', 
+                'store_requisitions.requested_by', 
+                'store_requisitions.created_at'
+            )
+            ->havingRaw('issued_items.quantity > COALESCE(SUM(returned_items.returned_qty), 0)')
+            ->get();
+
+        if ($activeItems->isEmpty()) {
+            \Illuminate\Support\Facades\Cache::put($cacheKey, true, 43200); // Cache for 12 hours
+            return;
+        }
+
+        // Pre-fetch all active department heads to prevent querying inside loop
+        $deptHeads = \App\Models\User::where('role', 'Department Head')
+            ->where('is_active', true)
+            ->get()
+            ->keyBy(fn($u) => strtolower(trim($u->department)));
+
+        // Pre-fetch active stores staff to avoid querying it multiple times
+        $storesStaff = \App\Models\User::where(function($q) {
+            $q->where('is_admin', true)
+              ->orWhereIn('role', ['Main Admin', 'Store Officer', 'Dept. Head (Stores)']);
+        })->where('is_active', true)->get();
+
+        // Pre-fetch all other department heads
+        $allDeptHeads = \App\Models\User::where('role', 'Department Head')
+            ->where('is_active', true)
             ->get();
 
         foreach ($activeItems as $item) {
-            // Check if fully returned under either remaining-qty or original-qty system
-            $returnedQty = \App\Models\ReturnedItem::where('issued_item_id', $item->id)->sum('returned_qty') ?? 0;
+            $returnedQty = (float)$item->total_returned;
             if ($item->quantity <= 0 || $returnedQty >= $item->quantity) {
                 continue;
             }
@@ -1609,11 +1664,8 @@ class StoreRequisitionController extends Controller
             }
 
             // Find recipient (Department Head)
-            $recipient = \App\Models\User::where('role', 'Department Head')
-                ->where('department', $item->department)
-                ->where('is_active', true)
-                ->first();
-            
+            $deptKey = strtolower(trim($item->department));
+            $recipient = $deptHeads->get($deptKey);
             $recipientId = $recipient ? $recipient->id : $item->requested_by;
 
             if ($diffInDays === 3) {
@@ -1640,11 +1692,6 @@ class StoreRequisitionController extends Controller
                     ]);
 
                     // Notify Department Head (Stores) & Head of Stores
-                    $storesStaff = \App\Models\User::where(function($q) {
-                        $q->where('is_admin', true)
-                          ->orWhereIn('role', ['Main Admin', 'Store Officer', 'Dept. Head (Stores)']);
-                    })->where('is_active', true)->get();
-
                     foreach ($storesStaff as $staff) {
                         $adminMsg  = "<div class='admin-view notification-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
                         $adminMsg .= "<b style='color:#10b981;'>🔔 DELIVERY NOTIFICATION: 3-DAY REMINDER SENT</b><br><br>";
@@ -1683,10 +1730,7 @@ class StoreRequisitionController extends Controller
                 }
 
                 // Notify OTHER Department Heads
-                $otherDeptHeads = \App\Models\User::where('role', 'Department Head')
-                    ->where('department', '!=', $item->department)
-                    ->where('is_active', true)
-                    ->get();
+                $otherDeptHeads = $allDeptHeads->filter(fn($u) => strcasecmp($u->department, $item->department) !== 0);
 
                 foreach ($otherDeptHeads as $otherHead) {
                     $headExists = \App\Models\Message::where('receiver_id', $otherHead->id)
@@ -1711,12 +1755,7 @@ class StoreRequisitionController extends Controller
                     }
                 }
 
-                // Notify Logistics/Stores Staff (Main Admin, Store Officer, Dept. Head (Stores))
-                $storesStaff = \App\Models\User::where(function($q) {
-                    $q->where('is_admin', true)
-                      ->orWhereIn('role', ['Main Admin', 'Store Officer', 'Dept. Head (Stores)']);
-                })->where('is_active', true)->get();
-
+                // Notify Logistics/Stores Staff
                 foreach ($storesStaff as $staff) {
                     $staffExists = \App\Models\Message::where('receiver_id', $staff->id)
                         ->where('is_automated', true)
@@ -1741,6 +1780,8 @@ class StoreRequisitionController extends Controller
                 }
             }
         }
+
+        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 43200); // Cache for 12 hours
     }
 
     public function overdueAssets(Request $request)

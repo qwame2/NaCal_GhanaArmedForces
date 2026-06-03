@@ -20,6 +20,16 @@ class InventoryItem extends Model
         'location'
     ];
 
+    protected static function booted()
+    {
+        static::saved(function () {
+            Setting::clearInventoryCache();
+        });
+        static::deleted(function () {
+            Setting::clearInventoryCache();
+        });
+    }
+
 
     public function batch()
     {

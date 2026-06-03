@@ -6,6 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class StoreRequisitionItem extends Model
 {
+    protected static function booted()
+    {
+        static::saved(function () {
+            Setting::clearInventoryCache();
+        });
+        static::deleted(function () {
+            Setting::clearInventoryCache();
+        });
+    }
+
     protected $fillable = [
         'requisition_id',
         'description',

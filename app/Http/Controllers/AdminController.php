@@ -113,6 +113,10 @@ class AdminController extends Controller
 
     public function index(Request $request)
     {
+        if (auth()->user()->role === 'Main Admin') {
+            return redirect()->route('main-admin.requisitions');
+        }
+
         if (!auth()->user()->is_admin) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access to Admin Dashboard.');
         }
@@ -123,11 +127,15 @@ class AdminController extends Controller
         }
 
         $perPage = $request->input('per_page', 10);
-        $users = User::where('is_admin', false)->paginate($perPage);
-        $totalUsers = User::where('is_admin', false)->count();
-        $onlineCount = User::where('is_admin', false)->where('is_online', true)->count();
+        $users = User::where('is_admin', false)->orWhere('role', 'Main Admin')->paginate($perPage);
+        $totalUsers = User::where('is_admin', false)->orWhere('role', 'Main Admin')->count();
+        $onlineCount = User::where(function($q) {
+            $q->where('is_admin', false)->orWhere('role', 'Main Admin');
+        })->where('is_online', true)->count();
         $allUsers = User::all(); // Keep for calculating global metrics if needed
-        $recentLogins = User::where('is_admin', false)->orderBy('last_login_at', 'desc')->limit(100)->get();
+        $recentLogins = User::where(function($q) {
+            $q->where('is_admin', false)->orWhere('role', 'Main Admin');
+        })->orderBy('last_login_at', 'desc')->limit(100)->get();
         
         // Fetch legacy/previous admin logs for auditing
         $legacyAdminLogs = \App\Models\SystemLog::with('user')
@@ -218,7 +226,9 @@ class AdminController extends Controller
         }
 
         $department = $request->department;
-        if ($request->role === 'Officer') {
+        if ($request->role === 'Main Admin') {
+            $department = 'Stores';
+        } elseif ($request->role === 'Officer') {
             $department = 'Store';
         }
 
@@ -226,7 +236,7 @@ class AdminController extends Controller
             'name' => $request->name,
             'role' => $request->role,
             'department' => $department,
-            'is_admin' => $request->role === 'Admin',
+            'is_admin' => in_array($request->role, ['Admin', 'Main Admin']),
             'is_temp_account' => $request->role === 'Auditor',
         ]);
 
@@ -488,12 +498,14 @@ class AdminController extends Controller
         $partialCount = $partialQuery->where('inventory_batches.supplier_name', 'LIKE', '%[Partial Deliv%')->count();
 
         // Fetch aggregate totals for item status display (System Health metrics)
-        $itemAggregates = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->selectRaw('inventory_items.description, SUM(inventory_items.qty) as total_received_qty, SUM(inventory_items.stock_balance) as total_available, SUM(inventory_items.variance) as total_variance')
-            ->groupBy('inventory_items.description')
-            ->get()
-            ->keyBy('description');
+        $itemAggregates = \Illuminate\Support\Facades\Cache::remember('item_aggregates_list', 600, function() {
+            return InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->selectRaw('inventory_items.description, SUM(inventory_items.qty) as total_received_qty, SUM(inventory_items.stock_balance) as total_available, SUM(inventory_items.variance) as total_variance')
+                ->groupBy('inventory_items.description')
+                ->get()
+                ->keyBy('description');
+        });
 
         $perPage = $request->input('per_page', 15);
         
@@ -645,16 +657,18 @@ class AdminController extends Controller
         $allDonors = $donorNames1->concat($donorNames2)->filter()->unique()->values();
 
         // Compute Low Stock Items for the monitor card
-        $allItemAggregates = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.stock_balance) as total_available')
-            ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
-            ->get();
+        $lowStockItems = \Illuminate\Support\Facades\Cache::remember('low_stock_items_list', 600, function() {
+            $allItemAggregates = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.stock_balance) as total_available')
+                ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
+                ->get();
 
-        $lowStockItems = $allItemAggregates->filter(function ($item) {
-            $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
-            return (float) $item->total_available <= $threshold;
-        })->sortBy('total_available')->values();
+            return $allItemAggregates->filter(function ($item) {
+                $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
+                return (float) $item->total_available <= $threshold;
+            })->sortBy('total_available')->values();
+        });
 
         return view('admin.inventory.index', compact('receivedItems', 'partialCount', 'itemAggregates', 'issuances', 'returnedItems', 'ledgeMap', 'allSuppliers', 'allDonors', 'lowStockItems'));
     }

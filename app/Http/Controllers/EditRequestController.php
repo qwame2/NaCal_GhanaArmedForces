@@ -854,6 +854,9 @@ class EditRequestController extends Controller
                     'remarks' => $payload['remarks'] ?? null,
                 ]);
 
+                // Invalidate the cache of overdue temporary items to trigger recalculation on next load
+                \Illuminate\Support\Facades\Cache::forget('overdue_temporary_items_checked');
+
                 \App\Models\SystemLog::create([
                     'user_id' => $editReq->user_id,
                     'event_type' => 'INVENTORY',

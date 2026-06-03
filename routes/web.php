@@ -11,49 +11,53 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ArchiveController;
 
-// Self-healing auto-migration schema update
-try {
-    if (!\Illuminate\Support\Facades\Schema::hasColumn('inventory_items', 'location') ||
-        !\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collected_at') ||
-        !\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collector_name') ||
-        !\Illuminate\Support\Facades\Schema::hasColumn('users', 'is_temp_account')) {
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-    }
-
-    // Self-healing user profile update for Adom
-    $adom = \App\Models\User::whereRaw('LOWER(username) = ?', ['adom'])->first();
-    if ($adom && ($adom->name === 'Test Name Update' || strpos($adom->name, 'Test') !== false)) {
-        $adom->name = 'Adom';
-        $adom->save();
-    }
-
-    // Self-healing for delivery person / phone database columns
-    \App\Models\InventoryBatch::selfHealSchema();
-
+// Self-healing auto-migration schema update (cached to prevent query and disk write overhead on every request)
+if (!\Illuminate\Support\Facades\Cache::has('routes_boot_self_healed')) {
     try {
-        $cols = \Illuminate\Support\Facades\Schema::getColumnListing('inventory_batches');
-        file_put_contents(base_path('scratch/db_output.txt'), "Columns: " . implode(', ', $cols));
-        
-        $out = "Recent Batches:\n";
-        $batches = \App\Models\InventoryBatch::orderBy('id', 'desc')->take(10)->get();
-        foreach ($batches as $b) {
-            $out .= sprintf(
-                "ID: %d | Acq: %s | Supplier: %s | Donor: %s | DelPerson: %s | DelPhone: %s | Approved: %s\n",
-                $b->id,
-                $b->acquisition_type,
-                $b->supplier_name,
-                $b->donor_name,
-                $b->delivery_person,
-                $b->delivery_phone,
-                $b->approval_status
-            );
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('inventory_items', 'location') ||
+            !\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collected_at') ||
+            !\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collector_name') ||
+            !\Illuminate\Support\Facades\Schema::hasColumn('users', 'is_temp_account')) {
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         }
-        file_put_contents(base_path('scratch/batches_output.txt'), $out);
-    } catch (\Exception $ex) {
-        file_put_contents(base_path('scratch/db_output.txt'), "Error: " . $ex->getMessage());
+
+        // Self-healing user profile update for Adom
+        $adom = \App\Models\User::whereRaw('LOWER(username) = ?', ['adom'])->first();
+        if ($adom && ($adom->name === 'Test Name Update' || strpos($adom->name, 'Test') !== false)) {
+            $adom->name = 'Adom';
+            $adom->save();
+        }
+
+        // Self-healing for delivery person / phone database columns
+        \App\Models\InventoryBatch::selfHealSchema();
+
+        try {
+            $cols = \Illuminate\Support\Facades\Schema::getColumnListing('inventory_batches');
+            file_put_contents(base_path('scratch/db_output.txt'), "Columns: " . implode(', ', $cols));
+            
+            $out = "Recent Batches:\n";
+            $batches = \App\Models\InventoryBatch::orderBy('id', 'desc')->take(10)->get();
+            foreach ($batches as $b) {
+                $out .= sprintf(
+                    "ID: %d | Acq: %s | Supplier: %s | Donor: %s | DelPerson: %s | DelPhone: %s | Approved: %s\n",
+                    $b->id,
+                    $b->acquisition_type,
+                    $b->supplier_name,
+                    $b->donor_name,
+                    $b->delivery_person,
+                    $b->delivery_phone,
+                    $b->approval_status
+                );
+            }
+            file_put_contents(base_path('scratch/batches_output.txt'), $out);
+        } catch (\Exception $ex) {
+            file_put_contents(base_path('scratch/db_output.txt'), "Error: " . $ex->getMessage());
+        }
+
+        \Illuminate\Support\Facades\Cache::put('routes_boot_self_healed', true, 604800); // Cache for 7 days
+    } catch (\Exception $e) {
+        // Ignore to prevent boot failures
     }
-} catch (\Exception $e) {
-    // Ignore to prevent boot failures
 }
 
 // Temporary Route
@@ -120,6 +124,11 @@ Route::get('/account-deactivated', function() { return view('auth.deactivated');
 Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     
     Route::get('/dashboard', function () {
+        // Redirect Main Admin to their designated page
+        if (auth()->user()->role === 'Main Admin') {
+            return redirect()->route('main-admin.requisitions');
+        }
+
         // STRICT ROLE ENFORCEMENT: Admins are not allowed in the Personnel Dashboard
         if (auth()->user()->is_admin) {
             return redirect()->route('admin.index')->with('warning', 'Strategic Oversight required. Redirecting to Command Center.');
@@ -135,360 +144,359 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             return redirect()->route('requisitions.index');
         }
 
-        // Redirect Main Admin to their designated page
-        if (auth()->user()->role === 'Main Admin') {
-            return redirect()->route('main-admin.requisitions');
-        }
+        $dashboardData = \Illuminate\Support\Facades\Cache::remember('dashboard_metrics_data', 600, function () {
+            $rawItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->select(
+                    'inventory_items.description',
+                    'inventory_items.unit',
+                    'inventory_items.location',
+                    'inventory_items.qty',
+                    'inventory_items.stock_balance',
+                    'inventory_items.variance',
+                    'inventory_batches.ledge_category',
+                    'inventory_batches.supplier_status',
+                    'inventory_items.id as item_id'
+                )
+                ->orderBy('inventory_items.id', 'asc')
+                ->get();
 
-        $rawItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->select(
-                'inventory_items.description',
-                'inventory_items.unit',
-                'inventory_items.location',
-                'inventory_items.qty',
-                'inventory_items.stock_balance',
-                'inventory_items.variance',
-                'inventory_batches.ledge_category',
-                'inventory_batches.supplier_status',
-                'inventory_items.id as item_id'
-            )
-            ->orderBy('inventory_items.id', 'asc')
-            ->get();
-
-        $grouped = $rawItems->groupBy(function($item) {
-            return trim(strtoupper($item->description));
-        });
-
-        $existingItems = $grouped->map(function($group) {
-            $nonDraftGroup = $group->filter(fn($item) => $item->supplier_status !== 'System Draft');
-            
-            $lastItem = $nonDraftGroup->last() ?? $group->last();
-            
-            $stockBalance = $nonDraftGroup->sum(function($item) {
-                return (float) str_replace(',', '', $item->stock_balance);
-            });
-            
-            $variance = $nonDraftGroup->sum(function($item) {
-                return (float) str_replace(',', '', $item->variance);
+            $grouped = $rawItems->groupBy(function($item) {
+                return trim(strtoupper($item->description));
             });
 
-            $qty = $lastItem ? (float) str_replace(',', '', $lastItem->qty) : 0;
+            $existingItems = $grouped->map(function($group) {
+                $nonDraftGroup = $group->filter(fn($item) => $item->supplier_status !== 'System Draft');
+                
+                $lastItem = $nonDraftGroup->last() ?? $group->last();
+                
+                $stockBalance = $nonDraftGroup->sum(function($item) {
+                    return (float) str_replace(',', '', $item->stock_balance);
+                });
+                
+                $variance = $nonDraftGroup->sum(function($item) {
+                    return (float) str_replace(',', '', $item->variance);
+                });
 
-            return (object) [
-                'description'    => $lastItem->description,
-                'unit'           => $lastItem->unit,
-                'location'       => $lastItem->location,
-                'ledge_category' => $lastItem->ledge_category,
-                'stock_balance'  => $stockBalance,
-                'qty'            => $qty,
-                'variance'       => $variance,
-            ];
-        })->values();
+                $qty = $lastItem ? (float) str_replace(',', '', $lastItem->qty) : 0;
 
-        // Total Inventory: Sum of stock_balance excluding System Draft
-        $totalInventory = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->get()->sum(function ($item) {
-                return is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0;
-            });
+                return (object) [
+                    'description'    => $lastItem->description,
+                    'unit'           => $lastItem->unit,
+                    'location'       => $lastItem->location,
+                    'ledge_category' => $lastItem->ledge_category,
+                    'stock_balance'  => $stockBalance,
+                    'qty'            => $qty,
+                    'variance'       => $variance,
+                ];
+            })->values();
 
-        // Trend calculation (Month-over-month additions)
-        $currentMonthStart = now()->startOfMonth();
-        $lastMonthStart = now()->subMonth()->startOfMonth();
-        $lastMonthEnd = now()->subMonth()->endOfMonth();
+            // Total Inventory: Sum of stock_balance excluding System Draft
+            $totalInventory = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->get()->sum(function ($item) {
+                    return is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0;
+                });
 
-        $currentMonthInvValue = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->where('inventory_batches.entry_date', '>=', $currentMonthStart)
-            ->get()->sum(function ($i) {
-                return is_numeric($i->stock_balance) ? (float)$i->stock_balance : 0;
-            });
+            // Trend calculation (Month-over-month additions)
+            $currentMonthStart = now()->startOfMonth();
+            $lastMonthStart = now()->subMonth()->startOfMonth();
+            $lastMonthEnd = now()->subMonth()->endOfMonth();
 
-        $lastMonthInvValue = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->whereBetween('inventory_batches.entry_date', [$lastMonthStart, $lastMonthEnd])
-            ->get()->sum(function ($i) {
-                return is_numeric($i->stock_balance) ? (float)$i->stock_balance : 0;
-            });
+            $currentMonthInvValue = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.entry_date', '>=', $currentMonthStart)
+                ->get()->sum(function ($i) {
+                    return is_numeric($i->stock_balance) ? (float)$i->stock_balance : 0;
+                });
 
-        $trendValue = 0;
-        if ($lastMonthInvValue > 0) {
-            $trendValue = (($currentMonthInvValue - $lastMonthInvValue) / $lastMonthInvValue) * 100;
-        } elseif ($currentMonthInvValue > 0) {
-            $trendValue = 100;
-        }
+            $lastMonthInvValue = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->whereBetween('inventory_batches.entry_date', [$lastMonthStart, $lastMonthEnd])
+                ->get()->sum(function ($i) {
+                    return is_numeric($i->stock_balance) ? (float)$i->stock_balance : 0;
+                });
 
-        // Daily "Issuance" (Mocked as items added today) excluding System Draft
-        $dailyIssuance = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->whereDate('inventory_batches.entry_date', now())
-            ->count();
-
-        // Stock Value (Mocked calculation: Total Inventory * GHS 50 average)
-        $stockValue = $totalInventory * 50;
-
-        // Expired Items (Stock = 0 AND Ledge >= 1)
-        $expiredCount = \App\Models\InventoryItem::get()->filter(function ($item) {
-            return is_numeric($item->stock_balance) && (float)$item->stock_balance == 0 &&
-                is_numeric($item->qty) && (float)$item->qty >= 1;
-        })->count();
-
-        // Chart Data (Last 12 Months)
-        $chartMonths = [];
-        $receivedSeries = [];
-        $varianceSeries = [];
-
-        $allActivity = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.entry_date', '>=', now()->subMonths(11)->startOfMonth())
-            ->select('inventory_items.variance', 'inventory_items.stock_balance', 'inventory_batches.entry_date')
-            ->get();
-
-        for ($i = 11; $i >= 0; $i--) {
-            $m = now()->subMonths($i);
-            $chartMonths[] = $m->format('M');
-
-            $monthItems = $allActivity->filter(function ($item) use ($m) {
-                $d = \Carbon\Carbon::parse($item->entry_date);
-                return $d->month == $m->month && $d->year == $m->year;
-            });
-
-            $receivedSeries[] = (float)$monthItems->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
-            $varianceSeries[] = (float)$monthItems->sum(fn($item) => is_numeric($item->variance) ? (float)$item->variance : 0);
-        }
-
-        // Total Variance
-        $totalVariance = \App\Models\InventoryItem::get()->sum(function ($item) {
-            return is_numeric($item->variance) ? (float)$item->variance : 0;
-        });
-
-        // Ledge mapping for display and calculations
-        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
-            ? \App\Models\Setting::getCategories() 
-            : [
-                'A' => 'Stationary',
-                'B' => 'Cleaning',
-                'C' => 'IT & Acc.',
-                'D' => 'Transport',
-                'E' => 'Safety',
-                'G' => 'Pharmacy',
-                'J' => 'Equipment'
-            ];
-
-        // Fetch Item Threshold Rules
-        $thresholdRules = \Illuminate\Support\Facades\Schema::hasTable('settings') 
-            ? json_decode(\App\Models\Setting::where('key', 'item_threshold_rules')->value('value') ?? '{}', true) ?? [] 
-            : [];
-
-        // 50% Threshold Monitoring for Ledge Categories
-        $thresholdLedges = array_keys($ledgeMap);
-        $lowStockLedges = [];
-
-        $categoryStats = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->whereIn('inventory_batches.ledge_category', $thresholdLedges)
-            ->get()
-            ->groupBy('ledge_category');
-
-        foreach ($categoryStats as $code => $items) {
-            $avail  = $items->sum(fn($i) => is_numeric($i->stock_balance) ? (float)str_replace(',', '', $i->stock_balance) : 0);
-            $target = $items->sum(fn($i) => is_numeric($i->qty) ? (float)str_replace(',', '', $i->qty) : 0);
-            
-            if ($target > 0) {
-                $percentage = round(($avail / $target) * 100);
-                if ($percentage <= 50) {
-                    $lowStockLedges[] = [
-                        'code' => $code,
-                        'name' => $ledgeMap[$code] ?? "Category $code",
-                        'percentage' => $percentage,
-                        'avail' => $avail,
-                        'is_override' => false
-                    ];
-                }
+            $trendValue = 0;
+            if ($lastMonthInvValue > 0) {
+                $trendValue = (($currentMonthInvValue - $lastMonthInvValue) / $lastMonthInvValue) * 100;
+            } elseif ($currentMonthInvValue > 0) {
+                $trendValue = 100;
             }
-        }
 
-        // Individual items below threshold for the alerts container (Grouped by Description)
-        $allItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as stock_balance, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as qty')
-            ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
-            ->get();
+            // Daily "Issuance" (Mocked as items added today) excluding System Draft
+            $dailyIssuance = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->whereDate('inventory_batches.entry_date', now())
+                ->count();
 
-        $lowStockItems = collect();
-        foreach ($allItems as $item) {
-            $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
-            
-            $currentStock = (float)$item->stock_balance;
-            if ($threshold > 0 && $currentStock < $threshold) {
-                $lowStockItems->push($item);
+            // Stock Value (Mocked calculation: Total Inventory * GHS 50 average)
+            $stockValue = $totalInventory * 50;
+
+            // Expired Items (Stock = 0 AND Ledge >= 1)
+            $expiredCount = \App\Models\InventoryItem::get()->filter(function ($item) {
+                return is_numeric($item->stock_balance) && (float)$item->stock_balance == 0 &&
+                    is_numeric($item->qty) && (float)$item->qty >= 1;
+            })->count();
+
+            // Chart Data (Last 12 Months)
+            $chartMonths = [];
+            $receivedSeries = [];
+            $varianceSeries = [];
+
+            $allActivity = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.entry_date', '>=', now()->subMonths(11)->startOfMonth())
+                ->select('inventory_items.variance', 'inventory_items.stock_balance', 'inventory_batches.entry_date')
+                ->get();
+
+            for ($i = 11; $i >= 0; $i--) {
+                $m = now()->subMonths($i);
+                $chartMonths[] = $m->format('M');
+
+                $monthItems = $allActivity->filter(function ($item) use ($m) {
+                    $d = \Carbon\Carbon::parse($item->entry_date);
+                    return $d->month == $m->month && $d->year == $m->year;
+                });
+
+                $receivedSeries[] = (float)$monthItems->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
+                $varianceSeries[] = (float)$monthItems->sum(fn($item) => is_numeric($item->variance) ? (float)$item->variance : 0);
             }
-        }
-        
-        $lowStockCount = $lowStockItems->count();
-        $lowStockItems = $lowStockItems->sortBy('stock_balance')->take(10);
 
-        // Distribution Data (Donut Chart) - Dynamic Categories
-        $distData = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->select('inventory_batches.ledge_category', 'inventory_items.stock_balance')
-            ->get()
-            ->groupBy('ledge_category')
-            ->map(function ($items) {
-                return $items->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
+            // Total Variance
+            $totalVariance = \App\Models\InventoryItem::get()->sum(function ($item) {
+                return is_numeric($item->variance) ? (float)$item->variance : 0;
             });
 
-        $distLabels = $distData->keys()->map(fn($key) => $ledgeMap[$key] ?? "Category $key")->toArray();
-        $distSeries = $distData->values()->toArray();
+            // Ledge mapping for display and calculations
+            $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+                ? \App\Models\Setting::getCategories() 
+                : [
+                    'A' => 'Stationary',
+                    'B' => 'Cleaning',
+                    'C' => 'IT & Acc.',
+                    'D' => 'Transport',
+                    'E' => 'Safety',
+                    'G' => 'Pharmacy',
+                    'J' => 'Equipment'
+                ];
 
-        $topCategory = 'None';
-        if ($distData->count() > 0 && $distData->max() > 0) {
-            $topKey = $distData->sortDesc()->keys()->first();
-            $topCategory = $ledgeMap[$topKey] ?? "Category $topKey";
-        }
+            // Fetch Item Threshold Rules
+            $thresholdRules = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+                ? json_decode(\App\Models\Setting::where('key', 'item_threshold_rules')->value('value') ?? '{}', true) ?? [] 
+                : [];
 
-        $avgStock = $distData->count() > 0 ? ($totalInventory / $distData->count()) : 0;
+            // 50% Threshold Monitoring for Ledge Categories
+            $thresholdLedges = array_keys($ledgeMap);
+            $lowStockLedges = [];
 
-        // Handle Empty Donut State (Array empty OR all values are zero)
-        $isEmptyDist = empty($distSeries) || array_sum($distSeries) <= 0;
-        if ($isEmptyDist) {
-            $distSeries = [100];
-            $distLabels = ['No Data Available'];
-        }
+            $categoryStats = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->whereIn('inventory_batches.ledge_category', $thresholdLedges)
+                ->get()
+                ->groupBy('ledge_category');
 
-        // Weekly Chart Data (Last 12 Weeks)
-        $weekLabels = [];
-        $weekReceived = [];
-        $weekVariance = [];
-        $weeklyActivity = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.entry_date', '>=', now()->subWeeks(11)->startOfWeek())
-            ->select('inventory_items.variance', 'inventory_items.stock_balance', 'inventory_batches.entry_date')
-            ->get();
-
-        for ($i = 11; $i >= 0; $i--) {
-            $w = now()->subWeeks($i);
-            $weekLabels[] = $w->startOfWeek()->format('M d');
-            $itemsInWeek = $weeklyActivity->filter(function ($item) use ($w) {
-                $d = \Carbon\Carbon::parse($item->entry_date);
-                return $d->between($w->copy()->startOfWeek(), $w->copy()->endOfWeek());
-            });
-            $weekReceived[] = (float)$itemsInWeek->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
-            $weekVariance[] = (float)$itemsInWeek->sum(fn($item) => is_numeric($item->variance) ? (float)$item->variance : 0);
-        }
-
-        // Daily Chart Data (Last 14 Days)
-        $dayLabels = [];
-        $dayReceived = [];
-        $dayVariance = [];
-        $dailyActivity = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.entry_date', '>=', now()->subDays(13)->startOfDay())
-            ->select('inventory_items.variance', 'inventory_items.stock_balance', 'inventory_batches.entry_date')
-            ->get();
-
-        for ($i = 13; $i >= 0; $i--) {
-            $d = now()->subDays($i);
-            $dayLabels[] = $d->format('M d');
-            $itemsInDay = $dailyActivity->filter(function ($item) use ($d) {
-                $entry = \Carbon\Carbon::parse($item->entry_date);
-                return $entry->isSameDay($d);
-            });
-            $dayReceived[] = (float)$itemsInDay->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
-            $dayVariance[] = (float)$itemsInDay->sum(fn($item) => is_numeric($item->variance) ? (float)$item->variance : 0);
-        }
-
-        // Recent Transactions
-        $recentTransactions = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.arrival_date', 'inventory_batches.ledge_category', 'inventory_batches.supplier_name', 'inventory_batches.supplier_status', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type')
-            ->orderBy('inventory_batches.entry_date', 'desc')
-            ->limit(4)
-            ->get();
-
-        // Fetch unique suppliers and donors for the dropdown
-        $registryData = \App\Models\Setting::get('suppliers_registry', []);
-        if (is_string($registryData)) {
-            $registryData = json_decode($registryData, true) ?? [];
-        }
-        $registrySuppliers = is_array($registryData) ? array_keys($registryData) : [];
-        $dbSuppliers = \App\Models\InventoryBatch::where('acquisition_type', 'Supplier')
-            ->whereNotNull('supplier_name')
-            ->distinct()
-            ->pluck('supplier_name')
-            ->map(function($name) use ($registrySuppliers) {
-                $clean = preg_replace('/\s\[.*\]$/', '', $name);
-                foreach ($registrySuppliers as $regName) {
-                    if (strcasecmp($regName, $clean) === 0) {
-                        return $regName;
+            foreach ($categoryStats as $code => $items) {
+                $avail  = $items->sum(fn($i) => is_numeric($i->stock_balance) ? (float)str_replace(',', '', $i->stock_balance) : 0);
+                $target = $items->sum(fn($i) => is_numeric($i->qty) ? (float)str_replace(',', '', $i->qty) : 0);
+                
+                if ($target > 0) {
+                    $percentage = round(($avail / $target) * 100);
+                    if ($percentage <= 50) {
+                        $lowStockLedges[] = [
+                            'code' => $code,
+                            'name' => $ledgeMap[$code] ?? "Category $code",
+                            'percentage' => $percentage,
+                            'avail' => $avail,
+                            'is_override' => false
+                        ];
                     }
                 }
-                return $clean;
-            })->toArray();
-        $allSuppliers = collect(array_merge($registrySuppliers, $dbSuppliers))
-            ->filter(function ($item) {
-                return strtolower(trim($item)) !== 'system';
-            })
-            ->unique(function ($item) {
-                return strtolower(trim($item));
-            })
-            ->values();
+            }
 
-        $donorNames1 = \App\Models\InventoryBatch::where('acquisition_type', 'Donor')
-            ->whereNotNull('donor_name')
-            ->distinct()
-            ->pluck('donor_name');
+            // Individual items below threshold for the alerts container (Grouped by Description)
+            $allItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as stock_balance, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as qty')
+                ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
+                ->get();
 
-        $donorNames2 = \App\Models\InventoryBatch::where('acquisition_type', 'Donor')
-            ->whereNotNull('supplier_name')
-            ->distinct()
-            ->pluck('supplier_name');
+            $lowStockItems = collect();
+            foreach ($allItems as $item) {
+                $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
+                
+                $currentStock = (float)$item->stock_balance;
+                if ($threshold > 0 && $currentStock < $threshold) {
+                    $lowStockItems->push($item);
+                }
+            }
+            
+            $lowStockCount = $lowStockItems->count();
+            $lowStockItems = $lowStockItems->sortBy('stock_balance')->take(10);
 
-        $allDonors = $donorNames1->concat($donorNames2)
-            ->map(function($name) {
-                return preg_replace('/\s\[.*\]$/', '', $name);
-            })
-            ->filter()
-            ->unique()
-            ->values();
+            // Distribution Data (Donut Chart) - Dynamic Categories
+            $distData = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->select('inventory_batches.ledge_category', 'inventory_items.stock_balance')
+                ->get()
+                ->groupBy('ledge_category')
+                ->map(function ($items) {
+                    return $items->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
+                });
 
-        // Ledge mapping for display and calculations (Category standardization)
-        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
-            ? \App\Models\Setting::getCategories() 
-            : [
-                'A' => 'Stationary',
-                'B' => 'Cleaning',
-                'C' => 'IT & Acc.',
-                'D' => 'Transport',
-                'E' => 'Safety',
-                'G' => 'Pharmacy',
-                'J' => 'Equipment'
-            ];
+            $distLabels = $distData->keys()->map(fn($key) => $ledgeMap[$key] ?? "Category $key")->toArray();
+            $distSeries = $distData->values()->toArray();
 
-        return view('dashboard', compact(
-            'isEmptyDist',
-            'allSuppliers',
-            'allDonors',
-            'existingItems',
-            'totalInventory',
-            'trendValue',
-            'totalVariance',
-            'lowStockCount',
-            'dailyIssuance',
-            'stockValue',
-            'expiredCount',
-            'chartMonths',
-            'receivedSeries',
-            'varianceSeries',
-            'distLabels',
-            'distSeries',
-            'topCategory',
-            'avgStock',
-            'weekLabels',
-            'weekReceived',
-            'weekVariance',
-            'dayLabels',
-            'dayReceived',
-            'dayVariance',
-            'recentTransactions',
-            'ledgeMap',
-            'lowStockLedges',
-            'lowStockItems'
-        ));
+            $topCategory = 'None';
+            if ($distData->count() > 0 && $distData->max() > 0) {
+                $topKey = $distData->sortDesc()->keys()->first();
+                $topCategory = $ledgeMap[$topKey] ?? "Category $topKey";
+            }
+
+            $avgStock = $distData->count() > 0 ? ($totalInventory / $distData->count()) : 0;
+
+            // Handle Empty Donut State (Array empty OR all values are zero)
+            $isEmptyDist = empty($distSeries) || array_sum($distSeries) <= 0;
+            if ($isEmptyDist) {
+                $distSeries = [100];
+                $distLabels = ['No Data Available'];
+            }
+
+            // Weekly Chart Data (Last 12 Weeks)
+            $weekLabels = [];
+            $weekReceived = [];
+            $weekVariance = [];
+            $weeklyActivity = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.entry_date', '>=', now()->subWeeks(11)->startOfWeek())
+                ->select('inventory_items.variance', 'inventory_items.stock_balance', 'inventory_batches.entry_date')
+                ->get();
+
+            for ($i = 11; $i >= 0; $i--) {
+                $w = now()->subWeeks($i);
+                $weekLabels[] = $w->startOfWeek()->format('M d');
+                $itemsInWeek = $weeklyActivity->filter(function ($item) use ($w) {
+                    $d = \Carbon\Carbon::parse($item->entry_date);
+                    return $d->between($w->copy()->startOfWeek(), $w->copy()->endOfWeek());
+                });
+                $weekReceived[] = (float)$itemsInWeek->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
+                $weekVariance[] = (float)$itemsInWeek->sum(fn($item) => is_numeric($item->variance) ? (float)$item->variance : 0);
+            }
+
+            // Daily Chart Data (Last 14 Days)
+            $dayLabels = [];
+            $dayReceived = [];
+            $dayVariance = [];
+            $dailyActivity = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.entry_date', '>=', now()->subDays(13)->startOfDay())
+                ->select('inventory_items.variance', 'inventory_items.stock_balance', 'inventory_batches.entry_date')
+                ->get();
+
+            for ($i = 13; $i >= 0; $i--) {
+                $d = now()->subDays($i);
+                $dayLabels[] = $d->format('M d');
+                $itemsInDay = $dailyActivity->filter(function ($item) use ($d) {
+                    $entry = \Carbon\Carbon::parse($item->entry_date);
+                    return $entry->isSameDay($d);
+                });
+                $dayReceived[] = (float)$itemsInDay->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
+                $dayVariance[] = (float)$itemsInDay->sum(fn($item) => is_numeric($item->variance) ? (float)$item->variance : 0);
+            }
+
+            // Recent Transactions
+            $recentTransactions = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.arrival_date', 'inventory_batches.ledge_category', 'inventory_batches.supplier_name', 'inventory_batches.supplier_status', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type')
+                ->orderBy('inventory_batches.entry_date', 'desc')
+                ->limit(4)
+                ->get();
+
+            // Fetch unique suppliers and donors for the dropdown
+            $registryData = \App\Models\Setting::get('suppliers_registry', []);
+            if (is_string($registryData)) {
+                $registryData = json_decode($registryData, true) ?? [];
+            }
+            $registrySuppliers = is_array($registryData) ? array_keys($registryData) : [];
+            $dbSuppliers = \App\Models\InventoryBatch::where('acquisition_type', 'Supplier')
+                ->whereNotNull('supplier_name')
+                ->distinct()
+                ->pluck('supplier_name')
+                ->map(function($name) use ($registrySuppliers) {
+                    $clean = preg_replace('/\s\[.*\]$/', '', $name);
+                    foreach ($registrySuppliers as $regName) {
+                        if (strcasecmp($regName, $clean) === 0) {
+                            return $regName;
+                        }
+                    }
+                    return $clean;
+                })->toArray();
+            $allSuppliers = collect(array_merge($registrySuppliers, $dbSuppliers))
+                ->filter(function ($item) {
+                    return strtolower(trim($item)) !== 'system';
+                })
+                ->unique(function ($item) {
+                    return strtolower(trim($item));
+                })
+                ->values();
+
+            $donorNames1 = \App\Models\InventoryBatch::where('acquisition_type', 'Donor')
+                ->whereNotNull('donor_name')
+                ->distinct()
+                ->pluck('donor_name');
+
+            $donorNames2 = \App\Models\InventoryBatch::where('acquisition_type', 'Donor')
+                ->whereNotNull('supplier_name')
+                ->distinct()
+                ->pluck('supplier_name');
+
+            $allDonors = $donorNames1->concat($donorNames2)
+                ->map(function($name) {
+                    return preg_replace('/\s\[.*\]$/', '', $name);
+                })
+                ->filter()
+                ->unique()
+                ->values();
+
+            // Ledge mapping for display and calculations (Category standardization)
+            $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+                ? \App\Models\Setting::getCategories() 
+                : [
+                    'A' => 'Stationary',
+                    'B' => 'Cleaning',
+                    'C' => 'IT & Acc.',
+                    'D' => 'Transport',
+                    'E' => 'Safety',
+                    'G' => 'Pharmacy',
+                    'J' => 'Equipment'
+                ];
+
+            return compact(
+                'isEmptyDist',
+                'allSuppliers',
+                'allDonors',
+                'existingItems',
+                'totalInventory',
+                'trendValue',
+                'totalVariance',
+                'lowStockCount',
+                'dailyIssuance',
+                'stockValue',
+                'expiredCount',
+                'chartMonths',
+                'receivedSeries',
+                'varianceSeries',
+                'distLabels',
+                'distSeries',
+                'topCategory',
+                'avgStock',
+                'weekLabels',
+                'weekReceived',
+                'weekVariance',
+                'dayLabels',
+                'dayReceived',
+                'dayVariance',
+                'recentTransactions',
+                'ledgeMap',
+                'lowStockLedges',
+                'lowStockItems'
+            );
+        });
+
+        return view('dashboard', $dashboardData);
     })->name('dashboard');
 
     // Public API: serve unit rules as JSON for personnel forms
@@ -582,71 +590,95 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             $acknowledged = session()->get('acknowledged_notifications', []);
         }
 
-        
-        $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
-            ->whereNotIn(\DB::raw('TRIM(inventory_items.description)'), array_map('trim', $acknowledged))
-            ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
-            ->get();
+        $acknowledgedClean = array_map('trim', $acknowledged);
 
-        $lowStockNotifications = [];
-        foreach ($items as $item) {
-            $descLower = strtolower(trim($item->description));
-            $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
- 
-            $currentStock = (float)$item->total_stock;
-            if ($threshold > 0 && $currentStock < $threshold) {
-                $unit = \App\Models\Setting::getItemUnit($item->description);
- 
-                 $lowStockNotifications[] = [
-                     'type' => 'warning',
-                     'title' => 'Low Stock: ' . $item->description,
-                     'message' => "Stock level (" . number_format($currentStock, 0) . " {$unit}) is below threshold (" . $threshold . ").",
-                    'icon' => 'alert-triangle',
-                    'route' => auth()->user()->is_admin ? 'admin.index' : 'dashboard'
-                ];
+        $lowStockAlerts = \Illuminate\Support\Facades\Cache::remember('global_low_stock_alerts', 600, function() {
+            $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+                ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
+                ->get();
+
+            $alerts = [];
+            foreach ($items as $item) {
+                $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
+                $currentStock = (float)$item->total_stock;
+                if ($threshold > 0 && $currentStock < $threshold) {
+                    $unit = \App\Models\Setting::getItemUnit($item->description);
+                    $alerts[] = [
+                        'description' => trim($item->description),
+                        'total_stock' => $currentStock,
+                        'threshold' => $threshold,
+                        'unit' => $unit
+                    ];
+                }
             }
-        }
+            return $alerts;
+        });
 
-        $expiredItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) as total_qty')
-            ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
-            ->groupBy('description')
-            ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
-            ->get();
+        $expiredAlerts = \Illuminate\Support\Facades\Cache::remember('global_expired_alerts', 600, function() {
+            return \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) as total_qty')
+                ->groupBy('description')
+                ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
+                ->get()
+                ->map(fn($item) => ['description' => trim($item->description)])
+                ->toArray();
+        });
 
         $notifications = [];
         $is_admin = auth()->user()->is_admin;
 
-        foreach ($lowStockNotifications as $notif) {
-            $notif['category'] = 'alert';
-            $notifications[] = $notif;
+        foreach ($lowStockAlerts as $alert) {
+            if (in_array(trim($alert['description']), $acknowledgedClean)) {
+                continue;
+            }
+            $notifications[] = [
+                'category' => 'alert',
+                'type' => 'warning',
+                'title' => 'Low Stock: ' . $alert['description'],
+                'message' => "Stock level (" . number_format($alert['total_stock'], 0) . " {$alert['unit']}) is below threshold (" . $alert['threshold'] . ").",
+                'icon' => 'alert-triangle',
+                'route' => $is_admin ? 'admin.index' : 'dashboard'
+            ];
         }
 
-        foreach ($expiredItems as $item) {
+        foreach ($expiredAlerts as $item) {
+            if (in_array(trim($item['description']), $acknowledgedClean)) {
+                continue;
+            }
             $notifications[] = [
                 'category' => 'alert',
                 'type' => 'danger',
-                'title' => 'Expired Record: ' . $item->description,
+                'title' => 'Expired Record: ' . $item['description'],
                 'message' => "Item registry indicates zero balance but exists in inventory records.",
                 'icon' => 'alert-octagon',
                 'route' => $is_admin ? 'admin.index' : 'dashboard'
             ];
         }
 
-        // Fetch recent system logs as System notifications
-        $systemLogs = \App\Models\SystemLog::orderBy('created_at', 'desc')
-            ->limit(20)
-            ->get();
+        $systemLogs = \Illuminate\Support\Facades\Cache::remember('global_recent_system_logs', 60, function() {
+            return \App\Models\SystemLog::orderBy('created_at', 'desc')
+                ->limit(20)
+                ->get()
+                ->map(function($log) {
+                    return [
+                        'action' => $log->action,
+                        'description' => $log->description,
+                        'severity' => $log->severity,
+                        'created_at_timestamp' => $log->created_at->timestamp
+                    ];
+                })
+                ->toArray();
+        });
 
         foreach ($systemLogs as $log) {
             $notifications[] = [
                 'category' => 'system',
                 'type' => 'info',
-                'title' => $log->action ?? 'System Event',
-                'message' => $log->description,
-                'icon' => $log->severity === 'danger' || $log->severity === 'critical' ? 'shield-alert' : 'activity',
+                'title' => $log['action'] ?? 'System Event',
+                'message' => $log['description'],
+                'icon' => $log['severity'] === 'danger' || $log['severity'] === 'critical' ? 'shield-alert' : 'activity',
                 'route' => $is_admin ? 'admin.logs' : 'dashboard',
-                'created_at' => $log->created_at->diffForHumans()
+                'created_at' => \Carbon\Carbon::createFromTimestamp($log['created_at_timestamp'])->diffForHumans()
             ];
         }
 
@@ -724,7 +756,6 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         return response()->json(['success' => true]);
     })->name('api.notifications.dismiss');
 
-    // Admin API Routes
     Route::get('/api/admin/sidebar-counts', function() {
         if (!auth()->check() || !auth()->user()->is_admin) return response()->json(['error' => 'Unauthorized'], 401);
 
@@ -738,27 +769,52 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             $acknowledged = session()->get('acknowledged_notifications', []);
         }
 
-        $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
-            ->whereNotIn(\DB::raw('TRIM(inventory_items.description)'), array_map('trim', $acknowledged))
-            ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
-            ->get();
+        $acknowledgedClean = array_map('trim', $acknowledged);
+
+        $lowStockAlerts = \Illuminate\Support\Facades\Cache::remember('global_low_stock_alerts', 600, function() {
+            $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+                ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
+                ->get();
+
+            $alerts = [];
+            foreach ($items as $item) {
+                $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
+                $currentStock = (float)$item->total_stock;
+                if ($threshold > 0 && $currentStock < $threshold) {
+                    $unit = \App\Models\Setting::getItemUnit($item->description);
+                    $alerts[] = [
+                        'description' => trim($item->description),
+                        'total_stock' => $currentStock,
+                        'threshold' => $threshold,
+                        'unit' => $unit
+                    ];
+                }
+            }
+            return $alerts;
+        });
+
+        $expiredAlerts = \Illuminate\Support\Facades\Cache::remember('global_expired_alerts', 600, function() {
+            return \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) as total_qty')
+                ->groupBy('description')
+                ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
+                ->get()
+                ->map(fn($item) => ['description' => trim($item->description)])
+                ->toArray();
+        });
 
         $alertCount = 0;
-        foreach ($items as $item) {
-            $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
-            if ($threshold > 0 && (float)$item->total_stock < $threshold) {
+        foreach ($lowStockAlerts as $alert) {
+            if (!in_array(trim($alert['description']), $acknowledgedClean)) {
                 $alertCount++;
             }
         }
 
-        $expiredCount = \App\Models\InventoryItem::selectRaw('description')
-            ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
-            ->groupBy('description')
-            ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
-            ->get()->count();
-
-        $alertCount += $expiredCount;
+        foreach ($expiredAlerts as $item) {
+            if (!in_array(trim($item['description']), $acknowledgedClean)) {
+                $alertCount++;
+            }
+        }
 
         $pendingRequisitions = \App\Models\StoreRequisition::where('status', 'pending')->where('main_admin_status', 'approved')->count();
 

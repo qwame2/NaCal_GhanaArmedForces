@@ -417,6 +417,7 @@
     }
 </style>
 
+@push('modals')
 <!-- Bottom Sheet -->
 <div id="logBottomSheetOverlay" class="bottom-sheet-overlay" onclick="closeLogModal()"></div>
 <div id="logBottomSheet" class="bottom-sheet">
@@ -434,6 +435,7 @@
         <!-- Dynamic Content Here -->
     </div>
 </div>
+@endpush
 
 @endsection
 

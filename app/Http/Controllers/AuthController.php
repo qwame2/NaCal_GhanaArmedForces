@@ -22,12 +22,12 @@ class AuthController extends Controller
                 $user->update(['is_online' => true]);
             }
 
-            if ($user->is_admin) {
-                return redirect()->route('admin.index');
+            if (in_array($user->role, ['Main Admin', 'Department Head'])) {
+                return redirect()->route('main-admin.requisitions');
             } elseif ($user->role === 'Auditor') {
                 return redirect()->route('auditor.dashboard');
-            } elseif (in_array($user->role, ['Main Admin', 'Department Head'])) {
-                return redirect()->route('main-admin.requisitions');
+            } elseif ($user->is_admin) {
+                return redirect()->route('admin.index');
             } else {
                 return redirect()->route('dashboard');
             }
@@ -233,12 +233,12 @@ class AuthController extends Controller
 
             // SCENARIO 1: User tried to enter ADMIN terminal
             if ($target === 'admin') {
-                if ($user->is_admin) {
-                    return redirect()->route('admin.index');
+                if (in_array($user->role, ['Main Admin', 'Department Head'])) {
+                    return redirect()->route('main-admin.requisitions');
                 } elseif ($user->role === 'Auditor') {
                     return redirect()->route('auditor.dashboard');
-                } elseif (in_array($user->role, ['Main Admin', 'Department Head'])) {
-                    return redirect()->route('main-admin.requisitions');
+                } elseif ($user->is_admin) {
+                    return redirect()->route('admin.index');
                 } else {
                     Auth::logout();
                     $request->session()->invalidate();
@@ -249,6 +249,9 @@ class AuthController extends Controller
 
             // SCENARIO 2: User tried to enter PERSONNEL terminal
             if ($target === 'user') {
+                if (in_array($user->role, ['Main Admin', 'Department Head'])) {
+                    return redirect()->route('main-admin.requisitions');
+                }
                 if ($user->is_admin) {
                     return redirect()->route('admin.index');
                 }
@@ -257,9 +260,6 @@ class AuthController extends Controller
                 }
                 if ($user->role === 'Requisitioner') {
                     return redirect()->route('requisitions.index');
-                }
-                if (in_array($user->role, ['Main Admin', 'Department Head'])) {
-                    return redirect()->route('main-admin.requisitions');
                 }
                 return redirect()->route('dashboard');
             }
@@ -275,14 +275,14 @@ class AuthController extends Controller
             ]);
 
             // Default fallback based on role
-            if ($user->is_admin) {
-                return redirect()->route('admin.index');
+            if (in_array($user->role, ['Main Admin', 'Department Head'])) {
+                return redirect()->route('main-admin.requisitions');
             } elseif ($user->role === 'Auditor') {
                 return redirect()->route('auditor.dashboard');
             } elseif ($user->role === 'Requisitioner') {
                 return redirect()->route('requisitions.index');
-            } elseif (in_array($user->role, ['Main Admin', 'Department Head'])) {
-                return redirect()->route('main-admin.requisitions');
+            } elseif ($user->is_admin) {
+                return redirect()->route('admin.index');
             } else {
                 return redirect()->route('dashboard');
             }

@@ -9,6 +9,16 @@ class IssuedItem extends Model
 {
     use HasFactory;
 
+    protected static function booted()
+    {
+        static::saved(function () {
+            Setting::clearInventoryCache();
+        });
+        static::deleted(function () {
+            Setting::clearInventoryCache();
+        });
+    }
+
     protected $fillable = [
         'issuance_id',
         'description',

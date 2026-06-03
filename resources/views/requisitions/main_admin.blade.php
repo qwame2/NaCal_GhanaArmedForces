@@ -903,6 +903,7 @@
         </div>
     </div>
 
+    @push('modals')
     {{-- Provision Modal --}}
     <div id="provisionModal" class="modal-overlay" style="z-index:99999 !important;">
         <div class="modal-box" style="max-width:480px;">
@@ -998,6 +999,7 @@
             </div>
         </div>
     </div>
+    @endpush
     @endif
 
     {{-- Filters Toolbar --}}
@@ -1310,6 +1312,7 @@
     </div>
 </div>
 
+@push('modals')
 {{-- Oversight Approval & Detail Modal --}}
 <div class="modal-overlay" id="reqModal" onclick="if(event.target===this)closeModal()">
     <div class="modal-box">
@@ -1333,6 +1336,7 @@
         <div id="modalFooter" style="padding:1.25rem 2rem;border-top:1px solid var(--border-color);display:flex;justify-content:flex-end;gap:.75rem;flex-shrink:0;"></div>
     </div>
 </div>
+@endpush
 
 <script>
     const isStoresHead = {{ $isStoresHead ? 'true' : 'false' }};
@@ -1636,7 +1640,7 @@
                         </button>
                         <button onclick="processDecision('approved')" style="flex:1.5; background: #10b981; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);" onmouseover="this.style.background='#059669';" onmouseout="this.style.background='#10b981';">
                             <i data-lucide="check-circle" style="width: 18px;"></i>
-                            Approve & Escalate
+                            Approve
                         </button>
                     </div>
                 </div>`;
@@ -1834,7 +1838,7 @@
         }
 
         Swal.fire({
-            title: decision === 'approved' ? 'Approve & Escalate?' : 'Decline Requisition?',
+            title: decision === 'approved' ? 'Approve?' : 'Decline Requisition?',
             text: decision === 'approved' ?
                 (isStoresHead ?
                 'This will verify the request and route it immediately to the Head of Stores for final volume allocations.' :
@@ -1842,7 +1846,7 @@
                 'This will de-activate the requisition and return it as declined to the requesting department.',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonText: decision === 'approved' ? 'Yes, Escalate' : 'Yes, Decline',
+            confirmButtonText: decision === 'approved' ? 'Yes' : 'Yes, Decline',
             cancelButtonText: 'Abort',
             confirmButtonColor: decision === 'approved' ? '#10b981' : '#ef4444',
             cancelButtonColor: '#ef4444',

@@ -762,6 +762,7 @@
     </div>
 </div>
 
+@push('modals')
 {{-- Review Modal --}}
 <div class="modal-overlay" id="reqModal" onclick="if(event.target===this)closeModal()">
     <div class="modal-box">
@@ -785,6 +786,7 @@
         <div id="modalFooter" style="padding:1.25rem 2rem;border-top:1px solid var(--border-color);display:flex;justify-content:flex-end;gap:.75rem;flex-shrink:0;"></div>
     </div>
 </div>
+@endpush
 
 <script>
     const loggedInUserRole = "{{ auth()->user()->role }}";

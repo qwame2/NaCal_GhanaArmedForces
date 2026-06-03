@@ -1,0 +1,5 @@
+requester_name,department,purpose,priority,status,usage_type,item_description,item_category,item_unit,item_quantity_requested
+Inspector Grace Appiah,Airport Detachment,Daily baggage inspection testing,normal,approved,consumable,Scott Reagent Cocaine Field Kits,J,Boxes,5
+Inspector Grace Appiah,Airport Detachment,Daily baggage inspection testing,normal,approved,consumable,Nitrile Protective Gloves (Large),E,Boxes,2
+Sergeant Emmanuel Tetteh,K-9 Unit,Tactical patrol evidence collection,urgent,approved,permanent,Tamper-Evident Evidence Bags (Medium),E,Packs,5
+Analyst Mercy Ofori,Forensic Laboratory,Standard verification assays,low,pending,consumable,Marquis Reagent Heroin Test Vials,J,Packs,1

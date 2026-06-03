@@ -117,15 +117,15 @@
                             </div>
                         </td>
                         <td>
-                            @if($user->is_admin)
-                                <div class="clearance-pill admin">
-                                    <div class="dot"></div>
-                                    Administrator
-                                </div>
-                            @elseif($user->role === 'Main Admin')
+                            @if($user->role === 'Main Admin')
                                 <div class="clearance-pill dept-head">
                                     <div class="dot"></div>
                                     Department Head {{ $user->rank ? '(' . $user->rank . ')' : '' }}
+                                </div>
+                            @elseif($user->is_admin)
+                                <div class="clearance-pill admin">
+                                    <div class="dot"></div>
+                                    Head of Admin
                                 </div>
                             @elseif($user->role === 'Department Head')
                                 <div class="clearance-pill dept-head">
@@ -1453,6 +1453,7 @@
 </style>
 
 
+@push('modals')
 <!-- Legacy Admin Audit Modal -->
 <div class="modal-overlay" id="legacyAuditModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); z-index: 99999; justify-content: center; align-items: center;">
     <div class="modal-container" style="background: white; border-radius: 24px; width: 100%; max-width: 900px; padding: 2.5rem; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
@@ -1534,6 +1535,7 @@
         </div>
     </div>
 </div>
+@endpush
 
 <script>
     function openLegacyAuditModal() {

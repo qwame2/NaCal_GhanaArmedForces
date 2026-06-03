@@ -185,7 +185,7 @@ class ReceivedItemsController extends Controller
             abort(403, 'Unauthorized. Access restricted to Department Head (Stores) and Store Officers.');
         }
 
-        if (auth()->user()->is_admin) {
+        if (auth()->user()->is_admin && auth()->user()->role !== 'Main Admin') {
             return redirect()->route('admin.inventory')->with('info', 'Strategic Oversight required. Redirecting to Command Center.');
         }
 

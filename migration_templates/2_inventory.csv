@@ -1,0 +1,5 @@
+ledge_category,supplier_name,donor_name,acquisition_type,supplier_status,entry_date,arrival_date,recorded_by,item_description,item_unit,item_qty,item_stock_balance,item_location,item_remarks
+J,Forensic Science Systems,,Supplier,Full Delivery,2026-05-15 08:30:00,2026-05-15,adom.b,Scott Reagent Cocaine Field Kits,Boxes,50,45,Cabinet A-3,Expiry date: 2028-12-31
+J,Forensic Science Systems,,Supplier,Full Delivery,2026-05-15 08:30:00,2026-05-15,adom.b,Marquis Reagent Heroin Test Vials,Packs,30,30,Cabinet A-3,Chemically sensitive storage
+E,,United Nations ODOC,Donor,Full Delivery,2026-05-20 14:15:00,2026-05-20,adom.b,Nitrile Protective Gloves (Large),Boxes,100,85,Shelf 4-B,Donated by UNODC
+E,Apex Tactical Equipment,,Supplier,Partial Delivery,2026-06-01 09:00:00,2026-06-01,justice.o,Tamper-Evident Evidence Bags (Medium),Packs,200,180,Drawer 2,APEX Tactical shipment

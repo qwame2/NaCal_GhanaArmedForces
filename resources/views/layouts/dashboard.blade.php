@@ -29,9 +29,28 @@
             }
         }
 
-        /* Ensure SweetAlert2 appears in front of modal-overlay (z-index 2000) */
+        /* Ensure SweetAlert2 appears in front of modal-overlay (z-index 2000) and has backdrop blur */
+        .modal-overlay,
+        .bottom-sheet-overlay,
+        #legacyAuditModal,
+        #logDetailsModal,
+        #messageDetailModal {
+            z-index: 1000000 !important;
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: rgba(15, 23, 42, 0.5) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+        }
+        .bottom-sheet {
+            z-index: 1000001 !important;
+        }
         .swal2-container {
-            z-index: 999999 !important;
+            z-index: 1000005 !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
         }
     </style>
     <title>{{ \App\Models\Setting::get('organization_name', 'NACOC') }} | Advanced Inventory System</title>
@@ -82,7 +101,7 @@
             </div>
             <div>
                 <h1 style="font-size: 1.25rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1.2; max-width: 150px;">{{ \App\Models\Setting::get('organization_name', 'NACOC') }}</h1>
-                <div class="sidebar-branding-subtitle" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; opacity: 0.8;">Inventory Management System</div>
+                <div class="sidebar-branding-subtitle" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; opacity: 0.8;">Inventory Management System(NSIMs)</div>
             </div>
         </div>
 
@@ -989,7 +1008,7 @@
             setInterval(pollApprovedRequisitions, 15000);
         })();
     </script>
+    @stack('modals')
     @stack('scripts')
 </body>
-
 </html>
