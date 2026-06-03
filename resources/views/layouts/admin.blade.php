@@ -1237,6 +1237,9 @@
         @if(session('warning'))
             showToast('Warning', "{!! addslashes(session('warning')) !!}", 'warning');
         @endif
+        @if($errors->any())
+            showToast('Validation Error', "{!! addslashes($errors->first()) !!}", 'error');
+        @endif
     });
     </script>
     <div id="toast-container" class="toast-container"></div>

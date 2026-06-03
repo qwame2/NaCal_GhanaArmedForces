@@ -57,7 +57,7 @@ class SettingsController extends Controller
         ]);
 
         auth()->user()->update([
-            'password' => \Hash::make($request->password)
+            'password' => $request->password
         ]);
 
         // Log the password change

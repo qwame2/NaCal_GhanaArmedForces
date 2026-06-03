@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\ReceivedItemsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\IssueItemsController;
@@ -12,13 +13,85 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ArchiveController;
 
 // Self-healing auto-migration schema update (cached to prevent query and disk write overhead on every request)
-if (!\Illuminate\Support\Facades\Cache::has('routes_boot_self_healed')) {
+if (!\Illuminate\Support\Facades\Cache::has('routes_boot_self_healed_v9')) {
     try {
-        if (!\Illuminate\Support\Facades\Schema::hasColumn('inventory_items', 'location') ||
-            !\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collected_at') ||
-            !\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collector_name') ||
-            !\Illuminate\Support\Facades\Schema::hasColumn('users', 'is_temp_account')) {
-            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+
+        // Hot-patch indexes
+        $patches = [
+            'ALTER TABLE inventory_items ADD INDEX inventory_items_category_index (category)',
+            'ALTER TABLE messages ADD INDEX messages_is_archived_index (is_archived)',
+            'ALTER TABLE system_logs ADD INDEX system_logs_is_archived_index (is_archived)',
+            'ALTER TABLE edit_requests ADD INDEX edit_requests_status_index (status)',
+            'ALTER TABLE edit_requests ADD INDEX edit_requests_request_type_index (request_type)',
+            
+            // New Performance Optimization Indexes
+            'ALTER TABLE inventory_batches ADD INDEX inventory_batches_entry_date_index (entry_date)',
+            'ALTER TABLE issuances ADD INDEX issuances_issuance_date_index (issuance_date)',
+            'ALTER TABLE issued_items ADD INDEX issued_items_description_index (description)',
+            'ALTER TABLE issued_items ADD INDEX issued_items_ledge_category_index (ledge_category)',
+            'ALTER TABLE system_logs ADD INDEX system_logs_created_at_index (created_at)',
+            'ALTER TABLE store_requisitions ADD INDEX store_requisitions_created_at_index (created_at)',
+            'ALTER TABLE messages ADD INDEX messages_created_at_index (created_at)',
+            'ALTER TABLE messages ADD INDEX messages_receiver_read_archived_idx (receiver_id, read_at, is_archived)',
+
+            // Comprehensive Database-Wide Indexes (Every single table gets optimized indexes)
+            'ALTER TABLE users ADD INDEX users_role_index (role)',
+            'ALTER TABLE users ADD INDEX users_is_admin_index (is_admin)',
+            'ALTER TABLE users ADD INDEX users_is_active_index (is_active)',
+            'ALTER TABLE users ADD INDEX users_is_online_index (is_online)',
+            'ALTER TABLE users ADD INDEX users_department_index (department)',
+            'ALTER TABLE users ADD INDEX users_rank_index (rank)',
+
+            'ALTER TABLE inventory_batches ADD INDEX inventory_batches_supplier_name_index (supplier_name)',
+            'ALTER TABLE inventory_batches ADD INDEX inventory_batches_donor_name_index (donor_name)',
+            'ALTER TABLE inventory_batches ADD INDEX inventory_batches_acquisition_type_index (acquisition_type)',
+            'ALTER TABLE inventory_batches ADD INDEX inventory_batches_arrival_date_index (arrival_date)',
+            'ALTER TABLE inventory_batches ADD INDEX inventory_batches_approval_status_index (approval_status)',
+
+            'ALTER TABLE inventory_items ADD INDEX inventory_items_unit_index (unit)',
+            'ALTER TABLE inventory_items ADD INDEX inventory_items_location_index (location)',
+
+            'ALTER TABLE issuances ADD INDEX issuances_beneficiary_index (beneficiary)',
+            'ALTER TABLE issuances ADD INDEX issuances_issuance_type_index (issuance_type)',
+
+            'ALTER TABLE issued_items ADD INDEX issued_items_quantity_index (quantity)',
+
+            'ALTER TABLE store_requisitions ADD INDEX store_requisitions_main_admin_status_index (main_admin_status)',
+
+            'ALTER TABLE store_requisition_items ADD INDEX store_requisition_items_category_index (category)',
+
+            'ALTER TABLE returned_items ADD INDEX returned_items_return_date_index (return_date)',
+
+            'ALTER TABLE edit_requests ADD INDEX edit_requests_created_at_index (created_at)',
+
+            'ALTER TABLE notification_acknowledgements ADD INDEX notif_ack_acknowledged_at_index (acknowledged_at)',
+
+            'ALTER TABLE password_reset_requests ADD INDEX password_reset_requests_status_index (status)',
+
+            'ALTER TABLE suppliers ADD INDEX suppliers_delivery_person_index (delivery_person)',
+            'ALTER TABLE suppliers ADD INDEX suppliers_phone_index (phone)',
+            'ALTER TABLE suppliers ADD INDEX suppliers_email_index (email)',
+
+            'ALTER TABLE jobs ADD INDEX jobs_available_at_index (available_at)',
+            'ALTER TABLE jobs ADD INDEX jobs_created_at_index (created_at)',
+
+            'ALTER TABLE failed_jobs ADD INDEX failed_jobs_failed_at_index (failed_at)',
+
+            'ALTER TABLE password_reset_tokens ADD INDEX password_reset_tokens_token_index (token)',
+
+            'ALTER TABLE job_batches ADD INDEX job_batches_cancelled_at_index (cancelled_at)',
+
+            'ALTER TABLE sessions ADD INDEX sessions_ip_address_index (ip_address)',
+
+            'ALTER TABLE receipts ADD INDEX receipts_created_at_index (created_at)'
+        ];
+        foreach ($patches as $sql) {
+            try {
+                \DB::statement($sql);
+            } catch (\Exception $e) {
+                // Ignore if index already exists
+            }
         }
 
         // Self-healing user profile update for Adom
@@ -35,6 +108,11 @@ if (!\Illuminate\Support\Facades\Cache::has('routes_boot_self_healed')) {
             $cols = \Illuminate\Support\Facades\Schema::getColumnListing('inventory_batches');
             file_put_contents(base_path('scratch/db_output.txt'), "Columns: " . implode(', ', $cols));
             
+            // Verify indexes
+            $indexes = \DB::select("SHOW INDEX FROM inventory_items");
+            $idxNames = collect($indexes)->pluck('Key_name')->unique()->implode(', ');
+            file_put_contents(base_path('scratch/db_indexes_check.txt'), "Inventory Items Indexes: " . $idxNames);
+
             $out = "Recent Batches:\n";
             $batches = \App\Models\InventoryBatch::orderBy('id', 'desc')->take(10)->get();
             foreach ($batches as $b) {
@@ -54,7 +132,7 @@ if (!\Illuminate\Support\Facades\Cache::has('routes_boot_self_healed')) {
             file_put_contents(base_path('scratch/db_output.txt'), "Error: " . $ex->getMessage());
         }
 
-        \Illuminate\Support\Facades\Cache::put('routes_boot_self_healed', true, 604800); // Cache for 7 days
+        \Illuminate\Support\Facades\Cache::put('routes_boot_self_healed_v9', true, 604800); // Cache for 7 days
     } catch (\Exception $e) {
         // Ignore to prevent boot failures
     }
@@ -67,6 +145,8 @@ Route::get('/clear', function() {
     \Illuminate\Support\Facades\Artisan::call('config:clear');
     return 'Cleared';
 });
+
+
 
 // Archive Routes
 Route::middleware(['auth', 'check_status'])->prefix('admin/archive')->group(function () {
@@ -852,6 +932,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
     // Admin Routes
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('/admin/users/create', [AdminController::class, 'createUser'])->name('admin.users.create');
     Route::post('/admin/users', [AdminController::class, 'storeUser'])->name('admin.users.store');
     Route::get('/admin/logs', [AdminController::class, 'logs'])->name('admin.logs');
     Route::get('/admin/inventory', [AdminController::class, 'viewInventory'])->name('admin.inventory');

@@ -1,0 +1,1 @@
+Inventory Items Indexes: PRIMARY, inventory_items_batch_id_foreign, inventory_items_description_index, inventory_items_unit_index, inventory_items_location_index

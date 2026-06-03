@@ -75,7 +75,7 @@ class AuthController extends Controller
             $user = User::create([
                 'name' => $request->name,
                 'username' => $request->username,
-                'password' => Hash::make($request->password),
+                'password' => $request->password,
                 'role' => 'Admin',
                 'is_admin' => true,
                 'is_online' => false,
@@ -402,7 +402,7 @@ class AuthController extends Controller
         $request->validate($rules);
 
         $updateData = [
-            'password' => Hash::make($request->password),
+            'password' => $request->password,
             'must_change_password' => false,
             'username' => $request->username,
             'phone' => $request->phone,
@@ -499,7 +499,7 @@ class AuthController extends Controller
         $user = User::where('username', $resetReq->username)->first();
         if ($user) {
             $user->update([
-                'password' => Hash::make($request->password),
+                'password' => $request->password,
                 'must_change_password' => false,
                 'is_active' => true, // Reactivate if it was deactivated
             ]);

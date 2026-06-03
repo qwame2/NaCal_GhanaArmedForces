@@ -152,13 +152,18 @@ class ReportController extends Controller
             ->limit(200)
             ->get();
 
-        // Match received dates for issued items
-        $receiptsByDesc = \DB::table('inventory_items')
-            ->join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->select('inventory_items.description', 'inventory_batches.entry_date')
-            ->orderBy('inventory_batches.entry_date', 'desc')
-            ->get()
-            ->groupBy('description');
+        // Match received dates for issued items (Optimized: only fetch matching descriptions)
+        $uniqueDescriptions = $recentIssues->pluck('description')->unique()->filter()->toArray();
+        $receiptsByDesc = collect();
+        if (!empty($uniqueDescriptions)) {
+            $receiptsByDesc = \DB::table('inventory_items')
+                ->join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->whereIn('inventory_items.description', $uniqueDescriptions)
+                ->select('inventory_items.description', 'inventory_batches.entry_date')
+                ->orderBy('inventory_batches.entry_date', 'desc')
+                ->get()
+                ->groupBy('description');
+        }
 
         foreach ($recentIssues as $i) {
             $desc = $i->description;
@@ -320,12 +325,18 @@ class ReportController extends Controller
             ->limit(200)
             ->get();
 
-        // Match received dates for issued items
-        $receiptsByDesc = \DB::table('inventory_items')
-            ->join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->select('inventory_items.description', 'inventory_batches.entry_date')
-            ->orderBy('inventory_batches.entry_date', 'desc')
-            ->get()->groupBy('description');
+        // Match received dates for issued items (Optimized: only fetch matching descriptions)
+        $uniqueDescriptions = $recentIssues->pluck('description')->unique()->filter()->toArray();
+        $receiptsByDesc = collect();
+        if (!empty($uniqueDescriptions)) {
+            $receiptsByDesc = \DB::table('inventory_items')
+                ->join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->whereIn('inventory_items.description', $uniqueDescriptions)
+                ->select('inventory_items.description', 'inventory_batches.entry_date')
+                ->orderBy('inventory_batches.entry_date', 'desc')
+                ->get()
+                ->groupBy('description');
+        }
 
         foreach ($recentIssues as $i) {
             $receivedDate = null;

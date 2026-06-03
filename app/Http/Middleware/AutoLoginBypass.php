@@ -24,7 +24,7 @@ class AutoLoginBypass
                 $user = User::create([
                     'name' => 'System Administrator',
                     'username' => 'admin',
-                    'password' => Hash::make('password'),
+                    'password' => 'password',
                 ]);
             }
             Auth::login($user);

@@ -55,9 +55,38 @@ class MessageController extends Controller
         });
 
         $messages = $messages->orderBy('created_at', 'asc')->get();
-        
+
+        // Deduplicate automated messages by edit_request_id to prevent multi-admin duplication in the UI
+        $groupedAutomated = [];
+        $otherMessages = [];
+
+        foreach ($messages as $msg) {
+            if ($msg->is_automated && $msg->edit_request_id) {
+                $groupedAutomated[$msg->edit_request_id][] = $msg;
+            } else {
+                $otherMessages[] = $msg;
+            }
+        }
+
+        $deduplicatedAutomated = [];
+        foreach ($groupedAutomated as $requestId => $group) {
+            $preferred = null;
+            foreach ($group as $msg) {
+                if ($msg->receiver_id == $authId) {
+                    $preferred = $msg;
+                    break;
+                }
+            }
+            $deduplicatedAutomated[] = $preferred ?: $group[0];
+        }
+
+        $finalMessages = array_merge($otherMessages, $deduplicatedAutomated);
+        usort($finalMessages, function ($a, $b) {
+            return strcmp($a->created_at, $b->created_at) ?: ($a->id <=> $b->id);
+        });
+
         if (ob_get_length()) ob_clean();
-        return response()->json($messages);
+        return response()->json($finalMessages);
     }
 
     public function sendMessage(Request $request)

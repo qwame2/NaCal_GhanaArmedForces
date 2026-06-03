@@ -1,0 +1,5 @@
+Admin Username: Emma
+Admin Name: Emmanuel Tetteh
+Admin Hash: $2y$12$PT1YTyFd02mCXFGYVtMt.eLNGxKkqLPtJOAr/F.I2mPS.DunEgWyq
+Correct Password: None
+Rehash needs: NO

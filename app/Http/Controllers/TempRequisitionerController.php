@@ -127,7 +127,7 @@ class TempRequisitionerController extends Controller
         $tempUser = User::create([
             'name'                => $request->username,
             'username'            => $request->username,
-            'password'            => bcrypt($otp), // hashed fallback
+            'password'            => $otp, // hashed fallback
             'otp_token'           => $otp,         // plain for display & login comparison
             'role'                => 'Requisitioner',
             'department'          => $department,
@@ -249,7 +249,7 @@ class TempRequisitionerController extends Controller
 
         $tempUser->update([
             'otp_token' => $newOtp,
-            'password'  => bcrypt($newOtp),
+            'password'  => $newOtp,
         ]);
 
         SystemLog::create([

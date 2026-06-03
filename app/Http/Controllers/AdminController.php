@@ -13,102 +13,150 @@ use App\Models\ReturnedItem;
 
 class AdminController extends Controller
 {
+    public function createUser()
+    {
+        if (!auth()->user()->is_admin) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        return view('admin.create_user');
+    }
+
     public function storeUser(Request $request)
     {
         if (!auth()->user()->is_admin) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
-        $request->validate([
-            'username' => 'required|string|max:255|unique:users,username',
-            'password' => [
-                'required', 'string', 'min:8', 'regex:/[0-9]/',
-                function ($attribute, $value, $fail) use ($request) {
-                    $username = strtolower($request->username ?? '');
-                    $fullname = strtolower($request->name ?? $request->username);
-                    $password = strtolower($value);
-                    
-                    if ($username !== '' && str_contains($password, $username)) {
-                        $fail('Security Alert: Password cannot contain the username.');
-                    }
-                    if ($fullname !== '' && str_contains($password, $fullname)) {
-                        $fail('Security Alert: Password cannot contain your name.');
-                    }
-                }
-            ],
-            'role'       => 'required|string|in:Department Head,Main Admin,Officer,Requisitioner,Dept Head HR,Head of Welfare,Auditor',
-            'department' => 'nullable|string|max:255',
-            'rank'       => [
-                'nullable',
-                'string',
-                'in:SNCO,NCO',
-                function ($attribute, $value, $fail) use ($request) {
-                    if (in_array($request->role, ['Dept Head HR', 'Head of Welfare', 'Main Admin']) && empty($value)) {
-                        $fail('Please select a Rank (SNCO / NCO).');
-                    }
-                }
-            ],
-        ]);
-
-        // Determine department based on role
-        $role = $request->role;
-        if ($role === 'Main Admin') {
-            $department = 'Stores';
-            $isAdmin    = true;
-        } elseif ($role === 'Dept Head HR') {
-            $role = 'Department Head';
-            $department = 'Human Resource Management Department';
-            $isAdmin = false;
-        } elseif ($role === 'Head of Welfare') {
-            $role = 'Department Head';
-            $department = 'Welfare Department';
-            $isAdmin = false;
-        } elseif ($role === 'Auditor') {
-            $role = 'Auditor';
-            $department = 'Internal Audit';
-            $isAdmin = false;
-        } elseif ($role === 'Department Head') {
-            $department = $request->department;
-            if (!$department) {
-                return back()->withErrors(['department' => 'Department is required for a Department Head.'])->withInput();
-            }
-            $isAdmin = false;
-        } elseif ($role === 'Officer') {
-            $department = 'Store';
-            $isAdmin = false;
-        } else {
-            $department = $request->department;
-            $isAdmin    = false;
+        if (!$request->has('users')) {
+            $request->merge([
+                'users' => [
+                    [
+                        'name' => $request->name,
+                        'username' => $request->username,
+                        'password' => $request->password,
+                        'role' => $request->role,
+                        'department' => $request->department,
+                        'rank' => $request->rank,
+                    ]
+                ]
+            ]);
         }
 
-        $user = User::create([
-            'name'               => $request->name ?? $request->username,
-            'username'           => $request->username,
-            'password'           => Hash::make($request->password),
-            'department'         => $department,
-            'role'               => $role,
-            'rank'               => $request->rank,
-            'is_admin'           => $isAdmin,
-            'is_temp_account'    => ($role === 'Auditor'),
-            'is_active'          => true,
-            'must_change_password' => true,
+        $request->validate([
+            'users' => 'required|array|min:1',
+            'users.*.username' => 'required|string|max:255|unique:users,username',
+            'users.*.name' => 'nullable|string|max:255',
+            'users.*.role' => 'required|string|in:Department Head,Main Admin,Officer,Requisitioner,Dept Head HR,Head of Welfare,Auditor',
+            'users.*.department' => 'nullable|string|max:255',
+            'users.*.rank' => 'nullable|string|in:SNCO,NCO',
+            'users.*.password' => 'required|string|min:8|regex:/[0-9]/',
+        ], [
+            'users.*.username.unique' => 'One of the usernames has already been registered.',
+            'users.*.password.min' => 'Passwords must be at least 8 characters long.',
+            'users.*.password.regex' => 'Passwords must contain at least one number.',
         ]);
 
-        // Log the creation
-        \App\Models\SystemLog::create([
-            'user_id' => auth()->id(),
-            'event_type' => 'SECURITY',
-            'action' => 'CREATE_USER',
-            'description' => "Administrator registered new staff member: {$user->name} (@{$user->username}).",
-            'severity' => 'info',
-            'ip_address' => request()->ip()
-        ]);
+        $errors = [];
+        $usersData = $request->input('users');
 
-        $message = $user->role === 'Officer' 
-            ? "Staff member {$user->name} has been successfully added."
-            : "Staff account for {$user->name} created successfully.";
+        foreach ($usersData as $index => $u) {
+            $username = strtolower($u['username'] ?? '');
+            $fullname = strtolower($u['name'] ?? $u['username'] ?? '');
+            $password = strtolower($u['password'] ?? '');
+            $role = $u['role'] ?? '';
+            $rank = $u['rank'] ?? '';
+            $department = $u['department'] ?? '';
 
-        return back()->with('success', $message);
+            $userLabel = count($usersData) > 1 ? "User #" . ($index + 1) . " (@{$u['username']})" : "User";
+
+            // 1. Password security constraints
+            if ($username !== '' && str_contains($password, $username)) {
+                $errors["users.{$index}.password"] = "Security Alert ({$userLabel}): Password cannot contain the username.";
+            }
+            if ($fullname !== '' && str_contains($password, $fullname)) {
+                $errors["users.{$index}.password"] = "Security Alert ({$userLabel}): Password cannot contain your name.";
+            }
+
+            // 2. Rank checks for Main Admin, Dept Head HR, Head of Welfare
+            if (in_array($role, ['Dept Head HR', 'Head of Welfare', 'Main Admin']) && empty($rank)) {
+                $errors["users.{$index}.rank"] = "{$userLabel}: Please select a Rank (SNCO / NCO).";
+            }
+
+            // 3. Department checks
+            if ($role === 'Department Head' && empty($department)) {
+                $errors["users.{$index}.department"] = "{$userLabel}: Department is required for a Department Head.";
+            }
+        }
+
+        if (!empty($errors)) {
+            return back()->withErrors($errors)->withInput();
+        }
+
+        $createdUsers = [];
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($usersData, &$createdUsers) {
+            foreach ($usersData as $u) {
+                $role = $u['role'];
+                $department = $u['department'] ?? null;
+                $isAdmin = false;
+                $isTempAccount = false;
+
+                // Determine department and flags based on role
+                if ($role === 'Main Admin') {
+                    $department = 'Stores';
+                    $isAdmin    = true;
+                } elseif ($role === 'Dept Head HR') {
+                    $role = 'Department Head';
+                    $department = 'Human Resource Management Department';
+                } elseif ($role === 'Head of Welfare') {
+                    $role = 'Department Head';
+                    $department = 'Welfare Department';
+                } elseif ($role === 'Auditor') {
+                    $role = 'Auditor';
+                    $department = 'Internal Audit';
+                    $isTempAccount = true;
+                } elseif ($role === 'Officer') {
+                    $department = 'Store';
+                }
+
+                $user = User::create([
+                    'name'                 => $u['name'] ?? $u['username'],
+                    'username'             => $u['username'],
+                    'password'             => $u['password'],
+                    'department'           => $department,
+                    'role'                 => $role,
+                    'rank'                 => $u['rank'] ?? null,
+                    'is_admin'             => $isAdmin,
+                    'is_temp_account'      => $isTempAccount,
+                    'is_active'            => true,
+                    'must_change_password' => true,
+                ]);
+
+                // Log the creation
+                \App\Models\SystemLog::create([
+                    'user_id' => auth()->id(),
+                    'event_type' => 'SECURITY',
+                    'action' => 'CREATE_USER',
+                    'description' => "Administrator registered new staff member: {$user->name} (@{$user->username}).",
+                    'severity' => 'info',
+                    'ip_address' => request()->ip()
+                ]);
+
+                $createdUsers[] = $user;
+            }
+        });
+
+        if (count($createdUsers) === 1) {
+            $user = $createdUsers[0];
+            $message = $user->role === 'Officer' 
+                ? "Staff member {$user->name} has been successfully added."
+                : "Staff account for {$user->name} created successfully.";
+        } else {
+            $message = "Successfully registered " . count($createdUsers) . " users.";
+        }
+
+        return redirect()->route('admin.index')->with('success', $message);
     }
 
     public function index(Request $request)

@@ -167,6 +167,11 @@
         opacity: 1;
     }
 
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
+
     /* Admin view logic */
     .admin-view {
         display: block !important;
@@ -1388,6 +1393,9 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
+        // Immediately open the overlay with a loading skeleton
+        window.showOversightPanelLoading('Loading Recovery Details...', 'Fetching the requested recovery information...');
+
         fetch(`{{ url('/api/edit-requests') }}/${reqId}/recovery-preview`, {
                 credentials: 'same-origin',
                 headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
@@ -1405,6 +1413,7 @@
                 _renderRecoverySheet(data, reqId);
             })
             .catch(err => {
+                window.closeOversightPanel();
                 /* console print removed */
                 if (btn) {
                     btn.disabled = false;
@@ -1422,6 +1431,9 @@
             btn.innerHTML = `<i data-lucide="loader" class="animate-spin" style="width:14px;"></i> Loading...`;
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
+
+        // Immediately open the overlay with a loading skeleton
+        window.showOversightPanelLoading('Loading Reconciliation Details...', 'Fetching the requested reconciliation information...');
 
         fetch(`{{ url('/api/edit-requests') }}/${reqId}/reconciliation-preview`, {
                 credentials: 'same-origin',
@@ -1441,6 +1453,7 @@
                 _renderReconciliationSheet(data, reqId);
             })
             .catch(err => {
+                window.closeOversightPanel();
                 showToast('Error', 'Could not fetch reconciliation details.', 'error');
                 if (btn) {
                     btn.disabled = false;
@@ -2106,6 +2119,9 @@
             btn.innerHTML = `<svg style="width:14px;height:14px;animation:spin 1s linear infinite;display:inline;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Loading...`;
         }
 
+        // Immediately open the overlay with a loading skeleton
+        window.showOversightPanelLoading('Loading Remainder Details...', 'Fetching the remainder items information...');
+
         fetch(`{{ url('/api/edit-requests') }}/${reqId}/remainder-preview`, {
                 headers: {
                     'Accept': 'application/json',
@@ -2126,6 +2142,7 @@
                 _renderRemainderSheet(data);
             })
             .catch(err => {
+                window.closeOversightPanel();
                 /* console print removed */
                 if (btn) {
                     btn.disabled = false;
@@ -2134,6 +2151,61 @@
                 }
                 alert('Could not load preview: ' + err.message);
             });
+    };
+
+    window.showOversightPanelLoading = function(title, subtitle) {
+        const skeletonHtml = `
+            <div style="background: white; padding: 3.5rem 3rem 2.5rem 3rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: relative;">
+                <button onclick="window.closeOversightPanel()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 10;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
+                    <i data-lucide="x" style="width: 18px;"></i>
+                </button>
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div style="width: 56px; height: 56px; background: rgba(79, 70, 229, 0.05); color: #4f46e5; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                        <svg class="animate-spin" style="width:28px;height:28px;color:#6366f1;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.2"></circle><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path></svg>
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.5rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">${title || 'Loading Details...'}</h2>
+                        <p style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 500;">${subtitle || 'Fetching the requested information...'}</p>
+                    </div>
+                </div>
+            </div>
+            <div style="padding: 2.5rem 3rem; flex: 1; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 2rem;">
+                <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.01);">
+                    <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="width: 80px; height: 12px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite ease-in-out;"></div>
+                        <div style="width: 150px; height: 20px; background: #f1f5f9; border-radius: 6px; animation: pulse 1.5s infinite ease-in-out;"></div>
+                    </div>
+                    <div style="width: 1px; height: 40px; background: #e2e8f0;"></div>
+                    <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="width: 80px; height: 12px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite ease-in-out;"></div>
+                        <div style="width: 120px; height: 20px; background: #f1f5f9; border-radius: 6px; animation: pulse 1.5s infinite ease-in-out;"></div>
+                    </div>
+                </div>
+                <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.01);">
+                    <div style="padding: 1.25rem 1.5rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between;">
+                        <div style="width: 120px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite ease-in-out;"></div>
+                        <div style="width: 80px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite ease-in-out;"></div>
+                    </div>
+                    <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 8px; animation: pulse 1.5s infinite ease-in-out;"></div>
+                                <div style="display: flex; flex-direction: column; gap: 6px;">
+                                    <div style="width: 200px; height: 16px; background: #f1f5f9; border-radius: 4px; animation: pulse 1.5s infinite ease-in-out;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.getElementById('oversightPanelContent').innerHTML = skeletonHtml;
+        document.getElementById('oversightOverlay').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('oversightOverlay').classList.add('show');
+            document.getElementById('oversightSidePanel').classList.add('open');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }, 10);
     };
 
     window.closeOversightPanel = function() {
@@ -2158,6 +2230,9 @@
             btn.disabled = true;
             btn.innerHTML = `<svg style="width:14px;height:14px;animation:spin 1s linear infinite;display:inline;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Loading...`;
         }
+
+        // Immediately open the overlay with a loading skeleton
+        window.showOversightPanelLoading('Loading Entry Details...', 'Fetching the requested stock entry information...');
 
         fetch(`{{ url('/api/sra-preview') }}/${reqId}`, {
                 headers: {
@@ -2618,6 +2693,7 @@
             })
             .catch(err => {
                 window._entryPreviewLoading = false;
+                window.closeOversightPanel();
                 /* console print removed */
                 if (btn) {
                     btn.disabled = false;

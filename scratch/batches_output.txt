@@ -1,3 +1,1 @@
 Recent Batches:
-ID: 2 | Acq: Supplier | Supplier: Mtn | Donor:  | DelPerson: adomko | DelPhone: 0243034567 | Approved: approved
-ID: 1 | Acq: Supplier | Supplier: System | Donor:  | DelPerson:  | DelPhone:  | Approved: approved

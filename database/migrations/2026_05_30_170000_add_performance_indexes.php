@@ -15,6 +15,7 @@ return new class extends Migration
         try {
             Schema::table('inventory_items', function (Blueprint $table) {
                 $table->index('description');
+                $table->index('category');
             });
         } catch (\Exception $e) {
             // Index already exists or error
@@ -56,6 +57,7 @@ return new class extends Migration
                 $table->index('sender_id');
                 $table->index('receiver_id');
                 $table->index('is_automated');
+                $table->index('is_archived');
             });
         } catch (\Exception $e) {
             // Index already exists or error
@@ -66,6 +68,17 @@ return new class extends Migration
             Schema::table('system_logs', function (Blueprint $table) {
                 $table->index('event_type');
                 $table->index('action');
+                $table->index('is_archived');
+            });
+        } catch (\Exception $e) {
+            // Index already exists or error
+        }
+
+        // 7. edit_requests
+        try {
+            Schema::table('edit_requests', function (Blueprint $table) {
+                $table->index('status');
+                $table->index('request_type');
             });
         } catch (\Exception $e) {
             // Index already exists or error
@@ -81,6 +94,7 @@ return new class extends Migration
         try {
             Schema::table('inventory_items', function (Blueprint $table) {
                 $table->dropIndex(['description']);
+                $table->dropIndex(['category']);
             });
         } catch (\Exception $e) {}
 
@@ -110,6 +124,7 @@ return new class extends Migration
                 $table->dropIndex(['sender_id']);
                 $table->dropIndex(['receiver_id']);
                 $table->dropIndex(['is_automated']);
+                $table->dropIndex(['is_archived']);
             });
         } catch (\Exception $e) {}
 
@@ -117,6 +132,14 @@ return new class extends Migration
             Schema::table('system_logs', function (Blueprint $table) {
                 $table->dropIndex(['event_type']);
                 $table->dropIndex(['action']);
+                $table->dropIndex(['is_archived']);
+            });
+        } catch (\Exception $e) {}
+
+        try {
+            Schema::table('edit_requests', function (Blueprint $table) {
+                $table->dropIndex(['status']);
+                $table->dropIndex(['request_type']);
             });
         } catch (\Exception $e) {}
     }
