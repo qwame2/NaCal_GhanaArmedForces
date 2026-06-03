@@ -196,7 +196,7 @@
         flex-wrap: wrap;
         gap: 1rem;
     }
-    
+
     .audit-pagination-info {
         font-size: 0.82rem;
         color: var(--text-muted);
@@ -207,12 +207,12 @@
         color: var(--text-main);
         font-weight: 800;
     }
-    
+
     .audit-pagination-buttons {
         display: flex;
         gap: 8px;
     }
-    
+
     .audit-page-btn {
         padding: 0.55rem 1.1rem;
         background: var(--bg-card);
@@ -229,7 +229,7 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         cursor: pointer;
     }
-    
+
     .audit-page-btn:hover:not(.disabled) {
         background: var(--audit-primary);
         color: white;
@@ -237,7 +237,7 @@
         transform: translateY(-1.5px);
         box-shadow: 0 8px 16px rgba(99, 102, 241, 0.2);
     }
-    
+
     .audit-page-btn.disabled {
         background: var(--bg-main);
         color: var(--text-muted);
@@ -316,7 +316,7 @@
         </div>
         <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
             <input type="text" name="search_query" class="filter-control-audit" placeholder="Search logs, items, names..." value="{{ request('search_query') }}" style="flex: 1; min-width: 240px;">
-            
+
             <input type="date" name="date_from" class="filter-control-audit" title="From Date" value="{{ request('date_from') }}">
             <input type="date" name="date_to" class="filter-control-audit" title="To Date" value="{{ request('date_to') }}">
 
@@ -498,7 +498,7 @@
                             <th>Description</th>
                             <th>Category</th>
                             <th>Qty Received</th>
-                            <th>Current Balance</th>
+                            <th>Stock Bal.</th>
                             <th>Variance</th>
                             <th>Acquisition</th>
                             <th>Supplier / Donor</th>
@@ -770,7 +770,7 @@
             const btn = Array.from(document.querySelectorAll('.audit-tab-btn')).find(b => b.getAttribute('onclick').includes(savedTab));
             if (btn) btn.click();
         }
-        
+
         if (typeof lucide !== 'undefined') lucide.createIcons();
     });
 </script>

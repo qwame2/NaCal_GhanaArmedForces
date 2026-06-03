@@ -173,15 +173,15 @@
                                         id: '{{ $user->id }}',
                                         name: '{{ addslashes($user->name) }}',
                                         username: '{{ addslashes($user->username) }}',
-                                        email: '{{ $user->email ?? 'Not Provided' }}',
-                                        phone: '{{ $user->phone ?? 'Not Provided' }}',
-                                        department: '{{ $user->department ?? 'UNASSIGNED' }}',
-                                        role: '{{ $user->role }}',
-                                        rank: '{{ $user->rank ?? '' }}',
+                                        email: '{{ addslashes($user->email ?? 'Not Provided') }}',
+                                        phone: '{{ addslashes($user->phone ?? 'Not Provided') }}',
+                                        department: '{{ addslashes($user->department ?? 'UNASSIGNED') }}',
+                                        role: '{{ addslashes($user->role) }}',
+                                        rank: '{{ addslashes($user->rank ?? '') }}',
                                         last_login: '{{ $user->last_login_at ? $user->last_login_at->format('d/m/y H:i') : 'No record' }}',
                                         last_logout: '{{ $user->last_logout_at ? $user->last_logout_at->format('d/m/y H:i') : 'No record' }}',
                                         status: '{{ $user->is_active ? 'ACTIVE' : 'DEACTIVATED' }}',
-                                        avatar: '{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}'
+                                        avatar: '{{ $user->avatar ? asset('storage/' . $user->avatar) : '' }}'
                                     })"
                                     style="border: 1px solid #e0e7ff; color: #4f46e5; background: #f5f3ff;"
                                     onmouseover="this.style.background='#4f46e5'; this.style.color='white'"
@@ -1546,13 +1546,15 @@
     }
 
     function viewUserDetails(user) {
+        const defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>";
+        const avatarUrl = user.avatar ? user.avatar : defaultAvatar;
         Swal.fire({
             html: `
                 <div class="user-details-card">
                     <!-- Header Banner -->
                     <div class="profile-header-banner">
                         <div class="profile-avatar-wrapper">
-                            <img src="${user.avatar}" class="profile-avatar" alt="${user.name}">
+                            <img src="${avatarUrl}" class="profile-avatar" alt="${user.name}">
                             <span class="profile-status-ring ${user.status === 'ACTIVE' ? 'online' : 'offline'}"></span>
                         </div>
                         <div class="profile-title-group">

@@ -134,22 +134,22 @@
     </div>
 
     <!-- Data Registry View -->
-    <div class="glass-card registry-card" style="border-radius: 32px; padding: 3rem 4rem; border: 1px solid var(--border-color); min-height: 500px; margin-bottom: 3rem;">
+    <div class="glass-card registry-card" style="border-radius: 28px; padding: 2rem 2.5rem; border: 1px solid var(--border-color); min-height: 500px; margin-bottom: 3rem;">
         <div id="logTableContainer">
             @if($issuedItems->count() > 0)
             <div class="table-scroll-wrapper" style="width: 100%; overflow-x: auto; padding-bottom: 1.5rem;">
-                <table class="responsive-log-table" style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0 1.25rem; table-layout: auto;">
+                <table class="responsive-log-table" style="width: 100%; min-width: 1200px; border-collapse: collapse; table-layout: auto;">
                     <thead>
-                        <tr style="text-align: left; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 900; white-space: nowrap;">
-                            <th style="padding: 0 1.5rem 0.5rem;">Timeline</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Items</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Storage Location</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Destination</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Collector</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Head of Stores</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Store Officer</th>
-                            <th style="padding: 0 1.5rem 0.5rem;">Qty Disbursed</th>
-                            <th style="padding: 0 1.5rem 0.5rem; text-align: right;">Status</th>
+                        <tr style="background: rgba(0,0,0,0.02); text-align: left;">
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Timeline</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Items</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Storage Location</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Destination</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Collector</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Head of Stores</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Store Officer</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Qty Disbursed</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Status</th>
                         </tr>
                     </thead>
                     <tbody id="logTableBody">
@@ -169,29 +169,31 @@
                                 $statusBadge = '<span class="status-badge" style="background: ' . $statusBg . '; color: ' . $statusColor . '; font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em;">' . strtoupper($item->issuance_type) . '</span>';
                             }
                         @endphp
-                        <tr class="log-row" data-date="{{ $dateVal }}" data-category="{{ $item->ledge_category }}" data-type="{{ $item->issuance_type }}" data-search="{{ strtolower($item->description . ' ' . $item->beneficiary . ' ' . ($item->authority ?? 'Adomako Emmanuel') . ' ' . $item->location . ' ' . ($item->collector_name ?? '') . ' ' . ($item->confirming_officer_name ?? 'Adomako Emmanuel')) }}" style="background: var(--bg-card); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-radius: 20px;">
-                            <td data-label="Timeline" style="padding: 1.75rem 1.5rem; border-radius: 20px 0 0 20px;">
-                                <div style="font-weight: 800; color: var(--text-main); font-size: 0.95rem;">{{ $dateStr }}</div>
+                        <tr class="activity-row" data-date="{{ $dateVal }}" data-category="{{ $item->ledge_category }}" data-type="{{ $item->issuance_type }}" data-search="{{ strtolower($item->description . ' ' . $item->beneficiary . ' ' . ($item->authority ?? 'Adomako Emmanuel') . ' ' . $item->location . ' ' . ($item->collector_name ?? '') . ' ' . ($item->confirming_officer_name ?? 'Adomako Emmanuel')) }}" style="border-top: 1px solid var(--border-color);">
+                            <td data-label="Timeline" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main); font-size: 0.9rem;">
+                                <div>{{ $dateStr }}</div>
                                 <div style="font-weight: 700; color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-                                    <i data-lucide="clock" style="width: 12px;"></i> {{ $timeStr }}
+                                    <i data-lucide="clock" style="width: 12px; height: 12px;"></i> {{ $timeStr }}
                                 </div>
                             </td>
-                            <td data-label="Asset Breakdown" style="padding: 1.75rem 1.5rem;">
-                                <div style="font-weight: 950; color: var(--primary); font-size: 1.05rem; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-                                    <span>{{ $item->description }}</span>
+                            <td data-label="Items" style="padding: 1.25rem 1.5rem;">
+                                <div style="font-weight: 700; color: var(--text-main);">{{ $item->description }}</div>
+                                <div style="margin-top: 4px;">
+                                    <span style="font-size: 0.65rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600; text-transform: uppercase;">
+                                        Category {{ $item->ledge_category }}
+                                    </span>
                                 </div>
-                                <div style="margin-top: 4px;"><span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.6rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1); letter-spacing: 0.03em;">CATEGORY {{ $item->ledge_category }}</span></div>
                             </td>
-                            <td data-label="Storage Location" style="padding: 1.75rem 1.5rem; font-weight: 800; color: var(--text-main); font-size: 0.95rem;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <i data-lucide="map-pin" style="width: 16px; color: var(--text-muted); opacity: 0.6;"></i>
+                            <td data-label="Storage Location" style="padding: 1.25rem 1.5rem; font-weight: 600; color: var(--text-main); font-size: 0.9rem;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--text-muted);"></i>
                                     <span>{{ $item->location }}</span>
                                 </div>
                             </td>
-                            <td data-label="Destination" style="padding: 1.75rem 1.5rem; font-weight: 900; color: var(--text-main); font-size: 1.05rem; white-space: nowrap;">{{ $item->beneficiary }}</td>
-                            <td data-label="Collector" style="padding: 1.75rem 1.5rem;">
+                            <td data-label="Destination" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main); font-size: 0.9rem; white-space: nowrap;">{{ $item->beneficiary }}</td>
+                            <td data-label="Collector" style="padding: 1.25rem 1.5rem;">
                                 @if(!empty($item->collector_name))
-                                <div style="font-size: 0.95rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                                <div style="font-size: 0.9rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 6px; white-space: nowrap;">
                                     <i data-lucide="user" style="width: 14px; height: 14px;"></i>
                                     {{ $item->collector_name }}
                                 </div>
@@ -199,15 +201,18 @@
                                 <span style="color: var(--text-muted); font-size: 0.9rem;">-</span>
                                 @endif
                             </td>
-                            <td data-label="Head of Stores" style="padding: 1.75rem 1.5rem; font-weight: 800; color: var(--text-main); font-size: 0.95rem; white-space: nowrap;">{{ $item->authority ?: 'Adomako Emmanuel' }}</td>
-                            <td data-label="Store Officer" style="padding: 1.75rem 1.5rem; font-weight: 800; color: var(--text-main); font-size: 0.95rem; white-space: nowrap;">
+                            <td data-label="Head of Stores" style="padding: 1.25rem 1.5rem; font-weight: 600; color: var(--text-main); font-size: 0.9rem; white-space: nowrap;">{{ $item->authority ?: 'Adomako Emmanuel' }}</td>
+                            <td data-label="Store Officer" style="padding: 1.25rem 1.5rem; font-weight: 600; color: var(--text-main); font-size: 0.9rem; white-space: nowrap;">
                                 <div style="display: flex; align-items: center; gap: 6px;">
                                     <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #10b981;"></i>
                                     {{ $item->confirming_officer_name ?: 'Adomako Emmanuel' }}
                                 </div>
                             </td>
-                            <td data-label="Qty Disbursed" style="padding: 1.75rem 1.5rem; font-weight: 900; font-size: 1.35rem; color: var(--text-main); white-space: nowrap;">{{ number_format($item->quantity) }} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">{{ $item->unit ?: 'Package Types' }}</span></td>
-                            <td data-label="Allocation Status" style="padding: 1.75rem 1.5rem; border-radius: 0 20px 20px 0; text-align: right;">
+                            <td data-label="Qty Disbursed" style="padding: 1.25rem 1.5rem; font-weight: 800; font-size: 1.1rem; color: var(--text-main); white-space: nowrap;">
+                                {{ number_format($item->quantity) }}
+                                <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">{{ $item->unit ?: 'Package Types' }}</span>
+                            </td>
+                            <td data-label="Status" style="padding: 1.25rem 1.5rem; text-align: right;">
                                 {!! $statusBadge !!}
                             </td>
                         </tr>
@@ -287,10 +292,28 @@
         transform: translateY(-5px);
         box-shadow: 0 15px 30px rgba(0,0,0,0.05);
     }
-    .log-row:hover {
-        transform: scale(1.008) translateY(-3px);
-        box-shadow: 0 12px 25px rgba(0,0,0,0.05) !important;
-        border-color: var(--primary-light) !important;
+    .table-scroll-wrapper::-webkit-scrollbar {
+        height: 6px;
+    }
+    .table-scroll-wrapper::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .table-scroll-wrapper::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 10px;
+    }
+    .table-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-light);
+    }
+    
+    /* Standard Grid Table styling */
+    .activity-row {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    .activity-row:hover {
+        background: rgba(99, 102, 241, 0.04) !important;
+        box-shadow: inset 4px 0 0 var(--primary);
     }
     .status-badge {
         display: inline-block;
