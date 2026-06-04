@@ -1206,13 +1206,20 @@
 
         {{-- Category Management --}}
         <div class="cfg-card" id="category-configs">
-            <div class="cfg-card-header">
-                <div class="cfg-icon-box" style="background: linear-gradient(135deg,#10b981,#059669);">
-                    <i data-lucide="tags"></i>
+            <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div class="cfg-icon-box" style="background: linear-gradient(135deg,#10b981,#059669);">
+                        <i data-lucide="tags"></i>
+                    </div>
+                    <div>
+                        <h3>Item Categories</h3>
+                        <p>Manage category codes for the inventory system.</p>
+                    </div>
                 </div>
-                <div>
-                    <h3>Item Categories</h3>
-                    <p>Manage category codes for the inventory system.</p>
+
+                <div class="cfg-search-wrap" style="margin: 0 3.5rem 0 0; width: 260px; position: relative;">
+                    <i data-lucide="search" style="width: 14px; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                    <input type="text" id="categorySearch" placeholder="Search categories..." oninput="filterCategories()" style="width: 100%; padding: 0.5rem 1rem 0.5rem 2.2rem; font-size: 0.8rem; height: 38px; border: 2px solid #edf2f7; border-radius: 10px; outline: none; transition: 0.2s; background: white;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#edf2f7'">
                 </div>
             </div>
             <div class="cfg-card-body">
@@ -1243,6 +1250,11 @@
                             @empty
                             <div style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; padding: 1rem 0;">No categories registered yet.</div>
                             @endforelse
+                        </div>
+                        
+                        <div id="noCategoriesFound" style="display: none; padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0; margin-top: 1rem;">
+                            <i data-lucide="search" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
+                            <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No matching categories found.</p>
                         </div>
                     </div>
 
@@ -1868,6 +1880,33 @@
             group.style.display = hasVisible ? '' : 'none';
         });
     }
+
+    function filterCategories() {
+        const input = document.getElementById('categorySearch');
+        const term = input ? input.value.toLowerCase().trim() : '';
+        const badges = document.querySelectorAll('#category-configs .cat-badge');
+        let visibleCount = 0;
+        
+        badges.forEach(badge => {
+            const codeEl = badge.querySelector('.cat-code-pill');
+            const nameEl = badge.querySelector('.cat-name');
+            const code = codeEl ? codeEl.textContent.toLowerCase() : '';
+            const name = nameEl ? nameEl.textContent.toLowerCase() : '';
+            
+            if (code.includes(term) || name.includes(term)) {
+                badge.style.display = '';
+                visibleCount++;
+            } else {
+                badge.style.display = 'none';
+            }
+        });
+
+        const noResults = document.getElementById('noCategoriesFound');
+        if (noResults) {
+            noResults.style.display = (visibleCount === 0 && term !== '') ? '' : 'none';
+        }
+    }
+
 
     const rawSuppliers = @json($suppliersRegistry ?? []);
     let suppliersList = [];
