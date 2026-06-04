@@ -1,1 +1,2 @@
-<?php header('Location: /'); exit;
+<?php
+// Removed after testing.

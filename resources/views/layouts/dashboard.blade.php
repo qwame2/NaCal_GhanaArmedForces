@@ -240,7 +240,7 @@
             </li>
 
             <li class="nav-item">
-                <a href="{{ route('notifications.index') }}" class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
+                <a href="{{ route('notifications.index') }}" class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}" title="Notifications">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                     <span>Notifications</span>
                 </a>
@@ -248,7 +248,7 @@
         </ul>
 
         <div class="sidebar-footer" style="margin-top: auto;">
-            <div class="user-profile-card">
+            <div class="user-profile-card" title="{{ auth()->user()->name }}">
                 @if(auth()->user()->avatar)
                 <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 44px; height: 44px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid white;">
                 @else
@@ -835,10 +835,11 @@
         document.addEventListener('mouseover', (e) => {
             const target = e.target.closest('[data-tooltip]');
             if (target) {
-                // Prevent duplicate tooltips: skip JS tooltip if target is inside a collapsed sidebar
                 const sidebar = target.closest('.sidebar');
-                if (sidebar && sidebar.classList.contains('collapsed')) {
-                    return;
+                if (sidebar) {
+                    if (!sidebar.classList.contains('collapsed')) {
+                        return; // Don't show tooltips when sidebar is expanded
+                    }
                 }
 
                 const text = target.getAttribute('data-tooltip');
@@ -851,19 +852,30 @@
                 const rect = target.getBoundingClientRect();
                 const tooltipRect = tooltipEl.getBoundingClientRect();
 
-                let top = rect.top - tooltipRect.height - 12;
-                let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                let top, left;
 
-                // Boundary checks
-                tooltipEl.classList.remove('place-bottom');
-                if (top < 10) {
-                    top = rect.bottom + 12;
-                    tooltipEl.classList.add('place-bottom');
-                }
+                tooltipEl.classList.remove('place-bottom', 'place-right');
 
-                if (left < 10) left = 10;
-                if (left + tooltipRect.width > window.innerWidth - 10) {
-                    left = window.innerWidth - tooltipRect.width - 10;
+                if (sidebar && sidebar.classList.contains('collapsed')) {
+                    // Sidebar is collapsed: position tooltip on the right side of the icon
+                    top = rect.top + (rect.height / 2) - (tooltipRect.height / 2);
+                    left = rect.right + 12;
+                    tooltipEl.classList.add('place-right');
+                } else {
+                    // Default position (above)
+                    top = rect.top - tooltipRect.height - 12;
+                    left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+
+                    // Boundary checks
+                    if (top < 10) {
+                        top = rect.bottom + 12;
+                        tooltipEl.classList.add('place-bottom');
+                    }
+
+                    if (left < 10) left = 10;
+                    if (left + tooltipRect.width > window.innerWidth - 10) {
+                        left = window.innerWidth - tooltipRect.width - 10;
+                    }
                 }
 
                 tooltipEl.style.top = top + 'px';
@@ -925,6 +937,25 @@
             bottom: 100%;
             border-top-color: transparent;
             border-bottom-color: #0f172a;
+        }
+
+        .global-premium-tooltip.place-right {
+            transform: translate(-6px, 0);
+        }
+
+        .global-premium-tooltip.place-right.visible {
+            transform: translate(0, 0) !important;
+        }
+
+        .global-premium-tooltip.place-right::after {
+            top: 50%;
+            left: auto;
+            bottom: auto;
+            right: 100%;
+            transform: translateY(-50%);
+            border-top-color: transparent;
+            border-bottom-color: transparent;
+            border-right-color: #0f172a;
         }
 
         .global-premium-tooltip.visible {

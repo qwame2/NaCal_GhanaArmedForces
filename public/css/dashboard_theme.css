@@ -258,7 +258,7 @@ body {
 .sidebar.collapsed .logo-container > div:last-child,
 .sidebar.collapsed .sidebar-branding-subtitle,
 .sidebar.collapsed .nav-section-title,
-.sidebar.collapsed .nav-link span,
+.sidebar.collapsed .nav-link span:not([id^="sidebar-badge-"]),
 .sidebar.collapsed .user-profile-card > div:not(:first-child),
 .sidebar.collapsed .user-profile-card form,
 .sidebar.collapsed .user-profile-card button {
@@ -269,6 +269,7 @@ body {
     justify-content: center;
     padding: 1rem 0;
     border-radius: 1rem;
+    position: relative !important;
 }
 
 .sidebar.collapsed .logo-container {
@@ -279,6 +280,25 @@ body {
 .sidebar.collapsed .user-profile-card {
     padding: 0.75rem;
     justify-content: center;
+}
+
+.sidebar.collapsed .nav-link span[id^="sidebar-badge-"] {
+    display: inline-block;
+    position: absolute !important;
+    top: 4px !important;
+    right: 4px !important;
+    margin-left: 0 !important;
+    min-width: 18px !important;
+    height: 18px !important;
+    padding: 0 4px !important;
+    border-radius: 50% !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.6rem !important;
+    font-weight: 800 !important;
+    border: 2px solid var(--bg-sidebar) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    z-index: 10 !important;
 }
 
 @media (max-width: 992px) {

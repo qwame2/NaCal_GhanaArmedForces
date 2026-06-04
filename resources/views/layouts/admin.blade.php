@@ -577,7 +577,7 @@
             }
             .sidebar.minimized .brand-text,
             .sidebar.minimized .nav-label,
-            .sidebar.minimized .nav-link span,
+            .sidebar.minimized .nav-link span:not([id^="sidebar-badge-"]),
             .sidebar.minimized .sidebar-footer .user-meta,
             .sidebar.minimized .sidebar-footer form {
                 display: none !important;
@@ -596,6 +596,7 @@
                 padding: 0.85rem !important;
                 justify-content: center !important;
                 gap: 0 !important;
+                position: relative !important;
             }
             .sidebar.minimized .sidebar-footer {
                 padding: 1.5rem 0.5rem !important;
@@ -619,7 +620,21 @@
                 height: 36px !important;
             }
             .sidebar.minimized .nav-link span[id^="sidebar-badge-"] {
-                display: none !important;
+                display: inline-block;
+                position: absolute !important;
+                top: 4px !important;
+                right: 4px !important;
+                margin-left: 0 !important;
+                background: #ef4444 !important;
+                color: white !important;
+                padding: 2px 5px !important;
+                font-size: 0.6rem !important;
+                font-weight: 900 !important;
+                line-height: 1 !important;
+                border-radius: 99px !important;
+                border: 2px solid var(--sidebar-bg) !important;
+                box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+                z-index: 10 !important;
             }
             .main-wrapper.sidebar-minimized {
                 margin-left: 80px !important;
