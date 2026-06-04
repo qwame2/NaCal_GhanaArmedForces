@@ -407,6 +407,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
             // Individual items below threshold for the alerts container (Grouped by Description)
             $allItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
                 ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as stock_balance, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as qty')
                 ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
                 ->get();
@@ -689,6 +690,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
         $lowStockAlerts = \Illuminate\Support\Facades\Cache::remember('global_low_stock_alerts', 600, function() {
             $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
                 ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                 ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
                 ->get();
@@ -711,9 +713,11 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         });
 
         $expiredAlerts = \Illuminate\Support\Facades\Cache::remember('global_expired_alerts', 600, function() {
-            return \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) as total_qty')
-                ->groupBy('description')
-                ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
+            return \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as total_qty')
+                ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
+                ->havingRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) >= 1')
                 ->get()
                 ->map(fn($item) => ['description' => trim($item->description)])
                 ->toArray();
@@ -819,8 +823,10 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         if (!auth()->check()) return response()->json(['success' => false], 401);
 
 
-        $items = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
-            ->groupBy('description')
+        $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+            ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
             ->get();
 
         $lowStockItems = [];
@@ -832,9 +838,11 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             }
         }
 
-        $expiredItems = \App\Models\InventoryItem::selectRaw('description')
-            ->groupBy('description')
-            ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
+        $expiredItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->selectRaw('TRIM(inventory_items.description) as description')
+            ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
+            ->havingRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) >= 1')
             ->pluck('description')
             ->toArray();
 

@@ -1,116 +1,35 @@
--06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
+[2026-06-04 15:20:03] local.ERROR: fread(): Argument #2 ($length) must be greater than 0 {"exception":"[object] (ValueError(code: 0): fread(): Argument #2 ($length) must be greater than 0 at C:/xampp/htdocs/NaCal/routes/web.php:12)
 [stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
-"} 
-[2026-06-04 12:44:49] local.ERROR: Maximum execution time of 60 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 60 seconds exceeded at C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Console/View/Components/Factory.php:56)
-[stacktrace]
-#0 {main}
+#0 C:/xampp/htdocs/NaCal/routes/web.php(12): fread(Resource id #482, 0)
+#1 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Routing/RouteFileRegistrar.php(34): require('C://xampp//htdocs...')
+#2 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Routing/Router.php(526): Illuminate/Routing/RouteFileRegistrar->register('C://xampp//htdocs...')
+#3 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Routing/Router.php(480): Illuminate/Routing/Router->loadRoutes('C://xampp//htdocs...')
+#4 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Routing/RouteRegistrar.php(212): Illuminate/Routing/Router->group(Array, 'C://xampp//htdocs...')
+#5 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Configuration/ApplicationBuilder.php(248): Illuminate/Routing/RouteRegistrar->group('C://xampp//htdocs...')
+#6 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Foundation/Configuration/ApplicationBuilder->Illuminate/Foundation/Configuration/{closure}()
+#7 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#8 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(84): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#9 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Object(Closure), Object(Closure))
+#10 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Object(Closure), Array, NULL)
+#11 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Support/Providers/RouteServiceProvider.php(162): Illuminate/Container/Container->call(Object(Closure))
+#12 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Support/Providers/RouteServiceProvider.php(59): Illuminate/Foundation/Support/Providers/RouteServiceProvider->loadRoutes()
+#13 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Foundation/Support/Providers/RouteServiceProvider->Illuminate/Foundation/Support/Providers/{closure}()
+#14 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#15 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(84): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#16 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Object(Closure), Object(Closure))
+#17 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Object(Closure), Array, NULL)
+#18 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Support/ServiceProvider.php(150): Illuminate/Container/Container->call(Object(Closure))
+#19 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1154): Illuminate/Support/ServiceProvider->callBootedCallbacks()
+#20 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1132): Illuminate/Foundation/Application->bootProvider(Object(Illuminate/Foundation/Support/Providers/RouteServiceProvider))
+#21 [internal function]: Illuminate/Foundation/Application->Illuminate/Foundation/{closure}(Object(Illuminate/Foundation/Support/Providers/RouteServiceProvider), 'Illuminate//Foun...')
+#22 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1131): array_walk(Array, Object(Closure))
+#23 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/BootProviders.php(17): Illuminate/Foundation/Application->boot()
+#24 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(342): Illuminate/Foundation/Bootstrap/BootProviders->bootstrap(Object(Illuminate/Foundation/Application))
+#25 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(186): Illuminate/Foundation/Application->bootstrapWith(Array)
+#26 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(170): Illuminate/Foundation/Http/Kernel->bootstrap()
+#27 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate/Foundation/Http/Kernel->sendRequestThroughRouter(Object(Illuminate/Http/Request))
+#28 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1220): Illuminate/Foundation/Http/Kernel->handle(Object(Illuminate/Http/Request))
+#29 C:/xampp/htdocs/NaCal/public/index.php(21): Illuminate/Foundation/Application->handleRequest(Object(Illuminate/Http/Request))
+#30 C:/xampp/htdocs/NaCal/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(23): require_once('C://xampp//htdocs...')
+#31 {main}
 "} 

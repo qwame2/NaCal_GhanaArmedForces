@@ -37,6 +37,14 @@
     }
 </style>
 <div class="animate-slide-up">
+    @if(request()->get('from') === 'low-stock')
+    <div style="margin-bottom: 1.5rem;">
+        <a href="{{ route('inventory.low-stock') }}" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--text-muted); font-weight: 700; transition: color 0.3s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'">
+            <i data-lucide="arrow-left" style="width: 18px;"></i>
+            Back to Low Stock Monitor
+        </a>
+    </div>
+    @endif
     <div class="page-header" style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
             <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-heading); margin: 0;">Inventory <span style="color: var(--primary);">Overview</span></h2>
