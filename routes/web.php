@@ -2,21 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-try {
-    $logPath = storage_path('logs/laravel.log');
-    if (file_exists($logPath)) {
-        $size = filesize($logPath);
-        $readBytes = min($size, 10000);
-        $fp = fopen($logPath, 'r');
-        fseek($fp, $size - $readBytes);
-        $content = fread($fp, $readBytes);
-        fclose($fp);
-        file_put_contents(base_path('scratch/recent_log.txt'), $content);
-    }
-} catch (\Exception $e) {
-    file_put_contents(base_path('scratch/recent_log.txt'), "Log read error: " . $e->getMessage());
-}
-
 use App\Http\Controllers\ReceivedItemsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\IssueItemsController;
