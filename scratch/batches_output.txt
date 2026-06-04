@@ -1,1 +1,3 @@
 Recent Batches:
+ID: 2 | Acq: Supplier | Supplier: MTN | Donor:  | DelPerson: kofi | DelPhone: 0234565456 | Approved: approved
+ID: 1 | Acq: Supplier | Supplier: System | Donor:  | DelPerson:  | DelPhone:  | Approved: approved

@@ -19,8 +19,48 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-
         try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('issuances')) {
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('issuances', 'requisition_id')) {
+                    \Illuminate\Support\Facades\Schema::table('issuances', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->unsignedBigInteger('requisition_id')->nullable();
+                    });
+                }
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('issued_items')) {
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('issued_items', 'unit')) {
+                    \Illuminate\Support\Facades\Schema::table('issued_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->string('unit')->nullable();
+                    });
+                }
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('store_requisitions')) {
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collector_location')) {
+                    \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->string('collector_location')->nullable();
+                    });
+                }
+            }
+
+            if (!\Illuminate\Support\Facades\Schema::hasTable('returned_items')) {
+                \Illuminate\Support\Facades\Schema::create('returned_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->id();
+                    $table->foreignId('issued_item_id')->constrained('issued_items')->onDelete('cascade');
+                    $table->integer('returned_qty');
+                    $table->date('return_date');
+                    $table->text('remarks')->nullable();
+                    $table->timestamps();
+                });
+            } else {
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('returned_items', 'remarks')) {
+                    \Illuminate\Support\Facades\Schema::table('returned_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->text('remarks')->nullable();
+                    });
+                }
+            }
+
             if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
                 if (!\App\Models\Setting::where('key', 'stores_dept_head_approval_categories')->exists()) {
                     \App\Models\Setting::create([
