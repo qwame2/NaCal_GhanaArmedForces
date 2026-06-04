@@ -148,6 +148,9 @@ Route::get('/clear', function() {
 
 
 
+
+
+
 // Archive Routes
 Route::middleware(['auth', 'check_status'])->prefix('admin/archive')->group(function () {
     Route::get('/', [ArchiveController::class, 'index'])->name('admin.archive');
@@ -1017,6 +1020,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/admin/settings', [AdminController::class, 'settings'])->name('admin.settings');
     Route::post('/admin/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
     Route::post('/admin/settings/category', [AdminController::class, 'addCategory'])->name('admin.settings.category');
+    Route::post('/admin/settings/category/{code}/update', [AdminController::class, 'updateCategory'])->name('admin.settings.category.update');
     Route::delete('/admin/settings/category/{code}', [AdminController::class, 'deleteCategory'])->name('admin.settings.category.destroy');
 
     // Item Unit Rules

@@ -42,7 +42,54 @@
         background: #94a3b8;
     }
 
-
+    /* Supplier Pagination Premium Styling */
+    .supplier-pag-btn {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1.5px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+    
+    .supplier-pag-btn:hover:not(:disabled) {
+        background: #f1f5f9;
+        color: #0f172a;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+    }
+    
+    .supplier-pag-btn.active {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+    }
+    
+    .supplier-pag-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f8fafc;
+    }
+    
+    .supplier-pag-ellipsis {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
 
     /* ── Main Content ── */
     .cfg-main {
@@ -506,9 +553,32 @@
         transform: scale(1.1);
     }
 
-    .cat-del-btn i {
-        width: 16px;
-        height: 16px;
+    .cat-del-btn i,
+    .cat-del-btn svg {
+        width: 15px !important;
+        height: 15px !important;
+    }
+
+    .cat-edit-btn {
+        background: none;
+        border: none;
+        color: #cbd5e1;
+        cursor: pointer;
+        transition: 0.2s;
+        padding: 2px;
+        display: flex;
+        align-items: center;
+    }
+
+    .cat-edit-btn:hover {
+        color: var(--primary);
+        transform: scale(1.1);
+    }
+
+    .cat-edit-btn i,
+    .cat-edit-btn svg {
+        width: 15px !important;
+        height: 15px !important;
     }
 
     /* ── New Category Form ── */
@@ -1158,12 +1228,17 @@
                             <div class="cat-badge">
                                 <div class="cat-code-pill">{{ $code }}</div>
                                 <span class="cat-name" title="{{ $name }}">{{ $name }}</span>
-                                <form action="{{ route('admin.settings.category.destroy', $code) }}" method="POST" onsubmit="return confirm('Remove category {{ $code }}?');" style="margin: 0;">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="cat-del-btn">
-                                        <i data-lucide="x"></i>
+                                <div style="display: flex; gap: 4px; align-items: center;">
+                                    <button type="button" onclick="populateCategoryForm('{{ $code }}', '{{ addslashes($name) }}')" class="cat-edit-btn" title="Edit Category">
+                                        <i data-lucide="edit-3"></i>
                                     </button>
-                                </form>
+                                    <form action="{{ route('admin.settings.category.destroy', $code) }}" method="POST" onsubmit="return confirm('Remove category {{ $code }}?');" style="margin: 0; display: inline;">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="cat-del-btn">
+                                            <i data-lucide="x"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                             @empty
                             <div style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; padding: 1rem 0;">No categories registered yet.</div>
@@ -1173,22 +1248,27 @@
 
                     {{-- Add New Category --}}
                     <div class="cat-form-card">
-                        <h5>Add New Category</h5>
-                        <p>Register a new ledger code for inventory tracking.</p>
-                        <form action="{{ route('admin.settings.category') }}" method="POST">
+                        <h5 id="categoryFormTitle">Add New Category</h5>
+                        <p id="categoryFormSub">Register a new ledger code for inventory tracking.</p>
+                        <form id="categoryForm" action="{{ route('admin.settings.category') }}" method="POST">
                             @csrf
                             <div style="display: flex; flex-direction: column; gap: 1rem;">
                                 <div>
                                     <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Code</label>
-                                    <input type="text" name="category_code" class="cfg-text-input" placeholder="e.g. M" required maxlength="3" style="text-transform: uppercase; font-size: 1.1rem; font-weight: 900; text-align: center;">
+                                    <input type="text" id="categoryCodeInput" name="category_code" class="cfg-text-input" placeholder="e.g. M" required maxlength="3" style="text-transform: uppercase; font-size: 1.1rem; font-weight: 900; text-align: center;">
                                 </div>
                                 <div>
                                     <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Category Name</label>
-                                    <input type="text" name="category_name" class="cfg-text-input" placeholder="e.g. Medical Assets" required>
+                                    <input type="text" id="categoryNameInput" name="category_name" class="cfg-text-input" placeholder="e.g. Medical Assets" required>
                                 </div>
-                                <button type="submit" class="btn-cfg-add">
-                                    <i data-lucide="plus-circle"></i> Register Category
-                                </button>
+                                <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                                    <button type="submit" id="categorySubmitBtn" class="btn-cfg-add" style="margin-top: 0; flex: 1;">
+                                        <i data-lucide="plus-circle" id="categorySubmitIcon"></i> <span id="categorySubmitText">Register Category</span>
+                                    </button>
+                                    <button type="button" id="categoryResetBtn" onclick="resetCategoryForm()" style="display: none; padding: 0.75rem 1.5rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                                        Cancel
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -1668,78 +1748,40 @@
                     <p style="margin: 0;">Register pre-defined suppliers and their contact details for users to easily select.</p>
                 </div>
             </div>
+
+            <div class="cfg-search-wrap" style="margin: 0 3.5rem 0 0; width: 260px; position: relative;">
+                <i data-lucide="search" style="width: 14px; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                <input type="text" id="supplierSearch" placeholder="Search suppliers..." oninput="filterSuppliers()" style="width: 100%; padding: 0.5rem 1rem 0.5rem 2.2rem; font-size: 0.8rem; height: 38px; border: 2px solid #edf2f7; border-radius: 10px; outline: none; transition: 0.2s; background: white;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#edf2f7'">
+            </div>
         </div>
         <div class="cfg-card-body">
             <div style="display: grid; grid-template-columns: 1fr 360px; gap: 2rem; align-items: start;">
 
                 {{-- Existing Suppliers List --}}
                 <div>
-                    <p style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 1rem; display: flex; align-items: center; gap: 6px;">
-                        <i data-lucide="list" style="width: 14px;"></i> Registered Suppliers
-                    </p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <p style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin: 0; display: flex; align-items: center; gap: 6px;">
+                            <i data-lucide="list" style="width: 14px;"></i> Registered Suppliers
+                        </p>
+                        <span id="supplierPaginationInfo" style="font-size: 0.75rem; font-weight: 700; color: #64748b;"></span>
+                    </div>
                     @php
                     $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
                     @endphp
-                    @if(empty($suppliersRegistry))
-                    <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;" id="suppliersRegistryContainer"></div>
+                    
+                    <div id="noSuppliersRegistered" style="display: none; padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
                         <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
                         <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No suppliers registered yet. Register suppliers on the right.</p>
                     </div>
-                    @else
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;" id="suppliersRegistryContainer">
-                        @foreach($suppliersRegistry as $name => $details)
-                        <div class="supplier-card" data-name="{{ strtolower($name) }}" style="padding: 1.25rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 0.75rem; position: relative;">
-                            <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
-                                <div style="font-weight: 900; font-size: 0.95rem; color: #0f172a; line-height: 1.2;">{{ $name }}</div>
-                                <form action="{{ route('admin.settings.supplier.destroy') }}" method="POST" onsubmit="return confirm('Remove {{ $name }} from the registry?');" style="margin: 0;">
-                                    @csrf @method('DELETE')
-                                    <input type="hidden" name="name" value="{{ $name }}">
-                                    <button type="submit" style="width: 28px; height: 28px; border-radius: 8px; background: #fff1f2; border: none; color: #f43f5e; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'">
-                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
-                                    </button>
-                                </form>
-                            </div>
-                            <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; font-weight: 600; color: #475569;">
-                                @if(!empty($details['delivery_person']))
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <i data-lucide="user" style="width: 12px; color: #94a3b8;"></i> <strong>Delivery Person:</strong> {{ $details['delivery_person'] }}
-                                </div>
-                                @endif
-                                @if(!empty($details['delivery_phone']))
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <i data-lucide="phone" style="width: 12px; color: #94a3b8;"></i> <strong>Delivery Phone:</strong> {{ $details['delivery_phone'] }}
-                                </div>
-                                @endif
-                                @if(!empty($details['phone']))
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <i data-lucide="phone" style="width: 12px; color: #94a3b8;"></i> <strong>Company Phone:</strong> {{ $details['phone'] }}
-                                </div>
-                                @endif
-                                @if(!empty($details['email']))
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <i data-lucide="mail" style="width: 12px; color: #94a3b8;"></i> <strong>Email:</strong> {{ $details['email'] }}
-                                </div>
-                                @endif
-                                @if(!empty($details['address']))
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <i data-lucide="map-pin" style="width: 12px; color: #94a3b8;"></i> <strong>Address:</strong> {{ $details['address'] }}
-                                </div>
-                                @endif
-                            </div>
-                            @if(!empty($details['desc']))
-                            <div style="font-size: 0.72rem; font-weight: 500; color: #64748b; background: #f8fafc; padding: 6px 10px; border-radius: 8px; line-height: 1.4;">
-                                {{ $details['desc'] }}
-                            </div>
-                            @endif
 
-                            {{-- Edit Button --}}
-                            <button type="button" onclick="populateSupplierForm('{{ addslashes($name) }}', '{{ addslashes($details['delivery_person'] ?? '') }}', '{{ addslashes($details['phone'] ?? '') }}', '{{ addslashes($details['email'] ?? '') }}', '{{ addslashes($details['address'] ?? '') }}', '{{ addslashes($details['desc'] ?? '') }}')" style="position: absolute; right: 45px; top: 1.25rem; width: 28px; height: 28px; border-radius: 8px; background: #f1f5f9; border: none; color: #64748b; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
-                                <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
-                            </button>
-                        </div>
-                        @endforeach
+                    <div id="noSuppliersFound" style="display: none; padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0; margin-top: 1rem;">
+                        <i data-lucide="search" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
+                        <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No matching suppliers found.</p>
                     </div>
-                    @endif
+
+                    <div id="suppliersPagination" style="margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;"></div>
                 </div>
 
                 {{-- Add/Edit Form --}}
@@ -1826,6 +1868,264 @@
             group.style.display = hasVisible ? '' : 'none';
         });
     }
+
+    const rawSuppliers = @json($suppliersRegistry ?? []);
+    let suppliersList = [];
+    for (const [name, details] of Object.entries(rawSuppliers)) {
+        suppliersList.push({
+            name: name,
+            delivery_person: details.delivery_person || '',
+            delivery_phone: details.delivery_phone || '',
+            phone: details.phone || '',
+            email: details.email || '',
+            address: details.address || '',
+            desc: details.desc || ''
+        });
+    }
+
+    let filteredSuppliers = [...suppliersList];
+    let currentSupplierPage = 1;
+    const suppliersPerPage = 12;
+
+    const csrfToken = "{{ csrf_token() }}";
+    const deleteRoute = "{{ route('admin.settings.supplier.destroy') }}";
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function populateSupplierFormByIndex(idx) {
+        const s = filteredSuppliers[idx];
+        if (s) {
+            populateSupplierForm(s.name, s.delivery_person, s.phone, s.email, s.address, s.desc);
+        }
+    }
+
+    function renderSupplierCard(supplier, index) {
+        let detailsHtml = '';
+        if (supplier.delivery_person) {
+            detailsHtml += `
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="user" style="width: 12px; color: #94a3b8;"></i> <strong>Delivery Person:</strong> ${escapeHtml(supplier.delivery_person)}
+            </div>`;
+        }
+        if (supplier.delivery_phone) {
+            detailsHtml += `
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="phone" style="width: 12px; color: #94a3b8;"></i> <strong>Delivery Phone:</strong> ${escapeHtml(supplier.delivery_phone)}
+            </div>`;
+        }
+        if (supplier.phone) {
+            detailsHtml += `
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="phone" style="width: 12px; color: #94a3b8;"></i> <strong>Company Phone:</strong> ${escapeHtml(supplier.phone)}
+            </div>`;
+        }
+        if (supplier.email) {
+            detailsHtml += `
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="mail" style="width: 12px; color: #94a3b8;"></i> <strong>Email:</strong> ${escapeHtml(supplier.email)}
+            </div>`;
+        }
+        if (supplier.address) {
+            detailsHtml += `
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="map-pin" style="width: 12px; color: #94a3b8;"></i> <strong>Address:</strong> ${escapeHtml(supplier.address)}
+            </div>`;
+        }
+
+        let descHtml = '';
+        if (supplier.desc) {
+            descHtml = `
+            <div style="font-size: 0.72rem; font-weight: 500; color: #64748b; background: #f8fafc; padding: 6px 10px; border-radius: 8px; line-height: 1.4;">
+                ${escapeHtml(supplier.desc)}
+            </div>`;
+        }
+
+        return `
+        <div class="supplier-card" data-name="${escapeHtml(supplier.name.toLowerCase())}" style="padding: 1.25rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 0.75rem; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+                <div style="font-weight: 900; font-size: 0.95rem; color: #0f172a; line-height: 1.2;">${escapeHtml(supplier.name)}</div>
+                <form action="${deleteRoute}" method="POST" onsubmit="return confirm('Remove ${escapeHtml(supplier.name)} from the registry?');" style="margin: 0;">
+                    <input type="hidden" name="_token" value="${csrfToken}">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <input type="hidden" name="name" value="${escapeHtml(supplier.name)}">
+                    <button type="submit" style="width: 28px; height: 28px; border-radius: 8px; background: #fff1f2; border: none; color: #f43f5e; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'">
+                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                    </button>
+                </form>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; font-weight: 600; color: #475569;">
+                ${detailsHtml}
+            </div>
+            ${descHtml}
+            
+            <button type="button" onclick="populateSupplierFormByIndex(${index})" style="position: absolute; right: 45px; top: 1.25rem; width: 28px; height: 28px; border-radius: 8px; background: #f1f5f9; border: none; color: #64748b; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+            </button>
+        </div>
+        `;
+    }
+
+    function renderSupplierPagination(totalPages, currentPage) {
+        const pagDiv = document.getElementById('suppliersPagination');
+        if (!pagDiv) return;
+        pagDiv.innerHTML = '';
+        
+        if (totalPages <= 1) return;
+
+        // Previous Button
+        const prevBtn = document.createElement('button');
+        prevBtn.type = 'button';
+        prevBtn.innerHTML = '<i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.className = 'supplier-pag-btn prev';
+        prevBtn.onclick = () => goToSupplierPage(currentPage - 1);
+        pagDiv.appendChild(prevBtn);
+
+        const range = 2; // Number of pages to show on either side of current page
+        let pages = [];
+
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - range && i <= currentPage + range)) {
+                pages.push(i);
+            } else if (i === currentPage - range - 1 || i === currentPage + range + 1) {
+                pages.push('...');
+            }
+        }
+
+        // Remove consecutive ellipses
+        pages = pages.filter((item, pos, self) => {
+            return pos === 0 || !(item === '...' && self[pos - 1] === '...');
+        });
+
+        pages.forEach(p => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            if (p === '...') {
+                btn.textContent = '...';
+                btn.disabled = true;
+                btn.className = 'supplier-pag-ellipsis';
+            } else {
+                btn.textContent = p;
+                if (p === currentPage) {
+                    btn.className = 'supplier-pag-btn active';
+                } else {
+                    btn.className = 'supplier-pag-btn';
+                    btn.onclick = () => goToSupplierPage(p);
+                }
+            }
+            pagDiv.appendChild(btn);
+        });
+
+        // Next Button
+        const nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.innerHTML = '<i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.className = 'supplier-pag-btn next';
+        nextBtn.onclick = () => goToSupplierPage(currentPage + 1);
+        pagDiv.appendChild(nextBtn);
+        
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function displaySuppliersPage(page) {
+        currentSupplierPage = page;
+        const container = document.getElementById('suppliersRegistryContainer');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        const startIndex = (page - 1) * suppliersPerPage;
+        const endIndex = Math.min(startIndex + suppliersPerPage, filteredSuppliers.length);
+        
+        if (suppliersList.length === 0) {
+            const noReg = document.getElementById('noSuppliersRegistered');
+            if (noReg) noReg.style.display = '';
+            const noResults = document.getElementById('noSuppliersFound');
+            if (noResults) noResults.style.display = 'none';
+            
+            const infoSpan = document.getElementById('supplierPaginationInfo');
+            if (infoSpan) infoSpan.textContent = 'Showing 0 - 0 of 0 suppliers';
+            
+            const pagDiv = document.getElementById('suppliersPagination');
+            if (pagDiv) pagDiv.innerHTML = '';
+            return;
+        } else {
+            const noReg = document.getElementById('noSuppliersRegistered');
+            if (noReg) noReg.style.display = 'none';
+        }
+
+        if (filteredSuppliers.length === 0) {
+            const noResults = document.getElementById('noSuppliersFound');
+            if (noResults) noResults.style.display = '';
+            
+            const infoSpan = document.getElementById('supplierPaginationInfo');
+            if (infoSpan) infoSpan.textContent = 'Showing 0 - 0 of 0 suppliers';
+            
+            const pagDiv = document.getElementById('suppliersPagination');
+            if (pagDiv) pagDiv.innerHTML = '';
+            return;
+        } else {
+            const noResults = document.getElementById('noSuppliersFound');
+            if (noResults) noResults.style.display = 'none';
+        }
+        
+        // Render slice
+        for (let i = startIndex; i < endIndex; i++) {
+            const supplier = filteredSuppliers[i];
+            const cardHtml = renderSupplierCard(supplier, i);
+            container.insertAdjacentHTML('beforeend', cardHtml);
+        }
+        
+        // Update pagination info
+        const infoSpan = document.getElementById('supplierPaginationInfo');
+        if (infoSpan) {
+            infoSpan.textContent = `Showing ${startIndex + 1} - ${endIndex} of ${filteredSuppliers.length} suppliers`;
+        }
+        
+        // Render pagination buttons
+        const totalPages = Math.ceil(filteredSuppliers.length / suppliersPerPage);
+        renderSupplierPagination(totalPages, page);
+        
+        if (window.lucide) lucide.createIcons();
+    }
+    
+    function goToSupplierPage(page) {
+        displaySuppliersPage(page);
+    }
+
+    function filterSuppliers() {
+        const input = document.getElementById('supplierSearch');
+        const term = input ? input.value.toLowerCase().trim() : '';
+        
+        if (term === '') {
+            filteredSuppliers = [...suppliersList];
+        } else {
+            filteredSuppliers = suppliersList.filter(s => {
+                return s.name.toLowerCase().includes(term) ||
+                       s.delivery_person.toLowerCase().includes(term) ||
+                       s.delivery_phone.toLowerCase().includes(term) ||
+                       s.phone.toLowerCase().includes(term) ||
+                       s.email.toLowerCase().includes(term) ||
+                       s.address.toLowerCase().includes(term) ||
+                       s.desc.toLowerCase().includes(term);
+            });
+        }
+        
+        displaySuppliersPage(1);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        filterSuppliers();
+    });
 
     function populateUnitForm(keyword, unit, category, location) {
         // Set category first to trigger the keyword dropdown update
@@ -2605,6 +2905,60 @@
         document.getElementById('supplierResetBtn').style.display = 'none';
 
         const icon = document.getElementById('supplierSubmitIcon');
+        icon.setAttribute('data-lucide', 'plus-circle');
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function populateCategoryForm(code, name) {
+        document.getElementById('categoryFormTitle').innerText = 'Update Category';
+        document.getElementById('categoryFormSub').innerText = 'Update the category details.';
+        
+        const form = document.getElementById('categoryForm');
+        form.action = `{{ url('/admin/settings/category') }}/${code}/update`;
+
+        const codeInput = document.getElementById('categoryCodeInput');
+        codeInput.value = code;
+        codeInput.readOnly = true;
+        codeInput.style.background = '#f8fafc';
+        
+        document.getElementById('categoryNameInput').value = name;
+        
+        document.getElementById('categorySubmitText').innerText = 'Update Category';
+        document.getElementById('categorySubmitBtn').style.background = 'linear-gradient(135deg, #4f46e5, #3730a3)';
+        document.getElementById('categorySubmitBtn').style.boxShadow = '0 6px 16px rgba(79, 70, 229, 0.25)';
+        
+        document.getElementById('categoryResetBtn').style.display = 'block';
+
+        const icon = document.getElementById('categorySubmitIcon');
+        icon.setAttribute('data-lucide', 'refresh-cw');
+        if (window.lucide) lucide.createIcons();
+
+        document.getElementById('category-configs').scrollIntoView({
+            behavior: 'smooth'
+        });
+    }
+
+    function resetCategoryForm() {
+        document.getElementById('categoryFormTitle').innerText = 'Add New Category';
+        document.getElementById('categoryFormSub').innerText = 'Register a new ledger code for inventory tracking.';
+        
+        const form = document.getElementById('categoryForm');
+        form.action = `{{ route('admin.settings.category') }}`;
+
+        const codeInput = document.getElementById('categoryCodeInput');
+        codeInput.value = '';
+        codeInput.readOnly = false;
+        codeInput.style.background = '';
+        
+        document.getElementById('categoryNameInput').value = '';
+        
+        document.getElementById('categorySubmitText').innerText = 'Register Category';
+        document.getElementById('categorySubmitBtn').style.background = '';
+        document.getElementById('categorySubmitBtn').style.boxShadow = '';
+        
+        document.getElementById('categoryResetBtn').style.display = 'none';
+
+        const icon = document.getElementById('categorySubmitIcon');
         icon.setAttribute('data-lucide', 'plus-circle');
         if (window.lucide) lucide.createIcons();
     }

@@ -871,6 +871,45 @@ class AdminController extends Controller
         return back()->with('success', 'New category added successfully.');
     }
 
+    public function updateCategory(\Illuminate\Http\Request $request, $code)
+    {
+        if (!auth()->user()->is_admin) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        $request->validate([
+            'category_name' => 'required|string|max:100'
+        ]);
+
+        $code = strtoupper($code);
+        $name = $request->category_name;
+        $categories = \App\Models\Setting::getCategories();
+
+        if (!array_key_exists($code, $categories)) {
+            return back()->with('error', "Category '{$code}' not found.");
+        }
+
+        // Validate that the category name is not already in use by a DIFFERENT category code
+        foreach ($categories as $existingCode => $existingName) {
+            if ($existingCode !== $code && strtolower($existingName) === strtolower($name)) {
+                return back()->with('error', "Category Name '{$name}' is already in use by code '{$existingCode}'.");
+            }
+        }
+
+        \App\Models\Setting::addCategory($code, $name);
+
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'INVENTORY',
+            'action' => 'UPDATE_CATEGORY',
+            'description' => "Administrator updated category '{$code}' name to: {$name}.",
+            'severity' => 'info',
+            'ip_address' => request()->ip()
+        ]);
+
+        return back()->with('success', 'Category updated successfully.');
+    }
+
     public function deleteCategory($code)
     {
         if (!auth()->user()->is_admin) {

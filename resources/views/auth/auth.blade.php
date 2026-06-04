@@ -356,7 +356,7 @@
                             <input type="hidden" name="target_interface" id="loginInterfaceSync" value="user">
 
                             <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 0.25rem; gap: 10px; flex-wrap: wrap;">
-                                <a href="{{ route('password.request') }}" id="forgotLink" style="font-size: 0.8rem; font-weight: 800; color: var(--primary); text-decoration: none;">Forgot Access?</a>
+                                <a href="{{ route('password.request') }}" id="forgotLink" style="font-size: 0.8rem; font-weight: 800; color: var(--primary); text-decoration: none;">Forgot Password?</a>
                             </div>
 
                             <button type="submit" class="auth-btn-primary" style="background: var(--primary) !important; height: 56px; font-size: 1rem; border-radius: 20px; margin-top: 1rem; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);">
