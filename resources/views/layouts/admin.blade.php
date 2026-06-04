@@ -731,7 +731,7 @@
                 <li>
                     <a href="{{ route('admin.password.requests') }}" class="nav-link {{ request()->routeIs('admin.password.requests') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4.1"/><path d="m10.5 12.5 2.8 2.8a1 1 0 0 0 1.4 0l2.8-2.8"/><circle cx="7" cy="17" r="5"/></svg>
-                        <span>Password Requests</span>
+                        <span>Password Resets</span>
                         <span id="sidebar-badge-password" style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingPasswordRequests) || $pendingPasswordRequests <= 0) ? 'display: none;' : '' }}">
                             {{ $pendingPasswordRequests ?? 0 }}
                         </span>
@@ -850,7 +850,7 @@
                             .notif-item { transition: 0.2s; }
                         </style>
                         <div style="padding: 1.5rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
-                            <h3 style="font-size: 1rem; font-weight: 900; color: #0f172a; margin: 0;">System Alerts</h3>
+                            <h3 style="font-size: 1rem; font-weight: 900; color: #0f172a; margin: 0;">Notifications</h3>
                             @if($globalNotificationCount > 0)
                             <span style="font-size: 0.65rem; background: #fef2f2; color: #ef4444; padding: 4px 10px; border-radius: 8px; font-weight: 800;">{{ $globalNotificationCount }} ACTIVE</span>
                             @endif

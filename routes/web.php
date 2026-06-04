@@ -672,7 +672,9 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         }
 
         $acknowledgedClean = array_map('trim', $acknowledged);
+        $is_admin = auth()->user()->is_admin;
 
+        // Fetch low stock alerts (cached)
         $lowStockAlerts = \Illuminate\Support\Facades\Cache::remember('global_low_stock_alerts', 600, function() {
             $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
@@ -697,6 +699,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             return $alerts;
         });
 
+        // Fetch expired alerts (cached)
         $expiredAlerts = \Illuminate\Support\Facades\Cache::remember('global_expired_alerts', 600, function() {
             return \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
@@ -708,99 +711,127 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 ->toArray();
         });
 
-        $notifications = [];
-        $is_admin = auth()->user()->is_admin;
-
+        // Count total alert notifications (used for navbar badge)
+        $alertCount = 0;
         foreach ($lowStockAlerts as $alert) {
-            if (in_array(trim($alert['description']), $acknowledgedClean)) {
-                continue;
+            if (!in_array(trim($alert['description']), $acknowledgedClean)) {
+                $alertCount++;
             }
-            $notifications[] = [
-                'category' => 'alert',
-                'type' => 'warning',
-                'title' => 'Low Stock: ' . $alert['description'],
-                'message' => "Stock level (" . number_format($alert['total_stock'], 0) . " {$alert['unit']}) is below threshold (" . $alert['threshold'] . ").",
-                'icon' => 'alert-triangle',
-                'route' => 'inventory.low-stock'
-            ];
         }
-
         if ($is_admin) {
             foreach ($expiredAlerts as $item) {
-                if (in_array(trim($item['description']), $acknowledgedClean)) {
+                if (!in_array(trim($item['description']), $acknowledgedClean)) {
+                    $alertCount++;
+                }
+            }
+        }
+
+        // Determine tab and pagination options
+        $tab = request('tab', 'all'); // 'all', 'alert', 'system'
+        $page = (int)request('page', 1);
+        $perPage = (int)request('per_page', 10);
+
+        $notifications = [];
+
+        // Add alert category items if relevant
+        if ($tab === 'all' || $tab === 'alert') {
+            foreach ($lowStockAlerts as $alert) {
+                if (in_array(trim($alert['description']), $acknowledgedClean)) {
                     continue;
                 }
                 $notifications[] = [
                     'category' => 'alert',
-                    'type' => 'danger',
-                    'title' => 'Expired Record: ' . $item['description'],
-                    'message' => "Item registry indicates zero balance but exists in inventory records.",
-                    'icon' => 'alert-octagon',
-                    'route' => 'admin.index'
+                    'type' => 'warning',
+                    'title' => 'Low Stock: ' . $alert['description'],
+                    'message' => "Stock level (" . number_format($alert['total_stock'], 0) . " {$alert['unit']}) is below threshold (" . $alert['threshold'] . ").",
+                    'icon' => 'alert-triangle',
+                    'route' => 'inventory.low-stock',
+                    'time' => 'Just now'
+                ];
+            }
+
+            if ($is_admin) {
+                foreach ($expiredAlerts as $item) {
+                    if (in_array(trim($item['description']), $acknowledgedClean)) {
+                        continue;
+                    }
+                    $notifications[] = [
+                        'category' => 'alert',
+                        'type' => 'danger',
+                        'title' => 'Expired Record: ' . $item['description'],
+                        'message' => "Item registry indicates zero balance but exists in inventory records.",
+                        'icon' => 'alert-octagon',
+                        'route' => 'admin.index',
+                        'time' => 'Just now'
+                    ];
+                }
+            }
+        }
+
+        // Add system logs if relevant
+        if ($tab === 'all' || $tab === 'system') {
+            $systemLogs = \Illuminate\Support\Facades\Cache::remember('global_recent_system_logs_v2', 60, function() {
+                return \App\Models\SystemLog::orderBy('created_at', 'desc')
+                    ->limit(100)
+                    ->get()
+                    ->map(function($log) {
+                        return [
+                            'user_id' => $log->user_id,
+                            'action' => $log->action,
+                            'description' => $log->description,
+                            'severity' => $log->severity,
+                            'created_at_timestamp' => $log->created_at->timestamp
+                        ];
+                    })
+                    ->toArray();
+            });
+
+            foreach ($systemLogs as $log) {
+                $isConcerned = false;
+                if ($is_admin) {
+                    $isConcerned = true;
+                } else {
+                    $nameLower = strtolower(auth()->user()->name);
+                    $usernameLower = strtolower(auth()->user()->username);
+                    $descLower = strtolower($log['description'] ?? '');
+                    
+                    if (str_contains($descLower, $nameLower) || str_contains($descLower, $usernameLower)) {
+                        $isConcerned = true;
+                    } elseif (($log['user_id'] ?? null) === auth()->id()) {
+                        $action = strtoupper($log['action'] ?? '');
+                        if (in_array($action, ['ADD_INVENTORY', 'EDIT_INVENTORY', 'SUPPLEMENT_INVENTORY', 'ISSUE_ITEM', 'RETURN_ITEM', 'AUTHORIZATION'])) {
+                            $isConcerned = true;
+                        }
+                    }
+                }
+
+                if (!$isConcerned) {
+                    continue;
+                }
+
+                $notifications[] = [
+                    'category' => 'system',
+                    'type' => 'info',
+                    'title' => $log['action'] ? str_replace('_', ' ', $log['action']) : 'System Event',
+                    'message' => $log['description'],
+                    'icon' => $log['severity'] === 'danger' || $log['severity'] === 'critical' ? 'shield-alert' : 'activity',
+                    'route' => $is_admin ? 'admin.logs' : 'dashboard',
+                    'time' => \Carbon\Carbon::createFromTimestamp($log['created_at_timestamp'])->diffForHumans()
                 ];
             }
         }
 
-        $systemLogs = \Illuminate\Support\Facades\Cache::remember('global_recent_system_logs_v2', 60, function() {
-            return \App\Models\SystemLog::orderBy('created_at', 'desc')
-                ->limit(100)
-                ->get()
-                ->map(function($log) {
-                    return [
-                        'user_id' => $log->user_id,
-                        'action' => $log->action,
-                        'description' => $log->description,
-                        'severity' => $log->severity,
-                        'created_at_timestamp' => $log->created_at->timestamp
-                    ];
-                })
-                ->toArray();
-        });
-
-        foreach ($systemLogs as $log) {
-            $isConcerned = false;
-            if ($is_admin) {
-                $isConcerned = true;
-            } else {
-                $nameLower = strtolower(auth()->user()->name);
-                $usernameLower = strtolower(auth()->user()->username);
-                $descLower = strtolower($log['description'] ?? '');
-                
-                if (str_contains($descLower, $nameLower) || str_contains($descLower, $usernameLower)) {
-                    $isConcerned = true;
-                } elseif (($log['user_id'] ?? null) === auth()->id()) {
-                    $action = strtoupper($log['action'] ?? '');
-                    if (in_array($action, ['ADD_INVENTORY', 'EDIT_INVENTORY', 'SUPPLEMENT_INVENTORY', 'ISSUE_ITEM', 'RETURN_ITEM', 'AUTHORIZATION'])) {
-                        $isConcerned = true;
-                    }
-                }
-            }
-
-            if (!$isConcerned) {
-                continue;
-            }
-
-            $notifications[] = [
-                'category' => 'system',
-                'type' => 'info',
-                'title' => $log['action'] ? str_replace('_', ' ', $log['action']) : 'System Event',
-                'message' => $log['description'],
-                'icon' => $log['severity'] === 'danger' || $log['severity'] === 'critical' ? 'shield-alert' : 'activity',
-                'route' => $is_admin ? 'admin.logs' : 'dashboard',
-                'created_at' => \Carbon\Carbon::createFromTimestamp($log['created_at_timestamp'])->diffForHumans()
-            ];
-        }
-
-        $alertCount = 0;
-        foreach ($notifications as $n) {
-            if ($n['category'] === 'alert') {
-                $alertCount++;
-            }
-        }
+        $total = count($notifications);
+        $offset = ($page - 1) * $perPage;
+        $sliced = array_slice($notifications, $offset, $perPage);
 
         return response()->json([
-            'notifications' => $notifications,
-            'count' => $alertCount
+            'notifications' => $sliced,
+            'count' => $alertCount,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+            'last_page' => ceil($total / $perPage)
         ]);
     })->name('api.notifications');
 

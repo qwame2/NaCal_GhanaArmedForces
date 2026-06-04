@@ -50,11 +50,9 @@
 
                 <div class="col-ctrl">
                     <div class="toggle-group-wrap">
-                        <label class="luxe-toggle" title="Toggle Inventory Entry">
+                        <label class="normal-toggle" title="Toggle Inventory Entry">
                             <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_add_inventory')" {{ $user->can_add_inventory ? 'checked' : '' }}>
-                            <div class="luxe-track">
-                                <div class="luxe-knob"><i data-lucide="package-plus"></i></div>
-                            </div>
+                            <div class="toggle-slider"></div>
                         </label>
                         <div class="toggle-text">
                             <span class="t-main">Add/Edit Items</span>
@@ -65,11 +63,9 @@
 
                 <div class="col-ctrl">
                     <div class="toggle-group-wrap">
-                        <label class="luxe-toggle" title="Toggle Logistics Operations">
+                        <label class="normal-toggle" title="Toggle Logistics Operations">
                             <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_operate_logistics')" {{ $user->can_operate_logistics ? 'checked' : '' }}>
-                            <div class="luxe-track">
-                                <div class="luxe-knob"><i data-lucide="truck"></i></div>
-                            </div>
+                            <div class="toggle-slider"></div>
                         </label>
                         <div class="toggle-text">
                             <span class="t-main">Issue & Return</span>
@@ -80,11 +76,9 @@
 
                 <div class="col-ctrl">
                     <div class="toggle-group-wrap">
-                        <label class="luxe-toggle" title="Toggle Analytics Access">
+                        <label class="normal-toggle" title="Toggle Analytics Access">
                             <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_generate_reports')" {{ $user->can_generate_reports ? 'checked' : '' }}>
-                            <div class="luxe-track">
-                                <div class="luxe-knob"><i data-lucide="bar-chart-3"></i></div>
-                            </div>
+                            <div class="toggle-slider"></div>
                         </label>
                         <div class="toggle-text">
                             <span class="t-main">View Reports</span>
@@ -296,57 +290,53 @@
         font-weight: 600;
     }
 
-    /* Luxe Switch */
-    .luxe-toggle {
+    /* Normal Toggle Switch */
+    .normal-toggle {
         position: relative;
         display: inline-block;
+        width: 44px;
+        height: 24px;
         cursor: pointer;
     }
 
-    .luxe-toggle input { display: none; }
-
-    .luxe-track {
-        width: 64px;
-        height: 32px;
-        background: #f1f5f9;
-        border-radius: 20px;
-        transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        position: relative;
-        border: 1px solid #e2e8f0;
+    .normal-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
     }
 
-    .luxe-knob {
+    .toggle-slider {
         position: absolute;
-        top: 2px;
-        left: 2px;
-        width: 26px;
-        height: 26px;
-        background: white;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: .25s ease;
+        border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .25s ease;
         border-radius: 50%;
-        transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #94a3b8;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
     }
 
-    .luxe-knob i { width: 14px; height: 14px; transition: 0.3s; }
-
-    .luxe-toggle input:checked + .luxe-track {
-        background: #eef2ff;
-        border-color: #c7d2fe;
+    .normal-toggle input:checked + .toggle-slider {
+        background-color: var(--primary);
     }
 
-    .luxe-toggle input:checked + .luxe-track .luxe-knob {
-        transform: translateX(32px);
-        background: var(--primary);
-        color: white;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+    .normal-toggle input:checked + .toggle-slider:before {
+        transform: translateX(20px);
     }
-
-    .luxe-toggle:hover .luxe-track { border-color: #cbd5e1; }
-    .luxe-toggle input:checked:hover + .luxe-track { border-color: #a5b4fc; }
 
     /* Badges */
     .badge-status {
@@ -415,7 +405,6 @@
         const row = checkbox.closest('.m-row');
         const userId = row.getAttribute('data-user-id');
         const value = checkbox.checked ? 1 : 0;
-        const knob = checkbox.nextElementSibling.querySelector('.luxe-knob');
 
         row.classList.add('syncing-row');
 
@@ -435,13 +424,7 @@
         .then(response => response.json())
         .then(data => {
             row.classList.remove('syncing-row');
-            if (data.success) {
-                // Success pulse animation on knob
-                knob.style.transform = checkbox.checked ? 'translateX(32px) scale(1.1)' : 'translateX(0) scale(1.1)';
-                setTimeout(() => {
-                    knob.style.transform = checkbox.checked ? 'translateX(32px)' : 'translateX(0)';
-                }, 200);
-            } else {
+            if (!data.success) {
                 checkbox.checked = !checkbox.checked; // Revert
                 alert('Failed to update permission: ' + data.message);
             }
@@ -449,7 +432,6 @@
         .catch(error => {
             row.classList.remove('syncing-row');
             checkbox.checked = !checkbox.checked; // Revert
-            /* console print removed */
             alert('A system error occurred.');
         });
     }

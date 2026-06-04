@@ -30,7 +30,7 @@
 
     {{-- Metrics --}}
     <div class="rt-metrics">
-        <div class="rt-metric amber">
+        <div class="rt-metric">
             <div class="rt-metric-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
@@ -38,9 +38,9 @@
                 <span class="rt-metric-label">Awaiting Review</span>
                 <span class="rt-metric-val">{{ $pending }}</span>
             </div>
-            <div class="rt-metric-glow amber-glow"></div>
+            <div class="rt-metric-glow"></div>
         </div>
-        <div class="rt-metric indigo">
+        <div class="rt-metric">
             <div class="rt-metric-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
             </div>
@@ -48,9 +48,9 @@
                 <span class="rt-metric-label">Awaiting Completion</span>
                 <span class="rt-metric-val">{{ $approved }}</span>
             </div>
-            <div class="rt-metric-glow indigo-glow"></div>
+            <div class="rt-metric-glow"></div>
         </div>
-        <div class="rt-metric green">
+        <div class="rt-metric">
             <div class="rt-metric-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
             </div>
@@ -58,9 +58,9 @@
                 <span class="rt-metric-label">Access Restored</span>
                 <span class="rt-metric-val">{{ $completed }}</span>
             </div>
-            <div class="rt-metric-glow green-glow"></div>
+            <div class="rt-metric-glow"></div>
         </div>
-        <div class="rt-metric slate">
+        <div class="rt-metric">
             <div class="rt-metric-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
             </div>
@@ -68,7 +68,7 @@
                 <span class="rt-metric-label">Total Requests</span>
                 <span class="rt-metric-val">{{ $requests->count() }}</span>
             </div>
-            <div class="rt-metric-glow slate-glow"></div>
+            <div class="rt-metric-glow"></div>
         </div>
     </div>
 
@@ -121,7 +121,7 @@
                             <div class="rt-identity">
                                 <div class="rt-avatar">
                                     {{ strtoupper(substr($req->user->name ?? $req->username, 0, 1)) }}
-                                    <span class="rt-avatar-ring {{ $req->status === 'pending' ? 'ring-amber' : ($req->status === 'approved' ? 'ring-indigo' : 'ring-green') }}"></span>
+                                    <span class="rt-avatar-ring {{ $req->status === 'pending' ? 'ring-active' : 'ring-inactive' }}"></span>
                                 </div>
                                 <div>
                                     <span class="rt-name">{{ $req->user->name ?? 'Unregistered User' }}</span>
@@ -138,23 +138,23 @@
                         {{-- Status --}}
                         <td>
                             @if($req->status === 'pending')
-                                <div class="rt-status amber">
-                                    <div class="rt-status-dot amber-dot"></div>
+                                <div class="rt-status active">
+                                    <div class="rt-status-dot active-dot"></div>
                                     <span>Pending</span>
                                 </div>
                             @elseif($req->status === 'approved')
-                                <div class="rt-status indigo">
-                                    <div class="rt-status-dot indigo-dot"></div>
+                                <div class="rt-status active">
+                                    <div class="rt-status-dot active-dot"></div>
                                     <span>Code Issued</span>
                                 </div>
                             @elseif($req->status === 'completed')
-                                <div class="rt-status green">
-                                    <div class="rt-status-dot green-dot"></div>
+                                <div class="rt-status completed">
+                                    <div class="rt-status-dot completed-dot"></div>
                                     <span>Restored</span>
                                 </div>
                             @else
-                                <div class="rt-status red">
-                                    <div class="rt-status-dot red-dot"></div>
+                                <div class="rt-status completed">
+                                    <div class="rt-status-dot completed-dot"></div>
                                     <span>{{ ucfirst($req->status) }}</span>
                                 </div>
                             @endif
@@ -277,20 +277,20 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 .rt-flash.success {
-    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-    border: 1px solid #bbf7d0;
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.15);
 }
 .rt-flash-icon {
     width: 40px; height: 40px; border-radius: 12px;
-    background: #10b981; color: white; flex-shrink: 0;
+    background: var(--primary); color: white; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
 }
 .rt-flash-icon i { width: 18px; }
 .rt-flash-body { flex: 1; }
-.rt-flash-title { display: block; font-size: 0.7rem; font-weight: 900; color: #059669; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
-.rt-flash-msg { margin: 0; font-size: 0.85rem; font-weight: 700; color: #166534; line-height: 1.5; }
-.rt-flash-close { background: none; border: none; color: #6ee7b7; cursor: pointer; padding: 4px; border-radius: 8px; display: flex; transition: 0.2s; }
-.rt-flash-close:hover { background: rgba(16,185,129,0.15); color: #059669; }
+.rt-flash-title { display: block; font-size: 0.7rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+.rt-flash-msg { margin: 0; font-size: 0.85rem; font-weight: 700; color: #312e81; line-height: 1.5; }
+.rt-flash-close { background: none; border: none; color: var(--primary); opacity: 0.6; cursor: pointer; padding: 4px; border-radius: 8px; display: flex; transition: 0.2s; }
+.rt-flash-close:hover { background: rgba(99, 102, 241, 0.1); opacity: 1; color: var(--primary); }
 
 /* ─── Metrics ───────────────────────────── */
 .rt-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
@@ -306,28 +306,12 @@
 .rt-metric-icon {
     width: 52px; height: 52px; border-radius: 16px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
+    background: rgba(99, 102, 241, 0.08); color: var(--primary);
 }
 .rt-metric-icon i { width: 22px; height: 22px; }
 .rt-metric-label { display: block; font-size: 0.68rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; color: #94a3b8; }
-.rt-metric-val { display: block; font-size: 2.2rem; font-weight: 950; letter-spacing: -0.05em; line-height: 1; }
-.rt-metric-glow { position: absolute; width: 120px; height: 120px; border-radius: 50%; right: -30px; top: -30px; opacity: 0.06; }
-
-/* Metric Colors */
-.rt-metric.amber .rt-metric-icon { background: #fffbeb; color: #f59e0b; }
-.rt-metric.amber .rt-metric-val { color: #d97706; }
-.amber-glow { background: #f59e0b; }
-
-.rt-metric.indigo .rt-metric-icon { background: #eef2ff; color: #6366f1; }
-.rt-metric.indigo .rt-metric-val { color: #4f46e5; }
-.indigo-glow { background: #6366f1; }
-
-.rt-metric.green .rt-metric-icon { background: #f0fdf4; color: #10b981; }
-.rt-metric.green .rt-metric-val { color: #059669; }
-.green-glow { background: #10b981; }
-
-.rt-metric.slate .rt-metric-icon { background: #f8fafc; color: #64748b; }
-.rt-metric.slate .rt-metric-val { color: #0f172a; }
-.slate-glow { background: #64748b; }
+.rt-metric-val { display: block; font-size: 2.2rem; font-weight: 950; letter-spacing: -0.05em; line-height: 1; color: #0f172a; }
+.rt-metric-glow { position: absolute; width: 120px; height: 120px; border-radius: 50%; right: -30px; top: -30px; opacity: 0.06; background: var(--primary); }
 
 /* ─── Main Panel ─────────────────────────── */
 .rt-panel {
@@ -355,27 +339,27 @@
 .rt-toolbar-brand { display: flex; align-items: center; gap: 18px; position: relative; z-index: 1; }
 .rt-brand-icon {
     width: 52px; height: 52px; border-radius: 16px;
-    background: linear-gradient(135deg, #f59e0b, #d97706);
+    background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%);
     color: white; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 24px rgba(245,158,11,0.35); flex-shrink: 0;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35); flex-shrink: 0;
 }
 .rt-brand-icon i { width: 24px; height: 24px; }
 .rt-brand-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
 .rt-brand-heading h3 { margin: 0; font-size: 1.4rem; font-weight: 900; color: #0f172a; letter-spacing: -0.03em; }
 .rt-pending-badge {
     font-size: 0.6rem; font-weight: 900; letter-spacing: 0.12em;
-    background: #fffbeb; color: #d97706;
-    border: 1px solid #fde68a; padding: 3px 10px; border-radius: 999px;
+    background: rgba(99, 102, 241, 0.1); color: var(--primary);
+    border: 1px solid rgba(99, 102, 241, 0.2); padding: 3px 10px; border-radius: 999px;
     animation: pulse-badge 2s infinite;
 }
 @keyframes pulse-badge {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.3); }
-    50% { box-shadow: 0 0 0 6px rgba(245,158,11,0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(99,102,241,0); }
 }
 .rt-clear-badge {
     font-size: 0.6rem; font-weight: 900; letter-spacing: 0.12em;
-    background: #f0fdf4; color: #15803d;
-    border: 1px solid #bbf7d0; padding: 3px 10px; border-radius: 999px;
+    background: #f1f5f9; color: #64748b;
+    border: 1px solid #e2e8f0; padding: 3px 10px; border-radius: 999px;
 }
 .rt-brand-sub { margin: 0; font-size: 0.78rem; color: #64748b; font-weight: 600; }
 .rt-toolbar-status {
@@ -388,12 +372,12 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 .rt-live-dot {
-    width: 8px; height: 8px; border-radius: 50%; background: #10b981;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--primary);
     animation: rt-live 2s infinite;
 }
 @keyframes rt-live {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
-    50% { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.5); }
+    50% { box-shadow: 0 0 0 5px rgba(99, 102, 241, 0); }
 }
 
 /* ─── Table ──────────────────────────────── */
@@ -416,8 +400,8 @@
 .rt-row td:first-child { padding-left: 2.5rem; }
 .rt-row td:last-child  { padding-right: 2.5rem; }
 .rt-row:hover td { background: #fafbff; }
-.rt-row-highlight td { background: #fffdf5; }
-.rt-row-highlight:hover td { background: #fffbeb; }
+.rt-row-highlight td { background: rgba(99, 102, 241, 0.02); }
+.rt-row-highlight:hover td { background: rgba(99, 102, 241, 0.05); }
 .rt-row:last-child td { border-bottom: none; }
 
 /* Identity */
@@ -434,9 +418,8 @@
     position: absolute; inset: -3px; border-radius: 17px;
     border: 2px solid transparent;
 }
-.ring-amber { border-color: #f59e0b; animation: spin-ring 3s linear infinite; }
-.ring-indigo { border-color: #6366f1; }
-.ring-green  { border-color: #10b981; }
+.ring-active { border-color: var(--primary); animation: spin-ring 3s linear infinite; }
+.ring-inactive { border-color: #e2e8f0; }
 @keyframes spin-ring {
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
@@ -446,8 +429,8 @@
 
 /* Callsign */
 .rt-callsign {
-    font-size: 0.8rem; font-weight: 800; color: #4f46e5;
-    background: #eef2ff; border: 1px solid #e0e7ff;
+    font-size: 0.8rem; font-weight: 800; color: var(--primary);
+    background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.15);
     padding: 4px 10px; border-radius: 8px; font-family: monospace;
     letter-spacing: 0.02em;
 }
@@ -457,15 +440,11 @@
     display: inline-flex; align-items: center; gap: 7px;
     padding: 5px 12px; border-radius: 999px; font-size: 0.7rem; font-weight: 800;
 }
-.rt-status.amber  { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-.rt-status.indigo { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
-.rt-status.green  { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-.rt-status.red    { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.rt-status.active { background: rgba(99, 102, 241, 0.08); color: var(--primary); border: 1px solid rgba(99, 102, 241, 0.15); }
+.rt-status.completed { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
 .rt-status-dot { width: 7px; height: 7px; border-radius: 50%; }
-.amber-dot  { background: #f59e0b; animation: rt-live 2s infinite; }
-.indigo-dot { background: #6366f1; }
-.green-dot  { background: #10b981; }
-.red-dot    { background: #ef4444; }
+.active-dot { background: var(--primary); animation: rt-live 2s infinite; }
+.completed-dot { background: #94a3b8; }
 
 /* Date */
 .rt-date { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; font-weight: 700; color: #475569; }
@@ -475,15 +454,16 @@
 .rt-otp-code {
     font-family: 'Courier New', monospace;
     font-size: 1rem; font-weight: 900; letter-spacing: 0.2em;
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-    color: #fbbf24; padding: 6px 14px; border-radius: 10px;
+    background: rgba(99, 102, 241, 0.08);
+    color: var(--primary); padding: 6px 14px; border-radius: 10px;
+    border: 1px solid rgba(99, 102, 241, 0.15);
 }
 .rt-copy-btn {
     background: #f1f5f9; border: 1px solid #e2e8f0; color: #64748b;
     padding: 6px 8px; border-radius: 8px; cursor: pointer; display: flex;
     transition: 0.2s;
 }
-.rt-copy-btn:hover { background: #6366f1; color: white; border-color: #6366f1; }
+.rt-copy-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
 .rt-no-otp { font-size: 0.75rem; font-weight: 600; color: #cbd5e1; font-style: italic; }
 
 /* Action buttons */
@@ -495,14 +475,14 @@
 }
 .rt-btn i { width: 13px; height: 13px; }
 .rt-btn-approve {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white; box-shadow: 0 4px 14px rgba(16,185,129,0.25);
+    background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%);
+    color: white; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
 }
-.rt-btn-approve:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(16,185,129,0.35); }
+.rt-btn-approve:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(99, 102, 241, 0.35); }
 .rt-btn-reject {
-    background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;
+    background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;
 }
-.rt-btn-reject:hover { background: #ef4444; color: white; border-color: #ef4444; transform: translateY(-2px); }
+.rt-btn-reject:hover { background: #e2e8f0; color: #0f172a; border-color: #e2e8f0; transform: translateY(-2px); }
 
 .rt-done-tag {
     display: inline-flex; align-items: center; gap: 5px;
@@ -515,18 +495,18 @@
     margin-top: 6px;
     font-size: 0.72rem;
     font-weight: 700;
-    color: #f59e0b;
+    color: var(--primary);
     display: flex;
     align-items: center;
 }
-.rt-countdown.expired { color: #ef4444; }
+.rt-countdown.expired { color: #94a3b8; }
 
 /* Empty state */
 .rt-empty { padding: 5rem 2rem; text-align: center; }
 .rt-empty-icon {
     width: 80px; height: 80px; border-radius: 24px;
-    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-    color: #10b981; margin: 0 auto 1.5rem;
+    background: rgba(99, 102, 241, 0.08);
+    color: var(--primary); margin: 0 auto 1.5rem;
     display: flex; align-items: center; justify-content: center;
 }
 .rt-empty-icon i { width: 36px; height: 36px; }
@@ -567,9 +547,9 @@ function copyOtp(otp, btn) {
     navigator.clipboard.writeText(otp).then(() => {
         const orig = btn.innerHTML;
         btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-        btn.style.background = '#10b981';
+        btn.style.background = 'var(--primary)';
         btn.style.color = 'white';
-        btn.style.borderColor = '#10b981';
+        btn.style.borderColor = 'var(--primary)';
         setTimeout(() => {
             btn.innerHTML = orig;
             btn.style.background = '';
@@ -600,9 +580,9 @@ function initCountdowns() {
                     const tag = document.getElementById('status-tag-' + id);
                     if(tag) {
                         tag.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Expired';
-                        tag.style.color = '#ef4444';
-                        tag.style.background = '#fef2f2';
-                        tag.style.borderColor = '#fecaca';
+                        tag.style.color = '#64748b';
+                        tag.style.background = '#f1f5f9';
+                        tag.style.borderColor = '#e2e8f0';
                     }
                     
                     const otp = document.getElementById('otp-' + id);
