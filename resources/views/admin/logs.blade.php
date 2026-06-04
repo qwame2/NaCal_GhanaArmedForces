@@ -35,7 +35,7 @@
         </div>
         <form action="{{ route('admin.logs') }}" method="GET" style="display: flex; gap: 1.5rem; align-items: flex-end; flex-wrap: wrap;">
             @if(request('per_page'))
-                <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+            <input type="hidden" name="per_page" value="{{ request('per_page') }}">
             @endif
             <div style="flex: 1; min-width: 240px;">
                 <div style="background: white; border: 1.5px solid #edf2f7; padding: 10px 18px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 8px 20px rgba(79,70,229,0.06)'" onmouseout="this.style.borderColor='#edf2f7'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.02)'">
@@ -72,7 +72,7 @@
             </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
                 <button type="submit" class="btn-primary" style="padding: 0.85rem 2rem; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(79,70,229,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(79,70,229,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(79,70,229,0.2)'">
-                    <i data-lucide="search" style="width: 16px; display: inline-block; vertical-align: text-bottom; margin-right: 4px;"></i> 
+                    <i data-lucide="search" style="width: 16px; display: inline-block; vertical-align: text-bottom; margin-right: 4px;"></i>
                 </button>
                 @if(request()->hasAny(['severity', 'event_type']) && (request('severity') != '' || request('event_type') != ''))
                 <a href="{{ route('admin.logs') }}" style="padding: 0.85rem 1.5rem; color: #ef4444; background: #fef2f2; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 800; transition: all 0.3s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">Reset</a>
@@ -83,124 +83,126 @@
 
     <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 24px;">
         <form id="deleteLogsForm" method="POST" action="{{ route('admin.logs.delete_multiple') }}">
-        @csrf
-        <div style="max-height: 65vh; overflow-y: auto; overflow-x: hidden;">
-            <table style="width: 100%; border-collapse: separate; border-spacing: 0; text-align: left;">
-                <thead style="position: sticky; top: 0; z-index: 20; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 1px 0 var(--border-color);">
-                    <tr>
-                    <th style="padding: 1.25rem 2rem; width: 50px; text-align: center;">
-                        <input type="checkbox" id="selectAllLogs" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);">
-                    </th>
-                    <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Date & Time</th>
-                    <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Activity Type</th>
-                    <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Staff Member</th>
-                    <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Activity Details</th>
-                    <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Status Level</th>
-                    <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; text-align: right;">Options</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($logs as $log)
-                <tr id="log-row-{{ $log->id }}" style="border-bottom: 1px solid var(--border-color); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: default; position: relative; z-index: 1;" onmouseover="this.style.background='#f8fafc'; this.style.transform='scale(1.005)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.03)'; this.style.zIndex='10'" onmouseout="this.style.background='transparent'; this.style.transform='scale(1)'; this.style.boxShadow='none'; this.style.zIndex='1'">
-                    <td style="padding: 1.25rem 2rem; text-align: center;">
-                        <input type="checkbox" name="log_ids[]" value="{{ $log->id }}" class="log-checkbox" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);">
-                    </td>
-                    <td style="padding: 1.25rem 2rem;">
-                        <div style="font-weight: 800; color: var(--text-heading); font-size: 0.85rem;">{{ $log->created_at->format('d/m/y') }}</div>
-                        <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-top: 2px;">{{ $log->created_at->format('H:i:s') }}</div>
-                    </td>
-                    <td style="padding: 1.25rem 2rem;">
-                        @php
-                            $eventIcons = [
+            @csrf
+            <div style="max-height: 65vh; overflow-y: auto; overflow-x: hidden;">
+                <table style="width: 100%; border-collapse: separate; border-spacing: 0; text-align: left;">
+                    <thead style="position: sticky; top: 0; z-index: 20; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 1px 0 var(--border-color);">
+                        <tr>
+                            <th style="padding: 1.25rem 2rem; width: 50px; text-align: center;">
+                                <input type="checkbox" id="selectAllLogs" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);">
+                            </th>
+                            <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Date</th>
+                            <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Time</th>
+                            <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Staff Member</th>
+                            <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Activity Details</th>
+                            <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Status Level</th>
+                            <th style="padding: 1.25rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; text-align: right;">Options</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($logs as $log)
+                        <tr id="log-row-{{ $log->id }}" style="border-bottom: 1px solid var(--border-color); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: default; position: relative; z-index: 1;" onmouseover="this.style.background='#f8fafc'; this.style.transform='scale(1.005)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.03)'; this.style.zIndex='10'" onmouseout="this.style.background='transparent'; this.style.transform='scale(1)'; this.style.boxShadow='none'; this.style.zIndex='1'">
+                            <td style="padding: 1.25rem 2rem; text-align: center;">
+                                <input type="checkbox" name="log_ids[]" value="{{ $log->id }}" class="log-checkbox" style="width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary);">
+                            </td>
+                            <td style="padding: 1.25rem 2rem;">
+                                <div style="font-weight: 800; color: var(--text-heading); font-size: 0.85rem;">{{ $log->created_at->format('d/m/y') }}</div>
+                            </td>
+                            <td style="padding: 1.25rem 2rem;">
+                                <div style="font-weight: 800; color: var(--text-heading); font-size: 0.85rem;">{{ $log->created_at->format('H:i:s') }}</div>
+                            </td>
+                            <!-- <td style="padding: 1.25rem 2rem;">
+                                @php
+                                $eventIcons = [
                                 'SECURITY' => 'shield-alert',
                                 'INVENTORY' => 'package',
                                 'AUTH' => 'key',
                                 'SYSTEM' => 'server'
-                            ];
-                            $icon = $eventIcons[$log->event_type] ?? 'activity';
-                        @endphp
-                        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 900; background: white; border: 1px solid #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                            <i data-lucide="{{ $icon }}" style="width: 12px; height: 12px; color: var(--primary);"></i>
-                            {{ $log->event_type }}
-                        </span>
-                        <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-heading); margin-top: 6px; letter-spacing: -0.01em;">{{ str_replace('_', ' ', $log->action) }}</div>
-                    </td>
-                    <td style="padding: 1.25rem 2rem;">
-                        @if($log->user)
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            @if($log->user->avatar)
-                                <img src="{{ asset('storage/' . $log->user->avatar) }}" alt="{{ $log->user->name }}" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                            @else
-                                <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem;">
-                                    {{ substr($log->user->name, 0, 1) }}
+                                ];
+                                $icon = $eventIcons[$log->event_type] ?? 'activity';
+                                @endphp
+                                <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 900; background: white; border: 1px solid #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                    <i data-lucide="{{ $icon }}" style="width: 12px; height: 12px; color: var(--primary);"></i>
+                                    {{ $log->event_type }}
+                                </span>
+                                <div style="font-size: 0.85rem; font-weight: 800; color: var(--text-heading); margin-top: 6px; letter-spacing: -0.01em;">{{ str_replace('_', ' ', $log->action) }}</div> -->
+                            </td>
+                            <td style="padding: 1.25rem 2rem;">
+                                @if($log->user)
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    @if($log->user->avatar)
+                                    <img src="{{ asset('storage/' . $log->user->avatar) }}" alt="{{ $log->user->name }}" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                                    @else
+                                    <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem;">
+                                        {{ substr($log->user->name, 0, 1) }}
+                                    </div>
+                                    @endif
+                                    <div>
+                                        <div style="font-weight: 700; color: var(--text-main); font-size: 0.85rem;">{{ $log->user->name }}</div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted);">{{ $log->ip_address }}</div>
+                                    </div>
                                 </div>
-                            @endif
-                            <div>
-                                <div style="font-weight: 700; color: var(--text-main); font-size: 0.85rem;">{{ $log->user->name }}</div>
-                                <div style="font-size: 0.7rem; color: var(--text-muted);">{{ $log->ip_address }}</div>
-                            </div>
-                        </div>
-                        @else
-                        <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">System Auto</div>
-                        @endif
-                    </td>
-                    <td style="padding: 1.25rem 2rem; max-width: 400px;">
-                        <p style="font-size: 0.85rem; color: var(--text-main); line-height: 1.5; margin: 0;">{{ $log->description }}</p>
-                    </td>
-                    <td style="padding: 1.25rem 2rem;">
-                        @php
-                            $colors = [
+                                @else
+                                <div style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">System Auto</div>
+                                @endif
+                            </td>
+                            <td style="padding: 1.25rem 2rem; max-width: 400px;">
+                                <p style="font-size: 0.85rem; color: var(--text-main); line-height: 1.5; margin: 0;">{{ $log->description }}</p>
+                            </td>
+                            <td style="padding: 1.25rem 2rem;">
+                                @php
+                                $colors = [
                                 'info' => ['bg' => '#f0f9ff', 'text' => '#0369a1'],
                                 'warning' => ['bg' => '#fffbeb', 'text' => '#b45309'],
                                 'danger' => ['bg' => '#fef2f2', 'text' => '#b91c1c']
-                            ];
-                            $c = $colors[$log->severity] ?? $colors['info'];
-                        @endphp
-                        <span style="background: {{ $c['bg'] }}; color: {{ $c['text'] }}; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
-                            {{ $log->severity }}
-                        </span>
-                    </td>
-                    <td style="padding: 1.25rem 2rem; text-align: right;">
-                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center;">
-                            @if($log->metadata)
-                            <button type="button"
-                                data-metadata="{{ json_encode($log->metadata) }}"
-                                data-event="{{ $log->event_type }}"
-                                data-action="{{ $log->action }}"
-                                data-user-name="{{ $log->user ? $log->user->name : 'System Auto' }}"
-                                data-user-avatar="{{ $log->user && $log->user->avatar ? asset('storage/' . $log->user->avatar) : '' }}"
-                                onclick="viewLogDetails(this)"
-                                class="btn-details">
-                                <i data-lucide="info"></i> Details
-                            </button>
-                            @else
-                            <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600; padding: 0.4rem 0.85rem;">No Details</span>
-                            @endif
-                            <button type="button" onclick="archiveLog('{{ $log->id }}')" style="background: rgba(79, 70, 229, 0.05); color: var(--primary); border: 1px solid rgba(79, 70, 229, 0.2); padding: 0.4rem 0.65rem; border-radius: 10px; font-weight: 800; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='rgba(79, 70, 229, 0.05)'; this.style.color='var(--primary)'" title="Archive Log">
-                                <i data-lucide="archive" style="width: 14px;"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="7" style="padding: 6rem 2rem; text-align: center; color: var(--text-muted); background: #f8fafc;">
-                        <div style="width: 80px; height: 80px; background: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid rgba(79,70,229,0.1);">
-                            <i data-lucide="shield-check" style="width: 40px; height: 40px; color: var(--primary); opacity: 0.9;"></i>
-                        </div>
-                        <h4 style="font-weight: 900; color: var(--text-heading); font-size: 1.25rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">No Activities Found</h4>
-                        <p style="font-size: 0.95rem; max-width: 400px; margin: 0 auto; line-height: 1.5;">No system events match your current filter criteria. The system is operating securely within normal parameters.</p>
-                        @if(request()->hasAny(['severity', 'event_type']))
-                        <a href="{{ route('admin.logs') }}" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 1.5rem; background: white; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; text-decoration: none; color: var(--primary); border: 1px solid rgba(79,70,229,0.2); box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='white'; this.style.color='var(--primary)'">
-                            <i data-lucide="rotate-ccw" style="width: 16px;"></i> Clear All Filters
-                        </a>
-                        @endif
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-        </div>
+                                ];
+                                $c = $colors[$log->severity] ?? $colors['info'];
+                                @endphp
+                                <span style="background: {{ $c['bg'] }}; color: {{ $c['text'] }}; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">
+                                    {{ $log->severity }}
+                                </span>
+                            </td>
+                            <td style="padding: 1.25rem 2rem; text-align: right;">
+                                <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center;">
+                                    @if($log->metadata)
+                                    <button type="button"
+                                        data-metadata="{{ json_encode($log->metadata) }}"
+                                        data-event="{{ $log->event_type }}"
+                                        data-action="{{ $log->action }}"
+                                        data-user-name="{{ $log->user ? $log->user->name : 'System Auto' }}"
+                                        data-user-avatar="{{ $log->user && $log->user->avatar ? asset('storage/' . $log->user->avatar) : '' }}"
+                                        onclick="viewLogDetails(this)"
+                                        class="btn-details">
+                                        <i data-lucide="info"></i> Details
+                                    </button>
+                                    @else
+                                    <!-- <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600; padding: 0.4rem 0.85rem;">No Details</span> -->
+                                    @endif
+                                    <button type="button" onclick="archiveLog('{{ $log->id }}')" style="background: rgba(79, 70, 229, 0.05); color: var(--primary); border: 1px solid rgba(79, 70, 229, 0.2); padding: 0.4rem 0.65rem; border-radius: 10px; font-weight: 800; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='rgba(79, 70, 229, 0.05)'; this.style.color='var(--primary)'" title="Archive Log">
+                                        <i data-lucide="archive" style="width: 14px;"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" style="padding: 6rem 2rem; text-align: center; color: var(--text-muted); background: #f8fafc;">
+                                <div style="width: 80px; height: 80px; background: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid rgba(79,70,229,0.1);">
+                                    <i data-lucide="shield-check" style="width: 40px; height: 40px; color: var(--primary); opacity: 0.9;"></i>
+                                </div>
+                                <h4 style="font-weight: 900; color: var(--text-heading); font-size: 1.25rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">No Activities Found</h4>
+                                <p style="font-size: 0.95rem; max-width: 400px; margin: 0 auto; line-height: 1.5;">No system events match your current filter criteria. The system is operating securely within normal parameters.</p>
+                                @if(request()->hasAny(['severity', 'event_type']))
+                                <a href="{{ route('admin.logs') }}" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 1.5rem; background: white; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; text-decoration: none; color: var(--primary); border: 1px solid rgba(79,70,229,0.2); box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='white'; this.style.color='var(--primary)'">
+                                    <i data-lucide="rotate-ccw" style="width: 16px;"></i> Clear All Filters
+                                </a>
+                                @endif
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </form>
         <div style="padding: 1.5rem 2rem; background: rgba(0,0,0,0.015); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
             <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
@@ -222,15 +224,15 @@
             </div>
             <div class="custom-pagination">
                 @if ($logs->onFirstPage())
-                    <span class="page-btn disabled">Previous</span>
+                <span class="page-btn disabled">Previous</span>
                 @else
-                    <a href="{{ $logs->appends(request()->query())->previousPageUrl() }}" class="page-btn">Previous</a>
+                <a href="{{ $logs->appends(request()->query())->previousPageUrl() }}" class="page-btn">Previous</a>
                 @endif
 
                 @if ($logs->hasMorePages())
-                    <a href="{{ $logs->appends(request()->query())->nextPageUrl() }}" class="page-btn">Next</a>
+                <a href="{{ $logs->appends(request()->query())->nextPageUrl() }}" class="page-btn">Next</a>
                 @else
-                    <span class="page-btn disabled">Next</span>
+                <span class="page-btn disabled">Next</span>
                 @endif
             </div>
         </div>
@@ -249,6 +251,7 @@
         opacity: 0;
         transition: opacity 0.3s ease;
     }
+
     .bottom-sheet-overlay.active {
         opacity: 1;
     }
@@ -269,6 +272,7 @@
         flex-direction: column;
         max-height: 90vh;
     }
+
     .bottom-sheet.active {
         transform: translateX(-50%) translateY(0);
     }
@@ -298,6 +302,7 @@
         gap: 1.5rem;
         margin-bottom: 2rem;
     }
+
     .detail-card {
         background: var(--bg-card);
         padding: 1rem;
@@ -305,6 +310,7 @@
         border: 1px solid var(--border-color);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
     }
+
     .detail-label {
         font-size: 0.7rem;
         font-weight: 800;
@@ -313,11 +319,13 @@
         margin-bottom: 0.4rem;
         letter-spacing: 0.5px;
     }
+
     .detail-value {
         font-size: 1rem;
         font-weight: 800;
         color: var(--text-main);
     }
+
     .items-table {
         width: 100%;
         border-collapse: collapse;
@@ -327,18 +335,22 @@
         border: 1px solid var(--border-color);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
     }
-    .items-table th, .items-table td {
+
+    .items-table th,
+    .items-table td {
         padding: 1rem 1.25rem;
         text-align: left;
         border-bottom: 1px solid var(--border-color);
     }
+
     .items-table th {
-        background: rgba(0,0,0,0.015);
+        background: rgba(0, 0, 0, 0.015);
         font-size: 0.75rem;
         font-weight: 800;
         color: var(--text-muted);
         text-transform: uppercase;
     }
+
     .items-table td {
         font-size: 0.85rem;
         font-weight: 600;
@@ -361,6 +373,7 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 0 2px 4px rgba(79, 70, 229, 0.05);
     }
+
     .btn-details:hover {
         background: var(--primary);
         color: white;
@@ -368,10 +381,12 @@
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(79, 70, 229, 0.25);
     }
+
     .btn-details i {
         width: 14px;
         transition: transform 0.3s ease;
     }
+
     .btn-details:hover i {
         transform: scale(1.2);
     }
@@ -381,6 +396,7 @@
         display: flex;
         gap: 8px;
     }
+
     .page-btn {
         padding: 0.5rem 1rem;
         background: white;
@@ -391,8 +407,9 @@
         font-size: 0.85rem;
         text-decoration: none;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     }
+
     .page-btn:hover:not(.disabled) {
         background: var(--primary);
         color: white;
@@ -400,6 +417,7 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
     }
+
     .page-btn.disabled {
         background: #f8fafc;
         color: #94a3b8;
@@ -412,6 +430,7 @@
     .log-checkbox {
         display: none !important;
     }
+
     .log-checkbox.visible {
         display: block !important;
     }
@@ -546,7 +565,7 @@
                         'Accept': 'application/json'
                     }
                 }).then(res => res.json()).then(data => {
-                    if(data.success) {
+                    if (data.success) {
                         setTimeout(() => {
                             if (row) row.remove();
                         }, 600);
@@ -637,8 +656,7 @@
                     });
                     html += '</tbody></table>';
                 }
-            }
-            else if (action === 'ISSUE_ITEM') {
+            } else if (action === 'ISSUE_ITEM') {
                 html += `
                     <div class="detail-card">
                         <div class="detail-label">Beneficiary</div>
@@ -666,8 +684,7 @@
                     });
                     html += '</tbody></table>';
                 }
-            }
-            else if (action === 'RETURN_ITEM') {
+            } else if (action === 'RETURN_ITEM') {
                 html += `
                     <div class="detail-card">
                         <div class="detail-label">Beneficiary Returning</div>
@@ -691,8 +708,7 @@
                     <td style="font-style: italic;">${dataObj.remarks || '-'}</td>
                 </tr>`;
                 html += '</tbody></table>';
-            }
-            else if (action === 'UPDATE_BATCH') {
+            } else if (action === 'UPDATE_BATCH') {
                 html += `
                     <div class="detail-card">
                         <div class="detail-label">Batch ID</div>
@@ -740,14 +756,13 @@
                 } else {
                     html += '<div style="padding: 2rem; text-align: center; color: var(--text-muted); font-style: italic;">No specific item attributes were modified.</div>';
                 }
-            }
-            else {
+            } else {
                 html += `</div>`; // close detail-grid
                 html += `<pre style="background: var(--bg-card); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); color: var(--text-main); font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap; font-family: monospace;">${JSON.stringify(dataObj, null, 4)}</pre>`;
             }
 
             contentDiv.innerHTML = html;
-        } catch(e) {
+        } catch (e) {
             contentDiv.innerHTML = `<pre style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.2); color: var(--danger); font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap; font-family: monospace;">Error parsing details data:\n\n${metadataStr}</pre>`;
         }
 

@@ -20,6 +20,15 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         try {
+            $routeCachePath = base_path('bootstrap/cache/routes-v7.php');
+            if (file_exists($routeCachePath)) {
+                @unlink($routeCachePath);
+            }
+            $configCachePath = base_path('bootstrap/cache/config.php');
+            if (file_exists($configCachePath)) {
+                @unlink($configCachePath);
+            }
+
             if (\Illuminate\Support\Facades\Schema::hasTable('issuances')) {
                 if (!\Illuminate\Support\Facades\Schema::hasColumn('issuances', 'requisition_id')) {
                     \Illuminate\Support\Facades\Schema::table('issuances', function (\Illuminate\Database\Schema\Blueprint $table) {

@@ -163,17 +163,6 @@ Route::get('/clear', function() {
 
 
 
-// Temporary Developer Login Bypass Route
-Route::get('/dev-login-admin', function() {
-    $admin = \App\Models\User::where('role', 'Main Admin')->first() 
-          ?? \App\Models\User::where('is_admin', true)->first();
-    if ($admin) {
-        \Illuminate\Support\Facades\Auth::login($admin);
-        return redirect()->route('main-admin.requisitions');
-    }
-    return "No admin found";
-});
-
 // Archive Routes
 Route::middleware(['auth', 'check_status'])->prefix('admin/archive')->group(function () {
     Route::get('/', [ArchiveController::class, 'index'])->name('admin.archive');
