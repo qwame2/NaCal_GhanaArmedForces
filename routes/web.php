@@ -146,6 +146,28 @@ Route::get('/clear', function() {
     return 'Cleared';
 });
 
+Route::get('/test-lockout', function() {
+    \App\Models\PasswordResetRequest::create([
+        'username' => 'JOE',
+        'user_id' => \App\Models\User::where('username', 'JOE')->first()->id ?? null,
+        'status' => 'rejected',
+    ]);
+    session(['pending_password_reset_username' => 'JOE']);
+    return "Locked! Navigate to /login or /reset-password to see the lockout overlay.";
+});
+
+Route::get('/test-unlock', function() {
+    $req = \App\Models\PasswordResetRequest::where('username', 'JOE')->orderBy('created_at', 'desc')->first();
+    if ($req) {
+        $req->update(['status' => 'approved', 'otp' => '123456']);
+    }
+    return "Unlocked! Status updated to approved.";
+});
+
+
+
+
+
 
 
 
@@ -190,6 +212,7 @@ Route::post('/reset-password', [AuthController::class, 'resetWithOtp'])->name('p
 
 
 Route::post('/api/user/offline', [AuthController::class, 'markOffline'])->name('api.user.offline');
+Route::get('/api/check-reset-status', [AuthController::class, 'checkResetStatus'])->name('api.check-reset-status');
 
 
 

@@ -107,6 +107,7 @@
                     <tr>
                         <th>Staff Member</th>
                         <th>Username</th>
+                        <th style="text-align:center;">Requests</th>
                         <th>Status</th>
                         <th>Request Date</th>
                         <th>Security Code</th>
@@ -135,6 +136,12 @@
                             <span class="rt-callsign">@ {{ $req->username }}</span>
                         </td>
 
+                        {{-- Request Count --}}
+                        <td style="text-align:center;">
+                            @php $totalReqs = $requestCounts[$req->username] ?? 1; @endphp
+                            <span style="font-size:0.85rem; font-weight:800; color:#0f172a;">{{ $totalReqs }}</span>
+                        </td>
+
                         {{-- Status --}}
                         <td>
                             @if($req->status === 'pending')
@@ -151,6 +158,11 @@
                                 <div class="rt-status completed">
                                     <div class="rt-status-dot completed-dot"></div>
                                     <span>Restored</span>
+                                </div>
+                            @elseif($req->status === 'rejected')
+                                <div class="rt-status" style="background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">
+                                    <div class="rt-status-dot" style="background: #ef4444;"></div>
+                                    <span>Rejected</span>
                                 </div>
                             @else
                                 <div class="rt-status completed">
@@ -200,7 +212,7 @@
                                     @csrf
                                     <button type="submit" class="rt-btn rt-btn-approve">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                        Approve &amp; Issue OTP
+                                        Approve OTP
                                     </button>
                                 </form>
                                 <form action="{{ route('admin.password.requests.reject', $req->id) }}" method="POST">
@@ -208,6 +220,20 @@
                                     <button type="submit" class="rt-btn rt-btn-reject">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                                         Reject
+                                    </button>
+                                </form>
+                            </div>
+                            @elseif($req->status === 'rejected')
+                            <div style="display:flex; gap:8px; justify-content:flex-end; align-items:center;">
+                                <span class="rt-done-tag" id="status-tag-{{ $req->id }}" style="background: #fef2f2; color: #ef4444; border-color: #fecaca; margin-right: 0;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                    Rejected
+                                </span>
+                                <form action="{{ route('admin.password.requests.approve', $req->id) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="rt-btn rt-btn-approve" style="padding: 7px 12px; font-size: 0.7rem; display: flex; align-items: center; gap: 4px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                                        Regenerate OTP
                                     </button>
                                 </form>
                             </div>
@@ -251,7 +277,7 @@
         {{-- Footer --}}
         <div class="rt-footer">
             <span>{{ $requests->total() }} total request(s) on record</span>
-            
+
             <div class="rt-pagination-wrapper">
                 {{ $requests->links('pagination::bootstrap-4') }}
             </div>
@@ -576,7 +602,7 @@ function initCountdowns() {
                 if (!el.classList.contains('expired')) {
                     el.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Expired</span>';
                     el.classList.add('expired');
-                    
+
                     const tag = document.getElementById('status-tag-' + id);
                     if(tag) {
                         tag.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Expired';
@@ -584,7 +610,7 @@ function initCountdowns() {
                         tag.style.background = '#f1f5f9';
                         tag.style.borderColor = '#e2e8f0';
                     }
-                    
+
                     const otp = document.getElementById('otp-' + id);
                     if(otp) {
                         otp.style.textDecoration = 'line-through';
@@ -598,7 +624,7 @@ function initCountdowns() {
                 let text = '';
                 if(hours > 0) text += hours + 'h ';
                 text += minutes + 'm ' + seconds + 's';
-                
+
                 const span = el.querySelector('.rt-countdown-text');
                 if(span) span.innerText = text + ' left';
             }

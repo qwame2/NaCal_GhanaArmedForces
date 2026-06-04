@@ -204,7 +204,13 @@ class AdminController extends Controller
     public function passwordRequests()
     {
         $requests = \App\Models\PasswordResetRequest::with('user')->orderBy('created_at', 'desc')->paginate(15);
-        return view('admin.password_requests', compact('requests'));
+
+        // Count how many total requests each username has ever submitted
+        $requestCounts = \App\Models\PasswordResetRequest::selectRaw('username, COUNT(*) as total')
+            ->groupBy('username')
+            ->pluck('total', 'username');
+
+        return view('admin.password_requests', compact('requests', 'requestCounts'));
     }
 
     public function approvePasswordRequest(Request $request, $id)
@@ -249,7 +255,7 @@ class AdminController extends Controller
             'ip_address' => $request->ip()
         ]);
 
-        return back()->with('success', "Request for @{$resetReq->username} rejected.");
+        return back();
     }
 
     public function updateUser(Request $request, $id)

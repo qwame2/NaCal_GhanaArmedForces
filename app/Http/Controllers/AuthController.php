@@ -14,6 +14,22 @@ class AuthController extends Controller
     {
         \Illuminate\Support\Facades\Artisan::call('view:clear');
         
+        $username = session('pending_password_reset_username');
+        if ($username) {
+            $latestRequest = \App\Models\PasswordResetRequest::where('username', $username)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            if ($latestRequest && $latestRequest->status === 'rejected') {
+                return view('auth.auth', [
+                    'rejected_reset' => true,
+                    'rejected_username' => $username,
+                    'rejected_message' => "Alert: Your password reset request has been rejected by the Head of Stores. Please contact Head of Stores for resolution."
+                ]);
+            } else {
+                session()->forget('pending_password_reset_username');
+            }
+        }
+
         if (Auth::check()) {
             $user = Auth::user();
             
@@ -105,6 +121,14 @@ class AuthController extends Controller
             'username' => ['required', 'string'],
             'password' => ['required'],
         ]);
+
+        $latestRequest = \App\Models\PasswordResetRequest::where('username', $request->username)
+            ->orderBy('created_at', 'desc')
+            ->first();
+        if ($latestRequest && $latestRequest->status === 'rejected') {
+            session(['pending_password_reset_username' => $request->username]);
+            return back()->with('error', "Alert: Your password reset request has been rejected by the Head of Stores. Please contact Head of Stores for resolution.")->withInput();
+        }
 
         $maxAttemptsRaw = \Illuminate\Support\Facades\Schema::hasTable('settings') 
             ? \App\Models\Setting::get('max_login_attempts', 5) 
@@ -439,12 +463,29 @@ class AuthController extends Controller
 
     public function showForgotPassword()
     {
+        $username = session('pending_password_reset_username');
+        if ($username) {
+            $latestRequest = \App\Models\PasswordResetRequest::where('username', $username)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            if ($latestRequest && $latestRequest->status === 'rejected') {
+                return redirect()->route('password.reset.otp');
+            }
+        }
         return view('auth.forgot_password');
     }
 
     public function sendPasswordRequest(Request $request)
     {
         $request->validate(['username' => 'required|string']);
+
+        $latestRequest = \App\Models\PasswordResetRequest::where('username', $request->username)
+            ->orderBy('created_at', 'desc')
+            ->first();
+        if ($latestRequest && $latestRequest->status === 'rejected') {
+            session(['pending_password_reset_username' => $request->username]);
+            return back()->with('error', "Alert: Your password reset request has been rejected by the Head of Stores. Please contact Head of Stores for resolution.")->withInput();
+        }
 
         $user = User::where('username', $request->username)->first();
 
@@ -454,11 +495,28 @@ class AuthController extends Controller
             'status' => 'pending',
         ]);
 
+        session(['pending_password_reset_username' => $request->username]);
+
         return redirect()->route('password.reset.otp')->with('success', 'Your request has been sent to the Admin. Once you receive your OTP, enter it here along with your new password.');
     }
 
     public function showResetWithOtp()
     {
+        $username = session('pending_password_reset_username');
+        if ($username) {
+            $latestRequest = \App\Models\PasswordResetRequest::where('username', $username)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            if ($latestRequest && $latestRequest->status === 'rejected') {
+                return view('auth.reset_password_otp', [
+                    'rejected_reset' => true,
+                    'rejected_username' => $username,
+                    'rejected_message' => "Alert: Your password reset request has been rejected by the Head of Stores. Please contact Head of Stores for resolution."
+                ]);
+            } else {
+                session()->forget('pending_password_reset_username');
+            }
+        }
         return view('auth.reset_password_otp');
     }
 
@@ -486,6 +544,14 @@ class AuthController extends Controller
                 }
             ],
         ]);
+
+        $latestRequest = \App\Models\PasswordResetRequest::where('username', $request->username)
+            ->orderBy('created_at', 'desc')
+            ->first();
+        if ($latestRequest && $latestRequest->status === 'rejected') {
+            session(['pending_password_reset_username' => $request->username]);
+            return back()->with('error', "Alert: Your password reset request has been rejected by the Head of Stores. Please contact Head of Stores for resolution.")->withInput();
+        }
 
         $resetReq = \App\Models\PasswordResetRequest::where('username', $request->username)
             ->where('otp', $request->otp)
@@ -519,6 +585,32 @@ class AuthController extends Controller
         }
 
         return back()->with('error', 'System Error: Personnel record not found.');
+    }
+
+    public function checkResetStatus(Request $request)
+    {
+        $username = $request->query('username');
+        if (!$username) {
+            return response()->json(['rejected' => false]);
+        }
+
+        $latestRequest = \App\Models\PasswordResetRequest::where('username', $username)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($latestRequest && $latestRequest->status === 'rejected') {
+            session(['pending_password_reset_username' => $username]);
+            return response()->json([
+                'rejected' => true,
+                'message' => "Alert: Your password reset request has been rejected by the Head of Stores. Please contact Head of Stores for resolution."
+            ]);
+        }
+
+        if (session('pending_password_reset_username') === $username) {
+            session()->forget('pending_password_reset_username');
+        }
+
+        return response()->json(['rejected' => false]);
     }
 
 }
