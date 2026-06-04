@@ -109,30 +109,29 @@
                     $typeBg = 'rgba(59, 130, 246, 0.1)';
                 }
             @endphp
-            <div class="notification-item" data-category="{{ $notif['category'] }}" style="display: flex; gap: 1.5rem; padding: 2rem; border-bottom: 1px solid var(--border-color); transition: var(--transition); cursor: pointer;" onmouseover="this.style.background='rgba(99, 102, 241, 0.02)'" onmouseout="this.style.background='transparent'">
-                <div style="width: 52px; height: 52px; border-radius: 16px; background: {{ $typeBg }}; color: {{ $typeColor }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 8px 15px {{ $typeBg }};">
-                    <i data-lucide="{{ $notif['icon'] }}" style="width: 24px;"></i>
-                </div>
-                <div style="flex: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                        <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0; text-transform: capitalize;">{{ $notif['title'] }}</h4>
-                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">{{ $notif['time'] }}</span>
+            <div class="notification-item" data-category="{{ $notif['category'] }}" style="display: flex; gap: 1rem; padding: 0.85rem 1.5rem; border-bottom: 1px solid var(--border-color); transition: background 0.2s ease; cursor: pointer; align-items: flex-start;" onmouseover="this.style.background='rgba(99, 102, 241, 0.015)'" onmouseout="this.style.background='transparent'">
+                <i data-lucide="{{ $notif['icon'] }}" style="width: 16px; height: 16px; color: {{ $typeColor }}; margin-top: 0.15rem; flex-shrink: 0;"></i>
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 0.15rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                        <h4 style="font-size: 0.875rem; font-weight: 600; color: var(--text-main); margin: 0; text-transform: capitalize; line-height: 1.3;">{{ $notif['title'] }}</h4>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500; white-space: nowrap; margin-left: 1rem;">{{ $notif['time'] }}</span>
                     </div>
-                    <p style="color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; margin-bottom: 1rem;">
+                    <p style="color: var(--text-muted); line-height: 1.4; font-size: 0.8125rem; margin: 0;">
                         {{ $notif['message'] }}
                     </p>
-                    <div style="display: flex; gap: 1rem;">
+                    <div style="display: flex; gap: 0.6rem; align-items: center; margin-top: 0.35rem; font-size: 0.75rem;">
                         @if($notif['category'] === 'alert')
-                            <a href="{{ auth()->user()->is_admin ? route('admin.index') : route('dashboard') }}" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8rem; text-decoration: none; border-radius: 8px; background: {{ $typeColor }}; color: white; font-weight: 700;">{{ $notif['type'] === 'warning' ? 'View Monitor' : 'Audit Now' }}</a>
-                            <button onclick="dismissNotification('{{ str_replace("'", "\'", explode(': ', $notif['title'])[1] ?? $notif['title']) }}')" class="btn-secondary" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-main); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">Dismiss</button>
+                            <a href="{{ auth()->user()->is_admin ? route('admin.index') : route('dashboard') }}" style="color: var(--primary); text-decoration: none; font-weight: 600; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">{{ $notif['type'] === 'warning' ? 'View Monitor' : 'Audit Now' }}</a>
+                            <span style="color: var(--border-color); font-weight: 300;">|</span>
+                            <button onclick="dismissNotification('{{ str_replace("'", "\'", explode(': ', $notif['title'])[1] ?? $notif['title']) }}')" style="background: transparent; border: none; padding: 0; color: var(--text-muted); font-weight: 500; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">Dismiss</button>
                         @else
                             @if(auth()->user()->is_admin)
-                                <a href="{{ route('admin.logs') }}" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8rem; text-decoration: none; border-radius: 8px; background: {{ $typeColor }}; color: white; font-weight: 700;">View System Logs</a>
+                                <a href="{{ route('admin.logs') }}" style="color: var(--primary); text-decoration: none; font-weight: 600; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">View System Logs</a>
                             @endif
                         @endif
                     </div>
                 </div>
-                <div style="width: 10px; height: 10px; background: {{ $typeColor }}; border-radius: 50%; margin-top: 0.5rem;"></div>
+                <div style="width: 6px; height: 6px; background: {{ $typeColor }}; border-radius: 50%; flex-shrink: 0; margin-top: 0.4rem; margin-left: 0.5rem;"></div>
             </div>
             @empty
             <div style="padding: 8rem 2rem; text-align: center;">
@@ -244,39 +243,39 @@
                     let actionButtons = '';
                     if (category === 'alert') {
                         const routeUrl = notif.route === 'admin.index' ? "{{ route('admin.index') }}" : "{{ route('dashboard') }}";
+                        const cleanTitle = (notif.title.includes(': ') ? notif.title.split(': ')[1] : notif.title).replace(/'/g, "\\'");
                         actionButtons = `
-                            <a href="${routeUrl}" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8rem; text-decoration: none; border-radius: 8px; background: ${typeColor}; color: white; font-weight: 700;">${notif.type === 'warning' ? 'View Monitor' : 'Audit Now'}</a>
-                            <button onclick="dismissNotification('${notif.title.replace(/'/g, "\\'")}')" class="btn-secondary" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-main); padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">Dismiss</button>
+                            <div style="display: flex; gap: 0.6rem; align-items: center; margin-top: 0.35rem; font-size: 0.75rem;">
+                                <a href="${routeUrl}" style="color: var(--primary); text-decoration: none; font-weight: 600; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">${notif.type === 'warning' ? 'View Monitor' : 'Audit Now'}</a>
+                                <span style="color: var(--border-color); font-weight: 300;">|</span>
+                                <button onclick="dismissNotification('${cleanTitle}')" style="background: transparent; border: none; padding: 0; color: var(--text-muted); font-weight: 500; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">Dismiss</button>
+                            </div>
                         `;
                     } else {
                         const isAdmin = {{ auth()->user()->is_admin ? 'true' : 'false' }};
                         if (isAdmin) {
                             actionButtons = `
-                                <a href="{{ route('admin.logs') }}" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.8rem; text-decoration: none; border-radius: 8px; background: ${typeColor}; color: white; font-weight: 700;">View System Logs</a>
+                                <div style="display: flex; gap: 0.6rem; align-items: center; margin-top: 0.35rem; font-size: 0.75rem;">
+                                    <a href="{{ route('admin.logs') }}" style="color: var(--primary); text-decoration: none; font-weight: 600; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">View System Logs</a>
+                                </div>
                             `;
-                        } else {
-                            actionButtons = '';
                         }
                     }
 
                     html += `
-                        <div class="notification-item" data-category="${category}" style="display: flex; gap: 1.5rem; padding: 2rem; border-bottom: 1px solid var(--border-color); transition: var(--transition); cursor: pointer;" onmouseover="this.style.background='rgba(99, 102, 241, 0.02)'" onmouseout="this.style.background='transparent'">
-                            <div style="width: 52px; height: 52px; border-radius: 16px; background: ${typeBg}; color: ${typeColor}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 8px 15px ${typeBg};">
-                                <i data-lucide="${notif.icon}" style="width: 24px;"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                                    <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0; text-transform: capitalize;">${notif.title}</h4>
-                                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">${timeLabel}</span>
+                        <div class="notification-item" data-category="${category}" style="display: flex; gap: 1rem; padding: 0.85rem 1.5rem; border-bottom: 1px solid var(--border-color); transition: background 0.2s ease; cursor: pointer; align-items: flex-start;" onmouseover="this.style.background='rgba(99, 102, 241, 0.015)'" onmouseout="this.style.background='transparent'">
+                            <i data-lucide="${notif.icon}" style="width: 16px; height: 16px; color: ${typeColor}; margin-top: 0.15rem; flex-shrink: 0;"></i>
+                            <div style="flex: 1; display: flex; flex-direction: column; gap: 0.15rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                    <h4 style="font-size: 0.875rem; font-weight: 600; color: var(--text-main); margin: 0; text-transform: capitalize; line-height: 1.3;">${notif.title}</h4>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500; white-space: nowrap; margin-left: 1rem;">${timeLabel}</span>
                                 </div>
-                                <p style="color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; margin-bottom: 1rem;">
+                                <p style="color: var(--text-muted); line-height: 1.4; font-size: 0.8125rem; margin: 0;">
                                     ${notif.message}
                                 </p>
-                                <div style="display: flex; gap: 1rem;">
-                                    ${actionButtons}
-                                </div>
+                                ${actionButtons}
                             </div>
-                            <div style="width: 10px; height: 10px; background: ${typeColor}; border-radius: 50%; margin-top: 0.5rem;"></div>
+                            <div style="width: 6px; height: 6px; background: ${typeColor}; border-radius: 50%; flex-shrink: 0; margin-top: 0.4rem; margin-left: 0.5rem;"></div>
                         </div>
                     `;
                 });
