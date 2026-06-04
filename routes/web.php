@@ -179,7 +179,6 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/admin/password-requests/{id}/approve', [AdminController::class, 'approvePasswordRequest'])->name('admin.password.requests.approve');
     Route::post('/admin/password-requests/{id}/reject', [AdminController::class, 'rejectPasswordRequest'])->name('admin.password.requests.reject');
 });
-
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -602,6 +601,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
 
     Route::get('/inventory/create', [InventoryController::class, 'create'])->name('inventory.create');
+    Route::get('/inventory/low-stock', [InventoryController::class, 'lowStockMonitor'])->name('inventory.low-stock');
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     Route::get('/received-items', [ReceivedItemsController::class, 'index'])->name('receiveditems');
     Route::get('/issue-items', [IssueItemsController::class, 'index'])->name('issueitems');
@@ -732,30 +732,33 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 'title' => 'Low Stock: ' . $alert['description'],
                 'message' => "Stock level (" . number_format($alert['total_stock'], 0) . " {$alert['unit']}) is below threshold (" . $alert['threshold'] . ").",
                 'icon' => 'alert-triangle',
-                'route' => $is_admin ? 'admin.index' : 'dashboard'
+                'route' => 'inventory.low-stock'
             ];
         }
 
-        foreach ($expiredAlerts as $item) {
-            if (in_array(trim($item['description']), $acknowledgedClean)) {
-                continue;
+        if ($is_admin) {
+            foreach ($expiredAlerts as $item) {
+                if (in_array(trim($item['description']), $acknowledgedClean)) {
+                    continue;
+                }
+                $notifications[] = [
+                    'category' => 'alert',
+                    'type' => 'danger',
+                    'title' => 'Expired Record: ' . $item['description'],
+                    'message' => "Item registry indicates zero balance but exists in inventory records.",
+                    'icon' => 'alert-octagon',
+                    'route' => 'admin.index'
+                ];
             }
-            $notifications[] = [
-                'category' => 'alert',
-                'type' => 'danger',
-                'title' => 'Expired Record: ' . $item['description'],
-                'message' => "Item registry indicates zero balance but exists in inventory records.",
-                'icon' => 'alert-octagon',
-                'route' => $is_admin ? 'admin.index' : 'dashboard'
-            ];
         }
 
-        $systemLogs = \Illuminate\Support\Facades\Cache::remember('global_recent_system_logs', 60, function() {
+        $systemLogs = \Illuminate\Support\Facades\Cache::remember('global_recent_system_logs_v2', 60, function() {
             return \App\Models\SystemLog::orderBy('created_at', 'desc')
-                ->limit(20)
+                ->limit(100)
                 ->get()
                 ->map(function($log) {
                     return [
+                        'user_id' => $log->user_id,
                         'action' => $log->action,
                         'description' => $log->description,
                         'severity' => $log->severity,
@@ -766,10 +769,32 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         });
 
         foreach ($systemLogs as $log) {
+            $isConcerned = false;
+            if ($is_admin) {
+                $isConcerned = true;
+            } else {
+                $nameLower = strtolower(auth()->user()->name);
+                $usernameLower = strtolower(auth()->user()->username);
+                $descLower = strtolower($log['description'] ?? '');
+                
+                if (str_contains($descLower, $nameLower) || str_contains($descLower, $usernameLower)) {
+                    $isConcerned = true;
+                } elseif (($log['user_id'] ?? null) === auth()->id()) {
+                    $action = strtoupper($log['action'] ?? '');
+                    if (in_array($action, ['ADD_INVENTORY', 'EDIT_INVENTORY', 'SUPPLEMENT_INVENTORY', 'ISSUE_ITEM', 'RETURN_ITEM', 'AUTHORIZATION'])) {
+                        $isConcerned = true;
+                    }
+                }
+            }
+
+            if (!$isConcerned) {
+                continue;
+            }
+
             $notifications[] = [
                 'category' => 'system',
                 'type' => 'info',
-                'title' => $log['action'] ?? 'System Event',
+                'title' => $log['action'] ? str_replace('_', ' ', $log['action']) : 'System Event',
                 'message' => $log['description'],
                 'icon' => $log['severity'] === 'danger' || $log['severity'] === 'critical' ? 'shield-alert' : 'activity',
                 'route' => $is_admin ? 'admin.logs' : 'dashboard',

@@ -716,7 +716,7 @@
                 <li>
                     <a href="{{ route('notifications.index') }}" class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                        <span>System Alerts</span>
+                        <span>Notifications</span>
                         <span id="sidebar-badge-alerts" style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($globalNotificationCount) || $globalNotificationCount <= 0) ? 'display: none;' : '' }}">
                             {{ $globalNotificationCount ?? 0 }}
                         </span>
@@ -1005,7 +1005,14 @@
                             } else {
                                 let html = '';
                                 data.notifications.forEach(notif => {
-                                    const routeUrl = notif.route === 'admin.index' ? "{{ route('admin.index') }}" : "{{ route('dashboard') }}";
+                                    let routeUrl = "{{ route('dashboard') }}";
+                                    if (notif.route === 'inventory.low-stock') {
+                                        routeUrl = "{{ route('inventory.low-stock') }}";
+                                    } else if (notif.route === 'admin.index') {
+                                        routeUrl = "{{ route('admin.index') }}";
+                                    } else if (notif.route === 'admin.logs') {
+                                        routeUrl = "{{ route('admin.logs') }}";
+                                    }
                                     const cleanDesc = notif.title.includes(': ') ? notif.title.split(': ')[1] : notif.title;
                                     html += `
                                         <div style="position: relative; border-bottom: 1px solid #f1f5f9;">

@@ -62,30 +62,54 @@
                     }
                 }
 
-                // Fetch expired items details
-                $expiredItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) as total_qty')
-                    ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
-                    ->groupBy('description')
-                    ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
-                    ->get();
-                    
-                foreach($expiredItems as $item) {
-                    $allNotifs[] = [
-                        'category' => 'alert',
-                        'type' => 'danger', 
-                        'title' => 'Expired Record: ' . $item->description, 
-                        'message' => "Item registry indicates zero balance but exists in inventory records.", 
-                        'icon' => 'alert-octagon',
-                        'time' => 'Just now'
-                    ];
+                // Fetch expired items details (Admins only)
+                if (auth()->user()->is_admin) {
+                    $expiredItems = \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) as total_qty')
+                        ->whereNotIn(\DB::raw('TRIM(description)'), array_map('trim', $acknowledged))
+                        ->groupBy('description')
+                        ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
+                        ->get();
+                        
+                    foreach($expiredItems as $item) {
+                        $allNotifs[] = [
+                            'category' => 'alert',
+                            'type' => 'danger', 
+                            'title' => 'Expired Record: ' . $item->description, 
+                            'message' => "Item registry indicates zero balance but exists in inventory records.", 
+                            'icon' => 'alert-octagon',
+                            'time' => 'Just now'
+                        ];
+                    }
                 }
 
                 // Fetch recent system logs
                 $systemLogs = \App\Models\SystemLog::orderBy('created_at', 'desc')
-                    ->limit(20)
+                    ->limit(100)
                     ->get();
                     
                 foreach($systemLogs as $log) {
+                    $isConcerned = false;
+                    if (auth()->user()->is_admin) {
+                        $isConcerned = true;
+                    } else {
+                        $nameLower = strtolower(auth()->user()->name);
+                        $usernameLower = strtolower(auth()->user()->username);
+                        $descLower = strtolower($log->description);
+                        
+                        if (str_contains($descLower, $nameLower) || str_contains($descLower, $usernameLower)) {
+                            $isConcerned = true;
+                        } elseif ($log->user_id === auth()->id()) {
+                            $action = strtoupper($log->action ?? '');
+                            if (in_array($action, ['ADD_INVENTORY', 'EDIT_INVENTORY', 'SUPPLEMENT_INVENTORY', 'ISSUE_ITEM', 'RETURN_ITEM', 'AUTHORIZATION'])) {
+                                $isConcerned = true;
+                            }
+                        }
+                    }
+
+                    if (!$isConcerned) {
+                        continue;
+                    }
+
                     $allNotifs[] = [
                         'category' => 'system',
                         'type' => 'info',
@@ -121,7 +145,7 @@
                     </p>
                     <div style="display: flex; gap: 0.6rem; align-items: center; margin-top: 0.35rem; font-size: 0.75rem;">
                         @if($notif['category'] === 'alert')
-                            <a href="{{ auth()->user()->is_admin ? route('admin.index') : route('dashboard') }}" style="color: var(--primary); text-decoration: none; font-weight: 600; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">{{ $notif['type'] === 'warning' ? 'View Monitor' : 'Audit Now' }}</a>
+                            <a href="{{ $notif['type'] === 'warning' ? route('inventory.low-stock') : (auth()->user()->is_admin ? route('admin.index') : route('dashboard')) }}" style="color: var(--primary); text-decoration: none; font-weight: 600; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">{{ $notif['type'] === 'warning' ? 'View Monitor' : 'Audit Now' }}</a>
                             <span style="color: var(--border-color); font-weight: 300;">|</span>
                             <button onclick="dismissNotification('{{ str_replace("'", "\'", explode(': ', $notif['title'])[1] ?? $notif['title']) }}')" style="background: transparent; border: none; padding: 0; color: var(--text-muted); font-weight: 500; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">Dismiss</button>
                         @else
@@ -242,7 +266,14 @@
                     
                     let actionButtons = '';
                     if (category === 'alert') {
-                        const routeUrl = notif.route === 'admin.index' ? "{{ route('admin.index') }}" : "{{ route('dashboard') }}";
+                        let routeUrl = "{{ route('dashboard') }}";
+                        if (notif.route === 'inventory.low-stock') {
+                            routeUrl = "{{ route('inventory.low-stock') }}";
+                        } else if (notif.route === 'admin.index') {
+                            routeUrl = "{{ route('admin.index') }}";
+                        } else if (notif.route === 'admin.logs') {
+                            routeUrl = "{{ route('admin.logs') }}";
+                        }
                         const cleanTitle = (notif.title.includes(': ') ? notif.title.split(': ')[1] : notif.title).replace(/'/g, "\\'");
                         actionButtons = `
                             <div style="display: flex; gap: 0.6rem; align-items: center; margin-top: 0.35rem; font-size: 0.75rem;">

@@ -385,4 +385,47 @@ class InventoryController extends Controller
 
         return response()->json($categoryResults->merge($items)->merge($batches));
     }
+
+    public function lowStockMonitor()
+    {
+        \App\Models\InventoryBatch::selfHealSchema();
+
+        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
+
+        $allItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as stock_balance, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as qty')
+            ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
+            ->get();
+
+        $lowStockItems = collect();
+        foreach ($allItems as $item) {
+            $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
+            $currentStock = (float)$item->stock_balance;
+            if ($threshold > 0 && $currentStock < $threshold) {
+                $unit = \App\Models\Setting::getItemUnit($item->description);
+                $lowStockItems->push((object)[
+                    'description' => $item->description,
+                    'ledge_category' => $item->ledge_category,
+                    'category_name' => $ledgeMap[$item->ledge_category] ?? "Category {$item->ledge_category}",
+                    'stock_balance' => $currentStock,
+                    'threshold' => $threshold,
+                    'unit' => $unit
+                ]);
+            }
+        }
+
+        $lowStockItems = $lowStockItems->sortBy('stock_balance')->values();
+
+        return view('inventory.low_stock', compact('lowStockItems', 'ledgeMap'));
+    }
 }

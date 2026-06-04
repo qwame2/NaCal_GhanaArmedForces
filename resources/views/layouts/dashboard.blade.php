@@ -644,7 +644,14 @@
                                 } else {
                                     let html = '';
                                     data.notifications.forEach(notif => {
-                                         const routeUrl = notif.route === 'admin.index' ? "{{ route('admin.index') }}" : "{{ route('dashboard') }}";
+                                         let routeUrl = "{{ route('dashboard') }}";
+                                         if (notif.route === 'inventory.low-stock') {
+                                             routeUrl = "{{ route('inventory.low-stock') }}";
+                                         } else if (notif.route === 'admin.index') {
+                                             routeUrl = "{{ route('admin.index') }}";
+                                         } else if (notif.route === 'admin.logs') {
+                                             routeUrl = "{{ route('admin.logs') }}";
+                                         }
                                          const cleanDesc = notif.title.includes(': ') ? notif.title.split(': ')[1] : notif.title;
                                          html += `
                                              <div style="position: relative; border-bottom: 1px solid var(--border-color);">
