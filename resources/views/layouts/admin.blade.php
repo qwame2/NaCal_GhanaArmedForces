@@ -132,7 +132,6 @@
             color: var(--text-body);
             font-family: "outfit", serif;
             margin: 0;
-            display: flex;
             min-height: 100vh;
         }
 
@@ -323,7 +322,6 @@
 
         /* Main Viewport */
         .main-wrapper {
-            flex: 1;
             margin-left: 280px;
             padding: 0 2.5rem 4rem 2.5rem;
             min-width: 0;
@@ -335,6 +333,9 @@
         .main-wrapper > *:not(header) {
             max-width: 1600px;
             width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            box-sizing: border-box;
         }
 
         /* Mobile Trigger */

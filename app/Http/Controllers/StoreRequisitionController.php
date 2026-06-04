@@ -613,7 +613,83 @@ class StoreRequisitionController extends Controller
             'urgent'             => StoreRequisition::where('status', 'pending')->where('main_admin_status', 'approved')->where('priority', 'urgent')->count(),
         ];
 
-        return view('admin.requisitions', compact('requisitions', 'ledgeMap', 'stats'));
+        // 1. Requisitions count by Department
+        $deptRequests = StoreRequisition::whereNotNull('department')
+            ->where('department', '!=', '')
+            ->selectRaw('department, count(*) as count')
+            ->groupBy('department')
+            ->orderByDesc('count')
+            ->get();
+        $deptLabels = $deptRequests->pluck('department')->toArray();
+        $deptCounts = $deptRequests->pluck('count')->toArray();
+
+        // 2. Category Requests by Department (Grouped Column Chart)
+        $deptCategoryData = StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
+            ->whereNotNull('store_requisitions.department')
+            ->where('store_requisitions.department', '!=', '')
+            ->selectRaw('store_requisitions.department, store_requisition_items.category, count(*) as count')
+            ->groupBy('store_requisitions.department', 'store_requisition_items.category')
+            ->get();
+
+        $uniqueDepts = $deptCategoryData->pluck('department')->unique()->values()->toArray();
+        $uniqueCats = $deptCategoryData->pluck('category')->unique()->values()->toArray();
+        
+        $categorySeries = [];
+        foreach ($uniqueCats as $cat) {
+            $catName = $ledgeMap[$cat] ?? 'Category ' . $cat;
+            $data = [];
+            foreach ($uniqueDepts as $dept) {
+                $match = $deptCategoryData->where('department', $dept)->where('category', $cat)->first();
+                $data[] = $match ? $match->count : 0;
+            }
+            $categorySeries[] = [
+                'name' => $catName,
+                'data' => $data
+            ];
+        }
+
+        // 3. Top Requested Items by Department
+        $topItems = StoreRequisitionItem::selectRaw('TRIM(description) as item_name, count(*) as count')
+            ->groupBy(\DB::raw('TRIM(description)'))
+            ->orderByDesc('count')
+            ->take(8)
+            ->get();
+        $itemLabels = $topItems->pluck('item_name')->toArray();
+
+        $itemDeptData = StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
+            ->whereNotNull('store_requisitions.department')
+            ->where('store_requisitions.department', '!=', '')
+            ->whereIn(\DB::raw('TRIM(store_requisition_items.description)'), $itemLabels)
+            ->selectRaw('TRIM(store_requisition_items.description) as item_name, store_requisitions.department, count(*) as count')
+            ->groupBy(\DB::raw('TRIM(store_requisition_items.description)'), 'store_requisitions.department')
+            ->get();
+
+        $topItemDepts = $itemDeptData->pluck('department')->unique()->values()->toArray();
+
+        $itemSeries = [];
+        foreach ($topItemDepts as $dept) {
+            $data = [];
+            foreach ($itemLabels as $itemLabel) {
+                $match = $itemDeptData->where('item_name', $itemLabel)->where('department', $dept)->first();
+                $data[] = $match ? $match->count : 0;
+            }
+            $itemSeries[] = [
+                'name' => $dept,
+                'data' => $data
+            ];
+        }
+
+        return view('admin.requisitions', compact(
+            'requisitions', 
+            'ledgeMap', 
+            'stats',
+            'deptLabels',
+            'deptCounts',
+            'categorySeries',
+            'uniqueDepts',
+            'itemLabels',
+            'itemSeries'
+        ));
     }
 
     /**

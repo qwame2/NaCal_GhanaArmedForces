@@ -848,7 +848,7 @@
     }
 </style>
 
-<div style="padding:2rem;">
+<div style="padding:2rem; width:100%; box-sizing:border-box; overflow-x:hidden;">
 
     {{-- Header --}}
     <div style="margin-bottom:2rem;">
@@ -895,6 +895,44 @@
             </div>
         </div>
     </div>
+
+    {{-- Requisition Analytical Intelligence --}}
+    @if(count($deptLabels) > 0)
+    <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        {{-- Department Requisition Volume --}}
+        <div class="glass-card" style="background: var(--bg-card); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-luxe);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 style="font-size: 0.9rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <i data-lucide="building" style="color: var(--primary); width: 18px; height: 18px;"></i>
+                    Department Volume
+                </h3>
+            </div>
+            <div id="deptRequisitionsChart" style="min-height: 280px;"></div>
+        </div>
+
+        {{-- Category Requests by Department --}}
+        <div class="glass-card" style="background: var(--bg-card); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-luxe);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 style="font-size: 0.9rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <i data-lucide="bar-chart-3" style="color: var(--primary); width: 18px; height: 18px;"></i>
+                    Categories by Department
+                </h3>
+            </div>
+            <div id="deptCategoryChart" style="min-height: 280px;"></div>
+        </div>
+
+        {{-- Top Requested Items --}}
+        <div class="glass-card" style="background: var(--bg-card); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-luxe);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 style="font-size: 0.9rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <i data-lucide="package" style="color: var(--primary); width: 18px; height: 18px;"></i>
+                    Top Requested Items
+                </h3>
+            </div>
+            <div id="topItemsChart" style="min-height: 280px;"></div>
+        </div>
+    </div>
+    @endif
 
     {{-- Filters --}}
     <div class="filter-card">
@@ -944,7 +982,7 @@
     </div>
 
     {{-- Table --}}
-    <div id="requisitions-table-container" style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);overflow:hidden; transition: opacity 0.2s ease;">
+    <div id="requisitions-table-container" style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);overflow:hidden;overflow-x:auto; transition: opacity 0.2s ease;">
         <table style="width:100%;border-collapse:collapse;">
             <thead style="background:var(--bg-main);">
                 <tr>
@@ -2113,6 +2151,146 @@
         if (openId) {
             openRequisitionModal(parseInt(openId));
         }
+    });
+</script>
+<script src="{{ asset('js/apexcharts.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        @if(count($deptLabels) > 0)
+        // 1. Department Volume Chart (Donut)
+        var deptOptions = {
+            chart: {
+                type: 'donut',
+                height: 280,
+                fontFamily: 'Outfit, sans-serif',
+                background: 'transparent'
+            },
+            theme: {
+                mode: document.documentElement.getAttribute('data-theme') || 'light'
+            },
+            series: @json($deptCounts),
+            labels: @json($deptLabels),
+            colors: ['#6366f1', '#10b981', '#f59e0b', '#db2777', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6'],
+            dataLabels: {
+                enabled: false
+            },
+            legend: {
+                position: 'bottom',
+                fontSize: '11px',
+                markers: {
+                    radius: 12
+                }
+            },
+            stroke: {
+                width: 4,
+                colors: [document.documentElement.getAttribute('data-theme') === 'dark' ? '#1e293b' : '#ffffff']
+            }
+        };
+        var deptChart = new ApexCharts(document.querySelector("#deptRequisitionsChart"), deptOptions);
+        deptChart.render();
+
+        // 2. Categories by Department (Stacked Column)
+        var catOptions = {
+            chart: {
+                type: 'bar',
+                height: 280,
+                stacked: true,
+                toolbar: {
+                    show: false
+                },
+                fontFamily: 'Outfit, sans-serif',
+                background: 'transparent'
+            },
+            theme: {
+                mode: document.documentElement.getAttribute('data-theme') || 'light'
+            },
+            series: @json($categorySeries),
+            xaxis: {
+                categories: @json($uniqueDepts),
+                axisBorder: {
+                    show: false
+                },
+                axisTicks: {
+                    show: false
+                }
+            },
+            grid: {
+                borderColor: 'var(--border-color)',
+                strokeDashArray: 4
+            },
+            legend: {
+                position: 'bottom',
+                fontSize: '11px'
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    borderRadius: 6
+                }
+            }
+        };
+        var catChart = new ApexCharts(document.querySelector("#deptCategoryChart"), catOptions);
+        catChart.render();
+
+        // 3. Top Requested Items (Horizontal Bar stacked by Department)
+        var itemsOptions = {
+            chart: {
+                type: 'bar',
+                height: 280,
+                stacked: true,
+                toolbar: {
+                    show: false
+                },
+                fontFamily: 'Outfit, sans-serif',
+                background: 'transparent'
+            },
+            theme: {
+                mode: document.documentElement.getAttribute('data-theme') || 'light'
+            },
+            series: @json($itemSeries),
+            plotOptions: {
+                bar: {
+                    barHeight: '70%',
+                    horizontal: true,
+                    borderRadius: 4
+                }
+            },
+            colors: ['#6366f1', '#10b981', '#f59e0b', '#db2777', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6'],
+            xaxis: {
+                categories: @json($itemLabels),
+                axisBorder: {
+                    show: false
+                },
+                axisTicks: {
+                    show: false
+                }
+            },
+            grid: {
+                borderColor: 'var(--border-color)',
+                strokeDashArray: 4
+            },
+            legend: {
+                position: 'bottom',
+                fontSize: '11px'
+            },
+            dataLabels: {
+                enabled: true,
+                style: {
+                    fontSize: '10px'
+                }
+            }
+        };
+        var itemsChart = new ApexCharts(document.querySelector("#topItemsChart"), itemsOptions);
+        itemsChart.render();
+
+        // Theme toggle updates
+        window.addEventListener('themeChanged', function(e) {
+            const mode = e.detail.theme;
+            deptChart.updateOptions({ theme: { mode: mode } });
+            catChart.updateOptions({ theme: { mode: mode } });
+            itemsChart.updateOptions({ theme: { mode: mode } });
+        });
+        @endif
     });
 </script>
 @endsection
