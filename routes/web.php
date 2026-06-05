@@ -686,6 +686,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         ]);
     })->name('api.user.permissions');
 
+    Route::get('/api/inventory/check-duplicate', [InventoryController::class, 'checkDuplicate'])->name('api.inventory.check-duplicate');
+
     Route::get('/api/notifications', function() {
         if (!auth()->check()) return response()->json(['error' => 'Unauthenticated'], 401);
 

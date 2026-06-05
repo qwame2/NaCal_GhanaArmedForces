@@ -227,6 +227,56 @@ jQuery(document).ready(function($) {
     $('#entryDate').val(formattedDate);
     $('#arrivalDate').val(new Date().toISOString().split('T')[0]);
 
+    // Check duplicates when Received Date changes
+    $('#arrivalDate').on('change', function() {
+        $('.item-entry-row').each(function() {
+            checkDuplicateItem($(this));
+        });
+    });
+
+    function checkDuplicateItem($row) {
+        const desc = ($row.find('.item-select-dynamic').val() || '').trim();
+        const arrivalDate = $('#arrivalDate').val();
+
+        // Clear warning and state
+        $row.find('.duplicate-warning').remove();
+        $row.removeClass('has-duplicate');
+        if (typeof updateSubmitButtonState === 'function') {
+            updateSubmitButtonState();
+        }
+
+        if (!desc || !arrivalDate) {
+            return;
+        }
+
+        $.ajax({
+            url: '{{ route("api.inventory.check-duplicate", [], false) }}',
+            method: 'GET',
+            data: {
+                description: desc,
+                arrival_date: arrivalDate
+            },
+            success: function(response) {
+                if (response.duplicate) {
+                    $row.addClass('has-duplicate');
+                    const warningHtml = `
+                        <div class="duplicate-warning animate-slide-up" style="color: #ef4444; font-size: 0.8rem; font-weight: 700; margin-top: 8px; display: flex; align-items: flex-start; gap: 8px; padding: 10px 14px; background: rgba(239, 68, 68, 0.05); border: 1.5px solid rgba(239, 68, 68, 0.2); border-radius: 12px;">
+                            <svg style="width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <span>${response.message}</span>
+                        </div>
+                    `;
+                    const select2Container = $row.find('.item-select-dynamic').parent();
+                    select2Container.append(warningHtml);
+                    if (typeof updateSubmitButtonState === 'function') {
+                        updateSubmitButtonState();
+                    }
+                }
+            }
+        });
+    }
+
     function hasRollbackChanges(newPayload, origPayload) {
         if (!origPayload) return true;
 
@@ -461,6 +511,27 @@ jQuery(document).ready(function($) {
             });
             return;
         }
+
+        let hasDuplicate = false;
+        let duplicateMessage = '';
+        $('.item-entry-row').each(function() {
+            if ($(this).hasClass('has-duplicate')) {
+                hasDuplicate = true;
+                duplicateMessage = $(this).find('.duplicate-warning span').text();
+                return false; // break loop
+            }
+        });
+
+        if (hasDuplicate) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Duplicate Entry Detected',
+                text: duplicateMessage || 'One or more items have already been entered into the system for the selected Received Date.',
+                confirmButtonColor: '#ef4444'
+            });
+            return;
+        }
+
 
         const supplierStatus = isDonor ? 'Donor' : $('#supplierStatusSelect').val();
         const acquisitionType = isDonor ? 'Donor' : 'Supplier';
@@ -917,8 +988,11 @@ jQuery(document).ready(function($) {
                     qtyInput.removeAttr('placeholder');
                     varianceInput.attr('placeholder', '0');
                     updateStatsPanel();
+                    checkDuplicateItem($row);
                 } else {
                     statsPanel.slideUp(300);
+                    $row.find('.duplicate-warning').remove();
+                    $row.removeClass('has-duplicate');
                 }
                 if (typeof updateSubmitButtonState === 'function') {
                     updateSubmitButtonState();
@@ -965,6 +1039,8 @@ jQuery(document).ready(function($) {
 
     function updateSubmitButtonState() {
         let disabled = false;
+        let duplicateFound = false;
+
         $('#itemsContainer .item-entry-row').each(function() {
             const unitVal = ($(this).find('.row-unit').val() || '').trim();
             const locationVal = ($(this).find('.row-location').val() || '').trim();
@@ -977,17 +1053,25 @@ jQuery(document).ready(function($) {
                 !locationVal) {
                 disabled = true;
             }
+
+            if ($(this).hasClass('has-duplicate')) {
+                duplicateFound = true;
+            }
         });
 
         const submitBtn = $('#newEntryForm button[type="submit"]');
-        if (disabled) {
+        if (disabled || duplicateFound) {
             submitBtn.prop('disabled', true);
             submitBtn.css({
                 'opacity': '0.5',
                 'cursor': 'not-allowed',
                 'pointer-events': 'none'
             });
-            submitBtn.attr('title', 'Please assign a package type and store location before submitting.');
+            if (duplicateFound) {
+                submitBtn.attr('title', 'Please resolve duplicate entries before submitting.');
+            } else {
+                submitBtn.attr('title', 'Please assign a package type and store location before submitting.');
+            }
         } else {
             submitBtn.prop('disabled', false);
             submitBtn.css({
@@ -998,6 +1082,7 @@ jQuery(document).ready(function($) {
             submitBtn.removeAttr('title');
         }
     }
+
 
     $(document).on('input', '.row-unit, .row-location', function() {
         updateSubmitButtonState();
