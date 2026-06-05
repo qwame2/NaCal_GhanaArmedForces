@@ -1896,7 +1896,8 @@ class StoreRequisitionController extends Controller
                 'store_requisitions.id as requisition_id',
                 'store_requisitions.requester_name',
                 'store_requisitions.created_at as req_created',
-                'issuances.issuance_date'
+                'issuances.issuance_date',
+                \DB::raw('(SELECT COALESCE(SUM(returned_qty), 0) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id) as total_returned')
             )
             ->where('issuances.issuance_type', 'Temporary')
             ->where('issued_items.quantity', '>', 0);
@@ -1914,7 +1915,7 @@ class StoreRequisitionController extends Controller
         $ledgeMap = Setting::getCategories();
 
         foreach ($allIssuedItems as $item) {
-            $returnedQty = \App\Models\ReturnedItem::where('issued_item_id', $item->issued_item_id)->sum('returned_qty') ?? 0;
+            $returnedQty = floatval($item->total_returned);
             $outstandingQty = $item->qty_issued - $returnedQty;
 
             // Only show items with outstanding quantities to return

@@ -12,8 +12,6 @@ class AuthController extends Controller
 {
     public function showAuth()
     {
-        \Illuminate\Support\Facades\Artisan::call('view:clear');
-        
         $username = session('pending_password_reset_username');
         if ($username) {
             $latestRequest = \App\Models\PasswordResetRequest::where('username', $username)

@@ -84,7 +84,13 @@ class InventoryItem extends Model
         
         $activeLoans = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->join('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
-            ->select('issued_items.id', 'issued_items.quantity', 'store_requisitions.purpose', 'store_requisitions.created_at')
+            ->select(
+                'issued_items.id',
+                'issued_items.quantity',
+                'store_requisitions.purpose',
+                'store_requisitions.created_at',
+                \DB::raw('(SELECT COALESCE(SUM(returned_qty), 0) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id) as total_returned')
+            )
             ->where('issuances.issuance_type', 'Temporary')
             ->where('issued_items.quantity', '>', 0)
             ->where(\DB::raw('LOWER(TRIM(issued_items.description))'), '=', strtolower(trim($this->description)))
@@ -93,7 +99,7 @@ class InventoryItem extends Model
 
         foreach ($activeLoans as $loan) {
             // Check if fully returned
-            $returnedQty = \App\Models\ReturnedItem::where('issued_item_id', $loan->id)->sum('returned_qty') ?? 0;
+            $returnedQty = floatval($loan->total_returned);
             if ($loan->quantity <= 0 || $returnedQty >= $loan->quantity) {
                 continue;
             }
@@ -143,7 +149,14 @@ class InventoryItem extends Model
         
         $activeLoans = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->join('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
-            ->select('issued_items.id', 'issued_items.quantity', 'store_requisitions.purpose', 'store_requisitions.created_at', 'store_requisitions.department')
+            ->select(
+                'issued_items.id',
+                'issued_items.quantity',
+                'store_requisitions.purpose',
+                'store_requisitions.created_at',
+                'store_requisitions.department',
+                \DB::raw('(SELECT COALESCE(SUM(returned_qty), 0) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id) as total_returned')
+            )
             ->where('issuances.issuance_type', 'Temporary')
             ->where('issued_items.quantity', '>', 0)
             ->where(\DB::raw('LOWER(TRIM(issued_items.description))'), '=', strtolower(trim($this->description)))
@@ -153,7 +166,7 @@ class InventoryItem extends Model
         $dates = [];
         foreach ($activeLoans as $loan) {
             // Check if fully returned
-            $returnedQty = \App\Models\ReturnedItem::where('issued_item_id', $loan->id)->sum('returned_qty') ?? 0;
+            $returnedQty = floatval($loan->total_returned);
             if ($loan->quantity <= 0 || $returnedQty >= $loan->quantity) {
                 continue;
             }
