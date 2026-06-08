@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 
 class TempRequisitionerController extends Controller
 {
+    protected static $overdueReturnCache = [];
+
     /**
      * Generate a department-prefix OTP from the department name.
      * Examples: "Information Technology" → "IT", "Human Resources" → "HR",
@@ -51,47 +53,59 @@ class TempRequisitionerController extends Controller
             return false;
         }
 
-        $activeItems = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-            ->join('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
-            ->select(
-                'issued_items.id',
-                'issued_items.quantity',
-                'store_requisitions.purpose',
-                'store_requisitions.created_at',
-                \DB::raw('(SELECT COALESCE(SUM(returned_qty), 0) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id) as total_returned')
-            )
-            ->where('issuances.issuance_type', 'Temporary')
-            ->where('store_requisitions.department', $department)
-            ->where('issued_items.quantity', '>', 0)
-            ->get();
+        $deptClean = trim($department);
+        if (array_key_exists($deptClean, self::$overdueReturnCache)) {
+            return self::$overdueReturnCache[$deptClean];
+        }
 
-        foreach ($activeItems as $item) {
-            // Check if fully returned under either remaining-qty or original-qty system
-            $returnedQty = floatval($item->total_returned);
-            if ($item->quantity <= 0 || $returnedQty >= $item->quantity) {
-                continue;
-            }
+        // Short-lived Laravel cache (10 seconds) to avoid database joins across concurrent request loops
+        $cacheKey = 'dept_overdue_return_' . md5($deptClean);
+        $hasOverdue = \Illuminate\Support\Facades\Cache::remember($cacheKey, 10, function() use ($deptClean) {
+            $activeItems = \App\Models\IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+                ->join('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
+                ->select(
+                    'issued_items.id',
+                    'issued_items.quantity',
+                    'store_requisitions.purpose',
+                    'store_requisitions.created_at',
+                    \DB::raw('(SELECT COALESCE(SUM(returned_qty), 0) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id) as total_returned')
+                )
+                ->where('issuances.issuance_type', 'Temporary')
+                ->where('store_requisitions.department', $deptClean)
+                ->where('issued_items.quantity', '>', 0)
+                ->get();
 
-            $returnDate = null;
-            if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $item->purpose, $matches)) {
-                try {
-                    $returnDate = \App\Models\Setting::parseExpectedReturnDate(trim($matches[1]))->format('Y-m-d');
-                } catch (\Exception $e) {
+            foreach ($activeItems as $item) {
+                // Check if fully returned under either remaining-qty or original-qty system
+                $returnedQty = floatval($item->total_returned);
+                if ($item->quantity <= 0 || $returnedQty >= $item->quantity) {
                     continue;
+                }
+
+                $returnDate = null;
+                if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $item->purpose, $matches)) {
+                    try {
+                        $returnDate = \App\Models\Setting::parseExpectedReturnDate(trim($matches[1]))->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                }
+
+                if (!$returnDate) {
+                    $returnDate = \Carbon\Carbon::parse($item->created_at)->format('Y-m-d');
+                }
+
+                $today = \Carbon\Carbon::now()->format('Y-m-d');
+                if ($today >= $returnDate) {
+                    return true;
                 }
             }
 
-            if (!$returnDate) {
-                $returnDate = \Carbon\Carbon::parse($item->created_at)->format('Y-m-d');
-            }
+            return false;
+        });
 
-            $today = \Carbon\Carbon::now()->format('Y-m-d');
-            if ($today >= $returnDate) {
-                return true;
-            }
-        }
-
-        return false;
+        self::$overdueReturnCache[$deptClean] = $hasOverdue;
+        return $hasOverdue;
     }
 
     /**

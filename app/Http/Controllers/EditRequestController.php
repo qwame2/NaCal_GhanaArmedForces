@@ -205,7 +205,10 @@ class EditRequestController extends Controller
 
         // Update the original message that triggered this for Admin's persistence
         // Update all original messages that triggered this for Admin's persistence (sync across multiple admins)
-        $originalMsgs = Message::where('message', 'like', "%edit-req-actions-{$editReq->id}%")->get();
+        $originalMsgs = Message::where('edit_request_id', $editReq->id)->get();
+        if ($originalMsgs->isEmpty()) {
+            $originalMsgs = Message::where('message', 'like', "%edit-req-actions-{$editReq->id}%")->get();
+        }
         
         if ($originalMsgs->count() > 0) {
             if ($requestType === 'issue_submission') {
@@ -601,16 +604,22 @@ class EditRequestController extends Controller
         }
         $finalMsg .= "</div>";
 
-        // 1. Update the original "Awaiting" message for the Personnel (Highly Resilient Search)
+        // Try finding by edit_request_id first (fast index path)
         $personnelOriginalMsg = Message::where('receiver_id', $editReq->user_id)
-            ->where(function($q) use ($editReq) {
-                $q->where('edit_request_id', $editReq->id)
-                  ->orWhere('message', 'like', "%<!-- sra_req_id:{$editReq->id} -->%")
-                  ->orWhere('message', 'like', '%Awaiting Authorization%')
-                  ->orWhere('message', 'like', '%Awaiting Admin verification for remainder%');
-            })
+            ->where('edit_request_id', $editReq->id)
             ->orderBy('created_at', 'desc')
             ->first();
+
+        if (!$personnelOriginalMsg) {
+            $personnelOriginalMsg = Message::where('receiver_id', $editReq->user_id)
+                ->where(function($q) use ($editReq) {
+                    $q->where('message', 'like', "%<!-- sra_req_id:{$editReq->id} -->%")
+                      ->orWhere('message', 'like', '%Awaiting Authorization%')
+                      ->orWhere('message', 'like', '%Awaiting Admin verification for remainder%');
+                })
+                ->orderBy('created_at', 'desc')
+                ->first();
+        }
 
         if ($personnelOriginalMsg) {
             $personnelOriginalMsg->update([
@@ -632,11 +641,17 @@ class EditRequestController extends Controller
         // 2. Update the Admin's message (this view)
         // 2. Update ALL Admin messages for this request (Collaborative status sync)
         $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
-            ->where(function($q) use ($editReq) {
-                $q->where('edit_request_id', $editReq->id)
-                  ->orWhere('message', 'like', "%sra-creation-actions-{$editReq->id}%");
-            })
+            ->where('edit_request_id', $editReq->id)
             ->get();
+
+        if ($adminMsgs->isEmpty()) {
+            $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+                ->where(function($q) use ($editReq) {
+                    $q->where('edit_request_id', $editReq->id)
+                      ->orWhere('message', 'like', "%sra-creation-actions-{$editReq->id}%");
+                })
+                ->get();
+        }
 
         foreach ($adminMsgs as $adminMsg) {
             $statusColor = $request->status === 'approved' ? '#10b981' : '#dc2626';
@@ -944,11 +959,17 @@ class EditRequestController extends Controller
 
         // Update Admin Messages
         $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
-            ->where(function($q) use ($editReq) {
-                $q->where('edit_request_id', $editReq->id)
-                  ->orWhere('message', 'like', "%recovery-actions-{$editReq->id}%");
-            })
+            ->where('edit_request_id', $editReq->id)
             ->get();
+
+        if ($adminMsgs->isEmpty()) {
+            $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+                ->where(function($q) use ($editReq) {
+                    $q->where('edit_request_id', $editReq->id)
+                      ->orWhere('message', 'like', "%recovery-actions-{$editReq->id}%");
+                })
+                ->get();
+        }
 
         foreach ($adminMsgs as $adminMsg) {
             $statusLabel = $request->status === 'approved' ? 'AUTHORIZED' : 'REJECTED';
@@ -1100,11 +1121,17 @@ class EditRequestController extends Controller
 
         // Update Admin Messages
         $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
-            ->where(function($q) use ($editReq) {
-                $q->where('edit_request_id', $editReq->id)
-                  ->orWhere('message', 'like', "%verification-actions-{$editReq->id}%");
-            })
+            ->where('edit_request_id', $editReq->id)
             ->get();
+
+        if ($adminMsgs->isEmpty()) {
+            $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+                ->where(function($q) use ($editReq) {
+                    $q->where('edit_request_id', $editReq->id)
+                      ->orWhere('message', 'like', "%verification-actions-{$editReq->id}%");
+                })
+                ->get();
+        }
 
         foreach ($adminMsgs as $adminMsg) {
             $statusLabel = $request->status === 'approved' ? 'AUTHORIZED & RECONCILED' : 'REJECTED';
@@ -1225,14 +1252,21 @@ class EditRequestController extends Controller
             </div>";
 
         // 1. Update the original "Awaiting" message for the user
+        // Try finding by edit_request_id first (fast index path)
         $personnelOriginalMsg = Message::where('receiver_id', $editReq->user_id)
-            ->where(function($q) use ($editReq) {
-                $q->where('edit_request_id', $editReq->id)
-                  ->orWhere('message', 'like', "%<!-- sra_req_id:{$editReq->id} -->%")
-                  ->orWhere('message', 'like', '%Awaiting Authorization%');
-            })
+            ->where('edit_request_id', $editReq->id)
             ->orderBy('created_at', 'desc')
             ->first();
+
+        if (!$personnelOriginalMsg) {
+            $personnelOriginalMsg = Message::where('receiver_id', $editReq->user_id)
+                ->where(function($q) use ($editReq) {
+                    $q->where('message', 'like', "%<!-- sra_req_id:{$editReq->id} -->%")
+                      ->orWhere('message', 'like', '%Awaiting Authorization%');
+                })
+                ->orderBy('created_at', 'desc')
+                ->first();
+        }
 
         if ($personnelOriginalMsg) {
             $personnelOriginalMsg->update([
@@ -1252,11 +1286,17 @@ class EditRequestController extends Controller
 
         // 2. Update the Admin's own oversight message to show "Rolled Back" status
         $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
-            ->where(function($q) use ($editReq) {
-                $q->where('edit_request_id', $editReq->id)
-                  ->orWhere('message', 'like', "%sra-creation-actions-{$editReq->id}%");
-            })
+            ->where('edit_request_id', $editReq->id)
             ->get();
+
+        if ($adminMsgs->isEmpty()) {
+            $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+                ->where(function($q) use ($editReq) {
+                    $q->where('edit_request_id', $editReq->id)
+                      ->orWhere('message', 'like', "%sra-creation-actions-{$editReq->id}%");
+                })
+                ->get();
+        }
 
         foreach ($adminMsgs as $adminMsg) {
             $newMsg = "<div class='sra-approval-msg' style='padding: 15px; border-left: 4px solid #f59e0b; background: rgba(245,158,11,0.04);'>"

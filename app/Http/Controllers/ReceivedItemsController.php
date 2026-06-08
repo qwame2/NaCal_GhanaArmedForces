@@ -36,6 +36,13 @@ class ReceivedItemsController extends Controller
         $req = \App\Models\EditRequest::findOrFail($id);
         $data = json_decode($req->payload, true);
         
+        $descriptions = collect($data['items'] ?? [])->pluck('description')->filter()->unique()->toArray();
+        $sums = \App\Models\InventoryItem::whereIn('description', $descriptions)
+            ->selectRaw('description, SUM(stock_balance) as total')
+            ->groupBy('description')
+            ->pluck('total', 'description')
+            ->toArray();
+
         // Mock a batch object for the view
         $batch = (object)[
             'id' => 'DRAFT',
@@ -52,14 +59,13 @@ class ReceivedItemsController extends Controller
             'created_at' => $req->created_at, // Use the request creation date as mock
             'recorded_by_name' => $req->user->name ?? 'Personnel',
             'recorder' => (object)['name' => $req->user->name ?? 'Personnel'],
-            'items' => collect($data['items'])->map(function($i) {
+            'items' => collect($data['items'] ?? [])->map(function($i) use ($sums) {
                 $item = (object)$i;
                 $item->ledger_id = $item->ledger_id ?? '-';
                 $item->remarks = $item->remarks ?? '';
                 $item->stock_balance = $item->stock_balance ?? 0;
                 $item->variance = $item->variance ?? 0;
-                $item->total_in_system = \App\Models\InventoryItem::where('description', $item->description ?? '')
-                    ->sum('stock_balance');
+                $item->total_in_system = floatval($sums[$item->description ?? ''] ?? 0);
                 return $item;
             })
         ];
@@ -86,9 +92,15 @@ class ReceivedItemsController extends Controller
         
         if ($req->request_type === 'issue_submission') {
             if (isset($data['items']) && is_array($data['items'])) {
+                $descriptions = collect($data['items'])->pluck('description')->filter()->unique()->toArray();
+                $sums = \App\Models\InventoryItem::whereIn('description', $descriptions)
+                    ->selectRaw('description, SUM(stock_balance) as total')
+                    ->groupBy('description')
+                    ->pluck('total', 'description')
+                    ->toArray();
+
                 foreach ($data['items'] as &$issueItem) {
-                    $issueItem['total_in_system'] = \App\Models\InventoryItem::where('description', $issueItem['description'] ?? '')
-                        ->sum('stock_balance');
+                    $issueItem['total_in_system'] = floatval($sums[$issueItem['description'] ?? ''] ?? 0);
                 }
                 unset($issueItem);
             }
@@ -122,9 +134,15 @@ class ReceivedItemsController extends Controller
 
         // Add total_in_system to items
         if (isset($data['items']) && is_array($data['items'])) {
+            $descriptions = collect($data['items'])->pluck('description')->filter()->unique()->toArray();
+            $sums = \App\Models\InventoryItem::whereIn('description', $descriptions)
+                ->selectRaw('description, SUM(stock_balance) as total')
+                ->groupBy('description')
+                ->pluck('total', 'description')
+                ->toArray();
+
             foreach ($data['items'] as &$propItem) {
-                $propItem['total_in_system'] = \App\Models\InventoryItem::where('description', $propItem['description'] ?? '')
-                    ->sum('stock_balance');
+                $propItem['total_in_system'] = floatval($sums[$propItem['description'] ?? ''] ?? 0);
             }
             unset($propItem);
         }
@@ -157,9 +175,15 @@ class ReceivedItemsController extends Controller
                 $originalBatch->delivery_person = $origDelivery;
                 $originalBatch->delivery_phone = $origPhone;
 
+                $origDescriptions = $originalBatch->items->pluck('description')->filter()->unique()->toArray();
+                $origSums = \App\Models\InventoryItem::whereIn('description', $origDescriptions)
+                    ->selectRaw('description, SUM(stock_balance) as total')
+                    ->groupBy('description')
+                    ->pluck('total', 'description')
+                    ->toArray();
+
                 foreach ($originalBatch->items as $origItem) {
-                    $origItem->total_in_system = \App\Models\InventoryItem::where('description', $origItem->description)
-                        ->sum('stock_balance');
+                    $origItem->total_in_system = floatval($origSums[$origItem->description] ?? 0);
                 }
 
                 $response['previous_batch'] = $originalBatch;

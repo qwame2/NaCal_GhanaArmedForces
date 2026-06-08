@@ -43,16 +43,21 @@ class IssueItemsController extends Controller
                 'J' => 'Equipment'
             ];
 
-        // Total calculations across database for stats cards
+        // Total calculations across database for stats cards (optimized to run in fewer queries)
+        $statsData = IssuedItem::leftJoin('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->selectRaw("
+                SUM(issued_items.quantity) as total_disbursed,
+                SUM(CASE WHEN issuances.issuance_type = 'Permanent' THEN issued_items.quantity ELSE 0 END) as permanent_allocations,
+                SUM(CASE WHEN issuances.issuance_type = 'Temporary' THEN issued_items.quantity ELSE 0 END) as temporary_loans
+            ")->first();
+
+        $activeDestinations = Issuance::distinct()->count('beneficiary');
+
         $stats = [
-            'total_disbursed' => (float) IssuedItem::sum('quantity'),
-            'permanent_allocations' => (float) IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-                ->where('issuances.issuance_type', 'Permanent')
-                ->sum('quantity'),
-            'temporary_loans' => (float) IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-                ->where('issuances.issuance_type', 'Temporary')
-                ->sum('quantity'),
-            'active_destinations' => (int) Issuance::distinct()->count('beneficiary')
+            'total_disbursed' => (float) ($statsData->total_disbursed ?? 0),
+            'permanent_allocations' => (float) ($statsData->permanent_allocations ?? 0),
+            'temporary_loans' => (float) ($statsData->temporary_loans ?? 0),
+            'active_destinations' => (int) $activeDestinations
         ];
 
         // Build the filtered query

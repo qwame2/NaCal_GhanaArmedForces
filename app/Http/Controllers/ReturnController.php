@@ -43,20 +43,20 @@ class ReturnController extends Controller
             });
         }
 
-        // Global DB stats for returns card aggregates
+        // Global DB stats for returns card aggregates (optimized to run in one aggregate query)
+        $statsData = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->where('issuances.issuance_type', 'Temporary')
+            ->selectRaw("
+                SUM(issued_items.quantity) as total_outstanding,
+                COUNT(DISTINCT CASE WHEN issued_items.quantity > 0 THEN issuances.beneficiary END) as active_holders,
+                SUM(CASE WHEN issued_items.quantity > 0 THEN 1 ELSE 0 END) as total_active_holdings
+            ")
+            ->first();
+
         $stats = [
-            'total_outstanding' => (float) IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-                ->where('issuances.issuance_type', 'Temporary')
-                ->sum('quantity'),
-            'active_holders' => (int) IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-                ->where('issuances.issuance_type', 'Temporary')
-                ->where('issued_items.quantity', '>', 0)
-                ->distinct('issuances.beneficiary')
-                ->count('issuances.beneficiary'),
-            'total_active_holdings' => (int) IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-                ->where('issuances.issuance_type', 'Temporary')
-                ->where('issued_items.quantity', '>', 0)
-                ->count()
+            'total_outstanding' => (float) ($statsData->total_outstanding ?? 0),
+            'active_holders' => (int) ($statsData->active_holders ?? 0),
+            'total_active_holdings' => (int) ($statsData->total_active_holdings ?? 0),
         ];
 
         // Build search & paginated query

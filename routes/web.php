@@ -12,8 +12,8 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ArchiveController;
 
-// Self-healing auto-migration schema update (cached to prevent query and disk write overhead on every request)
-if (!\Illuminate\Support\Facades\Cache::has('routes_boot_self_healed_v9')) {
+// Self-healing auto-migration schema update (locked via file existence to prevent concurrent query and disk write overhead on every request/cache clear)
+if (!file_exists(storage_path('framework/routes_boot_self_healed_v9.lock'))) {
     try {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
 
@@ -132,7 +132,7 @@ if (!\Illuminate\Support\Facades\Cache::has('routes_boot_self_healed_v9')) {
             file_put_contents(base_path('scratch/db_output.txt'), "Error: " . $ex->getMessage());
         }
 
-        \Illuminate\Support\Facades\Cache::put('routes_boot_self_healed_v9', true, 604800); // Cache for 7 days
+        @touch(storage_path('framework/routes_boot_self_healed_v9.lock'));
     } catch (\Exception $e) {
         // Ignore to prevent boot failures
     }

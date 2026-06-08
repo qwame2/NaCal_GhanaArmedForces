@@ -9,9 +9,15 @@ class Setting extends Model
     protected $fillable = ['key', 'value', 'type', 'group', 'description'];
 
     protected static $cachedSettings = [];
+    protected static $itemThresholdCache = [];
+    protected static $itemUnitCache = [];
+    protected static $itemRequestLimitCache = [];
 
     public static function clearInventoryCache()
     {
+        self::$itemThresholdCache = [];
+        self::$itemUnitCache = [];
+        self::$itemRequestLimitCache = [];
         \Illuminate\Support\Facades\Cache::forget('dashboard_metrics_data');
         \Illuminate\Support\Facades\Cache::forget('low_stock_items_list');
         \Illuminate\Support\Facades\Cache::forget('item_aggregates_list');
@@ -23,6 +29,9 @@ class Setting extends Model
     {
         static::saved(function ($setting) {
             self::$cachedSettings = [];
+            self::$itemThresholdCache = [];
+            self::$itemUnitCache = [];
+            self::$itemRequestLimitCache = [];
             \Illuminate\Support\Facades\Cache::forget('setting_' . $setting->key);
             if ($setting->key === 'suppliers_registry') {
                 \Illuminate\Support\Facades\Cache::forget('setting_suppliers_registry');
@@ -31,6 +40,9 @@ class Setting extends Model
         });
         static::deleted(function ($setting) {
             self::$cachedSettings = [];
+            self::$itemThresholdCache = [];
+            self::$itemUnitCache = [];
+            self::$itemRequestLimitCache = [];
             \Illuminate\Support\Facades\Cache::forget('setting_' . $setting->key);
             if ($setting->key === 'suppliers_registry') {
                 \Illuminate\Support\Facades\Cache::forget('setting_suppliers_registry');
@@ -162,6 +174,12 @@ class Setting extends Model
      */
     public static function getItemThreshold($description, $category = null)
     {
+        $descClean = trim($description);
+        $cacheKey = $descClean . '_' . ($category ?? '');
+        if (isset(self::$itemThresholdCache[$cacheKey])) {
+            return self::$itemThresholdCache[$cacheKey];
+        }
+
         $rules = self::get('item_threshold_rules', []);
         if (is_string($rules)) {
             $rules = json_decode($rules, true);
@@ -169,8 +187,9 @@ class Setting extends Model
         if (!is_array($rules)) {
             $rules = [];
         }
-        $descLower = strtolower(trim($description));
+        $descLower = strtolower($descClean);
 
+        $threshold = null;
         foreach ($rules as $keyword => $rule) {
             $keywordLower = strtolower(trim($keyword));
             $pattern = '/\b' . preg_quote($keywordLower, '/') . '\b/i';
@@ -180,12 +199,18 @@ class Setting extends Model
                 if ($ruleCat && $category && strcasecmp(trim($ruleCat), trim($category)) !== 0) {
                     continue;
                 }
-                return (int)($rule['threshold'] ?? $rule);
+                $threshold = (int)($rule['threshold'] ?? $rule);
+                break;
             }
         }
 
-        // Fallback to global threshold
-        return (int)self::get('low_stock_threshold', 100);
+        if ($threshold === null) {
+            // Fallback to global threshold
+            $threshold = (int)self::get('low_stock_threshold', 100);
+        }
+
+        self::$itemThresholdCache[$cacheKey] = $threshold;
+        return $threshold;
     }
 
     /**
@@ -193,6 +218,11 @@ class Setting extends Model
      */
     public static function getItemUnit($description)
     {
+        $descClean = trim($description);
+        if (isset(self::$itemUnitCache[$descClean])) {
+            return self::$itemUnitCache[$descClean];
+        }
+
         $rules = self::get('item_unit_rules', []);
         if (is_string($rules)) {
             $rules = json_decode($rules, true);
@@ -200,17 +230,20 @@ class Setting extends Model
         if (!is_array($rules)) {
             $rules = [];
         }
-        $descLower = strtolower(trim($description));
+        $descLower = strtolower($descClean);
 
+        $unit = 'units';
         foreach ($rules as $keyword => $rule) {
             $keywordLower = strtolower(trim($keyword));
             $pattern = '/\b' . preg_quote($keywordLower, '/') . '\b/i';
             if (preg_match($pattern, $descLower)) {
-                return is_array($rule) ? ($rule['unit'] ?? 'units') : $rule;
+                $unit = is_array($rule) ? ($rule['unit'] ?? 'units') : $rule;
+                break;
             }
         }
 
-        return 'units';
+        self::$itemUnitCache[$descClean] = $unit;
+        return $unit;
     }
 
     /**
@@ -218,6 +251,12 @@ class Setting extends Model
      */
     public static function getItemRequestLimit($description, $category = null)
     {
+        $descClean = trim($description);
+        $cacheKey = $descClean . '_' . ($category ?? '');
+        if (isset(self::$itemRequestLimitCache[$cacheKey])) {
+            return self::$itemRequestLimitCache[$cacheKey];
+        }
+
         $limits = self::get('item_request_limits', []);
         if (is_string($limits)) {
             $limits = json_decode($limits, true);
@@ -225,8 +264,9 @@ class Setting extends Model
         if (!is_array($limits)) {
             $limits = [];
         }
-        $descLower = strtolower(trim($description));
+        $descLower = strtolower($descClean);
 
+        $limit = null;
         foreach ($limits as $keyword => $rule) {
             $keywordLower = strtolower(trim($keyword));
             $pattern = '/\b' . preg_quote($keywordLower, '/') . '\b/i';
@@ -235,10 +275,13 @@ class Setting extends Model
                 if ($ruleCat && $category && strcasecmp(trim($ruleCat), trim($category)) !== 0) {
                     continue;
                 }
-                return (int)($rule['limit'] ?? $rule);
+                $limit = (int)($rule['limit'] ?? $rule);
+                break;
             }
         }
-        return null;
+
+        self::$itemRequestLimitCache[$cacheKey] = $limit;
+        return $limit;
     }
 
     protected static $requestRequisitionItems = null;

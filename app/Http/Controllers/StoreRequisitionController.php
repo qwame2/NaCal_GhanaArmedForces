@@ -605,12 +605,20 @@ class StoreRequisitionController extends Controller
         $requisitions = $query->paginate(5)->withQueryString();
         $ledgeMap = Setting::getCategories();
 
+        $statsData = StoreRequisition::selectRaw("
+            SUM(CASE WHEN status = 'pending' AND main_admin_status = 'approved' THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
+            SUM(CASE WHEN status = 'partially_approved' THEN 1 ELSE 0 END) as partially_approved,
+            SUM(CASE WHEN status = 'declined' THEN 1 ELSE 0 END) as declined,
+            SUM(CASE WHEN status = 'pending' AND main_admin_status = 'approved' AND priority = 'urgent' THEN 1 ELSE 0 END) as urgent
+        ")->first();
+
         $stats = [
-            'pending'            => StoreRequisition::where('status', 'pending')->where('main_admin_status', 'approved')->count(),
-            'approved'           => StoreRequisition::where('status', 'approved')->count(),
-            'partially_approved' => StoreRequisition::where('status', 'partially_approved')->count(),
-            'declined'           => StoreRequisition::where('status', 'declined')->count(),
-            'urgent'             => StoreRequisition::where('status', 'pending')->where('main_admin_status', 'approved')->where('priority', 'urgent')->count(),
+            'pending'            => (int) ($statsData->pending ?? 0),
+            'approved'           => (int) ($statsData->approved ?? 0),
+            'partially_approved' => (int) ($statsData->partially_approved ?? 0),
+            'declined'           => (int) ($statsData->declined ?? 0),
+            'urgent'             => (int) ($statsData->urgent ?? 0),
         ];
 
         // 1. Requisitions count by Department
@@ -1120,12 +1128,20 @@ class StoreRequisitionController extends Controller
         $requisitions = $query->paginate(5)->withQueryString();
         $ledgeMap = Setting::getCategories();
 
+        $statsData = StoreRequisition::selectRaw("
+            SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
+            SUM(CASE WHEN status = 'partially_approved' THEN 1 ELSE 0 END) as partially_approved,
+            SUM(CASE WHEN status = 'declined' THEN 1 ELSE 0 END) as declined,
+            SUM(CASE WHEN status = 'pending' AND priority = 'urgent' THEN 1 ELSE 0 END) as urgent
+        ")->first();
+
         $stats = [
-            'pending'            => StoreRequisition::where('status', 'pending')->count(),
-            'approved'           => StoreRequisition::where('status', 'approved')->count(),
-            'partially_approved' => StoreRequisition::where('status', 'partially_approved')->count(),
-            'declined'           => StoreRequisition::where('status', 'declined')->count(),
-            'urgent'             => StoreRequisition::where('status', 'pending')->where('priority', 'urgent')->count(),
+            'pending'            => (int) ($statsData->pending ?? 0),
+            'approved'           => (int) ($statsData->approved ?? 0),
+            'partially_approved' => (int) ($statsData->partially_approved ?? 0),
+            'declined'           => (int) ($statsData->declined ?? 0),
+            'urgent'             => (int) ($statsData->urgent ?? 0),
         ];
 
         return view('requisitions.personnel', compact('requisitions', 'ledgeMap', 'stats'));
@@ -1233,23 +1249,29 @@ class StoreRequisitionController extends Controller
 
         // Calculate scoped stats
         if ($isStoresHead) {
+            $statsData = StoreRequisition::selectRaw("
+                SUM(CASE WHEN status = 'pending' AND origin_admin_status = 'approved' AND main_admin_status = 'pending' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN main_admin_status = 'approved' THEN 1 ELSE 0 END) as approved,
+                SUM(CASE WHEN main_admin_status = 'declined' THEN 1 ELSE 0 END) as declined
+            ")->first();
+
             $stats = [
-                'pending'  => StoreRequisition::where('status', 'pending')->where('origin_admin_status', 'approved')->where('main_admin_status', 'pending')->count(),
-                'approved' => StoreRequisition::where('main_admin_status', 'approved')->count(),
-                'declined' => StoreRequisition::where('main_admin_status', 'declined')->count(),
+                'pending'  => (int) ($statsData->pending ?? 0),
+                'approved' => (int) ($statsData->approved ?? 0),
+                'declined' => (int) ($statsData->declined ?? 0),
             ];
         } else {
+            $statsData = StoreRequisition::where('department', auth()->user()->department)
+                ->selectRaw("
+                    SUM(CASE WHEN (status = 'pending' AND origin_admin_status = 'pending') OR (status = 'pending' AND alternative_status = 'proposed') THEN 1 ELSE 0 END) as pending,
+                    SUM(CASE WHEN origin_admin_status = 'approved' THEN 1 ELSE 0 END) as approved,
+                    SUM(CASE WHEN origin_admin_status = 'declined' THEN 1 ELSE 0 END) as declined
+                ")->first();
+
             $stats = [
-                'pending'  => StoreRequisition::where('department', auth()->user()->department)
-                    ->where(function($q) {
-                        $q->where(function($qp) {
-                            $qp->where('status', 'pending')->where('origin_admin_status', 'pending');
-                        })->orWhere(function($qp) {
-                            $qp->where('status', 'pending')->where('alternative_status', 'proposed');
-                        });
-                    })->count(),
-                'approved' => StoreRequisition::where('department', auth()->user()->department)->where('origin_admin_status', 'approved')->count(),
-                'declined' => StoreRequisition::where('department', auth()->user()->department)->where('origin_admin_status', 'declined')->count(),
+                'pending'  => (int) ($statsData->pending ?? 0),
+                'approved' => (int) ($statsData->approved ?? 0),
+                'declined' => (int) ($statsData->declined ?? 0),
             ];
         }
 
