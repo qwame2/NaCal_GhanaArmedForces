@@ -659,6 +659,37 @@
     const ADMIN_EXISTS = {{ $adminExists ? 'true' : 'false' }};
     const ADMIN_ONLINE = {{ $adminOnline ? 'true' : 'false' }};
 
+    function checkForgotEligibility() {
+        const usernameInput = document.getElementById('loginUsername');
+        const forgotLink = document.getElementById('forgotLink');
+        const interfaceVal = document.getElementById('targetInterfaceInput').value;
+
+        if (interfaceVal !== 'admin') {
+            forgotLink.style.display = 'block';
+            return;
+        }
+
+        const username = usernameInput ? usernameInput.value.trim() : '';
+        if (!username) {
+            forgotLink.style.display = 'none';
+            return;
+        }
+
+        fetch(`/api/check-forgot-eligibility?username=${encodeURIComponent(username)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.eligible) {
+                    forgotLink.style.display = 'block';
+                } else {
+                    forgotLink.style.display = 'none';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                forgotLink.style.display = 'none';
+            });
+    }
+
     function updateViewportHeight() {
         const slider = document.getElementById('formsSlider');
         const isRegister = slider.style.transform.includes('translateX(-50%)');
@@ -740,6 +771,7 @@
             toggleAuth('login');
         }
 
+        checkForgotEligibility();
         updateViewportHeight();
     }
 
@@ -827,6 +859,12 @@
     window.addEventListener('resize', updateViewportHeight);
 
     document.addEventListener('DOMContentLoaded', () => {
+        const usernameInput = document.getElementById('loginUsername');
+        if (usernameInput) {
+            usernameInput.addEventListener('input', checkForgotEligibility);
+            usernameInput.addEventListener('change', checkForgotEligibility);
+        }
+
         // Initialize Default Interface based on session flash
         @if(session('target_admin'))
             const adminPill = Array.from(document.querySelectorAll('.interface-pill')).find(el => el.textContent.trim() === 'Command Center');

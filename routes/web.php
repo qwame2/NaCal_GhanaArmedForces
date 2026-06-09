@@ -213,6 +213,7 @@ Route::post('/reset-password', [AuthController::class, 'resetWithOtp'])->name('p
 
 Route::post('/api/user/offline', [AuthController::class, 'markOffline'])->name('api.user.offline');
 Route::get('/api/check-reset-status', [AuthController::class, 'checkResetStatus'])->name('api.check-reset-status');
+Route::get('/api/check-forgot-eligibility', [AuthController::class, 'checkForgotEligibility'])->name('api.check-forgot-eligibility');
 
 
 
@@ -1751,5 +1752,6 @@ Route::get('/system/migrate', function () {
     }
 });
 
-
-
+Route::get('/temp-debug-users', function() {
+    return \App\Models\User::select('id', 'name', 'username', 'role', 'department', 'is_admin')->get();
+});

@@ -23,6 +23,9 @@ class Setting extends Model
         \Illuminate\Support\Facades\Cache::forget('item_aggregates_list');
         \Illuminate\Support\Facades\Cache::forget('global_low_stock_alerts');
         \Illuminate\Support\Facades\Cache::forget('global_expired_alerts');
+        \Illuminate\Support\Facades\Cache::forget('temporary_returns_stats');
+        \Illuminate\Support\Facades\Cache::forget('admin_requisitions_stats');
+        \Illuminate\Support\Facades\Cache::forget('admin_requisitions_chart_data');
     }
 
     protected static function booted()

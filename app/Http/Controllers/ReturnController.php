@@ -43,29 +43,29 @@ class ReturnController extends Controller
             });
         }
 
-        // Global DB stats for returns card aggregates (optimized to run in one aggregate query)
-        $statsData = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-            ->where('issuances.issuance_type', 'Temporary')
-            ->selectRaw("
-                SUM(issued_items.quantity) as total_outstanding,
-                COUNT(DISTINCT CASE WHEN issued_items.quantity > 0 THEN issuances.beneficiary END) as active_holders,
-                SUM(CASE WHEN issued_items.quantity > 0 THEN 1 ELSE 0 END) as total_active_holdings
-            ")
-            ->first();
+        // Global DB stats for returns card aggregates (optimized to run in one aggregate query, cached)
+        $stats = \Illuminate\Support\Facades\Cache::remember('temporary_returns_stats', 600, function() {
+            $statsData = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+                ->where('issuances.issuance_type', 'Temporary')
+                ->selectRaw("
+                    SUM(issued_items.quantity) as total_outstanding,
+                    COUNT(DISTINCT CASE WHEN issued_items.quantity > 0 THEN issuances.beneficiary END) as active_holders,
+                    SUM(CASE WHEN issued_items.quantity > 0 THEN 1 ELSE 0 END) as total_active_holdings
+                ")
+                ->first();
 
-        $stats = [
-            'total_outstanding' => (float) ($statsData->total_outstanding ?? 0),
-            'active_holders' => (int) ($statsData->active_holders ?? 0),
-            'total_active_holdings' => (int) ($statsData->total_active_holdings ?? 0),
-        ];
+            return [
+                'total_outstanding' => (float) ($statsData->total_outstanding ?? 0),
+                'active_holders' => (int) ($statsData->active_holders ?? 0),
+                'total_active_holdings' => (int) ($statsData->total_active_holdings ?? 0),
+            ];
+        });
 
         // Build search & paginated query
         $query = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->leftJoin('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
             ->leftJoin('users as confirming_officers', 'store_requisitions.collected_by', '=', 'confirming_officers.id')
-            ->leftJoin(DB::raw('(SELECT description, MAX(unit) as unit FROM inventory_items GROUP BY description) as inv_units'), function($join) {
-                $join->on(DB::raw('LOWER(TRIM(issued_items.description))'), '=', DB::raw('LOWER(TRIM(inv_units.description))'));
-            })
+            ->leftJoin(DB::raw('(SELECT description, MAX(unit) as unit FROM inventory_items GROUP BY description) as inv_units'), 'issued_items.description', '=', 'inv_units.description')
             ->select(
                 'issued_items.*', 
                 'issuances.beneficiary', 
@@ -224,9 +224,7 @@ class ReturnController extends Controller
             ->join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->leftJoin('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
             ->leftJoin('users as confirming_officers', 'store_requisitions.collected_by', '=', 'confirming_officers.id')
-            ->leftJoin(DB::raw('(SELECT description, MAX(unit) as unit FROM inventory_items GROUP BY description) as inv_units'), function($join) {
-                $join->on(DB::raw('LOWER(TRIM(issued_items.description))'), '=', DB::raw('LOWER(TRIM(inv_units.description))'));
-            })
+            ->leftJoin(DB::raw('(SELECT description, MAX(unit) as unit FROM inventory_items GROUP BY description) as inv_units'), 'issued_items.description', '=', 'inv_units.description')
             ->select(
                 'returned_items.id', 
                 'returned_items.returned_qty',

@@ -605,87 +605,101 @@ class StoreRequisitionController extends Controller
         $requisitions = $query->paginate(5)->withQueryString();
         $ledgeMap = Setting::getCategories();
 
-        $statsData = StoreRequisition::selectRaw("
-            SUM(CASE WHEN status = 'pending' AND main_admin_status = 'approved' THEN 1 ELSE 0 END) as pending,
-            SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
-            SUM(CASE WHEN status = 'partially_approved' THEN 1 ELSE 0 END) as partially_approved,
-            SUM(CASE WHEN status = 'declined' THEN 1 ELSE 0 END) as declined,
-            SUM(CASE WHEN status = 'pending' AND main_admin_status = 'approved' AND priority = 'urgent' THEN 1 ELSE 0 END) as urgent
-        ")->first();
+        $stats = \Illuminate\Support\Facades\Cache::remember('admin_requisitions_stats', 300, function() {
+            $statsData = StoreRequisition::selectRaw("
+                SUM(CASE WHEN status = 'pending' AND main_admin_status = 'approved' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
+                SUM(CASE WHEN status = 'partially_approved' THEN 1 ELSE 0 END) as partially_approved,
+                SUM(CASE WHEN status = 'declined' THEN 1 ELSE 0 END) as declined,
+                SUM(CASE WHEN status = 'pending' AND main_admin_status = 'approved' AND priority = 'urgent' THEN 1 ELSE 0 END) as urgent
+            ")->first();
 
-        $stats = [
-            'pending'            => (int) ($statsData->pending ?? 0),
-            'approved'           => (int) ($statsData->approved ?? 0),
-            'partially_approved' => (int) ($statsData->partially_approved ?? 0),
-            'declined'           => (int) ($statsData->declined ?? 0),
-            'urgent'             => (int) ($statsData->urgent ?? 0),
-        ];
-
-        // 1. Requisitions count by Department
-        $deptRequests = StoreRequisition::whereNotNull('department')
-            ->where('department', '!=', '')
-            ->selectRaw('department, count(*) as count')
-            ->groupBy('department')
-            ->orderByDesc('count')
-            ->get();
-        $deptLabels = $deptRequests->pluck('department')->toArray();
-        $deptCounts = $deptRequests->pluck('count')->toArray();
-
-        // 2. Category Requests by Department (Grouped Column Chart)
-        $deptCategoryData = StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
-            ->whereNotNull('store_requisitions.department')
-            ->where('store_requisitions.department', '!=', '')
-            ->selectRaw('store_requisitions.department, store_requisition_items.category, count(*) as count')
-            ->groupBy('store_requisitions.department', 'store_requisition_items.category')
-            ->get();
-
-        $uniqueDepts = $deptCategoryData->pluck('department')->unique()->values()->toArray();
-        $uniqueCats = $deptCategoryData->pluck('category')->unique()->values()->toArray();
-        
-        $categorySeries = [];
-        foreach ($uniqueCats as $cat) {
-            $catName = $ledgeMap[$cat] ?? 'Category ' . $cat;
-            $data = [];
-            foreach ($uniqueDepts as $dept) {
-                $match = $deptCategoryData->where('department', $dept)->where('category', $cat)->first();
-                $data[] = $match ? $match->count : 0;
-            }
-            $categorySeries[] = [
-                'name' => $catName,
-                'data' => $data
+            return [
+                'pending'            => (int) ($statsData->pending ?? 0),
+                'approved'           => (int) ($statsData->approved ?? 0),
+                'partially_approved' => (int) ($statsData->partially_approved ?? 0),
+                'declined'           => (int) ($statsData->declined ?? 0),
+                'urgent'             => (int) ($statsData->urgent ?? 0),
             ];
-        }
+        });
 
-        // 3. Top Requested Items by Department
-        $topItems = StoreRequisitionItem::selectRaw('TRIM(description) as item_name, count(*) as count')
-            ->groupBy(\DB::raw('TRIM(description)'))
-            ->orderByDesc('count')
-            ->take(8)
-            ->get();
-        $itemLabels = $topItems->pluck('item_name')->toArray();
+        $chartData = \Illuminate\Support\Facades\Cache::remember('admin_requisitions_chart_data', 300, function() use ($ledgeMap) {
+            // 1. Requisitions count by Department
+            $deptRequests = StoreRequisition::whereNotNull('department')
+                ->where('department', '!=', '')
+                ->selectRaw('department, count(*) as count')
+                ->groupBy('department')
+                ->orderByDesc('count')
+                ->get();
+            $deptLabels = $deptRequests->pluck('department')->toArray();
+            $deptCounts = $deptRequests->pluck('count')->toArray();
 
-        $itemDeptData = StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
-            ->whereNotNull('store_requisitions.department')
-            ->where('store_requisitions.department', '!=', '')
-            ->whereIn(\DB::raw('TRIM(store_requisition_items.description)'), $itemLabels)
-            ->selectRaw('TRIM(store_requisition_items.description) as item_name, store_requisitions.department, count(*) as count')
-            ->groupBy(\DB::raw('TRIM(store_requisition_items.description)'), 'store_requisitions.department')
-            ->get();
+            // 2. Category Requests by Department (Grouped Column Chart)
+            $deptCategoryData = StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
+                ->whereNotNull('store_requisitions.department')
+                ->where('store_requisitions.department', '!=', '')
+                ->selectRaw('store_requisitions.department, store_requisition_items.category, count(*) as count')
+                ->groupBy('store_requisitions.department', 'store_requisition_items.category')
+                ->get();
 
-        $topItemDepts = $itemDeptData->pluck('department')->unique()->values()->toArray();
-
-        $itemSeries = [];
-        foreach ($topItemDepts as $dept) {
-            $data = [];
-            foreach ($itemLabels as $itemLabel) {
-                $match = $itemDeptData->where('item_name', $itemLabel)->where('department', $dept)->first();
-                $data[] = $match ? $match->count : 0;
+            $uniqueDepts = $deptCategoryData->pluck('department')->unique()->values()->toArray();
+            $uniqueCats = $deptCategoryData->pluck('category')->unique()->values()->toArray();
+            
+            $categorySeries = [];
+            foreach ($uniqueCats as $cat) {
+                $catName = $ledgeMap[$cat] ?? 'Category ' . $cat;
+                $data = [];
+                foreach ($uniqueDepts as $dept) {
+                    $match = $deptCategoryData->where('department', $dept)->where('category', $cat)->first();
+                    $data[] = $match ? $match->count : 0;
+                }
+                $categorySeries[] = [
+                    'name' => $catName,
+                    'data' => $data
+                ];
             }
-            $itemSeries[] = [
-                'name' => $dept,
-                'data' => $data
-            ];
-        }
+
+            // 3. Top Requested Items by Department
+            $topItems = StoreRequisitionItem::selectRaw('TRIM(description) as item_name, count(*) as count')
+                ->groupBy(\DB::raw('TRIM(description)'))
+                ->orderByDesc('count')
+                ->take(8)
+                ->get();
+            $itemLabels = $topItems->pluck('item_name')->toArray();
+
+            $itemDeptData = StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
+                ->whereNotNull('store_requisitions.department')
+                ->where('store_requisitions.department', '!=', '')
+                ->whereIn(\DB::raw('TRIM(store_requisition_items.description)'), $itemLabels)
+                ->selectRaw('TRIM(store_requisition_items.description) as item_name, store_requisitions.department, count(*) as count')
+                ->groupBy(\DB::raw('TRIM(store_requisition_items.description)'), 'store_requisitions.department')
+                ->get();
+
+            $topItemDepts = $itemDeptData->pluck('department')->unique()->values()->toArray();
+
+            $itemSeries = [];
+            foreach ($topItemDepts as $dept) {
+                $data = [];
+                foreach ($itemLabels as $itemLabel) {
+                    $match = $itemDeptData->where('item_name', $itemLabel)->where('department', $dept)->first();
+                    $data[] = $match ? $match->count : 0;
+                }
+                $itemSeries[] = [
+                    'name' => $dept,
+                    'data' => $data
+                ];
+            }
+
+            return compact('deptLabels', 'deptCounts', 'categorySeries', 'uniqueDepts', 'itemLabels', 'itemSeries');
+        });
+
+        // Unpack cached series
+        $deptLabels = $chartData['deptLabels'];
+        $deptCounts = $chartData['deptCounts'];
+        $categorySeries = $chartData['categorySeries'];
+        $uniqueDepts = $chartData['uniqueDepts'];
+        $itemLabels = $chartData['itemLabels'];
+        $itemSeries = $chartData['itemSeries'];
 
         return view('admin.requisitions', compact(
             'requisitions', 
@@ -1731,6 +1745,21 @@ class StoreRequisitionController extends Controller
             ->where('is_active', true)
             ->get();
 
+        // Calculate the earliest requisition creation date among active temporary loan items
+        $minDate = $activeItems->min(function($item) {
+            return $item->req_created ? \Carbon\Carbon::parse($item->req_created) : null;
+        });
+        if (!$minDate) {
+            $minDate = \Carbon\Carbon::now()->subMonths(3);
+        } else {
+            $minDate = $minDate->copy()->subDays(5); // Add a small safety buffer of 5 days
+        }
+
+        // Fetch all automated alert messages in a single query to run in-memory lookups
+        $existingAlerts = \App\Models\Message::where('is_automated', true)
+            ->where('created_at', '>=', $minDate)
+            ->get();
+
         foreach ($activeItems as $item) {
             $returnedQty = (float)$item->total_returned;
             if ($item->quantity <= 0 || $returnedQty >= $item->quantity) {
@@ -1768,11 +1797,11 @@ class StoreRequisitionController extends Controller
 
             if ($diffInDays === 3) {
                 // A: friendly countdown reminder (due in 3 days)
-                $exists = \App\Models\Message::where('receiver_id', $recipientId)
-                    ->where('is_automated', true)
-                    ->where('message', 'like', "%⏳ RETURN COUNTDOWN: 3 DAYS REMAINING%")
-                    ->where('message', 'like', "%Ref: #{$item->requisition_id}%")
-                    ->exists();
+                $exists = $existingAlerts->contains(function($msg) use ($recipientId, $item) {
+                    return $msg->receiver_id == $recipientId &&
+                           strpos($msg->message, '⏳ RETURN COUNTDOWN: 3 DAYS REMAINING') !== false &&
+                           strpos($msg->message, "Ref: #{$item->requisition_id}") !== false;
+                });
 
                 if (!$exists) {
                     // Send reminder to Department Head
@@ -1782,12 +1811,13 @@ class StoreRequisitionController extends Controller
                     $msg .= "Please ensure the item is returned to Central Store NACOC on time.";
                     $msg .= "</div>";
 
-                    \App\Models\Message::create([
+                    $newMsg = \App\Models\Message::create([
                         'sender_id' => 1, // System Admin
                         'receiver_id' => $recipientId,
                         'message' => $msg,
                         'is_automated' => true,
                     ]);
+                    $existingAlerts->push($newMsg);
 
                     // Notify Department Head (Stores) & Head of Stores
                     foreach ($storesStaff as $staff) {
@@ -1796,21 +1826,22 @@ class StoreRequisitionController extends Controller
                         $adminMsg .= "The 3-day return countdown reminder for temporary item <b>" . e($item->description) . "</b> (Ref: #<b>" . e($item->requisition_id) . "</b>) has been successfully delivered to the <b>" . e($item->department) . "</b> Department Head.";
                         $adminMsg .= "</div>";
 
-                        \App\Models\Message::create([
+                        $newMsg = \App\Models\Message::create([
                             'sender_id' => 1,
                             'receiver_id' => $staff->id,
                             'message' => $adminMsg,
                             'is_automated' => true,
                         ]);
+                        $existingAlerts->push($newMsg);
                     }
                 }
             } elseif ($diffInDays <= 0) {
                 // B: Overdue Return Reminder for Borrower Department Head
-                $exists = \App\Models\Message::where('receiver_id', $recipientId)
-                    ->where('is_automated', true)
-                    ->where('message', 'like', "%🚨 OVERDUE RETURN NOTICE%")
-                    ->where('message', 'like', "%Ref: #{$item->requisition_id}%")
-                    ->exists();
+                $exists = $existingAlerts->contains(function($msg) use ($recipientId, $item) {
+                    return $msg->receiver_id == $recipientId &&
+                           strpos($msg->message, '🚨 OVERDUE RETURN NOTICE') !== false &&
+                           strpos($msg->message, "Ref: #{$item->requisition_id}") !== false;
+                });
 
                 if (!$exists) {
                     $msg  = "<div class='department-view reminder-msg' style='padding:15px;border:1px solid #ef4444;border-radius:12px;background:rgba(239,68,68,0.05);'>";
@@ -1819,23 +1850,24 @@ class StoreRequisitionController extends Controller
                     $msg .= "<span style='color:#b91c1c; font-weight:800;'>Crucial Access Blocked: Your department's requisition creation privileges have been suspended. Please return the item to the Central Store immediately to restore access.</span>";
                     $msg .= "</div>";
 
-                    \App\Models\Message::create([
+                    $newMsg = \App\Models\Message::create([
                         'sender_id' => 1,
                         'receiver_id' => $recipientId,
                         'message' => $msg,
                         'is_automated' => true,
                     ]);
+                    $existingAlerts->push($newMsg);
                 }
 
                 // Notify OTHER Department Heads
                 $otherDeptHeads = $allDeptHeads->filter(fn($u) => strcasecmp($u->department, $item->department) !== 0);
 
                 foreach ($otherDeptHeads as $otherHead) {
-                    $headExists = \App\Models\Message::where('receiver_id', $otherHead->id)
-                        ->where('is_automated', true)
-                        ->where('message', 'like', "%⚠️ DEPARTMENT SUSPENSION WARNING%")
-                        ->where('message', 'like', "%Ref: #{$item->requisition_id}%")
-                        ->exists();
+                    $headExists = $existingAlerts->contains(function($msg) use ($otherHead, $item) {
+                        return $msg->receiver_id == $otherHead->id &&
+                               strpos($msg->message, '⚠️ DEPARTMENT SUSPENSION WARNING') !== false &&
+                               strpos($msg->message, "Ref: #{$item->requisition_id}") !== false;
+                    });
 
                     if (!$headExists) {
                         $otherHeadMsg  = "<div class='department-view warning-msg' style='padding:15px;border:1px solid #f59e0b;border-radius:12px;background:rgba(245,158,11,0.05);'>";
@@ -1844,22 +1876,23 @@ class StoreRequisitionController extends Controller
                         $otherHeadMsg .= "Ensure your own department's temporary loans are returned within their designated expected dates to prevent similar access lockout.";
                         $otherHeadMsg .= "</div>";
 
-                        \App\Models\Message::create([
+                        $newMsg = \App\Models\Message::create([
                             'sender_id' => 1,
                             'receiver_id' => $otherHead->id,
                             'message' => $otherHeadMsg,
                             'is_automated' => true,
                         ]);
+                        $existingAlerts->push($newMsg);
                     }
                 }
 
                 // Notify Logistics/Stores Staff
                 foreach ($storesStaff as $staff) {
-                    $staffExists = \App\Models\Message::where('receiver_id', $staff->id)
-                        ->where('is_automated', true)
-                        ->where('message', 'like', "%🚨 SYSTEM LOCKOUT EXCEPTION%")
-                        ->where('message', 'like', "%Ref: #{$item->requisition_id}%")
-                        ->exists();
+                    $staffExists = $existingAlerts->contains(function($msg) use ($staff, $item) {
+                        return $msg->receiver_id == $staff->id &&
+                               strpos($msg->message, '🚨 SYSTEM LOCKOUT EXCEPTION') !== false &&
+                               strpos($msg->message, "Ref: #{$item->requisition_id}") !== false;
+                    });
 
                     if (!$staffExists) {
                         $staffMsg  = "<div class='admin-view notification-msg' style='padding:15px;border:1px solid #ef4444;border-radius:12px;background:rgba(239,68,68,0.05);'>";
@@ -1868,12 +1901,13 @@ class StoreRequisitionController extends Controller
                         $staffMsg .= "The borrowing department (<b>" . e($item->department) . "</b>) has been locked out of requisition privileges. Please initiate asset recovery procedures immediately.";
                         $staffMsg .= "</div>";
 
-                        \App\Models\Message::create([
+                        $newMsg = \App\Models\Message::create([
                             'sender_id' => 1,
                             'receiver_id' => $staff->id,
                             'message' => $staffMsg,
                             'is_automated' => true,
                         ]);
+                        $existingAlerts->push($newMsg);
                     }
                 }
             }

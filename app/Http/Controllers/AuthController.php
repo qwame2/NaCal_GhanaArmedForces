@@ -215,9 +215,9 @@ class AuthController extends Controller
                 return redirect()->route('account.deactivated');
             }
 
-            // FORCE PASSWORD CHANGE: Check if personnel needs to update their temporary key
+            // FORCE PASSWORD CHANGE: Check if personnel or main admin needs to update their temporary key
             // (Skip this for temporary requisitioner accounts — they use OTP flow instead)
-            if (!$user->is_admin && $user->must_change_password && !$user->is_temp_account) {
+            if (($user->role === 'Main Admin' || !$user->is_admin) && $user->must_change_password && !$user->is_temp_account) {
                 return redirect()->route('password.change')->with('info', 'Security Synchronization required. Please update your temporary access key.');
             }
 
@@ -609,6 +609,21 @@ class AuthController extends Controller
         }
 
         return response()->json(['rejected' => false]);
+    }
+
+    public function checkForgotEligibility(Request $request)
+    {
+        $username = $request->query('username');
+        if (!$username) {
+            return response()->json(['eligible' => false]);
+        }
+
+        $user = User::where('username', $username)->first();
+        if ($user && in_array($user->role, ['Department Head', 'Admin'])) {
+            return response()->json(['eligible' => true]);
+        }
+
+        return response()->json(['eligible' => false]);
     }
 
 }
