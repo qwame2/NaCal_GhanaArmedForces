@@ -366,9 +366,7 @@
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
 
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Level</th>
-                        @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; text-align: right;">Action</th>
-                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -475,11 +473,11 @@
                                 <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">-</span>
                             @endif
                         </td>
-                        <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ $item->qty ?? '0' }}</td>
-                        <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">{{ $item->stock_balance }}</td>
+                        <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ number_format((float)($item->qty ?? 0)) }}</td>
+                        <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">{{ number_format((float)($item->stock_balance ?? 0)) }}</td>
                         <td data-label="Variance" style="padding: 1.25rem 1.5rem;">
                             <span style="font-weight: 800; color: {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '#10b981' : (is_numeric($item->variance) && (float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">
-                                {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '+' : '' }}{{ $item->variance }}
+                                {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '+' : '' }}{{ is_numeric($item->variance) ? number_format((float)$item->variance) : $item->variance }}
                             </span>
                         </td>
 
@@ -500,51 +498,57 @@
                             </div>
                         </td>
 
-                        @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
-                        <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right;">
-                            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
-                                    @if($isDbPartialDelivery && is_numeric($item->variance) && (float)$item->variance < 0)
-                                        @php
-                                            $pendingRemainder = \App\Models\EditRequest::where('item_id', $item->batch_id)
-                                                ->where('item_type', 'batch')
-                                                ->where('request_type', 'remainder_submission')
-                                                ->where('status', 'pending')
-                                                ->exists();
-                                        @endphp
-                                        @if($pendingRemainder)
-                                            <div title="Awaiting Approval" style="width: 38px; height: 38px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; opacity: 0.7;">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                            </div>
-                                        @else
-                                            <button @if(!auth()->user()->is_admin && !auth()->user()->can_add_inventory) disabled title="Permission Denied" style="opacity: 0.4; cursor: not-allowed; width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.1);" @else onclick="continueDelivery('{{ $item->batch_id }}')" class="action-icon-btn" title="Continue Delivery" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.1);" @endif>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7"/><circle cx="12" cy="12" r="3"/></svg>
-                                            </button>
-                                        @endif
-                                    @endif
+                         <td data-label="Action" style="padding: 1.25rem 1.5rem; text-align: right;">
+                             <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+                                     @php
+                                         $isPending = !empty($item->is_pending_creation);
+                                         $batchOrReqId = $isPending ? $item->edit_request_id : $item->batch_id;
+                                     @endphp
+                                     <button type="button" onclick="viewItemDetails('{{ $batchOrReqId }}', '{{ $item->id }}', {{ $isPending ? 'true' : 'false' }})" class="action-icon-btn" title="View Details" style="width: 38px; height: 38px; border-radius: 10px; color: #4f46e5; background: rgba(79, 70, 229, 0.05); border: 1px solid rgba(79, 70, 229, 0.1); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                     </button>
 
-                                    @php
-                                        $pendingEdit = \App\Models\EditRequest::where('item_id', $item->batch_id)
-                                            ->where('item_type', 'batch')
-                                            ->whereIn('request_type', ['edit', 'edit_submission'])
-                                            ->where('status', 'pending')
-                                            ->exists();
-                                    @endphp
-                                    @if($pendingEdit)
-                                        <div title="Edit Pending Approval" style="width: 38px; height: 38px; background: rgba(99, 102, 241, 0.08); color: #6366f1; border-radius: 10px; border: 1px dashed rgba(99, 102, 241, 0.3); display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: default;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                        </div>
-                                    @else
-                                        <button @if(!auth()->user()->is_admin && !auth()->user()->can_add_inventory) disabled title="Permission Denied" style="opacity: 0.4; cursor: not-allowed; width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.1);" @else onclick="openEditBatchModal('{{ $item->batch_id }}')" class="action-icon-btn" title="Edit Entry" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.1);" @endif>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                        </button>
-                                    @endif
-                            </div>
-                        </td>
-                        @endif
+                                     @if($isDbPartialDelivery && is_numeric($item->variance) && (float)$item->variance < 0)
+                                             @php
+                                                 $pendingRemainder = \App\Models\EditRequest::where('item_id', $item->batch_id)
+                                                     ->where('item_type', 'batch')
+                                                     ->where('request_type', 'remainder_submission')
+                                                     ->where('status', 'pending')
+                                                     ->exists();
+                                             @endphp
+                                             @if($pendingRemainder)
+                                                 <div title="Awaiting Approval" style="width: 38px; height: 38px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; opacity: 0.7;">
+                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                                 </div>
+                                             @else
+                                                 <button @if(!auth()->user()->is_admin && !auth()->user()->can_add_inventory) disabled title="Permission Denied" style="opacity: 0.4; cursor: not-allowed; width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.1);" @else onclick="continueDelivery('{{ $item->batch_id }}')" class="action-icon-btn" title="Continue Delivery" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.1);" @endif>
+                                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7"/><circle cx="12" cy="12" r="3"/></svg>
+                                                 </button>
+                                             @endif
+                                         @endif
+
+                                         @php
+                                             $pendingEdit = \App\Models\EditRequest::where('item_id', $item->batch_id)
+                                                 ->where('item_type', 'batch')
+                                                 ->whereIn('request_type', ['edit', 'edit_submission'])
+                                                 ->where('status', 'pending')
+                                                 ->exists();
+                                         @endphp
+                                         @if($pendingEdit)
+                                             <div title="Edit Pending Approval" style="width: 38px; height: 38px; background: rgba(99, 102, 241, 0.08); color: #6366f1; border-radius: 10px; border: 1px dashed rgba(99, 102, 241, 0.3); display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: default;">
+                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                             </div>
+                                         @else
+                                             <button @if(!auth()->user()->is_admin && !auth()->user()->can_add_inventory) disabled title="Permission Denied" style="opacity: 0.4; cursor: not-allowed; width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.1);" @else onclick="openEditBatchModal('{{ $item->batch_id }}')" class="action-icon-btn" title="Edit Entry" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.1);" @endif>
+                                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                             </button>
+                                         @endif
+                             </div>
+                         </td>
         </tr>
         @empty
         <tr>
-            <td colspan="{{ in_array(auth()->user()->role, ['Main Admin', 'Department Head']) ? 11 : 12 }}" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
+            <td colspan="12" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; margin: 0 auto;">
                     <div style="background: rgba(99, 102, 241, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(99, 102, 241, 0.2); animation: pulse 2s infinite;">
                         <i data-lucide="package-search" style="width: 44px; stroke-width: 1.5px;"></i>
@@ -672,6 +676,73 @@
 </div>
 </div>
 
+
+<!-- View Batch Details Modal -->
+<div id="viewBatchDetailsModal" class="modal-backdrop" style="display: none; z-index: 1050;">
+    <div class="modal-content glass-card animate-scale-up" style="max-width: 650px; width: 95%; display: flex; flex-direction: column; max-height: 90vh; padding: 0; overflow: hidden; border: none; background: #ffffff; color: #000000; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+        <!-- Modal Header -->
+        <div class="modal-header" style="background: var(--primary-gradient, var(--primary)); color: white; padding: 1.5rem 2.5rem; display: flex; justify-content: space-between; align-items: center; border-radius: 24px 24px 0 0;">
+            <div>
+                <h3 style="margin: 0; font-size: 1.4rem; font-weight: 900; color: white; display: flex; align-items: center; gap: 12px;">
+                    <span style="width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="info" style="width: 20px; height: 20px;"></i>
+                    </span>
+                    Transaction Entry Details
+                </h3>
+                <p id="viewModalSubtitle" style="margin: 4px 0 0; font-size: 0.9rem; color: rgba(255, 255, 255, 0.85); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Batch Reference</p>
+            </div>
+            <button onclick="closeViewDetailsModal()" class="btn-icon" style="background: rgba(255, 255, 255, 0.15); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                <i data-lucide="x" style="width: 18px;"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body" style="padding: 2.5rem; overflow-y: auto; background: #ffffff; display: flex; flex-direction: column; gap: 2rem;">
+            <!-- Hidden elements to keep JS variables alive -->
+            <div style="display: none;">
+                <span id="viewLedgeCategory"></span>
+                <span id="viewEntryDate"></span>
+                <span id="viewArrivalDate"></span>
+                <span id="viewAcquisitionType"></span>
+                <span id="viewRecordedBy"></span>
+                <span id="viewApprovedBy"></span>
+                <span id="viewApprovalStatus"></span>
+                <table><tbody id="viewItemsList"></tbody></table>
+            </div>
+
+            <!-- Logistics Entity & Delivery Details -->
+            <div style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 20px; padding: 2rem; border-left: 6px solid #10b981; box-shadow: 0 12px 28px rgba(0,0,0,0.04); transition: all 0.3s;">
+                <h4 style="margin: 0 0 1.5rem 0; font-size: 1.05rem; text-transform: uppercase; color: #334155; font-weight: 900; letter-spacing: 0.08em; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="truck" style="width: 22px; height: 22px; color: #10b981;"></i>
+                    Logistics Entity & Delivery
+                </h4>
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.05rem; font-weight: 600; border-bottom: 1px dashed #e2e8f0; padding-bottom: 12px;">
+                        <span id="viewEntityLabel" style="color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Supplier Name</span>
+                        <span id="viewEntityDisplay" style="color: #0f172a; font-weight: 900; font-size: 1.15rem;">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.05rem; font-weight: 600; border-bottom: 1px dashed #e2e8f0; padding-bottom: 12px;">
+                        <span style="color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Delivery Person</span>
+                        <span id="viewDeliveryPerson" style="color: #0f172a; font-weight: 900; font-size: 1.15rem;">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.05rem; font-weight: 600; padding-bottom: 4px;">
+                        <span style="color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Delivery Phone</span>
+                        <span id="viewDeliveryPhone" style="color: #0f172a; font-weight: 900; font-size: 1.15rem;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div style="border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; align-items: center; padding: 1.5rem 2.5rem; background: #f8fafc; border-radius: 0 0 28px 28px;">
+            <div style="display: none;">
+                <a href="" id="viewPrintBtn"></a>
+                <a href="" id="viewSraBtn"></a>
+            </div>
+            <button onclick="closeViewDetailsModal()" style="padding: 0.85rem 3rem; border-radius: 12px; font-weight: 800; font-size: 1rem; background: var(--primary); border: none; color: white; cursor: pointer; transition: all 0.3s; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);">Close</button>
+        </div>
+    </div>
+</div>
 
 <!-- Continue Delivery Modal -->
 <div id="continueDeliveryModal" class="modal-backdrop">
@@ -1952,6 +2023,166 @@
     const ledgeMap = @json($ledgeMap);
 
     let currentBatchId = null;
+
+    function viewItemDetails(batchOrReqId, itemId, isPending) {
+        const modal = document.getElementById('viewBatchDetailsModal');
+        const subtitle = document.getElementById('viewModalSubtitle');
+        const itemsList = document.getElementById('viewItemsList');
+        
+        modal.style.display = 'flex';
+        subtitle.innerText = isPending ? `Draft Creation Request #${batchOrReqId}` : `Batch Reference #${batchOrReqId}`;
+        
+        document.getElementById('viewLedgeCategory').innerText = 'Loading...';
+        document.getElementById('viewEntryDate').innerText = 'Loading...';
+        document.getElementById('viewArrivalDate').innerText = 'Loading...';
+        document.getElementById('viewAcquisitionType').innerText = 'Loading...';
+        document.getElementById('viewRecordedBy').innerText = 'Loading...';
+        document.getElementById('viewApprovedBy').innerText = 'Loading...';
+        document.getElementById('viewApprovalStatus').innerText = 'Loading...';
+        document.getElementById('viewEntityDisplay').innerText = 'Loading...';
+        document.getElementById('viewDeliveryPerson').innerText = 'Loading...';
+        document.getElementById('viewDeliveryPhone').innerText = 'Loading...';
+        document.getElementById('viewPrintBtn').style.display = 'none';
+        document.getElementById('viewSraBtn').style.display = 'none';
+        
+        itemsList.innerHTML = `
+            <tr>
+                <td colspan="6" style="padding: 3rem; text-align: center; color: var(--text-muted); background: var(--bg-main);">
+                    <div class="loader" style="margin: 0 auto 10px auto;"></div>
+                    Retrieving transaction details...
+                </td>
+            </tr>
+        `;
+        
+        const fetchUrl = isPending 
+            ? `{{ url('/api/sra-preview') }}/${batchOrReqId}` 
+            : `{{ url('/received-items') }}/${batchOrReqId}?json=true`;
+            
+        fetch(fetchUrl)
+            .then(r => {
+                if (!r.ok) throw new Error("Server response error");
+                return r.json();
+            })
+            .then(data => {
+                const batch = data.batch;
+                
+                // Set parameter fields
+                const categoryCode = batch.ledge_category;
+                const categoryName = ledgeMap[categoryCode] || categoryCode || '-';
+                document.getElementById('viewLedgeCategory').innerText = `Category ${categoryCode} - ${categoryName}`;
+                
+                const entryDateStr = batch.entry_date ? new Date(batch.entry_date).toLocaleString('en-GB') : (data.recorded_by_name ? (data.created_at || '-') : '-');
+                const arrivalDateStr = batch.arrival_date ? new Date(batch.arrival_date).toLocaleDateString('en-GB') : '-';
+                
+                document.getElementById('viewEntryDate').innerText = entryDateStr;
+                document.getElementById('viewArrivalDate').innerText = arrivalDateStr;
+
+                // Set acquisition type
+                const acqType = batch.acquisition_type || '-';
+                document.getElementById('viewAcquisitionType').innerText = acqType;
+
+                // Set recorded by
+                const recorderName = batch.recorder ? (batch.recorder.name || batch.recorder.username) : (data.recorded_by_name || '-');
+                document.getElementById('viewRecordedBy').innerText = recorderName;
+
+                // Set approval status and approver
+                let approvalStatus = batch.approval_status || (isPending ? 'pending' : 'approved');
+                approvalStatus = approvalStatus.charAt(0).toUpperCase() + approvalStatus.slice(1);
+                document.getElementById('viewApprovalStatus').innerText = approvalStatus;
+                
+                let approverName = '-';
+                if (isPending) {
+                    approverName = 'Awaiting Approval';
+                } else if (batch.approver) {
+                    approverName = batch.approver.name || batch.approver.username;
+                } else if (batch.approved_by) {
+                    approverName = 'Administrator';
+                }
+                document.getElementById('viewApprovedBy').innerText = approverName;
+                
+                // Set logistics entity details
+                const isDonor = batch.acquisition_type === 'Donor';
+                document.getElementById('viewEntityLabel').innerText = isDonor ? 'Donor Name' : 'Supplier Name';
+                const rawName = isDonor ? (batch.donor_name || batch.supplier_name) : batch.supplier_name;
+                const entityName = (rawName || 'Unknown').replace(/\[.*?\]/g, '').trim();
+                document.getElementById('viewEntityDisplay').innerText = entityName;
+                
+                document.getElementById('viewDeliveryPerson').innerText = batch.delivery_person || 'N/A';
+                document.getElementById('viewDeliveryPhone').innerText = batch.delivery_phone || 'N/A';
+                
+                // Show printable buttons if not pending draft
+                if (!isPending) {
+                    const printBtn = document.getElementById('viewPrintBtn');
+                    const sraBtn = document.getElementById('viewSraBtn');
+                    printBtn.href = `{{ url('/received-items') }}/${batch.id}/print`;
+                    sraBtn.href = `{{ url('/received-items') }}/${batch.id}/sra`;
+                    printBtn.style.display = 'flex';
+                    sraBtn.style.display = 'flex';
+                }
+                
+                // Render items
+                let itemsHtml = '';
+                const itemsArray = batch.items || [];
+                if (itemsArray.length === 0) {
+                    itemsHtml = `
+                        <tr>
+                            <td colspan="6" style="padding: 2rem; text-align: center; color: var(--text-muted); background: var(--bg-main);">No items in this transaction.</td>
+                        </tr>
+                    `;
+                } else {
+                    itemsArray.forEach(item => {
+                        const isCurrentSelected = String(item.id) === String(itemId);
+                        const rowStyle = isCurrentSelected 
+                            ? 'background: rgba(99, 102, 241, 0.08); font-weight: bold; border-left: 3px solid var(--primary);' 
+                            : '';
+                            
+                        const expQty = parseFloat(item.qty) || 0;
+                        const verifiedQty = parseFloat(item.stock_balance) || 0;
+                        const variance = parseFloat(item.variance) || 0;
+                        
+                        let varianceHtml = '';
+                        if (variance > 0) {
+                            varianceHtml = `<span style="color: #10b981; font-weight: 800;">+${Math.round(variance).toLocaleString()}</span>`;
+                        } else if (variance < 0) {
+                            varianceHtml = `<span style="color: #ef4444; font-weight: 800;">${Math.round(variance).toLocaleString()}</span>`;
+                        } else {
+                            varianceHtml = `<span style="color: #94a3b8; font-weight: 800;">0</span>`;
+                        }
+                        
+                        itemsHtml += `
+                            <tr style="border-bottom: 1px solid var(--border-color); ${rowStyle}">
+                                <td style="padding: 1rem; color: var(--text-main); font-weight: 700;">
+                                    ${item.description}
+                                    ${isCurrentSelected ? ' <span style="font-size: 0.65rem; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 6px; text-transform: uppercase;">Selected</span>' : ''}
+                                </td>
+                                <td style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; font-weight: 700;">${item.unit || '-'}</td>
+                                <td style="padding: 1rem; text-align: center; color: var(--text-main); font-weight: 700;">${Math.round(expQty).toLocaleString()}</td>
+                                <td style="padding: 1rem; text-align: center; color: var(--text-main); font-weight: 800;">${Math.round(verifiedQty).toLocaleString()}</td>
+                                <td style="padding: 1rem; text-align: center;">${varianceHtml}</td>
+                                <td style="padding: 1rem; color: var(--text-muted); font-size: 0.85rem; font-style: italic;">${item.remarks || '-'}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                itemsList.innerHTML = itemsHtml;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            })
+            .catch(err => {
+                itemsList.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="padding: 3rem; text-align: center; color: #ef4444; font-weight: bold; background: var(--bg-main);">
+                            <i data-lucide="alert-triangle" style="width: 24px; margin: 0 auto 10px auto;"></i>
+                            Failed to retrieve transaction details. Please try again.
+                        </td>
+                    </tr>
+                `;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
+    }
+    
+    function closeViewDetailsModal() {
+        document.getElementById('viewBatchDetailsModal').style.display = 'none';
+    }
 
 
     let continueBatchData = null;

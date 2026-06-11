@@ -220,7 +220,7 @@
                         @endif
                     </td>
                     <td style="text-align: center;">{{ $item->unit }}</td>
-                    <td style="text-align: center; font-weight: bold; font-size: 16px;">{{ $item->qty }}</td>
+                    <td style="text-align: center; font-weight: bold; font-size: 16px;">{{ number_format((float)($item->qty ?? 0)) }}</td>
                 </tr>
                 @endforeach
             </tbody>

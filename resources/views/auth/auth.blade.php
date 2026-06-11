@@ -665,10 +665,13 @@
         const interfaceVal = document.getElementById('targetInterfaceInput').value;
 
         if (interfaceVal !== 'admin') {
+            // User interface: always show the link, reset href
+            forgotLink.href = '{{ route('password.request') }}';
             forgotLink.style.display = 'block';
             return;
         }
 
+        // Head interface: only show if a valid Head/Admin username is entered
         const username = usernameInput ? usernameInput.value.trim() : '';
         if (!username) {
             forgotLink.style.display = 'none';
@@ -679,6 +682,8 @@
             .then(res => res.json())
             .then(data => {
                 if (data.eligible) {
+                    // Attach username to the link so forgot password page can pre-fill it
+                    forgotLink.href = '{{ route('password.request') }}?username=' + encodeURIComponent(username);
                     forgotLink.style.display = 'block';
                 } else {
                     forgotLink.style.display = 'none';

@@ -695,7 +695,7 @@ jQuery(document).ready(function($) {
                                             <i data-lucide="layers" style="width: 16px;"></i>
                                         </div>
                                         <div>
-                                            <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Total items</div>
+                                            <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Previous Balance</div>
                                             <div class="stat-stock-balance" style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">0</div>
                                         </div>
                                     </div>
@@ -963,9 +963,13 @@ jQuery(document).ready(function($) {
                     const finalUnit = isUnitValid ? unitLabel : 'PACKAGE TYPES';
 
                     if (prevData) {
-                        $row.find('.stat-stock-balance').text(parseFloat(prevData.stock_balance).toLocaleString() + ' ' + finalUnit);
-                        $row.find('.stat-received-qty').text(parseFloat(prevData.qty).toLocaleString() + ' ' + finalUnit);
-                        $row.find('.stat-dynamic-stock-balance').text(parseFloat(prevData.stock_balance).toLocaleString());
+                        const totalStock = parseFloat(prevData.stock_balance) || 0;
+                        const lastQty = parseFloat(prevData.qty) || 0;
+                        const prevBalance = Math.max(0, totalStock - lastQty);
+
+                        $row.find('.stat-stock-balance').text(prevBalance.toLocaleString() + ' ' + finalUnit);
+                        $row.find('.stat-received-qty').text(lastQty.toLocaleString() + ' ' + finalUnit);
+                        $row.find('.stat-dynamic-stock-balance').text(totalStock.toLocaleString());
                         statsPanel.slideDown(300);
 
                         if (!$row.find('.existing-indicator').length) {

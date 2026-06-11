@@ -392,9 +392,9 @@
                     <td style="text-align: center;">{{ $item->ledger_id ?? '-' }}</td>
                     <td>
                         <div class="qty-sub-grid">
-                            <div class="qty-sub-cell">{{ (float)$item->stock_balance - (float)$item->variance }}</div>
-                            <div class="qty-sub-cell" style="font-weight: bold;">{{ $item->stock_balance }}</div>
-                            <div class="qty-sub-cell">{{ $item->variance == 0 ? '-' : abs($item->variance) }}</div>
+                            <div class="qty-sub-cell">{{ number_format((float)$item->stock_balance - (float)$item->variance) }}</div>
+                            <div class="qty-sub-cell" style="font-weight: bold;">{{ number_format((float)$item->stock_balance) }}</div>
+                            <div class="qty-sub-cell">{{ $item->variance == 0 ? '-' : number_format(abs((float)$item->variance)) }}</div>
                         </div>
                     </td>
                 </tr>

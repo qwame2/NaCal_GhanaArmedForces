@@ -57,7 +57,8 @@
                     </div>
                     <div class="field-input">
                         <div class="field-icon"><i data-lucide="user"></i></div>
-                        <input type="text" name="username" placeholder="e.g. j_doe" required autofocus>
+                        <input type="text" name="username" placeholder="e.g. j_doe" required autofocus
+                            value="{{ request('username') }}">
                     </div>
                 </div>
 

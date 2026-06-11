@@ -1,2 +1,3 @@
 <?php
-// Removed after testing.
+unlink(__FILE__);
+echo "Cleaned up successfully.";

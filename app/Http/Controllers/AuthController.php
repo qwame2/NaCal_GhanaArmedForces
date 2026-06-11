@@ -619,7 +619,7 @@ class AuthController extends Controller
         }
 
         $user = User::where('username', $username)->first();
-        if ($user && in_array($user->role, ['Department Head', 'Admin'])) {
+        if ($user && in_array($user->role, ['Department Head', 'Admin', 'Main Admin'])) {
             return response()->json(['eligible' => true]);
         }
 

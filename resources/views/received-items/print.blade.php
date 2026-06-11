@@ -313,7 +313,7 @@
 
     <div class="info-grid">
         <div class="info-card">
-            <h3>Shipment Parameters</h3>
+            <h3>Receiving Parameters</h3>
             <div class="info-line">
                 <span class="info-label">Transaction ID</span>
                 <span class="info-value">{{ str_pad($batch->id, 6, '0', STR_PAD_LEFT) }}</span>
@@ -439,10 +439,10 @@
                     <td class="row-sn">{{ $index + 1 }}</td>
                     <td class="row-desc">{{ $item->description }}</td>
                     <td style="text-align: center; color: var(--print-secondary); font-weight: 500;">{{ $item->unit ?? 'Pcs' }}</td>
-                    <td style="text-align: center; font-weight: 600; color: var(--print-secondary);">{{ $expected }}</td>
-                    <td style="text-align: center; font-weight: 700;">{{ $verified }}</td>
+                    <td style="text-align: center; font-weight: 600; color: var(--print-secondary);">{{ number_format($expected) }}</td>
+                    <td style="text-align: center; font-weight: 700;">{{ number_format($verified) }}</td>
                     <td style="text-align: center; font-weight: 700; color: {{ $variance < 0 ? '#dc2626' : ($variance > 0 ? '#2563eb' : '#059669') }};">
-                        {{ $variance > 0 ? '+' : '' }}{{ $variance }}
+                        {{ $variance > 0 ? '+' : '' }}{{ number_format($variance) }}
                     </td>
                     <td style="text-align: center;">
                         <span style="display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: {{ $statusColor }}; background: {{ $statusBg }}; border: 1px solid {{ $statusColor }}33;">

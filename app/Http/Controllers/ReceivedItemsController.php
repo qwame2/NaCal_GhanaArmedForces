@@ -620,7 +620,7 @@ class ReceivedItemsController extends Controller
         }
 
         $ledgeMap = $this->getLedgeMap();
-        $batch = InventoryBatch::with(['items'])->findOrFail($id);
+        $batch = InventoryBatch::with(['items', 'recorder', 'approver'])->findOrFail($id);
         
         // Fetch history logs for this batch
         $history = \App\Models\SystemLog::where('action', 'UPDATE_BATCH')
