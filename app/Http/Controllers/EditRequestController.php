@@ -612,6 +612,7 @@ class EditRequestController extends Controller
 
         if (!$personnelOriginalMsg) {
             $personnelOriginalMsg = Message::where('receiver_id', $editReq->user_id)
+                ->where('created_at', '>=', now()->subDays(5))
                 ->where(function($q) use ($editReq) {
                     $q->where('message', 'like', "%<!-- sra_req_id:{$editReq->id} -->%")
                       ->orWhere('message', 'like', '%Awaiting Authorization%')
@@ -646,6 +647,7 @@ class EditRequestController extends Controller
 
         if ($adminMsgs->isEmpty()) {
             $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+                ->where('created_at', '>=', now()->subDays(5))
                 ->where(function($q) use ($editReq) {
                     $q->where('edit_request_id', $editReq->id)
                       ->orWhere('message', 'like', "%sra-creation-actions-{$editReq->id}%");
@@ -1260,6 +1262,7 @@ class EditRequestController extends Controller
 
         if (!$personnelOriginalMsg) {
             $personnelOriginalMsg = Message::where('receiver_id', $editReq->user_id)
+                ->where('created_at', '>=', now()->subDays(5))
                 ->where(function($q) use ($editReq) {
                     $q->where('message', 'like', "%<!-- sra_req_id:{$editReq->id} -->%")
                       ->orWhere('message', 'like', '%Awaiting Authorization%');
@@ -1291,6 +1294,7 @@ class EditRequestController extends Controller
 
         if ($adminMsgs->isEmpty()) {
             $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+                ->where('created_at', '>=', now()->subDays(5))
                 ->where(function($q) use ($editReq) {
                     $q->where('edit_request_id', $editReq->id)
                       ->orWhere('message', 'like', "%sra-creation-actions-{$editReq->id}%");

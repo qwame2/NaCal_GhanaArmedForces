@@ -214,6 +214,17 @@
 jQuery(document).ready(function($) {
     window.originalRollbackPayload = null;
 
+    // Global listener to close and blur select2 when an item is selected
+    $(document).on('select2:select', '.item-select-dynamic', function() {
+        var $select = $(this);
+        setTimeout(function() {
+            $select.select2('close');
+            var $container = $select.next('.select2-container');
+            $container.find('.select2-search__field').blur();
+            $container.find('.select2-selection').blur();
+        }, 50);
+    });
+
     // Set default dates
     const now = new Date();
     const year = now.getFullYear();
@@ -229,53 +240,7 @@ jQuery(document).ready(function($) {
 
     // Check duplicates when Received Date changes
     $('#arrivalDate').on('change', function() {
-        $('.item-entry-row').each(function() {
-            checkDuplicateItem($(this));
-        });
     });
-
-    function checkDuplicateItem($row) {
-        const desc = ($row.find('.item-select-dynamic').val() || '').trim();
-        const arrivalDate = $('#arrivalDate').val();
-
-        // Clear warning and state
-        $row.find('.duplicate-warning').remove();
-        $row.removeClass('has-duplicate');
-        if (typeof updateSubmitButtonState === 'function') {
-            updateSubmitButtonState();
-        }
-
-        if (!desc || !arrivalDate) {
-            return;
-        }
-
-        $.ajax({
-            url: '{{ route("api.inventory.check-duplicate", [], false) }}',
-            method: 'GET',
-            data: {
-                description: desc,
-                arrival_date: arrivalDate
-            },
-            success: function(response) {
-                if (response.duplicate) {
-                    $row.addClass('has-duplicate');
-                    const warningHtml = `
-                        <div class="duplicate-warning animate-slide-up" style="color: #ef4444; font-size: 0.8rem; font-weight: 700; margin-top: 8px; display: flex; align-items: flex-start; gap: 8px; padding: 10px 14px; background: rgba(239, 68, 68, 0.05); border: 1.5px solid rgba(239, 68, 68, 0.2); border-radius: 12px;">
-                            <svg style="width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                            </svg>
-                            <span>${response.message}</span>
-                        </div>
-                    `;
-                    const select2Container = $row.find('.item-select-dynamic').parent();
-                    select2Container.append(warningHtml);
-                    if (typeof updateSubmitButtonState === 'function') {
-                        updateSubmitButtonState();
-                    }
-                }
-            }
-        });
-    }
 
     function hasRollbackChanges(newPayload, origPayload) {
         if (!origPayload) return true;
@@ -507,26 +472,6 @@ jQuery(document).ready(function($) {
                 icon: 'warning',
                 title: 'Package Type or Location Missing',
                 text: `The item "${invalidItemName}" does not have a valid package type or store location assigned. Please enter or select them before submitting.`,
-                confirmButtonColor: '#ef4444'
-            });
-            return;
-        }
-
-        let hasDuplicate = false;
-        let duplicateMessage = '';
-        $('.item-entry-row').each(function() {
-            if ($(this).hasClass('has-duplicate')) {
-                hasDuplicate = true;
-                duplicateMessage = $(this).find('.duplicate-warning span').text();
-                return false; // break loop
-            }
-        });
-
-        if (hasDuplicate) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Duplicate Entry Detected',
-                text: duplicateMessage || 'One or more items have already been entered into the system for the selected Received Date.',
                 confirmButtonColor: '#ef4444'
             });
             return;
@@ -794,6 +739,7 @@ jQuery(document).ready(function($) {
                 placeholder: "Search, select, or type new item...",
                 width: '100%',
                 tags: true,
+                closeOnSelect: true,
                 createTag: function (params) {
                     var term = $.trim(params.term).toUpperCase();
                     if (term === '') {
@@ -807,9 +753,25 @@ jQuery(document).ready(function($) {
                 }
             });
 
+            // Close dropdown immediately after an item is selected
+            $row.find('.item-select-dynamic').on('select2:select', function() {
+                var $select = $(this);
+                setTimeout(function() {
+                    $select.select2('close');
+                    // Force blur on the select2 container and search inputs to drop focus and close dropdown
+                    var $container = $select.next('.select2-container');
+                    $container.find('.select2-search__field').blur();
+                    $container.find('.select2-selection').blur();
+                }, 50);
+            });
+
             // Handle Item Selection to show previous data explicitly
             $row.on('change', '.item-select-dynamic', function() {
-                const selectedDesc = ($(this).val() || '').trim().toUpperCase();
+                var $select = $(this);
+                setTimeout(function() {
+                    $select.select2('close');
+                }, 50);
+                const selectedDesc = ($select.val() || '').trim().toUpperCase();
                 const prevData = (existingDBItems || []).find(item => item && item.description === selectedDesc);
 
                 // Auto-fill unit and location based on admin-defined unit rules or existing item data
@@ -992,7 +954,6 @@ jQuery(document).ready(function($) {
                     qtyInput.removeAttr('placeholder');
                     varianceInput.attr('placeholder', '0');
                     updateStatsPanel();
-                    checkDuplicateItem($row);
                 } else {
                     statsPanel.slideUp(300);
                     $row.find('.duplicate-warning').remove();

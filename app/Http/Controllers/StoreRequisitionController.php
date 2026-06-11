@@ -271,8 +271,8 @@ class StoreRequisitionController extends Controller
 
     public function collect(Request $request, $id)
     {
-        if (auth()->user()->role !== 'Officer') {
-            return response()->json(['success' => false, 'message' => 'Only Store Officers are authorized to click the collection button and confirm physical collection.'], 403);
+        if (!auth()->user()->can_operate_logistics) {
+            return response()->json(['success' => false, 'message' => 'Only personnel with Logistics Ops permission are authorized to click the collection button and confirm physical collection.'], 403);
         }
 
         // Add self-healing schema migration for collector_location if not exists

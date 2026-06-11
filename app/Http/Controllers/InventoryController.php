@@ -157,51 +157,6 @@ class InventoryController extends Controller
         ]);
 
         $arrivalDate = $validated['arrival_date'];
-        foreach ($validated['items'] as $item) {
-            $description = trim($item['description'] ?? '');
-
-            // 1. Check existing items in database
-            $existingItem = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-                ->where(\DB::raw('LOWER(TRIM(inventory_items.description))'), '=', strtolower($description))
-                ->whereDate('inventory_batches.arrival_date', $arrivalDate)
-                ->select('inventory_items.*', 'inventory_batches.entry_date')
-                ->orderBy('inventory_batches.entry_date', 'desc')
-                ->first();
-
-            if ($existingItem) {
-                $entryTime = \Carbon\Carbon::parse($existingItem->entry_date)->format('d/m/y H:i:s');
-                return response()->json([
-                    'success' => false,
-                    'message' => "The item '{$description}' with Received Date '{$arrivalDate}' has already been entered on {$entryTime}."
-                ], 422);
-            }
-
-            // 2. Check pending creation requests
-            $pendingRequests = \App\Models\EditRequest::where('item_type', 'batch_creation')
-                ->where('status', 'pending')
-                ->get();
-
-            foreach ($pendingRequests as $req) {
-                $payload = json_decode($req->payload, true);
-                if (!$payload) continue;
-
-                $reqArrivalDate = $payload['arrival_date'] ?? '';
-                if ($reqArrivalDate && date('Y-m-d', strtotime($reqArrivalDate)) === $arrivalDate) {
-                    $items = $payload['items'] ?? [];
-                    foreach ($items as $pItem) {
-                        if (strcasecmp(trim($pItem['description'] ?? ''), $description) === 0) {
-                            $submittingOfficer = $req->user->name ?? 'another Store Officer';
-                            $submissionTime = \Carbon\Carbon::parse($req->created_at)->format('d/m/y H:i:s');
-                            return response()->json([
-                                'success' => false,
-                                'message' => "The item '{$description}' with Received Date '{$arrivalDate}' has already been submitted by {$submittingOfficer} on {$submissionTime} and is awaiting approval."
-                            ], 422);
-                        }
-                    }
-                }
-            }
-        }
 
         try {
             DB::beginTransaction();
@@ -480,58 +435,6 @@ class InventoryController extends Controller
 
     public function checkDuplicate(Request $request)
     {
-        $description = trim($request->query('description'));
-        $arrivalDate = trim($request->query('arrival_date'));
-
-        if (empty($description) || empty($arrivalDate)) {
-            return response()->json(['duplicate' => false]);
-        }
-
-        // 1. Check existing items in database
-        $existingItem = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->where(\DB::raw('LOWER(TRIM(inventory_items.description))'), '=', strtolower($description))
-            ->whereDate('inventory_batches.arrival_date', $arrivalDate)
-            ->select('inventory_items.*', 'inventory_batches.entry_date')
-            ->orderBy('inventory_batches.entry_date', 'desc')
-            ->first();
-
-        if ($existingItem) {
-            $entryTime = \Carbon\Carbon::parse($existingItem->entry_date)->format('d/m/y H:i:s');
-            return response()->json([
-                'duplicate' => true,
-                'status' => 'approved',
-                'message' => "The item '{$description}' with Received Date '{$arrivalDate}' has already been entered on {$entryTime}."
-            ]);
-        }
-
-        // 2. Check pending creation requests
-        $pendingRequests = \App\Models\EditRequest::where('item_type', 'batch_creation')
-            ->where('status', 'pending')
-            ->get();
-
-        foreach ($pendingRequests as $req) {
-            $payload = json_decode($req->payload, true);
-            if (!$payload) continue;
-
-            $reqArrivalDate = $payload['arrival_date'] ?? '';
-            if ($reqArrivalDate && date('Y-m-d', strtotime($reqArrivalDate)) === $arrivalDate) {
-                $items = $payload['items'] ?? [];
-                foreach ($items as $item) {
-                    $itemDesc = trim($item['description'] ?? '');
-                    if (strcasecmp($itemDesc, $description) === 0) {
-                        $submittingOfficer = $req->user->name ?? 'another Store Officer';
-                        $submissionTime = \Carbon\Carbon::parse($req->created_at)->format('d/m/y H:i:s');
-                        return response()->json([
-                            'duplicate' => true,
-                            'status' => 'pending',
-                            'message' => "The item '{$description}' with Received Date '{$arrivalDate}' has already been submitted by {$submittingOfficer} on {$submissionTime} and is awaiting approval."
-                        ]);
-                    }
-                }
-            }
-        }
-
         return response()->json(['duplicate' => false]);
     }
 }

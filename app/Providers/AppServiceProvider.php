@@ -20,197 +20,201 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('issuances')) {
-                if (!\Illuminate\Support\Facades\Schema::hasColumn('issuances', 'requisition_id')) {
-                    \Illuminate\Support\Facades\Schema::table('issuances', function (\Illuminate\Database\Schema\Blueprint $table) {
-                        $table->unsignedBigInteger('requisition_id')->nullable();
-                    });
+            \Illuminate\Support\Facades\Cache::remember('schema_healed_v2', 86400, function () {
+                if (\Illuminate\Support\Facades\Schema::hasTable('issuances')) {
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('issuances', 'requisition_id')) {
+                        \Illuminate\Support\Facades\Schema::table('issuances', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->unsignedBigInteger('requisition_id')->nullable();
+                        });
+                    }
                 }
-            }
 
-            if (\Illuminate\Support\Facades\Schema::hasTable('issued_items')) {
-                if (!\Illuminate\Support\Facades\Schema::hasColumn('issued_items', 'unit')) {
-                    \Illuminate\Support\Facades\Schema::table('issued_items', function (\Illuminate\Database\Schema\Blueprint $table) {
-                        $table->string('unit')->nullable();
-                    });
+                if (\Illuminate\Support\Facades\Schema::hasTable('issued_items')) {
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('issued_items', 'unit')) {
+                        \Illuminate\Support\Facades\Schema::table('issued_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->string('unit')->nullable();
+                        });
+                    }
                 }
-            }
 
-            if (\Illuminate\Support\Facades\Schema::hasTable('store_requisitions')) {
-                if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collector_location')) {
-                    \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
-                        $table->string('collector_location')->nullable();
-                    });
+                if (\Illuminate\Support\Facades\Schema::hasTable('store_requisitions')) {
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collector_location')) {
+                        \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->string('collector_location')->nullable();
+                        });
+                    }
                 }
-            }
 
-            if (!\Illuminate\Support\Facades\Schema::hasTable('returned_items')) {
-                \Illuminate\Support\Facades\Schema::create('returned_items', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->id();
-                    $table->foreignId('issued_item_id')->constrained('issued_items')->onDelete('cascade');
-                    $table->integer('returned_qty');
-                    $table->date('return_date');
-                    $table->text('remarks')->nullable();
-                    $table->timestamps();
-                });
-            } else {
-                if (!\Illuminate\Support\Facades\Schema::hasColumn('returned_items', 'remarks')) {
-                    \Illuminate\Support\Facades\Schema::table('returned_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                if (!\Illuminate\Support\Facades\Schema::hasTable('returned_items')) {
+                    \Illuminate\Support\Facades\Schema::create('returned_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->id();
+                        $table->foreignId('issued_item_id')->constrained('issued_items')->onDelete('cascade');
+                        $table->integer('returned_qty');
+                        $table->date('return_date');
                         $table->text('remarks')->nullable();
+                        $table->timestamps();
+                    });
+                } else {
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('returned_items', 'remarks')) {
+                        \Illuminate\Support\Facades\Schema::table('returned_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->text('remarks')->nullable();
+                        });
+                    }
+                }
+
+                if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
+                    if (!\App\Models\Setting::where('key', 'stores_dept_head_approval_categories')->exists()) {
+                        \App\Models\Setting::create([
+                            'key' => 'stores_dept_head_approval_categories',
+                            'value' => '[]',
+                            'type' => 'json',
+                            'group' => 'inventory',
+                            'description' => 'Categories of items that require Department Head (Stores) approval before going to the Head of Stores.'
+                        ]);
+                    }
+                }
+
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'service_number')) {
+                    \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->string('service_number')->nullable();
                     });
                 }
-            }
-
-            if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
-                if (!\App\Models\Setting::where('key', 'stores_dept_head_approval_categories')->exists()) {
-                    \App\Models\Setting::create([
-                        'key' => 'stores_dept_head_approval_categories',
-                        'value' => '[]',
-                        'type' => 'json',
-                        'group' => 'inventory',
-                        'description' => 'Categories of items that require Department Head (Stores) approval before going to the Head of Stores.'
-                    ]);
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'signature')) {
+                    \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->string('signature')->nullable();
+                    });
                 }
-            }
-
-            if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'service_number')) {
-                \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->string('service_number')->nullable();
-                });
-            }
-            if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'signature')) {
-                \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->string('signature')->nullable();
-                });
-            }
-            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'origin_approved_by')) {
-                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->string('origin_approved_by')->nullable();
-                });
-            } else {
-                try {
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'origin_approved_by')) {
                     \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
-                        $table->string('origin_approved_by', 255)->nullable()->change();
+                        $table->string('origin_approved_by')->nullable();
                     });
-                } catch (\Exception $e) {
+                } else {
+                    try {
+                        \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->string('origin_approved_by', 255)->nullable()->change();
+                        });
+                    } catch (\Exception $e) {
+                        // Ignore
+                    }
+                }
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'stores_approved_by')) {
+                    \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->string('stores_approved_by')->nullable();
+                    });
+                }
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'rank')) {
+                    \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->string('rank')->nullable();
+                    });
+                }
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'usage_type')) {
+                    \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->string('usage_type')->default('permanent');
+                    });
+                }
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisition_items', 'alternative_description')) {
+                    \Illuminate\Support\Facades\Schema::table('store_requisition_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->string('alternative_description')->nullable();
+                    });
+                }
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisition_items', 'alternative_quantity_approved')) {
+                    \Illuminate\Support\Facades\Schema::table('store_requisition_items', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->decimal('alternative_quantity_approved', 15, 2)->nullable();
+                    });
+                }
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'main_admin_status')) {
+                    \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->string('main_admin_status')->default('pending');
+                    });
+                }
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'origin_admin_status')) {
+                    \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->string('origin_admin_status')->default('pending');
+                    });
+                }
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'alternative_status')) {
+                    \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->string('alternative_status')->nullable();
+                    });
+                }
+
+                if (!\Illuminate\Support\Facades\Schema::hasTable('receipts')) {
+                    \Illuminate\Support\Facades\Schema::create('receipts', function (\Illuminate\Database\Schema\Blueprint $table) {
+                        $table->id();
+                        $table->unsignedBigInteger('requisition_id')->unique();
+                        $table->string('receipt_number')->unique();
+                        $table->string('collector_name');
+                        $table->string('collector_contact');
+                        $table->string('collector_location');
+                        $table->timestamp('collected_at');
+                        $table->unsignedBigInteger('issued_by');
+                        $table->string('approved_by_dept_head')->nullable();
+                        $table->string('approved_by_stores_head')->nullable();
+                        $table->text('items_json');
+                        $table->timestamps();
+                    });
+                }
+
+                // Backfill origin_approved_by for existing approved requisitions
+                try {
+                    $needsBackfill = \App\Models\StoreRequisition::whereNull('origin_approved_by')
+                        ->where('origin_admin_status', 'approved')
+                        ->get();
+                    foreach ($needsBackfill as $req) {
+                        $deptHead = \App\Models\User::whereIn('role', ['Main Admin', 'Department Head'])
+                            ->where('department', $req->department)
+                            ->first();
+                        if ($deptHead) {
+                            $req->origin_approved_by = $deptHead->name;
+                            $req->save();
+                        } else {
+                            $req->origin_approved_by = $req->department . " Department Head";
+                            $req->save();
+                        }
+                    }
+                } catch (\Exception $ex) {
+                    // Ignore backfill errors on migration
+                }
+
+                // Backfill stores_approved_by for existing approved requisitions
+                try {
+                    $needsBackfillStores = \App\Models\StoreRequisition::whereNull('stores_approved_by')
+                        ->where('main_admin_status', 'approved')
+                        ->get();
+                    foreach ($needsBackfillStores as $req) {
+                        $storesHead = \App\Models\User::whereIn('role', ['Main Admin', 'Department Head'])
+                            ->where(fn($q) => $q->where('department', 'Stores')->orWhere('department', 'Store'))
+                            ->first();
+                        if ($storesHead) {
+                            $req->stores_approved_by = $storesHead->name;
+                            $req->save();
+                        } else {
+                            $req->stores_approved_by = "Stores Department Head";
+                            $req->save();
+                        }
+                    }
+                } catch (\Exception $ex) {
+                    // Ignore backfill errors on migration
+                }
+
+                // Ensure all existing Auditor accounts have is_temp_account set to true
+                try {
+                    \App\Models\User::where('role', 'Auditor')->where('is_temp_account', false)->update(['is_temp_account' => true]);
+                } catch (\Exception $ex) {
                     // Ignore
                 }
-            }
-            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'stores_approved_by')) {
-                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->string('stores_approved_by')->nullable();
-                });
-            }
-            if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'rank')) {
-                \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->string('rank')->nullable();
-                });
-            }
-            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'usage_type')) {
-                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->string('usage_type')->default('permanent');
-                });
-            }
-            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisition_items', 'alternative_description')) {
-                \Illuminate\Support\Facades\Schema::table('store_requisition_items', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->string('alternative_description')->nullable();
-                });
-            }
-            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisition_items', 'alternative_quantity_approved')) {
-                \Illuminate\Support\Facades\Schema::table('store_requisition_items', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->decimal('alternative_quantity_approved', 15, 2)->nullable();
-                });
-            }
-            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'main_admin_status')) {
-                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->string('main_admin_status')->default('pending');
-                });
-            }
-            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'origin_admin_status')) {
-                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->string('origin_admin_status')->default('pending');
-                });
-            }
-            if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'alternative_status')) {
-                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->string('alternative_status')->nullable();
-                });
-            }
 
-            if (!\Illuminate\Support\Facades\Schema::hasTable('receipts')) {
-                \Illuminate\Support\Facades\Schema::create('receipts', function (\Illuminate\Database\Schema\Blueprint $table) {
-                    $table->id();
-                    $table->unsignedBigInteger('requisition_id')->unique();
-                    $table->string('receipt_number')->unique();
-                    $table->string('collector_name');
-                    $table->string('collector_contact');
-                    $table->string('collector_location');
-                    $table->timestamp('collected_at');
-                    $table->unsignedBigInteger('issued_by');
-                    $table->string('approved_by_dept_head')->nullable();
-                    $table->string('approved_by_stores_head')->nullable();
-                    $table->text('items_json');
-                    $table->timestamps();
-                });
-            }
-
-            // Backfill origin_approved_by for existing approved requisitions
-            try {
-                $needsBackfill = \App\Models\StoreRequisition::whereNull('origin_approved_by')
-                    ->where('origin_admin_status', 'approved')
-                    ->get();
-                foreach ($needsBackfill as $req) {
-                    $deptHead = \App\Models\User::whereIn('role', ['Main Admin', 'Department Head'])
-                        ->where('department', $req->department)
-                        ->first();
-                    if ($deptHead) {
-                        $req->origin_approved_by = $deptHead->name;
-                        $req->save();
-                    } else {
-                        $req->origin_approved_by = $req->department . " Department Head";
-                        $req->save();
-                    }
+                // Ensure all existing Store Officer (role: Officer) accounts have department set to 'Store'
+                try {
+                    \App\Models\User::where('role', 'Officer')->where(function($q) {
+                        $q->whereNull('department')->orWhere('department', '!=', 'Store');
+                    })->update(['department' => 'Store']);
+                } catch (\Exception $ex) {
+                    // Ignore
                 }
-            } catch (\Exception $ex) {
-                // Ignore backfill errors on migration
-            }
-
-            // Backfill stores_approved_by for existing approved requisitions
-            try {
-                $needsBackfillStores = \App\Models\StoreRequisition::whereNull('stores_approved_by')
-                    ->where('main_admin_status', 'approved')
-                    ->get();
-                foreach ($needsBackfillStores as $req) {
-                    $storesHead = \App\Models\User::whereIn('role', ['Main Admin', 'Department Head'])
-                        ->where(fn($q) => $q->where('department', 'Stores')->orWhere('department', 'Store'))
-                        ->first();
-                    if ($storesHead) {
-                        $req->stores_approved_by = $storesHead->name;
-                        $req->save();
-                    } else {
-                        $req->stores_approved_by = "Stores Department Head";
-                        $req->save();
-                    }
-                }
-            } catch (\Exception $ex) {
-                // Ignore backfill errors on migration
-            }
-
-            // Ensure all existing Auditor accounts have is_temp_account set to true
-            try {
-                \App\Models\User::where('role', 'Auditor')->where('is_temp_account', false)->update(['is_temp_account' => true]);
-            } catch (\Exception $ex) {
-                // Ignore
-            }
-
-            // Ensure all existing Store Officer (role: Officer) accounts have department set to 'Store'
-            try {
-                \App\Models\User::where('role', 'Officer')->where(function($q) {
-                    $q->whereNull('department')->orWhere('department', '!=', 'Store');
-                })->update(['department' => 'Store']);
-            } catch (\Exception $ex) {
-                // Ignore
-            }
+                
+                return true;
+            });
         } catch (\Exception $e) {
             // Ignore
         }

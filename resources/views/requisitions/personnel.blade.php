@@ -679,14 +679,14 @@
                             <span style="font-size:.78rem;color:#10b981;font-weight:800;display:inline-flex;align-items:center;gap:4px;">
                                 <i data-lucide="check-circle" style="width:14px;"></i> Collected
                             </span>
-                            @elseif(auth()->user()->role === 'Officer')
+                            @elseif(auth()->user()->can_operate_logistics)
                             <button onclick="confirmCollection({{ $req->id }}, this)"
                                 style="background:rgba(16,185,129,.1);color:#10b981;border:none;padding:.5rem 1rem;border-radius:10px;font-weight:800;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;" onmouseover="this.style.background='#10b981';this.style.color='white'" onmouseout="this.style.background='rgba(16,185,129,.1)';this.style.color='#10b981'">
                                 <i data-lucide="package-check" style="width:14px;"></i> Confirm Collection
                             </button>
                             @else
-                            <span style="font-size:.75rem;color:var(--success-color);font-style:italic;font-weight:800;display:inline-flex;align-items:center;gap:3px;">
-                                <i data-lucide="info" style="width:13px;height:13px;"></i> Awaiting Physical Collection (Officer Only)
+                            <span style="font-size:.75rem;color:#ef4444;font-style:italic;font-weight:800;display:inline-flex;align-items:center;gap:3px;">
+                                <i data-lucide="info" style="width:13px;height:13px;"></i> Not Permitted to Confirm Collection
                             </span>
                             @endif
                         @elseif($req->status === 'declined')
@@ -790,6 +790,7 @@
 
 <script>
     const loggedInUserRole = "{{ auth()->user()->role }}";
+    const canOperateLogistics = {{ auth()->user()->can_operate_logistics ? 'true' : 'false' }};
     let currentReqId = null;
     let currentReqData = null;
 
@@ -1085,15 +1086,15 @@
             const isAlreadyCollected = !!data.collected_at;
 
             if (!isAlreadyCollected) {
-                if (loggedInUserRole === 'Officer') {
+                if (canOperateLogistics) {
                     footerHtml += `
                 <button onclick="confirmCollection(${id}, this)" id="modalConfirmBtn" disabled
                     style="background:#cbd5e1;color:#64748b;border:none;padding:.75rem 2.25rem;border-radius:12px;font-weight:800;cursor:not-allowed;display:flex;align-items:center;gap:8px;font-size:.88rem;box-shadow:none;transition:0.2s;">
                     <i data-lucide="package-check" style="width:16px;"></i> Confirm Collection
                 </button>`;
                 } else {
-                    footerHtml = `<span style="font-size:0.8rem; font-weight:800; color:var(--success-color); display:inline-flex; align-items:center; gap:6px; margin-right:auto; padding-left:1rem;">
-                        <i data-lucide="info" style="width:14px; height:14px;"></i> Awaiting Physical Collection (Officer Only)
+                    footerHtml = `<span style="font-size:0.8rem; font-weight:800; color:#ef4444; display:inline-flex; align-items:center; gap:6px; margin-right:auto; padding-left:1rem;">
+                        <i data-lucide="info" style="width:14px; height:14px;"></i> Not Permitted to Confirm Collection
                     </span>` + footerHtml;
                 }
             } else {
