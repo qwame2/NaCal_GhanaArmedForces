@@ -319,9 +319,28 @@ class AdminController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
-        $users = User::where('is_admin', false)->where('role', 'Officer')->where('registration_status', 'approved')->get();
+        $storeOfficers = User::where('role', 'Officer')
+            ->where('registration_status', 'approved')
+            ->orderBy('name')
+            ->get();
+
+        $requisitioners = User::where('role', 'Requisitioner')
+            ->where('registration_status', 'approved')
+            ->orderBy('name')
+            ->get();
+
+        $deptHeads = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+            ->where('registration_status', 'approved')
+            ->orderBy('name')
+            ->get();
+
+        $auditors = User::where('role', 'Auditor')
+            ->where('registration_status', 'approved')
+            ->orderBy('name')
+            ->get();
+
         $pendingUsers = User::where('registration_status', 'pending')->orderBy('created_at', 'desc')->get();
-        return view('admin.permissions', compact('users', 'pendingUsers'));
+        return view('admin.permissions', compact('storeOfficers', 'requisitioners', 'deptHeads', 'auditors', 'pendingUsers'));
     }
 
     public function updatePermission(Request $request)

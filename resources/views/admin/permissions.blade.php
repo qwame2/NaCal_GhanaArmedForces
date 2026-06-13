@@ -9,7 +9,7 @@
         <div style="flex: 1; min-width: 300px;">
             <div class="title-group">
                 <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500; margin-top: 0.5rem; max-width: 600px;">
-                    Manage granular permissions, security clearances, and review incoming registration requests.
+                    Manage user permissions, clearances, and new registration requests.
                 </p>
             </div>
         </div>
@@ -25,10 +25,22 @@
 </div>
 
 {{-- ── Tab Navigation ── --}}
-<div class="pager-tabs-wrap">
-    <button class="pager-tab active" id="tab-permissions" onclick="switchTab('permissions')">
+<div class="pager-tabs-wrap" style="flex-wrap: wrap;">
+    <button class="pager-tab active" id="tab-store-officers" onclick="switchTab('store-officers')">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Permissions Matrix
+        Store Officers
+    </button>
+    <button class="pager-tab" id="tab-requisitioners" onclick="switchTab('requisitioners')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Requisitioners
+    </button>
+    <button class="pager-tab" id="tab-dept-heads" onclick="switchTab('dept-heads')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Other Dept. Heads
+    </button>
+    <button class="pager-tab" id="tab-auditors" onclick="switchTab('auditors')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        Auditors
     </button>
     <button class="pager-tab" id="tab-registrations" onclick="switchTab('registrations')">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
@@ -39,8 +51,110 @@
     </button>
 </div>
 
-{{-- ── Panel: Permissions Matrix ── --}}
-<div id="panel-permissions" class="pager-panel active">
+{{-- ── Panel: Store Officers ── --}}
+<div id="panel-store-officers" class="pager-panel active">
+    <div class="permissions-matrix-wrapper">
+        <div class="matrix-table">
+            <div class="m-header">
+                <div class="col-id">Users</div>
+                <div class="col-ctrl">Item Entry</div>
+                <div class="col-ctrl">Confirm Collection</div>
+                <div class="col-ctrl">Report Access</div>
+                <div class="col-stat">Clearance Status</div>
+            </div>
+
+            <div class="m-body" id="storeOfficersBody">
+                @forelse($storeOfficers as $user)
+                <div class="m-row" data-user-id="{{ $user->id }}">
+                    <div class="col-id">
+                        <div class="m-avatar">
+                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
+                            <span class="m-pulse {{ $user->is_active ? 'online' : 'offline' }}"></span>
+                        </div>
+                        <div class="m-identity">
+                            <h4 class="m-name">{{ $user->name }}</h4>
+                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
+                                <span>@ {{ $user->username }}</span>
+                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
+                                    @if($user->role === 'Main Admin')
+                                        Head of Admin
+                                    @elseif($user->role === 'Officer')
+                                        Store Officer
+                                    @elseif($user->role === 'Dept Head HR')
+                                        Dept Head HR
+                                    @elseif($user->role === 'Head of Welfare')
+                                        Head of Welfare
+                                    @else
+                                        {{ $user->role }}
+                                    @endif
+                                </span>
+                                @if($user->department)
+                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
+                                    {{ $user->department }}
+                                </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Inventory Entry">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_add_inventory')" {{ $user->can_add_inventory ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">Add/Edit Items</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Logistics Operations">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_operate_logistics')" {{ $user->can_operate_logistics ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">Confirm Collection</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Analytics Access">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_generate_reports')" {{ $user->can_generate_reports ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">View Reports</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-stat">
+                        <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
+                            <i data-lucide="{{ $user->is_active ? 'shield-check' : 'shield-alert' }}"></i>
+                            {{ $user->is_active ? 'AUTHORIZED' : 'SUSPENDED' }}
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
+                    No store officers registered.
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ── Panel: Requisitioners ── --}}
+<div id="panel-requisitioners" class="pager-panel">
     <div class="permissions-matrix-wrapper">
         <div class="matrix-table">
             <div class="m-header">
@@ -51,8 +165,8 @@
                 <div class="col-stat">Clearance Status</div>
             </div>
 
-            <div class="m-body" id="matrixBody">
-                @foreach($users as $user)
+            <div class="m-body" id="requisitionersBody">
+                @forelse($requisitioners as $user)
                 <div class="m-row" data-user-id="{{ $user->id }}">
                     <div class="col-id">
                         <div class="m-avatar">
@@ -61,7 +175,27 @@
                         </div>
                         <div class="m-identity">
                             <h4 class="m-name">{{ $user->name }}</h4>
-                            <span class="m-handle">@ {{ $user->username }}</span>
+                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
+                                <span>@ {{ $user->username }}</span>
+                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
+                                    @if($user->role === 'Main Admin')
+                                        Head of Admin
+                                    @elseif($user->role === 'Officer')
+                                        Store Officer
+                                    @elseif($user->role === 'Dept Head HR')
+                                        Dept Head HR
+                                    @elseif($user->role === 'Head of Welfare')
+                                        Head of Welfare
+                                    @else
+                                        {{ $user->role }}
+                                    @endif
+                                </span>
+                                @if($user->department)
+                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
+                                    {{ $user->department }}
+                                </span>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
@@ -111,7 +245,215 @@
                         </div>
                     </div>
                 </div>
-                @endforeach
+                @empty
+                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
+                    No requisitioners registered.
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ── Panel: Other Dept. Heads ── --}}
+<div id="panel-dept-heads" class="pager-panel">
+    <div class="permissions-matrix-wrapper">
+        <div class="matrix-table">
+            <div class="m-header">
+                <div class="col-id">Users</div>
+                <div class="col-ctrl">Item Entry</div>
+                <div class="col-ctrl">Logistics Ops</div>
+                <div class="col-ctrl">Report Access</div>
+                <div class="col-stat">Clearance Status</div>
+            </div>
+
+            <div class="m-body" id="deptHeadsBody">
+                @forelse($deptHeads as $user)
+                <div class="m-row" data-user-id="{{ $user->id }}">
+                    <div class="col-id">
+                        <div class="m-avatar">
+                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
+                            <span class="m-pulse {{ $user->is_active ? 'online' : 'offline' }}"></span>
+                        </div>
+                        <div class="m-identity">
+                            <h4 class="m-name">{{ $user->name }}</h4>
+                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
+                                <span>@ {{ $user->username }}</span>
+                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
+                                    @if($user->role === 'Main Admin')
+                                        Head of Admin
+                                    @elseif($user->role === 'Officer')
+                                        Store Officer
+                                    @elseif($user->role === 'Dept Head HR')
+                                        Dept Head HR
+                                    @elseif($user->role === 'Head of Welfare')
+                                        Head of Welfare
+                                    @else
+                                        {{ $user->role }}
+                                    @endif
+                                </span>
+                                @if($user->department)
+                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
+                                    {{ $user->department }}
+                                </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Inventory Entry">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_add_inventory')" {{ $user->can_add_inventory ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">Add/Edit Items</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Logistics Operations">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_operate_logistics')" {{ $user->can_operate_logistics ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">Issue & Return</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Analytics Access">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_generate_reports')" {{ $user->can_generate_reports ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">View Reports</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-stat">
+                        <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
+                            <i data-lucide="{{ $user->is_active ? 'shield-check' : 'shield-alert' }}"></i>
+                            {{ $user->is_active ? 'AUTHORIZED' : 'SUSPENDED' }}
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
+                    No other department heads registered.
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ── Panel: Auditors ── --}}
+<div id="panel-auditors" class="pager-panel">
+    <div class="permissions-matrix-wrapper">
+        <div class="matrix-table">
+            <div class="m-header">
+                <div class="col-id">Users</div>
+                <div class="col-ctrl">Item Entry</div>
+                <div class="col-ctrl">Logistics Ops</div>
+                <div class="col-ctrl">Report Access</div>
+                <div class="col-stat">Clearance Status</div>
+            </div>
+
+            <div class="m-body" id="auditorsBody">
+                @forelse($auditors as $user)
+                <div class="m-row" data-user-id="{{ $user->id }}">
+                    <div class="col-id">
+                        <div class="m-avatar">
+                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
+                            <span class="m-pulse {{ $user->is_active ? 'online' : 'offline' }}"></span>
+                        </div>
+                        <div class="m-identity">
+                            <h4 class="m-name">{{ $user->name }}</h4>
+                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
+                                <span>@ {{ $user->username }}</span>
+                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
+                                    @if($user->role === 'Main Admin')
+                                        Head of Admin
+                                    @elseif($user->role === 'Officer')
+                                        Store Officer
+                                    @elseif($user->role === 'Dept Head HR')
+                                        Dept Head HR
+                                    @elseif($user->role === 'Head of Welfare')
+                                        Head of Welfare
+                                    @else
+                                        {{ $user->role }}
+                                    @endif
+                                </span>
+                                @if($user->department)
+                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
+                                    {{ $user->department }}
+                                </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Inventory Entry">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_add_inventory')" {{ $user->can_add_inventory ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">Add/Edit Items</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Logistics Operations">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_operate_logistics')" {{ $user->can_operate_logistics ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">Issue & Return</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Analytics Access">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_generate_reports')" {{ $user->can_generate_reports ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">View Reports</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-stat">
+                        <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
+                            <i data-lucide="{{ $user->is_active ? 'shield-check' : 'shield-alert' }}"></i>
+                            {{ $user->is_active ? 'AUTHORIZED' : 'SUSPENDED' }}
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
+                    No auditors registered.
+                </div>
+                @endforelse
             </div>
         </div>
     </div>
@@ -496,9 +838,9 @@
         document.getElementById('tab-' + tab).classList.add('active');
         document.getElementById('panel-' + tab).classList.add('active');
 
-        // Show/hide search vault (only relevant for permissions)
+        // Show/hide search vault (only relevant for matrix tabs)
         const sv = document.getElementById('searchVaultWrap');
-        if (sv) sv.style.display = (tab === 'permissions') ? '' : 'none';
+        if (sv) sv.style.display = (tab !== 'registrations') ? '' : 'none';
     }
 
     /* ── Personnel Filter ── */
@@ -516,7 +858,7 @@
         if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
             if (document.activeElement !== document.getElementById('personnelSearch')) {
                 e.preventDefault();
-                switchTab('permissions');
+                switchTab('store-officers');
                 document.getElementById('personnelSearch').focus();
             }
         }
