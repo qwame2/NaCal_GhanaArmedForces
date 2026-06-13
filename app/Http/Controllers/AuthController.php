@@ -13,6 +13,11 @@ class AuthController extends Controller
     public function showAuth()
     {
         $username = session('pending_password_reset_username');
+        $departmentHeads = \App\Models\User::where('role', 'Department Head')
+            ->where('is_active', true)
+            ->where('registration_status', 'approved')
+            ->get();
+
         if ($username) {
             $latestRequest = \App\Models\PasswordResetRequest::where('username', $username)
                 ->orderBy('created_at', 'desc')
@@ -21,7 +26,8 @@ class AuthController extends Controller
                 return view('auth.auth', [
                     'rejected_reset' => true,
                     'rejected_username' => $username,
-                    'rejected_message' => "Alert: Your password reset request has been rejected by the Head of Stores. Please contact Head of Stores for resolution."
+                    'rejected_message' => "Alert: Your password reset request has been rejected by the Head of Stores. Please contact Head of Stores for resolution.",
+                    'departmentHeads' => $departmentHeads
                 ]);
             } else {
                 session()->forget('pending_password_reset_username');
@@ -46,11 +52,19 @@ class AuthController extends Controller
                 return redirect()->route('dashboard');
             }
         }
-        return view('auth.auth');
+        return view('auth.auth', compact('departmentHeads'));
     }
 
     public function register(Request $request)
     {
+        // Delete existing rejected user to allow registration
+        $existingRejected = User::where('username', $request->username)
+            ->where('registration_status', 'rejected')
+            ->first();
+        if ($existingRejected) {
+            $existingRejected->delete();
+        }
+
         $request->validate([
             'role' => 'required|string',
             'name' => 'required|string|max:255',
@@ -136,6 +150,16 @@ class AuthController extends Controller
         $throttleKey = strtolower($request->input('username')) . '|' . $request->ip();
 
         $targetUser = User::where('username', $request->username)->first();
+
+        // SECURITY ENFORCEMENT: Block pending self-registrations
+        if ($targetUser && $targetUser->registration_status === 'pending') {
+            return back()->with('error', 'Your registration request is pending approval by the Admin. Please try again later.')->withInput();
+        }
+
+        // SECURITY ENFORCEMENT: Block rejected self-registrations
+        if ($targetUser && $targetUser->registration_status === 'rejected') {
+            return back()->with('error', 'Your account has been declined. Please register again or contact Admin.')->withInput();
+        }
 
         // SECURITY ENFORCEMENT: Block already deactivated accounts immediately
         if ($targetUser && !$targetUser->is_active) {
@@ -624,6 +648,127 @@ class AuthController extends Controller
         }
 
         return response()->json(['eligible' => false]);
+    }
+
+    public function selfRegister(Request $request)
+    {
+        $allowRegistration = \Illuminate\Support\Facades\Schema::hasTable('settings')
+            ? \App\Models\Setting::get('allow_personnel_registration', true)
+            : true;
+        if (!$allowRegistration) {
+            return redirect()->route('login')->with('error', 'Self-registration is currently disabled by the Administrator.');
+        }
+
+        // Delete existing rejected user to allow re-registration
+        $existingRejected = User::where('username', $request->username)
+            ->where('registration_status', 'rejected')
+            ->first();
+        if ($existingRejected) {
+            $existingRejected->delete();
+        }
+
+        $request->validate([
+            'role' => 'required|string|in:Officer,Main Admin,Department Head,Auditor,Requisitioner',
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
+            'phone' => 'required|string|max:20',
+            'service_number' => 'required|string|max:100',
+            'department' => 'required_if:role,Department Head,Requisitioner|nullable|string|max:255',
+            'sponsored_by' => 'required_if:role,Requisitioner|nullable|integer|exists:users,id',
+            'rank' => [
+                'nullable',
+                'string',
+                'max:100',
+                function ($attribute, $value, $fail) use ($request) {
+                    $role = $request->role;
+                    if ($role === 'Main Admin' && empty($value)) {
+                        $fail('Rank (SNCO/NCO) is required for Head of Admin (Stores).');
+                    }
+                    if ($role === 'Department Head' && empty($value)) {
+                        $fail('Rank is required for Department Heads.');
+                    }
+                }
+            ],
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+                'regex:/[0-9]/', // Must contain at least one number
+                function ($attribute, $value, $fail) use ($request) {
+                    $username = strtolower($request->username ?? '');
+                    $fullname = strtolower($request->name ?? '');
+                    $password = strtolower($value);
+                    
+                    if ($username !== '' && str_contains($password, $username)) {
+                        $fail('Strategic Security Alert: Password cannot contain your username.');
+                    }
+                    if ($fullname !== '' && str_contains($password, $fullname)) {
+                        $fail('Strategic Security Alert: Password cannot contain your full name.');
+                    }
+                },
+            ],
+        ], [
+            'username.unique' => 'This username has already been registered.',
+            'password.min' => 'Passwords must be at least 8 characters long.',
+            'password.regex' => 'Passwords must contain at least one number.',
+        ]);
+
+        try {
+            $role = $request->role;
+            $department = null;
+            $isAdmin = false;
+            $isTempAccount = false;
+            $sponsoredBy = null;
+
+            if ($role === 'Main Admin') {
+                $department = 'Stores';
+                $isAdmin = true;
+            } elseif ($role === 'Auditor') {
+                $department = 'Internal Audit';
+                $isTempAccount = true;
+            } elseif ($role === 'Officer') {
+                $department = 'Stores';
+            } elseif ($role === 'Requisitioner') {
+                $department = $request->department;
+                $sponsoredBy = $request->sponsored_by;
+            } else {
+                // Department Head
+                $department = $request->department;
+            }
+
+            $user = User::create([
+                'name' => $request->name,
+                'username' => $request->username,
+                'password' => $request->password,
+                'role' => $role,
+                'department' => $department,
+                'rank' => $request->rank,
+                'phone' => $request->phone,
+                'service_number' => $request->service_number,
+                'sponsored_by' => $sponsoredBy,
+                'is_admin' => $isAdmin,
+                'is_temp_account' => $isTempAccount,
+                'is_active' => false,
+                'registration_status' => 'pending',
+                'must_change_password' => false,
+            ]);
+
+            // Log the self-registration
+            \App\Models\SystemLog::create([
+                'user_id' => null, // Guest action
+                'event_type' => 'SECURITY',
+                'action' => 'SELF_REGISTER',
+                'description' => "Self-registration request submitted by {$user->name} (@{$user->username}) for role {$user->role}.",
+                'severity' => 'info',
+                'ip_address' => $request->ip()
+            ]);
+
+            return redirect()->route('login')
+                ->with('success', 'Your registration request has been submitted successfully. Please wait for Admin approval.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Critical System Failure: ' . $e->getMessage())->withInput();
+        }
     }
 
 }

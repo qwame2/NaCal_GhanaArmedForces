@@ -143,7 +143,7 @@ class ReturnController extends Controller
                 'payload' => json_encode($validated)
             ]);
 
-            $admins = \App\Models\User::where('is_admin', true)->get();
+            $admins = \App\Models\User::where('is_admin', true)->where('registration_status', 'approved')->get();
             if ($admins->count() > 0) {
                 $msgContent = "<div class='recovery-approval-card' style='background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin: 10px 0;'>";
                 $msgContent .= "<div style='display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;'>";

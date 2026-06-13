@@ -62,7 +62,7 @@ return new class extends Migration
                 'value' => 'true',
                 'type' => 'boolean',
                 'group' => 'system',
-                'description' => 'Allow new personnel to register accounts (requires admin approval later).',
+                'description' => 'Allow new users to register accounts (requires admin approval later).',
                 'created_at' => now(),
                 'updated_at' => now()
             ]

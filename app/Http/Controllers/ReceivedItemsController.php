@@ -676,7 +676,7 @@ class ReceivedItemsController extends Controller
         
         // Fallback for legacy approved batches or system defaults
         if (!$admin) {
-            $admin = \App\Models\User::where('is_admin', true)->first();
+            $admin = \App\Models\User::where('is_admin', true)->where('registration_status', 'approved')->first();
         }
 
         // Fetch history logs for this batch

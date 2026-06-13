@@ -7,6 +7,7 @@
 @endphp
 
 @section('content')
+    <link rel="stylesheet" href="{{ asset('css/vendor/select2.min.css') }}">
     <style>
         body {
             min-height: 100vh;
@@ -20,20 +21,22 @@
 
         .auth-vault {
             width: 100%;
-            max-width: 700px;
-            background: rgba(255, 255, 255, 0.95);
+            max-width: 680px;
+            background: rgba(255, 255, 255, 0.97);
             border: 1px solid rgba(255,255,255,0.8);
             border-radius: 40px;
-            padding: 2rem 3.5rem; /* Reduced base padding for login */
+            padding: 2.5rem 3.5rem;
             backdrop-filter: blur(40px);
-            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.08);
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.1), 0 0 0 1px rgba(99,102,241,0.04);
             position: relative;
             overflow: hidden;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: max-width 0.55s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s ease, box-shadow 0.4s ease;
         }
 
         .auth-vault.mode-register {
-            padding: 3rem 3.5rem; /* Increased padding for registration */
+            max-width: 1000px;
+            padding: 2.5rem 4rem 3rem;
+            box-shadow: 0 50px 120px -20px rgba(99,102,241,0.12), 0 0 0 1px rgba(99,102,241,0.06);
         }
 
         .auth-header {
@@ -112,11 +115,133 @@
             padding-left: 2rem;
         }
 
+        /* ── Two-column form grid ── */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.25rem;
+            gap: 1.5rem;
         }
+
+        /* ── Register form: spacious field stack ── */
+        #adminRegisterForm,
+        #userSelfRegisterForm {
+            gap: 1.6rem !important;
+        }
+
+        /* ── Section divider for register forms ── */
+        .form-section-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0.25rem 0;
+        }
+        .form-section-divider .divider-label {
+            font-size: 0.68rem;
+            font-weight: 900;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .form-section-divider .divider-label svg {
+            width: 13px;
+            height: 13px;
+            color: var(--primary);
+            opacity: 0.7;
+        }
+        .form-section-divider .divider-line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, rgba(99,102,241,0.15), transparent);
+        }
+        .form-section-divider .divider-line.right {
+            background: linear-gradient(to left, rgba(99,102,241,0.15), transparent);
+        }
+
+        /* ── Register field animations ── */
+        @keyframes fieldSlideIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        #adminRegisterForm .input-modern-group,
+        #userSelfRegisterForm .input-modern-group,
+        #adminRegisterForm .form-grid,
+        #userSelfRegisterForm .form-grid,
+        #adminRegisterForm .form-section-divider,
+        #userSelfRegisterForm .form-section-divider {
+            animation: fieldSlideIn 0.4s ease both;
+        }
+        #adminRegisterForm .input-modern-group:nth-child(1),
+        #userSelfRegisterForm .input-modern-group:nth-child(1),
+        #adminRegisterForm .form-grid:nth-child(1),
+        #userSelfRegisterForm .form-grid:nth-child(1) { animation-delay: 0.05s; }
+        #adminRegisterForm .input-modern-group:nth-child(2),
+        #userSelfRegisterForm .input-modern-group:nth-child(2),
+        #adminRegisterForm .form-grid:nth-child(2),
+        #userSelfRegisterForm .form-grid:nth-child(2) { animation-delay: 0.10s; }
+        #adminRegisterForm .input-modern-group:nth-child(3),
+        #userSelfRegisterForm .input-modern-group:nth-child(3),
+        #adminRegisterForm .form-grid:nth-child(3),
+        #userSelfRegisterForm .form-grid:nth-child(3) { animation-delay: 0.15s; }
+        #adminRegisterForm .input-modern-group:nth-child(4),
+        #userSelfRegisterForm .input-modern-group:nth-child(4),
+        #adminRegisterForm .form-section-divider:nth-child(4),
+        #userSelfRegisterForm .form-section-divider:nth-child(4) { animation-delay: 0.20s; }
+        #adminRegisterForm .input-modern-group:nth-child(5),
+        #userSelfRegisterForm .input-modern-group:nth-child(5) { animation-delay: 0.25s; }
+        #adminRegisterForm .input-modern-group:nth-child(6),
+        #userSelfRegisterForm .input-modern-group:nth-child(6) { animation-delay: 0.30s; }
+
+        /* ── Taller input icons in register mode ── */
+        .auth-vault.mode-register .icon-box {
+            height: 60px;
+        }
+        .auth-vault.mode-register .input-wrapper input,
+        .auth-vault.mode-register .input-wrapper select {
+            padding: 1.35rem 1.5rem;
+        }
+        .auth-vault.mode-register .select2-container--default .select2-selection--single {
+            height: 60px !important;
+        }
+        .auth-vault.mode-register .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 58px !important;
+        }
+
+        /* ── Register submit button: gradient ── */
+        .register-submit-btn {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+            box-shadow: 0 12px 30px rgba(99,102,241,0.35) !important;
+            height: 60px !important;
+            border-radius: 22px !important;
+            font-size: 0.95rem !important;
+            letter-spacing: 0.08em !important;
+            text-transform: uppercase !important;
+        }
+        .register-submit-btn:hover {
+            background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%) !important;
+            transform: translateY(-4px) !important;
+            box-shadow: 0 20px 45px rgba(99,102,241,0.45) !important;
+        }
+
+        /* ── Password hint chip ── */
+        .pwd-hint-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(99,102,241,0.06);
+            border: 1px solid rgba(99,102,241,0.12);
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #6366f1;
+            margin-top: 8px;
+            letter-spacing: 0.04em;
+        }
+        .pwd-hint-chip svg { width: 11px; height: 11px; }
 
         .avatar-section {
             display: flex;
@@ -129,14 +254,28 @@
         }
 
         /* Mobile & Tablet Responsiveness */
+        @media (max-width: 1100px) {
+            .auth-vault.mode-register {
+                max-width: 860px;
+                padding: 2.5rem 3.5rem 3rem;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .auth-vault.mode-register {
+                max-width: 680px;
+                padding: 2.5rem 3rem 3rem;
+            }
+        }
+
         @media (max-width: 768px) {
             .auth-vault {
-                padding: 2rem 1.5rem;
+                padding: 2rem 1.75rem;
                 border-radius: 30px;
             }
 
             .auth-vault.mode-register {
-                padding: 2.5rem 1.5rem;
+                padding: 2.5rem 1.75rem;
             }
 
             .auth-header h2 {
@@ -148,7 +287,7 @@
 
             .form-grid {
                 grid-template-columns: 1fr;
-                gap: 1rem;
+                gap: 1.25rem;
             }
 
             .tab-btn {
@@ -166,23 +305,27 @@
                 width: 100%;
                 margin-top: 0.5rem;
             }
+
+            .auth-vault.mode-register .icon-box {
+                height: 56px;
+            }
         }
 
         @media (max-width: 480px) {
             body {
                 padding: 0.5rem;
-                align-items: flex-start; /* Better for long forms on short screens */
-                padding-top: 2rem;
+                align-items: flex-start;
+                padding-top: 1.5rem;
             }
 
             .auth-vault {
-                padding: 1.5rem 1rem;
+                padding: 1.75rem 1.25rem;
                 border-radius: 24px;
-                box-shadow: 0 20px 50px -10px rgba(0,0,0,0.05);
+                box-shadow: 0 20px 50px -10px rgba(0,0,0,0.08);
             }
 
             .auth-vault.mode-register {
-                padding: 2rem 1rem;
+                padding: 2rem 1.25rem;
             }
 
             .auth-tabs {
@@ -196,8 +339,12 @@
             }
 
             .auth-btn-primary {
-                height: 50px;
+                height: 52px;
                 font-size: 0.9rem;
+            }
+
+            .auth-vault.mode-register .icon-box {
+                height: 54px;
             }
         }
 
@@ -252,6 +399,7 @@
             0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
             50%       { box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
         }
+        /* Custom selects styles aligned with standard inputs */
     </style>
 
     {{-- Admin Access Lockout Overlay (fixed, full-screen) --}}
@@ -365,55 +513,301 @@
                         </form>
                     </div>
 
-                    <!-- Register Side (Admin Only) -->
+                    <!-- Register Side -->
                     <div id="registerForm" class="auth-form-side" style="width: 50%; padding: 0 10px; opacity: 0;">
-                        <form action="{{ route('register') }}" method="POST" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <!-- Initial Admin Registration (Admin Only) -->
+                        <form id="adminRegisterForm" action="{{ route('register') }}" method="POST" style="display: flex; flex-direction: column; gap: 1.6rem;">
                             @csrf
                             <input type="hidden" name="role" value="Admin">
 
-                            <div class="input-modern-group">
-                                <label>Full Name <span style="color: #ef4444;">*</span></label>
-                                <div class="input-wrapper">
-                                    <div class="icon-box"><i data-lucide="user-plus"></i></div>
-                                    <input type="text" name="name" placeholder="Full Name" required>
+                            {{-- Section: Identity --}}
+                            <div class="form-section-divider">
+                                <div class="divider-line"></div>
+                                <div class="divider-label">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    Identity Information
+                                </div>
+                                <div class="divider-line right"></div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="input-modern-group">
+                                    <label>Full Name <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="user-plus"></i></div>
+                                        <input type="text" name="name" placeholder="e.g. John Mensah" required>
+                                    </div>
+                                </div>
+
+                                <div class="input-modern-group">
+                                    <label>Username <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="at-sign"></i></div>
+                                        <input type="text" name="username" placeholder="e.g. jmensah" required>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="input-modern-group">
-                                <label>Username <span style="color: #ef4444;">*</span></label>
-                                <div class="input-wrapper">
-                                    <div class="icon-box"><i data-lucide="at-sign"></i></div>
-                                    <input type="text" name="username" placeholder="Username" required>
+                            {{-- Section: Security --}}
+                            <div class="form-section-divider">
+                                <div class="divider-line"></div>
+                                <div class="divider-label">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                    Security Credentials
+                                </div>
+                                <div class="divider-line right"></div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="input-modern-group">
+                                    <label>Password <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="key-round"></i></div>
+                                        <input type="password" name="password" placeholder="••••••••" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
+                                        <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                                            <i data-lucide="eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="input-modern-group">
+                                    <label>Confirm Password <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="check-circle-2"></i></div>
+                                        <input type="password" name="password_confirmation" placeholder="••••••••" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
+                                        <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                                            <i data-lucide="eye"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="input-modern-group">
-                                <label>Password <span style="color: #ef4444;">*</span></label>
-                                <div class="input-wrapper">
-                                    <div class="icon-box"><i data-lucide="key-round"></i></div>
-                                    <input type="password" name="password" placeholder="••••••••" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
-                                    <button type="button" class="password-toggle" onclick="togglePassword(this)">
-                                        <i data-lucide="eye"></i>
-                                    </button>
-                                </div>
-                                <p style="font-size: 0.65rem; color: #64748b; font-weight: 700; margin-top: 6px; padding-left: 4px;">Requirement: Min 8 chars including a number. Cannot match username.</p>
+                            <div style="margin-top: -0.5rem;">
+                                <span class="pwd-hint-chip">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                                    Min 8 characters &bull; Must include a number &bull; Cannot match username
+                                </span>
                             </div>
 
-                            <div class="input-modern-group">
-                                <label>Confirm Password <span style="color: #ef4444;">*</span></label>
-                                <div class="input-wrapper">
-                                    <div class="icon-box"><i data-lucide="check-circle-2"></i></div>
-                                    <input type="password" name="password_confirmation" placeholder="••••••••" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
-                                    <button type="button" class="password-toggle" onclick="togglePassword(this)">
-                                        <i data-lucide="eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-
-
-                            <button type="submit" class="auth-btn-primary" style="background: var(--primary) !important; height: 56px; font-size: 1rem; border-radius: 20px; margin-top: 1rem; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);">
+                            <button type="submit" class="auth-btn-primary register-submit-btn" style="margin-top: 0.5rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                                 <span>Register Account</span>
+                            </button>
+                        </form>
+
+                        <!-- User Self Registration -->
+                        <form id="userSelfRegisterForm" action="{{ route('self-register') }}" method="POST" style="display: none; flex-direction: column; gap: 1.6rem;">
+                            @csrf
+
+                            {{-- Section: Identity --}}
+                            <div class="form-section-divider">
+                                <div class="divider-line"></div>
+                                <div class="divider-label">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    Personal Information
+                                </div>
+                                <div class="divider-line right"></div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="input-modern-group">
+                                    <label>Full Name <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="user"></i></div>
+                                        <input type="text" name="name" placeholder="e.g. John Mensah" required>
+                                    </div>
+                                </div>
+
+                                <div class="input-modern-group">
+                                    <label>Username <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="at-sign"></i></div>
+                                        <input type="text" name="username" placeholder="e.g. jmensah" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="input-modern-group">
+                                    <label>Service Number <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="hash"></i></div>
+                                        <input type="text" name="service_number" placeholder="e.g. SN-8942" required>
+                                    </div>
+                                </div>
+
+                                <div class="input-modern-group">
+                                    <label>Phone Number <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="phone"></i></div>
+                                        <input type="tel" name="phone" placeholder="e.g. +233241234567" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Section: Role --}}
+                            <div class="form-section-divider">
+                                <div class="divider-line"></div>
+                                <div class="divider-label">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    Role &amp; Assignment
+                                </div>
+                                <div class="divider-line right"></div>
+                            </div>
+
+                            <div class="input-modern-group" style="margin-top: 0.5rem;">
+                                <label>Role <span style="color: #ef4444;">*</span></label>
+                                <div class="input-wrapper">
+                                    <div class="icon-box"><i data-lucide="shield"></i></div>
+                                    <select name="role" id="selfRoleSelect" class="premium-select-input" required style="width: 100%; border: none; background: transparent; height: 100%; font-weight: 600; font-size: 1rem; outline: none; padding-left: 0.5rem; color: #0f172a; text-align: left;">
+                                        <option value="">-- Select Role --</option>
+                                        <option value="Officer">Store Officer</option>
+                                        <option value="Main Admin">Head of Admin (Stores)</option>
+                                        <option value="Department Head">Other Dept. Head</option>
+                                        <option value="Auditor">Auditor</option>
+                                        <option value="Requisitioner">Requisitioner</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-grid" id="selfDeptRankGrid" style="display:none; grid-template-columns: 2fr 1fr;">
+                                <div class="input-modern-group" id="selfDeptGroup" style="display: none;">
+                                    <label>Department <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="network"></i></div>
+                                        <select name="department" id="selfDeptSelect" class="premium-select-input" style="width: 100%; border: none; background: transparent; height: 100%; font-weight: 600; font-size: 1rem; outline: none; padding-left: 0.5rem; color: #0f172a; text-align: left;">
+                                            <option value="">-- Select Department --</option>
+                                            <optgroup label="INVESTIGATIONS & INTELLIGENCE DIRECTORATE">
+                                                <option value="Intelligence Department">Intelligence Department</option>
+                                                <option value="Investigations Department">Investigations Department</option>
+                                                <option value="Forensic Science Department">Forensic Science Department</option>
+                                                <option value="Asset recovery & Management Department">Asset recovery & Management Department</option>
+                                                <option value="Strategic Intelligence Oversight Department">Strategic Intelligence Oversight Department</option>
+                                            </optgroup>
+                                            <optgroup label="LICENSING & REGULATORY DIRECTORATE">
+                                                <option value="Cannabis Regulations Department">Cannabis Regulations Department</option>
+                                                <option value="Precursor Diversion Department">Precursor Diversion Department</option>
+                                            </optgroup>
+                                            <optgroup label="DRUG DEMAND REDUCTION DIRECTORATE">
+                                                <option value="Drug Education & Prevention Department">Drug Education & Prevention Department</option>
+                                                <option value="Rehabilitation & Social Re-integration Department">Rehabilitation & Social Re-integration Department</option>
+                                                <option value="Harm Reduction Department">Harm Reduction Department</option>
+                                                <option value="Alternative Livelihoods Development Department">Alternative Livelihoods Development Department</option>
+                                            </optgroup>
+                                            <optgroup label="OPERATIONS AND ENFORCEMENT DIRECTORATE">
+                                                <option value="Canine Operations Department">Canine Operations Department</option>
+                                            </optgroup>
+                                            <optgroup label="FINANCE DIRECTORATE">
+                                                <option value="Accounts & Budget Department">Accounts & Budget Department</option>
+                                                <option value="Payroll & Pension Department">Payroll & Pension Department</option>
+                                            </optgroup>
+                                            <optgroup label="RESEARCH POLICY & PLANNING DIRECTORATE">
+                                                <option value="Research Policy Planning Monitoring & Evaluation Department">Research Policy Planning Monitoring & Evaluation Department</option>
+                                                <option value="Professional Standards Department">Professional Standards Department</option>
+                                            </optgroup>
+                                            <optgroup label="ADMINISTRATION DIRECTORATE">
+                                                <option value="General Services Department">General Services Department</option>
+                                                <option value="ICT Department">ICT Department</option>
+                                                <option value="Transport Department">Transport Department</option>
+                                                <option value="Procurement Department">Procurement Department</option>
+                                                <option value="Project Management Department">Project Management Department</option>
+                                            </optgroup>
+                                            <optgroup label="HUMAN RESOURCE DIRECTORATE">
+                                                <option value="Human Resource Management Department">Human Resource Management Department</option>
+                                                <option value="Welfare Department">Welfare Department</option>
+                                                <option value="Religious Affairs Department">Religious Affairs Department</option>
+                                            </optgroup>
+                                            <optgroup label="TRAINING & DEVELOPMENT DIRECTORATE">
+                                                <option value="Internal & External Training Department">Internal & External Training Department</option>
+                                            </optgroup>
+                                            <optgroup label="PUBLIC AFFAIRS AND INTERNATIONAL RELATIONS">
+                                                <option value="Public Affairs Department">Public Affairs Department</option>
+                                                <option value="International Relations Department">International Relations Department</option>
+                                                <option value="Material Development Department">Material Development Department</option>
+                                                <option value="Client Service Department">Client Service Department</option>
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {{-- Rank dropdown: Main Admin only (SNCO / NCO) --}}
+                                <div class="input-modern-group" id="selfRankGroup" style="display: none;">
+                                    <label>Rank <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="award"></i></div>
+                                        <select name="rank" id="selfRankSelect" class="premium-select-input" style="width: 100%; border: none; background: transparent; height: 100%; font-weight: 600; font-size: 1rem; outline: none; padding-left: 0.5rem; color: #0f172a;">
+                                            <option value="">-- Select Rank --</option>
+                                            <option value="SNCO">SNCO</option>
+                                            <option value="NCO">NCO</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {{-- Rank input: Other Dept. Head only (free text) --}}
+                                <div class="input-modern-group" id="selfRankInputGroup" style="display: none;">
+                                    <label>Rank <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="badge"></i></div>
+                                        <input type="text" name="rank" id="selfRankInput" placeholder="e.g. Major, Colonel, Director" autocomplete="off">
+                                    </div>
+                                </div>
+
+                                {{-- Sponsor input: Requisitioner only --}}
+                                <div class="input-modern-group" id="selfSponsorGroup" style="display: none;">
+                                    <label>Department Head (Sponsor) <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper" style="background: rgba(241, 245, 249, 0.75); cursor: not-allowed;">
+                                        <div class="icon-box"><i data-lucide="user-check"></i></div>
+                                        <input type="text" id="selfSponsorDisplay" readonly placeholder="No approved Department Head found" style="width: 100%; border: none; background: transparent; outline: none; color: #0f172a; text-align: left; font-weight: 600; font-size: 1rem; cursor: not-allowed;">
+                                        <input type="hidden" name="sponsored_by" id="selfSponsorSelectValue">
+                                    </div>
+                                    <div id="selfSponsorFeedback" style="display: none; font-size: 0.75rem; font-weight: 800; margin-top: 8px; padding: 10px 14px; border-radius: 12px; line-height: 1.4; transition: all 0.3s ease;"></div>
+                                </div>
+                            </div>
+
+                            {{-- Section: Security --}}
+                            <div class="form-section-divider">
+                                <div class="divider-line"></div>
+                                <div class="divider-label">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                    Security Credentials
+                                </div>
+                                <div class="divider-line right"></div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="input-modern-group">
+                                    <label>Password <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="key-round"></i></div>
+                                        <input type="password" name="password" placeholder="••••••••" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
+                                        <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                                            <i data-lucide="eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="input-modern-group">
+                                    <label>Confirm Password <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="check-circle-2"></i></div>
+                                        <input type="password" name="password_confirmation" placeholder="••••••••" required minlength="8" pattern="(?=.*\d).{8,}" title="Minimum 8 characters, including at least one number">
+                                        <button type="button" class="password-toggle" onclick="togglePassword(this)">
+                                            <i data-lucide="eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: -0.5rem;">
+                                <span class="pwd-hint-chip">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                                    Min 8 characters &bull; Must include a number &bull; Cannot match username
+                                </span>
+                            </div>
+
+                            <button type="submit" class="auth-btn-primary register-submit-btn" style="margin-top: 0.5rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                <span>Submit Registration Request</span>
                             </button>
                         </form>
                     </div>
@@ -650,6 +1044,102 @@
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
+
+    /* Select2 Premium Override */
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .select2-container--default .select2-selection--single {
+        height: 52px !important;
+        border: none !important;
+        background: transparent !important;
+        display: flex !important;
+        align-items: center !important;
+        padding-left: 0 !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        color: #0f172a !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #0f172a !important;
+        padding-left: 1.25rem !important;
+        text-align: left !important;
+        line-height: inherit !important;
+        display: flex !important;
+        align-items: center !important;
+        height: 100% !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 50px !important;
+        right: 12px !important;
+    }
+
+    .select2-dropdown {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.1) !important;
+        overflow: hidden !important;
+        background: white !important;
+        padding: 6px !important;
+        z-index: 9999999 !important;
+    }
+
+    .select2-search__field {
+        border-radius: 10px !important;
+        padding: 10px 14px !important;
+        border: 1px solid #e2e8f0 !important;
+        font-weight: 600 !important;
+        outline: none !important;
+    }
+
+    .select2-results__option {
+        padding: 10px 15px !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        color: #334155 !important;
+        margin-bottom: 2px !important;
+    }
+
+    .select2-results__option--highlighted[aria-selected] {
+        background-color: #4f46e5 !important;
+        color: white !important;
+    }
+
+    .select2-results__group {
+        font-size: 0.65rem !important;
+        font-weight: 900 !important;
+        color: #64748b !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.08em !important;
+        padding: 12px 15px 6px !important;
+        background: #f8fafc !important;
+        border-radius: 8px !important;
+        margin: 6px 0 2px 0 !important;
+        display: block !important;
+    }
+
+    /* Select2 Parent Focus Synchronization */
+    .input-wrapper.select2-focused {
+        background: white !important;
+        border-color: var(--primary) !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05) !important;
+        transform: translateY(-2px);
+    }
+    
+    .input-wrapper.select2-focused .icon-box::after {
+        background: var(--primary) !important;
+        height: 28px !important;
+    }
+    
+    .input-wrapper.select2-focused i,
+    .input-wrapper.select2-focused svg {
+        color: var(--primary) !important;
+        transform: scale(1.1) !important;
+    }
 </style>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -658,6 +1148,7 @@
     // Server-side state passed to JS
     const ADMIN_EXISTS = {{ $adminExists ? 'true' : 'false' }};
     const ADMIN_ONLINE = {{ $adminOnline ? 'true' : 'false' }};
+    const ALLOW_REGISTRATION = {{ \Illuminate\Support\Facades\Schema::hasTable('settings') && !\App\Models\Setting::get('allow_personnel_registration', true) ? 'false' : 'true' }};
 
     function checkForgotEligibility() {
         const usernameInput = document.getElementById('loginUsername');
@@ -739,6 +1230,8 @@
                 usernameInput.removeAttribute('readonly');
                 usernameInput.style.opacity = '1';
             }
+            if (document.getElementById('adminRegisterForm')) document.getElementById('adminRegisterForm').style.display = 'flex';
+            if (document.getElementById('userSelfRegisterForm')) document.getElementById('userSelfRegisterForm').style.display = 'none';
             toggleAuth('login');
 
             // Show lockout overlay if admin is already online
@@ -756,15 +1249,19 @@
 
             document.getElementById('forgotLink').style.display = 'block';
 
-            tabsContainer.innerHTML = `
-                <button type="button" class="tab-btn active" style="background: rgba(99, 102, 241, 0.1); color: var(--primary); width: 100%; max-width: 250px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    Secure Authentication
-                </button>
-            `;
-            tabsContainer.style.background = 'transparent';
-            tabsContainer.style.border = 'none';
-            tabsContainer.style.padding = '0';
+            if (ALLOW_REGISTRATION) {
+                tabsContainer.innerHTML = `
+                    <button type="button" class="tab-btn active" id="tab-login" onclick="toggleAuth('login')">Login</button>
+                    <button type="button" class="tab-btn" id="tab-register" onclick="toggleAuth('register')">Register</button>
+                `;
+            } else {
+                tabsContainer.innerHTML = `
+                    <button type="button" class="tab-btn active" id="tab-login" onclick="toggleAuth('login')">Login</button>
+                `;
+            }
+            tabsContainer.style.background = 'rgba(0,0,0,0.03)';
+            tabsContainer.style.border = '1px solid rgba(0,0,0,0.05)';
+            tabsContainer.style.padding = '5px';
             usernameLabel.innerHTML = 'Username <span style="color: #ef4444;">*</span>';
 
             if (usernameInput) {
@@ -772,6 +1269,8 @@
                 usernameInput.removeAttribute('readonly');
                 usernameInput.style.opacity = '1';
             }
+            if (document.getElementById('adminRegisterForm')) document.getElementById('adminRegisterForm').style.display = 'none';
+            if (document.getElementById('userSelfRegisterForm')) document.getElementById('userSelfRegisterForm').style.display = 'flex';
 
             toggleAuth('login');
         }
@@ -797,6 +1296,7 @@
         const tabRegister = document.getElementById('tab-register');
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
+        const vault = document.querySelector('.auth-vault');
 
         if (mode === 'register') {
             slider.style.transform = 'translateX(-50%)';
@@ -804,12 +1304,14 @@
             if (tabRegister) tabRegister.classList.add('active');
             if (loginForm) loginForm.style.opacity = '0';
             if (registerForm) registerForm.style.opacity = '1';
+            if (vault) vault.classList.add('mode-register');
         } else {
             slider.style.transform = 'translateX(0)';
             if (tabLogin) tabLogin.classList.add('active');
             if (tabRegister) tabRegister.classList.remove('active');
             if (loginForm) loginForm.style.opacity = '1';
             if (registerForm) registerForm.style.opacity = '0';
+            if (vault) vault.classList.remove('mode-register');
         }
 
         updateViewportHeight();
@@ -842,7 +1344,7 @@
                 <i data-lucide="${icon}"></i>
             </div>
             <div style="flex: 1;">
-                <p style="font-weight: 800; font-size: 0.85rem; color: var(--text-main); margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">${type === 'success' ? 'Status Alpha' : 'System Alert'}</p>
+                <p style="font-weight: 800; font-size: 0.85rem; color: var(--text-main); margin: 0; text-transform: uppercase; letter-spacing: 0.05em;">${type === 'success' ? 'Success' : 'Alert'}</p>
                 <p style="font-weight: 600; font-size: 0.85rem; color: var(--text-muted); margin: 0;">${message}</p>
             </div>
         `;
@@ -860,6 +1362,137 @@
         }, 5000);
     }
 
+    const departmentHeadsData = [
+        @foreach($departmentHeads as $head)
+            { id: "{{ $head->id }}", name: "{{ addslashes($head->name) }}", department: "{{ addslashes($head->department) }}" },
+        @endforeach
+    ];
+
+    function filterSponsorsByDepartment() {
+        const role = document.getElementById('selfRoleSelect').value;
+        const deptVal = document.getElementById('selfDeptSelect').value;
+        const sponsorDisplay = document.getElementById('selfSponsorDisplay');
+        const sponsorValue = document.getElementById('selfSponsorSelectValue');
+        const feedbackDiv = document.getElementById('selfSponsorFeedback');
+        if (!sponsorDisplay || !sponsorValue) return;
+
+        let matchedHead = null;
+
+        if (role === 'Requisitioner' && deptVal) {
+            matchedHead = departmentHeadsData.find(h => h.department === deptVal);
+        }
+
+        if (role === 'Requisitioner' && deptVal) {
+            if (matchedHead) {
+                sponsorDisplay.value = matchedHead.name;
+                sponsorValue.value = matchedHead.id;
+
+                if (feedbackDiv) {
+                    feedbackDiv.style.display = 'none';
+                    feedbackDiv.innerHTML = '';
+                }
+            } else {
+                sponsorDisplay.value = "";
+                sponsorValue.value = "";
+
+                if (feedbackDiv) {
+                    feedbackDiv.style.display = 'block';
+                    feedbackDiv.style.background = 'rgba(239, 68, 68, 0.08)';
+                    feedbackDiv.style.color = '#dc2626';
+                    feedbackDiv.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+                    feedbackDiv.innerHTML = `⚠️ No approved Department Head is currently registered for the <strong>${deptVal}</strong>. Please notify your Department Head to register and obtain Admin approval before you can sign up.`;
+                }
+            }
+        } else {
+            sponsorDisplay.value = "";
+            sponsorValue.value = "";
+            if (feedbackDiv) {
+                feedbackDiv.style.display = 'none';
+                feedbackDiv.innerHTML = '';
+            }
+        }
+    }
+
+    function handleSelfRoleChange() {
+        const role = document.getElementById('selfRoleSelect').value;
+        const deptGroup      = document.getElementById('selfDeptGroup');
+        const deptSelect     = document.getElementById('selfDeptSelect');
+        const rankGroup      = document.getElementById('selfRankGroup');      // dropdown (Main Admin)
+        const rankSelect     = document.getElementById('selfRankSelect');
+        const rankInputGroup = document.getElementById('selfRankInputGroup'); // free text (Dept Head)
+        const rankInput      = document.getElementById('selfRankInput');
+        const sponsorGroup   = document.getElementById('selfSponsorGroup');   // Requisitioner sponsor
+        const sponsorDisplay = document.getElementById('selfSponsorDisplay');
+        const sponsorValue   = document.getElementById('selfSponsorSelectValue');
+        const deptRankGrid   = document.getElementById('selfDeptRankGrid');
+
+        // ── Department field: only for Department Head and Requisitioner ──
+        if (role === 'Department Head' || role === 'Requisitioner') {
+            deptGroup.style.display = 'block';
+            deptSelect.setAttribute('required', 'required');
+        } else {
+            deptGroup.style.display = 'none';
+            deptSelect.removeAttribute('required');
+            if (deptSelect.value !== '') {
+                deptSelect.value = '';
+                $(deptSelect).trigger('change');
+            }
+        }
+
+        // ── Rank dropdown (SNCO/NCO): Main Admin only ──
+        if (role === 'Main Admin') {
+            rankGroup.style.display = 'block';
+            rankSelect.setAttribute('required', 'required');
+        } else {
+            rankGroup.style.display = 'none';
+            rankSelect.removeAttribute('required');
+            rankSelect.value = '';
+        }
+
+        // ── Rank input (free text): Other Dept. Head only ──
+        if (role === 'Department Head') {
+            rankInputGroup.style.display = 'block';
+            rankInput.setAttribute('required', 'required');
+        } else {
+            rankInputGroup.style.display = 'none';
+            rankInput.removeAttribute('required');
+            rankInput.value = '';
+        }
+
+        // ── Sponsor input: Requisitioner only ──
+        if (role === 'Requisitioner') {
+            sponsorGroup.style.display = 'block';
+            sponsorDisplay.setAttribute('required', 'required');
+        } else {
+            sponsorGroup.style.display = 'none';
+            sponsorDisplay.removeAttribute('required');
+            sponsorDisplay.value = '';
+            sponsorValue.value = '';
+        }
+
+        // ── Show/hide the grid wrapper ──
+        if (deptRankGrid) {
+            const anyVisible = (deptGroup.style.display      !== 'none') ||
+                               (rankGroup.style.display      !== 'none') ||
+                               (rankInputGroup.style.display !== 'none') ||
+                               (sponsorGroup.style.display   !== 'none');
+            
+            deptRankGrid.style.display = anyVisible ? 'grid' : 'none';
+
+            // Adjust columns dynamically based on role
+            if (role === 'Requisitioner') {
+                deptRankGrid.style.gridTemplateColumns = '1fr 1fr';
+            } else if (role === 'Department Head') {
+                deptRankGrid.style.gridTemplateColumns = '2fr 1fr';
+            } else {
+                deptRankGrid.style.gridTemplateColumns = '1fr'; // fallback
+            }
+        }
+
+        filterSponsorsByDepartment();
+        updateViewportHeight();
+    }
+
     // Handle window resize to keep height accurate
     window.addEventListener('resize', updateViewportHeight);
 
@@ -868,6 +1501,13 @@
         if (usernameInput) {
             usernameInput.addEventListener('input', checkForgotEligibility);
             usernameInput.addEventListener('change', checkForgotEligibility);
+        }
+
+        // Option caching removed since Sponsor is now a text input
+
+        const selfDeptSelect = document.getElementById('selfDeptSelect');
+        if (selfDeptSelect) {
+            selfDeptSelect.addEventListener('change', handleSelfRoleChange);
         }
 
         // Initialize Default Interface based on session flash
@@ -916,4 +1556,55 @@
         @endif
     });
 </script>
+
+@push('scripts')
+<script src="{{ asset('js/vendor/select2.min.js') }}"></script>
+<script>
+    $(document).ready(function() {
+
+        // ── Role Select2 ──
+        if ($('#selfRoleSelect').length) {
+            $('#selfRoleSelect').select2({
+                placeholder: "-- Select Role --",
+                allowClear: false,
+                minimumResultsForSearch: Infinity  // hide search box (only 4 options)
+            });
+
+            $('#selfRoleSelect').on('change', function() {
+                handleSelfRoleChange();
+            });
+
+            $('#selfRoleSelect').on('select2:open', function() {
+                $(this).closest('.input-wrapper').addClass('select2-focused');
+            });
+            $('#selfRoleSelect').on('select2:close', function() {
+                $(this).closest('.input-wrapper').removeClass('select2-focused');
+            });
+        }
+
+        // ── Department Select2 ──
+        if ($('#selfDeptSelect').length) {
+            $('#selfDeptSelect').select2({
+                placeholder: "-- Select Department --",
+                allowClear: true
+            });
+            
+            // Re-trigger dynamic role/rank check when select2 values change
+            $('#selfDeptSelect').on('change', function() {
+                handleSelfRoleChange();
+            });
+
+            // Focus state visual integration
+            $('#selfDeptSelect').on('select2:open', function() {
+                $(this).closest('.input-wrapper').addClass('select2-focused');
+            });
+            $('#selfDeptSelect').on('select2:close', function() {
+                $(this).closest('.input-wrapper').removeClass('select2-focused');
+            });
+        }
+
+        // Sponsor Select2 configuration removed since Sponsor is now a text input
+    });
+</script>
+@endpush
 @endsection

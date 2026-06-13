@@ -178,7 +178,7 @@ class InventoryController extends Controller
                 ]);
 
                 // Send Approval Request to all Admins
-                $admins = \App\Models\User::where('is_admin', true)->get();
+                $admins = \App\Models\User::where('is_admin', true)->where('registration_status', 'approved')->get();
                 if ($admins->count() > 0) {
                     $itemNames = collect($validated['items'])->pluck('description')->take(3)->implode(', ');
                     if (count($validated['items']) > 3) $itemNames .= ' etc.';
@@ -210,7 +210,7 @@ class InventoryController extends Controller
                 }
 
                 // Send confirmation back to the user
-                $firstAdmin = \App\Models\User::where('is_admin', true)->first();
+                $firstAdmin = \App\Models\User::where('is_admin', true)->where('registration_status', 'approved')->first();
                 if ($firstAdmin) {
                     $confirmMsg = "<!-- sra_req_id:{$editReq->id} -->"
                         . "<div class='sra-awaiting-msg personnel-view' style='padding: 15px 18px; border: 1.5px solid #c7d2fe; border-radius: 16px; background: rgba(99,102,241,0.04); display: flex; align-items: center; gap: 12px;'>"

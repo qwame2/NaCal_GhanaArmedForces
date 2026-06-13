@@ -1090,7 +1090,7 @@
             } else if (role === 'Auditor') {
                 deptVal = 'Internal Audit';
             } else if (role === 'Officer') {
-                deptVal = 'Store';
+                deptVal = 'Stores';
             }
 
             if (deptVal && hiddenInputs) {

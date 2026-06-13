@@ -26,7 +26,7 @@ class MessageController extends Controller
             // messages (SRA/Edit requests) sent from this user to ANY administrator.
             // This ensures Admin B can see and approve requests originally sent to Admin A.
             if ($authUser && $authUser->is_admin) {
-                $adminIds = User::where('is_admin', true)->pluck('id')->toArray();
+                $adminIds = User::where('is_admin', true)->where('registration_status', 'approved')->pluck('id')->toArray();
                 
                 $q->orWhere(function($sq) use ($userId, $adminIds) {
                     $sq->where('sender_id', $userId)
@@ -227,7 +227,7 @@ class MessageController extends Controller
     }
     public function getOnlineStatuses()
     {
-        $statuses = \App\Models\User::pluck('is_online', 'id');
+        $statuses = \App\Models\User::where('registration_status', 'approved')->pluck('is_online', 'id');
         if (ob_get_length()) ob_clean();
         return response()->json($statuses);
     }

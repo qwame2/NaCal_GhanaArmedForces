@@ -39,6 +39,7 @@ class User extends Authenticatable
         'is_temp_account',
         'otp_token',
         'sponsored_by',
+        'registration_status',
     ];
 
     /**

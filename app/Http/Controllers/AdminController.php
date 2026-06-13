@@ -15,148 +15,12 @@ class AdminController extends Controller
 {
     public function createUser()
     {
-        if (!auth()->user()->is_admin) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
-        }
-
-        return view('admin.create_user');
+        return redirect()->route('admin.index')->with('error', 'Strategic Oversight Alert: Personnel registration must be performed by the users themselves and approved by Admin.');
     }
 
     public function storeUser(Request $request)
     {
-        if (!auth()->user()->is_admin) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
-        }
-
-        if (!$request->has('users')) {
-            $request->merge([
-                'users' => [
-                    [
-                        'name' => $request->name,
-                        'username' => $request->username,
-                        'password' => $request->password,
-                        'role' => $request->role,
-                        'department' => $request->department,
-                        'rank' => $request->rank,
-                    ]
-                ]
-            ]);
-        }
-
-        $request->validate([
-            'users' => 'required|array|min:1',
-            'users.*.username' => 'required|string|max:255|unique:users,username',
-            'users.*.name' => 'nullable|string|max:255',
-            'users.*.role' => 'required|string|in:Department Head,Main Admin,Officer,Requisitioner,Dept Head HR,Head of Welfare,Auditor',
-            'users.*.department' => 'nullable|string|max:255',
-            'users.*.rank' => 'nullable|string|in:SNCO,NCO',
-            'users.*.password' => 'required|string|min:8|regex:/[0-9]/',
-        ], [
-            'users.*.username.unique' => 'One of the usernames has already been registered.',
-            'users.*.password.min' => 'Passwords must be at least 8 characters long.',
-            'users.*.password.regex' => 'Passwords must contain at least one number.',
-        ]);
-
-        $errors = [];
-        $usersData = $request->input('users');
-
-        foreach ($usersData as $index => $u) {
-            $username = strtolower($u['username'] ?? '');
-            $fullname = strtolower($u['name'] ?? $u['username'] ?? '');
-            $password = strtolower($u['password'] ?? '');
-            $role = $u['role'] ?? '';
-            $rank = $u['rank'] ?? '';
-            $department = $u['department'] ?? '';
-
-            $userLabel = count($usersData) > 1 ? "User #" . ($index + 1) . " (@{$u['username']})" : "User";
-
-            // 1. Password security constraints
-            if ($username !== '' && str_contains($password, $username)) {
-                $errors["users.{$index}.password"] = "Security Alert ({$userLabel}): Password cannot contain the username.";
-            }
-            if ($fullname !== '' && str_contains($password, $fullname)) {
-                $errors["users.{$index}.password"] = "Security Alert ({$userLabel}): Password cannot contain your name.";
-            }
-
-            // 2. Rank checks for Main Admin, Dept Head HR, Head of Welfare
-            if (in_array($role, ['Dept Head HR', 'Head of Welfare', 'Main Admin']) && empty($rank)) {
-                $errors["users.{$index}.rank"] = "{$userLabel}: Please select a Rank (SNCO / NCO).";
-            }
-
-            // 3. Department checks
-            if ($role === 'Department Head' && empty($department)) {
-                $errors["users.{$index}.department"] = "{$userLabel}: Department is required for a Department Head.";
-            }
-        }
-
-        if (!empty($errors)) {
-            return back()->withErrors($errors)->withInput();
-        }
-
-        $createdUsers = [];
-
-        \Illuminate\Support\Facades\DB::transaction(function () use ($usersData, &$createdUsers) {
-            foreach ($usersData as $u) {
-                $role = $u['role'];
-                $department = $u['department'] ?? null;
-                $isAdmin = false;
-                $isTempAccount = false;
-
-                // Determine department and flags based on role
-                if ($role === 'Main Admin') {
-                    $department = 'Stores';
-                    $isAdmin    = true;
-                } elseif ($role === 'Dept Head HR') {
-                    $role = 'Department Head';
-                    $department = 'Human Resource Management Department';
-                } elseif ($role === 'Head of Welfare') {
-                    $role = 'Department Head';
-                    $department = 'Welfare Department';
-                } elseif ($role === 'Auditor') {
-                    $role = 'Auditor';
-                    $department = 'Internal Audit';
-                    $isTempAccount = true;
-                } elseif ($role === 'Officer') {
-                    $department = 'Store';
-                }
-
-                $user = User::create([
-                    'name'                 => $u['name'] ?? $u['username'],
-                    'username'             => $u['username'],
-                    'password'             => $u['password'],
-                    'department'           => $department,
-                    'role'                 => $role,
-                    'rank'                 => $u['rank'] ?? null,
-                    'is_admin'             => $isAdmin,
-                    'is_temp_account'      => $isTempAccount,
-                    'is_active'            => true,
-                    'must_change_password' => true,
-                ]);
-
-                // Log the creation
-                \App\Models\SystemLog::create([
-                    'user_id' => auth()->id(),
-                    'event_type' => 'SECURITY',
-                    'action' => 'CREATE_USER',
-                    'description' => "Administrator registered new staff member: {$user->name} (@{$user->username}).",
-                    'severity' => 'info',
-                    'ip_address' => request()->ip()
-                ]);
-
-                $createdUsers[] = $user;
-            }
-        });
-
-        if (count($createdUsers) === 1) {
-            $user = $createdUsers[0];
-            $message = $user->role === 'Officer' 
-                ? "Staff member {$user->name} has been successfully added."
-                : "Staff account for {$user->name} created successfully.";
-        } else {
-            $message = "Successfully registered " . count($createdUsers) . " users.";
-        }
-
-        return redirect()->route('admin.index')->with('success', $message);
+        return redirect()->route('admin.index')->with('error', 'Strategic Oversight Alert: Personnel registration must be performed by the users themselves and approved by Admin.');
     }
 
     public function index(Request $request)
@@ -175,15 +39,26 @@ class AdminController extends Controller
         }
 
         $perPage = $request->input('per_page', 10);
-        $users = User::where('is_admin', false)->orWhere('role', 'Main Admin')->paginate($perPage);
-        $totalUsers = User::where('is_admin', false)->orWhere('role', 'Main Admin')->count();
-        $onlineCount = User::where(function($q) {
-            $q->where('is_admin', false)->orWhere('role', 'Main Admin');
-        })->where('is_online', true)->count();
-        $allUsers = User::all(); // Keep for calculating global metrics if needed
-        $recentLogins = User::where(function($q) {
-            $q->where('is_admin', false)->orWhere('role', 'Main Admin');
-        })->orderBy('last_login_at', 'desc')->limit(100)->get();
+        $users = User::where('role', '!=', 'Admin')
+            ->where('registration_status', 'approved')
+            ->paginate($perPage);
+
+        $totalUsers = User::where('role', '!=', 'Admin')
+            ->where('registration_status', 'approved')
+            ->count();
+
+        $onlineCount = User::where('role', '!=', 'Admin')
+            ->where('registration_status', 'approved')
+            ->where('is_online', true)
+            ->count();
+
+        $allUsers = User::where('registration_status', 'approved')->get(); // Keep for calculating global metrics if needed
+        
+        $recentLogins = User::where('role', '!=', 'Admin')
+            ->where('registration_status', 'approved')
+            ->orderBy('last_login_at', 'desc')
+            ->limit(100)
+            ->get();
         
         // Fetch legacy/previous admin logs for auditing
         $legacyAdminLogs = \App\Models\SystemLog::with('user')
@@ -198,7 +73,65 @@ class AdminController extends Controller
             ->where('id', '!=', auth()->id())
             ->get();
 
-        return view('admin.index', compact('users', 'totalUsers', 'allUsers', 'recentLogins', 'onlineCount', 'legacyAdminLogs', 'legacyAdmins'));
+        $pendingUsers = User::where('registration_status', 'pending')->get();
+
+        return view('admin.index', compact('users', 'totalUsers', 'allUsers', 'recentLogins', 'onlineCount', 'legacyAdminLogs', 'legacyAdmins', 'pendingUsers'));
+    }
+
+    public function approveRegistration(Request $request, $id)
+    {
+        if (!auth()->user()->is_admin) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        $user = User::findOrFail($id);
+        $user->update([
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        // Log the approval
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'APPROVE_USER',
+            'description' => "Administrator approved registration request for: {$user->name} (@{$user->username}) as {$user->role}.",
+            'severity' => 'info',
+            'ip_address' => $request->ip()
+        ]);
+
+        return redirect()->route('admin.permissions')
+            ->with('success', "Registration approved — {$user->name} ({$user->role}) is now active.")
+            ->with('open_tab', 'registrations');
+    }
+
+    public function rejectRegistration(Request $request, $id)
+    {
+        if (!auth()->user()->is_admin) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        $user = User::findOrFail($id);
+        $name = $user->name;
+        $username = $user->username;
+        $user->update([
+            'registration_status' => 'rejected',
+            'is_active' => false,
+        ]);
+
+        // Log the rejection
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'REJECT_USER',
+            'description' => "Administrator rejected registration request for: {$name} (@{$username}).",
+            'severity' => 'warning',
+            'ip_address' => $request->ip()
+        ]);
+
+        return redirect()->route('admin.permissions')
+            ->with('success', "Registration request for {$name} (@{$username}) has been declined.")
+            ->with('open_tab', 'registrations');
     }
 
     public function passwordRequests()
@@ -283,7 +216,7 @@ class AdminController extends Controller
         if ($request->role === 'Main Admin') {
             $department = 'Stores';
         } elseif ($request->role === 'Officer') {
-            $department = 'Store';
+            $department = 'Stores';
         }
 
         $user->update([
@@ -386,8 +319,9 @@ class AdminController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
-        $users = User::where('is_admin', false)->where('role', 'Officer')->get();
-        return view('admin.permissions', compact('users'));
+        $users = User::where('is_admin', false)->where('role', 'Officer')->where('registration_status', 'approved')->get();
+        $pendingUsers = User::where('registration_status', 'pending')->orderBy('created_at', 'desc')->get();
+        return view('admin.permissions', compact('users', 'pendingUsers'));
     }
 
     public function updatePermission(Request $request)
@@ -499,7 +433,7 @@ class AdminController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
-        $users = User::where('is_admin', false)->get();
+        $users = User::where('is_admin', false)->where('registration_status', 'approved')->get();
         return view('admin.messages', compact('users'));
     }
 

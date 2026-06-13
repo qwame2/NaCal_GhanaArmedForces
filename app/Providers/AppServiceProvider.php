@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         try {
-            \Illuminate\Support\Facades\Cache::remember('schema_healed_v2', 86400, function () {
+            \Illuminate\Support\Facades\Cache::remember('schema_healed_v11', 86400, function () {
                 if (\Illuminate\Support\Facades\Schema::hasTable('issuances')) {
                     if (!\Illuminate\Support\Facades\Schema::hasColumn('issuances', 'requisition_id')) {
                         \Illuminate\Support\Facades\Schema::table('issuances', function (\Illuminate\Database\Schema\Blueprint $table) {
@@ -163,6 +163,7 @@ class AppServiceProvider extends ServiceProvider
                     foreach ($needsBackfill as $req) {
                         $deptHead = \App\Models\User::whereIn('role', ['Main Admin', 'Department Head'])
                             ->where('department', $req->department)
+                            ->where('registration_status', 'approved')
                             ->first();
                         if ($deptHead) {
                             $req->origin_approved_by = $deptHead->name;
@@ -184,6 +185,7 @@ class AppServiceProvider extends ServiceProvider
                     foreach ($needsBackfillStores as $req) {
                         $storesHead = \App\Models\User::whereIn('role', ['Main Admin', 'Department Head'])
                             ->where(fn($q) => $q->where('department', 'Stores')->orWhere('department', 'Store'))
+                            ->where('registration_status', 'approved')
                             ->first();
                         if ($storesHead) {
                             $req->stores_approved_by = $storesHead->name;
@@ -204,11 +206,22 @@ class AppServiceProvider extends ServiceProvider
                     // Ignore
                 }
 
-                // Ensure all existing Store Officer (role: Officer) accounts have department set to 'Store'
+                // Ensure all existing Store Officer (role: Officer) accounts have department set to 'Stores'
                 try {
                     \App\Models\User::where('role', 'Officer')->where(function($q) {
-                        $q->whereNull('department')->orWhere('department', '!=', 'Store');
-                    })->update(['department' => 'Store']);
+                        $q->whereNull('department')->orWhere('department', '!=', 'Stores');
+                    })->update(['department' => 'Stores']);
+                } catch (\Exception $ex) {
+                    // Ignore
+                }
+
+                // Ensure the registration_status column exists in users table
+                try {
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'registration_status')) {
+                        \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->string('registration_status')->default('approved');
+                        });
+                    }
                 } catch (\Exception $ex) {
                     // Ignore
                 }

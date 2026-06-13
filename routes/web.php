@@ -192,6 +192,7 @@ Route::middleware(['auth', 'check_status'])->group(function () {
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/self-register', [AuthController::class, 'selfRegister'])->name('self-register');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/logout', function () {
@@ -1023,10 +1024,11 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         ]);
     })->name('api.personnel.sidebar-counts');
 
-    // Admin Routes
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
     Route::get('/admin/users/create', [AdminController::class, 'createUser'])->name('admin.users.create');
     Route::post('/admin/users', [AdminController::class, 'storeUser'])->name('admin.users.store');
+    Route::post('/admin/users/{id}/approve-registration', [AdminController::class, 'approveRegistration'])->name('admin.users.approve_registration');
+    Route::post('/admin/users/{id}/reject-registration', [AdminController::class, 'rejectRegistration'])->name('admin.users.reject_registration');
     Route::get('/admin/logs', [AdminController::class, 'logs'])->name('admin.logs');
     Route::get('/admin/inventory', [AdminController::class, 'viewInventory'])->name('admin.inventory');
 

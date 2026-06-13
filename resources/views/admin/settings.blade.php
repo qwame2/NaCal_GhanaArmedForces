@@ -936,9 +936,13 @@
                 <div class="cfg-card-body">
                     <div class="cfg-grid">
                         @foreach($groupSettings as $setting)
-                        @php if(in_array($setting->key, ['strict_audit_logging','enable_strict_audit_logging','approval_timeout_minutes','item_unit_rules','ledge_categories','reporting_enabled','allow_personnel_registration','low_stock_threshold','item_threshold_rules','otp_expiry_hours','otp_expiry_minutes'])) continue; @endphp
+                        @php if(in_array($setting->key, ['strict_audit_logging','enable_strict_audit_logging','approval_timeout_minutes','item_unit_rules','ledge_categories','reporting_enabled','low_stock_threshold','item_threshold_rules','otp_expiry_hours','otp_expiry_minutes'])) continue; @endphp
                         <div class="cfg-item">
+                            @if($setting->key === 'allow_personnel_registration')
+                            <p class="cfg-item-label">Allow User Registration</p>
+                            @else
                             <p class="cfg-item-label">{{ ucwords(str_replace('_', ' ', $setting->key)) }}</p>
+                            @endif
 
                             @if($setting->type === 'boolean')
                             <div class="toggle-row">
@@ -963,7 +967,9 @@
                             @endif
 
                             @if($setting->description)
-                            <p class="cfg-item-desc">{{ $setting->description }}</p>
+                            <p class="cfg-item-desc">
+                                {{ $setting->key === 'allow_personnel_registration' ? 'Allow new users to register accounts (requires admin approval later).' : $setting->description }}
+                            </p>
                             @endif
                         </div>
                         @endforeach

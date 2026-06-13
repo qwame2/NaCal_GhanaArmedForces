@@ -151,7 +151,7 @@ class IssueItemsController extends Controller
                 'status' => 'pending'
             ]);
 
-            $admins = \App\Models\User::where('is_admin', true)->get();
+            $admins = \App\Models\User::where('is_admin', true)->where('registration_status', 'approved')->get();
             if ($admins->count() > 0) {
                 // Let's create an informative message for the admins to review
                 $msgContent = "
