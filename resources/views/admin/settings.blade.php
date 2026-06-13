@@ -1827,6 +1827,14 @@
                                 <input type="text" name="address" id="supplierAddressInput" class="cfg-text-input" placeholder="e.g. Cantonments, Accra">
                             </div>
                             <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Contact Person Name</label>
+                                <input type="text" name="delivery_person" id="supplierDeliveryPersonInput" class="cfg-text-input" placeholder="e.g. John Doe">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Contact Person Number</label>
+                                <input type="text" name="delivery_phone" id="supplierDeliveryPhoneInput" class="cfg-text-input" placeholder="e.g. +233 2400000">
+                            </div>
+                            <div>
                                 <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Description / Notes</label>
                                 <textarea name="desc" id="supplierDescInput" class="cfg-text-input" placeholder="e.g. Lead distributor for stationery items" style="min-height: 80px; font-family: inherit; resize: vertical; padding: 0.75rem 1rem; border-radius: 12px;"></textarea>
                             </div>
@@ -1948,7 +1956,7 @@
     function populateSupplierFormByIndex(idx) {
         const s = filteredSuppliers[idx];
         if (s) {
-            populateSupplierForm(s.name, s.delivery_person, s.phone, s.email, s.address, s.desc);
+            populateSupplierForm(s.name, s.delivery_person, s.delivery_phone, s.phone, s.email, s.address, s.desc);
         }
     }
 
@@ -2595,13 +2603,14 @@
         });
     }
 
-    function populateSupplierForm(name, delivery_person, phone, email, address, desc) {
+    function populateSupplierForm(name, delivery_person, delivery_phone, phone, email, address, desc) {
         document.getElementById('supplierFormTitle').innerText = 'Update Supplier';
         document.getElementById('supplierNameInput').value = name;
         document.getElementById('supplierNameInput').readOnly = true;
         document.getElementById('supplierNameInput').style.background = '#f8fafc';
 
-
+        document.getElementById('supplierDeliveryPersonInput').value = delivery_person || '';
+        document.getElementById('supplierDeliveryPhoneInput').value = delivery_phone || '';
         document.getElementById('supplierPhoneInput').value = phone;
         document.getElementById('supplierEmailInput').value = email;
         document.getElementById('supplierAddressInput').value = address;

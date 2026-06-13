@@ -329,7 +329,7 @@ class AdminController extends Controller
             ->orderBy('name')
             ->get();
 
-        $deptHeads = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+        $deptHeads = User::whereIn('role', ['Main Admin', 'Department Head', 'Dept Head HR', 'Head of Welfare'])
             ->where('registration_status', 'approved')
             ->orderBy('name')
             ->get();
@@ -359,7 +359,7 @@ class AdminController extends Controller
         $field = $request->permission;
         
         // Ensure the field is one of our allowed permission columns
-        $allowed = ['can_add_inventory', 'can_operate_logistics', 'can_generate_reports'];
+        $allowed = ['can_add_inventory', 'can_operate_logistics', 'can_generate_reports', 'can_make_requisition', 'can_approve_requisition'];
         if (!in_array($field, $allowed)) {
             return response()->json(['success' => false, 'message' => 'Invalid permission field'], 400);
         }

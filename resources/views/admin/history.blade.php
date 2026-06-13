@@ -142,9 +142,9 @@
                                         @elseif($record->action === 'AUTHORIZATION')
                                             Credentials Authorization
                                         @elseif($record->action === 'TOGGLE_USER_STATUS')
-                                            Personnel Status Toggled
+                                            User Status Toggled
                                         @elseif($record->action === 'PERMISSION_CHANGE')
-                                            Personnel Privilege Modified
+                                            User Privilege Modified
                                         @else
                                             System Activity Logged
                                         @endif

@@ -1300,6 +1300,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/admin/settings/supplier-registry', function(\Illuminate\Http\Request $request) {
         if (!auth()->user()->is_admin) abort(403);
         $namesStr = trim($request->input('name'));
+        $deliveryPerson = trim($request->input('delivery_person'));
+        $deliveryPhone = trim($request->input('delivery_phone'));
         $phone = trim($request->input('phone'));
         $email = trim($request->input('email'));
         $address = trim($request->input('address'));
@@ -1316,6 +1318,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             \App\Models\Supplier::updateOrCreate(
                 ['name' => $name],
                 [
+                    'delivery_person' => $deliveryPerson,
+                    'delivery_phone' => $deliveryPhone,
                     'phone' => $phone,
                     'email' => $email,
                     'address' => $address,
