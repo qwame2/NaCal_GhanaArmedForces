@@ -60,6 +60,15 @@ class StoreRequisitionController extends Controller
     public function store(Request $request)
     {
         $user = auth()->user();
+
+        // Permission gate: admin may revoke the ability to submit requests
+        if (isset($user->can_make_requisition) && !$user->can_make_requisition) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to submit requisition requests. Please contact your administrator.'
+            ], 403);
+        }
+
         if (empty($user->name) || $user->name === $user->username || empty($user->phone) || empty($user->role) || strcasecmp($user->role, 'Requisitioner') === 0 || empty($user->service_number)) {
             return response()->json([
                 'success' => false,
@@ -1304,6 +1313,11 @@ class StoreRequisitionController extends Controller
     {
         if (!in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Permission gate: admin may revoke a dept head's ability to approve requisitions
+        if (auth()->user()->role === 'Department Head' && isset(auth()->user()->can_approve_requisition) && !auth()->user()->can_approve_requisition) {
+            return response()->json(['success' => false, 'message' => 'You do not have permission to approve or decline requisition requests. Please contact your administrator.'], 403);
         }
 
         $request->validate([

@@ -20,7 +20,21 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         try {
-            \Illuminate\Support\Facades\Cache::remember('schema_healed_v11', 86400, function () {
+            \Illuminate\Support\Facades\Cache::remember('schema_healed_v12', 86400, function () {
+                // Ensure can_make_requisition column exists for requisitioner permission gating
+                if (\Illuminate\Support\Facades\Schema::hasTable('users')) {
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'can_make_requisition')) {
+                        \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->boolean('can_make_requisition')->default(true)->after('can_generate_reports');
+                        });
+                    }
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'can_approve_requisition')) {
+                        \Illuminate\Support\Facades\Schema::table('users', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->boolean('can_approve_requisition')->default(true)->after('can_make_requisition');
+                        });
+                    }
+                }
+
                 if (\Illuminate\Support\Facades\Schema::hasTable('issuances')) {
                     if (!\Illuminate\Support\Facades\Schema::hasColumn('issuances', 'requisition_id')) {
                         \Illuminate\Support\Facades\Schema::table('issuances', function (\Illuminate\Database\Schema\Blueprint $table) {

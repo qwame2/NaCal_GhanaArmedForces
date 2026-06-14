@@ -991,12 +991,14 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         }
 
         $pendingRequisitions = \App\Models\StoreRequisition::where('status', 'pending')->where('main_admin_status', 'approved')->count();
+        $pendingRegistrations = \App\Models\User::where('registration_status', 'pending')->count();
 
         return response()->json([
             'messages' => $messages,
             'password_requests' => $passwordRequests,
             'alerts' => $alertCount,
             'pending_requisitions' => $pendingRequisitions,
+            'pending_registrations' => $pendingRegistrations,
         ]);
     })->name('api.admin.sidebar-counts');
 
@@ -1038,6 +1040,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/admin/requisitions/{id}/process', [\App\Http\Controllers\StoreRequisitionController::class, 'adminProcess'])->name('admin.requisitions.process');
     Route::get('/admin/permissions', [AdminController::class, 'permissions'])->name('admin.permissions');
     Route::post('/admin/permissions/update', [AdminController::class, 'updatePermission'])->name('admin.permissions.update');
+    Route::get('/api/admin/pending-registrations', [AdminController::class, 'getPendingRegistrations'])->name('api.admin.pending-registrations');
     Route::post('/admin/logs/delete-multiple', [AdminController::class, 'destroyMultipleLogs'])->name('admin.logs.delete_multiple');
     Route::put('/admin/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
     Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages');
@@ -1300,6 +1303,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/admin/settings/supplier-registry', function(\Illuminate\Http\Request $request) {
         if (!auth()->user()->is_admin) abort(403);
         $namesStr = trim($request->input('name'));
+        $deliveryPerson = trim($request->input('delivery_person'));
+        $deliveryPhone = trim($request->input('delivery_phone'));
         $phone = trim($request->input('phone'));
         $email = trim($request->input('email'));
         $address = trim($request->input('address'));
@@ -1316,6 +1321,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             \App\Models\Supplier::updateOrCreate(
                 ['name' => $name],
                 [
+                    'delivery_person' => $deliveryPerson,
+                    'delivery_phone' => $deliveryPhone,
                     'phone' => $phone,
                     'email' => $email,
                     'address' => $address,

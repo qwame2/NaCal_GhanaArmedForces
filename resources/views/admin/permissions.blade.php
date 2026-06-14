@@ -38,16 +38,11 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Other Dept. Heads
     </button>
-    <button class="pager-tab" id="tab-auditors" onclick="switchTab('auditors')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-        Auditors
-    </button>
+
     <button class="pager-tab" id="tab-registrations" onclick="switchTab('registrations')">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
         Registration Requests
-        @if($pendingUsers->count() > 0)
-            <span class="tab-badge">{{ $pendingUsers->count() }}</span>
-        @endif
+        <span class="tab-badge" id="reg-badge" style="display: {{ $pendingUsers->count() > 0 ? 'inline-block' : 'none' }}">{{ $pendingUsers->count() }}</span>
     </button>
 </div>
 
@@ -158,10 +153,9 @@
     <div class="permissions-matrix-wrapper">
         <div class="matrix-table">
             <div class="m-header">
-                <div class="col-id">Users</div>
-                <div class="col-ctrl">Item Entry</div>
-                <div class="col-ctrl">Logistics Ops</div>
-                <div class="col-ctrl">Report Access</div>
+                <div class="col-id">Personnel</div>
+                <div class="col-req-ctrl">Make Requests</div>
+                <div class="col-req-ctrl">Report Access</div>
                 <div class="col-stat">Clearance Status</div>
             </div>
 
@@ -177,57 +171,38 @@
                             <h4 class="m-name">{{ $user->name }}</h4>
                             <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
                                 <span>@ {{ $user->username }}</span>
-                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
-                                    @if($user->role === 'Main Admin')
-                                        Head of Admin
-                                    @elseif($user->role === 'Officer')
-                                        Store Officer
-                                    @elseif($user->role === 'Dept Head HR')
-                                        Dept Head HR
-                                    @elseif($user->role === 'Head of Welfare')
-                                        Head of Welfare
-                                    @else
-                                        {{ $user->role }}
-                                    @endif
-                                </span>
                                 @if($user->department)
-                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
+                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
                                     {{ $user->department }}
+                                </span>
+                                @endif
+                                @if($user->sponsor)
+                                <span style="font-size: 0.65rem; background: #f5f3ff; color: #6d28d9; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-family: sans-serif; border: 1px solid rgba(109,40,217,0.1); white-space: nowrap;">
+                                    via {{ $user->sponsor->name }}
                                 </span>
                                 @endif
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-ctrl">
+                    {{-- Make Requests toggle --}}
+                    <div class="col-req-ctrl">
                         <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Inventory Entry">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_add_inventory')" {{ $user->can_add_inventory ? 'checked' : '' }}>
+                            <label class="normal-toggle" title="Allow or block this user from submitting requisition requests">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_make_requisition')" {{ ($user->can_make_requisition ?? true) ? 'checked' : '' }}>
                                 <div class="toggle-slider"></div>
                             </label>
                             <div class="toggle-text">
-                                <span class="t-main">Add/Edit Items</span>
-                                <span class="t-sub"></span>
+                                <span class="t-main">{{ ($user->can_make_requisition ?? true) ? 'Allowed' : 'Blocked' }}</span>
+                                <span class="t-sub">Submit requests</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-ctrl">
+                    {{-- Report Access toggle --}}
+                    <div class="col-req-ctrl">
                         <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Logistics Operations">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_operate_logistics')" {{ $user->can_operate_logistics ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">Issue & Return</span>
-                                <span class="t-sub"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Analytics Access">
+                            <label class="normal-toggle" title="Toggle Report Access">
                                 <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_generate_reports')" {{ $user->can_generate_reports ? 'checked' : '' }}>
                                 <div class="toggle-slider"></div>
                             </label>
@@ -260,10 +235,9 @@
     <div class="permissions-matrix-wrapper">
         <div class="matrix-table">
             <div class="m-header">
-                <div class="col-id">Users</div>
-                <div class="col-ctrl">Item Entry</div>
-                <div class="col-ctrl">Logistics Ops</div>
-                <div class="col-ctrl">Report Access</div>
+                <div class="col-id">Personnel</div>
+                <div class="col-req-ctrl">Approve Requests</div>
+                <div class="col-req-ctrl">Report Access</div>
                 <div class="col-stat">Clearance Status</div>
             </div>
 
@@ -282,18 +256,12 @@
                                 <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
                                     @if($user->role === 'Main Admin')
                                         Head of Admin
-                                    @elseif($user->role === 'Officer')
-                                        Store Officer
-                                    @elseif($user->role === 'Dept Head HR')
-                                        Dept Head HR
-                                    @elseif($user->role === 'Head of Welfare')
-                                        Head of Welfare
                                     @else
                                         {{ $user->role }}
                                     @endif
                                 </span>
                                 @if($user->department)
-                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
+                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
                                     {{ $user->department }}
                                 </span>
                                 @endif
@@ -301,35 +269,24 @@
                         </div>
                     </div>
 
-                    <div class="col-ctrl">
+                    {{-- Approve Requests toggle --}}
+                    <div class="col-req-ctrl">
                         <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Inventory Entry">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_add_inventory')" {{ $user->can_add_inventory ? 'checked' : '' }}>
+                            <label class="normal-toggle" title="Allow or block this department head from approving requisition requests from their staff">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_approve_requisition')" {{ ($user->can_approve_requisition ?? true) ? 'checked' : '' }}>
                                 <div class="toggle-slider"></div>
                             </label>
                             <div class="toggle-text">
-                                <span class="t-main">Add/Edit Items</span>
-                                <span class="t-sub"></span>
+                                <span class="t-main">{{ ($user->can_approve_requisition ?? true) ? 'Allowed' : 'Blocked' }}</span>
+                                <span class="t-sub">Approve requests</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-ctrl">
+                    {{-- Report Access toggle --}}
+                    <div class="col-req-ctrl">
                         <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Logistics Operations">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_operate_logistics')" {{ $user->can_operate_logistics ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">Issue & Return</span>
-                                <span class="t-sub"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Analytics Access">
+                            <label class="normal-toggle" title="Toggle Report Access">
                                 <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_generate_reports')" {{ $user->can_generate_reports ? 'checked' : '' }}>
                                 <div class="toggle-slider"></div>
                             </label>
@@ -357,195 +314,9 @@
     </div>
 </div>
 
-{{-- ── Panel: Auditors ── --}}
-<div id="panel-auditors" class="pager-panel">
-    <div class="permissions-matrix-wrapper">
-        <div class="matrix-table">
-            <div class="m-header">
-                <div class="col-id">Users</div>
-                <div class="col-ctrl">Item Entry</div>
-                <div class="col-ctrl">Logistics Ops</div>
-                <div class="col-ctrl">Report Access</div>
-                <div class="col-stat">Clearance Status</div>
-            </div>
-
-            <div class="m-body" id="auditorsBody">
-                @forelse($auditors as $user)
-                <div class="m-row" data-user-id="{{ $user->id }}">
-                    <div class="col-id">
-                        <div class="m-avatar">
-                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
-                            <span class="m-pulse {{ $user->is_active ? 'online' : 'offline' }}"></span>
-                        </div>
-                        <div class="m-identity">
-                            <h4 class="m-name">{{ $user->name }}</h4>
-                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
-                                <span>@ {{ $user->username }}</span>
-                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
-                                    @if($user->role === 'Main Admin')
-                                        Head of Admin
-                                    @elseif($user->role === 'Officer')
-                                        Store Officer
-                                    @elseif($user->role === 'Dept Head HR')
-                                        Dept Head HR
-                                    @elseif($user->role === 'Head of Welfare')
-                                        Head of Welfare
-                                    @else
-                                        {{ $user->role }}
-                                    @endif
-                                </span>
-                                @if($user->department)
-                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
-                                    {{ $user->department }}
-                                </span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Inventory Entry">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_add_inventory')" {{ $user->can_add_inventory ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">Add/Edit Items</span>
-                                <span class="t-sub"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Logistics Operations">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_operate_logistics')" {{ $user->can_operate_logistics ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">Issue & Return</span>
-                                <span class="t-sub"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Analytics Access">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_generate_reports')" {{ $user->can_generate_reports ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">View Reports</span>
-                                <span class="t-sub"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-stat">
-                        <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
-                            <i data-lucide="{{ $user->is_active ? 'shield-check' : 'shield-alert' }}"></i>
-                            {{ $user->is_active ? 'AUTHORIZED' : 'SUSPENDED' }}
-                        </div>
-                    </div>
-                </div>
-                @empty
-                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
-                    No auditors registered.
-                </div>
-                @endforelse
-            </div>
-        </div>
-    </div>
-</div>
-
 {{-- ── Panel: Registration Requests ── --}}
 <div id="panel-registrations" class="pager-panel">
-
-    @if($pendingUsers->count() === 0)
-        <div class="reg-empty-state">
-            <div class="reg-empty-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            </div>
-            <h3>No Pending Requests</h3>
-            <p>All registration requests have been processed. New submissions will appear here.</p>
-        </div>
-    @else
-        <div class="reg-list">
-            @foreach($pendingUsers as $req)
-            <div class="reg-card" id="reg-card-{{ $req->id }}">
-                {{-- Avatar + Identity --}}
-                <div class="reg-identity">
-                    <div class="reg-avatar">
-                        {{ strtoupper(substr($req->name, 0, 1)) }}
-                    </div>
-                    <div>
-                        <div class="reg-name">{{ $req->name }}</div>
-                        <div class="reg-username">@ {{ $req->username }}</div>
-                        <div class="reg-time">Submitted {{ $req->created_at->diffForHumans() }}</div>
-                    </div>
-                </div>
-
-                {{-- Detail Pills --}}
-                <div class="reg-details">
-                    <div class="reg-pill role">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        {{ $req->role === 'Main Admin' ? 'Head of Admin' : $req->role }}
-                    </div>
-                    @if($req->department)
-                    <div class="reg-pill dept">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
-                        {{ $req->department }}
-                    </div>
-                    @endif
-                    @if($req->rank)
-                    <div class="reg-pill rank">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
-                        {{ $req->rank }}
-                    </div>
-                    @endif
-                    @if($req->sponsor)
-                    <div class="reg-pill sponsor" style="background: #f5f3ff; color: #6d28d9; border: 1px solid rgba(109, 40, 217, 0.1);">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        Sponsor: {{ $req->sponsor->name }}
-                    </div>
-                    @endif
-                    @if($req->service_number)
-                    <div class="reg-pill service-number" style="background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
-                        Service: {{ $req->service_number }}
-                    </div>
-                    @endif
-                    @if($req->phone)
-                    <div class="reg-pill phone" style="background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                        {{ $req->phone }}
-                    </div>
-                    @endif
-                </div>
-
-                {{-- Action Buttons --}}
-                <div class="reg-actions">
-                    <form action="{{ route('admin.users.approve_registration', $req->id) }}" method="POST" style="display:inline;">
-                        @csrf
-                        <button type="submit" class="reg-btn approve" title="Approve registration">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            Approve
-                        </button>
-                    </form>
-
-                    <form action="{{ route('admin.users.reject_registration', $req->id) }}" method="POST" style="display:inline;" class="decline-form">
-                        @csrf
-                        <button type="button" class="reg-btn decline" title="Decline registration" onclick="confirmDecline(this)">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            Decline
-                        </button>
-                    </form>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    @endif
+    @include('admin.partials.pending_registrations')
 </div>
 
 <style>
@@ -648,6 +419,7 @@
     .m-row:last-child { border-bottom: none; }
     .col-id { flex: 0 0 350px; display: flex; align-items: center; gap: 1.25rem; }
     .col-ctrl { flex: 1; display: flex; justify-content: flex-start; align-items: center; }
+    .col-req-ctrl { flex: 0 0 200px; display: flex; justify-content: flex-start; align-items: center; }
     .col-stat { flex: 0 0 160px; display: flex; justify-content: flex-end; }
     .m-avatar { position: relative; width: 48px; height: 48px; border-radius: 16px; padding: 3px; background: linear-gradient(135deg, #e2e8f0, #f8fafc); flex-shrink: 0; }
     .m-avatar img { width: 100%; height: 100%; border-radius: 12px; object-fit: cover; }
@@ -886,6 +658,10 @@
             if (!data.success) {
                 checkbox.checked = !checkbox.checked;
                 alert('Failed to update permission: ' + data.message);
+            } else if (permission === 'can_make_requisition' || permission === 'can_approve_requisition') {
+                // Live-update the Allowed/Blocked label text
+                const label = checkbox.closest('.toggle-group-wrap')?.querySelector('.t-main');
+                if (label) label.textContent = checkbox.checked ? 'Allowed' : 'Blocked';
             }
         })
         .catch(() => {
@@ -914,10 +690,171 @@
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                form.submit();
+                if (typeof form.requestSubmit === 'function') {
+                    form.requestSubmit();
+                } else {
+                    const submitEvent = new Event('submit', { cancelable: true, bubbles: true });
+                    form.dispatchEvent(submitEvent);
+                    if (!submitEvent.defaultPrevented) {
+                        form.submit();
+                    }
+                }
             }
         });
     }
+
+    // Intercept Approve and Reject form submissions to avoid page blinking
+    document.addEventListener('submit', async function(e) {
+        const form = e.target;
+        if (form.action && (form.action.includes('approve-registration') || form.action.includes('reject-registration'))) {
+            e.preventDefault();
+
+            // Disable buttons inside the card to prevent double clicks
+            const card = form.closest('.reg-card');
+            const buttons = card ? card.querySelectorAll('.reg-btn') : null;
+            if (buttons) {
+                buttons.forEach(btn => btn.disabled = true);
+            }
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Swap out the Requisitioners matrix body
+                const newReqs = doc.getElementById('requisitionersBody');
+                const currentReqs = document.getElementById('requisitionersBody');
+                if (newReqs && currentReqs) {
+                    currentReqs.innerHTML = newReqs.innerHTML;
+                }
+
+                // Swap out the Dept Heads matrix body
+                const newDept = doc.getElementById('deptHeadsBody');
+                const currentDept = document.getElementById('deptHeadsBody');
+                if (newDept && currentDept) {
+                    currentDept.innerHTML = newDept.innerHTML;
+                }
+
+                // Swap out the pending registrations list
+                const newRegs = doc.getElementById('panel-registrations');
+                const currentRegs = document.getElementById('panel-registrations');
+                if (newRegs && currentRegs) {
+                    currentRegs.innerHTML = newRegs.innerHTML;
+                }
+
+                // Update tab badges
+                const tabKeys = ['reg-badge', 'sidebar-badge-registrations'];
+                tabKeys.forEach(key => {
+                    const newEl = doc.getElementById(key);
+                    const oldEl = document.getElementById(key);
+                    if (oldEl && newEl) {
+                        oldEl.style.display = newEl.style.display;
+                        oldEl.textContent = newEl.textContent;
+                    } else if (oldEl && !newEl) {
+                        oldEl.style.display = 'none';
+                    }
+                });
+
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+
+                // Show dynamic success toast
+                const isApprove = form.action.includes('approve-registration');
+                const userName = card ? card.querySelector('.reg-name')?.textContent || 'User' : 'User';
+                const message = isApprove 
+                    ? `Registration approved — ${userName} is now active.` 
+                    : `Registration request for ${userName} has been declined.`;
+
+                if (typeof showToast === 'function') {
+                    showToast('Success', message, 'success');
+                } else {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: message,
+                        confirmButtonColor: '#4f46e5'
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                if (typeof showToast === 'function') {
+                    showToast('Error', 'An error occurred while processing the request.', 'error');
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'System Error',
+                        text: 'An error occurred while processing the request.',
+                        confirmButtonColor: '#4f46e5'
+                    });
+                }
+                if (buttons) {
+                    buttons.forEach(btn => btn.disabled = false);
+                }
+            }
+        }
+    });
+
+    function pollPendingRegistrations() {
+        fetch('{{ route("api.admin.pending-registrations", [], false) }}')
+            .then(res => {
+                const contentType = res.headers.get("content-type");
+                if (res.status === 200 && contentType && contentType.indexOf("application/json") !== -1) {
+                    return res.json();
+                }
+                return null;
+            })
+            .then(data => {
+                if (!data) return;
+                
+                const panel = document.getElementById('panel-registrations');
+                if (panel) {
+                    const temp = document.createElement('div');
+                    temp.innerHTML = data.html;
+                    const currentIds = Array.from(panel.querySelectorAll('.reg-card')).map(card => card.id).join(',');
+                    const newIds = Array.from(temp.querySelectorAll('.reg-card')).map(card => card.id).join(',');
+                    
+                    if (currentIds !== newIds) {
+                        panel.innerHTML = data.html;
+                        if (window.lucide) {
+                            lucide.createIcons();
+                        }
+                    }
+                }
+                
+                const badge = document.getElementById('reg-badge');
+                if (badge) {
+                    if (data.count > 0) {
+                        badge.style.display = 'inline-block';
+                        badge.textContent = data.count;
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+
+                const sidebarBadge = document.getElementById('sidebar-badge-registrations');
+                if (sidebarBadge) {
+                    if (data.count > 0) {
+                        sidebarBadge.style.display = 'inline-block';
+                        sidebarBadge.textContent = data.count;
+                    } else {
+                        sidebarBadge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(() => {});
+    }
+
+    // Start polling every 10 seconds
+    setInterval(pollPendingRegistrations, 10000);
 
     document.addEventListener('DOMContentLoaded', () => {
         if (window.lucide) lucide.createIcons();

@@ -862,35 +862,35 @@
         <div class="req-stat-card">
             <div style="width:44px;height:44px;background:rgba(99,102,241,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:20px;color:#6366f1;"></i></div>
             <div>
-                <div style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['pending'] }}</div>
+                <div id="stats-pending" style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['pending'] }}</div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Pending</div>
             </div>
         </div>
         <div class="req-stat-card">
             <div style="width:44px;height:44px;background:rgba(220,38,38,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="alert-triangle" style="width:20px;color:#dc2626;"></i></div>
             <div>
-                <div style="font-size:1.5rem;font-weight:900;color:#dc2626;">{{ $stats['urgent'] }}</div>
+                <div id="stats-urgent" style="font-size:1.5rem;font-weight:900;color:#dc2626;">{{ $stats['urgent'] }}</div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Urgent</div>
             </div>
         </div>
         <div class="req-stat-card">
             <div style="width:44px;height:44px;background:rgba(16,185,129,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="check-circle" style="width:20px;color:#10b981;"></i></div>
             <div>
-                <div style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['approved'] }}</div>
+                <div id="stats-approved" style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['approved'] }}</div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Approved</div>
             </div>
         </div>
         <div class="req-stat-card">
             <div style="width:44px;height:44px;background:rgba(245,158,11,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="git-merge" style="width:20px;color:#f59e0b;"></i></div>
             <div>
-                <div style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['partially_approved'] }}</div>
+                <div id="stats-partially-approved" style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['partially_approved'] }}</div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Partial</div>
             </div>
         </div>
         <div class="req-stat-card">
             <div style="width:44px;height:44px;background:rgba(239,68,68,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="x-circle" style="width:20px;color:#ef4444;"></i></div>
             <div>
-                <div style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['declined'] }}</div>
+                <div id="stats-declined" style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['declined'] }}</div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Declined</div>
             </div>
         </div>
@@ -998,7 +998,7 @@
             <tbody>
                 @forelse($requisitions as $req)
                 @php $sb = $req->status_badge; $pb = $req->priority_badge; @endphp
-                <tr class="req-table-row">
+                <tr class="req-table-row" data-req-id="{{ $req->id }}" data-status="{{ $req->status }}" data-collected="{{ $req->collected_at ? '1' : '0' }}">
                     <td style="padding:1rem 1.5rem;">
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                             <div style="font-size:.9rem;font-weight:800;color:var(--text-main);">{{ $req->department }}</div>
@@ -2125,6 +2125,60 @@
         });
     }
 
+    async function pollStoreRequisitions() {
+        const modal = document.getElementById('reqModal');
+        if (modal && modal.classList.contains('open')) return;
+
+        const form = document.getElementById('filter-form');
+        const container = document.getElementById('requisitions-table-container');
+        if (!form || !container) return;
+
+        const formData = new FormData(form);
+        const searchParams = new URLSearchParams();
+        for (const [key, value] of formData.entries()) {
+            if (value.trim() !== '') {
+                searchParams.append(key, value);
+            }
+        }
+
+        const url = form.action + '?' + searchParams.toString();
+
+        try {
+            const response = await fetch(url);
+            const html = await response.text();
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            const newTable = doc.getElementById('requisitions-table-container');
+            if (newTable) {
+                const currentIds = Array.from(container.querySelectorAll('.req-table-row'))
+                    .map(row => `${row.dataset.reqId}-${row.dataset.status}-${row.dataset.collected}`).join(',');
+                const newIds = Array.from(newTable.querySelectorAll('.req-table-row'))
+                    .map(row => `${row.dataset.reqId}-${row.dataset.status}-${row.dataset.collected}`).join(',');
+
+                if (currentIds !== newIds) {
+                    container.innerHTML = newTable.innerHTML;
+                    if (window.lucide) {
+                        window.lucide.createIcons();
+                    }
+                    bindPaginationClicks();
+                }
+            }
+
+            const statsKeys = ['pending', 'urgent', 'approved', 'partially-approved', 'declined'];
+            statsKeys.forEach(key => {
+                const oldEl = document.getElementById(`stats-${key}`);
+                const newEl = doc.getElementById(`stats-${key}`);
+                if (oldEl && newEl && oldEl.textContent !== newEl.textContent) {
+                    oldEl.textContent = newEl.textContent;
+                }
+            });
+        } catch (e) {
+            console.error('Requisitions polling error:', e);
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const searchInput = document.getElementById('search_id_input');
         const deptInput = document.getElementById('dept_input');
@@ -2151,6 +2205,9 @@
         if (openId) {
             openRequisitionModal(parseInt(openId));
         }
+
+        // Start polling every 10 seconds
+        setInterval(pollStoreRequisitions, 10000);
     });
 </script>
 <script src="{{ asset('js/apexcharts.js') }}"></script>

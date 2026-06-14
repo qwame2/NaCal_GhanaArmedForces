@@ -1477,6 +1477,7 @@
                     updateBadge('sidebar-badge-password', data.password_requests);
                     updateBadge('sidebar-badge-alerts', data.alerts);
                     updateBadge('sidebar-badge-requisitions', data.pending_requisitions);
+                    updateBadge('sidebar-badge-registrations', data.pending_registrations);
 
                     // Also update the global header message badge if it exists
                     const globalUnreadBadge = document.getElementById('global-unread-badge');

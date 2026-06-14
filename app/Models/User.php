@@ -40,6 +40,8 @@ class User extends Authenticatable
         'otp_token',
         'sponsored_by',
         'registration_status',
+        'can_make_requisition',
+        'can_approve_requisition',
     ];
 
     /**
@@ -68,6 +70,8 @@ class User extends Authenticatable
             'can_add_inventory'      => 'boolean',
             'can_operate_logistics'  => 'boolean',
             'can_generate_reports'   => 'boolean',
+            'can_make_requisition'   => 'boolean',
+            'can_approve_requisition'=> 'boolean',
             'must_change_password'   => 'boolean',
             'is_temp_account'        => 'boolean',
         ];
