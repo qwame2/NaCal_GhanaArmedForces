@@ -753,11 +753,7 @@
                 <!-- Column 1: Originating Department -->
                 <div class="signature-block">
                     <div class="signature-space">
-                        @if($deptHeadUser && $deptHeadUser->signature)
-                            <img src="{{ Storage::url($deptHeadUser->signature) }}" class="signature-img" alt="Dept. Head Signature">
-                        @else
-                            <div style="height: 45px;"></div>
-                        @endif
+                        <div style="height: 45px;"></div>
                     </div>
                     <div class="signature-line"></div>
                     <div class="signature-title">{{ $receipt->approved_by_dept_head }}</div>
@@ -768,11 +764,7 @@
                 <!-- Column 2: Department Head (Stores) -->
                 <div class="signature-block">
                     <div class="signature-space">
-                        @if($storesDeptHead && $storesDeptHead->signature)
-                            <img src="{{ Storage::url($storesDeptHead->signature) }}" class="signature-img" alt="Stores Dept. Head Signature">
-                        @else
-                            <div style="height: 45px;"></div>
-                        @endif
+                        <div style="height: 45px;"></div>
                     </div>
                     <div class="signature-line"></div>
                     <div class="signature-title">{{ $storesDeptHead ? $storesDeptHead->name : '........................................' }}</div>
@@ -783,11 +775,7 @@
                 <!-- Column 3: Head of Stores -->
                 <div class="signature-block">
                     <div class="signature-space">
-                        @if($storesHeadUser && $storesHeadUser->signature)
-                            <img src="{{ Storage::url($storesHeadUser->signature) }}" class="signature-img" alt="Head of Stores Signature">
-                        @else
-                            <div style="height: 45px;"></div>
-                        @endif
+                        <div style="height: 45px;"></div>
                     </div>
                     <div class="signature-line"></div>
                     <div class="signature-title">{{ $receipt->approved_by_stores_head ?? 'Head of Stores' }}</div>

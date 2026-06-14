@@ -63,7 +63,7 @@
             </div>
 
             <div class="toolbar-actions">
-                @if(isset($legacyAdminLogs) && $legacyAdminLogs->count() > 0)
+                @if(isset($legacyAdmins) && $legacyAdmins->count() > 0)
                 <button type="button" class="btn-tool" onclick="openLegacyAuditModal()" style="border-radius: 18px; padding: 12px 24px; font-weight: 800; font-size: 0.85rem; gap: 10px; display: flex; align-items: center; background: #fffbeb; color: #d97706; border: 1.5px solid #fde68a; cursor: pointer; transition: all 0.3s ease;">
                     <i data-lucide="history" style="width: 18px;"></i>
                     <span>Legacy Audit</span>

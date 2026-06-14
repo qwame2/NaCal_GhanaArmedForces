@@ -63,7 +63,9 @@ class AdminController extends Controller
         // Fetch legacy/previous admin logs for auditing
         $legacyAdminLogs = \App\Models\SystemLog::with('user')
             ->whereHas('user', function($q) {
-                $q->where('is_admin', true)->where('id', '!=', auth()->id());
+                $q->where('is_admin', true)
+                  ->where('id', '!=', auth()->id())
+                  ->where('is_active', false);
             })
             ->orderBy('created_at', 'desc')
             ->limit(500)
@@ -71,6 +73,7 @@ class AdminController extends Controller
 
         $legacyAdmins = User::where('is_admin', true)
             ->where('id', '!=', auth()->id())
+            ->where('is_active', false)
             ->get();
 
         $pendingUsers = User::where('registration_status', 'pending')->get();
@@ -913,72 +916,68 @@ class AdminController extends Controller
         return back()->with('success', "Category '{$code}' deleted successfully.");
     }
 
-    public function history(Request $request)
+    public function auditLog(Request $request)
     {
         if (!auth()->user()->is_admin) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
-        // 1. Query approved/completed EditRequest records
-        $query = \App\Models\EditRequest::with('user')
-            ->where('request_type', 'edit_submission')
-            ->whereIn('status', ['approved', 'completed']);
+        $query = \App\Models\SystemLog::with('user');
 
         if ($request->has('user_id') && $request->user_id) {
             $query->where('user_id', $request->user_id);
         }
 
         if ($request->has('date_from') && $request->date_from) {
-            $query->whereDate('updated_at', '>=', $request->date_from);
+            $query->whereDate('created_at', '>=', $request->date_from);
         }
         if ($request->has('date_to') && $request->date_to) {
-            $query->whereDate('updated_at', '<=', $request->date_to);
+            $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $editRequests = $query->get();
+        $auditLog = $query->orderBy('created_at', 'desc')->paginate(15);
+        $users = User::all();
 
-        // 2. Query SystemLog user account/profile/security changes
-        $logQuery = \App\Models\SystemLog::with('user')
-            ->whereIn('action', [
-                'CREATE_USER', 'UPDATE_USER', 'UPDATE_PROFILE', 'CHANGE_PASSWORD', 
-                'PASSWORD_SYNCED', 'SELF_DEACTIVATION', 'AUTHORIZATION', 
-                'TOGGLE_USER_STATUS', 'PERMISSION_CHANGE', 'CREATE_TEMP_REQUISITIONER', 
-                'REVOKE_TEMP_REQUISITIONER', 'REGENERATE_OTP'
-            ]);
+        return view('admin.audit_log', compact('auditLog', 'users'));
+    }
 
+    public function dataHistory(Request $request)
+    {
+        if (!auth()->user()->is_admin) {
+            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        // Fetch Stock History
+        $stockQuery = \App\Models\StockHistory::with(['inventoryItem', 'user']);
         if ($request->has('user_id') && $request->user_id) {
-            $logQuery->where('user_id', $request->user_id);
+            $stockQuery->where('user_id', $request->user_id);
         }
-
         if ($request->has('date_from') && $request->date_from) {
-            $logQuery->whereDate('updated_at', '>=', $request->date_from);
+            $stockQuery->whereDate('created_at', '>=', $request->date_from);
         }
         if ($request->has('date_to') && $request->date_to) {
-            $logQuery->whereDate('updated_at', '<=', $request->date_to);
+            $stockQuery->whereDate('created_at', '<=', $request->date_to);
         }
+        $stockHistory = $stockQuery->orderBy('created_at', 'desc')->paginate(15, ['*'], 'stock_page');
 
-        $systemLogs = $logQuery->get();
-
-        // 3. Merge and sort descending
-        $merged = $editRequests->merge($systemLogs)->sortByDesc(function ($item) {
-            return $item->updated_at;
-        });
-
-        // 4. Manually paginate
-        $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
-        $perPage = 10;
-        $currentPageItems = $merged->slice(($currentPage - 1) * $perPage, $perPage)->values();
-
-        $history = new \Illuminate\Pagination\LengthAwarePaginator(
-            $currentPageItems,
-            $merged->count(),
-            $perPage,
-            $currentPage,
-            ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
-        );
+        // Fetch User Role History
+        $roleQuery = \App\Models\UserRoleHistory::with(['user', 'changer']);
+        if ($request->has('user_id') && $request->user_id) {
+            $roleQuery->where(function($q) use ($request) {
+                $q->where('user_id', $request->user_id)
+                  ->orWhere('changed_by', $request->user_id);
+            });
+        }
+        if ($request->has('date_from') && $request->date_from) {
+            $roleQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $roleQuery->whereDate('created_at', '<=', $request->date_to);
+        }
+        $roleHistory = $roleQuery->orderBy('created_at', 'desc')->paginate(15, ['*'], 'role_page');
 
         $users = User::all();
-        
+
         $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
             ? \App\Models\Setting::getCategories() 
             : [
@@ -991,6 +990,38 @@ class AdminController extends Controller
                 'J' => 'Equipment'
             ];
 
-        return view('admin.history', compact('history', 'users', 'ledgeMap'));
+        return view('admin.data_history', compact('stockHistory', 'roleHistory', 'users', 'ledgeMap'));
+    }
+
+    public function itemHistory($id)
+    {
+        if (!auth()->user()->is_admin) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $history = \App\Models\StockHistory::with('user')
+            ->where('inventory_item_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function($record) {
+                return [
+                    'id' => $record->id,
+                    'action' => ucfirst($record->action),
+                    'user_name' => $record->user->name ?? 'System',
+                    'date' => $record->created_at->format('d/m/y @ h:i A'),
+                    'old_description' => $record->old_description,
+                    'new_description' => $record->new_description,
+                    'old_unit' => $record->old_unit,
+                    'new_unit' => $record->new_unit,
+                    'old_qty' => $record->old_qty,
+                    'new_qty' => $record->new_qty,
+                    'old_stock_balance' => $record->old_stock_balance,
+                    'new_stock_balance' => $record->new_stock_balance,
+                    'old_variance' => $record->old_variance,
+                    'new_variance' => $record->new_variance,
+                ];
+            });
+
+        return response()->json(['success' => true, 'history' => $history]);
     }
 }

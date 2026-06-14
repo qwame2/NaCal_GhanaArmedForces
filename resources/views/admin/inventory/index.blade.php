@@ -530,6 +530,7 @@
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Bal.</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Level</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">History</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -666,6 +667,12 @@
                                         {{ number_format($totalStock) }} <span style="font-size: 0.65rem; color: var(--text-muted);">Available</span>
                                     </div>
                                 </div>
+                            </td>
+                            <td data-label="History" style="padding: 1.25rem 1.5rem;">
+                                <button class="glass-btn-sm" onclick="openItemHistory(event, {{ $item->id }}, '{{ addslashes($item->description) }}')" style="padding: 0.45rem 1rem; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; border: 1.5px solid #edf2f7; background: #ffffff; outline: none; transition: 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#edf2f7'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+                                    Logs
+                                </button>
                             </td>
                         </tr>
                         @empty
@@ -1565,6 +1572,153 @@ function submitContinueDelivery() {
             btn.innerHTML = '<i data-lucide="check-circle"></i> Complete Delivery';
         }
     });
+}
+</script>
+
+<!-- Item History Modal -->
+<div id="itemHistoryModal" class="modal-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="modal-content glass-card animate-scale-up" style="max-width: 900px; width: 95%; background: white; border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); border: 1px solid #f1f5f9; display: flex; flex-direction: column;">
+        <div class="modal-header" style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.25rem;">Stock Change Log</h3>
+                <p id="itemHistoryModalSubtitle" style="color: var(--text-muted); font-size: 0.9rem; margin: 0; font-weight: 700;">Item Description</p>
+            </div>
+            <button onclick="closeItemHistoryModal()" class="btn-icon danger" style="background: transparent; border: none; cursor: pointer; font-size: 1.5rem; color: #94a3b8; outline: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%;" onmouseover="this.style.background='#fef2f2'; this.style.color='#ef4444';" onmouseout="this.style.background='transparent'; this.style.color='#94a3b8';" title="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+
+        <div class="modal-body" style="padding: 1.5rem 2rem; max-height: 450px; overflow-y: auto;">
+            <div id="itemHistoryLoader" class="loader-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 0; gap: 1rem;">
+                <div class="loader" style="border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: modal-spin 1s linear infinite;"></div>
+                <p style="color: var(--text-muted); font-weight: 600; font-size: 0.95rem;">Loading evolution history...</p>
+            </div>
+            
+            <div id="itemHistoryContent" style="display: none;">
+                <div class="table-responsive" style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+                        <thead>
+                            <tr style="background: #f8fafc; border-bottom: 1px solid #edf2f7;">
+                                <th style="padding: 0.75rem 1rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Date</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Action</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Quantity</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Stock Balance</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Variance</th>
+                                <th style="padding: 0.75rem 1rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">User</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemHistoryTableBody">
+                            <!-- Populated via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding: 1.25rem 2rem; display: flex; justify-content: flex-end; background: var(--bg-card); border-radius: 0 0 28px 28px;">
+            <button type="button" onclick="closeItemHistoryModal()" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer;">Close</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes modal-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+<script>
+function openItemHistory(event, itemId, description) {
+    if (event) event.stopPropagation();
+    
+    const modal = document.getElementById('itemHistoryModal');
+    const subtitle = document.getElementById('itemHistoryModalSubtitle');
+    const loader = document.getElementById('itemHistoryLoader');
+    const content = document.getElementById('itemHistoryContent');
+    const tbody = document.getElementById('itemHistoryTableBody');
+    
+    subtitle.innerText = description;
+    tbody.innerHTML = '';
+    
+    modal.style.display = 'flex';
+    loader.style.display = 'flex';
+    content.style.display = 'none';
+    
+    fetch(`{{ url('/admin/inventory/item') }}/${itemId}/history`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.history.length > 0) {
+                data.history.forEach(record => {
+                    let qtyStr = '';
+                    if (record.action === 'Create') {
+                        qtyStr = `<span style="color: #10b981; font-weight: 800;">+${record.new_qty}</span>`;
+                    } else if (record.action === 'Delete') {
+                        qtyStr = `<span style="color: #ef4444; font-weight: 800; text-decoration: line-through;">-${record.old_qty}</span>`;
+                    } else {
+                        qtyStr = record.old_qty != record.new_qty 
+                            ? `<span style="text-decoration: line-through; opacity: 0.6; margin-right: 4px;">${record.old_qty}</span>&rarr; <span style="color: #2563eb; font-weight: 800;">${record.new_qty}</span>`
+                            : `<span>${record.new_qty}</span>`;
+                    }
+
+                    let balStr = '';
+                    if (record.action === 'Create') {
+                        balStr = `<span style="color: #10b981; font-weight: 800;">+${record.new_stock_balance}</span>`;
+                    } else if (record.action === 'Delete') {
+                        balStr = `<span style="color: #ef4444; font-weight: 800; text-decoration: line-through;">-${record.old_stock_balance}</span>`;
+                    } else {
+                        balStr = record.old_stock_balance != record.new_stock_balance 
+                            ? `<span style="text-decoration: line-through; opacity: 0.6; margin-right: 4px;">${record.old_stock_balance}</span>&rarr; <span style="color: #2563eb; font-weight: 800;">${record.new_stock_balance}</span>`
+                            : `<span>${record.new_stock_balance}</span>`;
+                    }
+
+                    let varStr = '';
+                    if (record.action === 'Create') {
+                        varStr = `<span style="font-weight: 800;">${record.new_variance}</span>`;
+                    } else if (record.action === 'Delete') {
+                        varStr = `<span style="font-weight: 800; text-decoration: line-through;">${record.old_variance}</span>`;
+                    } else {
+                        varStr = record.old_variance != record.new_variance 
+                            ? `<span style="text-decoration: line-through; opacity: 0.6; margin-right: 4px;">${record.old_variance}</span>&rarr; <span>${record.new_variance}</span>`
+                            : `<span>${record.new_variance}</span>`;
+                    }
+
+                    let actionBadge = '';
+                    if (record.action === 'Create') {
+                        actionBadge = `<span style="padding: 2px 6px; border-radius: 4px; background: #ecfdf5; color: #059669; font-weight: 800; font-size: 0.7rem;">CREATE</span>`;
+                    } else if (record.action === 'Update') {
+                        actionBadge = `<span style="padding: 2px 6px; border-radius: 4px; background: #eff6ff; color: #2563eb; font-weight: 800; font-size: 0.7rem;">UPDATE</span>`;
+                    } else {
+                        actionBadge = `<span style="padding: 2px 6px; border-radius: 4px; background: #fef2f2; color: #dc2626; font-weight: 800; font-size: 0.7rem;">DELETE</span>`;
+                    }
+
+                    const row = `
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.78rem;">${record.date}</td>
+                            <td style="padding: 0.75rem 1rem;">${actionBadge}</td>
+                            <td style="padding: 0.75rem 1rem;">${qtyStr}</td>
+                            <td style="padding: 0.75rem 1rem;">${balStr}</td>
+                            <td style="padding: 0.75rem 1rem;">${varStr}</td>
+                            <td style="padding: 0.75rem 1rem; font-weight: 700;">${record.user_name}</td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" style="padding: 2rem; text-align: center; color: var(--text-muted);">No stock adjustments logged for this item description.</td></tr>';
+            }
+            loader.style.display = 'none';
+            content.style.display = 'block';
+        })
+        .catch(err => {
+            tbody.innerHTML = '<tr><td colspan="6" style="padding: 2rem; text-align: center; color: #ef4444;">Failed to load history data.</td></tr>';
+            loader.style.display = 'none';
+            content.style.display = 'block';
+        });
+}
+
+function closeItemHistoryModal() {
+    document.getElementById('itemHistoryModal').style.display = 'none';
 }
 </script>
 @endsection

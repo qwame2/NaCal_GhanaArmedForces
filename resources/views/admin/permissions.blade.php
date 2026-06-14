@@ -44,6 +44,10 @@
         Registration Requests
         <span class="tab-badge" id="reg-badge" style="display: {{ $pendingUsers->count() > 0 ? 'inline-block' : 'none' }}">{{ $pendingUsers->count() }}</span>
     </button>
+    <button class="pager-tab" id="tab-role-history" onclick="switchTab('role-history')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        Role &amp; Privilege History
+    </button>
 </div>
 
 {{-- ── Panel: Store Officers ── --}}
@@ -317,6 +321,114 @@
 {{-- ── Panel: Registration Requests ── --}}
 <div id="panel-registrations" class="pager-panel">
     @include('admin.partials.pending_registrations')
+</div>
+
+{{-- ── Panel: Role & Privilege History ── --}}
+<div id="panel-role-history" class="pager-panel">
+    <div class="permissions-matrix-wrapper" style="background: white; border-radius: 32px; box-shadow: 0 20px 50px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 4rem; padding: 2rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            Role &amp; Privilege Modifications
+        </h3>
+        
+        @php
+            $embeddedRoleHistory = \App\Models\UserRoleHistory::with(['user', 'changer'])->orderBy('created_at', 'desc')->take(100)->get();
+        @endphp
+
+        @if($embeddedRoleHistory->isEmpty())
+            <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
+                No role or privilege updates recorded.
+            </div>
+        @else
+            <div class="table-responsive" style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 1px solid #edf2f7;">
+                            <th style="padding: 1rem 1.25rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Date</th>
+                            <th style="padding: 1rem 1.25rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Staff Name</th>
+                            <th style="padding: 1rem 1.25rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Action</th>
+                            <th style="padding: 1rem 1.25rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Role Evolution</th>
+                            <th style="padding: 1rem 1.25rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Privilege Details</th>
+                            <th style="padding: 1rem 1.25rem; font-weight: 800; color: #64748b; font-size: 0.72rem; text-transform: uppercase;">Changed By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($embeddedRoleHistory as $historyRecord)
+                            <tr style="border-bottom: 1px solid #edf2f7; transition: background 0.15s;" onmouseover="this.style.background='#fafcff'" onmouseout="this.style.background=''">
+                                <td style="padding: 1rem 1.25rem; color: var(--text-muted); font-size: 0.78rem; font-weight: 700; white-space: nowrap;">
+                                    {{ $historyRecord->created_at->format('d/m/y H:i') }}
+                                </td>
+                                <td style="padding: 1rem 1.25rem; font-weight: 800; color: var(--text-main);">
+                                    {{ $historyRecord->user->name ?? 'Deleted User' }}
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 500; font-family: monospace; margin-top: 1px;">
+                                        @ @if($historyRecord->user){{ $historyRecord->user->username }}@else{{ 'deleted' }}@endif
+                                    </div>
+                                </td>
+                                <td style="padding: 1rem 1.25rem;">
+                                    <span style="display: inline-flex; align-items: center; padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+                                        @if($historyRecord->action === 'created')
+                                            background: #ecfdf5; color: #059669;
+                                        @elseif($historyRecord->action === 'role_changed')
+                                            background: #fdf2f8; color: #db2777;
+                                        @elseif($historyRecord->action === 'status_changed')
+                                            background: #fffbeb; color: #d97706;
+                                        @else
+                                            background: #eff6ff; color: #2563eb;
+                                        @endif">
+                                        {{ str_replace('_', ' ', $historyRecord->action) }}
+                                    </span>
+                                </td>
+                                <td style="padding: 1rem 1.25rem; font-weight: 700;">
+                                    @if($historyRecord->action === 'created')
+                                        <span style="color: #059669;">{{ $historyRecord->new_role }}</span>
+                                    @else
+                                        @if($historyRecord->old_role != $historyRecord->new_role)
+                                            <span style="color: var(--text-muted); text-decoration: line-through; font-size: 0.78rem; font-weight: 500;">{{ $historyRecord->old_role }}</span>
+                                            <span style="color: var(--primary); margin: 0 4px;">&rarr;</span>
+                                            <span style="color: var(--text-main);">{{ $historyRecord->new_role }}</span>
+                                        @else
+                                            <span style="color: var(--text-muted); font-size: 0.78rem;">{{ $historyRecord->new_role }}</span>
+                                        @endif
+                                    @endif
+                                </td>
+                                <td style="padding: 1rem 1.25rem;">
+                                    @if($historyRecord->new_permissions)
+                                        <div style="display: flex; flex-direction: column; gap: 3px; max-width: 220px;">
+                                            @foreach(['can_add_inventory' => 'Inventory Entry', 'can_operate_logistics' => 'Confirm Collection', 'can_generate_reports' => 'View Reports', 'can_make_requisition' => 'Make Requests', 'can_approve_requisition' => 'Approve Requests'] as $key => $label)
+                                                @php
+                                                    $oldVal = $historyRecord->old_permissions[$key] ?? false;
+                                                    $newVal = $historyRecord->new_permissions[$key] ?? false;
+                                                @endphp
+                                                @if($historyRecord->action === 'created' || $oldVal != $newVal)
+                                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; padding: 1px 4px; background: #f8fafc; border-radius: 4px; border: 1px solid #f1f5f9;">
+                                                        <span style="font-weight: 700; color: #475569;">{{ $label }}</span>
+                                                        @if($historyRecord->action === 'created')
+                                                            <span style="font-weight: 800; color: {{ $newVal ? '#10b981' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
+                                                        @else
+                                                            <span style="font-weight: 800;">
+                                                                <span style="color: {{ $oldVal ? '#10b981' : '#dc2626' }}; text-decoration: line-through; opacity: 0.6;">{{ $oldVal ? 'Allowed' : 'Blocked' }}</span>
+                                                                <span style="color: #64748b; margin: 0 1px;">&rarr;</span>
+                                                                <span style="color: {{ $newVal ? '#10b981' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td style="padding: 1rem 1.25rem; font-weight: 700; color: var(--text-main);">
+                                    {{ $historyRecord->changer->name ?? 'System' }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
 </div>
 
 <style>

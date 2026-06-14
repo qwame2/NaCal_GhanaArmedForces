@@ -105,6 +105,10 @@ class SettingsController extends Controller
 
     public function updateSignature(Request $request)
     {
+        if (!(auth()->user()->is_admin && auth()->user()->role === 'Admin')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized. Only Head of Stores can perform this action.'], 403);
+        }
+
         $request->validate([
             'signature' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
         ]);
@@ -130,6 +134,10 @@ class SettingsController extends Controller
 
     public function removeSignature()
     {
+        if (!(auth()->user()->is_admin && auth()->user()->role === 'Admin')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized. Only Head of Stores can perform this action.'], 403);
+        }
+
         $user = auth()->user();
         if ($user->signature) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($user->signature);
@@ -149,7 +157,7 @@ class SettingsController extends Controller
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
-        $admins = \App\Models\User::where('is_admin', true)->where('registration_status', 'approved')->get();
+        $admins = \App\Models\User::where('is_admin', true)->where('role', 'Admin')->where('registration_status', 'approved')->get();
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
             $colleagues = collect();
         } else {

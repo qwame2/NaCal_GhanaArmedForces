@@ -25,8 +25,69 @@ class InventoryItem extends Model
         static::saved(function () {
             Setting::clearInventoryCache();
         });
-        static::deleted(function () {
+        static::created(function ($item) {
+            try {
+                \App\Models\StockHistory::create([
+                    'inventory_item_id' => $item->id,
+                    'user_id' => auth()->id(),
+                    'action' => 'create',
+                    'new_description' => $item->description,
+                    'new_unit' => $item->unit,
+                    'new_qty' => $item->qty,
+                    'new_stock_balance' => $item->stock_balance,
+                    'new_variance' => $item->variance,
+                ]);
+            } catch (\Exception $e) {
+                // Prevent model failures from breaking main execution flows
+            }
+        });
+        static::updating(function ($item) {
+            try {
+                $monitored = ['description', 'unit', 'qty', 'stock_balance', 'variance'];
+                $changed = false;
+                foreach ($monitored as $field) {
+                    if ($item->isDirty($field)) {
+                        $changed = true;
+                        break;
+                    }
+                }
+                if ($changed) {
+                    \App\Models\StockHistory::create([
+                        'inventory_item_id' => $item->id,
+                        'user_id' => auth()->id(),
+                        'action' => 'update',
+                        'old_description' => $item->getOriginal('description'),
+                        'new_description' => $item->description,
+                        'old_unit' => $item->getOriginal('unit'),
+                        'new_unit' => $item->unit,
+                        'old_qty' => $item->getOriginal('qty'),
+                        'new_qty' => $item->qty,
+                        'old_stock_balance' => $item->getOriginal('stock_balance'),
+                        'new_stock_balance' => $item->stock_balance,
+                        'old_variance' => $item->getOriginal('variance'),
+                        'new_variance' => $item->variance,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // Prevent failures
+            }
+        });
+        static::deleted(function ($item) {
             Setting::clearInventoryCache();
+            try {
+                \App\Models\StockHistory::create([
+                    'inventory_item_id' => $item->id,
+                    'user_id' => auth()->id(),
+                    'action' => 'delete',
+                    'old_description' => $item->description,
+                    'old_unit' => $item->unit,
+                    'old_qty' => $item->qty,
+                    'old_stock_balance' => $item->stock_balance,
+                    'old_variance' => $item->variance,
+                ]);
+            } catch (\Exception $e) {
+                // Prevent failures
+            }
         });
     }
 

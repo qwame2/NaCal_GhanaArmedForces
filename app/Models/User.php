@@ -108,6 +108,88 @@ class User extends Authenticatable
         return (bool)$value;
     }
 
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            try {
+                $perms = [
+                    'can_add_inventory' => (bool)$user->can_add_inventory,
+                    'can_operate_logistics' => (bool)$user->can_operate_logistics,
+                    'can_generate_reports' => (bool)$user->can_generate_reports,
+                    'can_make_requisition' => (bool)$user->can_make_requisition,
+                    'can_approve_requisition' => (bool)$user->can_approve_requisition,
+                ];
+                \App\Models\UserRoleHistory::create([
+                    'user_id' => $user->id,
+                    'changed_by' => auth()->id(),
+                    'action' => 'created',
+                    'new_role' => $user->role,
+                    'new_is_admin' => (bool)$user->is_admin,
+                    'new_permissions' => $perms,
+                ]);
+            } catch (\Exception $e) {
+                // Prevent failures
+            }
+        });
+
+        static::updating(function ($user) {
+            try {
+                $monitored = [
+                    'role', 'is_admin', 'is_active', 'registration_status',
+                    'can_add_inventory', 'can_operate_logistics', 'can_generate_reports',
+                    'can_make_requisition', 'can_approve_requisition'
+                ];
+
+                $changed = false;
+                foreach ($monitored as $field) {
+                    if ($user->isDirty($field)) {
+                        $changed = true;
+                        break;
+                    }
+                }
+
+                if ($changed) {
+                    $action = 'permissions_changed';
+                    if ($user->isDirty('role')) {
+                        $action = 'role_changed';
+                    } elseif ($user->isDirty('is_active') || $user->isDirty('registration_status')) {
+                        $action = 'status_changed';
+                    }
+
+                    $oldPerms = [
+                        'can_add_inventory' => (bool)$user->getOriginal('can_add_inventory'),
+                        'can_operate_logistics' => (bool)$user->getOriginal('can_operate_logistics'),
+                        'can_generate_reports' => (bool)$user->getOriginal('can_generate_reports'),
+                        'can_make_requisition' => (bool)$user->getOriginal('can_make_requisition'),
+                        'can_approve_requisition' => (bool)$user->getOriginal('can_approve_requisition'),
+                    ];
+
+                    $newPerms = [
+                        'can_add_inventory' => (bool)$user->can_add_inventory,
+                        'can_operate_logistics' => (bool)$user->can_operate_logistics,
+                        'can_generate_reports' => (bool)$user->can_generate_reports,
+                        'can_make_requisition' => (bool)$user->can_make_requisition,
+                        'can_approve_requisition' => (bool)$user->can_approve_requisition,
+                    ];
+
+                    \App\Models\UserRoleHistory::create([
+                        'user_id' => $user->id,
+                        'changed_by' => auth()->id(),
+                        'action' => $action,
+                        'old_role' => $user->getOriginal('role'),
+                        'new_role' => $user->role,
+                        'old_is_admin' => $user->getOriginal('is_admin') === null ? null : (bool)$user->getOriginal('is_admin'),
+                        'new_is_admin' => (bool)$user->is_admin,
+                        'old_permissions' => $oldPerms,
+                        'new_permissions' => $newPerms,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // Prevent failures
+            }
+        });
+    }
+
     public function getSecurityStatus(): array
     {
         return ['label' => 'Verified', 'color' => '#10b981'];

@@ -507,9 +507,9 @@
                         {{ $supStatusDisplay }}
                     </span>
                 </td>
-                <td data-label="Qty Received" style="font-weight: 600;">{{ $transaction->qty ?? '0' }}</td>
+                <td data-label="Qty Received" style="font-weight: 600;">{{ is_numeric($transaction->qty) ? number_format($transaction->qty, 0) : ($transaction->qty ?? '0') }}</td>
                 <td data-label="Qty/Variance" style="font-weight: 700; color: {{ is_numeric($transaction->variance) && (float)$transaction->variance > 0 ? 'var(--secondary)' : (is_numeric($transaction->variance) && (float)$transaction->variance < 0 ? 'var(--danger)' : 'inherit') }}">
-                    {{ is_numeric($transaction->variance) && (float)$transaction->variance > 0 ? '+' : '' }}{{ $transaction->variance }}
+                    {{ is_numeric($transaction->variance) && (float)$transaction->variance > 0 ? '+' : '' }}{{ is_numeric($transaction->variance) ? number_format($transaction->variance, 0) : $transaction->variance }}
                 </td>
                 <td data-label="Transaction Type">
                     @php
@@ -526,7 +526,7 @@
                         @endphp
                         <span class="status-badge {{ $stClass }}">{{ $stText }}</span>
                 </td>
-                <td data-label="Stock Bal." style="font-weight: 700;">{{ $transaction->stock_balance }}</td>
+                <td data-label="Stock Bal." style="font-weight: 700;">{{ is_numeric($transaction->stock_balance) ? number_format($transaction->stock_balance, 0) : $transaction->stock_balance }}</td>
             </tr>
             @empty
             <tr>

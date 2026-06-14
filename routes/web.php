@@ -1044,7 +1044,10 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/admin/logs/delete-multiple', [AdminController::class, 'destroyMultipleLogs'])->name('admin.logs.delete_multiple');
     Route::put('/admin/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
     Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages');
-    Route::get('/admin/history', [AdminController::class, 'history'])->name('admin.history');
+    Route::get('/admin/history', fn() => redirect()->route('admin.audit-log'))->name('admin.history');
+    Route::get('/admin/audit-log', [AdminController::class, 'auditLog'])->name('admin.audit-log');
+    Route::get('/admin/data-history', [AdminController::class, 'dataHistory'])->name('admin.data-history');
+    Route::get('/admin/inventory/item/{id}/history', [AdminController::class, 'itemHistory'])->name('admin.inventory.item.history');
     Route::patch('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
     Route::post('/admin/self-deactivate', [AdminController::class, 'deactivateSelf'])->name('admin.self_deactivate');
 

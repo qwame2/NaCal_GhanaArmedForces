@@ -398,14 +398,24 @@
     </table>
 
     {{-- Signature Sign-Off Block --}}
+    @php
+        $headOfStores = \App\Models\User::where('is_admin', true)->where('role', 'Admin')->where('is_active', true)->first();
+    @endphp
     <div class="signature-block">
         <div class="sig-col">
-            <div class="sig-line">{{ $auditor->name }}</div>
+            <div class="sig-line" style="margin-top: 60px;">{{ $auditor->name }}</div>
             <div class="sig-subtitle">Reporting Auditor</div>
             <div style="font-size: 8px; color: #94a3b8; margin-top: 4px;">Internal Audit & Oversight Unit</div>
         </div>
-        <div class="sig-col">
-            <div class="sig-line">COMMANDER, CENTRAL STORES</div>
+        <div class="sig-col" style="position: relative;">
+            @if($headOfStores && $headOfStores->signature)
+                <div style="height: 40px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: -25px; position: relative; z-index: 5; pointer-events: none;">
+                    <img src="{{ Storage::url($headOfStores->signature) }}" style="max-height: 55px; max-width: 180px; object-fit: contain; mix-blend-mode: multiply;" alt="Head of Stores Signature">
+                </div>
+            @else
+                <div style="height: 40px;"></div>
+            @endif
+            <div class="sig-line" style="margin-top: 20px;">COMMANDER, CENTRAL STORES</div>
             <div class="sig-subtitle">Authorized Approving Authority</div>
             <div style="font-size: 8px; color: #94a3b8; margin-top: 4px;">Strategic Command Oversight Unit</div>
         </div>

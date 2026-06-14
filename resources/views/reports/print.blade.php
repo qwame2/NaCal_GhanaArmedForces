@@ -555,6 +555,28 @@
             </tfoot>
         </table>
     </div>
+
+    {{-- Signature Sign-Off Block --}}
+    @php
+        $headOfStores = \App\Models\User::where('is_admin', true)->where('role', 'Admin')->where('is_active', true)->first();
+    @endphp
+    <div class="signature-block">
+        <div class="sig-col">
+            <div class="sig-line" style="margin-top: 60px;">{{ auth()->user()->name }}</div>
+            <div class="sig-subtitle">Prepared By ({{ auth()->user()->role }})</div>
+        </div>
+        <div class="sig-col" style="position: relative;">
+            @if($headOfStores && $headOfStores->signature)
+                <div style="height: 50px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: -30px; position: relative; z-index: 5; pointer-events: none;">
+                    <img src="{{ Storage::url($headOfStores->signature) }}" style="max-height: 65px; max-width: 180px; object-fit: contain; mix-blend-mode: multiply;" alt="Head of Stores Signature">
+                </div>
+            @else
+                <div style="height: 50px;"></div>
+            @endif
+            <div class="sig-line">{{ $headOfStores ? $headOfStores->name : 'Head of Stores' }}</div>
+            <div class="sig-subtitle">Approved By (Head of Stores)</div>
+        </div>
+    </div>
     @endif
 
     {{-- ApexCharts scripts --}}
