@@ -253,6 +253,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
         $dashboardData = \Illuminate\Support\Facades\Cache::remember('dashboard_metrics_data', 600, function () {
             $rawItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->select(
                     'inventory_items.description',
                     'inventory_items.unit',
@@ -300,6 +301,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             // Total Inventory: Sum of stock_balance excluding System Draft
             $totalInventory = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->get()->sum(function ($item) {
                     return is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0;
                 });
@@ -311,6 +313,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
             $currentMonthInvValue = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->where('inventory_batches.entry_date', '>=', $currentMonthStart)
                 ->get()->sum(function ($i) {
                     return is_numeric($i->stock_balance) ? (float)$i->stock_balance : 0;
@@ -318,6 +321,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
             $lastMonthInvValue = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->whereBetween('inventory_batches.entry_date', [$lastMonthStart, $lastMonthEnd])
                 ->get()->sum(function ($i) {
                     return is_numeric($i->stock_balance) ? (float)$i->stock_balance : 0;
@@ -333,6 +337,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             // Daily "Issuance" (Mocked as items added today) excluding System Draft
             $dailyIssuance = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->whereDate('inventory_batches.entry_date', now())
                 ->count();
 
@@ -340,10 +345,14 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             $stockValue = $totalInventory * 50;
 
             // Expired Items (Stock = 0 AND Ledge >= 1)
-            $expiredCount = \App\Models\InventoryItem::get()->filter(function ($item) {
-                return is_numeric($item->stock_balance) && (float)$item->stock_balance == 0 &&
-                    is_numeric($item->qty) && (float)$item->qty >= 1;
-            })->count();
+            $expiredCount = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
+                ->get()
+                ->filter(function ($item) {
+                    return is_numeric($item->stock_balance) && (float)$item->stock_balance == 0 &&
+                        is_numeric($item->qty) && (float)$item->qty >= 1;
+                })->count();
 
             // Chart Data (Last 12 Months)
             $chartMonths = [];
@@ -351,6 +360,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             $varianceSeries = [];
 
             $allActivity = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->where('inventory_batches.entry_date', '>=', now()->subMonths(11)->startOfMonth())
                 ->select('inventory_items.variance', 'inventory_items.stock_balance', 'inventory_batches.entry_date')
                 ->get();
@@ -396,6 +407,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             $lowStockLedges = [];
 
             $categoryStats = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->whereIn('inventory_batches.ledge_category', $thresholdLedges)
                 ->get()
                 ->groupBy('ledge_category');
@@ -421,6 +434,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             // Individual items below threshold for the alerts container (Grouped by Description)
             $allItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as stock_balance, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as qty')
                 ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
                 ->get();
@@ -440,6 +454,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
             // Distribution Data (Donut Chart) - Dynamic Categories
             $distData = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->select('inventory_batches.ledge_category', 'inventory_items.stock_balance')
                 ->get()
                 ->groupBy('ledge_category')
@@ -470,6 +486,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             $weekReceived = [];
             $weekVariance = [];
             $weeklyActivity = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->where('inventory_batches.entry_date', '>=', now()->subWeeks(11)->startOfWeek())
                 ->select('inventory_items.variance', 'inventory_items.stock_balance', 'inventory_batches.entry_date')
                 ->get();
@@ -490,6 +508,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             $dayReceived = [];
             $dayVariance = [];
             $dailyActivity = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->where('inventory_batches.entry_date', '>=', now()->subDays(13)->startOfDay())
                 ->select('inventory_items.variance', 'inventory_items.stock_balance', 'inventory_batches.entry_date')
                 ->get();
@@ -508,6 +528,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             // Recent Transactions
             $recentTransactions = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.arrival_date', 'inventory_batches.ledge_category', 'inventory_batches.supplier_name', 'inventory_batches.supplier_status', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type')
                 ->orderBy('inventory_batches.entry_date', 'desc')
                 ->limit(4)
@@ -708,6 +729,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         $lowStockAlerts = \Illuminate\Support\Facades\Cache::remember('global_low_stock_alerts', 600, function() {
             $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                 ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
                 ->get();
@@ -733,6 +755,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         $expiredAlerts = \Illuminate\Support\Facades\Cache::remember('global_expired_alerts', 600, function() {
             return \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as total_qty')
                 ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
                 ->havingRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) >= 1')
@@ -871,6 +894,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
         $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->where('inventory_batches.approval_status', '=', 'approved')
             ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
             ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
             ->get();
@@ -886,6 +910,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
         $expiredItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->where('inventory_batches.approval_status', '=', 'approved')
             ->selectRaw('TRIM(inventory_items.description) as description')
             ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
             ->havingRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) >= 1')
@@ -947,6 +972,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
         $lowStockAlerts = \Illuminate\Support\Facades\Cache::remember('global_low_stock_alerts', 600, function() {
             $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->selectRaw('TRIM(inventory_items.description) as description, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                 ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
                 ->get();
@@ -969,9 +996,12 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         });
 
         $expiredAlerts = \Illuminate\Support\Facades\Cache::remember('global_expired_alerts', 600, function() {
-            return \App\Models\InventoryItem::selectRaw('description, SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) as total_qty')
-                ->groupBy('description')
-                ->havingRaw('SUM(CAST(REPLACE(stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(qty, ",", "") AS DECIMAL(15,2))) >= 1')
+            return \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
+                ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as total_qty')
+                ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
+                ->havingRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) = 0 AND SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) >= 1')
                 ->get()
                 ->map(fn($item) => ['description' => trim($item->description)])
                 ->toArray();
@@ -1235,6 +1265,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         // Validate that limit does not exceed stock balance
         $stockItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->where('inventory_batches.approval_status', '=', 'approved')
             ->selectRaw('inventory_items.description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
             ->groupBy('inventory_items.description')
             ->get();
@@ -1515,6 +1546,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         
         $items = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_items.description', $description)
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->where('inventory_batches.approval_status', '=', 'approved')
             ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.supplier_name')
             ->orderBy('inventory_batches.entry_date', 'desc')
             ->get();

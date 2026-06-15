@@ -339,6 +339,7 @@ class ReceivedItemsController extends Controller
         // Fetch aggregate totals for item status display in the table
         $itemAggregates = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->where('inventory_batches.approval_status', '=', 'approved')
             ->selectRaw('inventory_items.description, SUM(inventory_items.qty) as total_received_qty, SUM(inventory_items.stock_balance) as total_available, SUM(inventory_items.variance) as total_variance')
             ->groupBy('inventory_items.description')
             ->get()

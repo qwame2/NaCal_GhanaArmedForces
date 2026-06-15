@@ -5,6 +5,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <!-- PWA Manifest & Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NACOC IMS">
+    <link rel="apple-touch-icon" href="{{ asset('img/cropped_circle_image.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('img/cropped_circle_image.png') }}">
     <!-- Content Security Policy: Essential for ApexCharts and Select2 functionality -->
     <style>
         :root {
@@ -213,10 +221,17 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    @if(auth()->user()->is_admin || auth()->user()->can_verify_stock)
                     <a href="{{ route('stockcheck.index') }}" class="nav-link {{ request()->routeIs('stockcheck.index') ? 'active' : '' }}" data-tooltip="Perform Stock Check">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
                         <span>Stock Check</span>
                     </a>
+                    @else
+                    <a href="#" onclick="return false;" class="nav-link" style="opacity: 0.55; cursor: not-allowed;" data-tooltip="Stock Check is disabled for your account" data-tooltip-always="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+                        <span style="color: var(--text-muted);">Stock Check</span>
+                    </a>
+                    @endif
                 </li>
             @endif
         </ul>
@@ -837,7 +852,7 @@
             if (target) {
                 const sidebar = target.closest('.sidebar');
                 if (sidebar) {
-                    if (!sidebar.classList.contains('collapsed')) {
+                    if (!sidebar.classList.contains('collapsed') && !target.hasAttribute('data-tooltip-always')) {
                         return; // Don't show tooltips when sidebar is expanded
                     }
                 }
@@ -979,26 +994,53 @@
         // This ensures that closing a tab effectively logs the user out for that tab.
         // Opening a new tab with the same URL will force a re-login.
         (function() {
-            const tabLockKey = 'tab_auth_lock_{{ auth()->id() }}';
+            const authId = '{{ auth()->id() }}';
+            const tabLockKey = 'tab_auth_lock_' + authId;
             const isJustLoggedIn = {{ session('just_logged_in') ? 'true' : 'false' }};
             const logoutUrl = "{{ route('logout') }}";
+
+            // Set up BroadcastChannel to share the lock across active tabs of the same session
+            const channel = new BroadcastChannel('tab_auth_channel_' + authId);
+            
+            channel.onmessage = (event) => {
+                if (event.data === 'request_key') {
+                    if (sessionStorage.getItem(tabLockKey) === 'active') {
+                        channel.postMessage('response_key');
+                    }
+                } else if (event.data === 'response_key') {
+                    if (!sessionStorage.getItem(tabLockKey)) {
+                        sessionStorage.setItem(tabLockKey, 'active');
+                        if (window.pendingTabLogoutTimeout) {
+                            clearTimeout(window.pendingTabLogoutTimeout);
+                            window.pendingTabLogoutTimeout = null;
+                        }
+                    }
+                }
+            };
 
             if (!sessionStorage.getItem(tabLockKey)) {
                 if (isJustLoggedIn) {
                     // Initializing the security lock for this tab
                     sessionStorage.setItem(tabLockKey, 'active');
                 } else {
-                    // Unauthorized tab entry detected (SessionStorage was wiped or never set)
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = logoutUrl;
-                    const token = document.createElement('input');
-                    token.type = 'hidden';
-                    token.name = '_token';
-                    token.value = "{{ csrf_token() }}";
-                    form.appendChild(token);
-                    document.body.appendChild(form);
-                    form.submit();
+                    // Query other active tabs for a valid session key before logging out
+                    channel.postMessage('request_key');
+
+                    window.pendingTabLogoutTimeout = setTimeout(() => {
+                        if (!sessionStorage.getItem(tabLockKey)) {
+                            // Unauthorized tab entry detected (SessionStorage was wiped and no other active tabs)
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = logoutUrl;
+                            const token = document.createElement('input');
+                            token.type = 'hidden';
+                            token.name = '_token';
+                            token.value = "{{ csrf_token() }}";
+                            form.appendChild(token);
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                    }, 150);
                 }
             }
 
@@ -1048,5 +1090,15 @@
     </script>
     @stack('modals')
     @stack('scripts')
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>

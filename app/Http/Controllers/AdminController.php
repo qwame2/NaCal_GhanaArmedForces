@@ -88,10 +88,19 @@ class AdminController extends Controller
         }
 
         $user = User::findOrFail($id);
-        $user->update([
-            'registration_status' => 'approved',
-            'is_active' => true,
-        ]);
+        
+        $user->registration_status = 'approved';
+        $user->is_active = true;
+
+        // By default toggle off Item Entry, Confirm Collection, Report Access, and Stock Check when a new store officer registration has been approved
+        if ($user->role === 'Officer') {
+            $user->can_add_inventory = false;
+            $user->can_operate_logistics = false;
+            $user->can_generate_reports = false;
+            $user->can_verify_stock = false;
+        }
+
+        $user->save();
 
         // Log the approval
         \App\Models\SystemLog::create([
@@ -378,7 +387,7 @@ class AdminController extends Controller
         $field = $request->permission;
         
         // Ensure the field is one of our allowed permission columns
-        $allowed = ['can_add_inventory', 'can_operate_logistics', 'can_generate_reports', 'can_make_requisition', 'can_approve_requisition'];
+        $allowed = ['can_add_inventory', 'can_operate_logistics', 'can_generate_reports', 'can_verify_stock', 'can_make_requisition', 'can_approve_requisition'];
         if (!in_array($field, $allowed)) {
             return response()->json(['success' => false, 'message' => 'Invalid permission field'], 400);
         }
@@ -527,6 +536,7 @@ class AdminController extends Controller
         $itemAggregates = \Illuminate\Support\Facades\Cache::remember('item_aggregates_list', 600, function() {
             return InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->selectRaw('inventory_items.description, SUM(inventory_items.qty) as total_received_qty, SUM(inventory_items.stock_balance) as total_available, SUM(inventory_items.variance) as total_variance')
                 ->groupBy('inventory_items.description')
                 ->get()
@@ -686,6 +696,7 @@ class AdminController extends Controller
         $lowStockItems = \Illuminate\Support\Facades\Cache::remember('low_stock_items_list', 600, function() {
             $allItemAggregates = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->selectRaw('inventory_items.description, inventory_batches.ledge_category, SUM(inventory_items.stock_balance) as total_available')
                 ->groupBy('inventory_items.description', 'inventory_batches.ledge_category')
                 ->get();

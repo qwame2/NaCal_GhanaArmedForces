@@ -7,11 +7,13 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use LdapRecord\Laravel\Auth\AuthenticatesWithLdap;
+use LdapRecord\Laravel\Auth\LdapAuthenticatable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements LdapAuthenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, AuthenticatesWithLdap;
 
     /**
      * The attributes that are mass assignable.
@@ -19,6 +21,8 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'guid',
+        'domain',
         'name',
         'username',
         'email',
@@ -70,6 +74,7 @@ class User extends Authenticatable
             'can_add_inventory'      => 'boolean',
             'can_operate_logistics'  => 'boolean',
             'can_generate_reports'   => 'boolean',
+            'can_verify_stock'       => 'boolean',
             'can_make_requisition'   => 'boolean',
             'can_approve_requisition'=> 'boolean',
             'must_change_password'   => 'boolean',
@@ -116,6 +121,7 @@ class User extends Authenticatable
                     'can_add_inventory' => (bool)$user->can_add_inventory,
                     'can_operate_logistics' => (bool)$user->can_operate_logistics,
                     'can_generate_reports' => (bool)$user->can_generate_reports,
+                    'can_verify_stock' => (bool)$user->can_verify_stock,
                     'can_make_requisition' => (bool)$user->can_make_requisition,
                     'can_approve_requisition' => (bool)$user->can_approve_requisition,
                 ];
@@ -137,7 +143,7 @@ class User extends Authenticatable
                 $monitored = [
                     'role', 'is_admin', 'is_active', 'registration_status',
                     'can_add_inventory', 'can_operate_logistics', 'can_generate_reports',
-                    'can_make_requisition', 'can_approve_requisition'
+                    'can_verify_stock', 'can_make_requisition', 'can_approve_requisition'
                 ];
 
                 $changed = false;
@@ -160,6 +166,7 @@ class User extends Authenticatable
                         'can_add_inventory' => (bool)$user->getOriginal('can_add_inventory'),
                         'can_operate_logistics' => (bool)$user->getOriginal('can_operate_logistics'),
                         'can_generate_reports' => (bool)$user->getOriginal('can_generate_reports'),
+                        'can_verify_stock' => (bool)$user->getOriginal('can_verify_stock'),
                         'can_make_requisition' => (bool)$user->getOriginal('can_make_requisition'),
                         'can_approve_requisition' => (bool)$user->getOriginal('can_approve_requisition'),
                     ];
@@ -168,6 +175,7 @@ class User extends Authenticatable
                         'can_add_inventory' => (bool)$user->can_add_inventory,
                         'can_operate_logistics' => (bool)$user->can_operate_logistics,
                         'can_generate_reports' => (bool)$user->can_generate_reports,
+                        'can_verify_stock' => (bool)$user->can_verify_stock,
                         'can_make_requisition' => (bool)$user->can_make_requisition,
                         'can_approve_requisition' => (bool)$user->can_approve_requisition,
                     ];

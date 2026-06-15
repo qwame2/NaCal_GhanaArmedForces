@@ -29,11 +29,16 @@ class StockCheckController extends Controller
 
     public function index(Request $request)
     {
+        if (!auth()->user()->is_admin && !auth()->user()->can_verify_stock) {
+            return redirect()->route('dashboard')->with('error', 'Security Alert: You do not have permission to access the Stock Check utility.');
+        }
+
         $ledgeMap = $this->getLedgeMap();
 
         // Fetch aggregate totals for all items to show a master verification list
         $query = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->where('inventory_batches.approval_status', '=', 'approved')
             ->selectRaw('
                 inventory_items.description, 
                 inventory_batches.ledge_category,
@@ -62,6 +67,13 @@ class StockCheckController extends Controller
 
     public function verify(Request $request)
     {
+        if (!auth()->user()->is_admin && !auth()->user()->can_verify_stock) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: Stock Check permission is required.'
+            ], 403);
+        }
+
         $validated = $request->validate([
             'description' => 'required|string',
             'physical_count' => 'required|integer|min:0',
@@ -80,6 +92,8 @@ class StockCheckController extends Controller
             // Find all inventory items with this description, ordered by the latest batch entry
             $items = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_items.description', $description)
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->select('inventory_items.*')
                 ->orderBy('inventory_batches.entry_date', 'desc')
                 ->get();
@@ -208,6 +222,13 @@ class StockCheckController extends Controller
 
     public function verifyBatch(Request $request)
     {
+        if (!auth()->user()->is_admin && !auth()->user()->can_verify_stock) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized: Stock Check permission is required.'
+            ], 403);
+        }
+
         $validated = $request->validate([
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
@@ -232,6 +253,8 @@ class StockCheckController extends Controller
 
                 $dbItems = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                     ->where('inventory_items.description', $description)
+                    ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                    ->where('inventory_batches.approval_status', '=', 'approved')
                     ->select('inventory_items.*')
                     ->orderBy('inventory_batches.entry_date', 'desc')
                     ->get();
@@ -331,6 +354,10 @@ class StockCheckController extends Controller
 
     public function batchView(Request $request)
     {
+        if (!auth()->user()->is_admin && !auth()->user()->can_verify_stock) {
+            return redirect()->route('dashboard')->with('error', 'Security Alert: You do not have permission to access the Stock Check utility.');
+        }
+
         $descriptions = $request->input('descriptions', []);
         if (empty($descriptions)) {
             return redirect()->route('stockcheck.index')->with('error', 'No items selected for batch verification.');
@@ -341,6 +368,7 @@ class StockCheckController extends Controller
         // Fetch aggregate totals for selected items
         $items = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->where('inventory_batches.approval_status', '=', 'approved')
             ->whereIn('inventory_items.description', $descriptions)
             ->selectRaw('
                 inventory_items.description, 

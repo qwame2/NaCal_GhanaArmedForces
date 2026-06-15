@@ -24,6 +24,7 @@ class StoreRequisitionController extends Controller
         // Fetch all available inventory items (grouped by description)
         $availableItems = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->where('inventory_batches.approval_status', '=', 'approved')
             ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, inventory_batches.ledge_category, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
             ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
             ->orderByRaw('TRIM(inventory_items.description)')
@@ -102,6 +103,7 @@ class StoreRequisitionController extends Controller
             // Calculate physical stock
             $stockQuery = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->whereRaw('TRIM(inventory_items.description) = ?', [$description]);
             
             if (is_null($category)) {
@@ -737,6 +739,7 @@ class StoreRequisitionController extends Controller
         $items = $req->items->map(function ($item) {
             $stock = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->where('inventory_batches.approval_status', '=', 'approved')
                 ->where(\DB::raw('TRIM(inventory_items.description)'), trim($item->description))
                 ->selectRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                 ->value('total_stock') ?? 0;
@@ -759,6 +762,7 @@ class StoreRequisitionController extends Controller
         // Query unique in-stock inventory items for alternatives
         $alternatives = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->where('inventory_batches.approval_status', '=', 'approved')
             ->selectRaw('TRIM(inventory_items.description) as description, MAX(inventory_items.unit) as unit, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, inventory_batches.ledge_category as category')
             ->groupBy(\DB::raw('TRIM(inventory_items.description)'), 'inventory_batches.ledge_category')
             ->orderByRaw('TRIM(inventory_items.description)')
@@ -954,6 +958,7 @@ class StoreRequisitionController extends Controller
                                     $origItemName = $reqItem->description;
                                     $totalStock = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                                         ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                                        ->where('inventory_batches.approval_status', '=', 'approved')
                                         ->where(\DB::raw('TRIM(inventory_items.description)'), trim($origItemName))
                                         ->selectRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                                         ->value('total_stock') ?? 0;
@@ -965,7 +970,8 @@ class StoreRequisitionController extends Controller
                                     $qtyToDeduct = $approvedQty;
                                     $stockItems = InventoryItem::where(\DB::raw('TRIM(description)'), trim($origItemName))
                                         ->whereHas('batch', function ($q) use ($reqItem) {
-                                            $q->where('supplier_status', '!=', 'System Draft');
+                                            $q->where('supplier_status', '!=', 'System Draft')
+                                                ->where('approval_status', '=', 'approved');
                                             if ($reqItem->category) {
                                                 $q->where('ledge_category', $reqItem->category);
                                             }
@@ -1000,6 +1006,7 @@ class StoreRequisitionController extends Controller
                                     $altItemName = $reqItem->alternative_description;
                                     $totalAltStock = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                                         ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                                        ->where('inventory_batches.approval_status', '=', 'approved')
                                         ->where(\DB::raw('TRIM(inventory_items.description)'), trim($altItemName))
                                         ->selectRaw('SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                                         ->value('total_stock') ?? 0;
@@ -1011,7 +1018,8 @@ class StoreRequisitionController extends Controller
                                     $qtyToDeduct = $altApprovedQty;
                                     $stockItems = InventoryItem::where(\DB::raw('TRIM(description)'), trim($altItemName))
                                         ->whereHas('batch', function ($q) use ($reqItem) {
-                                            $q->where('supplier_status', '!=', 'System Draft');
+                                            $q->where('supplier_status', '!=', 'System Draft')
+                                                ->where('approval_status', '=', 'approved');
                                             if ($reqItem->category) {
                                                 $q->where('ledge_category', $reqItem->category);
                                             }

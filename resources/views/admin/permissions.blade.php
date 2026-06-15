@@ -59,6 +59,7 @@
                 <div class="col-ctrl">Item Entry</div>
                 <div class="col-ctrl">Confirm Collection</div>
                 <div class="col-ctrl">Report Access</div>
+                <div class="col-ctrl">Stock Check</div>
                 <div class="col-stat">Clearance Status</div>
             </div>
 
@@ -130,6 +131,19 @@
                             </label>
                             <div class="toggle-text">
                                 <span class="t-main">View Reports</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Stock Verification">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_verify_stock')" {{ $user->can_verify_stock ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">Stock Checks</span>
                                 <span class="t-sub"></span>
                             </div>
                         </div>
@@ -394,7 +408,7 @@
                                 <td style="padding: 1rem 1.25rem;">
                                     @if($historyRecord->new_permissions)
                                         <div style="display: flex; flex-direction: column; gap: 3px; max-width: 220px;">
-                                            @foreach(['can_add_inventory' => 'Inventory Entry', 'can_operate_logistics' => 'Confirm Collection', 'can_generate_reports' => 'View Reports', 'can_make_requisition' => 'Make Requests', 'can_approve_requisition' => 'Approve Requests'] as $key => $label)
+                                            @foreach(['can_add_inventory' => 'Inventory Entry', 'can_operate_logistics' => 'Confirm Collection', 'can_generate_reports' => 'View Reports', 'can_verify_stock' => 'Stock Checks', 'can_make_requisition' => 'Make Requests', 'can_approve_requisition' => 'Approve Requests'] as $key => $label)
                                                 @php
                                                     $oldVal = $historyRecord->old_permissions[$key] ?? false;
                                                     $newVal = $historyRecord->new_permissions[$key] ?? false;

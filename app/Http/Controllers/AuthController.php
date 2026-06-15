@@ -227,7 +227,171 @@ class AuthController extends Controller
 
         // Persistent sessions are completely disabled for all accounts
 
-        if (Auth::attempt($credentials, false)) {
+        $ldapAuthenticated = false;
+
+        // Try AD Auth first
+        try {
+            if (config('ldap.default') && !empty(config('ldap.connections.default.hosts')) && config('ldap.connections.default.hosts')[0] !== '127.0.0.1') {
+                $ldapUser = \LdapRecord\Models\ActiveDirectory\User::where('samaccountname', '=', $request->username)->first();
+
+                if ($ldapUser) {
+                    $connection = \LdapRecord\Container::getConnection('default');
+                    if ($connection->auth()->attempt($ldapUser->getDn(), $request->password)) {
+                        // AD Authentication Success!
+                        $samAccountName = $ldapUser->getFirstAttribute('samaccountname');
+                        $cn = $ldapUser->getFirstAttribute('cn') ?? $samAccountName;
+                        $mail = $ldapUser->getFirstAttribute('mail');
+                        $department = $ldapUser->getFirstAttribute('department') ?? 'General';
+                        
+                        // Map roles and permissions based on group membership
+                        $groups = $ldapUser->groups()->get()->map(fn($g) => strtolower($g->getName()))->toArray();
+                        
+                        $role = 'Requisitioner'; // Default fallback role
+                        $isAdmin = false;
+                        $isTempAccount = false;
+                        
+                        $canMakeReq = false;
+                        $canApproveReq = false;
+                        $canAddInventory = false;
+                        $canOperateLogistics = false;
+                        $canGenerateReports = false;
+
+                        // Check groups
+                        foreach ($groups as $group) {
+                            // Dynamic department resolution from AD group suffixes
+                            $deptSuffixes = [
+                                '_intelligence' => 'Intelligence Department',
+                                '_investigations' => 'Investigations Department',
+                                '_forensic' => 'Forensic Science Department',
+                                '_asset_recovery' => 'Asset recovery & Management Department',
+                                '_strategic_intel' => 'Strategic Intelligence Oversight Department',
+                                '_cannabis' => 'Cannabis Regulations Department',
+                                '_precursor' => 'Precursor Diversion Department',
+                                '_drug_education' => 'Drug Education & Prevention Department',
+                                '_rehab' => 'Rehabilitation & Social Re-integration Department',
+                                '_harm_reduction' => 'Harm Reduction Department',
+                                '_alt_livelihood' => 'Alternative Livelihoods Development Department',
+                                '_canine' => 'Canine Operations Department',
+                                '_accounts' => 'Accounts & Budget Department',
+                                '_budget' => 'Accounts & Budget Department',
+                                '_finance' => 'Accounts & Budget Department',
+                                '_payroll' => 'Payroll & Pension Department',
+                                '_pension' => 'Payroll & Pension Department',
+                                '_research' => 'Research Policy Planning Monitoring & Evaluation Department',
+                                '_m_e' => 'Research Policy Planning Monitoring & Evaluation Department',
+                                '_professional_standards' => 'Professional Standards Department',
+                                '_standards' => 'Professional Standards Department',
+                                '_general_services' => 'General Services Department',
+                                '_ict' => 'ICT Department',
+                                '_it' => 'ICT Department',
+                                '_transport' => 'Transport Department',
+                                '_procurement' => 'Procurement Department',
+                                '_project' => 'Project Management Department',
+                                '_hr' => 'Human Resource Management Department',
+                                '_welfare' => 'Welfare Department',
+                                '_religious' => 'Religious Affairs Department',
+                                '_training' => 'Internal & External Training Department',
+                                '_public_affairs' => 'Public Affairs Department',
+                                '_international' => 'International Relations Department',
+                                '_material_dev' => 'Material Development Department',
+                                '_client_service' => 'Client Service Department',
+                                '_stores' => 'Stores',
+                                '_store' => 'Stores',
+                            ];
+
+                            foreach ($deptSuffixes as $suffix => $deptName) {
+                                if (str_contains($group, $suffix)) {
+                                    $department = $deptName;
+                                    break;
+                                }
+                            }
+
+                            if (str_contains($group, 'nacoc_admins')) {
+                                $role = 'Admin';
+                                $isAdmin = true;
+                                $canAddInventory = true;
+                                $canOperateLogistics = true;
+                                $canGenerateReports = true;
+                            } elseif (str_contains($group, 'nacoc_stores_head')) {
+                                $role = 'Main Admin';
+                                $isAdmin = true;
+                                $department = 'Stores';
+                                $canAddInventory = true;
+                                $canOperateLogistics = true;
+                                $canGenerateReports = true;
+                            } elseif (str_contains($group, 'nacoc_dept_heads')) {
+                                $role = 'Department Head';
+                                $canApproveReq = true;
+                                $canGenerateReports = true;
+                            } elseif (str_contains($group, 'nacoc_auditors')) {
+                                $role = 'Auditor';
+                                $isTempAccount = true;
+                                $department = 'Internal Audit';
+                                $canGenerateReports = true;
+                            } elseif (str_contains($group, 'nacoc_requisitioners')) {
+                                $role = 'Requisitioner';
+                                $canMakeReq = true;
+                            } elseif (str_contains($group, 'nacoc_officers')) {
+                                $role = 'Officer';
+                                $department = 'Stores';
+                                $canAddInventory = true;
+                                $canOperateLogistics = true;
+                            }
+                        }
+
+                        // Check if the user already exists locally and is deactivated
+                        if ($targetUser && !$targetUser->is_active) {
+                            \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, 3600);
+                            return back()->with('error', 'wrong password or username account has been deactivated see admin to activate your account')->withInput();
+                        }
+
+                        // Create or update local user
+                        $localUser = User::updateOrCreate(
+                            ['username' => $request->username],
+                            [
+                                'guid' => $ldapUser->getConvertedGuid(),
+                                'domain' => 'default',
+                                'name' => $cn,
+                                'email' => $mail,
+                                'department' => $department,
+                                'role' => $role,
+                                'is_admin' => $isAdmin,
+                                'is_temp_account' => $isTempAccount,
+                                'is_active' => true,
+                                'registration_status' => 'approved',
+                                'must_change_password' => false,
+                                'can_make_requisition' => $canMakeReq,
+                                'can_approve_requisition' => $canApproveReq,
+                            ]
+                        );
+
+                        Auth::login($localUser, false);
+                        $ldapAuthenticated = true;
+                    } else {
+                        // AD User exists, but incorrect password entered
+                        \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, 3600);
+                        return back()->withErrors([
+                            'username' => 'The provided credentials do not match our Active Directory records.',
+                        ])->onlyInput('username');
+                    }
+                }
+            }
+        } catch (\LdapRecord\ConnectionException $e) {
+            \Illuminate\Support\Facades\Log::warning("Active Directory Connection Failed: " . $e->getMessage() . ". Falling back to local database authentication.");
+            
+            \App\Models\SystemLog::create([
+                'user_id' => null,
+                'event_type' => 'SECURITY',
+                'action' => 'LDAP_CONNECTION_FAILURE',
+                'description' => "Active Directory Connection Failure during login check: " . $e->getMessage() . ". Falling back to local database authentication.",
+                'severity' => 'warning',
+                'ip_address' => $request->ip()
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("LDAP General Error: " . $e->getMessage());
+        }
+
+        if ($ldapAuthenticated || Auth::attempt($credentials, false)) {
             \Illuminate\Support\Facades\RateLimiter::clear($throttleKey);
             $user = auth()->user();
 
@@ -240,8 +404,8 @@ class AuthController extends Controller
             }
 
             // FORCE PASSWORD CHANGE: Check if personnel or main admin needs to update their temporary key
-            // (Skip this for temporary requisitioner accounts — they use OTP flow instead)
-            if (($user->role === 'Main Admin' || !$user->is_admin) && $user->must_change_password && !$user->is_temp_account) {
+            // (Skip this for temporary requisitioner accounts and AD synced accounts)
+            if (($user->role === 'Main Admin' || !$user->is_admin) && $user->must_change_password && !$user->is_temp_account && !$user->guid) {
                 return redirect()->route('password.change')->with('info', 'Security Synchronization required. Please update your temporary access key.');
             }
 
@@ -315,7 +479,7 @@ class AuthController extends Controller
                 'user_id' => $user->id,
                 'event_type' => 'AUTH',
                 'action' => 'LOGIN',
-                'description' => "User authenticated and entered " . ($target === 'admin' ? 'Administrative' : 'Personnel') . " terminal.",
+                'description' => "User authenticated and entered " . ($target === 'admin' ? 'Administrative' : 'Personnel') . " terminal. (Auth Source: " . ($user->guid ? 'Active Directory' : 'Local Database') . ")",
                 'severity' => 'info',
                 'ip_address' => $request->ip()
             ]);
@@ -737,7 +901,7 @@ class AuthController extends Controller
                 $department = $request->department;
             }
 
-            $user = User::create([
+            $user = new User([
                 'name' => $request->name,
                 'username' => $request->username,
                 'password' => $request->password,
@@ -753,6 +917,15 @@ class AuthController extends Controller
                 'registration_status' => 'pending',
                 'must_change_password' => false,
             ]);
+
+            if ($role === 'Officer') {
+                $user->can_add_inventory = false;
+                $user->can_operate_logistics = false;
+                $user->can_generate_reports = false;
+                $user->can_verify_stock = false;
+            }
+
+            $user->save();
 
             // Log the self-registration
             \App\Models\SystemLog::create([

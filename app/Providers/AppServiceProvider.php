@@ -262,6 +262,7 @@ class AppServiceProvider extends ServiceProvider
                 // Fetch all unique items (excluding acknowledged)
                 $allItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                     ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                    ->where('inventory_batches.approval_status', '=', 'approved')
                     ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
                     ->whereNotIn(\DB::raw('TRIM(inventory_items.description)'), array_map('trim', $acknowledged))
                     ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
@@ -284,6 +285,7 @@ class AppServiceProvider extends ServiceProvider
                 // Fetch expired items details
                 $expiredItems = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                     ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                    ->where('inventory_batches.approval_status', '=', 'approved')
                     ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock, SUM(CAST(REPLACE(inventory_items.qty, ",", "") AS DECIMAL(15,2))) as total_qty')
                     ->whereNotIn(\DB::raw('TRIM(inventory_items.description)'), array_map('trim', $acknowledged))
                     ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
