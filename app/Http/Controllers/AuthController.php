@@ -134,11 +134,17 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        $latestRequest = \App\Models\PasswordResetRequest::where('username', $request->username)
+        $usernameInput = $request->username;
+        $samAccountName = $usernameInput;
+        if (str_contains($usernameInput, '@')) {
+            $samAccountName = explode('@', $usernameInput)[0];
+        }
+
+        $latestRequest = \App\Models\PasswordResetRequest::where('username', $samAccountName)
             ->orderBy('created_at', 'desc')
             ->first();
         if ($latestRequest && $latestRequest->status === 'rejected') {
-            session(['pending_password_reset_username' => $request->username]);
+            session(['pending_password_reset_username' => $samAccountName]);
             return back()->with('error', "Alert: Your password reset request has been rejected by the Head of Stores. Please contact Head of Stores for resolution.")->withInput();
         }
 
@@ -147,9 +153,9 @@ class AuthController extends Controller
             : 5;
         $maxAttempts = max(1, (int) $maxAttemptsRaw);
 
-        $throttleKey = strtolower($request->input('username')) . '|' . $request->ip();
+        $throttleKey = strtolower($samAccountName) . '|' . $request->ip();
 
-        $targetUser = User::where('username', $request->username)->first();
+        $targetUser = User::where('username', $samAccountName)->first();
 
         // SECURITY ENFORCEMENT: Block pending self-registrations
         if ($targetUser && $targetUser->registration_status === 'pending') {
@@ -232,14 +238,16 @@ class AuthController extends Controller
         // Try AD Auth first
         try {
             if (config('ldap.default') && !empty(config('ldap.connections.default.hosts')) && config('ldap.connections.default.hosts')[0] !== '127.0.0.1') {
-                $ldapUser = \LdapRecord\Models\ActiveDirectory\User::where('samaccountname', '=', $request->username)->first();
+                $ldapUser = \LdapRecord\Models\ActiveDirectory\User::where('samaccountname', '=', $samAccountName)
+                    ->orWhere('userprincipalname', '=', $usernameInput)
+                    ->first();
 
                 if ($ldapUser) {
                     $connection = \LdapRecord\Container::getConnection('default');
                     if ($connection->auth()->attempt($ldapUser->getDn(), $request->password)) {
                         // AD Authentication Success!
-                        $samAccountName = $ldapUser->getFirstAttribute('samaccountname');
-                        $cn = $ldapUser->getFirstAttribute('cn') ?? $samAccountName;
+                        $adSamName = $ldapUser->getFirstAttribute('samaccountname') ?? $samAccountName;
+                        $cn = $ldapUser->getFirstAttribute('cn') ?? $adSamName;
                         $mail = $ldapUser->getFirstAttribute('mail');
                         $department = $ldapUser->getFirstAttribute('department') ?? 'General';
                         
@@ -345,25 +353,32 @@ class AuthController extends Controller
                             return back()->with('error', 'wrong password or username account has been deactivated see admin to activate your account')->withInput();
                         }
 
-                        // Create or update local user
-                        $localUser = User::updateOrCreate(
-                            ['username' => $request->username],
-                            [
-                                'guid' => $ldapUser->getConvertedGuid(),
-                                'domain' => 'default',
-                                'name' => $cn,
-                                'email' => $mail,
-                                'department' => $department,
-                                'role' => $role,
-                                'is_admin' => $isAdmin,
-                                'is_temp_account' => $isTempAccount,
-                                'is_active' => true,
-                                'registration_status' => 'approved',
-                                'must_change_password' => false,
-                                'can_make_requisition' => $canMakeReq,
-                                'can_approve_requisition' => $canApproveReq,
-                            ]
-                        );
+                        // Create or update local user safely with standard attributes and password placeholder on creation
+                        $localUser = User::where('username', $samAccountName)->first();
+                        if (!$localUser) {
+                            $localUser = new User();
+                            $localUser->username = $samAccountName;
+                            $localUser->password = \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(32));
+                            $localUser->can_add_inventory = false;
+                            $localUser->can_operate_logistics = false;
+                            $localUser->can_generate_reports = false;
+                            $localUser->can_verify_stock = false;
+                        }
+
+                        $localUser->guid = $ldapUser->getConvertedGuid();
+                        $localUser->domain = 'default';
+                        $localUser->name = $cn;
+                        $localUser->email = $mail;
+                        $localUser->department = $department;
+                        $localUser->role = $role;
+                        $localUser->is_admin = $isAdmin;
+                        $localUser->is_temp_account = $isTempAccount;
+                        $localUser->is_active = true;
+                        $localUser->registration_status = 'approved';
+                        $localUser->must_change_password = false;
+                        $localUser->can_make_requisition = $canMakeReq;
+                        $localUser->can_approve_requisition = $canApproveReq;
+                        $localUser->save();
 
                         Auth::login($localUser, false);
                         $ldapAuthenticated = true;
@@ -391,7 +406,12 @@ class AuthController extends Controller
             \Illuminate\Support\Facades\Log::error("LDAP General Error: " . $e->getMessage());
         }
 
-        if ($ldapAuthenticated || Auth::attempt($credentials, false)) {
+        $localCredentials = [
+            'username' => $samAccountName,
+            'password' => $request->password,
+        ];
+
+        if ($ldapAuthenticated || Auth::attempt($localCredentials, false)) {
             \Illuminate\Support\Facades\RateLimiter::clear($throttleKey);
             $user = auth()->user();
 
