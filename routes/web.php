@@ -1812,3 +1812,14 @@ Route::get('/test-ad', function () {
         return $e->getMessage();
     }
 });
+
+Route::get('/ad-login', function () {
+    return '
+        <form method="POST" action="/ad-login">
+            '.csrf_field().'
+            Username: <input name="username"><br><br>
+            Password: <input type="password" name="password"><br><br>
+            <button type="submit">Login</button>
+        </form>
+    ';
+});
