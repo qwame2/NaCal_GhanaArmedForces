@@ -11,6 +11,7 @@ use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ArchiveController;
+use LdapRecord\Container;
 
 // Self-healing auto-migration schema update (locked via file existence to prevent concurrent query and disk write overhead on every request/cache clear)
 if (!file_exists(storage_path('framework/routes_boot_self_healed_v9.lock'))) {
@@ -1799,4 +1800,15 @@ Route::get('/system/migrate', function () {
 
 Route::get('/temp-debug-users', function() {
     return \App\Models\User::select('id', 'name', 'username', 'role', 'department', 'is_admin')->get();
+});
+
+
+
+Route::get('/test-ad', function () {
+    try {
+        Container::getDefaultConnection()->connect();
+        return 'Connected to Active Directory';
+    } catch (\Exception $e) {
+        return $e->getMessage();
+    }
 });
