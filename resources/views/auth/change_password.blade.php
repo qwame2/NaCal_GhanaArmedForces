@@ -480,6 +480,18 @@
 
                 <!-- Username and Full Name -->
                 <div class="sync-grid">
+                    @if($user->guid)
+                    <div class="field-block">
+                        <div class="field-label">
+                            <label>Username</label>
+                            <span class="req-badge" style="background: #e0f2fe; color: #0284c7;">LOCKED (AD)</span>
+                        </div>
+                        <div class="field-input" style="background: #f8fafc; border-color: #e2e8f0; opacity: 0.85;">
+                            <div class="field-icon"><i data-lucide="lock" style="color: #94a3b8; width: 14px;"></i></div>
+                            <input type="text" name="username" value="{{ $user->username }}" style="color: #64748b; cursor: not-allowed;" readonly tabindex="-1">
+                        </div>
+                    </div>
+                    @else
                     <div class="field-block">
                         <div class="field-label">
                             <label>Username</label>
@@ -490,6 +502,7 @@
                             <input type="text" name="username" value="{{ old('username', $user->username) }}" placeholder="e.g. j_doe" required autocomplete="username">
                         </div>
                     </div>
+                    @endif
 
                     @if($hasNameEntered)
                     <div class="field-block">

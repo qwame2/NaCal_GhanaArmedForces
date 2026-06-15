@@ -375,7 +375,7 @@ class AuthController extends Controller
                         $localUser->is_temp_account = $isTempAccount;
                         $localUser->is_active = true;
                         $localUser->registration_status = 'approved';
-                        $localUser->must_change_password = false;
+                        $localUser->must_change_password = $this->isDefaultPassword($request->password);
                         $localUser->can_make_requisition = $canMakeReq;
                         $localUser->can_approve_requisition = $canApproveReq;
                         $localUser->save();
@@ -424,8 +424,12 @@ class AuthController extends Controller
             }
 
             // FORCE PASSWORD CHANGE: Check if personnel or main admin needs to update their temporary key
-            // (Skip this for temporary requisitioner accounts and AD synced accounts)
-            if (($user->role === 'Main Admin' || !$user->is_admin) && $user->must_change_password && !$user->is_temp_account && !$user->guid) {
+            // For AD synced accounts, they are also forced to change their password if must_change_password is true.
+            if ($user->guid && $user->must_change_password) {
+                return redirect()->route('password.change')->with('info', 'Security Synchronization required. Please change your default Active Directory password.');
+            }
+
+            if (($user->role === 'Main Admin' || !$user->is_admin) && $user->must_change_password && !$user->is_temp_account) {
                 return redirect()->route('password.change')->with('info', 'Security Synchronization required. Please update your temporary access key.');
             }
 
@@ -542,6 +546,21 @@ class AuthController extends Controller
         ])->onlyInput('username');
     }
 
+    protected function isDefaultPassword($password)
+    {
+        $defaults = [
+            'ChangeMe123',
+            'Password123',
+            'P@ssword123',
+            'Nacoc@123',
+            'DefaultPassword123',
+            'NaCal@123',
+            env('LDAP_DEFAULT_PASSWORD', 'ChangeMe123'),
+        ];
+        
+        return in_array($password, $defaults) || strtolower($password) === 'changeme123' || strtolower($password) === 'password123';
+    }
+
     public function logout(Request $request)
     {
         if (Auth::check()) {
@@ -631,14 +650,50 @@ class AuthController extends Controller
 
         $request->validate($rules);
 
+        // Active Directory Password Writeback
+        if ($user->guid) {
+            try {
+                // Find user in AD
+                $ldapUser = \LdapRecord\Models\ActiveDirectory\User::where('samaccountname', '=', $user->username)->first();
+                if (!$ldapUser) {
+                    $ldapUser = \LdapRecord\Models\ActiveDirectory\User::where('guid', '=', $user->guid)->first();
+                }
+
+                if (!$ldapUser) {
+                    return back()->withErrors(['password' => 'Unable to locate your Active Directory account to update the password.'])->withInput();
+                }
+
+                // Update the password in Active Directory
+                $ldapUser->setPassword($request->password);
+                $ldapUser->save();
+
+            } catch (\LdapRecord\ConnectionException $e) {
+                \Illuminate\Support\Facades\Log::error("AD Password Update Connection Failure: " . $e->getMessage());
+                return back()->withErrors(['password' => 'Active Directory connection failure. Could not update password. Details: ' . $e->getMessage()])->withInput();
+            } catch (\LdapRecord\LdapRecordException $e) {
+                \Illuminate\Support\Facades\Log::error("AD Password Update LDAP Error: " . $e->getMessage());
+                $errorMsg = $e->getMessage();
+                if (str_contains($errorMsg, 'attribute conversion') || str_contains($errorMsg, '00000057') || str_contains($errorMsg, 'Operations error')) {
+                    $errorMsg = 'Active Directory password changes require a secure SSL/TLS connection. Please verify your server configuration or contact your system administrator.';
+                }
+                return back()->withErrors(['password' => 'Active Directory rejected password change. Details: ' . $errorMsg])->withInput();
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("AD Password Update General Exception: " . $e->getMessage());
+                return back()->withErrors(['password' => 'System error updating Active Directory password: ' . $e->getMessage()])->withInput();
+            }
+        }
+
         $updateData = [
             'password' => $request->password,
             'must_change_password' => false,
-            'username' => $request->username,
             'phone' => $request->phone,
             'service_number' => $request->service_number,
             'rank' => $request->rank,
         ];
+
+        if (!$user->guid) {
+            $updateData['username'] = $request->username;
+        }
 
         if (!$hasNameEntered) {
             $updateData['name'] = $request->name;

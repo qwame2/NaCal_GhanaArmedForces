@@ -1803,12 +1803,12 @@ Route::get('/temp-debug-users', function() {
 });
 
 
-
+// // TESTING LDAP CONNECTION ROUTES
 Route::get('/test-ad', function () {
     try {
-        Container::getDefaultConnection()->connect();
-        return 'Connected to Active Directory';
-    } catch (\Exception $e) {
+            Container::getDefaultConnection()->connect();
+            return 'Connected to Active Directory';
+        } catch (\Exception $e) {
         return $e->getMessage();
     }
 });
