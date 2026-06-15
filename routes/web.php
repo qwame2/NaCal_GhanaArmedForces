@@ -1823,3 +1823,18 @@ Route::get('/ad-login', function () {
         </form>
     ';
 });
+
+Route::get('/test-user', function () {
+    $user = \LdapRecord\Models\ActiveDirectory\User::where(
+        'samaccountname',
+        '=',
+        'adjoa.andoh'
+    )->first();
+
+    dd(
+        $user?->getDn(),
+        $user?->getFirstAttribute('samaccountname'),
+        $user?->getFirstAttribute('mail'),
+        $user?->groups()->get()->map->getName()
+    );
+});
