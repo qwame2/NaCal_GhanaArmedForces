@@ -1838,3 +1838,20 @@ Route::get('/test-user', function () {
         $user?->groups()->get()->map->getName()
     );
 });
+
+Route::get('/test-auth', function () {
+    $user = \LdapRecord\Models\ActiveDirectory\User::where(
+        'samaccountname',
+        '=',
+        'adjoa.andoh'
+    )->first();
+
+    $connection = \LdapRecord\Container::getConnection('default');
+
+    $authenticated = $connection->auth()->attempt(
+        $user->getDn(),
+        'Qwerty12345@' // replace with the actual password
+    );
+
+    dd($authenticated);
+});
