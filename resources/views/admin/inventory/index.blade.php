@@ -685,17 +685,6 @@
                                     <div style="max-width: 500px; text-align: center;">
                                         <h4 style="font-size: 1.75rem; font-weight: 950; color: var(--text-main); margin-bottom: 0.75rem; letter-spacing: -0.04em;">No Records Discovered</h4>
                                         <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; font-weight: 500;">Your inventory ledger is currently empty or no items match your current search filters. Try broadening your criteria or record a new batch.</p>
-
-                                        <div style="margin-top: 2.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                                            <a href="{{ route('admin.inventory') }}" class="glass-card" style="padding: 0.85rem 1.75rem; border-radius: 14px; text-decoration: none; font-size: 0.95rem; color: var(--text-main); font-weight: 800; transition: all 0.3s; border: 1.5px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; background: var(--bg-card);">
-                                                <i data-lucide="refresh-ccw" style="width: 18px;"></i>
-                                                Reset Filters
-                                            </a>
-                                            <button onclick="window.location.href='/'" class="btn-primary" style="padding: 0.85rem 1.75rem; border-radius: 14px; border: none; font-size: 0.95rem; background: var(--primary-gradient); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 12px 24px -6px rgba(99, 102, 241, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                                                <i data-lucide="plus-circle" style="width: 20px;"></i>
-                                                New Inventory Entry
-                                            </button>
-                                        </div>
                                     </div>
                                 </div>
                             </td>
