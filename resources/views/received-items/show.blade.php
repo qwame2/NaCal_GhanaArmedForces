@@ -109,11 +109,11 @@
                     <span style="color: var(--text-main); font-weight: 700;">{{ $provider }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Delivery Person</span>
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Contact Person</span>
                     <span style="color: var(--text-main); font-weight: 700;">{{ $deliveryPerson ?: 'N/A' }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Delivery Person Phone</span>
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Contact Person Number</span>
                     <span style="color: var(--text-main); font-weight: 700;">{{ $deliveryPhone ?: 'N/A' }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">

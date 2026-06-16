@@ -67,14 +67,14 @@
                                          <div>
                                              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
                                                  <i data-lucide="user" style="width: 14px; color: var(--primary);"></i>
-                                                 Delivery Person Name <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                                 Contact Person Name <span style="color: #ef4444; margin-left: 2px;">*</span>
                                              </label>
-                                             <input type="text" id="deliveryPersonInput" class="form-control" placeholder="Enter delivery person's name" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                             <input type="text" id="deliveryPersonInput" class="form-control" placeholder="Enter contact person's name" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
                                          </div>
                                          <div>
                                              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
                                                  <i data-lucide="phone" style="width: 14px; color: var(--primary);"></i>
-                                                 Delivery Person Phone <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                                 Contact Person Number <span style="color: #ef4444; margin-left: 2px;">*</span>
                                              </label>
                                              <input type="text" id="deliveryPersonPhoneInput" maxlength="10" class="form-control" placeholder="Enter phone number" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
                                          </div>
@@ -383,13 +383,13 @@ jQuery(document).ready(function($) {
         // Check Delivery Person if visible
         if ($('#deliveryPersonGroup').is(':visible')) {
             if (!$('#deliveryPersonInput').val().trim()) {
-                missingFields.push("Delivery Person Name");
+                missingFields.push("Contact Person Name");
             }
             const phoneVal = ($('#deliveryPersonPhoneInput').val() || '').trim();
             if (!phoneVal) {
-                missingFields.push("Delivery Person Phone");
+                missingFields.push("Contact Person Number");
             } else if (phoneVal.toUpperCase() !== 'N/A' && !/^\d{10}$/.test(phoneVal)) {
-                missingFields.push("Delivery Person Phone (must be a 10-digit number or N/A)");
+                missingFields.push("Contact Person Number (must be a 10-digit number or N/A)");
             }
         }
 

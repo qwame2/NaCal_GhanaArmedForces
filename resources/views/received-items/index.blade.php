@@ -722,11 +722,11 @@
                         <span id="viewEntityDisplay" style="color: #0f172a; font-weight: 900; font-size: 1.15rem;">-</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.05rem; font-weight: 600; border-bottom: 1px dashed #e2e8f0; padding-bottom: 12px;">
-                        <span style="color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Delivery Person</span>
+                        <span style="color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Contact Person</span>
                         <span id="viewDeliveryPerson" style="color: #0f172a; font-weight: 900; font-size: 1.15rem;">-</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.05rem; font-weight: 600; padding-bottom: 4px;">
-                        <span style="color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Delivery Phone</span>
+                        <span style="color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Contact Person Number</span>
                         <span id="viewDeliveryPhone" style="color: #0f172a; font-weight: 900; font-size: 1.15rem;">-</span>
                     </div>
                 </div>

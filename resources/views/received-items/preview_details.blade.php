@@ -49,11 +49,11 @@
                         <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $provider ?: 'N/A' }}</span>
                     </div>
                     <div>
-                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Delivery Person</span>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Contact Person</span>
                         <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $deliveryPerson ?: 'N/A' }}</span>
                     </div>
                     <div>
-                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Delivery Person Phone</span>
+                        <span style="display: block; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Contact Person Number</span>
                         <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $deliveryPhone ?: 'N/A' }}</span>
                     </div>
                     <div>

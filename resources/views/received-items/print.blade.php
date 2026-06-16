@@ -373,11 +373,11 @@
                 <span class="info-value" style="font-size: 15px;">{{ $entityDisplay }}</span>
             </div>
             <div class="info-line">
-                <span class="info-label">Delivery Person</span>
+                <span class="info-label">Contact Person</span>
                 <span class="info-value">{{ $deliveryPerson ?: 'N/A' }}</span>
             </div>
             <div class="info-line">
-                <span class="info-label">Delivery Person Phone</span>
+                <span class="info-label">Contact Person Number</span>
                 <span class="info-value">{{ $deliveryPhone ?: 'N/A' }}</span>
             </div>
             <div class="info-line">

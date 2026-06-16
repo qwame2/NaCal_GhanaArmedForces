@@ -2636,11 +2636,11 @@
                                                 </div>
                                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 1.5rem;">
                                                     <div>
-                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person</div>
+                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Contact Person</div>
                                                         <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_person || s.delivery_person || 'N/A'}</div>
                                                     </div>
                                                     <div>
-                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Phone</div>
+                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Contact Person Number</div>
                                                         <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_phone || s.delivery_phone || 'N/A'}</div>
                                                     </div>
                                                     <div>
@@ -2756,14 +2756,14 @@
                                 <div style="display: flex; gap: 10px; align-items: flex-start;">
                                     <i data-lucide="user" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
                                     <div>
-                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Delivery Person</div>
+                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Contact Person</div>
                                         <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.delivery_person || 'N/A'}</div>
                                     </div>
                                 </div>
                                 <div style="display: flex; gap: 10px; align-items: flex-start;">
                                     <i data-lucide="phone" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
                                     <div>
-                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Delivery Phone</div>
+                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Contact Person Number</div>
                                         <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.delivery_phone || 'N/A'}</div>
                                     </div>
                                 </div>

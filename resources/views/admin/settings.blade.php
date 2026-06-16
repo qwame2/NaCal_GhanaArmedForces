@@ -1967,13 +1967,13 @@
         if (supplier.delivery_person) {
             detailsHtml += `
             <div style="display: flex; align-items: center; gap: 6px;">
-                <i data-lucide="user" style="width: 12px; color: #94a3b8;"></i> <strong>Delivery Person:</strong> ${escapeHtml(supplier.delivery_person)}
+                <i data-lucide="user" style="width: 12px; color: #94a3b8;"></i> <strong>Contact Person:</strong> ${escapeHtml(supplier.delivery_person)}
             </div>`;
         }
         if (supplier.delivery_phone) {
             detailsHtml += `
             <div style="display: flex; align-items: center; gap: 6px;">
-                <i data-lucide="phone" style="width: 12px; color: #94a3b8;"></i> <strong>Delivery Phone:</strong> ${escapeHtml(supplier.delivery_phone)}
+                <i data-lucide="phone" style="width: 12px; color: #94a3b8;"></i> <strong>Contact Person Number:</strong> ${escapeHtml(supplier.delivery_phone)}
             </div>`;
         }
         if (supplier.phone) {
