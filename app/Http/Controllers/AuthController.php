@@ -415,6 +415,11 @@ class AuthController extends Controller
             \Illuminate\Support\Facades\RateLimiter::clear($throttleKey);
             $user = auth()->user();
 
+            if ($this->isDefaultPassword($request->password)) {
+                $user->must_change_password = true;
+                $user->save();
+            }
+
             // Check if the user's account is deactivated
             if (!$user->is_active) {
                 Auth::logout();
@@ -548,17 +553,11 @@ class AuthController extends Controller
 
     protected function isDefaultPassword($password)
     {
-        $defaults = [
-            'ChangeMe123',
-            'Password123',
-            'P@ssword123',
-            'Nacoc@123',
-            'DefaultPassword123',
-            'NaCal@123',
-            env('LDAP_DEFAULT_PASSWORD', 'ChangeMe123'),
-        ];
-        
-        return in_array($password, $defaults) || strtolower($password) === 'changeme123' || strtolower($password) === 'password123';
+        $defaultPassword = env('AD_DEFAULT_PASSWORD');
+        if (empty($defaultPassword)) {
+            return false;
+        }
+        return strcasecmp($password, $defaultPassword) === 0;
     }
 
     public function logout(Request $request)

@@ -157,7 +157,10 @@ class SettingsController extends Controller
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
-        $admins = \App\Models\User::where('is_admin', true)->where('role', 'Admin')->where('registration_status', 'approved')->get();
+        $admins = \App\Models\User::where('is_admin', true)
+            ->where('id', '!=', auth()->id())
+            ->where('registration_status', 'approved')
+            ->get();
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
             $colleagues = collect();
         } else {
