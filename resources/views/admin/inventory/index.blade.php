@@ -47,7 +47,7 @@
     @endif
     <div class="page-header" style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
-            <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-heading); margin: 0;">Inventory <span style="color: var(--primary);">Overview</span></h2>
+            <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-heading); margin: 0;">Inventory <span style="color: var(--primary);">Oversight</span></h2>
             <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500; margin-top: 0.5rem;">See all items that were received, issued, or returned.</p>
         </div>
         <div style="display: flex; gap: 1rem; align-items: center;">
@@ -530,7 +530,6 @@
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Bal.</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Variance</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Level</th>
-                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">History</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -641,14 +640,17 @@
                                 @endif
                             </td>
                             <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">
-                                {{ $item->qty ?? '0' }}
+                                {{ number_format((float)str_replace(',', '', $item->qty ?? 0), 0) }}
                             </td>
                             <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">
-                                {{ $item->stock_balance }}
+                                {{ number_format((float)str_replace(',', '', $item->stock_balance ?? 0), 0) }}
                             </td>
                             <td data-label="Variance" style="padding: 1.25rem 1.5rem;">
-                                <span style="font-weight: 800; color: {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '#10b981' : (is_numeric($item->variance) && (float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">
-                                    {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '+' : '' }}{{ $item->variance }}
+                                @php
+                                    $varVal = (float)str_replace(',', '', $item->variance ?? 0);
+                                @endphp
+                                <span style="font-weight: 800; color: {{ $varVal > 0 ? '#10b981' : ($varVal < 0 ? '#ef4444' : '#94a3b8') }};">
+                                    {{ $varVal > 0 ? '+' : '' }}{{ number_format($varVal, 0) }}
                                 </span>
                             </td>
                             <td data-label="Stock Level" style="padding: 1.25rem 1.5rem;">
@@ -667,12 +669,6 @@
                                         {{ number_format($totalStock) }} <span style="font-size: 0.65rem; color: var(--text-muted);">Available</span>
                                     </div>
                                 </div>
-                            </td>
-                            <td data-label="History" style="padding: 1.25rem 1.5rem;">
-                                <button class="glass-btn-sm" onclick="openItemHistory(event, {{ $item->id }}, '{{ addslashes($item->description) }}')" style="padding: 0.45rem 1rem; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; border: 1.5px solid #edf2f7; background: #ffffff; outline: none; transition: 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#edf2f7'">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
-                                    Logs
-                                </button>
                             </td>
                         </tr>
                         @empty
@@ -753,7 +749,7 @@
                             <td><div style="font-weight: 600; color: #475569;">{{ $item->authority }}</div></td>
                             <td><span class="type-tag {{ strtolower($item->issuance_type) }}">{{ $item->issuance_type }}</span></td>
                             <td>
-                                <div style="font-size: 1rem; font-weight: 900; color: var(--primary);">{{ $item->quantity }}</div>
+                                <div style="font-size: 1rem; font-weight: 900; color: var(--primary);">{{ number_format((float)str_replace(',', '', $item->quantity ?? 0), 0) }}</div>
                                 <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 700;">{{ $item->unit ?: 'Package Types' }}</div>
                             </td>
                         </tr>
@@ -799,7 +795,7 @@
                                 <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">{{ $return->issuedItem->issuance->authority ?? 'N/A' }}</div>
                             </td>
                             <td>
-                                <div style="font-size: 1.1rem; font-weight: 900; color: var(--primary);">{{ $return->returned_qty }}</div>
+                                <div style="font-size: 1.1rem; font-weight: 900; color: var(--primary);">{{ number_format((float)str_replace(',', '', $return->returned_qty ?? 0), 0) }}</div>
                                 <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Package Types Returned</div>
                             </td>
                             <td style="max-width: 300px;">

@@ -46,6 +46,8 @@ class AuthController extends Controller
                 return redirect()->route('main-admin.requisitions');
             } elseif ($user->role === 'Auditor') {
                 return redirect()->route('auditor.dashboard');
+            } elseif ($user->role === 'Director General') {
+                return redirect()->route('dg.dashboard');
             } elseif ($user->is_admin) {
                 return redirect()->route('admin.index');
             } else {
@@ -476,6 +478,8 @@ class AuthController extends Controller
                     return redirect()->route('main-admin.requisitions');
                 } elseif ($user->role === 'Auditor') {
                     return redirect()->route('auditor.dashboard');
+                } elseif ($user->role === 'Director General') {
+                    return redirect()->route('dg.dashboard');
                 } elseif ($user->is_admin) {
                     return redirect()->route('admin.index');
                 } else {
@@ -496,6 +500,9 @@ class AuthController extends Controller
                 }
                 if ($user->role === 'Auditor') {
                     return redirect()->route('auditor.dashboard');
+                }
+                if ($user->role === 'Director General') {
+                    return redirect()->route('dg.dashboard');
                 }
                 if ($user->role === 'Requisitioner') {
                     return redirect()->route('requisitions.index');
@@ -518,6 +525,8 @@ class AuthController extends Controller
                 return redirect()->route('main-admin.requisitions');
             } elseif ($user->role === 'Auditor') {
                 return redirect()->route('auditor.dashboard');
+            } elseif ($user->role === 'Director General') {
+                return redirect()->route('dg.dashboard');
             } elseif ($user->role === 'Requisitioner') {
                 return redirect()->route('requisitions.index');
             } elseif ($user->is_admin) {
@@ -906,7 +915,7 @@ class AuthController extends Controller
         }
 
         $request->validate([
-            'role' => 'required|string|in:Officer,Main Admin,Department Head,Auditor,Requisitioner',
+            'role' => 'required|string|in:Officer,Main Admin,Department Head,Auditor,Requisitioner,Director General',
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username',
             'phone' => 'required|string|max:20',
@@ -970,6 +979,8 @@ class AuthController extends Controller
             } elseif ($role === 'Requisitioner') {
                 $department = $request->department;
                 $sponsoredBy = $request->sponsored_by;
+            } elseif ($role === 'Director General') {
+                $department = 'Executive Directorate';
             } else {
                 // Department Head
                 $department = $request->department;

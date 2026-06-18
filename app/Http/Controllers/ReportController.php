@@ -68,6 +68,12 @@ class ReportController extends Controller
             $selectedItems = array_filter(array_map('trim', explode(',', $selectedItems)));
         }
 
+        $issuedItemDescriptions = IssuedItem::whereNotNull('description')
+            ->where('description', '!=', '')
+            ->distinct()
+            ->pluck('description')
+            ->toArray();
+
         // Base Queries for Received Metrics
         $receivedQuery = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
@@ -122,6 +128,8 @@ class ReportController extends Controller
                 'inventory_items.*',
                 'inventory_batches.entry_date',
                 'inventory_batches.supplier_name',
+                'inventory_batches.donor_name',
+                'inventory_batches.acquisition_type',
                 'inventory_batches.ledge_category',
                 'inventory_batches.id as batch_id_ref',
                 \DB::raw("'Received' as transaction_type")
@@ -201,7 +209,8 @@ class ReportController extends Controller
             'groupedItems',
             'selectedItems',
             'receivedDistribution',
-            'issuedDistribution'
+            'issuedDistribution',
+            'issuedItemDescriptions'
         ));
     }
 
@@ -296,6 +305,8 @@ class ReportController extends Controller
                 'inventory_items.*',
                 'inventory_batches.entry_date',
                 'inventory_batches.supplier_name',
+                'inventory_batches.donor_name',
+                'inventory_batches.acquisition_type',
                 'inventory_batches.ledge_category',
                 \DB::raw("'Received' as transaction_type")
             )
@@ -354,37 +365,121 @@ class ReportController extends Controller
             $i->received_date = $receivedDate;
         }
 
+        // Fetch current stock balances per item to calculate historical values backwards
+        $currentBalances = [];
+        $balancesQuery = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->where('inventory_batches.approval_status', '=', 'approved')
+            ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+            ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
+            ->get();
+        foreach ($balancesQuery as $b) {
+            $currentBalances[trim($b->description)] = (float)$b->total_stock;
+        }
+
+        // Fetch all unique item descriptions to construct the supplier/donor mapping
+        $uniqueDescs = collect()
+            ->concat($recentReceivals->pluck('description'))
+            ->concat($recentIssues->pluck('description'))
+            ->unique()
+            ->filter()
+            ->toArray();
+
+        $itemSources = [];
+        if (!empty($uniqueDescs)) {
+            $rawSources = \DB::table('inventory_items')
+                ->join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->whereIn('inventory_items.description', $uniqueDescs)
+                ->select('inventory_items.description', 'inventory_batches.supplier_name', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type')
+                ->get();
+            foreach ($rawSources as $rs) {
+                $desc = trim($rs->description);
+                $src = $rs->acquisition_type === 'Donor' ? ($rs->donor_name ?: $rs->supplier_name) : $rs->supplier_name;
+                $src = preg_replace('/\s\[.*\]$/', '', $src ?: '');
+                if ($src && strtolower($src) !== 'system') {
+                    if (!isset($itemSources[$desc])) {
+                        $itemSources[$desc] = [];
+                    }
+                    if (!in_array($src, $itemSources[$desc])) {
+                        $itemSources[$desc][] = $src;
+                    }
+                }
+            }
+            $itemSources = array_map(function($srcs) {
+                return implode(', ', $srcs);
+            }, $itemSources);
+        }
+
         // Build allTransactions (same mapping as the Blade @php block)
-        $allTransactions = $recentReceivals->map(function ($r) use ($ledgeMap) {
+        $rawTransactions = $recentReceivals->map(function ($r) use ($ledgeMap) {
+            $source = $r->acquisition_type === 'Donor' ? ($r->donor_name ?: $r->supplier_name) : $r->supplier_name;
             return [
                 'date_received' => $r->entry_date,
                 'date_issued'   => null,
+                'date_sort'     => $r->entry_date,
                 'type'          => 'Received',
                 'category'      => $ledgeMap[$r->ledge_category] ?? ('Category ' . $r->ledge_category),
                 'description'   => $r->description,
-                'ref'           => preg_replace('/\s\[.*\]$/', '', $r->supplier_name ?: 'System'),
+                'ref'           => preg_replace('/\s\[.*\]$/', '', $source ?: 'System'),
                 'quantity'      => $r->qty ?? 0,
-                'stock_bal'     => $r->stock_balance ?? '—',
+                'stock_bal'     => $r->stock_balance ?? 0,
+                'previous_stock'=> '—',
                 'variance'      => $r->variance ?? '—',
                 'status'        => '—',
                 'department'    => '—',
+                'sources'       => null,
             ];
-        })->merge($recentIssues->map(function ($i) use ($ledgeMap) {
+        })->merge($recentIssues->map(function ($i) use ($ledgeMap, $itemSources) {
             return [
                 'date_received' => $i->received_date,
                 'date_issued'   => $i->entry_date,
+                'date_sort'     => $i->entry_date,
                 'type'          => 'Issued',
                 'category'      => $ledgeMap[$i->ledge_category] ?? ('Category ' . $i->ledge_category),
                 'description'   => $i->description,
                 'ref'           => $i->beneficiary ?? '—',
                 'quantity'      => $i->quantity ?? 0,
-                'stock_bal'     => '—',
+                'stock_bal'     => 0,
+                'previous_stock'=> '—',
                 'variance'      => '—',
                 'status'        => $i->issuance_type ?? 'Permanent',
                 'department'    => $i->department ?? '—',
+                'sources'       => $itemSources[trim($i->description)] ?? null,
             ];
-        }))->sortByDesc(function ($item) {
-            return $item['date_received'] ?: $item['date_issued'];
+        }));
+
+        $transactionsByItem = $rawTransactions->groupBy(function($t) {
+            return trim($t['description']);
+        });
+
+        $processedTransactions = collect();
+
+        foreach ($transactionsByItem as $desc => $group) {
+            // Sort by date_sort descending (newest to oldest)
+            $sortedGroup = $group->sortByDesc(function($t) {
+                return $t['date_sort'];
+            });
+
+            $runningBalance = $currentBalances[$desc] ?? 0.0;
+
+            foreach ($sortedGroup as $key => $t) {
+                $qty = (float)str_replace(',', '', $t['quantity']);
+                if ($t['type'] === 'Received') {
+                    $t['stock_bal'] = $runningBalance;
+                    $t['previous_stock'] = $runningBalance - $qty;
+                    $runningBalance -= $qty;
+                } else { // Issued
+                    $t['stock_bal'] = $runningBalance;
+                    $t['previous_stock'] = $runningBalance + $qty;
+                    $runningBalance += $qty;
+                }
+                $sortedGroup[$key] = $t;
+            }
+            $processedTransactions = $processedTransactions->merge($sortedGroup);
+        }
+
+        $allTransactions = $processedTransactions->sortByDesc(function($item) {
+            return $item['date_sort'];
         })->values();
 
         return response()->json([
@@ -484,7 +579,7 @@ class ReportController extends Controller
         }
 
         $recentReceivals = $recentReceivalsQuery
-            ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.supplier_name', 'inventory_batches.ledge_category')
+            ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.supplier_name', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type', 'inventory_batches.ledge_category')
             ->orderBy('inventory_batches.entry_date', 'desc')
             ->limit(500)
             ->get();

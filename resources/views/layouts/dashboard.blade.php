@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- PWA Manifest & Meta Tags -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -135,6 +135,19 @@
                         <span>Analytical Reports</span>
                     </a>
                 </li>
+            @elseif(auth()->user()->role === 'Director General')
+                <li class="nav-item">
+                    <a href="{{ route('dg.dashboard') }}" class="nav-link {{ request()->routeIs('dg.dashboard') ? 'active' : '' }}" data-tooltip="Command Center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                        <span>Command Center</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" data-tooltip="Analytical Reports">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/><path d="M12 13v5"/><path d="M16 13v5"/><path d="M8 13v5"/></svg>
+                        <span>Analytical Reports</span>
+                    </a>
+                </li>
             @elseif(in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
                 <li class="nav-item">
                     <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" data-tooltip="Review Requests">
@@ -238,7 +251,7 @@
 
         <div class="nav-section-title">Operations</div>
         <ul class="nav-menu">
-            @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head', 'Auditor']))
+            @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head', 'Auditor', 'Director General']))
                 <li class="nav-item">
                     <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" data-tooltip="Analytical Reports">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/><path d="M12 13v5"/><path d="M16 13v5"/><path d="M8 13v5"/></svg>
@@ -1094,7 +1107,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register("{{ asset('sw.js') }}")
                     .then(reg => console.log('Service Worker registered successfully:', reg.scope))
                     .catch(err => console.log('Service Worker registration failed:', err));
             });

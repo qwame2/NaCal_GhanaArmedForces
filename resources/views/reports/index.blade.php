@@ -98,11 +98,17 @@
                             <div class="item-filter-subtitle">Select one or multiple items — leave blank to include all inventory</div>
                         </div>
                     </div>
-                    @if(!empty($selectedItems))
-                        <span class="item-filter-count-badge">{{ count($selectedItems) }} selected</span>
-                    @else
-                        <span class="item-filter-all-badge">All Items</span>
-                    @endif
+                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                        <button type="button" id="select-issued-items-btn" class="glass-btn-sm" style="display: inline-flex; align-items: center; gap: 6px; padding: 0.4rem 0.8rem; border-radius: 10px; font-weight: 800; font-size: 0.75rem; cursor: pointer; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); transition: 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
+                            <i data-lucide="package-minus" style="width: 13px; height: 13px; color: #f59e0b;"></i>
+                            Select Issued Items
+                        </button>
+                        @if(!empty($selectedItems))
+                            <span class="item-filter-count-badge">{{ count($selectedItems) }} selected</span>
+                        @else
+                            <span class="item-filter-all-badge">All Items</span>
+                        @endif
+                    </div>
                 </div>
 
                 <!-- Selector + Actions -->
@@ -261,39 +267,123 @@
 
     <!-- Combined Inventory Movement Ledger -->
     @php
+        // Fetch current stock balances per item to calculate historical values backwards
+        $currentBalances = [];
+        $balancesQuery = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+            ->where('inventory_batches.approval_status', '=', 'approved')
+            ->selectRaw('TRIM(inventory_items.description) as description, SUM(CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2))) as total_stock')
+            ->groupBy(\DB::raw('TRIM(inventory_items.description)'))
+            ->get();
+        foreach ($balancesQuery as $b) {
+            $currentBalances[trim($b->description)] = (float)$b->total_stock;
+        }
+
+        // Fetch all unique item descriptions to construct the supplier/donor mapping
+        $uniqueDescs = collect()
+            ->concat($recentReceivals->pluck('description'))
+            ->concat($recentIssues->pluck('description'))
+            ->unique()
+            ->filter()
+            ->toArray();
+
+        $itemSources = [];
+        if (!empty($uniqueDescs)) {
+            $rawSources = \DB::table('inventory_items')
+                ->join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->whereIn('inventory_items.description', $uniqueDescs)
+                ->select('inventory_items.description', 'inventory_batches.supplier_name', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type')
+                ->get();
+            foreach ($rawSources as $rs) {
+                $desc = trim($rs->description);
+                $src = $rs->acquisition_type === 'Donor' ? ($rs->donor_name ?: $rs->supplier_name) : $rs->supplier_name;
+                $src = preg_replace('/\s\[.*\]$/', '', $src ?: '');
+                if ($src && strtolower($src) !== 'system') {
+                    if (!isset($itemSources[$desc])) {
+                        $itemSources[$desc] = [];
+                    }
+                    if (!in_array($src, $itemSources[$desc])) {
+                        $itemSources[$desc][] = $src;
+                    }
+                }
+            }
+            $itemSources = array_map(function($srcs) {
+                return implode(', ', $srcs);
+            }, $itemSources);
+        }
+
         // Merge both collections, normalise fields, then sort by date desc
-        $allTransactions = $recentReceivals->map(function($r) use ($ledgeMap) {
+        $rawTransactions = $recentReceivals->map(function($r) use ($ledgeMap) {
+            $source = $r->acquisition_type === 'Donor' ? ($r->donor_name ?: $r->supplier_name) : $r->supplier_name;
             return [
                 'date_received' => $r->entry_date,
                 'date_issued'   => null,
+                'date_sort'     => $r->entry_date,
                 'type'          => 'Received',
                 'category'      => $ledgeMap[$r->ledge_category] ?? ('Category ' . $r->ledge_category),
                 'description'   => $r->description,
-                'ref'           => preg_replace('/\s\[.*\]$/', '', $r->supplier_name ?: 'System'),
+                'ref'           => preg_replace('/\s\[.*\]$/', '', $source ?: 'System'),
                 'ref_label'     => 'Supplier / Source',
                 'quantity'      => $r->qty ?? 0,
-                'stock_bal'     => $r->stock_balance ?? '—',
+                'stock_bal'     => $r->stock_balance ?? 0,
+                'previous_stock'=> '—',
                 'variance'      => $r->variance ?? '—',
                 'status'        => '—',
                 'department'    => '—',
+                'sources'       => null,
             ];
-        })->merge($recentIssues->map(function($i) use ($ledgeMap) {
+        })->merge($recentIssues->map(function($i) use ($ledgeMap, $itemSources) {
             return [
                 'date_received' => $i->received_date,
                 'date_issued'   => $i->entry_date,
+                'date_sort'     => $i->entry_date,
                 'type'          => 'Issued',
                 'category'      => $ledgeMap[$i->ledge_category] ?? ('Category ' . $i->ledge_category),
                 'description'   => $i->description,
                 'ref'           => $i->beneficiary ?? '—',
                 'ref_label'     => 'Beneficiary / Dept.',
                 'quantity'      => $i->quantity ?? 0,
-                'stock_bal'     => '—',
+                'stock_bal'     => 0,
+                'previous_stock'=> '—',
                 'variance'      => '—',
                 'status'        => $i->issuance_type ?? 'Permanent',
                 'department'    => $i->department ?? '—',
+                'sources'       => $itemSources[trim($i->description)] ?? null,
             ];
-        }))->sortByDesc(function($item) {
-            return $item['date_received'] ?: $item['date_issued'];
+        }));
+
+        $transactionsByItem = $rawTransactions->groupBy(function($t) {
+            return trim($t['description']);
+        });
+
+        $processedTransactions = collect();
+
+        foreach ($transactionsByItem as $desc => $group) {
+            // Sort by date_sort descending (newest to oldest)
+            $sortedGroup = $group->sortByDesc(function($t) {
+                return $t['date_sort'];
+            });
+
+            $runningBalance = $currentBalances[$desc] ?? 0.0;
+
+            foreach ($sortedGroup as $key => $t) {
+                $qty = (float)str_replace(',', '', $t['quantity']);
+                if ($t['type'] === 'Received') {
+                    $t['stock_bal'] = $runningBalance;
+                    $t['previous_stock'] = $runningBalance - $qty;
+                    $runningBalance -= $qty;
+                } else { // Issued
+                    $t['stock_bal'] = $runningBalance;
+                    $t['previous_stock'] = $runningBalance + $qty;
+                    $runningBalance += $qty;
+                }
+                $sortedGroup[$key] = $t;
+            }
+            $processedTransactions = $processedTransactions->merge($sortedGroup);
+        }
+
+        $allTransactions = $processedTransactions->sortByDesc(function($item) {
+            return $item['date_sort'];
         })->values();
     @endphp
 
@@ -330,88 +420,94 @@
             <table class="formal-table unified-table rpt-unified-table" style="width: 100%; min-width: 900px;">
                 <thead>
                     <tr>
-                        <th style="width: 105px;">Date Received</th>
-                        <th style="width: 105px;">Date Issued</th>
-                        <th style="width: 115px; text-align:center;">Type</th>
-                        <th style="width: 120px;">Category</th>
-                        <th>Item(s)</th>
-                        <th style="width: 105px; text-align:center;">Status</th>
-                        <th style="width: 140px;">Department</th>
-                        <th style="width: 150px;">Supplier</th>
-                        <th style="text-align:right; width: 70px;">Qty</th>
-                        <th style="text-align:right; width: 85px;">Stock Bal.</th>
-                        <th style="text-align:right; width: 75px;">Variance</th>
+                        <th style="width: 110px;">Date</th>
+                        <th style="width: 125px; text-align:center;">Type</th>
+                        <th>Item / Category</th>
+                        <th style="width: 220px;">Supplier / Department</th>
+                        <th style="text-align:right; width: 80px;">Qty</th>
+                        <th style="text-align:right; width: 100px;">Prev. Stock</th>
+                        <th style="text-align:right; width: 100px;">Stock Bal.</th>
+                        <th style="text-align:right; width: 80px;">Variance</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($allTransactions as $row)
                     <tr class="ledger-row ledger-row-{{ strtolower($row['type']) }}">
-                        <td data-label="Date Received" class="ledger-date">
-                            {{ $row['date_received'] ? \Carbon\Carbon::parse($row['date_received'])->format('d M Y') : '—' }}
-                        </td>
-                        <td data-label="Date Issued" class="ledger-date">
-                            {{ $row['date_issued'] ? \Carbon\Carbon::parse($row['date_issued'])->format('d M Y') : '—' }}
+                        <td data-label="Date" class="ledger-date">
+                            {{ $row['date_sort'] ? \Carbon\Carbon::parse($row['date_sort'])->format('d M Y') : '—' }}
                         </td>
                         <td data-label="Type" style="text-align:center;">
-                            @if($row['type'] === 'Received')
-                                <span class="type-badge received-badge">
-                                    <i data-lucide="arrow-down-circle" style="width:12px;height:12px;"></i>
-                                    Received
-                                </span>
-                            @else
-                                <span class="type-badge issued-badge">
-                                    <i data-lucide="arrow-up-circle" style="width:12px;height:12px;"></i>
-                                    Issued
-                                </span>
-                            @endif
-                        </td>
-                        <td data-label="Category">
-                            <span class="cat-badge">{{ $row['category'] }}</span>
-                        </td>
-                        <td data-label="Item(s)" class="item-desc">{{ $row['description'] }}</td>
-                        <td data-label="Status" style="text-align:center;">
-                            @if($row['type'] === 'Issued')
-                                @if($row['status'] === 'Temporary')
-                                    <span style="font-size: 0.72rem; font-weight: 800; color: #b45309; background: rgba(245,158,11,0.12); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(245,158,11,0.25); text-transform: uppercase; letter-spacing: 0.03em;">
-                                        Temporary
+                            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                                @if($row['type'] === 'Received')
+                                    <span class="type-badge received-badge">
+                                        <i data-lucide="arrow-down-circle" style="width:12px;height:12px;"></i>
+                                        Received
                                     </span>
                                 @else
-                                    <span style="font-size: 0.72rem; font-weight: 800; color: #1e3a8a; background: rgba(99,102,241,0.08); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(99,102,241,0.2); text-transform: uppercase; letter-spacing: 0.03em;">
-                                        Permanent
+                                    <span class="type-badge issued-badge">
+                                        <i data-lucide="arrow-up-circle" style="width:12px;height:12px;"></i>
+                                        Issued
                                     </span>
+                                    @if($row['status'] === 'Temporary')
+                                        <span style="font-size: 0.65rem; font-weight: 800; color: #b45309; background: rgba(245,158,11,0.12); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(245,158,11,0.2); text-transform: uppercase;">
+                                            Temporary
+                                        </span>
+                                    @else
+                                        <span style="font-size: 0.65rem; font-weight: 800; color: #1e3a8a; background: rgba(99,102,241,0.08); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(99,102,241,0.15); text-transform: uppercase;">
+                                            Permanent
+                                        </span>
+                                    @endif
+                                @endif
+                            </div>
+                        </td>
+                        <td data-label="Item / Category">
+                            <div>
+                                <span class="item-desc" style="font-weight: 800; display: block; margin-bottom: 2px; color: var(--text-main);">{{ $row['description'] }}</span>
+                                <span class="cat-badge" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 6px;">{{ $row['category'] }}</span>
+                            </div>
+                        </td>
+                        <td data-label="Supplier / Department">
+                            @if($row['type'] === 'Received')
+                                <span style="font-weight: 600; color: var(--text-main);">{{ $row['ref'] }}</span>
+                            @else
+                                <span style="font-weight: 800; color: var(--text-main); text-transform: uppercase; font-size: 0.76rem; letter-spacing: 0.02em;">{{ $row['department'] }}</span>
+                                @if(!empty($row['sources']))
+                                    <span style="display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 600; margin-top: 2px; text-transform: none;">(Sourced from: {{ $row['sources'] }})</span>
+                                @endif
+                            @endif
+                        </td>
+                        <td data-label="Qty" style="text-align:right;" class="qty-cell qty-{{ strtolower($row['type']) }}">
+                            {{ is_numeric(str_replace(',', '', $row['quantity'])) ? number_format((float)str_replace(',', '', $row['quantity']), 0) : $row['quantity'] }}
+                        </td>
+                        <td data-label="Prev. Stock" class="prev-cell" style="text-align:right; font-weight:700; color: var(--text-main);">
+                            {{ is_numeric(str_replace(',', '', $row['previous_stock'])) ? number_format((float)str_replace(',', '', $row['previous_stock']), 0) : $row['previous_stock'] }}
+                        </td>
+                        <td data-label="Stock Bal." class="bal-cell" style="text-align:right;">
+                            {{ is_numeric(str_replace(',', '', $row['stock_bal'])) ? number_format((float)str_replace(',', '', $row['stock_bal']), 0) : $row['stock_bal'] }}
+                        </td>
+                        <td data-label="Variance" class="variance-cell" style="text-align:right;">
+                            @if($row['type'] === 'Received')
+                                @if(is_numeric(str_replace(',', '', $row['variance'])))
+                                    @php
+                                        $varVal = (float)str_replace(',', '', $row['variance']);
+                                    @endphp
+                                    {{ $varVal > 0 ? '+' : '' }}{{ number_format($varVal, 0) }}
+                                @else
+                                    {{ $row['variance'] }}
                                 @endif
                             @else
                                 <span style="color: var(--text-muted);">—</span>
                             @endif
                         </td>
-                        <td data-label="Department">
-                            @if($row['type'] === 'Issued' && $row['department'] !== '—')
-                                <span style="font-weight: 800; color: var(--text-main); text-transform: uppercase; font-size: 0.76rem; letter-spacing: 0.02em;">{{ $row['department'] }}</span>
-                            @else
-                                <span style="color: var(--text-muted);">—</span>
-                            @endif
-                        </td>
-                        <td data-label="Supplier">
-                            @if($row['type'] === 'Received')
-                                {{ $row['ref'] }}
-                            @else
-                                <span style="color: var(--text-muted);">—</span>
-                            @endif
-                        </td>
-                        <td data-label="Qty" style="text-align:right;" class="qty-cell qty-{{ strtolower($row['type']) }}">
-                            {{ is_numeric($row['quantity']) ? number_format((float)$row['quantity']) : $row['quantity'] }}
-                        </td>
-                        <td data-label="Stock Bal." class="bal-cell" style="text-align:right;">{{ $row['stock_bal'] }}</td>
-                        <td data-label="Variance" class="variance-cell" style="text-align:right;">{{ $row['variance'] }}</td>
                     </tr>
                     @endforeach
                 </tbody>
                 <tfoot>
                     <tr class="ledger-totals-row">
-                        <td colspan="8" style="font-weight:900; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.05em; padding: 14px 20px;">
+                        <td colspan="4" style="font-weight:900; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.05em; padding: 14px 20px;">
                             Period Totals
                         </td>
-                        <td style="text-align:right; font-weight:900; color: var(--primary); padding: 14px 20px;" colspan="3">
+                        <td style="text-align:right; font-weight:900; color: var(--primary); padding: 14px 20px;" colspan="4">
                             ↓ {{ number_format((float)$totalReceivedQty) }} received &nbsp;|&nbsp;
                             ↑ {{ number_format((float)$totalIssuedQty) }} issued
                         </td>
@@ -1579,47 +1675,72 @@
                 if (placeholder) placeholder.style.display = 'none';
 
                 tbody.innerHTML = rows.map((row, idx) => {
-                    const drec = row.date_received ? fmtDate(row.date_received) : '—';
-                    const diss = row.date_issued   ? fmtDate(row.date_issued)   : '—';
+                    const date = row.date_sort ? fmtDate(row.date_sort) : '—';
                     const isRec = row.type === 'Received';
-                    const typeBadge = isRec
-                        ? `<span class="type-badge received-badge">${iconSvg('arrow-down-circle')} Received</span>`
-                        : `<span class="type-badge issued-badge">${iconSvg('arrow-up-circle')} Issued</span>`;
-
-                    let statusCell = '—';
-                    if (!isRec) {
-                        statusCell = row.status === 'Temporary'
-                            ? `<span style="font-size:0.72rem;font-weight:800;color:#b45309;background:rgba(245,158,11,0.12);padding:3px 8px;border-radius:6px;border:1px solid rgba(245,158,11,0.25);text-transform:uppercase;">Temporary</span>`
-                            : `<span style="font-size:0.72rem;font-weight:800;color:#1e3a8a;background:rgba(99,102,241,0.08);padding:3px 8px;border-radius:6px;border:1px solid rgba(99,102,241,0.2);text-transform:uppercase;">Permanent</span>`;
+                    
+                    let typeHtml = '';
+                    if (isRec) {
+                        typeHtml = `<span class="type-badge received-badge">${iconSvg('arrow-down-circle')} Received</span>`;
+                    } else {
+                        const statusBadge = row.status === 'Temporary'
+                            ? `<span style="font-size:0.65rem;font-weight:800;color:#b45309;background:rgba(245,158,11,0.12);padding:1px 6px;border-radius:4px;border:1px solid rgba(245,158,11,0.2);text-transform:uppercase;">Temporary</span>`
+                            : `<span style="font-size:0.65rem;font-weight:800;color:#1e3a8a;background:rgba(99,102,241,0.08);padding:1px 6px;border-radius:4px;border:1px solid rgba(99,102,241,0.15);text-transform:uppercase;">Permanent</span>`;
+                        typeHtml = `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                            <span class="type-badge issued-badge">${iconSvg('arrow-up-circle')} Issued</span>
+                            ${statusBadge}
+                        </div>`;
                     }
 
-                    const deptCell = (!isRec && row.department && row.department !== '—')
-                        ? `<span style="font-weight:800;color:var(--text-main);text-transform:uppercase;font-size:0.76rem;">${esc(row.department)}</span>`
-                        : `<span style="color:var(--text-muted);">—</span>`;
+                    const itemHtml = `<div>
+                        <span class="item-desc" style="font-weight:800;display:block;margin-bottom:2px;color:var(--text-main);">${esc(row.description)}</span>
+                        <span class="cat-badge" style="font-size:0.7rem;padding:2px 6px;border-radius:6px;">${esc(row.category)}</span>
+                    </div>`;
 
-                    const supplierCell = isRec ? esc(row.ref) : `<span style="color:var(--text-muted);">—</span>`;
+                    let entityHtml = '';
+                    if (isRec) {
+                        entityHtml = `<span style="font-weight:600;color:var(--text-main);">${esc(row.ref)}</span>`;
+                    } else {
+                        entityHtml = `<span style="font-weight:800;color:var(--text-main);text-transform:uppercase;font-size:0.76rem;letter-spacing:0.02em;">${esc(row.department)}</span>`;
+                        if (row.sources) {
+                            entityHtml += `<span style="display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 600; margin-top: 2px; text-transform: none;">(Sourced from: ${esc(row.sources)})</span>`;
+                        }
+                    }
+
                     const qtyClass = isRec ? 'qty-received' : 'qty-issued';
-                    const qty = isNaN(row.quantity) ? row.quantity : Number(row.quantity).toLocaleString();
+                    const qtyVal = Number(String(row.quantity || 0).replace(/,/g, ''));
+                    const qty = isNaN(qtyVal) ? row.quantity : Math.round(qtyVal).toLocaleString();
+
+                    const prevVal = Number(String(row.previous_stock || 0).replace(/,/g, ''));
+                    const prevStock = (row.previous_stock === null || row.previous_stock === undefined || row.previous_stock === '—' || isNaN(prevVal)) ? '—' : Math.round(prevVal).toLocaleString();
+
+                    const balVal = Number(String(row.stock_bal || 0).replace(/,/g, ''));
+                    const bal = (row.stock_bal === null || row.stock_bal === undefined || row.stock_bal === '—' || isNaN(balVal)) ? '—' : Math.round(balVal).toLocaleString();
+
+                    let varText = '—';
+                    if (isRec) {
+                        const varVal = Number(String(row.variance || 0).replace(/,/g, ''));
+                        if (row.variance !== null && row.variance !== undefined && row.variance !== '—' && !isNaN(varVal)) {
+                            const roundedVar = Math.round(varVal);
+                            varText = (roundedVar > 0 ? '+' : '') + roundedVar.toLocaleString();
+                        }
+                    }
 
                     return `<tr class="ledger-row ledger-row-${isRec ? 'received' : 'issued'}">
-                        <td class="ledger-date">${drec}</td>
-                        <td class="ledger-date">${diss}</td>
-                        <td style="text-align:center;">${typeBadge}</td>
-                        <td><span class="cat-badge">${esc(row.category)}</span></td>
-                        <td class="item-desc">${esc(row.description)}</td>
-                        <td style="text-align:center;">${statusCell}</td>
-                        <td>${deptCell}</td>
-                        <td>${supplierCell}</td>
+                        <td class="ledger-date">${date}</td>
+                        <td style="text-align:center;">${typeHtml}</td>
+                        <td>${itemHtml}</td>
+                        <td>${entityHtml}</td>
                         <td class="qty-cell ${qtyClass}" style="text-align:right;">${qty}</td>
-                        <td class="bal-cell" style="text-align:right;">${esc(String(row.stock_bal))}</td>
-                        <td class="variance-cell" style="text-align:right;">${esc(String(row.variance))}</td>
+                        <td style="text-align:right;font-weight:700;color:var(--text-main);">${prevStock}</td>
+                        <td class="bal-cell" style="text-align:right;">${esc(bal)}</td>
+                        <td class="variance-cell" style="text-align:right;">${esc(varText)}</td>
                     </tr>`;
                 }).join('');
             }
 
             // Update totals footer
             if (tfoot) {
-                tfoot.cells[1].innerHTML = `↓ ${Number(totalRec).toLocaleString()} received &nbsp;|&nbsp; ↑ ${Number(totalIss).toLocaleString()} issued`;
+                tfoot.cells[1].innerHTML = `↓ ${Math.round(Number(totalRec)).toLocaleString()} received &nbsp;|&nbsp; ↑ ${Math.round(Number(totalIss)).toLocaleString()} issued`;
             }
 
             // Re-run lucide icon replacement on new SVGs
@@ -2163,6 +2284,14 @@
                         return null;
                     }
                 });
+
+                const selectIssuedBtn = document.getElementById('select-issued-items-btn');
+                if (selectIssuedBtn) {
+                    const issuedItems = @json($issuedItemDescriptions ?? []);
+                    selectIssuedBtn.addEventListener('click', () => {
+                        $('#items-select').val(issuedItems).trigger('change');
+                    });
+                }
             }
 
             // ApexCharts Rendering

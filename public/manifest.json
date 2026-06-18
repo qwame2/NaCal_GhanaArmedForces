@@ -2,33 +2,33 @@
   "name": "Narcotics Control Commission  ",
   "short_name": "NSIMs",
   "description": "Narcotics Control Commission Inventory Management System",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
-  "scope": "/",
+  "scope": "./",
   "icons": [
     {
-      "src": "/img/cropped_circle_image.png",
+      "src": "img/cropped_circle_image.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/img/cropped_circle_image.png",
+      "src": "img/cropped_circle_image.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/img/NACOC1.png",
+      "src": "img/NACOC1.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/img/NACOC1.png",
+      "src": "img/NACOC1.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

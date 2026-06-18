@@ -397,6 +397,103 @@
         </div>
     </div>
 
+    {{-- Narrative Report Breakdown --}}
+    @php
+        $essay = "";
+        
+        // 1. Introduction
+        if (!empty($selectedItems)) {
+            $itemsLimit = 4;
+            $itemsDisplay = array_slice($selectedItems, 0, $itemsLimit);
+            $itemsStr = implode(", ", $itemsDisplay);
+            if (count($selectedItems) > $itemsLimit) {
+                $itemsStr .= ", and " . (count($selectedItems) - $itemsLimit) . " other items";
+            }
+            $essay .= "This report details the activity of specific items, namely: <strong>" . e($itemsStr) . "</strong>, during the <strong>" . e($dateLabel) . "</strong> period. ";
+        } else {
+            $essay .= "This report provides a general overview of all inventory activity within the system during the <strong>" . e($dateLabel) . "</strong> period. ";
+        }
+
+        // 2. Incoming inventory (Receivals)
+        if ($totalReceivedQty > 0) {
+            $essay .= "On the incoming side, we successfully received a total of <strong>" . number_format($totalReceivedQty) . "</strong> units of stock, which arrived in <strong>" . $totalReceivedBatches . "</strong> separate batches. ";
+            
+            if (count($selectedItems) !== 1 && $receivedDistribution->count() > 0) {
+                $topReceived = $receivedDistribution->first();
+                $essay .= "Among the received items, the highest volume was for <strong>" . e($topReceived->description) . "</strong>, with a total of <strong>" . number_format($topReceived->total_qty) . "</strong> units incoming. ";
+            }
+            
+            $totalVariance = 0;
+            foreach($recentReceivals as $rr) {
+                if (is_numeric($rr->variance)) {
+                    $totalVariance += (float)$rr->variance;
+                }
+            }
+            if ($totalVariance != 0) {
+                $essay .= "During receipt inspection, a total variance of <strong>" . ($totalVariance > 0 ? '+' : '') . number_format($totalVariance) . "</strong> units was recorded, representing the difference between the supplier invoice quantities and the physical quantities received in our warehouse. ";
+            } else {
+                $essay .= "All incoming shipments matched their expected quantities perfectly, with zero variance recorded. ";
+            }
+        } else {
+            $essay .= "No new stock was received or recorded in the system during this timeframe. ";
+        }
+
+        // 3. Outgoing inventory (Issues)
+        if ($totalIssuedQty > 0) {
+            $essay .= "Regarding stock distributions, we issued out a total of <strong>" . number_format($totalIssuedQty) . "</strong> units to meet operational requests. ";
+            
+            $deptCounts = [];
+            $tempCount = 0;
+            $permCount = 0;
+            foreach ($recentIssues as $ri) {
+                if ($ri->issuance_type === 'Temporary') {
+                    $tempCount += $ri->quantity;
+                } else {
+                    $permCount += $ri->quantity;
+                }
+                $dept = $ri->department ?: 'Unassigned Departments';
+                $deptCounts[$dept] = ($deptCounts[$dept] ?? 0) + $ri->quantity;
+            }
+            
+            if (!empty($deptCounts)) {
+                arsort($deptCounts);
+                $topDept = key($deptCounts);
+                $topDeptQty = current($deptCounts);
+                $essay .= "The primary requestor was the <strong>" . e($topDept) . "</strong>, which received <strong>" . number_format($topDeptQty) . "</strong> units. ";
+                if (count($deptCounts) > 1) {
+                    $otherDepts = array_slice(array_keys($deptCounts), 1, 2);
+                    $essay .= "Other notable quantities were distributed to: " . implode(', ', $otherDepts) . ". ";
+                }
+            }
+            
+            if ($tempCount > 0) {
+                $essay .= "Of the total outgoing items, <strong>" . number_format($tempCount) . "</strong> units were issued on a temporary basis (loans that must be returned to the store), while <strong>" . number_format($permCount) . "</strong> units were issued permanently. ";
+            } else {
+                $essay .= "All distributions made during this period were permanent issuances to the respective departments. ";
+            }
+        } else {
+            $essay .= "No items were issued out or distributed during this reporting period. ";
+        }
+
+        // 4. Summary / Net
+        $netMovement = (float)$totalReceivedQty - (float)$totalIssuedQty;
+        if ($totalReceivedQty > 0 || $totalIssuedQty > 0) {
+            $essay .= "In summary, the net stock movement shows that we " . ($netMovement >= 0 ? "retained" : "reduced") . " our inventory levels by <strong>" . number_format(abs($netMovement)) . "</strong> units. ";
+            if ($netMovement < 0) {
+                $essay .= "This indicates that our consumption rate exceeded our replenishment rate for this period. ";
+            } else {
+                $essay .= "This indicates a healthy stock buildup to meet future operational demands. ";
+            }
+        }
+    @endphp
+
+    <div class="narrative-breakdown" style="margin-bottom: 25px; padding: 20px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 4px; line-height: 1.6; page-break-inside: avoid;">
+        <h3 style="margin-top: 0; color: #1e3a8a; font-family: 'Arial', sans-serif; font-size: 12px; font-weight: bold; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 8px; text-transform: uppercase;">Report Overview</h3>
+        <p style="font-size: 11px; color: #0f172a; margin-bottom: 0; text-align: justify; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            {!! $essay !!}
+        </p>
+    </div>
+
     {{-- Stock Receipts Visualization --}}
     @if($totalReceivedQty > 0 && $receivedDistribution->count() > 0)
     <div class="visualization-container">
@@ -427,23 +524,58 @@
 
     {{-- Unified Ledger --}}
     @php
+        // Fetch all unique item descriptions to construct the supplier/donor mapping
+        $uniqueDescs = collect()
+            ->concat($recentReceivals->pluck('description'))
+            ->concat($recentIssues->pluck('description'))
+            ->unique()
+            ->filter()
+            ->toArray();
+
+        $itemSources = [];
+        if (!empty($uniqueDescs)) {
+            $rawSources = \DB::table('inventory_items')
+                ->join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->whereIn('inventory_items.description', $uniqueDescs)
+                ->select('inventory_items.description', 'inventory_batches.supplier_name', 'inventory_batches.donor_name', 'inventory_batches.acquisition_type')
+                ->get();
+            foreach ($rawSources as $rs) {
+                $desc = trim($rs->description);
+                $src = $rs->acquisition_type === 'Donor' ? ($rs->donor_name ?: $rs->supplier_name) : $rs->supplier_name;
+                $src = preg_replace('/\s\[.*\]$/', '', $src ?: '');
+                if ($src && strtolower($src) !== 'system') {
+                    if (!isset($itemSources[$desc])) {
+                        $itemSources[$desc] = [];
+                    }
+                    if (!in_array($src, $itemSources[$desc])) {
+                        $itemSources[$desc][] = $src;
+                    }
+                }
+            }
+            $itemSources = array_map(function($srcs) {
+                return implode(', ', $srcs);
+            }, $itemSources);
+        }
+
         // Merge both collections, normalise fields, then sort by date desc
         $allTransactions = $recentReceivals->map(function($r) use ($ledgeMap) {
+            $source = $r->acquisition_type === 'Donor' ? ($r->donor_name ?: $r->supplier_name) : $r->supplier_name;
             return [
                 'date_received' => $r->entry_date,
                 'date_issued'   => null,
                 'type'          => 'Received',
                 'category'      => $ledgeMap[$r->ledge_category] ?? ('Category ' . $r->ledge_category),
                 'description'   => $r->description,
-                'ref'           => preg_replace('/\s\[.*\]$/', '', $r->supplier_name ?: 'System'),
+                'ref'           => preg_replace('/\s\[.*\]$/', '', $source ?: 'System'),
                 'ref_label'     => 'Supplier / Source',
                 'quantity'      => $r->qty ?? 0,
                 'stock_bal'     => $r->stock_balance ?? '—',
                 'variance'      => $r->variance ?? '—',
                 'status'        => '—',
                 'department'    => '—',
+                'sources'       => null,
             ];
-        })->merge($recentIssues->map(function($i) use ($ledgeMap) {
+        })->merge($recentIssues->map(function($i) use ($ledgeMap, $itemSources) {
             return [
                 'date_received' => $i->received_date,
                 'date_issued'   => $i->entry_date,
@@ -457,6 +589,7 @@
                 'variance'      => '—',
                 'status'        => $i->issuance_type ?? 'Permanent',
                 'department'    => $i->department ?? '—',
+                'sources'       => $itemSources[trim($i->description)] ?? null,
             ];
         }))->sortByDesc(function($item) {
             return $item['date_received'] ?: $item['date_issued'];
@@ -527,7 +660,11 @@
                         @if($row['type'] === 'Received')
                             {{ $row['ref'] }}
                         @else
-                            <span style="color: #94a3b8;">—</span>
+                            @if(!empty($row['sources']))
+                                <span style="color: #475569; font-style: italic;">{{ $row['sources'] }}</span>
+                            @else
+                                <span style="color: #94a3b8;">—</span>
+                            @endif
                         @endif
                     </td>
                     <td style="font-weight: 700;">
@@ -558,13 +695,16 @@
 
     {{-- Signature Sign-Off Block --}}
     @php
-        $headOfStores = \App\Models\User::where('is_admin', true)->where('role', 'Admin')->where('is_active', true)->first();
+        $isAdmin = auth()->user()->is_admin;
+        $headOfStores = $isAdmin ? auth()->user() : \App\Models\User::where('is_admin', true)->where('role', 'Admin')->where('is_active', true)->first();
     @endphp
-    <div class="signature-block">
-        <div class="sig-col">
-            <div class="sig-line" style="margin-top: 60px;">{{ auth()->user()->name }}</div>
-            <div class="sig-subtitle">Prepared By ({{ auth()->user()->role }})</div>
-        </div>
+    <div class="signature-block" style="{{ $isAdmin ? 'grid-template-columns: 1fr; max-width: 300px; margin-left: auto; margin-right: auto;' : '' }}">
+        @if(!$isAdmin)
+            <div class="sig-col">
+                <div class="sig-line" style="margin-top: 60px;">{{ auth()->user()->name }}</div>
+                <div class="sig-subtitle">Prepared By ({{ auth()->user()->role }})</div>
+            </div>
+        @endif
         <div class="sig-col" style="position: relative;">
             @if($headOfStores && $headOfStores->signature)
                 <div style="height: 50px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: -30px; position: relative; z-index: 5; pointer-events: none;">

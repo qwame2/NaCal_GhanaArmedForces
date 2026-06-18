@@ -38,6 +38,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Other Dept. Heads
     </button>
+    <button class="pager-tab" id="tab-director-generals" onclick="switchTab('director-generals')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="12" r="3"/></svg>
+        Director General(DG)
+    </button>
 
     <button class="pager-tab" id="tab-registrations" onclick="switchTab('registrations')">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
@@ -325,6 +329,71 @@
                 @empty
                 <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
                     No other department heads registered.
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ── Panel: Director General ── --}}
+<div id="panel-director-generals" class="pager-panel">
+    <div class="permissions-matrix-wrapper">
+        <div class="matrix-table">
+            <div class="m-header">
+                <div class="col-id">Personnel</div>
+                <div class="col-req-ctrl">Report Access</div>
+                <div class="col-stat">Clearance Status</div>
+            </div>
+
+            <div class="m-body" id="directorGeneralsBody">
+                @forelse($directorGenerals as $user)
+                <div class="m-row" data-user-id="{{ $user->id }}">
+                    <div class="col-id">
+                        <div class="m-avatar">
+                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
+                            <span class="m-pulse {{ $user->is_active ? 'online' : 'offline' }}"></span>
+                        </div>
+                        <div class="m-identity">
+                            <h4 class="m-name">{{ $user->name }}</h4>
+                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
+                                <span>@ {{ $user->username }}</span>
+                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
+                                    Director General
+                                </span>
+                                @if($user->department)
+                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
+                                    {{ $user->department }}
+                                </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Report Access toggle --}}
+                    <div class="col-req-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Report Access">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_generate_reports')" {{ $user->can_generate_reports ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">View Reports</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-stat">
+                        <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
+                            <i data-lucide="{{ $user->is_active ? 'shield-check' : 'shield-alert' }}"></i>
+                            {{ $user->is_active ? 'AUTHORIZED' : 'SUSPENDED' }}
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
+                    No Director General registered.
                 </div>
                 @endforelse
             </div>
@@ -867,6 +936,13 @@
                 const currentDept = document.getElementById('deptHeadsBody');
                 if (newDept && currentDept) {
                     currentDept.innerHTML = newDept.innerHTML;
+                }
+
+                // Swap out the Director Generals matrix body
+                const newDG = doc.getElementById('directorGeneralsBody');
+                const currentDG = document.getElementById('directorGeneralsBody');
+                if (newDG && currentDG) {
+                    currentDG.innerHTML = newDG.innerHTML;
                 }
 
                 // Swap out the pending registrations list

@@ -247,6 +247,11 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             return redirect()->route('auditor.dashboard');
         }
 
+        // Redirect Director General to their designated page
+        if (auth()->user()->role === 'Director General') {
+            return redirect()->route('dg.dashboard');
+        }
+
         // Redirect Requisitioners to their designated page
         if (auth()->user()->role === 'Requisitioner') {
             return redirect()->route('requisitions.index');
@@ -664,6 +669,10 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     // Auditor Routes
     Route::get('/auditor', [\App\Http\Controllers\AuditorController::class, 'index'])->name('auditor.dashboard');
     Route::get('/auditor/print', [\App\Http\Controllers\AuditorController::class, 'printReport'])->name('auditor.print');
+
+    // Director General Routes
+    Route::get('/dg', [\App\Http\Controllers\DGController::class, 'index'])->name('dg.dashboard');
+    Route::get('/dg/print', [\App\Http\Controllers\DGController::class, 'printReport'])->name('dg.print');
 
     // Temp Requisitioner Provisioning Routes (Non-Stores Department Heads only)
     Route::post('/dept-head/temp-requisitioners', [\App\Http\Controllers\TempRequisitionerController::class, 'store'])->name('dept-head.temp-requisitioners.store');

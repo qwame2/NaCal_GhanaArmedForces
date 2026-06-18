@@ -98,6 +98,8 @@ class AdminController extends Controller
             $user->can_operate_logistics = false;
             $user->can_generate_reports = false;
             $user->can_verify_stock = false;
+        } elseif ($user->role === 'Director General') {
+            $user->can_generate_reports = true;
         }
 
         $user->save();
@@ -229,6 +231,8 @@ class AdminController extends Controller
             $department = 'Stores';
         } elseif ($request->role === 'Officer') {
             $department = 'Stores';
+        } elseif ($request->role === 'Director General') {
+            $department = 'Executive Directorate';
         }
 
         $user->update([
@@ -351,8 +355,13 @@ class AdminController extends Controller
             ->orderBy('name')
             ->get();
 
+        $directorGenerals = User::where('role', 'Director General')
+            ->where('registration_status', 'approved')
+            ->orderBy('name')
+            ->get();
+
         $pendingUsers = User::where('registration_status', 'pending')->orderBy('created_at', 'desc')->get();
-        return view('admin.permissions', compact('storeOfficers', 'requisitioners', 'deptHeads', 'auditors', 'pendingUsers'));
+        return view('admin.permissions', compact('storeOfficers', 'requisitioners', 'deptHeads', 'auditors', 'directorGenerals', 'pendingUsers'));
     }
 
     public function getPendingRegistrations()

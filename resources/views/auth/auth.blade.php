@@ -629,7 +629,7 @@
 
                             <div class="form-grid">
                                 <div class="input-modern-group">
-                                    <label>Service Number <span style="color: #ef4444;">*</span></label>
+                                    <label>Staff ID <span style="color: #ef4444;">*</span></label>
                                     <div class="input-wrapper">
                                         <div class="icon-box"><i data-lucide="hash"></i></div>
                                         <input type="text" name="service_number" placeholder="e.g. SN-8942" required>
@@ -662,10 +662,11 @@
                                     <select name="role" id="selfRoleSelect" class="premium-select-input" required style="width: 100%; border: none; background: transparent; height: 100%; font-weight: 600; font-size: 1rem; outline: none; padding-left: 0.5rem; color: #0f172a; text-align: left;">
                                         <option value="">-- Select Role --</option>
                                         <option value="Officer">Store Officer</option>
-                                        <option value="Main Admin">Head of Admin (Stores)</option>
+                                        <option value="Main Admin">Head of Admin</option>
                                         <option value="Department Head">Other Dept. Head</option>
                                         <option value="Auditor">Auditor</option>
                                         <option value="Requisitioner">Requisitioner</option>
+                                        <option value="Director General">Director General(DG)</option>
                                     </select>
                                 </div>
                             </div>
@@ -748,7 +749,7 @@
                                     <label>Rank <span style="color: #ef4444;">*</span></label>
                                     <div class="input-wrapper">
                                         <div class="icon-box"><i data-lucide="badge"></i></div>
-                                        <input type="text" name="rank" id="selfRankInput" placeholder="e.g. Major, Colonel, Director" autocomplete="off">
+                                        <input type="text" name="rank" id="selfRankInput" placeholder="e.g. SNDO, DNCO, ANCO" autocomplete="off">
                                     </div>
                                 </div>
 

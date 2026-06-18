@@ -1,14 +1,14 @@
 const CACHE_NAME = 'nacoc-ims-cache-v1';
 const ASSETS_TO_CACHE = [
-    '/css/css2.css',
-    '/css/dashboard_theme.css',
-    '/js/jquery-3.7.1.min.js',
-    '/js/lucide.min.js',
-    '/js/apexcharts.js',
-    '/js/sweetalert2@11.js',
-    '/img/NACOC1.png',
-    '/img/cropped_circle_image.png',
-    '/offline.html'
+    'css/css2.css',
+    'css/dashboard_theme.css',
+    'js/jquery-3.7.1.min.js',
+    'js/lucide.min.js',
+    'js/apexcharts.js',
+    'js/sweetalert2@11.js',
+    'img/NACOC1.png',
+    'img/cropped_circle_image.png',
+    'offline.html'
 ];
 
 // Install Event
@@ -52,7 +52,7 @@ self.addEventListener('fetch', event => {
             fetch(event.request)
                 .catch(() => {
                     // Return the cached offline page on network failure
-                    return caches.match('/offline.html');
+                    return caches.match(new URL('offline.html', self.location.href).href);
                 })
         );
         return;
