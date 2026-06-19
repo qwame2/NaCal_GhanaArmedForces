@@ -445,6 +445,7 @@ class ReceivedItemsController extends Controller
             'items' => 'required|array',
             'items.*.id' => 'required|exists:inventory_items,id',
             'items.*.description' => 'required|string',
+            'items.*.serial_number' => 'nullable|string',
             'items.*.unit' => 'required|string',
             'items.*.qty' => 'required|numeric',
             'items.*.stock_balance' => 'required|numeric',
@@ -460,7 +461,7 @@ class ReceivedItemsController extends Controller
             // Capture Original State for Forensic Audit
             $originalBatch = $batch->only(['arrival_date', 'ledge_category', 'acquisition_type', 'supplier_name', 'supplier_status', 'donor_name', 'delivery_person', 'delivery_phone']);
             $originalItems = $batch->items->mapWithKeys(function($item) {
-                return [$item->id => $item->only(['description', 'unit', 'qty', 'stock_balance', 'variance', 'remarks'])];
+                return [$item->id => $item->only(['description', 'serial_number', 'unit', 'qty', 'stock_balance', 'variance', 'remarks'])];
             });
  
             $origPayloadArray = [
@@ -476,6 +477,7 @@ class ReceivedItemsController extends Controller
                     return [
                         'id' => $i->id,
                         'description' => $i->description,
+                        'serial_number' => $i->serial_number,
                         'unit' => $i->unit,
                         'qty' => $i->qty,
                         'stock_balance' => $i->stock_balance,
@@ -498,6 +500,7 @@ class ReceivedItemsController extends Controller
                     return [
                         'id' => $i['id'],
                         'description' => $i['description'],
+                        'serial_number' => $i['serial_number'] ?? null,
                         'unit' => $i['unit'],
                         'qty' => $i['qty'],
                         'stock_balance' => $i['stock_balance'],
@@ -525,6 +528,7 @@ class ReceivedItemsController extends Controller
                 $old = $originalItems[$item->id] ?? [];
                 $new = [
                     'description' => $itemData['description'],
+                    'serial_number' => $itemData['serial_number'] ?? null,
                     'unit' => $itemData['unit'],
                     'qty' => $itemData['qty'],
                     'stock_balance' => $itemData['stock_balance'],

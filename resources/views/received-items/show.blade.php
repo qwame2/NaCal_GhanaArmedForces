@@ -160,6 +160,11 @@
                         <td style="padding: 1.25rem 1.5rem;">
                             <div style="font-weight: 700; color: var(--text-main);">{{ $item->description }}</div>
                             <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Registry ID: {{ $item->ledger_id ?? '-' }}</div>
+                            @if(!empty($item->serial_number))
+                                <div style="font-size: 0.75rem; color: #6366f1; font-weight: 700; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg> S/N: {{ $item->serial_number }}
+                                </div>
+                            @endif
                         </td>
                         <td style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main);">{{ $item->unit ?? 'Package Types' }}</span>

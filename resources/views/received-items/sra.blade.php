@@ -383,6 +383,11 @@
                     <td style="text-align: center;">{{ $index + 1 }}</td>
                     <td>
                         <strong>{{ $item->description }}</strong>
+                        @if(!empty($item->serial_number))
+                        <div style="font-size: 11px; font-weight: bold; margin-top: 2px; color: #333;">
+                            S/N: {{ $item->serial_number }}
+                        </div>
+                        @endif
                         @if($item->remarks)
                         <div style="font-size: 11px; font-style: italic; margin-top: 4px; color: #555;">
                             Note: {{ $item->remarks }}

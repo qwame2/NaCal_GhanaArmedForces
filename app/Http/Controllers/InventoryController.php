@@ -146,6 +146,7 @@ class InventoryController extends Controller
             'arrival_date' => 'required|date',
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
+            'items.*.serial_number' => 'nullable|string',
             'items.*.unit' => 'required|string',
 
             'items.*.stock_balance' => 'required|string',

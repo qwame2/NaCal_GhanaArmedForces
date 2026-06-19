@@ -204,6 +204,20 @@
     #newEntryPageContainer label > span:last-child {
         color: #ef4444 !important;
     }
+
+    /* Premium box shadow for editable inputs and select elements */
+    #newEntryPageContainer input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="hidden"]):not([readonly]),
+    #newEntryPageContainer select,
+    #newEntryPageContainer .select2-container--default .select2-selection--single {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+        transition: all 0.3s ease;
+    }
+    #newEntryPageContainer input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="hidden"]):not([readonly]):focus,
+    #newEntryPageContainer select:focus,
+    #newEntryPageContainer .select2-container--default .select2-selection--single:focus {
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15) !important;
+        border-color: var(--primary) !important;
+    }
 </style>
 
 <script id="inventory-data" type="application/json">
@@ -458,6 +472,7 @@ jQuery(document).ready(function($) {
 
             items.push({
                 description: desc,
+                serial_number: $(this).find('.row-serial-number').val() || null,
                 unit: unit,
                 stock_balance: $(this).find('.row-stock-balance').val(),
                 qty: $(this).find('.row-qty').val(),
@@ -590,6 +605,12 @@ jQuery(document).ready(function($) {
                     $select.val(null).trigger('change.select2').trigger('change');
                 });
 
+                if (['C', 'J', 'D'].includes(selectedLedge)) {
+                    $('.serial-number-group').show();
+                } else {
+                    $('.serial-number-group').hide().find('.row-serial-number').val('');
+                }
+
                 if ($('#itemsContainer').children().length === 0) {
                     renderItemRows(1);
                 }
@@ -611,6 +632,7 @@ jQuery(document).ready(function($) {
 
         const selectedLedge = ($('#ledgeSelect').val() || '').toUpperCase().trim();
         const filteredItems = (existingDBItems || []).filter(item => item && (item.ledge_category || '').toUpperCase().trim() === selectedLedge);
+        const isSerialCategory = ['C', 'J', 'D'].includes(selectedLedge);
 
         for (let i = 0; i < count; i++) {
             const currentRows = container.children('.item-entry-row').length;
@@ -717,11 +739,22 @@ jQuery(document).ready(function($) {
                         <input type="hidden" class="row-variance" value="0">
 
                         <div class="form-group full-width">
-                            <label style="display: flex; align-items: center; gap: 6px;">
-                                <i data-lucide="message-square" style="width: 12px; color: var(--primary);"></i>
-                                Situation Remarks / Notes
-                            </label>
-                            <input type="text" class="row-remarks" placeholder="Briefly describe the current situation or condition...">
+                            <div class="remarks-serial-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; width: 100%;">
+                                <div class="serial-number-group" style="${isSerialCategory ? '' : 'display: none;'}">
+                                    <label style="display: flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="barcode" style="width: 12px; color: var(--primary);"></i>
+                                        Serial Number
+                                    </label>
+                                    <input type="text" class="row-serial-number" placeholder="Enter serial number (optional)" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                </div>
+                                <div class="remarks-group">
+                                    <label style="display: flex; align-items: center; gap: 6px;">
+                                        <i data-lucide="message-square" style="width: 12px; color: var(--primary);"></i>
+                                        Situation Remarks / Specifications
+                                    </label>
+                                    <input type="text" class="row-remarks" placeholder="Briefly describe the current situation or specification..." style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1357,6 +1390,7 @@ jQuery(document).ready(function($) {
                                 $row.find('.row-stock-balance').val(itm.stock_balance || '');
                                 $row.find('.row-variance').val(itm.variance || 0);
                                 $row.find('.row-remarks').val(itm.remarks || '');
+                                $row.find('.row-serial-number').val(itm.serial_number || '');
                             });
 
                             _applyRollbackHighlights(flaggedFields);
@@ -1391,6 +1425,7 @@ jQuery(document).ready(function($) {
             item_qty:         () => $('.row-qty').toArray().map(el => $(el)),
             item_unit:        () => $('.row-unit').toArray().map(el => $(el)),
             item_remarks:     () => $('.row-remarks').toArray().map(el => $(el)),
+            item_serial_number: () => $('.row-serial-number').toArray().map(el => $(el)),
         };
 
         Object.keys(flaggedFields).forEach(key => {
