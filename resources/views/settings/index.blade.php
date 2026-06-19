@@ -137,7 +137,7 @@
                     </div>
                 </div>
 
-                @if(auth()->user()->is_admin && auth()->user()->role === 'Admin')
+                @if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
                 <div style="margin-top: 3rem; border-top: 1px solid var(--border-color); padding-top: 2.5rem; margin-bottom: 2.5rem;">
                     <h3 style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; letter-spacing: -0.02em;">
                         <i data-lucide="signature" style="color: var(--primary); width: 22px;"></i>

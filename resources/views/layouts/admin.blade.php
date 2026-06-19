@@ -1415,7 +1415,11 @@
         (function() {
             const authId = '{{ auth()->id() }}';
             const tabLockKey = 'tab_auth_lock_' + authId;
-            const isJustLoggedIn = {{ session('just_logged_in') ? 'true' : 'false' }};
+            const clientJustLoggedIn = sessionStorage.getItem('just_logged_in') === 'true';
+            if (clientJustLoggedIn) {
+                sessionStorage.removeItem('just_logged_in');
+            }
+            const isJustLoggedIn = {{ session('just_logged_in') ? 'true' : 'false' }} || clientJustLoggedIn;
             const logoutUrl = "{{ route('logout') }}";
 
             // Set up BroadcastChannel to share the lock across active tabs of the same session
@@ -1459,7 +1463,7 @@
                             document.body.appendChild(form);
                             form.submit();
                         }
-                    }, 150);
+                    }, 2000);
                 }
             }
 

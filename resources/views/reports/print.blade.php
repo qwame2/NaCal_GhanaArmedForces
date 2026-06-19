@@ -696,7 +696,7 @@
     {{-- Signature Sign-Off Block --}}
     @php
         $isAdmin = auth()->user()->is_admin;
-        $headOfStores = $isAdmin ? auth()->user() : \App\Models\User::where('is_admin', true)->where('role', 'Admin')->where('is_active', true)->first();
+        $headOfStores = $isAdmin ? auth()->user() : \App\Models\User::where('is_admin', true)->where('role', 'Head of Stores')->where('is_active', true)->first();
     @endphp
     <div class="signature-block" style="{{ $isAdmin ? 'grid-template-columns: 1fr; max-width: 300px; margin-left: auto; margin-right: auto;' : '' }}">
         @if(!$isAdmin)

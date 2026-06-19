@@ -447,7 +447,7 @@
                     <img src="{{ asset('img/NACOC1.png') }}" style="width: 32px;" alt="Logo">
                 </div>
                 <h2 style="color: var(--text-main); font-size: 1.6rem; font-weight: 950; letter-spacing: -0.04em; margin-bottom: 0.15rem;">NACOC</h2>
-                <p style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Inventory Management System(NSIMs)</p>
+                <p style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Stores Inventory Management System(NSIMs)</p>
 
                 <!-- Target Interface Selector -->
                 <div class="interface-selector" style="margin-top: 1.5rem; width: 100%; max-width: 300px; margin-inline: auto;">
@@ -476,7 +476,7 @@
                 <div id="formsSlider" style="display: flex; width: 200%; transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1);">
                     <!-- Login Side -->
                     <div id="loginForm" class="auth-form-side" style="width: 50%; padding: 0 10px; opacity: 1;">
-                        <form action="{{ route('login') }}" method="POST" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <form id="loginSubmitForm" action="{{ route('login') }}" method="POST" style="display: flex; flex-direction: column; gap: 1.25rem;">
                             @csrf
                             <div class="input-modern-group">
                                 <label id="usernameLabel">Username <span style="color: #ef4444;">*</span></label>
@@ -518,7 +518,7 @@
                         <!-- Initial Admin Registration (Admin Only) -->
                         <form id="adminRegisterForm" action="{{ route('register') }}" method="POST" style="display: flex; flex-direction: column; gap: 1.6rem;">
                             @csrf
-                            <input type="hidden" name="role" value="Admin">
+                            <input type="hidden" name="role" value="Head of Stores">
 
                             {{-- Section: Identity --}}
                             <div class="form-section-divider">
@@ -544,6 +544,32 @@
                                     <div class="input-wrapper">
                                         <div class="icon-box"><i data-lucide="at-sign"></i></div>
                                         <input type="text" name="username" placeholder="e.g. jmensah" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="input-modern-group">
+                                <label>Rank <span style="color: #ef4444;">*</span></label>
+                                <div class="input-wrapper">
+                                    <div class="icon-box"><i data-lucide="award"></i></div>
+                                    <input type="text" name="rank" placeholder="e.g. SNCO, NCO" required>
+                                </div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="input-modern-group">
+                                    <label>Role</label>
+                                    <div class="input-wrapper" style="background: rgba(0,0,0,0.03); cursor: not-allowed;">
+                                        <div class="icon-box"><i data-lucide="shield"></i></div>
+                                        <input type="text" value="Head of Stores" readonly style="color: var(--text-muted); cursor: not-allowed;">
+                                    </div>
+                                </div>
+
+                                <div class="input-modern-group">
+                                    <label>Staff ID <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <div class="icon-box"><i data-lucide="hash"></i></div>
+                                        <input type="text" name="service_number" placeholder="e.g. SN-8942" required>
                                     </div>
                                 </div>
                             </div>
@@ -627,56 +653,30 @@
                                 </div>
                             </div>
 
-                            <div class="form-grid">
-                                <div class="input-modern-group">
-                                    <label>Staff ID <span style="color: #ef4444;">*</span></label>
-                                    <div class="input-wrapper">
-                                        <div class="icon-box"><i data-lucide="hash"></i></div>
-                                        <input type="text" name="service_number" placeholder="e.g. SN-8942" required>
-                                    </div>
-                                </div>
-
-                                <div class="input-modern-group">
-                                    <label>Phone Number <span style="color: #ef4444;">*</span></label>
-                                    <div class="input-wrapper">
-                                        <div class="icon-box"><i data-lucide="phone"></i></div>
-                                        <input type="tel" name="phone" placeholder="e.g. +233241234567" required>
-                                    </div>
+                            <div class="input-modern-group">
+                                <label>Phone Number <span style="color: #ef4444;">*</span></label>
+                                <div class="input-wrapper">
+                                    <div class="icon-box"><i data-lucide="phone"></i></div>
+                                    <input type="tel" name="phone" placeholder="e.g. +233241234567" required>
                                 </div>
                             </div>
 
-                            {{-- Section: Role --}}
+                            {{-- Section: Department & Assignment --}}
                             <div class="form-section-divider">
                                 <div class="divider-line"></div>
                                 <div class="divider-label">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                    Role &amp; Assignment
+                                    Department &amp; Assignment
                                 </div>
                                 <div class="divider-line right"></div>
                             </div>
 
-                            <div class="input-modern-group" style="margin-top: 0.5rem;">
-                                <label>Role <span style="color: #ef4444;">*</span></label>
-                                <div class="input-wrapper">
-                                    <div class="icon-box"><i data-lucide="shield"></i></div>
-                                    <select name="role" id="selfRoleSelect" class="premium-select-input" required style="width: 100%; border: none; background: transparent; height: 100%; font-weight: 600; font-size: 1rem; outline: none; padding-left: 0.5rem; color: #0f172a; text-align: left;">
-                                        <option value="">-- Select Role --</option>
-                                        <option value="Officer">Store Officer</option>
-                                        <option value="Main Admin">Head of Admin</option>
-                                        <option value="Department Head">Other Dept. Head</option>
-                                        <option value="Auditor">Auditor</option>
-                                        <option value="Requisitioner">Requisitioner</option>
-                                        <option value="Director General">Director General(DG)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="form-grid" id="selfDeptRankGrid" style="display:none; grid-template-columns: 2fr 1fr;">
-                                <div class="input-modern-group" id="selfDeptGroup" style="display: none;">
+                            <div class="form-grid" style="margin-top: 0.5rem;">
+                                <div class="input-modern-group">
                                     <label>Department <span style="color: #ef4444;">*</span></label>
                                     <div class="input-wrapper">
                                         <div class="icon-box"><i data-lucide="network"></i></div>
-                                        <select name="department" id="selfDeptSelect" class="premium-select-input" style="width: 100%; border: none; background: transparent; height: 100%; font-weight: 600; font-size: 1rem; outline: none; padding-left: 0.5rem; color: #0f172a; text-align: left;">
+                                        <select name="department" id="selfDeptSelect" class="premium-select-input" required style="width: 100%; border: none; background: transparent; height: 100%; font-weight: 600; font-size: 1rem; outline: none; padding-left: 0.5rem; color: #0f172a; text-align: left;">
                                             <option value="">-- Select Department --</option>
                                             <optgroup label="INVESTIGATIONS & INTELLIGENCE DIRECTORATE">
                                                 <option value="Intelligence Department">Intelligence Department</option>
@@ -712,6 +712,7 @@
                                                 <option value="Transport Department">Transport Department</option>
                                                 <option value="Procurement Department">Procurement Department</option>
                                                 <option value="Project Management Department">Project Management Department</option>
+                                                <option value="Stores">Stores</option>
                                             </optgroup>
                                             <optgroup label="HUMAN RESOURCE DIRECTORATE">
                                                 <option value="Human Resource Management Department">Human Resource Management Department</option>
@@ -731,37 +732,12 @@
                                     </div>
                                 </div>
 
-                                {{-- Rank dropdown: Main Admin only (SNCO / NCO) --}}
-                                <div class="input-modern-group" id="selfRankGroup" style="display: none;">
-                                    <label>Rank <span style="color: #ef4444;">*</span></label>
+                                <div class="input-modern-group">
+                                    <label>Staff ID <span style="color: #ef4444;">*</span></label>
                                     <div class="input-wrapper">
-                                        <div class="icon-box"><i data-lucide="award"></i></div>
-                                        <select name="rank" id="selfRankSelect" class="premium-select-input" style="width: 100%; border: none; background: transparent; height: 100%; font-weight: 600; font-size: 1rem; outline: none; padding-left: 0.5rem; color: #0f172a;">
-                                            <option value="">-- Select Rank --</option>
-                                            <option value="SNCO">SNCO</option>
-                                            <option value="NCO">NCO</option>
-                                        </select>
+                                        <div class="icon-box"><i data-lucide="hash"></i></div>
+                                        <input type="text" name="service_number" placeholder="e.g. SN-8942" required>
                                     </div>
-                                </div>
-
-                                {{-- Rank input: Other Dept. Head only (free text) --}}
-                                <div class="input-modern-group" id="selfRankInputGroup" style="display: none;">
-                                    <label>Rank <span style="color: #ef4444;">*</span></label>
-                                    <div class="input-wrapper">
-                                        <div class="icon-box"><i data-lucide="badge"></i></div>
-                                        <input type="text" name="rank" id="selfRankInput" placeholder="e.g. SNDO, DNCO, ANCO" autocomplete="off">
-                                    </div>
-                                </div>
-
-                                {{-- Sponsor input: Requisitioner only --}}
-                                <div class="input-modern-group" id="selfSponsorGroup" style="display: none;">
-                                    <label>Department Head (Sponsor) <span style="color: #ef4444;">*</span></label>
-                                    <div class="input-wrapper" style="background: rgba(241, 245, 249, 0.75); cursor: not-allowed;">
-                                        <div class="icon-box"><i data-lucide="user-check"></i></div>
-                                        <input type="text" id="selfSponsorDisplay" readonly placeholder="No approved Department Head found" style="width: 100%; border: none; background: transparent; outline: none; color: #0f172a; text-align: left; font-weight: 600; font-size: 1rem; cursor: not-allowed;">
-                                        <input type="hidden" name="sponsored_by" id="selfSponsorSelectValue">
-                                    </div>
-                                    <div id="selfSponsorFeedback" style="display: none; font-size: 0.75rem; font-weight: 800; margin-top: 8px; padding: 10px 14px; border-radius: 12px; line-height: 1.4; transition: all 0.3s ease;"></div>
                                 </div>
                             </div>
 
@@ -1218,7 +1194,7 @@
             tabsContainer.innerHTML = `
                 <button type="button" class="tab-btn active" id="tab-login" onclick="toggleAuth('login')">Login</button>
                 @if(!$adminExists)
-                <button type="button" class="tab-btn" id="tab-register" onclick="toggleAuth('register')">Registry</button>
+                <button type="button" class="tab-btn" id="tab-register" onclick="toggleAuth('register')">Register</button>
                 @endif
             `;
             tabsContainer.style.background = 'rgba(0,0,0,0.03)';
@@ -1363,141 +1339,19 @@
         }, 5000);
     }
 
-    const departmentHeadsData = [
-        @foreach($departmentHeads as $head)
-            { id: "{{ $head->id }}", name: "{{ addslashes($head->name) }}", department: "{{ addslashes($head->department) }}" },
-        @endforeach
-    ];
 
-    function filterSponsorsByDepartment() {
-        const role = document.getElementById('selfRoleSelect').value;
-        const deptVal = document.getElementById('selfDeptSelect').value;
-        const sponsorDisplay = document.getElementById('selfSponsorDisplay');
-        const sponsorValue = document.getElementById('selfSponsorSelectValue');
-        const feedbackDiv = document.getElementById('selfSponsorFeedback');
-        if (!sponsorDisplay || !sponsorValue) return;
-
-        let matchedHead = null;
-
-        if (role === 'Requisitioner' && deptVal) {
-            matchedHead = departmentHeadsData.find(h => h.department === deptVal);
-        }
-
-        if (role === 'Requisitioner' && deptVal) {
-            if (matchedHead) {
-                sponsorDisplay.value = matchedHead.name;
-                sponsorValue.value = matchedHead.id;
-
-                if (feedbackDiv) {
-                    feedbackDiv.style.display = 'none';
-                    feedbackDiv.innerHTML = '';
-                }
-            } else {
-                sponsorDisplay.value = "";
-                sponsorValue.value = "";
-
-                if (feedbackDiv) {
-                    feedbackDiv.style.display = 'block';
-                    feedbackDiv.style.background = 'rgba(239, 68, 68, 0.08)';
-                    feedbackDiv.style.color = '#dc2626';
-                    feedbackDiv.style.border = '1px solid rgba(239, 68, 68, 0.2)';
-                    feedbackDiv.innerHTML = `⚠️ No approved Department Head is currently registered for the <strong>${deptVal}</strong>. Please notify your Department Head to register and obtain Admin approval before you can sign up.`;
-                }
-            }
-        } else {
-            sponsorDisplay.value = "";
-            sponsorValue.value = "";
-            if (feedbackDiv) {
-                feedbackDiv.style.display = 'none';
-                feedbackDiv.innerHTML = '';
-            }
-        }
-    }
-
-    function handleSelfRoleChange() {
-        const role = document.getElementById('selfRoleSelect').value;
-        const deptGroup      = document.getElementById('selfDeptGroup');
-        const deptSelect     = document.getElementById('selfDeptSelect');
-        const rankGroup      = document.getElementById('selfRankGroup');      // dropdown (Main Admin)
-        const rankSelect     = document.getElementById('selfRankSelect');
-        const rankInputGroup = document.getElementById('selfRankInputGroup'); // free text (Dept Head)
-        const rankInput      = document.getElementById('selfRankInput');
-        const sponsorGroup   = document.getElementById('selfSponsorGroup');   // Requisitioner sponsor
-        const sponsorDisplay = document.getElementById('selfSponsorDisplay');
-        const sponsorValue   = document.getElementById('selfSponsorSelectValue');
-        const deptRankGrid   = document.getElementById('selfDeptRankGrid');
-
-        // ── Department field: only for Department Head and Requisitioner ──
-        if (role === 'Department Head' || role === 'Requisitioner') {
-            deptGroup.style.display = 'block';
-            deptSelect.setAttribute('required', 'required');
-        } else {
-            deptGroup.style.display = 'none';
-            deptSelect.removeAttribute('required');
-            if (deptSelect.value !== '') {
-                deptSelect.value = '';
-                $(deptSelect).trigger('change');
-            }
-        }
-
-        // ── Rank dropdown (SNCO/NCO): Main Admin only ──
-        if (role === 'Main Admin') {
-            rankGroup.style.display = 'block';
-            rankSelect.setAttribute('required', 'required');
-        } else {
-            rankGroup.style.display = 'none';
-            rankSelect.removeAttribute('required');
-            rankSelect.value = '';
-        }
-
-        // ── Rank input (free text): Other Dept. Head only ──
-        if (role === 'Department Head') {
-            rankInputGroup.style.display = 'block';
-            rankInput.setAttribute('required', 'required');
-        } else {
-            rankInputGroup.style.display = 'none';
-            rankInput.removeAttribute('required');
-            rankInput.value = '';
-        }
-
-        // ── Sponsor input: Requisitioner only ──
-        if (role === 'Requisitioner') {
-            sponsorGroup.style.display = 'block';
-            sponsorDisplay.setAttribute('required', 'required');
-        } else {
-            sponsorGroup.style.display = 'none';
-            sponsorDisplay.removeAttribute('required');
-            sponsorDisplay.value = '';
-            sponsorValue.value = '';
-        }
-
-        // ── Show/hide the grid wrapper ──
-        if (deptRankGrid) {
-            const anyVisible = (deptGroup.style.display      !== 'none') ||
-                               (rankGroup.style.display      !== 'none') ||
-                               (rankInputGroup.style.display !== 'none') ||
-                               (sponsorGroup.style.display   !== 'none');
-            
-            deptRankGrid.style.display = anyVisible ? 'grid' : 'none';
-
-            // Adjust columns dynamically based on role
-            if (role === 'Requisitioner') {
-                deptRankGrid.style.gridTemplateColumns = '1fr 1fr';
-            } else if (role === 'Department Head') {
-                deptRankGrid.style.gridTemplateColumns = '2fr 1fr';
-            } else {
-                deptRankGrid.style.gridTemplateColumns = '1fr'; // fallback
-            }
-        }
-
-        filterSponsorsByDepartment();
-        updateViewportHeight();
-    }
 
     // Handle window resize to keep height accurate
     window.addEventListener('resize', updateViewportHeight);
 
     document.addEventListener('DOMContentLoaded', () => {
+        const loginFormEl = document.getElementById('loginSubmitForm');
+        if (loginFormEl) {
+            loginFormEl.addEventListener('submit', () => {
+                sessionStorage.setItem('just_logged_in', 'true');
+            });
+        }
+
         const usernameInput = document.getElementById('loginUsername');
         if (usernameInput) {
             usernameInput.addEventListener('input', checkForgotEligibility);
@@ -1506,10 +1360,7 @@
 
         // Option caching removed since Sponsor is now a text input
 
-        const selfDeptSelect = document.getElementById('selfDeptSelect');
-        if (selfDeptSelect) {
-            selfDeptSelect.addEventListener('change', handleSelfRoleChange);
-        }
+
 
         // Initialize Default Interface based on session flash
         @if(session('target_admin'))
@@ -1563,25 +1414,7 @@
 <script>
     $(document).ready(function() {
 
-        // ── Role Select2 ──
-        if ($('#selfRoleSelect').length) {
-            $('#selfRoleSelect').select2({
-                placeholder: "-- Select Role --",
-                allowClear: false,
-                minimumResultsForSearch: Infinity  // hide search box (only 4 options)
-            });
 
-            $('#selfRoleSelect').on('change', function() {
-                handleSelfRoleChange();
-            });
-
-            $('#selfRoleSelect').on('select2:open', function() {
-                $(this).closest('.input-wrapper').addClass('select2-focused');
-            });
-            $('#selfRoleSelect').on('select2:close', function() {
-                $(this).closest('.input-wrapper').removeClass('select2-focused');
-            });
-        }
 
         // ── Department Select2 ──
         if ($('#selfDeptSelect').length) {
@@ -1589,11 +1422,7 @@
                 placeholder: "-- Select Department --",
                 allowClear: true
             });
-            
-            // Re-trigger dynamic role/rank check when select2 values change
-            $('#selfDeptSelect').on('change', function() {
-                handleSelfRoleChange();
-            });
+
 
             // Focus state visual integration
             $('#selfDeptSelect').on('select2:open', function() {

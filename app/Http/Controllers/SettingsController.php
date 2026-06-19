@@ -105,7 +105,7 @@ class SettingsController extends Controller
 
     public function updateSignature(Request $request)
     {
-        if (!(auth()->user()->is_admin && auth()->user()->role === 'Admin')) {
+        if (!(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')) {
             return response()->json(['success' => false, 'message' => 'Unauthorized. Only Head of Stores can perform this action.'], 403);
         }
 
@@ -134,7 +134,7 @@ class SettingsController extends Controller
 
     public function removeSignature()
     {
-        if (!(auth()->user()->is_admin && auth()->user()->role === 'Admin')) {
+        if (!(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')) {
             return response()->json(['success' => false, 'message' => 'Unauthorized. Only Head of Stores can perform this action.'], 403);
         }
 

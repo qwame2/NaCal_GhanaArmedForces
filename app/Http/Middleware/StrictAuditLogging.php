@@ -35,7 +35,7 @@ class StrictAuditLogging
                     }
 
                     $path = $request->path();
-                    $role = auth()->user()->is_admin ? 'Admin' : 'Staff Member';
+                    $role = auth()->user()->is_admin ? (auth()->user()->role ?? 'Head of Stores') : 'Staff Member';
 
                     // Human-friendly path mapping
                     $friendlyPath = '/' . $path;

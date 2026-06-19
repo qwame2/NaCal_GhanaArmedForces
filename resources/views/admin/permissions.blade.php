@@ -722,6 +722,47 @@
         flex-shrink: 0;
     }
 
+    .reg-select-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+    .reg-select {
+        padding: 0.55rem 2.2rem 0.55rem 1rem;
+        font-family: inherit;
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: #334155;
+        background-color: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        outline: none;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        transition: all 0.25s ease;
+    }
+    .reg-select:hover, .reg-select:focus {
+        border-color: #6366f1;
+        background-color: white;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+        transform: translateY(-1px);
+    }
+    .reg-select-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        transition: color 0.25s ease;
+    }
+    .reg-select:focus + .reg-select-icon,
+    .reg-select:hover + .reg-select-icon {
+        color: #6366f1;
+    }
+
     .reg-btn {
         display: inline-flex;
         align-items: center;
@@ -902,6 +943,26 @@
     document.addEventListener('submit', async function(e) {
         const form = e.target;
         if (form.action && (form.action.includes('approve-registration') || form.action.includes('reject-registration'))) {
+            const isApprove = form.action.includes('approve-registration');
+            
+            if (isApprove) {
+                const roleSelect = form.querySelector('select[name="role"]');
+                if (!roleSelect || !roleSelect.value) {
+                    e.preventDefault();
+                    if (typeof showToast === 'function') {
+                        showToast('Alert', 'Please select a role to assign before approving.', 'error');
+                    } else {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Role Required',
+                            text: 'Please select a role to assign before approving.',
+                            confirmButtonColor: '#4f46e5'
+                        });
+                    }
+                    return;
+                }
+            }
+
             e.preventDefault();
 
             // Disable buttons inside the card to prevent double clicks
@@ -919,6 +980,19 @@
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 });
+
+                if (!response.ok) {
+                    let errMsg = 'Server validation or processing failed.';
+                    try {
+                        const errData = await response.json();
+                        if (errData && errData.errors && errData.errors.role) {
+                            errMsg = errData.errors.role[0];
+                        } else if (errData && errData.message) {
+                            errMsg = errData.message;
+                        }
+                    } catch (e) {}
+                    throw new Error(errMsg);
+                }
 
                 const html = await response.text();
                 const parser = new DOMParser();
@@ -988,13 +1062,14 @@
                 }
             } catch (err) {
                 console.error(err);
+                const errMsg = err.message || 'An error occurred while processing the request.';
                 if (typeof showToast === 'function') {
-                    showToast('Error', 'An error occurred while processing the request.', 'error');
+                    showToast('Error', errMsg, 'error');
                 } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'System Error',
-                        text: 'An error occurred while processing the request.',
+                        text: errMsg,
                         confirmButtonColor: '#4f46e5'
                     });
                 }

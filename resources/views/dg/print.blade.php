@@ -359,7 +359,7 @@
 
     {{-- Signature Sign-Off Block --}}
     @php
-        $headOfStores = \App\Models\User::where('is_admin', true)->where('role', 'Admin')->where('is_active', true)->first();
+        $headOfStores = \App\Models\User::where('is_admin', true)->where('role', 'Head of Stores')->where('is_active', true)->first();
     @endphp
     <div class="signature-block">
         <div class="sig-col">

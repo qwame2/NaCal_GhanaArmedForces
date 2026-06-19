@@ -39,22 +39,22 @@ class AdminController extends Controller
         }
 
         $perPage = $request->input('per_page', 10);
-        $users = User::where('role', '!=', 'Admin')
+        $users = User::where('role', '!=', 'Head of Stores')
             ->where('registration_status', 'approved')
             ->paginate($perPage);
 
-        $totalUsers = User::where('role', '!=', 'Admin')
+        $totalUsers = User::where('role', '!=', 'Head of Stores')
             ->where('registration_status', 'approved')
             ->count();
 
-        $onlineCount = User::where('role', '!=', 'Admin')
+        $onlineCount = User::where('role', '!=', 'Head of Stores')
             ->where('registration_status', 'approved')
             ->where('is_online', true)
             ->count();
 
         $allUsers = User::where('registration_status', 'approved')->get(); // Keep for calculating global metrics if needed
         
-        $recentLogins = User::where('role', '!=', 'Admin')
+        $recentLogins = User::where('role', '!=', 'Head of Stores')
             ->where('registration_status', 'approved')
             ->orderBy('last_login_at', 'desc')
             ->limit(100)
@@ -87,18 +87,71 @@ class AdminController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
+        $request->validate([
+            'role' => 'required|string|in:Officer,Main Admin,Department Head,Auditor,Requisitioner,Director General',
+        ]);
+
         $user = User::findOrFail($id);
-        
+        $role = $request->role;
+
+        $user->role = $role;
         $user->registration_status = 'approved';
         $user->is_active = true;
 
-        // By default toggle off Item Entry, Confirm Collection, Report Access, and Stock Check when a new store officer registration has been approved
-        if ($user->role === 'Officer') {
+        // Default attributes based on the assigned role:
+        if ($role === 'Main Admin') {
+            $user->department = 'Stores';
+            $user->is_admin = true;
+            $user->is_temp_account = false;
+            $user->can_make_requisition = false;
+            $user->can_approve_requisition = false;
+        } elseif ($role === 'Auditor') {
+            $user->department = 'Internal Audit';
+            $user->is_admin = false;
+            $user->is_temp_account = true;
+            $user->can_make_requisition = false;
+            $user->can_approve_requisition = false;
+            $user->can_generate_reports = true;
+        } elseif ($role === 'Officer') {
+            $user->department = 'Stores';
+            $user->is_admin = false;
+            $user->is_temp_account = false;
             $user->can_add_inventory = false;
             $user->can_operate_logistics = false;
             $user->can_generate_reports = false;
             $user->can_verify_stock = false;
-        } elseif ($user->role === 'Director General') {
+            $user->can_make_requisition = false;
+            $user->can_approve_requisition = false;
+        } elseif ($role === 'Requisitioner') {
+            $user->is_admin = false;
+            $user->is_temp_account = false;
+            $user->can_make_requisition = true;
+            $user->can_approve_requisition = false;
+            
+            // Find active/approved Department Head for Requisitioner's department
+            $deptHead = User::where('role', 'Department Head')
+                ->where('department', $user->department)
+                ->where('is_active', true)
+                ->where('registration_status', 'approved')
+                ->first();
+            if ($deptHead) {
+                $user->sponsored_by = $deptHead->id;
+            } else {
+                $user->sponsored_by = null;
+            }
+        } elseif ($role === 'Director General') {
+            $user->department = 'Executive Directorate';
+            $user->is_admin = false;
+            $user->is_temp_account = false;
+            $user->can_generate_reports = true;
+            $user->can_make_requisition = false;
+            $user->can_approve_requisition = false;
+        } else {
+            // Department Head
+            $user->is_admin = false;
+            $user->is_temp_account = false;
+            $user->can_make_requisition = false;
+            $user->can_approve_requisition = true;
             $user->can_generate_reports = true;
         }
 
@@ -220,7 +273,7 @@ class AdminController extends Controller
         ]);
 
         // SECURITY ENFORCEMENT: Only one active Admin account allowed
-        if ($request->role === 'Admin' && !$user->is_admin) {
+        if ($request->role === 'Head of Stores' && !$user->is_admin) {
             if (User::where('is_admin', true)->where('is_active', true)->exists()) {
                 return back()->with('error', 'Strategic Oversight Alert: Only one active Administrative account is permitted. Promotion denied.');
             }
@@ -239,7 +292,7 @@ class AdminController extends Controller
             'name' => $request->name,
             'role' => $request->role,
             'department' => $department,
-            'is_admin' => in_array($request->role, ['Admin', 'Main Admin']),
+            'is_admin' => in_array($request->role, ['Head of Stores', 'Main Admin']),
             'is_temp_account' => $request->role === 'Auditor',
         ]);
 

@@ -1163,7 +1163,7 @@
         </form>
         @endif
 
-        @if(auth()->user()->is_admin && auth()->user()->role === 'Admin')
+        @if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
         {{-- Head of Stores Digital Signature Upload Card --}}
         <div class="cfg-card" id="head-stores-signature" style="margin-bottom: 2rem;">
             <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9;">

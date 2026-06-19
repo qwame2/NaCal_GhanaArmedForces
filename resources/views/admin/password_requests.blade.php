@@ -590,7 +590,11 @@ function initCountdowns() {
     const countdowns = document.querySelectorAll('.rt-countdown');
     if(countdowns.length === 0) return;
 
-    setInterval(() => {
+    if (window._countdownInterval) {
+        clearInterval(window._countdownInterval);
+    }
+
+    window._countdownInterval = setInterval(() => {
         const now = new Date().getTime();
         countdowns.forEach(el => {
             const expires = new Date(el.dataset.expires).getTime();
@@ -631,6 +635,90 @@ function initCountdowns() {
         });
     }, 1000);
 }
+
+// Helper to normalize HTML content for stable comparison (ignores Lucide icon expansions and whitespace differences)
+function getNormalizedHTML(element) {
+    if (!element) return '';
+    const clone = element.cloneNode(true);
+    // Remove all icon elements to prevent translation differences from causing false change detection
+    clone.querySelectorAll('svg, i, [data-lucide]').forEach(el => el.remove());
+    return clone.innerHTML.replace(/\s+/g, ' ').trim();
+}
+
+// Auto silent refresh every 10 seconds to show all requests without page reload
+setInterval(async () => {
+    // Prevent refresh if SweetAlert is open
+    const isSwalOpen = typeof Swal !== 'undefined' && Swal.isVisible();
+    if (isSwalOpen) return;
+    
+    try {
+        const response = await fetch(window.location.href);
+        if (!response.ok) return;
+        const html = await response.text();
+        
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        let updated = false;
+        
+        // Update stats/metrics cards
+        const newMetrics = doc.querySelector('.rt-metrics');
+        const currentMetrics = document.querySelector('.rt-metrics');
+        if (newMetrics && currentMetrics) {
+            const normNewMetrics = getNormalizedHTML(newMetrics);
+            const normCurMetrics = getNormalizedHTML(currentMetrics);
+            if (normNewMetrics !== normCurMetrics) {
+                currentMetrics.innerHTML = newMetrics.innerHTML;
+                updated = true;
+            }
+        }
+        
+        // Update table wrap (body and headers)
+        const newTable = doc.querySelector('.rt-table-wrap');
+        const currentTable = document.querySelector('.rt-table-wrap');
+        if (newTable && currentTable) {
+            const normNewTable = getNormalizedHTML(newTable);
+            const normCurTable = getNormalizedHTML(currentTable);
+            if (normNewTable !== normCurTable) {
+                currentTable.innerHTML = newTable.innerHTML;
+                updated = true;
+            }
+        }
+
+        // Update footer
+        const newFooter = doc.querySelector('.rt-footer');
+        const currentFooter = document.querySelector('.rt-footer');
+        if (newFooter && currentFooter) {
+            const normNewFooter = getNormalizedHTML(newFooter);
+            const normCurFooter = getNormalizedHTML(currentFooter);
+            if (normNewFooter !== normCurFooter) {
+                currentFooter.innerHTML = newFooter.innerHTML;
+                updated = true;
+            }
+        }
+
+        // Update brand heading badge
+        const newBrand = doc.querySelector('.rt-brand-heading');
+        const currentBrand = document.querySelector('.rt-brand-heading');
+        if (newBrand && currentBrand) {
+            const normNewBrand = getNormalizedHTML(newBrand);
+            const normCurBrand = getNormalizedHTML(currentBrand);
+            if (normNewBrand !== normCurBrand) {
+                currentBrand.innerHTML = newBrand.innerHTML;
+                updated = true;
+            }
+        }
+        
+        if (updated) {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            initCountdowns();
+        }
+    } catch (e) {
+        console.error('Password requests silent refresh failed:', e);
+    }
+}, 10000);
+
 document.addEventListener("DOMContentLoaded", initCountdowns);
 </script>
 

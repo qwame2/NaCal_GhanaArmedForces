@@ -71,6 +71,8 @@ class AuthController extends Controller
             'role' => 'required|string',
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username',
+            'rank' => 'required|string|max:255',
+            'service_number' => 'required|string|max:255',
             'password' => [
                 'required',
                 'string',
@@ -92,7 +94,7 @@ class AuthController extends Controller
             ],
         ]);
 
-        if ($request->role !== 'Admin') {
+        if ($request->role !== 'Head of Stores') {
             return back()->with('error', 'Strategic Oversight Alert: Personnel registration must be performed by an Administrator through the Command Center.');
         }
 
@@ -106,9 +108,11 @@ class AuthController extends Controller
                 'name' => $request->name,
                 'username' => $request->username,
                 'password' => $request->password,
-                'role' => 'Admin',
+                'role' => 'Head of Stores',
                 'is_admin' => true,
                 'is_online' => false,
+                'rank' => $request->rank,
+                'service_number' => $request->service_number,
             ]);
 
             // Log the registration
@@ -317,7 +321,7 @@ class AuthController extends Controller
                             }
 
                             if (str_contains($group, 'nacoc_admins')) {
-                                $role = 'Admin';
+                                $role = 'Head of Stores';
                                 $isAdmin = true;
                                 $canAddInventory = true;
                                 $canOperateLogistics = true;
@@ -890,7 +894,7 @@ class AuthController extends Controller
         }
 
         $user = User::where('username', $username)->first();
-        if ($user && in_array($user->role, ['Department Head', 'Admin', 'Main Admin'])) {
+        if ($user && in_array($user->role, ['Department Head', 'Head of Stores', 'Main Admin'])) {
             return response()->json(['eligible' => true]);
         }
 
@@ -915,27 +919,11 @@ class AuthController extends Controller
         }
 
         $request->validate([
-            'role' => 'required|string|in:Officer,Main Admin,Department Head,Auditor,Requisitioner,Director General',
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username',
             'phone' => 'required|string|max:20',
             'service_number' => 'required|string|max:100',
-            'department' => 'required_if:role,Department Head,Requisitioner|nullable|string|max:255',
-            'sponsored_by' => 'required_if:role,Requisitioner|nullable|integer|exists:users,id',
-            'rank' => [
-                'nullable',
-                'string',
-                'max:100',
-                function ($attribute, $value, $fail) use ($request) {
-                    $role = $request->role;
-                    if ($role === 'Main Admin' && empty($value)) {
-                        $fail('Rank (SNCO/NCO) is required for Head of Admin (Stores).');
-                    }
-                    if ($role === 'Department Head' && empty($value)) {
-                        $fail('Rank is required for Department Heads.');
-                    }
-                }
-            ],
+            'department' => 'required|string|max:255',
             'password' => [
                 'required',
                 'string',
@@ -962,53 +950,22 @@ class AuthController extends Controller
         ]);
 
         try {
-            $role = $request->role;
-            $department = null;
-            $isAdmin = false;
-            $isTempAccount = false;
-            $sponsoredBy = null;
-
-            if ($role === 'Main Admin') {
-                $department = 'Stores';
-                $isAdmin = true;
-            } elseif ($role === 'Auditor') {
-                $department = 'Internal Audit';
-                $isTempAccount = true;
-            } elseif ($role === 'Officer') {
-                $department = 'Stores';
-            } elseif ($role === 'Requisitioner') {
-                $department = $request->department;
-                $sponsoredBy = $request->sponsored_by;
-            } elseif ($role === 'Director General') {
-                $department = 'Executive Directorate';
-            } else {
-                // Department Head
-                $department = $request->department;
-            }
-
             $user = new User([
                 'name' => $request->name,
                 'username' => $request->username,
                 'password' => $request->password,
-                'role' => $role,
-                'department' => $department,
-                'rank' => $request->rank,
+                'role' => null,
+                'department' => $request->department,
+                'rank' => null,
                 'phone' => $request->phone,
                 'service_number' => $request->service_number,
-                'sponsored_by' => $sponsoredBy,
-                'is_admin' => $isAdmin,
-                'is_temp_account' => $isTempAccount,
+                'sponsored_by' => null,
+                'is_admin' => false,
+                'is_temp_account' => false,
                 'is_active' => false,
                 'registration_status' => 'pending',
                 'must_change_password' => false,
             ]);
-
-            if ($role === 'Officer') {
-                $user->can_add_inventory = false;
-                $user->can_operate_logistics = false;
-                $user->can_generate_reports = false;
-                $user->can_verify_stock = false;
-            }
 
             $user->save();
 
@@ -1017,7 +974,7 @@ class AuthController extends Controller
                 'user_id' => null, // Guest action
                 'event_type' => 'SECURITY',
                 'action' => 'SELF_REGISTER',
-                'description' => "Self-registration request submitted by {$user->name} (@{$user->username}) for role {$user->role}.",
+                'description' => "Self-registration request submitted by {$user->name} (@{$user->username}).",
                 'severity' => 'info',
                 'ip_address' => $request->ip()
             ]);
