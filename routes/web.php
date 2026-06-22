@@ -1346,6 +1346,10 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     // Supplier Registry
     Route::post('/admin/settings/supplier-registry', function(\Illuminate\Http\Request $request) {
         if (!auth()->user()->is_admin) abort(403);
+        
+        // Self-heal database schema to ensure delivery_phone exists
+        \App\Models\InventoryBatch::selfHealSchema();
+
         $namesStr = trim($request->input('name'));
         $deliveryPerson = trim($request->input('delivery_person'));
         $deliveryPhone = trim($request->input('delivery_phone'));

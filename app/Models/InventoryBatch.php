@@ -28,12 +28,15 @@ class InventoryBatch extends Model
             return;
         }
 
+        $success = true;
+
         if (Schema::hasTable('suppliers') && !Schema::hasColumn('suppliers', 'delivery_phone')) {
             try {
                 Schema::table('suppliers', function (Blueprint $table) {
                     $table->string('delivery_phone')->nullable()->after('delivery_person');
                 });
             } catch (\Exception $e) {
+                $success = false;
                 // Ignore concurrent schema updates or errors
             }
         }
@@ -52,13 +55,16 @@ class InventoryBatch extends Model
                         }
                     });
                 } catch (\Exception $e) {
+                    $success = false;
                     // Ignore concurrent schema updates or errors
                 }
             }
         }
 
-        // Cache the successful validation for 7 days
-        \Illuminate\Support\Facades\Cache::put($cacheKey, true, 604800);
+        // Cache the successful validation for 7 days if all schema modifications succeeded
+        if ($success) {
+            \Illuminate\Support\Facades\Cache::put($cacheKey, true, 604800);
+        }
     }
 
     protected $fillable = [
