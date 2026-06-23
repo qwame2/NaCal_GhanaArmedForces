@@ -143,7 +143,6 @@
                         <tr style="background: rgba(0,0,0,0.02); text-align: left;">
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Timeline</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Items</th>
-                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Storage Location</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Destination</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Collector</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Head of Stores</th>
@@ -169,7 +168,7 @@
                                 $statusBadge = '<span class="status-badge" style="background: ' . $statusBg . '; color: ' . $statusColor . '; font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em;">' . strtoupper($item->issuance_type) . '</span>';
                             }
                         @endphp
-                        <tr class="activity-row" data-date="{{ $dateVal }}" data-category="{{ $item->ledge_category }}" data-type="{{ $item->issuance_type }}" data-search="{{ strtolower($item->description . ' ' . $item->beneficiary . ' ' . ($item->authority ?? 'Adomako Emmanuel') . ' ' . $item->location . ' ' . ($item->collector_name ?? '') . ' ' . ($item->confirming_officer_name ?? 'Adomako Emmanuel')) }}" style="border-top: 1px solid var(--border-color);">
+                        <tr class="activity-row" data-date="{{ $dateVal }}" data-category="{{ $item->ledge_category }}" data-type="{{ $item->issuance_type }}" data-search="{{ strtolower($item->description . ' ' . $item->beneficiary . ' ' . ($item->authority ?? 'Adomako Emmanuel') . ' ' . ($item->collector_name ?? '') . ' ' . ($item->confirming_officer_name ?? 'Adomako Emmanuel')) }}" style="border-top: 1px solid var(--border-color);">
                             <td data-label="Timeline" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main); font-size: 0.9rem;">
                                 <div>{{ $dateStr }}</div>
                                 <div style="font-weight: 700; color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
@@ -184,12 +183,7 @@
                                     </span>
                                 </div>
                             </td>
-                            <td data-label="Storage Location" style="padding: 1.25rem 1.5rem; font-weight: 600; color: var(--text-main); font-size: 0.9rem;">
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--text-muted);"></i>
-                                    <span>{{ $item->location }}</span>
-                                </div>
-                            </td>
+
                             <td data-label="Destination" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main); font-size: 0.9rem; white-space: nowrap;">{{ $item->beneficiary }}</td>
                             <td data-label="Collector" style="padding: 1.25rem 1.5rem;">
                                 @if(!empty($item->collector_name))

@@ -1,6 +1,27 @@
 @extends('layouts.dashboard')
 
 @section('content')
+<style>
+    .serial-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(99, 102, 241, 0.02);
+        border: 1px solid var(--border-color);
+        padding: 4px 8px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    .serial-input-wrapper:focus-within {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+        background: var(--bg-card) !important;
+    }
+    .btn-bulk-paste:hover {
+        background: rgba(99, 102, 241, 0.08) !important;
+        color: var(--primary-hover) !important;
+    }
+</style>
 <div class="animate-slide-up" id="newEntryPageContainer">
     <!-- Header Section -->
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
@@ -218,6 +239,28 @@
         box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15) !important;
         border-color: var(--primary) !important;
     }
+
+    /* Premium styling overrides for select2 fields in unit container */
+    .unit-container-sleek .select2-container--default .select2-selection--single {
+        padding-left: 2.5rem !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+        border: 1px solid var(--border-color) !important;
+        display: flex !important;
+        align-items: center !important;
+        background: rgba(99, 102, 241, 0.03) !important;
+    }
+    .unit-container-sleek .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--text-main) !important;
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        padding-left: 0px !important;
+    }
+    .unit-container-sleek .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 46px !important;
+    }
 </style>
 
 <script id="inventory-data" type="application/json">
@@ -304,9 +347,7 @@ jQuery(document).ready(function($) {
             if ((ni.unit || '').trim().toUpperCase() !== (oi.unit || '').trim().toUpperCase()) {
                 return true;
             }
-            if ((ni.location || '').trim().toUpperCase() !== (oi.location || '').trim().toUpperCase()) {
-                return true;
-            }
+
             if (parseFloat(ni.qty || 0) !== parseFloat(oi.qty || 0)) {
                 return true;
             }
@@ -324,6 +365,131 @@ jQuery(document).ready(function($) {
     const ledgeSelect = $('#ledgeSelect');
     const itemDetails = $('#itemDetails');
 
+    function updateSerialInputs($row) {
+        const selectedLedge = ($('#ledgeSelect').val() || '').toUpperCase().trim();
+        const isSerialCategory = ['C', 'J', 'D'].includes(selectedLedge);
+        const $container = $row.find('.serial-inputs-container');
+        
+        if (!isSerialCategory) {
+            $container.empty();
+            $row.find('.serial-number-group').hide();
+            $row.find('.row-serial-number').val('');
+            return;
+        }
+
+        const status = $('#supplierStatusSelect').val();
+        const qty = parseInt(status === 'Partial Delivery' ? $row.find('.row-stock-balance').val() : $row.find('.row-qty').val()) || 0;
+
+        if (qty <= 0) {
+            $container.empty();
+            $row.find('.serial-number-group').hide();
+            $row.find('.row-serial-number').val('');
+            return;
+        }
+
+        $row.find('.serial-number-group').show();
+
+        // Get currently typed values from the inputs if any exist
+        let currentValues = $container.find('.serial-input-item').map(function() {
+            return $(this).val();
+        }).get();
+
+        // If no inputs exist yet, check if there is an existing joined value in .row-serial-number
+        if (currentValues.length === 0) {
+            const rawVal = $row.find('.row-serial-number').val();
+            if (rawVal) {
+                currentValues = rawVal.split(',').map(s => s.trim());
+            }
+        }
+
+        $container.empty();
+        
+        // Create multiple inputs
+        for (let i = 0; i < qty; i++) {
+            const val = currentValues[i] || '';
+            const inputHtml = `
+                <div class="serial-input-wrapper">
+                    <span style="font-size: 0.72rem; font-weight: 800; color: var(--primary); opacity: 0.8; user-select: none;">#${i+1}</span>
+                    <input type="text" class="serial-input-item" value="${val}" placeholder="S/N ${i+1}" style="flex: 1; border: none; background: transparent; color: var(--text-main); padding: 2px 4px; font-family: inherit; font-size: 0.82rem; font-weight: 600; outline: none; width: 100%;">
+                </div>
+            `;
+            $container.append(inputHtml);
+        }
+
+        // Update the joined hidden/manifest value
+        const sns = $container.find('.serial-input-item').map(function() {
+            return ($(this).val() || '').trim();
+        }).get().filter(Boolean).join(', ');
+        $row.find('.row-serial-number').val(sns);
+    }
+
+    $(document).on('input', '.serial-input-item', function() {
+        const $row = $(this).closest('.item-entry-row');
+        const sns = $row.find('.serial-input-item').map(function() {
+            return ($(this).val() || '').trim();
+        }).get().filter(Boolean).join(', ');
+        $row.find('.row-serial-number').val(sns);
+    });
+
+    $(document).on('click', '.btn-bulk-paste', function(e) {
+        e.preventDefault();
+        const $row = $(this).closest('.item-entry-row');
+        const $container = $row.find('.serial-inputs-container');
+        const numInputs = $container.find('.serial-input-item').length;
+        
+        if (numInputs === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Input Fields',
+                text: 'Please set a valid item quantity first to generate input fields.',
+                confirmButtonColor: 'var(--primary)'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Bulk Import Serial Numbers',
+            text: `Enter or paste up to ${numInputs} serial numbers (separated by commas, spaces, or newlines):`,
+            input: 'textarea',
+            inputPlaceholder: 'Paste here...',
+            inputAttributes: {
+                autocapitalize: 'off',
+                autocomplete: 'off',
+                autocorrect: 'off'
+            },
+            showCancelButton: true,
+            confirmButtonColor: 'var(--primary)',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Import',
+            preConfirm: (text) => {
+                if (!text) {
+                    Swal.showValidationMessage('Please enter some serial numbers');
+                }
+                return text;
+            }
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                const sns = result.value.split(/[\n,;\t]+/).map(s => s.trim()).filter(Boolean);
+                if (sns.length > 0) {
+                    $container.find('.serial-input-item').each((index, input) => {
+                        if (index < sns.length) {
+                            $(input).val(sns[index]);
+                        }
+                    });
+                    $container.find('.serial-input-item').first().trigger('input');
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Imported!',
+                        text: `Successfully imported ${Math.min(sns.length, numInputs)} serial number(s).`,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            }
+        });
+    });
+
     // Database Items from Backend
     let existingDBItems = [];
     try {
@@ -336,7 +502,6 @@ jQuery(document).ready(function($) {
                         ...item,
                         description: (item.description || '').toUpperCase().trim(),
                         unit: (item.unit || '').toUpperCase().trim(),
-                        location: (item.location || '').toUpperCase().trim(),
                         ledge_category: (item.ledge_category || '').toUpperCase().trim()
                     };
                 });
@@ -357,13 +522,11 @@ jQuery(document).ready(function($) {
                 if (typeof rule === 'object' && rule !== null) {
                     upperRules[upperKeyword] = {
                         category: (rule.category || '').toUpperCase().trim(),
-                        unit: (rule.unit || '').toUpperCase().trim(),
-                        location: (rule.location || 'Not Specified').toUpperCase().trim()
+                        unit: (rule.unit || '').toUpperCase().trim()
                     };
                 } else {
                     upperRules[upperKeyword] = {
-                        unit: (rule || '').toUpperCase().trim(),
-                        location: 'NOT SPECIFIED'
+                        unit: (rule || '').toUpperCase().trim()
                     };
                 }
             });
@@ -463,9 +626,7 @@ jQuery(document).ready(function($) {
         $('.item-entry-row').each(function() {
             const desc = ($(this).find('.item-select-dynamic').val() || '').trim();
             const unit = ($(this).find('.row-unit').val() || '').trim();
-            const location = ($(this).find('.row-location').val() || '').trim();
-
-            if (unit.indexOf("Confront Admin") !== -1 || unit.indexOf("not assigned") !== -1 || !unit || location.indexOf("Confront Admin") !== -1 || location.indexOf("Confront the Admin") !== -1 || location.indexOf("not assigned") !== -1 || !location) {
+            if (unit.indexOf("Confront Admin") !== -1 || unit.indexOf("not assigned") !== -1 || !unit) {
                 validationFailed = true;
                 invalidItemName = desc || 'Unnamed Item';
             }
@@ -477,16 +638,15 @@ jQuery(document).ready(function($) {
                 stock_balance: $(this).find('.row-stock-balance').val(),
                 qty: $(this).find('.row-qty').val(),
                 variance: $(this).find('.row-variance').val() || '0',
-                remarks: $(this).find('.row-remarks').val(),
-                location: location
+                remarks: $(this).find('.row-remarks').val()
             });
         });
 
         if (validationFailed) {
             Swal.fire({
                 icon: 'warning',
-                title: 'Package Type or Location Missing',
-                text: `The item "${invalidItemName}" does not have a valid package type or store location assigned. Please enter or select them before submitting.`,
+                title: 'Package Type Missing',
+                text: `The item "${invalidItemName}" does not have a valid package type assigned. Please enter or select it before submitting.`,
                 confirmButtonColor: '#ef4444'
             });
             return;
@@ -605,11 +765,9 @@ jQuery(document).ready(function($) {
                     $select.val(null).trigger('change.select2').trigger('change');
                 });
 
-                if (['C', 'J', 'D'].includes(selectedLedge)) {
-                    $('.serial-number-group').show();
-                } else {
-                    $('.serial-number-group').hide().find('.row-serial-number').val('');
-                }
+                $('.item-entry-row').each(function() {
+                    updateSerialInputs($(this));
+                });
 
                 if ($('#itemsContainer').children().length === 0) {
                     renderItemRows(1);
@@ -633,6 +791,13 @@ jQuery(document).ready(function($) {
         const selectedLedge = ($('#ledgeSelect').val() || '').toUpperCase().trim();
         const filteredItems = (existingDBItems || []).filter(item => item && (item.ledge_category || '').toUpperCase().trim() === selectedLedge);
         const isSerialCategory = ['C', 'J', 'D'].includes(selectedLedge);
+
+        const standardPackages = ['PIECE(S)', 'PACK', 'BOXES', 'CARTON', 'BAG', 'ROLL', 'SET', 'REAM', 'BOTTLE', 'PACKAGE TYPE'];
+        const existingUnits = (existingDBItems || []).map(item => (item && item.unit || '').toUpperCase().trim()).filter(Boolean);
+        const allPackages = [...new Set([...standardPackages, ...existingUnits])];
+        const packageOptionsHtml = allPackages.map(pkg => `<option value="${pkg}">${pkg}</option>`).join('');
+
+
 
         for (let i = 0; i < count; i++) {
             const currentRows = container.children('.item-entry-row').length;
@@ -689,30 +854,17 @@ jQuery(document).ready(function($) {
                         </div>
 
                         <div class="form-group">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div>
-                                    <label style="display: flex; align-items: center; gap: 6px;">
-                                        <i data-lucide="tag" style="width: 12px; color: var(--primary);"></i>
-                                        Package Types
-                                    </label>
-                                    <div class="unit-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
-                                        <input type="text" class="row-unit" value="" placeholder="Auto-determined" readonly style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid var(--border-color); border-radius: 12px; background: rgba(99, 102, 241, 0.03); color: var(--text-main); cursor: not-allowed; font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                                        <div style="position: absolute; left: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); opacity: 0.8; pointer-events: none;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label style="display: flex; align-items: center; gap: 6px;">
-                                        <i data-lucide="map-pin" style="width: 12px; color: var(--primary);"></i>
-                                        Store Location
-                                    </label>
-                                    <div class="location-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
-                                        <input type="text" class="row-location" value="" placeholder="Auto-determined" readonly style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid var(--border-color); border-radius: 12px; background: rgba(99, 102, 241, 0.03); color: var(--text-main); cursor: not-allowed; font-weight: 800; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.3s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
-                                        <div style="position: absolute; left: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); opacity: 0.8; pointer-events: none;">
-                                            <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i>
-                                        </div>
-                                    </div>
+                            <label style="display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="tag" style="width: 12px; color: var(--primary);"></i>
+                                Package Types
+                            </label>
+                            <div class="unit-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
+                                <select class="row-unit" style="width: 100%;">
+                                    <option value=""></option>
+                                    ${packageOptionsHtml}
+                                </select>
+                                <div style="position: absolute; left: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); opacity: 0.8; pointer-events: none; z-index: 5;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1"/></svg>
                                 </div>
                             </div>
                         </div>
@@ -740,12 +892,18 @@ jQuery(document).ready(function($) {
 
                         <div class="form-group full-width">
                             <div class="remarks-serial-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; width: 100%;">
-                                <div class="serial-number-group" style="${isSerialCategory ? '' : 'display: none;'}">
-                                    <label style="display: flex; align-items: center; gap: 6px;">
-                                        <i data-lucide="barcode" style="width: 12px; color: var(--primary);"></i>
-                                        Serial Number
-                                    </label>
-                                    <input type="text" class="row-serial-number" placeholder="Enter serial number (optional)" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                <div class="serial-number-group" style="\${isSerialCategory ? '' : 'display: none;'}">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 0;">
+                                            <i data-lucide="barcode" style="width: 12px; color: var(--primary);"></i>
+                                            Serial Number(s)
+                                        </label>
+                                        <button type="button" class="btn-bulk-paste" style="background: none; border: none; color: var(--primary); font-size: 0.72rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 6px; transition: all 0.2s;">
+                                            <i data-lucide="clipboard" style="width: 11px; height: 11px;"></i> Bulk Import
+                                        </button>
+                                    </div>
+                                    <input type="hidden" class="row-serial-number">
+                                    <div class="serial-inputs-container" style="max-height: 200px; overflow-y: auto; padding: 6px; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.4rem; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-main);"></div>
                                 </div>
                                 <div class="remarks-group">
                                     <label style="display: flex; align-items: center; gap: 6px;">
@@ -767,7 +925,7 @@ jQuery(document).ready(function($) {
             const varianceInput = $row.find('.row-variance');
             const statsPanel = $row.find('.existing-stats');
 
-            // Initialize Select2
+            // Initialize Select2 for Item Description
             $row.find('.item-select-dynamic').select2({
                 placeholder: "Search, select, or type new item...",
                 width: '100%',
@@ -791,11 +949,31 @@ jQuery(document).ready(function($) {
                 var $select = $(this);
                 setTimeout(function() {
                     $select.select2('close');
-                    // Force blur on the select2 container and search inputs to drop focus and close dropdown
                     var $container = $select.next('.select2-container');
                     $container.find('.select2-search__field').blur();
                     $container.find('.select2-selection').blur();
                 }, 50);
+            });
+
+            // Initialize Select2 for Row Unit (Package Type)
+            const $unitInput = $row.find('.row-unit');
+            $unitInput.select2({
+                placeholder: "Select or type package...",
+                width: '100%',
+                tags: true,
+                closeOnSelect: true,
+                dropdownParent: $row,
+                createTag: function (params) {
+                    var term = $.trim(params.term).toUpperCase();
+                    if (term === '') {
+                        return null;
+                    }
+                    return {
+                        id: term,
+                        text: term,
+                        newTag: true
+                    };
+                }
             });
 
             // Handle Item Selection to show previous data explicitly
@@ -807,91 +985,8 @@ jQuery(document).ready(function($) {
                 const selectedDesc = ($select.val() || '').trim().toUpperCase();
                 const prevData = (existingDBItems || []).find(item => item && item.description === selectedDesc);
 
-                // Auto-fill unit and location based on admin-defined unit rules or existing item data
-                const $unitInput = $row.find('.row-unit');
-                const $locationInput = $row.find('.row-location');
-
-                const resetUnitStyle = () => {
-                    $unitInput.css({
-                        'color': 'var(--text-main)',
-                        'border-color': 'var(--border-color)',
-                        'background': 'rgba(99, 102, 241, 0.03)',
-                        'box-shadow': 'inset 0 2px 4px rgba(0,0,0,0.02)',
-                        'font-style': 'normal',
-                        'font-size': '0.95rem',
-                        'letter-spacing': '0.05em'
-                    });
-                    $locationInput.css({
-                        'color': 'var(--text-main)',
-                        'border-color': 'var(--border-color)',
-                        'background': 'rgba(99, 102, 241, 0.03)',
-                        'box-shadow': 'inset 0 2px 4px rgba(0,0,0,0.02)',
-                        'font-style': 'normal',
-                        'font-size': '0.95rem',
-                        'letter-spacing': '0.05em'
-                    });
-                };
-
-                const setErrorUnitStyle = () => {
-                    $unitInput.css({
-                        'color': '#ef4444',
-                        'border-color': '#fca5a5',
-                        'background': 'rgba(239, 68, 68, 0.06)',
-                        'box-shadow': '0 0 0 3px rgba(239, 68, 68, 0.15)',
-                        'font-style': 'italic',
-                        'font-size': '0.82rem',
-                        'letter-spacing': 'normal'
-                    });
-                    $locationInput.css({
-                        'color': '#ef4444',
-                        'border-color': '#fca5a5',
-                        'background': 'rgba(239, 68, 68, 0.06)',
-                        'box-shadow': '0 0 0 3px rgba(239, 68, 68, 0.15)',
-                        'font-style': 'italic',
-                        'font-size': '0.82rem',
-                        'letter-spacing': 'normal'
-                    });
-                };
-
-                const showWarningHint = () => {
-                    removeWarningHint();
-                    const warningHtml = `<div class="unassigned-warning-hint" style="margin-top:8px; font-size:0.75rem; font-weight:700; color:#ef4444; display:flex; align-items:center; gap:6px; line-height:1.4; padding: 6px 12px; background: rgba(239, 68, 68, 0.05); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.15);">
-                        <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <span>This item is not yet saved/assigned by the Admin. Please contact the Admin to register this item's package type and store location.</span>
-                    </div>`;
-                    $unitInput.closest('.form-group').append(warningHtml);
-                };
-
-                const removeWarningHint = () => {
-                    $row.find('.unassigned-warning-hint').remove();
-                };
-
-                const setReadonlyStyle = () => {
-                    $unitInput.prop('readonly', true).attr('placeholder', 'Auto-determined').css({
-                        'cursor': 'not-allowed'
-                    });
-                    $locationInput.prop('readonly', true).attr('placeholder', 'Auto-determined').css({
-                        'cursor': 'not-allowed'
-                    });
-                    resetUnitStyle();
-                    removeWarningHint();
-                };
-
-                const setWarningDisabledStyle = () => {
-                    $unitInput.prop('readonly', true).attr('placeholder', 'Auto-determined').css({
-                        'cursor': 'not-allowed'
-                    });
-                    $locationInput.prop('readonly', true).attr('placeholder', 'Auto-determined').css({
-                        'cursor': 'not-allowed'
-                    });
-                    setErrorUnitStyle();
-                    showWarningHint();
-                };
-
                 if (!selectedDesc) {
-                    $unitInput.val('');
-                    $locationInput.val('');
-                    setReadonlyStyle();
+                    $unitInput.val(null).trigger('change');
                 } else if (window._unitRules) {
                     const descUpper = selectedDesc.toUpperCase().trim();
                     const currentCat = ($('#ledgeSelect').val() || '').toUpperCase().trim();
@@ -910,46 +1005,31 @@ jQuery(document).ready(function($) {
                     if (matchedUnit) {
                         const ruleValue = matchedUnit[1];
                         const unitVal = typeof ruleValue === 'object' ? ruleValue.unit : ruleValue;
-                        const locVal = typeof ruleValue === 'object' ? (ruleValue.location || 'Not Specified') : 'Not Specified';
-                        $unitInput.val(unitVal);
-                        $locationInput.val(locVal);
-
-                        if (unitVal.includes("Confront Admin") || locVal.includes("Confront Admin") || unitVal.includes("not assigned") || locVal.includes("not assigned")) {
-                            setWarningDisabledStyle();
-                        } else {
-                            setReadonlyStyle();
+                        
+                        if ($unitInput.find('option[value="' + unitVal + '"]').length === 0) {
+                            $unitInput.append(new Option(unitVal, unitVal, true, true));
                         }
+                        $unitInput.val(unitVal).trigger('change');
                     } else if (prevData && prevData.unit) {
-                        $unitInput.val(prevData.unit);
-                        $locationInput.val(prevData.location || 'Not Specified');
-
                         const unitVal = prevData.unit;
-                        const locVal = prevData.location || '';
-                        if (unitVal.includes("Confront Admin") || locVal.includes("Confront Admin") || unitVal.includes("not assigned") || locVal.includes("not assigned")) {
-                            setWarningDisabledStyle();
-                        } else {
-                            setReadonlyStyle();
+                        
+                        if ($unitInput.find('option[value="' + unitVal + '"]').length === 0) {
+                            $unitInput.append(new Option(unitVal, unitVal, true, true));
                         }
+                        $unitInput.val(unitVal).trigger('change');
                     } else {
-                        $unitInput.val('Package type not assigned.');
-                        $locationInput.val('Confront Admin!');
-                        setWarningDisabledStyle();
+                        // Brand new item: clear choices to let officer pick/type
+                        $unitInput.val(null).trigger('change');
                     }
                 } else if (prevData && prevData.unit) {
-                    $unitInput.val(prevData.unit);
-                    $locationInput.val(prevData.location || 'Not Specified');
-
                     const unitVal = prevData.unit;
-                    const locVal = prevData.location || '';
-                    if (unitVal.includes("Confront Admin") || locVal.includes("Confront Admin") || unitVal.includes("not assigned") || locVal.includes("not assigned")) {
-                        setWarningDisabledStyle();
-                    } else {
-                        setReadonlyStyle();
+                    
+                    if ($unitInput.find('option[value="' + unitVal + '"]').length === 0) {
+                        $unitInput.append(new Option(unitVal, unitVal, true, true));
                     }
+                    $unitInput.val(unitVal).trigger('change');
                 } else {
-                    $unitInput.val('Package type not assigned.');
-                    $locationInput.val('Confront Admin!');
-                    setWarningDisabledStyle();
+                    $unitInput.val(null).trigger('change');
                 }
 
                 const updateStatsPanel = () => {
@@ -1006,6 +1086,8 @@ jQuery(document).ready(function($) {
                     stockInput.val(qtyVal);
                 }
 
+                updateSerialInputs($row);
+
                 const stockVal = parseFloat(stockInput.val()) || 0;
                 const result = stockVal - qtyVal;
                 varianceInput.val(result);
@@ -1030,6 +1112,7 @@ jQuery(document).ready(function($) {
                 $row.find('.row-qty').css({'border-color': 'var(--primary-light)', 'background': 'var(--bg-main)'}).prop('readonly', false);
                 $row.find('.actual-qty-group').hide();
             }
+            updateSerialInputs($row);
         }
         if (typeof lucide !== 'undefined') lucide.createIcons();
         updateSubmitButtonState();
@@ -1041,14 +1124,10 @@ jQuery(document).ready(function($) {
 
         $('#itemsContainer .item-entry-row').each(function() {
             const unitVal = ($(this).find('.row-unit').val() || '').trim();
-            const locationVal = ($(this).find('.row-location').val() || '').trim();
 
             if (unitVal.indexOf("Package type not assigned") !== -1 ||
                 unitVal.indexOf("Confront Admin") !== -1 ||
-                locationVal.indexOf("Confront Admin") !== -1 ||
-                locationVal.indexOf("Confront the Admin") !== -1 ||
-                !unitVal ||
-                !locationVal) {
+                !unitVal) {
                 disabled = true;
             }
 
@@ -1068,7 +1147,7 @@ jQuery(document).ready(function($) {
             if (duplicateFound) {
                 submitBtn.attr('title', 'Please resolve duplicate entries before submitting.');
             } else {
-                submitBtn.attr('title', 'Please assign a package type and store location before submitting.');
+                submitBtn.attr('title', 'Please assign a package type before submitting.');
             }
         } else {
             submitBtn.prop('disabled', false);
@@ -1082,7 +1161,7 @@ jQuery(document).ready(function($) {
     }
 
 
-    $(document).on('input', '.row-unit, .row-location', function() {
+    $(document).on('change', '.row-unit', function() {
         updateSubmitButtonState();
     });
 
@@ -1145,6 +1224,7 @@ jQuery(document).ready(function($) {
                 $(this).find('.lbl-received-qty .lbl-text').text('Expected / Invoice Qty');
                 $(this).find('.row-qty').css({'border-color': '#f59e0b', 'background': 'var(--bg-card)'}).prop('readonly', false);
                 $(this).find('.actual-qty-group').slideDown(300);
+                updateSerialInputs($(this));
             });
         } else {
             $('.item-entry-row').each(function() {
@@ -1155,6 +1235,7 @@ jQuery(document).ready(function($) {
                 const qtyVal = parseFloat($(this).find('.row-qty').val()) || 0;
                 $(this).find('.row-stock-balance').val(qtyVal);
                 $(this).find('.row-variance').val(0);
+                updateSerialInputs($(this));
             });
         }
     });
@@ -1382,15 +1463,24 @@ jQuery(document).ready(function($) {
                                 descSel.val(itm.description).trigger('change');
                                 $row.find('.row-qty').val(itm.qty || '');
                                 if (itm.unit) {
-                                    $row.find('.row-unit').val(itm.unit);
+                                    const uSel = $row.find('.row-unit');
+                                    if (uSel.find('option[value="' + itm.unit + '"]').length === 0) {
+                                        uSel.append(new Option(itm.unit, itm.unit, true, true));
+                                    }
+                                    uSel.val(itm.unit).trigger('change');
                                 }
                                 if (itm.location) {
-                                    $row.find('.row-location').val(itm.location);
+                                    const lSel = $row.find('.row-location');
+                                    if (lSel.find('option[value="' + itm.location + '"]').length === 0) {
+                                        lSel.append(new Option(itm.location, itm.location, true, true));
+                                    }
+                                    lSel.val(itm.location).trigger('change');
                                 }
                                 $row.find('.row-stock-balance').val(itm.stock_balance || '');
                                 $row.find('.row-variance').val(itm.variance || 0);
                                 $row.find('.row-remarks').val(itm.remarks || '');
                                 $row.find('.row-serial-number').val(itm.serial_number || '');
+                                updateSerialInputs($row);
                             });
 
                             _applyRollbackHighlights(flaggedFields);
@@ -1425,7 +1515,7 @@ jQuery(document).ready(function($) {
             item_qty:         () => $('.row-qty').toArray().map(el => $(el)),
             item_unit:        () => $('.row-unit').toArray().map(el => $(el)),
             item_remarks:     () => $('.row-remarks').toArray().map(el => $(el)),
-            item_serial_number: () => $('.row-serial-number').toArray().map(el => $(el)),
+            item_serial_number: () => $('.serial-inputs-container').toArray().map(el => $(el)),
         };
 
         Object.keys(flaggedFields).forEach(key => {

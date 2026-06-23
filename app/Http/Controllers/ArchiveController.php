@@ -88,17 +88,6 @@ class ArchiveController extends Controller
             $data = $query->orderBy('issuances.issuance_date', 'desc')
                           ->orderBy('issuances.created_at', 'desc')
                           ->paginate($perPage);
-
-            $locations = \App\Models\InventoryItem::select('description', 'location')
-                ->whereNotNull('location')
-                ->where('location', '!=', '')
-                ->get()
-                ->pluck('location', 'description')
-                ->toArray();
-
-            foreach ($data as $item) {
-                $item->location = $locations[$item->description] ?? 'Not Specified';
-            }
         } else {
             $data = $query->orderBy('created_at', 'desc')->paginate($perPage);
         }

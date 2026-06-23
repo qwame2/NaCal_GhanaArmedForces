@@ -1907,7 +1907,12 @@
                 tableRows += `
                 <tr style="border-bottom: 1px solid #f1f5f9;">
                     <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a;">
-                        ${item.description}
+                        <div>${item.description}</div>
+                        ${item.serial_number ? `
+                            <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: rgba(99, 102, 241, 0.08); color: #4f46e5; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg> S/N: ${item.serial_number}
+                            </div>
+                        ` : ''}
                     </td>
                     <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">
                         ${item.unit || 'Package Types'}
@@ -2375,7 +2380,12 @@
                         return `
                         <tr style="border-bottom: 1px solid #f1f5f9;">
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a; ${isDescChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10b981;' : ''}">
-                                ${item.description}
+                                <div>${item.description}</div>
+                                ${item.serial_number ? `
+                                    <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: rgba(99, 102, 241, 0.08); color: #4f46e5; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg> S/N: ${item.serial_number}
+                                    </div>
+                                ` : ''}
                                 ${isDescChanged ? '<div style="font-size: 0.65rem; color: #10b981; margin-top: 4px;">Modified</div>' : ''}
                             </td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">
@@ -2410,8 +2420,12 @@
                             return `
                             <tr style="border-bottom: 1px solid #fee2e2;">
                                 <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #7f1d1d;">
-                                    ${item.description}
-
+                                    <div>${item.description}</div>
+                                    ${item.serial_number ? `
+                                        <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: rgba(220, 38, 38, 0.08); color: #dc2626; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg> S/N: ${item.serial_number}
+                                        </div>
+                                    ` : ''}
                                 </td>
                                 <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #991b1b;">
                                     ${item.unit || 'Package Types'}
@@ -2891,26 +2905,49 @@
             { key: 'supplier_status',  label: 'Delivery Status' },
             { key: 'arrival_date',     label: 'Received Date (Manual)' },
             { key: 'item_qty',         label: 'Received Qty' },
+            { key: 'item_unit',        label: 'Package Type' },
+            { key: 'item_description', label: 'Item Description' },
             { key: 'supplier_name',    label: 'Donor Name' },
         ];
 
-        const fieldsHtml = FIELDS.map(f => `
-            <div class="rb-field-row" style="display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; transition: background 0.2s;">
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
-                    <input type="checkbox" class="rb-field-check" data-key="${f.key}"
-                           style="width: 16px; height: 16px; accent-color: #ef4444; cursor: pointer; flex-shrink: 0;"
-                           onchange="this.closest('.rb-field-row').querySelector('.rb-note-wrap').style.display = this.checked ? 'block' : 'none'; this.closest('.rb-field-row').style.background = this.checked ? '#fff5f5' : '#f8fafc'; this.closest('.rb-field-row').style.borderColor = this.checked ? '#fca5a5' : '#e2e8f0';">
-                    <span style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${f.label}</span>
-                </label>
-                <div class="rb-note-wrap" style="display: none; padding-left: 24px;">
+        const standardPackages = ['PIECE(S)', 'PACK', 'BOXES', 'CARTON', 'BAG', 'ROLL', 'SET', 'REAM', 'BOTTLE'];
+
+        const fieldsHtml = FIELDS.map(f => {
+            let inputHtml = '';
+            let onchangeJs = `this.closest('.rb-field-row').querySelector('.rb-note-wrap').style.display = this.checked ? 'block' : 'none'; this.closest('.rb-field-row').style.background = this.checked ? '#fff5f5' : '#f8fafc'; this.closest('.rb-field-row').style.borderColor = this.checked ? '#fca5a5' : '#e2e8f0';`;
+            
+            if (f.key === 'item_unit') {
+                inputHtml = `
+                    <select class="rb-field-note select2-unit-rollback" data-key="${f.key}" style="width: 100%;">
+                        <option value="">Select recommended package type...</option>
+                        ${standardPackages.map(pkg => `<option value="${pkg}">${pkg}</option>`).join('')}
+                    </select>
+                `;
+                onchangeJs += ` if (this.checked) { setTimeout(() => { $(this.closest('.rb-field-row')).find('.select2-unit-rollback').select2({ placeholder: 'Select or type package type...', tags: true, width: '100%', dropdownParent: $('.swal-rollback-popup') }); }, 50); }`;
+            } else {
+                inputHtml = `
                     <input type="text" class="rb-field-note" data-key="${f.key}"
                            placeholder="Correction note for this field (e.g. 'Use XYZ Ltd instead')..."
                            style="width: 100%; font-size: 0.82rem; border: 1.5px solid #fca5a5; border-radius: 8px; padding: 7px 10px; font-family: inherit; color: #1e293b; background: white; outline: none; box-sizing: border-box;"
                            onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 3px rgba(239,68,68,0.12)'"
                            onblur="this.style.borderColor='#fca5a5'; this.style.boxShadow='none'">
+                `;
+            }
+
+            return `
+            <div class="rb-field-row" style="display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; transition: background 0.2s;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" class="rb-field-check" data-key="${f.key}"
+                           style="width: 16px; height: 16px; accent-color: #ef4444; cursor: pointer; flex-shrink: 0;"
+                           onchange="${onchangeJs}">
+                    <span style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${f.label}</span>
+                </label>
+                <div class="rb-note-wrap" style="display: none; padding-left: 24px; margin-top: 4px;">
+                    ${inputHtml}
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
 
         Swal.fire({
             html: `
@@ -2976,6 +3013,26 @@
                             font-weight: 800 !important;
                             padding: 12px 24px !important;
                             font-size: 0.9rem !important;
+                        }
+                        .swal-rollback-popup .select2-container--default .select2-selection--single {
+                            height: 38px !important;
+                            border-radius: 8px !important;
+                            border: 1.5px solid #fca5a5 !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            background: white !important;
+                            outline: none !important;
+                            box-sizing: border-box !important;
+                        }
+                        .swal-rollback-popup .select2-container--default .select2-selection--single .select2-selection__rendered {
+                            color: #1e293b !important;
+                            font-size: 0.82rem !important;
+                            font-weight: 700 !important;
+                            padding-left: 10px !important;
+                            line-height: 36px !important;
+                        }
+                        .swal-rollback-popup .select2-container--default .select2-selection--single .select2-selection__arrow {
+                            height: 36px !important;
                         }
                     `;
                     document.head.appendChild(st);

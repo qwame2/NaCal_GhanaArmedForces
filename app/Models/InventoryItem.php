@@ -17,8 +17,7 @@ class InventoryItem extends Model
         'stock_balance',
         'qty',
         'variance',
-        'remarks',
-        'location'
+        'remarks'
     ];
 
     protected static function booted()

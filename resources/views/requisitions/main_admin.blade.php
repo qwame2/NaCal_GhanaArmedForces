@@ -879,127 +879,18 @@
                     <div style="font-size:1rem;font-weight:800;color:var(--text-main);margin-top:1px;">Staff Access Provisioning</div>
                 </div>
             </div>
-            @if(!empty($hasOverdueReturn))
-            <button id="openProvisionModal" disabled title="Requisition privileges suspended due to overdue temporary assets." style="display:flex;align-items:center;gap:0.5rem;padding:0.65rem 1.25rem;background:#94a3b8;border:none;border-radius:10px;color:#fff;font-weight:700;font-size:.82rem;cursor:not-allowed;box-shadow:none;">
-                <i data-lucide="lock" style="width:16px;height:16px;"></i>
-                Create Temp Requisitioner (Suspended)
-            </button>
-            @else
-            <button id="openProvisionModal" onclick="openProvisionModal()" style="display:flex;align-items:center;gap:0.5rem;padding:0.65rem 1.25rem;background:linear-gradient(135deg,#10b981,#059669);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .2s;box-shadow:0 4px 12px rgba(16,185,129,0.25);">
-                <i data-lucide="plus-circle" style="width:16px;height:16px;"></i>
-                Create Temp Requisitioner
-            </button>
-            @endif
         </div>
 
-        {{-- Active Temp Accounts Table --}}
+        {{-- Department Staff Accounts Table --}}
         <div id="tempAccountsContainer">
-            <div style="font-size:.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.85rem;">Active Temporary Accounts</div>
+            <div style="font-size:.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.85rem;">Department Staff Access & Permissions</div>
             <div id="tempAccountsList">
                 <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
-                    <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;"></i><br>Loading accounts...
+                    <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;"></i><br>Loading department staff directory...
                 </div>
             </div>
         </div>
     </div>
-
-    @push('modals')
-    {{-- Provision Modal --}}
-    <div id="provisionModal" class="modal-overlay" style="z-index:99999 !important;">
-        <div class="modal-box" style="max-width:480px;">
-            <div style="padding:1.5rem 1.75rem;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;">
-                <div style="display:flex;align-items:center;gap:.75rem;">
-                    <div style="width:36px;height:36px;background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(5,150,105,.1));border-radius:10px;display:flex;align-items:center;justify-content:center;">
-                        <i data-lucide="key-round" style="width:18px;color:#10b981;"></i>
-                    </div>
-                    <div>
-                        <div style="font-size:.65rem;color:#10b981;font-weight:800;text-transform:uppercase;letter-spacing:.1em;">{{ strtoupper(auth()->user()->department ?? '') }} Department</div>
-                        <div style="font-size:1rem;font-weight:800;color:var(--text-main);">Provision Access Code</div>
-                    </div>
-                </div>
-                <button onclick="closeProvisionModal()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;">
-                    <i data-lucide="x" style="width:20px;"></i>
-                </button>
-            </div>
-
-            {{-- Step 1: Enter username --}}
-            <div id="provisionStep1" style="padding:1.75rem;">
-                <div style="margin-bottom:1.25rem;">
-                    <label style="font-size:.78rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:.5rem;">Staff Username</label>
-                    <input id="provisionUsername" type="text" placeholder="e.g. jsmith2025" autocomplete="off" style="width:100%;padding:.7rem 1rem;border:1px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-size:.9rem;font-weight:600;box-sizing:border-box;outline:none;transition:.2s;" oninput="clearProvisionError()">
-                    <div id="provisionError" style="font-size:.75rem;color:#ef4444;margin-top:.4rem;display:none;"></div>
-                    <div style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;">Letters and numbers only. No spaces or symbols. Max 50 characters.</div>
-                </div>
-                <div style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15);border-radius:10px;padding:.85rem 1rem;margin-bottom:1.25rem;">
-                    <div style="font-size:.72rem;font-weight:700;color:#6366f1;margin-bottom:.3rem;">ℹ️ How This Works</div>
-                    <div style="font-size:.76rem;color:var(--text-muted);line-height:1.5;">A unique access code will be generated for this staff member. They can use this code to log in and submit requisitions on behalf of the <strong>{{ auth()->user()->department ?? '' }}</strong> department. You will approve their requests first.</div>
-                </div>
-                <button id="generateOtpBtn" onclick="generateOtp()" style="width:100%;padding:.8rem;background:linear-gradient(135deg,#10b981,#059669);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;">
-                    Generate Access Code
-                </button>
-            </div>
-
-            {{-- Step 2: Show OTP --}}
-            <div id="provisionStep2" style="padding:1.75rem;display:none;">
-                <div style="text-align:center;margin-bottom:1.5rem;">
-                    <div style="width:56px;height:56px;background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(5,150,105,.1));border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
-                        <i data-lucide="shield-check" style="width:28px;color:#10b981;"></i>
-                    </div>
-                    <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">Account Created Successfully</div>
-                    <div style="font-size:.78rem;color:var(--text-muted);margin-top:.25rem;">Share these credentials with the staff member</div>
-                </div>
-
-                <div style="background:rgba(15,23,42,.04);border:2px dashed rgba(16,185,129,0.4);border-radius:14px;padding:1.25rem;margin-bottom:1.25rem;text-align:center;">
-                    <div style="font-size:.65rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.5rem;">Username</div>
-                    <div id="displayUsername" style="font-size:1.1rem;font-weight:900;color:var(--text-main);letter-spacing:.05em;margin-bottom:1rem;"></div>
-                    <div style="font-size:.65rem;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.5rem;">Access Code (OTP)</div>
-                    <div id="displayOtp" style="font-size:2rem;font-weight:950;color:#4f46e5;letter-spacing:.25em;font-family:'Courier New',monospace;"></div>
-                </div>
-
-                <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:.8rem 1rem;margin-bottom:1.25rem;display:flex;gap:.6rem;align-items:flex-start;">
-                    <i data-lucide="alert-triangle" style="width:16px;height:16px;color:#ef4444;flex-shrink:0;margin-top:2px;"></i>
-                    <div style="font-size:.73rem;color:#ef4444;font-weight:600;line-height:1.4;">This access code will NOT be shown again. Copy and share it with the staff member now.</div>
-                </div>
-
-                <div style="display:flex;gap:.75rem;">
-                    <button onclick="copyOtpToClipboard()" style="flex:1;padding:.75rem;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:10px;color:#10b981;font-weight:700;font-size:.82rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:.2s;">
-                        <i data-lucide="copy" style="width:15px;"></i> Copy Code
-                    </button>
-                    <button onclick="closeProvisionModal()" style="flex:1;padding:.75rem;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);border-radius:10px;color:#6366f1;font-weight:700;font-size:.82rem;cursor:pointer;transition:.2s;">
-                        Done
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Regenerate OTP Modal --}}
-    <div id="regenModal" class="modal-overlay" style="z-index:100000 !important;">
-        <div class="modal-box" style="max-width:420px;">
-            <div style="padding:1.5rem;text-align:center;">
-                <div style="width:50px;height:50px;background:rgba(245,158,11,0.12);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
-                    <i data-lucide="refresh-cw" style="width:24px;color:#f59e0b;"></i>
-                </div>
-                <div style="font-size:.9rem;font-weight:800;color:var(--text-main);margin-bottom:.4rem;">New OTP Generated</div>
-                <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:1.25rem;">Share the new code with <strong id="regenUsername"></strong></div>
-                <div style="background:rgba(15,23,42,.04);border:2px dashed rgba(99,102,241,0.35);border-radius:14px;padding:1rem;margin-bottom:1.25rem;">
-                    <div style="font-size:.6rem;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.4rem;">New Access Code</div>
-                    <div id="regenOtp" style="font-size:2rem;font-weight:950;color:#4f46e5;letter-spacing:.25em;font-family:'Courier New',monospace;"></div>
-                </div>
-                <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:.7rem .9rem;margin-bottom:1.25rem;text-align:left;display:flex;gap:.5rem;align-items:flex-start;">
-                    <i data-lucide="alert-triangle" style="width:15px;height:15px;color:#ef4444;flex-shrink:0;margin-top:2px;"></i>
-                    <div style="font-size:.72rem;color:#ef4444;font-weight:600;">Old OTP is now invalidated. This new code will NOT be shown again.</div>
-                </div>
-                <div style="display:flex;gap:.65rem;">
-                    <button onclick="copyRegenOtp()" style="flex:1;padding:.7rem;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:10px;color:#10b981;font-weight:700;font-size:.82rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;">
-                        <i data-lucide="copy" style="width:14px;"></i> Copy
-                    </button>
-                    <button onclick="closeRegenModal()" style="flex:1;padding:.7rem;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);border-radius:10px;color:#6366f1;font-weight:700;font-size:.82rem;cursor:pointer;">Done</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endpush
     @endif
 
     {{-- Filters Toolbar --}}
@@ -2103,81 +1994,6 @@
     // STAFF ACCESS PROVISIONING (Non-Stores Dept Heads only)
     // =====================================================================
     @if(!$isStoresHead)
-    let currentOtp = '';
-
-    function openProvisionModal() {
-        document.getElementById('provisionUsername').value = '';
-        document.getElementById('provisionError').style.display = 'none';
-        document.getElementById('provisionStep1').style.display = 'block';
-        document.getElementById('provisionStep2').style.display = 'none';
-        document.getElementById('provisionModal').classList.add('open');
-        setTimeout(() => document.getElementById('provisionUsername').focus(), 200);
-    }
-
-    function closeProvisionModal() {
-        document.getElementById('provisionModal').classList.remove('open');
-        loadTempAccounts();
-    }
-
-    function clearProvisionError() {
-        document.getElementById('provisionError').style.display = 'none';
-    }
-
-    async function generateOtp() {
-        const username = document.getElementById('provisionUsername').value.trim();
-        if (!username) {
-            showProvisionError('Please enter a username for the staff member.');
-            return;
-        }
-        if (!/^[a-zA-Z0-9]+$/.test(username)) {
-            showProvisionError('Username may only contain letters and numbers — no spaces or symbols.');
-            return;
-        }
-
-        const btn = document.getElementById('generateOtpBtn');
-        btn.disabled = true;
-        btn.textContent = 'Generating...';
-
-        try {
-            const res = await fetch('{{ route("dept-head.temp-requisitioners.store") }}', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify({ username })
-            });
-            const data = await res.json();
-
-            if (data.success) {
-                currentOtp = data.otp;
-                document.getElementById('displayUsername').textContent = data.username;
-                document.getElementById('displayOtp').textContent = data.otp;
-                document.getElementById('provisionStep1').style.display = 'none';
-                document.getElementById('provisionStep2').style.display = 'block';
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            } else {
-                showProvisionError(data.message || 'Failed to generate access code. Please try again.');
-            }
-        } catch (e) {
-            showProvisionError('Network error. Please check your connection and try again.');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'Generate Access Code';
-        }
-    }
-
-    function showProvisionError(msg) {
-        const el = document.getElementById('provisionError');
-        el.textContent = msg;
-        el.style.display = 'block';
-    }
-
-    function copyOtpToClipboard() {
-        if (!currentOtp) return;
-        const username = document.getElementById('displayUsername').textContent;
-        navigator.clipboard.writeText(`Username: ${username}\nAccess Code: ${currentOtp}`).then(() => {
-            Swal.fire({ title: 'Copied!', text: 'Credentials copied to clipboard.', icon: 'success', timer: 1500, showConfirmButton: false });
-        });
-    }
-
     async function loadTempAccounts() {
         const container = document.getElementById('tempAccountsList');
         if (!container) return;
@@ -2189,118 +2005,99 @@
             if (!data.success || !data.accounts || data.accounts.length === 0) {
                 container.innerHTML = `
                     <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
-                        <div style="font-size:1.75rem;margin-bottom:.4rem;">👤</div>
-                        <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No temporary accounts yet</div>
-                        <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Use the button above to create one for a staff member.</div>
+                        <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
+                        <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No department staff found</div>
+                        <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any registered staff in your department will appear here.</div>
                     </div>`;
                 return;
             }
 
-            let rows = data.accounts.map(acc => `
+            let rows = data.accounts.map(acc => {
+                const isAccessActive = acc.can_make_requisition;
+                const badgeStyle = isAccessActive 
+                    ? 'background:rgba(16,185,129,.1);color:#10b981;' 
+                    : 'background:rgba(239,68,68,.1);color:#ef4444;';
+                const badgeText = isAccessActive ? 'Active Access' : 'Access Suspended';
+                
+                const btnStyle = isAccessActive
+                    ? 'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;'
+                    : 'background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;';
+                const btnText = isAccessActive ? 'Suspend Access' : 'Grant Access';
+                const btnIcon = isAccessActive ? 'user-minus' : 'user-check';
+
+                return `
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
                     <div style="display:flex;align-items:center;gap:.75rem;">
-                        <div style="width:34px;height:34px;border-radius:10px;background:rgba(99,102,241,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#6366f1;">
-                            ${acc.username.charAt(0).toUpperCase()}
+                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(99,102,241,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#6366f1;">
+                            ${(acc.name || acc.username).charAt(0).toUpperCase()}
                         </div>
                         <div>
-                            <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">@${acc.username}</div>
-                            <div style="font-size:.7rem;color:var(--text-muted);">${acc.department} · Created ${acc.created_at}</div>
+                            <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${acc.name || '@' + acc.username}</div>
+                            <div style="font-size:.7rem;color:var(--text-muted);">${acc.role} · @${acc.username}</div>
                         </div>
                     </div>
-                    <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
                         <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(16,185,129,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#10b981' : '#64748b'};">
                             ${acc.is_online ? '● ONLINE' : '○ OFFLINE'}
                         </span>
-                        <button onclick="regenOtp(${acc.id}, '${acc.username}')" title="Regenerate OTP" style="padding:.4rem .7rem;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;color:#f59e0b;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;">
-                            🔄 New OTP
-                        </button>
-                        <button onclick="revokeAccount(${acc.id}, '${acc.username}')" title="Revoke Access" style="padding:.4rem .7rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;color:#ef4444;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;">
-                            🗑 Revoke
+                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;${badgeStyle}">
+                            ${badgeText}
+                        </span>
+                        <button onclick="toggleStaffAccess(${acc.id}, '${acc.username}', ${isAccessActive})" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;${btnStyle}">
+                            <i data-lucide="${btnIcon}" style="width:13px;height:13px;"></i> ${btnText}
                         </button>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
 
             container.innerHTML = `<div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">${rows}</div>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         } catch (e) {
-            container.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load accounts.</div>`;
+            container.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load staff list.</div>`;
         }
     }
 
-    async function revokeAccount(id, username) {
+    async function toggleStaffAccess(id, username, isCurrentlyActive) {
+        const actionWord = isCurrentlyActive ? 'Suspend' : 'Grant';
+        const actionColor = isCurrentlyActive ? '#ef4444' : '#10b981';
+        
         const confirm = await Swal.fire({
-            title: `Revoke @${username}?`,
-            text: 'This will permanently delete the temporary account. The staff member will lose access immediately.',
-            icon: 'warning',
+            title: `${actionWord} Requisition Access?`,
+            text: `Are you sure you want to ${actionWord.toLowerCase()} requisition privileges for @${username}?`,
+            icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#ef4444',
+            confirmButtonColor: actionColor,
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'Yes, Revoke',
+            confirmButtonText: `Yes, ${actionWord}`,
             cancelButtonText: 'Cancel'
         });
         if (!confirm.isConfirmed) return;
 
         try {
-            const res = await fetch(`/dept-head/temp-requisitioners/${id}`, {
-                method: 'DELETE',
-                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            const res = await fetch(`/dept-head/staff/${id}/toggle-request-access`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                }
             });
             const data = await res.json();
             if (data.success) {
-                Swal.fire({ title: 'Revoked!', text: data.message, icon: 'success', timer: 2000, showConfirmButton: false });
+                Swal.fire({ 
+                    title: 'Updated!', 
+                    text: data.message, 
+                    icon: 'success', 
+                    timer: 2000, 
+                    showConfirmButton: false 
+                });
                 loadTempAccounts();
             } else {
                 Swal.fire('Error', data.message, 'error');
             }
         } catch (e) {
-            Swal.fire('Error', 'Network error while revoking account.', 'error');
+            Swal.fire('Error', 'Network error while updating access privileges.', 'error');
         }
-    }
-
-    let currentRegenOtp = '';
-
-    async function regenOtp(id, username) {
-        const confirm = await Swal.fire({
-            title: `Regenerate OTP for @${username}?`,
-            text: 'The old access code will be immediately invalidated.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#f59e0b',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: 'Yes, Regenerate',
-        });
-        if (!confirm.isConfirmed) return;
-
-        try {
-            const res = await fetch(`/dept-head/temp-requisitioners/${id}/regenerate-otp`, {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-            });
-            const data = await res.json();
-            if (data.success) {
-                currentRegenOtp = data.otp;
-                document.getElementById('regenUsername').textContent = '@' + username;
-                document.getElementById('regenOtp').textContent = data.otp;
-                document.getElementById('regenModal').classList.add('open');
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            } else {
-                Swal.fire('Error', data.message, 'error');
-            }
-        } catch (e) {
-            Swal.fire('Error', 'Network error. Please try again.', 'error');
-        }
-    }
-
-    function closeRegenModal() {
-        document.getElementById('regenModal').classList.remove('open');
-    }
-
-    function copyRegenOtp() {
-        if (!currentRegenOtp) return;
-        const username = document.getElementById('regenUsername').textContent;
-        navigator.clipboard.writeText(`Username: ${username}\nNew Access Code: ${currentRegenOtp}`).then(() => {
-            Swal.fire({ title: 'Copied!', text: 'New credentials copied.', icon: 'success', timer: 1500, showConfirmButton: false });
-        });
     }
     @endif
 
@@ -2401,12 +2198,8 @@
     // Auto silent refresh every 10 seconds to show all requests without page reload
     setInterval(async () => {
         const reqModal = document.getElementById('reqModal');
-        const provisionModal = document.getElementById('provisionModal');
-        const regenModal = document.getElementById('regenModal');
         
-        const isModalOpen = (reqModal && reqModal.classList.contains('open')) ||
-                            (provisionModal && provisionModal.classList.contains('open')) ||
-                            (regenModal && regenModal.classList.contains('open'));
+        const isModalOpen = (reqModal && reqModal.classList.contains('open'));
                             
         const isSwalOpen = typeof Swal !== 'undefined' && Swal.isVisible();
         

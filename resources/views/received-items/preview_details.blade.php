@@ -110,11 +110,6 @@
                         </td>
                         <td style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.85rem; font-weight: 600; color: #475569;">{{ $item->unit }}</span>
-                            @if($item->location)
-                                <div style="font-size: 0.65rem; font-weight: 600; color: #4f46e5; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-                                    <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i> {{ $item->location }}
-                                </div>
-                            @endif
                         </td>
                         <td style="padding: 1.25rem 1.5rem; text-align: right;">
                             <span style="font-size: 0.95rem; font-weight: 800; color: #0f172a;">{{ number_format($item->qty) }}</span>

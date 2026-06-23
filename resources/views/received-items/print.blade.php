@@ -437,7 +437,14 @@
                 @endphp
                 <tr>
                     <td class="row-sn">{{ $index + 1 }}</td>
-                    <td class="row-desc">{{ $item->description }}</td>
+                    <td class="row-desc">
+                        {{ $item->description }}
+                        @if(!empty($item->serial_number))
+                            <div style="margin-top: 4px; font-size: 10px; font-weight: 700; color: var(--print-secondary);">
+                                S/N: {{ $item->serial_number }}
+                            </div>
+                        @endif
+                    </td>
                     <td style="text-align: center; color: var(--print-secondary); font-weight: 500;">{{ $item->unit ?? 'Pcs' }}</td>
                     <td style="text-align: center; font-weight: 600; color: var(--print-secondary);">{{ number_format($expected) }}</td>
                     <td style="text-align: center; font-weight: 700;">{{ number_format($verified) }}</td>

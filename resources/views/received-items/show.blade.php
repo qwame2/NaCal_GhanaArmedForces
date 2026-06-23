@@ -168,11 +168,6 @@
                         </td>
                         <td style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-main);">{{ $item->unit ?? 'Package Types' }}</span>
-                            @if($item->location)
-                                <div style="font-size: 0.7rem; font-weight: 600; color: #4f46e5; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-                                    <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i> {{ $item->location }}
-                                </div>
-                            @endif
                         </td>
                         <td style="padding: 1.25rem 1.5rem; text-align: right; font-weight: 700; color: var(--text-main);">{{ number_format($item->qty) }}</td>
                         <td style="padding: 1.25rem 1.5rem; text-align: right; color: var(--text-main); font-weight: 700;">{{ number_format($item->stock_balance) }}</td>

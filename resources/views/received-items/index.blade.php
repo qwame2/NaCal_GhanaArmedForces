@@ -386,6 +386,11 @@
                                 <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $item->unit ?? 'Package Types' }})</span>
                             </div>
                             <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Batch #{{ $item->batch_id }}</div>
+                            @if(!empty($item->serial_number))
+                                <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: rgba(99, 102, 241, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg> S/N: {{ $item->serial_number }}
+                                </div>
+                            @endif
                         </td>
                         <td data-label="Category" style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
@@ -2152,7 +2157,12 @@
                         itemsHtml += `
                             <tr style="border-bottom: 1px solid var(--border-color); ${rowStyle}">
                                 <td style="padding: 1rem; color: var(--text-main); font-weight: 700;">
-                                    ${item.description}
+                                    <div>${item.description}</div>
+                                    ${item.serial_number ? `
+                                        <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: rgba(99, 102, 241, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg> S/N: ${item.serial_number}
+                                        </div>
+                                    ` : ''}
                                     ${isCurrentSelected ? ' <span style="font-size: 0.65rem; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 6px; text-transform: uppercase;">Selected</span>' : ''}
                                 </td>
                                 <td style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; font-weight: 700;">${item.unit || '-'}</td>

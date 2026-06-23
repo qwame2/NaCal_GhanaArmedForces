@@ -103,21 +103,6 @@ class IssueItemsController extends Controller
             ->paginate(5)
             ->withQueryString();
 
-        // Get locations of inventory items to attach
-        $locations = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
-            ->where('inventory_batches.supplier_status', '!=', 'System Draft')
-            ->where('inventory_batches.approval_status', '=', 'approved')
-            ->select('inventory_items.description', 'inventory_items.location')
-            ->whereNotNull('inventory_items.location')
-            ->where('inventory_items.location', '!=', '')
-            ->get()
-            ->pluck('location', 'description')
-            ->toArray();
-
-        foreach ($issuedItems as $item) {
-            $item->location = $locations[$item->description] ?? 'Not Specified';
-        }
-
         return view('issue-items.index', compact('issuedItems', 'ledgeMap', 'stats'));
     }
 

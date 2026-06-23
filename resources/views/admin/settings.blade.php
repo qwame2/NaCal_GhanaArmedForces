@@ -1298,175 +1298,7 @@
         </div>
     </div>
 
-    {{-- Item Package Type Rules --}}
-    <div class="cfg-card" id="unit-rules" style="margin-top: 2rem;">
-        <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-            <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <div class="cfg-icon-box" style="background: linear-gradient(135deg,#f59e0b,#d97706);">
-                    <i data-lucide="ruler"></i>
-                </div>
-                <div>
-                    <h3 style="margin: 0 0 0.25rem 0;">Default Package Types</h3>
-                    <p style="margin: 0;">Set default units (like Piece or Box) for items to save time during entry.</p>
-                </div>
-            </div>
 
-            <div class="cfg-search-wrap" style="margin: 0 3.5rem 0 0; width: 260px; position: relative;">
-                <i data-lucide="search" style="width: 14px; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
-                <input type="text" id="ruleSearch" placeholder="Search rules..." oninput="filterRules()" style="width: 100%; padding: 0.5rem 1rem 0.5rem 2.2rem; font-size: 0.8rem; height: 38px; border: 2px solid #edf2f7; border-radius: 10px; outline: none; transition: 0.2s; background: white;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#edf2f7'">
-            </div>
-        </div>
-        <div class="cfg-card-body">
-            <div style="display: grid; grid-template-columns: 1fr 360px; gap: 2rem; align-items: start;">
-
-                {{-- Existing Rules --}}
-                <div>
-                    <p style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 1rem; display: flex; align-items: center; gap: 6px;">
-                        <i data-lucide="list" style="width: 14px;"></i> Active Package Type Rules
-                    </p>
-                    @php
-                    $unitRules = json_decode(\App\Models\Setting::where('key','item_unit_rules')->value('value') ?? '{}', true) ?? [];
-                    $groupedRules = [];
-                    foreach ($unitRules as $keyword => $data) {
-                    $cat = is_array($data) ? $data['category'] : 'Uncategorized';
-                    $unit = is_array($data) ? $data['unit'] : $data;
-                    $loc = is_array($data) ? ($data['location'] ?? 'Not Specified') : 'Not Specified';
-                    $groupedRules[$cat][$keyword] = [
-                    'unit' => $unit,
-                    'location' => $loc
-                    ];
-                    }
-                    @endphp
-                    @if(empty($groupedRules))
-                    <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
-                        <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
-                        <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No unit rules defined yet. Add rules on the right.</p>
-                    </div>
-                    @else
-                    <div class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;" id="rulesContainer">
-                        @foreach($groupedRules as $catCode => $rulesGroup)
-                        <div class="unit-rule-group">
-                            <h6 style="font-size: 0.85rem; font-weight: 800; color: #475569; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 8px;">
-                                <span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 6px; font-size: 0.7rem;">{{ $catCode }}</span>
-                                {{ $categories[$catCode] ?? 'Uncategorized' }}
-                            </h6>
-                            <div class="custom-scrollbar" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 0.25rem;">
-                                @foreach($rulesGroup as $keyword => $ruleData)
-                                @php
-                                $unit = $ruleData['unit'];
-                                $loc = $ruleData['location'];
-                                @endphp
-                                <div class="unit-rule-card" data-keyword="{{ strtolower($keyword) }}" style="display: flex; align-items: center; gap: 10px; padding: 0.75rem 1rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s;">
-                                    <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#f59e0b,#d97706); color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
-                                        {{ strtoupper(substr($keyword, 0, 2)) }}
-                                    </div>
-                                    <div style="flex: 1; min-width: 0;">
-                                        <div style="font-weight: 800; font-size: 0.82rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $keyword }}">{{ $keyword }}</div>
-                                        <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">→ {{ $unit }}</div>
-                                        <div style="font-size: 0.65rem; font-weight: 600; color: #4f46e5; margin-top: 2px; display: flex; align-items: center; gap: 4px;">
-                                            <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i> {{ $loc }}
-                                        </div>
-                                    </div>
-                                    <div style="display: flex; gap: 4px;">
-                                        <button type="button" onclick="populateUnitForm('{{ $keyword }}', '{{ $unit }}', '{{ $catCode }}', '{{ $loc }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
-                                            <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
-                                        </button>
-                                        <form action="{{ route('admin.settings.unit-rule.destroy') }}" method="POST" onsubmit="return confirm('Remove rule for \'{{ $keyword }}\'?');" style="margin: 0;">
-                                            @csrf @method('DELETE')
-                                            <input type="hidden" name="keyword" value="{{ $keyword }}">
-                                            <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Rule">
-                                                <i data-lucide="x" style="width: 16px; height: 16px;"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                    @endif
-                </div>
-
-                {{-- Add New Rule --}}
-                <div class="cat-form-card">
-                    <h5>Add Package Type Rule(s)</h5>
-                    <p>Type or select keyword(s) (e.g. "pen") and set their default unit (e.g. "Boxes"). Matching is case-insensitive.</p>
-                    <form action="{{ route('admin.settings.unit-rule.store') }}" method="POST">
-                        @csrf
-                        <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            <div>
-                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Target Category</label>
-                                <select name="category" id="unitCategory" class="cfg-text-input" required style="cursor: pointer;">
-                                    <option value="">Select Category...</option>
-                                    @foreach($categories ?? [] as $code => $name)
-                                    <option value="{{ $code }}">[{{ $code }}] {{ $name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div>
-                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Item Keyword(s)</label>
-                                <select name="keywords[]" id="unitKeyword" class="cfg-text-input select2-unit" required multiple="multiple">
-                                    <option value="">Select Category First...</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Default Package Type</label>
-                                <select name="unit" class="cfg-text-input select2-package" required style="cursor: pointer;">
-                                    <option value=""></option>
-                                    <option value="Piece(s)">Piece(s)</option>
-                                    <option value="Pack">Pack</option>
-                                    <option value="Boxes">Boxes</option>
-                                    <option value="Carton">Carton</option>
-                                    <option value="Bag">Bag</option>
-                                    <option value="Roll">Roll</option>
-                                    <option value="Set">Set</option>
-                                    <option value="Ream">Ream</option>
-                                    <option value="Bottle">Bottle</option>
-                                    <option value="Package Type">Package Type</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Store Location</label>
-                                @php
-                                $defaultLocations = [
-                                'Main Store',
-                                'Pharmacy Store',
-                                'Stationery Store',
-                                'Cleaning Store',
-                                'IT & Equipment Store',
-                                'Safety Store'
-                                ];
-                                $dbLocations = \App\Models\InventoryItem::whereNotNull('location')
-                                ->where('location', '!=', '')
-                                ->where('location', '!=', 'Not Specified')
-                                ->distinct()
-                                ->pluck('location')
-                                ->toArray();
-                                $allLocations = array_unique(array_merge($defaultLocations, $dbLocations));
-                                @endphp
-                                <select name="location" id="unitLocation" class="cfg-text-input select2-location" required style="cursor: pointer;">
-                                    <option value=""></option>
-                                    @foreach($allLocations as $loc)
-                                    <option value="{{ $loc }}">{{ $loc }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div style="display: flex; gap: 10px;">
-                                <button type="submit" id="unitSubmitBtn" class="btn-cfg-add" style="flex: 1; background: linear-gradient(135deg,#f59e0b,#d97706); box-shadow: 0 6px 16px rgba(245,158,11,0.25);">
-                                    <i data-lucide="plus-circle" id="unitSubmitIcon"></i> <span id="unitSubmitText">Add Rule</span>
-                                </button>
-                                <button type="button" id="unitResetBtn" onclick="resetUnitForm()" style="display: none; padding: 0.75rem 1rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; margin-top: 1rem;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-            </div>
-        </div>
-    </div>
 
     {{-- Item Threshold Rules --}}
     <div class="cfg-card" id="threshold-rules" style="margin-top: 2rem;">
@@ -2182,71 +2014,7 @@
         filterSuppliers();
     });
 
-    function populateUnitForm(keyword, unit, category, location) {
-        // Set category first to trigger the keyword dropdown update
-        const catSelect = document.getElementById('unitCategory');
-        catSelect.value = category;
-        $(catSelect).trigger('change');
 
-        // Set unit (wait for Select2)
-        setTimeout(() => {
-            const pkgSelect = $('.select2-package');
-            if (pkgSelect.find("option[value='" + unit + "']").length) {
-                pkgSelect.val(unit).trigger('change');
-            } else {
-                var newOption = new Option(unit, unit, true, true);
-                pkgSelect.append(newOption).trigger('change');
-            }
-        }, 100);
-
-        // Set location (wait for Select2)
-        setTimeout(() => {
-            const locSelect = $('#unitLocation');
-            if (locSelect.find("option[value='" + location + "']").length) {
-                locSelect.val(location).trigger('change');
-            } else {
-                var newOption = new Option(location, location, true, true);
-                locSelect.append(newOption).trigger('change');
-            }
-        }, 100);
-
-        // Set keyword (wait for Select2)
-        setTimeout(() => {
-            const keywordSelect = $('#unitKeyword');
-            if (keywordSelect.find("option[value='" + keyword + "']").length) {
-                keywordSelect.val([keyword]).trigger('change');
-            } else {
-                var newOption = new Option(keyword, keyword, true, true);
-                keywordSelect.append(newOption).val([keyword]).trigger('change');
-            }
-        }, 100);
-
-        // Update button UI
-        document.getElementById('unitSubmitText').innerText = 'Update';
-        document.getElementById('unitSubmitBtn').style.background = 'linear-gradient(135deg, #4f46e5, #3730a3)';
-        document.getElementById('unitResetBtn').style.display = 'block';
-        const icon = document.getElementById('unitSubmitIcon');
-        icon.setAttribute('data-lucide', 'refresh-cw');
-        if (window.lucide) lucide.createIcons();
-
-        // Scroll to form
-        document.getElementById('unit-rules').scrollIntoView({
-            behavior: 'smooth'
-        });
-    }
-
-    function resetUnitForm() {
-        document.querySelector('#unit-rules form').reset();
-        $('#unitKeyword').val(null).trigger('change');
-        $('.select2-package').val(null).trigger('change');
-        $('#unitLocation').val(null).trigger('change');
-        document.getElementById('unitSubmitText').innerText = 'Add Rule';
-        document.getElementById('unitSubmitBtn').style.background = 'linear-gradient(135deg,#f59e0b,#d97706)';
-        document.getElementById('unitResetBtn').style.display = 'none';
-        const icon = document.getElementById('unitSubmitIcon');
-        icon.setAttribute('data-lucide', 'plus-circle');
-        if (window.lucide) lucide.createIcons();
-    }
 
     function populateThresholdForm(keyword, threshold, category) {
         // Set category first to trigger the keyword dropdown update
@@ -2359,32 +2127,7 @@
             updateWorkflowFlowchart();
         }
 
-        // Initialize Select2 for units
-        $('.select2-unit').select2({
-            tags: true,
-            placeholder: 'Select or type one or more items...',
-            allowClear: true,
-            width: '100%',
-            dropdownParent: $('#unit-rules')
-        });
 
-        // Initialize Select2 for location
-        $('.select2-location').select2({
-            tags: true,
-            placeholder: 'Select or type a store location...',
-            allowClear: true,
-            width: '100%',
-            dropdownParent: $('#unit-rules')
-        });
-
-        // Initialize Select2 for package type
-        $('.select2-package').select2({
-            tags: true,
-            placeholder: 'Select or type a package type...',
-            allowClear: true,
-            width: '100%',
-            dropdownParent: $('#unit-rules')
-        });
 
         // Initialize Select2 for thresholds
         $('.select2-threshold').select2({
@@ -2395,22 +2138,7 @@
             dropdownParent: $('#threshold-rules')
         });
 
-        // Handle category change to update item dropdown (Package Types)
-        $('#unitCategory').on('change', function() {
-            const cat = $(this).val();
-            const keywordSelect = $('#unitKeyword');
-            keywordSelect.empty().append('<option value="">Select Item...</option>');
 
-            if (cat && itemsByCategory[cat]) {
-                itemsByCategory[cat].forEach(item => {
-                    keywordSelect.append(new Option(item, item));
-                });
-            } else if (!cat) {
-                keywordSelect.append('<option value="">Select Category First...</option>');
-            }
-
-            keywordSelect.trigger('change');
-        });
 
         // Handle category change to update item dropdown (Thresholds)
         $('#thresholdCategory').on('change', function() {

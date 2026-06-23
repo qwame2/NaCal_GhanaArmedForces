@@ -51,7 +51,6 @@ if (!file_exists(storage_path('framework/routes_boot_self_healed_v9.lock'))) {
             'ALTER TABLE inventory_batches ADD INDEX inventory_batches_approval_status_index (approval_status)',
 
             'ALTER TABLE inventory_items ADD INDEX inventory_items_unit_index (unit)',
-            'ALTER TABLE inventory_items ADD INDEX inventory_items_location_index (location)',
 
             'ALTER TABLE issuances ADD INDEX issuances_beneficiary_index (beneficiary)',
             'ALTER TABLE issuances ADD INDEX issuances_issuance_type_index (issuance_type)',
@@ -263,7 +262,6 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 ->select(
                     'inventory_items.description',
                     'inventory_items.unit',
-                    'inventory_items.location',
                     'inventory_items.qty',
                     'inventory_items.stock_balance',
                     'inventory_items.variance',
@@ -296,7 +294,6 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 return (object) [
                     'description'    => $lastItem->description,
                     'unit'           => $lastItem->unit,
-                    'location'       => $lastItem->location,
                     'ledge_category' => $lastItem->ledge_category,
                     'stock_balance'  => $stockBalance,
                     'qty'            => $qty,
@@ -674,11 +671,9 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/dg', [\App\Http\Controllers\DGController::class, 'index'])->name('dg.dashboard');
     Route::get('/dg/print', [\App\Http\Controllers\DGController::class, 'printReport'])->name('dg.print');
 
-    // Temp Requisitioner Provisioning Routes (Non-Stores Department Heads only)
-    Route::post('/dept-head/temp-requisitioners', [\App\Http\Controllers\TempRequisitionerController::class, 'store'])->name('dept-head.temp-requisitioners.store');
-    Route::delete('/dept-head/temp-requisitioners/{id}', [\App\Http\Controllers\TempRequisitionerController::class, 'destroy'])->name('dept-head.temp-requisitioners.destroy');
+    // Staff Access Provisioning Routes (Non-Stores Department Heads only)
     Route::get('/api/dept-head/temp-requisitioners', [\App\Http\Controllers\TempRequisitionerController::class, 'index'])->name('dept-head.temp-requisitioners.index');
-    Route::post('/dept-head/temp-requisitioners/{id}/regenerate-otp', [\App\Http\Controllers\TempRequisitionerController::class, 'regenerateOtp'])->name('dept-head.temp-requisitioners.regenerate-otp');
+    Route::post('/dept-head/staff/{id}/toggle-request-access', [\App\Http\Controllers\TempRequisitionerController::class, 'toggleRequestAccess'])->name('dept-head.staff.toggle-request-access');
 
     Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
     Route::put('/received-items/{id}', [ReceivedItemsController::class, 'update'])->name('receiveditems.update');
@@ -1102,7 +1097,6 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         if (!auth()->user()->is_admin) abort(403);
         $category = trim($request->input('category'));
         $unit    = strtoupper(trim($request->input('unit')));
-        $location = trim($request->input('location')) ?: 'Not Specified';
 
         // Support both single keyword or multiple keywords
         $keywords = $request->input('keywords');
@@ -1128,13 +1122,12 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             
             $rules[$kwUpper] = [
                 'category' => $category,
-                'unit' => $unit,
-                'location' => $location
+                'unit' => $unit
             ];
             
             // Automatically store this item in the database as a System Draft batch item
             try {
-                \Illuminate\Support\Facades\DB::transaction(function() use ($category, $kwUpper, $unit, $location) {
+                \Illuminate\Support\Facades\DB::transaction(function() use ($category, $kwUpper, $unit) {
                     $systemBatch = \App\Models\InventoryBatch::firstOrCreate(
                         [
                             'ledge_category' => $category,
@@ -1160,8 +1153,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                             'stock_balance' => 0,
                             'qty' => 0,
                             'variance' => 0,
-                            'remarks' => 'Auto-generated unit rule placeholder',
-                            'location' => $location
+                            'remarks' => 'Auto-generated unit rule placeholder'
                         ]
                     );
                 });
@@ -1467,12 +1459,13 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             $invItem = \App\Models\InventoryItem::find($u['item_id']);
             if (!$invItem) continue;
             $items[] = [
-                'description' => $invItem->description,
-                'unit'        => $invItem->unit,
-                'current'     => (float) $invItem->stock_balance,
-                'adding'      => (float) $u['incoming_qty'],
-                'projected'   => (float) $invItem->stock_balance + (float) $u['incoming_qty'],
-                'expected'    => (float) $invItem->stock_balance - (float) $invItem->variance,
+                'description'   => $invItem->description,
+                'serial_number' => $invItem->serial_number,
+                'unit'          => $invItem->unit,
+                'current'       => (float) $invItem->stock_balance,
+                'adding'        => (float) $u['incoming_qty'],
+                'projected'     => (float) $invItem->stock_balance + (float) $u['incoming_qty'],
+                'expected'      => (float) $invItem->stock_balance - (float) $invItem->variance,
             ];
         }
 

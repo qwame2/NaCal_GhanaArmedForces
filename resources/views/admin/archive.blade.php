@@ -327,7 +327,6 @@
                     <tr>
                         <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Timeline</th>
                         <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Items</th>
-                        <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Storage Location</th>
                         <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Destination</th>
                         <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Qty Issued</th>
                         <th style="padding: 1.5rem 2rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Approval</th>
@@ -363,12 +362,7 @@
                                 </span>
                             </div>
                         </td>
-                        <td style="padding: 1.5rem 2rem; font-weight: 800; color: var(--text-main); font-size: 0.95rem;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <i data-lucide="map-pin" style="width: 16px; color: var(--text-muted); opacity: 0.6;"></i>
-                                <span>{{ $item->location }}</span>
-                            </div>
-                        </td>
+
                         <td style="padding: 1.5rem 2rem; font-weight: 900; color: var(--text-main); font-size: 1.05rem; white-space: nowrap;">
                             {{ $item->beneficiary }}
                         </td>
@@ -387,7 +381,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" style="padding: 10rem 2rem; text-align: center; color: var(--text-muted);">
+                        <td colspan="6" style="padding: 10rem 2rem; text-align: center; color: var(--text-muted);">
                             <div style="width: 110px; height: 110px; background: #f8fafc; border-radius: 35px; display: flex; align-items: center; justify-content: center; margin: 0 auto 2.5rem auto; box-shadow: inset 0 2px 15px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;">
                                 <i data-lucide="database-zap" style="width: 54px; height: 54px; color: var(--primary); opacity: 0.25;"></i>
                             </div>

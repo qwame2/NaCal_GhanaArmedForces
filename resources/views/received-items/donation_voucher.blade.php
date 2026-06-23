@@ -215,6 +215,9 @@
                     <td style="text-align: center;">{{ $index + 1 }}</td>
                     <td>
                         <strong>{{ $item->description }}</strong>
+                        @if(!empty($item->serial_number))
+                            <br><span style="font-size: 11px; font-weight: bold; color: #444;">S/N: {{ $item->serial_number }}</span>
+                        @endif
                         @if($item->remarks)
                         <br><span style="font-size: 11px; font-style: italic;">Condition Note: {{ $item->remarks }}</span>
                         @endif

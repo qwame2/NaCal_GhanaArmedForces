@@ -84,7 +84,6 @@ class InventoryController extends Controller
             ->select(
                 'inventory_items.description',
                 'inventory_items.unit',
-                'inventory_items.location',
                 'inventory_items.qty',
                 'inventory_items.stock_balance',
                 'inventory_items.variance',
@@ -117,7 +116,6 @@ class InventoryController extends Controller
             return (object) [
                 'description'    => $lastItem->description,
                 'unit'           => $lastItem->unit,
-                'location'       => $lastItem->location,
                 'ledge_category' => $lastItem->ledge_category,
                 'stock_balance'  => $stockBalance,
                 'qty'            => $qty,
@@ -154,7 +152,6 @@ class InventoryController extends Controller
             'items.*.variance' => 'required|string',
 
             'items.*.remarks' => 'nullable|string',
-            'items.*.location' => 'nullable|string',
         ]);
 
         $arrivalDate = $validated['arrival_date'];
