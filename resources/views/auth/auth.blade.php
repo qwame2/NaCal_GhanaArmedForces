@@ -1381,7 +1381,7 @@
         @endif
 
         @if(session('error'))
-            @if(session('error') == 'wrong password or username account has been deactivated see admin to activate your account')
+            @if(session('error') == 'wrong password or username account has been deactivated see head of stores to activate your account')
                 Swal.fire({
                     title: '<span style="font-weight: 900; color: #1e293b;">Strategic Command Alert</span>',
                     text: "{{ session('error') }}",

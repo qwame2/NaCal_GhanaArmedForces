@@ -1139,7 +1139,10 @@
         // Opening a new tab with the same URL will force a re-login.
         (function() {
             const authId = '{{ auth()->id() }}';
+            if (!authId) return; // Not logged in
+
             const tabLockKey = 'tab_auth_lock_' + authId;
+            const heartbeatKey = 'tab_auth_heartbeat_' + authId;
             const clientJustLoggedIn = sessionStorage.getItem('just_logged_in') === 'true';
             if (clientJustLoggedIn) {
                 sessionStorage.removeItem('just_logged_in');
@@ -1150,14 +1153,26 @@
             // Set up BroadcastChannel to share the lock across active tabs of the same session
             const channel = new BroadcastChannel('tab_auth_channel_' + authId);
             
+            const writeHeartbeat = () => {
+                localStorage.setItem(heartbeatKey, Date.now().toString());
+            };
+            
+            if (sessionStorage.getItem(tabLockKey) === 'active') {
+                writeHeartbeat();
+                setInterval(writeHeartbeat, 3000);
+            }
+
             channel.onmessage = (event) => {
                 if (event.data === 'request_key') {
                     if (sessionStorage.getItem(tabLockKey) === 'active') {
                         channel.postMessage('response_key');
+                        writeHeartbeat();
                     }
                 } else if (event.data === 'response_key') {
                     if (!sessionStorage.getItem(tabLockKey)) {
                         sessionStorage.setItem(tabLockKey, 'active');
+                        writeHeartbeat();
+                        setInterval(writeHeartbeat, 3000);
                         if (window.pendingTabLogoutTimeout) {
                             clearTimeout(window.pendingTabLogoutTimeout);
                             window.pendingTabLogoutTimeout = null;
@@ -1167,28 +1182,28 @@
             };
 
             if (!sessionStorage.getItem(tabLockKey)) {
-                if (isJustLoggedIn) {
+                // Check localStorage heartbeat from another active tab of the same user
+                const lastHeartbeat = parseInt(localStorage.getItem(heartbeatKey) || '0', 10);
+                const isAnotherTabActive = (Date.now() - lastHeartbeat) < 15000;
+
+                if (isJustLoggedIn || isAnotherTabActive) {
                     // Initializing the security lock for this tab
                     sessionStorage.setItem(tabLockKey, 'active');
+                    writeHeartbeat();
+                    setInterval(writeHeartbeat, 3000);
                 } else {
                     // Query other active tabs for a valid session key before logging out
                     channel.postMessage('request_key');
 
                     window.pendingTabLogoutTimeout = setTimeout(() => {
                         if (!sessionStorage.getItem(tabLockKey)) {
-                            // Unauthorized tab entry detected (SessionStorage was wiped and no other active tabs)
-                            const form = document.createElement('form');
-                            form.method = 'POST';
-                            form.action = logoutUrl;
-                            const token = document.createElement('input');
-                            token.type = 'hidden';
-                            token.name = '_token';
-                            token.value = "{{ csrf_token() }}";
-                            form.appendChild(token);
-                            document.body.appendChild(form);
-                            form.submit();
+                            // If no other tab responded, we fallback to initializing the current tab as active.
+                            // This prevents false-positive global logouts during tab restorations, single tab restores, or browser restarts.
+                            sessionStorage.setItem(tabLockKey, 'active');
+                            writeHeartbeat();
+                            setInterval(writeHeartbeat, 3000);
                         }
-                    }, 2000);
+                    }, 10000); // 10s timeout to allow throttled background tabs to reply
                 }
             }
 

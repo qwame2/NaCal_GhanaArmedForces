@@ -130,7 +130,7 @@
             <i data-lucide="shield-alert" style="width: 48px; height: 48px;"></i>
         </div>
         <h1>Access Restricted</h1>
-        <p>Your account has been deactivated. Please contact your Administrator to resolve this issue and restore your operational credentials.</p>
+        <p>Your account has been deactivated. Please contact the Head of Stores to resolve this issue and restore your operational credentials.</p>
         
         <a href="{{ route('login') }}" class="btn-return">
             <i data-lucide="arrow-left" style="width: 20px;"></i>

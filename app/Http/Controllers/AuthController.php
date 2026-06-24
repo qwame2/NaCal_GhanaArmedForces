@@ -178,17 +178,21 @@ class AuthController extends Controller
             if ($targetUser->is_temp_account && \App\Http\Controllers\TempRequisitionerController::hasOverdueReturn($targetUser->department)) {
                 return back()->with('error', 'Access Suspended: Your department currently has overdue temporary assets. Active temporary accounts are suspended.')->withInput();
             }
-            return back()->with('error', 'wrong password or username account has been deactivated see admin to activate your account')->withInput();
+            return back()->with('error', 'wrong password or username account has been deactivated see head of stores to activate your account')->withInput();
         }
 
         // TEMP ACCOUNT OTP LOGIN: Bypass normal hashed-password auth for temp requisitioners
         if ($targetUser && $targetUser->is_temp_account && $targetUser->otp_token) {
             if ($request->password !== $targetUser->otp_token) {
-                // Wrong OTP — record attempt but do NOT deactivate temp accounts via rate limiter
-                \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, 3600);
-                return back()->withErrors([
-                    'username' => 'Invalid access code. Please check your username and OTP with your Department Head.',
-                ])->onlyInput('username');
+                // Wrong OTP — record attempt and handle possible rate limiting lockout
+                return $this->handleFailedAttempt(
+                    $request,
+                    $throttleKey,
+                    $maxAttempts,
+                    $targetUser,
+                    $samAccountName,
+                    'Invalid access code. Please check your username and OTP with your Department Head.'
+                );
             }
 
             // OTP matches — log the user in manually
@@ -217,23 +221,6 @@ class AuthController extends Controller
 
         if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($throttleKey, $maxAttempts)) {
             $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn($throttleKey);
-            
-            // If it's a personnel account and they are already being throttled, ensure they are deactivated
-            if ($targetUser && !$targetUser->is_admin) {
-                if ($targetUser->is_active) {
-                    $targetUser->update(['is_active' => false]);
-                    \App\Models\SystemLog::create([
-                        'user_id' => $targetUser->id,
-                        'event_type' => 'SECURITY',
-                        'action' => 'ACCOUNT_AUTO_DEACTIVATED',
-                        'description' => "Personnel @{$targetUser->username} deactivated after triggering rate limit.",
-                        'severity' => 'danger',
-                        'ip_address' => $request->ip()
-                    ]);
-                }
-                return back()->with('error', 'wrong password or username account has been deactivated see admin to activate your account')->withInput();
-            }
-
             return back()->with('error', "Too many login attempts. Please try again in {$seconds} seconds.")->withInput();
         }
 
@@ -356,7 +343,7 @@ class AuthController extends Controller
                         // Check if the user already exists locally and is deactivated
                         if ($targetUser && !$targetUser->is_active) {
                             \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, 3600);
-                            return back()->with('error', 'wrong password or username account has been deactivated see admin to activate your account')->withInput();
+                            return back()->with('error', 'wrong password or username account has been deactivated see head of stores to activate your account')->withInput();
                         }
 
                         // Create or update local user safely with standard attributes and password placeholder on creation
@@ -390,10 +377,14 @@ class AuthController extends Controller
                         $ldapAuthenticated = true;
                     } else {
                         // AD User exists, but incorrect password entered
-                        \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, 3600);
-                        return back()->withErrors([
-                            'username' => 'The provided credentials do not match our Active Directory records.',
-                        ])->onlyInput('username');
+                        return $this->handleFailedAttempt(
+                            $request,
+                            $throttleKey,
+                            $maxAttempts,
+                            $targetUser,
+                            $samAccountName,
+                            'The provided credentials do not match our Active Directory records.'
+                        );
                     }
                 }
             }
@@ -540,28 +531,14 @@ class AuthController extends Controller
             }
         }
 
-        \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, 3600); // Record hit for 1 hour
-        $attempts = \Illuminate\Support\Facades\RateLimiter::attempts($throttleKey);
-
-        // SECURITY ENFORCEMENT: Deactivate personnel accounts exceeding thresholds
-        if ($targetUser && !$targetUser->is_admin && $attempts >= $maxAttempts) {
-            $targetUser->update(['is_active' => false]);
-
-            \App\Models\SystemLog::create([
-                'user_id' => $targetUser->id,
-                'event_type' => 'SECURITY',
-                'action' => 'ACCOUNT_AUTO_DEACTIVATED',
-                'description' => "Personnel registry @{$targetUser->username} auto-deactivated after {$attempts} failed authentication attempts.",
-                'severity' => 'danger',
-                'ip_address' => $request->ip()
-            ]);
-
-            return back()->with('error', 'wrong password or username account has been deactivated see admin to activate your account')->withInput();
-        }
-
-        return back()->withErrors([
-            'username' => 'The provided credentials do not match our records.',
-        ])->onlyInput('username');
+        return $this->handleFailedAttempt(
+            $request,
+            $throttleKey,
+            $maxAttempts,
+            $targetUser,
+            $samAccountName,
+            'The provided credentials do not match our records.'
+        );
     }
 
     protected function isDefaultPassword($password)
@@ -984,6 +961,51 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Critical System Failure: ' . $e->getMessage())->withInput();
         }
+    }
+
+    protected function handleFailedAttempt(Request $request, $throttleKey, $maxAttempts, $targetUser, $samAccountName, $errorMessage)
+    {
+        \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, 3600);
+        $attempts = \Illuminate\Support\Facades\RateLimiter::attempts($throttleKey);
+
+        if ($attempts >= $maxAttempts) {
+            if ($targetUser && !$targetUser->is_admin) {
+                // Deactivate personnel account
+                $targetUser->update(['is_active' => false]);
+
+                \App\Models\SystemLog::create([
+                    'user_id' => $targetUser->id,
+                    'event_type' => 'SECURITY',
+                    'action' => 'ACCOUNT_AUTO_DEACTIVATED',
+                    'description' => "Personnel registry @{$targetUser->username} auto-deactivated after {$attempts} failed authentication attempts.",
+                    'severity' => 'danger',
+                    'ip_address' => $request->ip()
+                ]);
+
+                return back()->with('error', 'wrong password or username account has been deactivated see head of stores to activate your account')->withInput();
+            }
+
+            $userType = 'Unknown';
+            $userId = null;
+            if ($targetUser) {
+                $userType = $targetUser->is_admin ? 'Admin' : 'Personnel';
+                $userId = $targetUser->id;
+            }
+
+            \App\Models\SystemLog::create([
+                'user_id' => $userId,
+                'event_type' => 'SECURITY',
+                'action' => 'LOGIN_ATTEMPTS_EXCEEDED',
+                'description' => "{$userType} registry @{$samAccountName} exceeded login attempts ({$attempts} attempts). Account temporarily locked by rate limiter.",
+                'severity' => 'warning',
+                'ip_address' => $request->ip()
+            ]);
+
+            $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn($throttleKey);
+            return back()->with('error', "Too many login attempts. Please try again in {$seconds} seconds.")->withInput();
+        }
+
+        return back()->with('error', $errorMessage)->withInput();
     }
 
 }
