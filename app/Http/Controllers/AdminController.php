@@ -542,6 +542,12 @@ class AdminController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
+        // Self-heal: Mark ALL unread messages for this admin as read the moment they open the messages page.
+        // This ensures the persistent notification alarm stops immediately upon visiting the page.
+        \App\Models\Message::where('receiver_id', auth()->id())
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+
         $users = User::where('is_admin', false)->where('registration_status', 'approved')->get();
         return view('admin.messages', compact('users'));
     }

@@ -14,7 +14,7 @@ class MessageController extends Controller
         $authId = auth()->id();
         $authUser = auth()->user();
         
-        $messages = Message::where('is_archived', false)->where(function($q) use ($authId, $userId, $authUser) {
+        $messages = Message::with('editRequest')->where('is_archived', false)->where(function($q) use ($authId, $userId, $authUser) {
             // Standard peer-to-peer message query
             $q->where(function($sq) use ($authId, $userId) {
                 $sq->where('sender_id', $authId)->where('receiver_id', $userId);
@@ -178,7 +178,22 @@ class MessageController extends Controller
         $counts = $query->selectRaw('sender_id, count(*) as count')
             ->groupBy('sender_id')
             ->get()
-            ->pluck('count', 'sender_id');
+            ->pluck('count', 'sender_id')
+            ->toArray();
+
+        // If the logged in user is a store officer (non-admin), add active rollback requests count to admins
+        if (auth()->check() && !auth()->user()->is_admin) {
+            $rollbackCount = \App\Models\EditRequest::where('user_id', $authId)
+                ->where('status', 'rollback')
+                ->count();
+                
+            if ($rollbackCount > 0) {
+                $adminIds = User::where('is_admin', true)->pluck('id')->toArray();
+                foreach ($adminIds as $adminId) {
+                    $counts[$adminId] = ($counts[$adminId] ?? 0) + $rollbackCount;
+                }
+            }
+        }
 
         if (ob_get_length()) ob_clean();
         return response()->json($counts);
@@ -220,10 +235,25 @@ class MessageController extends Controller
             });
         }
 
+        // Exclude approval notifications from the persistent looping count
+        $query->where(function($q) {
+            $q->where('message', 'not like', '%sra-approved-msg%')
+              ->orWhereNull('message');
+        });
+
         $count = $query->count();
 
+        $approvalsCount = Message::where('is_archived', false)
+            ->where('receiver_id', auth()->id())
+            ->whereNull('read_at')
+            ->where('message', 'like', '%sra-approved-msg%')
+            ->count();
+
         if (ob_get_length()) ob_clean();
-        return response()->json(['count' => $count]);
+        return response()->json([
+            'count' => $count,
+            'approvals_count' => $approvalsCount
+        ]);
     }
     public function getOnlineStatuses()
     {

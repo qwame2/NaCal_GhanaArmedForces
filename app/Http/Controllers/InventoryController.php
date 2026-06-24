@@ -165,14 +165,19 @@ class InventoryController extends Controller
             
             if (!$is_admin) {
                 // Divert to staged approval process (Don't save items yet)
+                $payloadData = $validated;
+                if ($request->has('rollback_id')) {
+                    $payloadData['rollback_id'] = $request->rollback_id;
+                }
+
                 $editReq = \App\Models\EditRequest::create([
                     'user_id' => auth()->id(),
                     'item_id' => 0, // Fallback for creation requests
                     'item_type' => 'batch_creation',
                     'request_type' => 'sra_creation',
-                    'reason' => 'New Inventory Entry Submission',
+                    'reason' => $request->has('rollback_id') ? 'Correction submission for rolled back entry' : 'New Inventory Entry Submission',
                     'status' => 'pending',
-                    'payload' => json_encode($validated)
+                    'payload' => json_encode($payloadData)
                 ]);
 
                 // Send Approval Request to all Admins

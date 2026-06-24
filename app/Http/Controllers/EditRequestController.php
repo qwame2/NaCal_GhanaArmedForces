@@ -407,6 +407,14 @@ class EditRequestController extends Controller
             
         \Illuminate\Support\Facades\DB::beginTransaction();
         try {
+            if (isset($data['rollback_id'])) {
+                $origReq = EditRequest::find($data['rollback_id']);
+                if ($origReq) {
+                    $origReq->status = 'approved';
+                    $origReq->approved_at = now();
+                    $origReq->save();
+                }
+            }
             \App\Models\InventoryBatch::selfHealSchema();
             if (ob_get_length()) ob_clean();
 
@@ -580,7 +588,8 @@ class EditRequestController extends Controller
             $statusHeader = 'REMAINDER FULFILLMENT AUTHORIZED';
         }
         
-        $finalMsg = "<div class='personnel-view' style='padding: 15px; border: 1px solid {$color}; border-radius: 12px; background: " . ($request->status === 'approved' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(220, 38, 38, 0.05)') . ";'>";
+        $approvedClass = $request->status === 'approved' ? ' sra-approved-msg' : '';
+        $finalMsg = "<div class='personnel-view{$approvedClass}' style='padding: 15px; border: 1px solid {$color}; border-radius: 12px; background: " . ($request->status === 'approved' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(220, 38, 38, 0.05)') . ";'>";
         $finalMsg .= "<b style='color: {$color}'>{$statusHeader}</b><br>";
         
         if ($request->status === 'approved' && isset($batch) && $batch) {
@@ -626,7 +635,8 @@ class EditRequestController extends Controller
             $personnelOriginalMsg->update([
                 'message' => $finalMsg,
                 'is_automated' => true,
-                'edit_request_id' => $editReq->id // Ensure it's tagged for future
+                'edit_request_id' => $editReq->id, // Ensure it's tagged for future
+                'read_at' => null,
             ]);
         } else {
             // Fallback if not found
@@ -635,7 +645,8 @@ class EditRequestController extends Controller
                 'receiver_id' => $editReq->user_id,
                 'message' => $finalMsg,
                 'is_automated' => true,
-                'edit_request_id' => $editReq->id
+                'edit_request_id' => $editReq->id,
+                'read_at' => null,
             ]);
         }
 
@@ -1081,7 +1092,8 @@ class EditRequestController extends Controller
         }
 
         // Notification logic
-        $finalMsg = "<div class='personnel-view' style='padding: 15px; border: 1px solid {$color}; border-radius: 12px; background: " . ($request->status === 'approved' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(220, 38, 38, 0.05)') . ";'>";
+        $approvedClass = $request->status === 'approved' ? ' sra-approved-msg' : '';
+        $finalMsg = "<div class='personnel-view{$approvedClass}' style='padding: 15px; border: 1px solid {$color}; border-radius: 12px; background: " . ($request->status === 'approved' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(220, 38, 38, 0.05)') . ";'>";
         $finalMsg .= "<b style='color: {$color}'>{$statusHeader}</b><br>";
         
         if ($request->status === 'approved') {
@@ -1110,14 +1122,19 @@ class EditRequestController extends Controller
             ->first();
 
         if ($personnelMsg) {
-            $personnelMsg->update(['message' => $finalMsg, 'is_automated' => true]);
+            $personnelMsg->update([
+                'message' => $finalMsg, 
+                'is_automated' => true,
+                'read_at' => null
+            ]);
         } else {
             Message::create([
                 'sender_id' => auth()->id(),
                 'receiver_id' => $editReq->user_id,
                 'message' => $finalMsg,
                 'is_automated' => true,
-                'edit_request_id' => $editReq->id
+                'edit_request_id' => $editReq->id,
+                'read_at' => null
             ]);
         }
 
@@ -1276,6 +1293,7 @@ class EditRequestController extends Controller
                 'message'         => $userMsg,
                 'is_automated'    => true,
                 'edit_request_id' => $editReq->id,
+                'read_at'         => null, // Reset so the alarm triggers as a new unread notification
             ]);
         } else {
             Message::create([
@@ -1284,8 +1302,10 @@ class EditRequestController extends Controller
                 'message'         => $userMsg,
                 'is_automated'    => true,
                 'edit_request_id' => $editReq->id,
+                'read_at'         => null,
             ]);
         }
+
 
         // 2. Update the Admin's own oversight message to show "Rolled Back" status
         $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))

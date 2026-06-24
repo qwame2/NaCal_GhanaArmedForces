@@ -1332,6 +1332,14 @@
 <script>
     window.isAdmin = {{ auth()->user()->is_admin ? 'true' : 'false' }};
 
+    @if(session('success'))
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof window.playNotificationSound === 'function') {
+            window.playNotificationSound('sent');
+        }
+    });
+    @endif
+
     function openReturnModal(item) {
         document.getElementById('modal_item_id').value = item.id;
         document.getElementById('modal_item_desc').innerText = item.description;

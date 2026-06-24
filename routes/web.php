@@ -1232,7 +1232,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         }
         $setting->value = json_encode($rules);
         $setting->save();
-        return back()->with('success', "Added {$addedCount} threshold rule(s) successfully.");
+        return back()->with('success', "Added {$addedCount} threshold(s) successfully.");
     })->name('admin.settings.threshold-rule.store');
 
     Route::delete('/admin/settings/threshold-rule', function(\Illuminate\Http\Request $request) {
@@ -1245,7 +1245,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             $setting->value = json_encode($rules);
             $setting->save();
         }
-        return back()->with('success', "Threshold rule for \"{$keyword}\" removed.");
+        return back()->with('success', "Threshold for \"{$keyword}\" removed.");
     })->name('admin.settings.threshold-rule.destroy');
 
     // Item Request Limits

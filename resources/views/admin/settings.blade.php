@@ -1208,9 +1208,9 @@
                         <span style="font-size: 0.72rem; color: #64748b; font-weight: 600; display: block; margin-top: 4px;">Supports PNG, JPG, or JPEG. Transparent PNG is highly recommended for official audit receipt formatting. Max size: 5MB.</span>
                     </div>
                 </div>
-            </div>
         </div>
         @endif
+
 
         {{-- Category Management --}}
         <div class="cfg-card" id="category-configs">
@@ -1256,7 +1256,7 @@
                                 </div>
                             </div>
                             @empty
-                            <div style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; padding: 1rem 0;">No categories registered yet.</div>
+                            <div style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; padding: 1rem 0;">No categories added yet.</div>
                             @endforelse
                         </div>
                         
@@ -1269,7 +1269,7 @@
                     {{-- Add New Category --}}
                     <div class="cat-form-card">
                         <h5 id="categoryFormTitle">Add New Category</h5>
-                        <p id="categoryFormSub">Register a new ledger code for inventory tracking.</p>
+                        <p id="categoryFormSub">Add a new ledger code for inventory tracking.</p>
                         <form id="categoryForm" action="{{ route('admin.settings.category') }}" method="POST">
                             @csrf
                             <div style="display: flex; flex-direction: column; gap: 1rem;">
@@ -1283,7 +1283,7 @@
                                 </div>
                                 <div style="display: flex; gap: 10px; margin-top: 1rem;">
                                     <button type="submit" id="categorySubmitBtn" class="btn-cfg-add" style="margin-top: 0; flex: 1;">
-                                        <i data-lucide="plus-circle" id="categorySubmitIcon"></i> <span id="categorySubmitText">Register Category</span>
+                                        <i data-lucide="plus-circle" id="categorySubmitIcon"></i> <span id="categorySubmitText">Add Category</span>
                                     </button>
                                     <button type="button" id="categoryResetBtn" onclick="resetCategoryForm()" style="display: none; padding: 0.75rem 1.5rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
                                         Cancel
@@ -1300,7 +1300,7 @@
 
 
 
-    {{-- Item Threshold Rules --}}
+    {{-- Item Thresholds --}}
     <div class="cfg-card" id="threshold-rules" style="margin-top: 2rem;">
         <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
@@ -1308,8 +1308,8 @@
                     <i data-lucide="alert-triangle"></i>
                 </div>
                 <div>
-                    <h3 style="margin: 0 0 0.25rem 0;">Item Threshold Rules</h3>
-                    <p style="margin: 0;">Define specific low stock thresholds for items. Only items matching these rules will trigger alerts.</p>
+                    <h3 style="margin: 0 0 0.25rem 0;">Item Thresholds</h3>
+                    <p style="margin: 0;">Define specific low stock thresholds for items. Only items matching these will trigger alerts.</p>
                 </div>
             </div>
 
@@ -1324,7 +1324,7 @@
                 {{-- Existing Thresholds --}}
                 <div>
                     <p style="font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 1rem; display: flex; align-items: center; gap: 6px;">
-                        <i data-lucide="list" style="width: 14px;"></i> Active Threshold Rules
+                        <i data-lucide="list" style="width: 14px;"></i> Active Thresholds
                     </p>
                     @php
                     $thresholdRules = json_decode(\App\Models\Setting::where('key','item_threshold_rules')->value('value') ?? '{}', true) ?? [];
@@ -1338,7 +1338,7 @@
                     @if(empty($groupedThresholds))
                     <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
                         <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
-                        <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No threshold rules defined yet. Add rules on the right.</p>
+                        <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No stock thresholds defined yet. Add thresholds on the right.</p>
                     </div>
                     @else
                     <div class="custom-scrollbar" style="display: flex; flex-direction: column; gap: 1.5rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;" id="thresholdsContainer">
@@ -1365,7 +1365,7 @@
                                         <button type="button" onclick="populateThresholdForm('{{ $keyword }}', {{ $threshold }}, '{{ $catCode }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
                                             <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
                                         </button>
-                                        <form action="{{ route('admin.settings.threshold-rule.destroy') }}" method="POST" onsubmit="return confirm('Remove threshold rule for \'{{ $keyword }}\'?');" style="margin: 0;">
+                                        <form action="{{ route('admin.settings.threshold-rule.destroy') }}" method="POST" onsubmit="return confirm('Remove threshold for \'{{ $keyword }}\'?');" style="margin: 0;">
                                             @csrf @method('DELETE')
                                             <input type="hidden" name="keyword" value="{{ $keyword }}">
                                             <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Rule">
@@ -1382,9 +1382,9 @@
                     @endif
                 </div>
 
-                {{-- Add New Threshold Rule --}}
+                {{-- Add New Threshold --}}
                 <div class="cat-form-card">
-                    <h5>Add Threshold Rule</h5>
+                    <h5>Add Threshold</h5>
                     <p>Set a specific alert threshold for an item. These help catch low stock before it becomes critical.</p>
                     <form action="{{ route('admin.settings.threshold-rule.store') }}" method="POST">
                         @csrf
@@ -1410,7 +1410,7 @@
                             </div>
                             <div style="display: flex; gap: 10px;">
                                 <button type="submit" id="thresholdSubmitBtn" class="btn-cfg-add" style="flex: 1; background: linear-gradient(135deg,#ef4444,#dc2626); box-shadow: 0 6px 16px rgba(239,68,68,0.25);">
-                                    <i data-lucide="plus-circle" id="thresholdSubmitIcon"></i> <span id="thresholdSubmitText">Add Threshold Rule</span>
+                                    <i data-lucide="plus-circle" id="thresholdSubmitIcon"></i> <span id="thresholdSubmitText">Add Threshold</span>
                                 </button>
                                 <button type="button" id="thresholdResetBtn" onclick="resetThresholdForm()" style="display: none; padding: 0.75rem 1rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; margin-top: 1rem;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
                                     Cancel
@@ -1513,10 +1513,10 @@
                                         <button type="button" onclick="populateLimitForm('{{ $keyword }}', {{ $limit }}, '{{ $catCode }}')" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='#cbd5e1'" title="Edit Rule">
                                             <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
                                         </button>
-                                        <form action="{{ route('admin.settings.request-limit.destroy') }}" method="POST" onsubmit="return confirm('Remove request limit rule for \'{{ $keyword }}\'?');" style="margin: 0;">
+                                        <form action="{{ route('admin.settings.request-limit.destroy') }}" method="POST" onsubmit="return confirm('Remove request limit for \'{{ $keyword }}\'?');" style="margin: 0;">
                                             @csrf @method('DELETE')
                                             <input type="hidden" name="keyword" value="{{ $keyword }}">
-                                            <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Limit Rule">
+                                            <button type="submit" style="background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; padding: 2px; display: flex; align-items: center;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'" title="Remove Limit">
                                                 <i data-lucide="x" style="width: 16px; height: 16px;"></i>
                                             </button>
                                         </form>
@@ -1530,7 +1530,7 @@
                     @endif
                 </div>
 
-                {{-- Add New Limit Rule --}}
+                {{-- Add New Limit --}}
                 <div class="cat-form-card">
                     <h5 id="limitFormTitle">Add Request Limit</h5>
                     <p>Specify the keyword (e.g. "pen") and set the max allowed request limit. When this limit is reached, it will display as Out of Stock on the dashboard.</p>
@@ -1574,7 +1574,7 @@
                             </div>
                             <div style="display: flex; gap: 10px;">
                                 <button type="submit" id="limitSubmitBtn" class="btn-cfg-add" style="flex: 1; background: linear-gradient(135deg,#6366f1,#4f46e5); box-shadow: 0 6px 16px rgba(99,102,241,0.25);">
-                                    <i data-lucide="plus-circle" id="limitSubmitIcon"></i> <span id="limitSubmitText">Add Limit Rule</span>
+                                    <i data-lucide="plus-circle" id="limitSubmitIcon"></i> <span id="limitSubmitText">Add Limit</span>
                                 </button>
                                 <button type="button" id="limitResetBtn" onclick="resetLimitForm()" style="display: none; padding: 0.75rem 1rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s;">
                                     Cancel
@@ -1625,7 +1625,7 @@
                     
                     <div id="noSuppliersRegistered" style="display: none; padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
                         <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
-                        <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No suppliers registered yet. Register suppliers on the right.</p>
+                        <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No suppliers added yet. Add suppliers on the right.</p>
                     </div>
 
                     <div id="noSuppliersFound" style="display: none; padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0; margin-top: 1rem;">
@@ -1639,7 +1639,7 @@
                 {{-- Add/Edit Form --}}
                 <div style="background: #fafbff; border-radius: 20px; border: 1.5px solid #edf2f7; padding: 1.5rem;">
                     <h5 style="font-weight: 900; font-size: 0.95rem; color: #0f172a; margin: 0 0 0.25rem 0;" id="supplierFormTitle">Add Supplier</h5>
-                    <p style="font-size: 0.75rem; color: #64748b; margin: 0 0 1.25rem 0;">Register new supplier or update contact details.</p>
+                    <p style="font-size: 0.75rem; color: #64748b; margin: 0 0 1.25rem 0;">Add a new supplier or update contact details.</p>
                     <form action="{{ route('admin.settings.supplier.store') }}" method="POST" id="supplierForm">
                         @csrf
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
@@ -1674,7 +1674,7 @@
                             </div>
                             <div style="display: flex; gap: 10px;">
                                 <button type="submit" id="supplierSubmitBtn" class="btn-cfg-add" style="flex: 1; background: linear-gradient(135deg, #10b981, #059669); margin-top: 0.5rem;">
-                                    <i data-lucide="plus-circle" id="supplierSubmitIcon"></i> <span id="supplierSubmitText">Register Supplier</span>
+                                    <i data-lucide="plus-circle" id="supplierSubmitIcon"></i> <span id="supplierSubmitText">Add Supplier</span>
                                 </button>
                                 <button type="button" id="supplierResetBtn" onclick="resetSupplierForm()" style="display: none; padding: 0.75rem 1rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; margin-top: 0.5rem;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
                                     Cancel
@@ -2054,7 +2054,7 @@
     function resetThresholdForm() {
         document.querySelector('#threshold-rules form').reset();
         $('#thresholdKeyword').val(null).trigger('change');
-        document.getElementById('thresholdSubmitText').innerText = 'Add Threshold Rule';
+        document.getElementById('thresholdSubmitText').innerText = 'Add Threshold';
         document.getElementById('thresholdSubmitBtn').style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
         document.getElementById('thresholdResetBtn').style.display = 'none';
         const icon = document.getElementById('thresholdSubmitIcon');
@@ -2078,7 +2078,7 @@
         }, 100);
 
         document.getElementById('limitVal').value = limit;
-        document.getElementById('limitSubmitText').innerText = 'Update Limit Rule';
+        document.getElementById('limitSubmitText').innerText = 'Update Limit';
         document.getElementById('limitSubmitBtn').style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
         document.getElementById('limitResetBtn').style.display = 'inline-block';
         const icon = document.getElementById('limitSubmitIcon');
@@ -2094,7 +2094,7 @@
         document.getElementById('limitForm').reset();
         $('#limitKeyword').val(null).trigger('change.select2');
         document.getElementById('limitStockInfo').style.display = 'none';
-        document.getElementById('limitSubmitText').innerText = 'Add Limit Rule';
+        document.getElementById('limitSubmitText').innerText = 'Add Limit';
         document.getElementById('limitSubmitBtn').style.background = 'linear-gradient(135deg,#6366f1,#4f46e5)';
         document.getElementById('limitResetBtn').style.display = 'none';
         const icon = document.getElementById('limitSubmitIcon');
@@ -2672,11 +2672,11 @@
                 alert('Connection Error: Could not reach deletion node.');
             }
         } finally {
-            btn.innerHTML = orgHtml;
             btn.disabled = false;
             if (window.lucide) lucide.createIcons();
         }
     }
+
 
     function resetSupplierForm() {
         document.getElementById('supplierFormTitle').innerText = 'Add Supplier';
@@ -2684,7 +2684,7 @@
         document.getElementById('supplierNameInput').readOnly = false;
         document.getElementById('supplierNameInput').style.background = '';
 
-        document.getElementById('supplierSubmitText').innerText = 'Register Supplier';
+        document.getElementById('supplierSubmitText').innerText = 'Add Supplier';
         document.getElementById('supplierSubmitBtn').style.background = 'linear-gradient(135deg, #10b981, #059669)';
         document.getElementById('supplierResetBtn').style.display = 'none';
 
@@ -2724,7 +2724,7 @@
 
     function resetCategoryForm() {
         document.getElementById('categoryFormTitle').innerText = 'Add New Category';
-        document.getElementById('categoryFormSub').innerText = 'Register a new ledger code for inventory tracking.';
+        document.getElementById('categoryFormSub').innerText = 'Add a new ledger code for inventory tracking.';
         
         const form = document.getElementById('categoryForm');
         form.action = `{{ route('admin.settings.category') }}`;
@@ -2736,7 +2736,7 @@
         
         document.getElementById('categoryNameInput').value = '';
         
-        document.getElementById('categorySubmitText').innerText = 'Register Category';
+        document.getElementById('categorySubmitText').innerText = 'Add Category';
         document.getElementById('categorySubmitBtn').style.background = '';
         document.getElementById('categorySubmitBtn').style.boxShadow = '';
         

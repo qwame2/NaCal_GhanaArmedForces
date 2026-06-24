@@ -956,6 +956,9 @@
                 const result = await response.json();
 
                 if (result.success) {
+                    if (typeof window.playNotificationSound === 'function') {
+                        window.playNotificationSound('sent');
+                    }
                     cart = [];
                     saveCart();
                     const uniqueId = 'REQ-' + String(result.id).padStart(5, '0');

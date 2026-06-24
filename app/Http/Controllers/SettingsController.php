@@ -149,6 +149,7 @@ class SettingsController extends Controller
         ]);
     }
 
+
     public function messages()
     {
         // Self-heal: Mark all unread messages for the logged-in user as read when they visit the Comms Hub

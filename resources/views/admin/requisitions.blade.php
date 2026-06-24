@@ -2014,6 +2014,9 @@
         });
         const data = await res.json();
         if (data.success) {
+            if (typeof window.playNotificationSound === 'function') {
+                window.playNotificationSound('sent');
+            }
             showToast('Success', data.message, 'success');
             closeModal();
             setTimeout(() => location.reload(), 1200);

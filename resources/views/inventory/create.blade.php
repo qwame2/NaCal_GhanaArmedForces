@@ -673,6 +673,11 @@ jQuery(document).ready(function($) {
             items: items
         };
 
+        const rollbackId = urlParams.get('rollback');
+        if (rollbackId) {
+            payload.rollback_id = rollbackId;
+        }
+
         if (window.originalRollbackPayload) {
             if (!hasRollbackChanges(payload, window.originalRollbackPayload)) {
                 Swal.fire({
@@ -696,6 +701,9 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response.success) {
                     if (response.is_pending) {
+                        if (typeof window.playNotificationSound === 'function') {
+                            window.playNotificationSound('sent');
+                        }
                         Swal.fire({
                             icon: 'info',
                             title: 'REQUEST SUBMITTED',

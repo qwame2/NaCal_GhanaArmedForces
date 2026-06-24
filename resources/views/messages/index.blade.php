@@ -262,6 +262,7 @@
     let activeUserId = null;
     let pollInterval = null;
     let onlineStatuses = {};
+    let previousMessageCount = null;
 
     function selectChat(userId, name, role, avatar) {
         if (!name) {
@@ -273,6 +274,7 @@
             }
         }
         activeUserId = userId;
+        previousMessageCount = null;
         document.getElementById('emptyState').style.display = 'none';
         document.getElementById('sessionHeader').style.display = 'flex';
         document.getElementById('terminalOutput').style.display = 'flex';
@@ -305,7 +307,7 @@
     function fetchMessages() {
         if (!activeUserId) return;
 
-        const fetchUrl = `{{ route('api.messages.fetch', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId);
+        const fetchUrl = `{{ route('api.messages.fetch', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId) + '?_t=' + Date.now();
         fetch(fetchUrl)
             .then(res => {
                 if (!res.ok) throw new Error('Secure line interrupted');
@@ -314,6 +316,29 @@
             .then(data => {
                 const container = document.getElementById('terminalOutput');
                 const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+
+                // Self-heal: If we fetched messages and there are unread ones from the active user,
+                // immediately mark them as read so the db status updates and the alarm ceases in other tabs.
+                const hasUnread = data.some(msg => msg.sender_id == activeUserId && !msg.read_at);
+                if (hasUnread) {
+                    const readUrl = `{{ route('api.messages.read', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId);
+                    fetch(readUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    }).then(() => updateUnreadCounts());
+                }
+
+                if (previousMessageCount !== null && data.length > previousMessageCount) {
+                    const lastMsg = data[data.length - 1];
+                    if (lastMsg && lastMsg.sender_id != {{ auth()->id() }}) {
+                        if (typeof window.playNotificationSound === 'function') {
+                            window.playNotificationSound('receive');
+                        }
+                    }
+                }
+                previousMessageCount = data.length;
 
                 let html = '';
 
@@ -362,9 +387,19 @@
                         }
                     }
 
-                 // Pre-process rollback notifications — strip display:none so they show
+                 // Pre-process rollback notifications - strip display:none so they show
                     if (processedMessage && processedMessage.includes('rollback-notification')) {
                         processedMessage = processedMessage.replace(/style='display: none;/g, "style='display: block;");
+
+                        if (msg.edit_request && msg.edit_request.status === 'approved') {
+                            // Disable the resume button
+                            processedMessage = processedMessage.replace(/class='rollback-resume-btn'/g, "class='rollback-resume-btn disabled' style='pointer-events: none; opacity: 0.6; background: #cbd5e1; box-shadow: none; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 14px 20px; color: #475569; text-decoration: none; border-radius: 14px; font-weight: 800; font-size: 0.95rem; box-sizing: border-box;'");
+                            // Remove href and hover events
+                            processedMessage = processedMessage.replace(/href='[^']*'/g, "href='javascript:void(0);'");
+                            processedMessage = processedMessage.replace(/onmouseover="[^"]*"/g, "");
+                            processedMessage = processedMessage.replace(/onmouseout="[^"]*"/g, "");
+                            processedMessage = processedMessage.replace(/Resume &amp; Correct Entry/g, "Correction Approved");
+                        }
                     }
 
                     let ticksHtml = '';
@@ -455,6 +490,9 @@
             if (data.success) {
                 document.getElementById('msgContent').value = '';
                 clearFile();
+                if (typeof window.playNotificationSound === 'function') {
+                    window.playNotificationSound('sent');
+                }
                 fetchMessages();
             } else {
                 /* console print removed */
@@ -486,7 +524,7 @@
     }
 
     function updateUnreadCounts() {
-        fetch("{{ route('api.unread-counts', [], false) }}")
+        fetch("{{ route('api.unread-counts', [], false) }}?_t=" + Date.now())
             .then(res => res.json())
             .then(counts => {
                 let activeCount = 0;
@@ -518,7 +556,7 @@
             });
 
         // Sync Online Statuses
-        fetch("{{ route('api.online-statuses', [], false) }}")
+        fetch("{{ route('api.online-statuses', [], false) }}?_t=" + Date.now())
             .then(res => res.json())
             .then(statuses => {
                 onlineStatuses = statuses;

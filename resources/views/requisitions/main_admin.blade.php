@@ -1770,6 +1770,9 @@
                     const responseData = await res.json();
 
                     if (responseData.success) {
+                        if (typeof window.playNotificationSound === 'function') {
+                            window.playNotificationSound('sent');
+                        }
                         Swal.fire({
                             title: 'Success!',
                             text: responseData.message || 'Requisition processed successfully.',
@@ -1961,6 +1964,9 @@
                     const responseData = await res.json();
 
                     if (responseData.success) {
+                        if (typeof window.playNotificationSound === 'function') {
+                            window.playNotificationSound('sent');
+                        }
                         Swal.fire({
                             title: 'Success!',
                             text: responseData.message || 'Alternative response processed successfully.',
@@ -2131,6 +2137,9 @@
             const data = await response.json();
 
             if (data.success) {
+                if (typeof window.playNotificationSound === 'function') {
+                    window.playNotificationSound('sent');
+                }
                 sentFollowUps.add(id);
                 Swal.fire({
                     icon: 'success',

@@ -1178,6 +1178,9 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    if (typeof window.playNotificationSound === 'function') {
+                        window.playNotificationSound('sent');
+                    }
                     Swal.fire({
                         icon: 'success',
                         title: 'Follow Up Sent!',

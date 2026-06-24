@@ -919,6 +919,70 @@
     </main>
 
     <script>
+        // Global Notification sound player — plays /img/notification.wav (hard-coded public asset)
+        window.playNotificationSound = function(type = 'sent') {
+            try {
+                const audio = new Audio('/img/notification.wav');
+                audio.play().catch(() => {
+                    // Fallback to synthesizer if browser blocks autoplay
+                    playSynthSound(type);
+                });
+            } catch (err) {
+                playSynthSound(type);
+            }
+        };
+
+        function playSynthSound(type = 'sent') {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                
+                if (type === 'sent' || type === 'bump') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    const now = ctx.currentTime;
+                    osc.frequency.setValueAtTime(261.63, now); // C4
+                    osc.frequency.exponentialRampToValueAtTime(146.83, now + 0.15); // D3
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.25, now + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.16);
+                } else if (type === 'receive' || type === 'notification') {
+                    const now = ctx.currentTime;
+                    const osc1 = ctx.createOscillator();
+                    const gain1 = ctx.createGain();
+                    osc1.connect(gain1);
+                    gain1.connect(ctx.destination);
+                    osc1.type = 'sine';
+                    osc1.frequency.setValueAtTime(659.25, now); // E5
+                    gain1.gain.setValueAtTime(0, now);
+                    gain1.gain.linearRampToValueAtTime(0.15, now + 0.02);
+                    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                    osc1.start(now);
+                    osc1.stop(now + 0.25);
+                    
+                    const osc2 = ctx.createOscillator();
+                    const gain2 = ctx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(ctx.destination);
+                    osc2.type = 'sine';
+                    osc2.frequency.setValueAtTime(783.99, now + 0.08); // G5
+                    gain2.gain.setValueAtTime(0, now + 0.08);
+                    gain2.gain.linearRampToValueAtTime(0.15, now + 0.10);
+                    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.30);
+                    osc2.start(now + 0.08);
+                    osc2.stop(now + 0.35);
+                }
+            } catch (e) {
+                console.warn('AudioContext playback blocked or failed:', e);
+            }
+        }
+
         // Sidebar Minimize Toggle
         const minimizeBtn = document.getElementById('sidebar-minimize-btn');
         const mainWrapper = document.getElementById('main-wrapper');
@@ -992,7 +1056,7 @@
 
         // Real-time Admin Notification Refresh Logic
         window.refreshNotifications = function() {
-            fetch("{{ route('api.notifications', [], false) }}")
+            fetch("{{ route('api.notifications', [], false) }}?_t=" + Date.now())
                 .then(res => {
                     const contentType = res.headers.get("content-type");
                     if (res.status === 200 && contentType && contentType.indexOf("application/json") !== -1) {
@@ -1109,16 +1173,40 @@
             });
         };
 
+        // Global Message Badge Sync + Persistent Notification Alarm
+        // _notifAlarm: holds the setInterval ID for the repeating beep.
+        // Starts when there are unread messages; stops when count hits 0 or user opens messages page.
+        let _notifAlarm = null;
+        let _notifAlarmLastCount = 0;
+
+        function _startNotifAlarm() {
+            if (_notifAlarm) return; // already running
+            // Play immediately on start, then repeat every 4 seconds
+            window.playNotificationSound('receive');
+            _notifAlarm = setInterval(() => {
+                window.playNotificationSound('receive');
+            }, 4000);
+        }
+
+        function _stopNotifAlarm() {
+            if (_notifAlarm) {
+                clearInterval(_notifAlarm);
+                _notifAlarm = null;
+            }
+        }
+
         // Global Message Badge Sync
         window.refreshUnreadMessages = function() {
             const isMessagePage = window.location.href.includes('/admin/messages');
             if (isMessagePage) {
                 const badge = document.getElementById('global-unread-badge');
                 if (badge) badge.style.display = 'none';
+                _stopNotifAlarm();       // User is on messages page — stop alarm
+                _notifAlarmLastCount = 0; // Reset so alarm doesn’t restart on next page
                 return;
             }
 
-            fetch("{{ route('api.total-unread') }}")
+            fetch("{{ route('api.total-unread') }}?_t=" + Date.now())
                 .then(res => {
                     const contentType = res.headers.get("content-type");
                     if (res.status === 200 && contentType && contentType.indexOf("application/json") !== -1) {
@@ -1130,13 +1218,30 @@
                     if (!data) return;
                     const badge = document.getElementById('global-unread-badge');
                     if (badge) {
-                        if (data.count > 0) {
-                            badge.textContent = data.count;
+                        const totalDisplayCount = (data.count || 0) + (data.approvals_count || 0);
+                        if (totalDisplayCount > 0) {
+                            badge.textContent = totalDisplayCount;
                             badge.style.display = 'block';
                         } else {
                             badge.style.display = 'none';
                         }
                     }
+
+                    // Play a single beep if a new approval message is received
+                    if (data.approvals_count > 0 && (typeof window._lastApprovalsCount === 'undefined' ? 0 : window._lastApprovalsCount) < data.approvals_count) {
+                        window.playNotificationSound('receive');
+                    }
+                    window._lastApprovalsCount = data.approvals_count || 0;
+
+                    // Alarm control: start if new unread appeared, stop when all read
+                    if (data.count > 0 && _notifAlarmLastCount === 0) {
+                        // New unread message(s) just arrived — start the alarm
+                        _startNotifAlarm();
+                    } else if (data.count === 0 && _notifAlarm) {
+                        // All messages read — silence the alarm
+                        _stopNotifAlarm();
+                    }
+                    _notifAlarmLastCount = data.count;
                 })
                 .catch(err => {});
         };

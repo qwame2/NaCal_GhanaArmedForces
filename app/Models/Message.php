@@ -35,4 +35,9 @@ class Message extends Model
     {
         return $this->belongsTo(User::class, 'receiver_id');
     }
+
+    public function editRequest()
+    {
+        return $this->belongsTo(EditRequest::class, 'edit_request_id');
+    }
 }

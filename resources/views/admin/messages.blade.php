@@ -481,6 +481,7 @@
     let pollInterval = null;
     let countInterval = null;
     let onlineStatuses = {};
+    let previousMessageCount = null;
 
     function filterNetwork() {
         const term = document.getElementById('networkSearch').value.toLowerCase();
@@ -507,6 +508,7 @@
             }
         }
         activeUserId = userId;
+        previousMessageCount = null;
         document.getElementById('emptyState').style.display = 'none';
         document.getElementById('sessionHeader').style.display = 'flex';
         document.getElementById('terminalOutput').style.display = 'flex';
@@ -537,7 +539,7 @@
     function fetchMessages() {
         if (!activeUserId) return;
 
-        const fetchUrl = `{{ route('api.messages.fetch', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId);
+        const fetchUrl = `{{ route('api.messages.fetch', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId) + '?_t=' + Date.now();
         fetch(fetchUrl)
             .then(res => {
                 if (!res.ok) throw new Error('Secure line interrupted');
@@ -546,6 +548,29 @@
             .then(data => {
                 const container = document.getElementById('terminalOutput');
                 const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+
+                // Self-heal: If we fetched messages and there are unread ones from the active user,
+                // immediately mark them as read so the db status updates and the alarm ceases in other tabs.
+                const hasUnread = data.some(msg => msg.sender_id == activeUserId && !msg.read_at);
+                if (hasUnread) {
+                    const readUrl = `{{ route('api.messages.read', ['userId' => 'PLACEHOLDER'], false) }}`.replace('PLACEHOLDER', activeUserId);
+                    fetch(readUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    }).then(() => updateUnreadCounts());
+                }
+
+                if (previousMessageCount !== null && data.length > previousMessageCount) {
+                    const lastMsg = data[data.length - 1];
+                    if (lastMsg && lastMsg.sender_id != {{ auth()->id() }}) {
+                        if (typeof window.playNotificationSound === 'function') {
+                            window.playNotificationSound('receive');
+                        }
+                    }
+                }
+                previousMessageCount = data.length;
 
                 let html = '';
 
@@ -721,7 +746,7 @@
     }
 
     function updateUnreadCounts() {
-        fetch("{{ route('api.unread-counts', [], false) }}")
+        fetch("{{ route('api.unread-counts', [], false) }}?_t=" + Date.now())
             .then(res => res.json())
             .then(counts => {
                 let activeCount = 0;
@@ -753,7 +778,7 @@
             });
 
         // Sync Online Statuses
-        fetch("{{ route('api.online-statuses', [], false) }}")
+        fetch("{{ route('api.online-statuses', [], false) }}?_t=" + Date.now())
             .then(res => res.json())
             .then(statuses => {
                 onlineStatuses = statuses;
@@ -809,6 +834,9 @@
                 if (data.success) {
                     document.getElementById('msgContent').value = '';
                     clearFile();
+                    if (typeof window.playNotificationSound === 'function') {
+                        window.playNotificationSound('sent');
+                    }
                     fetchMessages();
                 } else {
                     alert('Transmission failed: ' + (data.message || 'Unknown protocol violation'));
@@ -951,6 +979,9 @@
             })
             .then(data => {
                 if (data.success) {
+                    if (typeof window.playNotificationSound === 'function') {
+                        window.playNotificationSound('sent');
+                    }
                     const color = status === 'approved' ? '#10b981' : '#dc2626';
                     const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
                     const text = status === 'approved' ?
@@ -1123,6 +1154,9 @@
             })
             .then(data => {
                 if (data.success) {
+                    if (typeof window.playNotificationSound === 'function') {
+                        window.playNotificationSound('sent');
+                    }
                     const badgeHtml = `<div style="padding: 12px 20px; border-radius: 12px; background: ${status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)'}; color: ${status === 'approved' ? '#10b981' : '#dc2626'}; font-weight: 900; border: 1.5px solid ${status === 'approved' ? '#10b981' : '#dc2626'}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
                         <i data-lucide="${status === 'approved' ? 'check-circle' : 'alert-circle'}" style="width: 16px;"></i> RECOVERY ${status.toUpperCase()}
                     </div>`;
@@ -1233,6 +1267,9 @@
             })
             .then(data => {
                 if (data.success) {
+                    if (typeof window.playNotificationSound === 'function') {
+                        window.playNotificationSound('sent');
+                    }
                     const color = status === 'approved' ? '#10b981' : '#dc2626';
                     const bgColor = status === 'approved' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
                     const htmlBadge = `<div style="padding: 12px 20px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 900; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
@@ -1713,6 +1750,9 @@
             })
             .then(data => {
                 if (data.success) {
+                    if (typeof window.playNotificationSound === 'function') {
+                        window.playNotificationSound('sent');
+                    }
                     const actionsDiv = document.getElementById(`edit-req-actions-${id}`);
                     if (actionsDiv) {
                         const color = status === 'approved' ? '#10b981' : '#dc2626';
@@ -3092,6 +3132,9 @@
                         if (typeof lucide !== 'undefined') lucide.createIcons();
                     }
 
+                    if (typeof window.playNotificationSound === 'function') {
+                        window.playNotificationSound('sent');
+                    }
                     showToast('Rolled Back', 'Entry sent back to user for correction.', 'success');
                 } else {
                     showToast('Rollback Failed', data.message || 'Error processing rollback.', 'error');

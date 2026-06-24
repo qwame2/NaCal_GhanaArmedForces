@@ -3432,6 +3432,9 @@ function promptActionReason(batchId, type = 'edit') {
             })
             .then(data => {
                 if(data.success) {
+                    if (typeof window.playNotificationSound === 'function') {
+                        window.playNotificationSound('sent');
+                    }
                     Swal.fire('Transmission Successful', `Your ${type} request has been synchronized with the head's terminal.`, 'success');
                 } else {
                     Swal.fire('System Rejection', data.message || 'Failed to transmit request.', 'error');
@@ -3796,6 +3799,9 @@ async function submitEditBatch() {
     .then(data => {
         if (data.success) {
             if (!isAdmin) {
+                if (typeof window.playNotificationSound === 'function') {
+                    window.playNotificationSound('sent');
+                }
                 Swal.fire('Request Submitted', 'Your changes have been sent to the head for approval.', 'success');
                 closeEditBatchModal();
                 return;
