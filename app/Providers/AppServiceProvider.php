@@ -86,6 +86,15 @@ class AppServiceProvider extends ServiceProvider
                             'description' => 'Categories of items that require Department Head (Stores) approval before going to the Head of Stores.'
                         ]);
                     }
+                    if (!\App\Models\Setting::where('key', 'delegated_approver_id')->exists()) {
+                        \App\Models\Setting::create([
+                            'key' => 'delegated_approver_id',
+                            'value' => '',
+                            'type' => 'integer',
+                            'group' => 'general',
+                            'description' => 'User ID of the Store Officer delegated to stand in and perform approvals.'
+                        ]);
+                    }
                 }
 
                 if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'service_number')) {
@@ -316,7 +325,7 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('unreadMessagesCount', $unreadMessagesCount);
                 
                 // Fetch Pending Password Requests Count (for Admin)
-                if (auth()->user()->is_admin && auth()->user()->role !== 'Main Admin') {
+                if ((auth()->user()->is_admin || auth()->user()->isDelegatedApprover()) && auth()->user()->role !== 'Main Admin') {
                     $pendingPasswordRequests = \App\Models\PasswordResetRequest::where('status', 'pending')->count();
                     $view->with('pendingPasswordRequests', $pendingPasswordRequests);
                     // Heads only see pending requisitions that have been approved by Main Admin

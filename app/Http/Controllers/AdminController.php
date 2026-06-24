@@ -498,6 +498,14 @@ class AdminController extends Controller
             $query->where('event_type', $request->event_type);
         }
 
+        if ($request->filled('authority')) {
+            if ($request->authority === 'delegated') {
+                $query->where('action', 'LIKE', 'DELEGATED_%');
+            } elseif ($request->authority === 'standard') {
+                $query->where('action', 'NOT LIKE', 'DELEGATED_%');
+            }
+        }
+
         $perPage = $request->input('per_page', 15);
         $logs = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
@@ -538,7 +546,7 @@ class AdminController extends Controller
 
     public function messages()
     {
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
@@ -823,7 +831,13 @@ class AdminController extends Controller
                 return [strtolower(trim($item->description)) => (float) $item->total_stock];
             });
 
-        return view('admin.settings', compact('settings', 'categories', 'itemsByCategory', 'stockByKeyword'));
+        $storeOfficers = \App\Models\User::where('role', 'Officer')
+            ->where('is_active', true)
+            ->where('registration_status', 'approved')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.settings', compact('settings', 'categories', 'itemsByCategory', 'stockByKeyword', 'storeOfficers'));
     }
 
     public function updateSettings(\Illuminate\Http\Request $request)
@@ -837,6 +851,8 @@ class AdminController extends Controller
         foreach ($inputs as $key => $value) {
             $setting = \App\Models\Setting::where('key', $key)->first();
             if ($setting) {
+                $oldValue = $setting->value;
+
                 // If the setting is boolean, handle checkbox uncheck logic
                 if ($setting->type === 'boolean') {
                     $setting->value = $value ? 'true' : 'false';
@@ -846,36 +862,65 @@ class AdminController extends Controller
                     $setting->value = $value;
                 }
                 $setting->save();
+
+                // Log delegation activations or revocations
+                if ($key === 'delegated_approver_id' && (string)$oldValue !== (string)$value) {
+                    if (!empty($value)) {
+                        $officer = \App\Models\User::find($value);
+                        $officerName = $officer ? $officer->name : "ID {$value}";
+                        \App\Models\SystemLog::create([
+                            'user_id' => auth()->id(),
+                            'event_type' => 'SECURITY',
+                            'action' => 'DELEGATE_AUTHORITY',
+                            'description' => "Administrator delegated approval authority to Store Officer: {$officerName}.",
+                            'severity' => 'warning',
+                            'ip_address' => request()->ip()
+                        ]);
+                    } else {
+                        $oldOfficer = \App\Models\User::find($oldValue);
+                        $oldOfficerName = $oldOfficer ? $oldOfficer->name : "ID {$oldValue}";
+                        \App\Models\SystemLog::create([
+                            'user_id' => auth()->id(),
+                            'event_type' => 'SECURITY',
+                            'action' => 'REVOKE_DELEGATION',
+                            'description' => "Administrator revoked delegated approval authority from Store Officer: {$oldOfficerName}.",
+                            'severity' => 'warning',
+                            'ip_address' => request()->ip()
+                        ]);
+                    }
+                }
             }
         }
 
         // Handle unchecked checkboxes which don't send any POST data
         // Only target settings that are actually visible on this page (not 'ui' group and not in exclusions)
-        $booleanSettings = \App\Models\Setting::where('type', 'boolean')
-            ->where('group', '!=', 'ui')
-            ->whereNotIn('key', [
-                'system_maintenance_mode',
-                'inventory_categories',
-                'require_issuance_approval',
-                'inventory_valuation_method',
-                'allow_negative_stock',
-                'enable_batch_expiration_alerts',
-                'notify_on_low_stock'
-            ])
-            ->get();
-        foreach ($booleanSettings as $boolSetting) {
-            if (!$request->has($boolSetting->key)) {
-                $boolSetting->value = 'false';
-                $boolSetting->save();
+        if ($request->has('settings_form')) {
+            $booleanSettings = \App\Models\Setting::where('type', 'boolean')
+                ->where('group', '!=', 'ui')
+                ->whereNotIn('key', [
+                    'system_maintenance_mode',
+                    'inventory_categories',
+                    'require_issuance_approval',
+                    'inventory_valuation_method',
+                    'allow_negative_stock',
+                    'enable_batch_expiration_alerts',
+                    'notify_on_low_stock'
+                ])
+                ->get();
+            foreach ($booleanSettings as $boolSetting) {
+                if (!$request->has($boolSetting->key)) {
+                    $boolSetting->value = 'false';
+                    $boolSetting->save();
+                }
             }
-        }
 
-        // Handle stores_dept_head_approval_categories multi-select clear
-        if (!$request->has('stores_dept_head_approval_categories')) {
-            $catSetting = \App\Models\Setting::where('key', 'stores_dept_head_approval_categories')->first();
-            if ($catSetting) {
-                $catSetting->value = json_encode([]);
-                $catSetting->save();
+            // Handle stores_dept_head_approval_categories multi-select clear
+            if (!$request->has('stores_dept_head_approval_categories')) {
+                $catSetting = \App\Models\Setting::where('key', 'stores_dept_head_approval_categories')->first();
+                if ($catSetting) {
+                    $catSetting->value = json_encode([]);
+                    $catSetting->save();
+                }
             }
         }
 

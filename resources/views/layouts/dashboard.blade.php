@@ -249,6 +249,33 @@
             @endif
         </ul>
 
+        @if(auth()->user()->isDelegatedApprover())
+            <div class="nav-section-title" style="color: #4f46e5; display: flex; align-items: center; gap: 6px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #4f46e5;"></span>
+                Delegated Admin Authority
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ route('admin.requisitions') }}" class="nav-link {{ request()->routeIs('admin.requisitions') ? 'active' : '' }}" data-tooltip="Admin Store Requisitions">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <span>Store Requisitions</span>
+                        <span id="sidebar-badge-delegated-reqs" style="background: #4f46e5; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingRequisitionsCount) || $pendingRequisitionsCount <= 0) ? 'display: none;' : '' }}">
+                            {{ $pendingRequisitionsCount ?? 0 }}
+                        </span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.messages') }}" class="nav-link {{ request()->routeIs('admin.messages') ? 'active' : '' }}" data-tooltip="Admin Staff Messages">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        <span>Staff Messages</span>
+                        <span id="sidebar-badge-delegated-messages" style="background: #4f46e5; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($unreadMessagesCount) || $unreadMessagesCount <= 0) ? 'display: none;' : '' }}">
+                            {{ $unreadMessagesCount ?? 0 }}
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        @endif
+
         <div class="nav-section-title">Operations</div>
         <ul class="nav-menu">
             @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head', 'Auditor', 'Director General']))

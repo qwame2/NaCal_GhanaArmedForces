@@ -910,6 +910,7 @@
         @else
         <form action="{{ route('admin.settings.update') }}" method="POST" id="core-configs">
             @csrf
+            <input type="hidden" name="settings_form" value="1">
 
             @foreach($settings as $group => $groupSettings)
             @php if($group === 'inventory') continue; @endphp
@@ -1209,6 +1210,8 @@
                     </div>
                 </div>
         </div>
+
+
         @endif
 
 

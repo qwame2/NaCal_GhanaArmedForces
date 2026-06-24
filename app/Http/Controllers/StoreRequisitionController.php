@@ -580,7 +580,7 @@ class StoreRequisitionController extends Controller
             return redirect()->route('main-admin.requisitions');
         }
 
-        if (!auth()->user()->is_admin) abort(403);
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) abort(403);
 
         $query = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])
             ->where(function($q) {
@@ -730,7 +730,7 @@ class StoreRequisitionController extends Controller
      */
     public function adminShow($id)
     {
-        if (!auth()->user()->is_admin && auth()->user()->role === 'Requisitioner') {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
             abort(403, 'Unauthorized');
         }
         $req = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])->findOrFail($id);
@@ -817,7 +817,7 @@ class StoreRequisitionController extends Controller
      */
     public function adminProcess(Request $request, $id)
     {
-        if (!auth()->user()->is_admin) return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
 
         $request->validate([
             'status'         => 'required|in:approved,partially_approved,declined,pending',
@@ -877,11 +877,16 @@ class StoreRequisitionController extends Controller
             }
 
             // Log
+            $logAction = auth()->user()->isDelegatedApprover() ? 'DELEGATED_PROPOSE_SUGGESTED_QTY' : 'PROPOSE_SUGGESTED_QTY';
+            $logDesc = auth()->user()->isDelegatedApprover()
+                ? "Store Officer " . auth()->user()->name . " (Delegated) proposed suggested quantities for store requisition #{$req->id} from department: {$req->department} on behalf of Admin."
+                : "Administrator " . auth()->user()->name . " proposed suggested quantities for store requisition #{$req->id} from department: {$req->department}.";
+
             SystemLog::create([
                 'user_id'    => auth()->id(),
                 'event_type' => 'REQUISITION',
-                'action'     => 'PROPOSE_SUGGESTED_QTY',
-                'description'=> "Administrator " . auth()->user()->name . " proposed suggested quantities for store requisition #{$req->id} from department: {$req->department}.",
+                'action'     => $logAction,
+                'description'=> $logDesc,
                 'severity'   => 'info',
                 'metadata'   => ['requisition_id' => $req->id],
                 'ip_address' => $request->ip(),
@@ -1070,11 +1075,16 @@ class StoreRequisitionController extends Controller
         }
 
         // Log
+        $logAction = auth()->user()->isDelegatedApprover() ? 'DELEGATED_PROCESS_REQUISITION' : 'PROCESS_REQUISITION';
+        $logDesc = auth()->user()->isDelegatedApprover()
+            ? "Store Officer " . auth()->user()->name . " (Delegated) {$request->status} store requisition #{$req->id} from {$req->department} on behalf of Admin."
+            : "Administrator " . auth()->user()->name . " {$request->status} store requisition #{$req->id} from {$req->department}.";
+
         SystemLog::create([
             'user_id'    => auth()->id(),
             'event_type' => 'REQUISITION',
-            'action'     => 'PROCESS_REQUISITION',
-            'description'=> "Administrator " . auth()->user()->name . " {$request->status} store requisition #{$req->id} from {$req->department}.",
+            'action'     => $logAction,
+            'description'=> $logDesc,
             'severity'   => 'info',
             'metadata'   => ['requisition_id' => $req->id],
             'ip_address' => $request->ip(),

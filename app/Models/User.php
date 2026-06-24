@@ -198,8 +198,18 @@ class User extends Authenticatable implements LdapAuthenticatable
         });
     }
 
+    public function isDelegatedApprover()
+    {
+        if ($this->role !== 'Officer') {
+            return false;
+        }
+        $delegatedId = \App\Models\Setting::get('delegated_approver_id');
+        return $delegatedId && (int)$delegatedId === (int)$this->id;
+    }
+
     public function getSecurityStatus(): array
     {
         return ['label' => 'Verified', 'color' => '#10b981'];
     }
 }
+

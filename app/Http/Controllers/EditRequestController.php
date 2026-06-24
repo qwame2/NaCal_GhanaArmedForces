@@ -153,7 +153,7 @@ class EditRequestController extends Controller
         ]);
 
         $editReq = EditRequest::findOrFail($id);
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -171,11 +171,17 @@ class EditRequestController extends Controller
         if ($request->status === 'approved') {
             $requestTypeForLog = $editReq->request_type ?? 'edit';
             $typeLabelForLog = $requestTypeForLog === 'edit_submission' ? 'ENTRY EDIT' : ($requestTypeForLog === 'issue_submission' ? 'DISBURSEMENT' : strtoupper($requestTypeForLog));
+            
+            $logAction = auth()->user()->isDelegatedApprover() ? 'DELEGATED_AUTHORIZATION' : 'AUTHORIZATION';
+            $logDesc = auth()->user()->isDelegatedApprover()
+                ? "Store Officer " . auth()->user()->name . " (Delegated) authorized {$typeLabelForLog} request submitted by {$editReq->user->name} on behalf of Admin."
+                : "Administrator authorized {$typeLabelForLog} request submitted by {$editReq->user->name}.";
+
             \App\Models\SystemLog::create([
                 'user_id' => auth()->id(),
                 'event_type' => 'SECURITY',
-                'action' => 'AUTHORIZATION',
-                'description' => "Administrator authorized {$typeLabelForLog} request submitted by {$editReq->user->name}.",
+                'action' => $logAction,
+                'description' => $logDesc,
                 'severity' => 'info',
                 'is_archived' => ($requestTypeForLog === 'issue_submission'),
                 'ip_address' => request()->ip()
@@ -185,11 +191,16 @@ class EditRequestController extends Controller
         if ($request->status === 'canceled') {
             $requestTypeForLog = $editReq->request_type ?? 'edit';
             if ($requestTypeForLog === 'issue_submission') {
+                $logAction = auth()->user()->isDelegatedApprover() ? 'DELEGATED_DECLINE_DISBURSEMENT' : 'DECLINE_DISBURSEMENT';
+                $logDesc = auth()->user()->isDelegatedApprover()
+                    ? "Store Officer " . auth()->user()->name . " (Delegated) declined disbursement request submitted by {$editReq->user->name} on behalf of Admin."
+                    : "Administrator declined disbursement request submitted by {$editReq->user->name}.";
+
                 \App\Models\SystemLog::create([
                     'user_id' => auth()->id(),
                     'event_type' => 'SECURITY',
-                    'action' => 'DECLINE_DISBURSEMENT',
-                    'description' => "Administrator declined disbursement request submitted by {$editReq->user->name}.",
+                    'action' => $logAction,
+                    'description' => $logDesc,
                     'severity' => 'warning',
                     'is_archived' => true,
                     'ip_address' => request()->ip()
@@ -341,7 +352,7 @@ class EditRequestController extends Controller
     {
         $type = $request->get('type', 'edit');
 
-        if (auth()->user()->is_admin) {
+        if (auth()->user()->is_admin || auth()->user()->isDelegatedApprover()) {
             return response()->json(['allowed' => true]);
         }
 
@@ -390,7 +401,7 @@ class EditRequestController extends Controller
             'reason' => 'nullable|string'
         ]);
 
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -564,10 +575,14 @@ class EditRequestController extends Controller
                         ? "Administrator authorized ENTRY EDIT submitted by {$editReq->user->name}."
                         : "Administrator authorized STOCK ENTRY submitted by {$editReq->user->name}.");
                     
+                $logAction = auth()->user()->isDelegatedApprover() ? 'DELEGATED_AUTHORIZATION' : 'AUTHORIZATION';
+                if (auth()->user()->isDelegatedApprover()) {
+                    $logDesc = str_replace("Administrator", "Store Officer " . auth()->user()->name . " (Delegated)", $logDesc) . " on behalf of Admin.";
+                }
                 \App\Models\SystemLog::create([
                     'user_id' => auth()->id(),
                     'event_type' => 'SECURITY',
-                    'action' => 'AUTHORIZATION',
+                    'action' => $logAction,
                     'description' => $logDesc,
                     'severity' => 'info',
                     'ip_address' => request()->ip()
@@ -814,7 +829,7 @@ class EditRequestController extends Controller
             'reason' => 'nullable|string'
         ]);
 
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -902,11 +917,16 @@ class EditRequestController extends Controller
 
                 \Illuminate\Support\Facades\DB::commit();
 
+                $logAction = auth()->user()->isDelegatedApprover() ? 'DELEGATED_AUTHORIZATION' : 'AUTHORIZATION';
+                $logDesc = auth()->user()->isDelegatedApprover()
+                    ? "Store Officer " . auth()->user()->name . " (Delegated) authorized ASSET RECOVERY request submitted by {$editReq->user->name} on behalf of Admin."
+                    : "Administrator authorized ASSET RECOVERY request submitted by {$editReq->user->name}.";
+
                 \App\Models\SystemLog::create([
                     'user_id' => auth()->id(),
                     'event_type' => 'SECURITY',
-                    'action' => 'AUTHORIZATION',
-                    'description' => "Administrator authorized ASSET RECOVERY request submitted by {$editReq->user->name}.",
+                    'action' => $logAction,
+                    'description' => $logDesc,
                     'severity' => 'info',
                     'is_archived' => true,
                     'ip_address' => request()->ip()
@@ -920,11 +940,16 @@ class EditRequestController extends Controller
             // Log rejection
             try {
                 $issuedItem = \App\Models\IssuedItem::findOrFail($editReq->item_id);
+                $logAction = auth()->user()->isDelegatedApprover() ? 'DELEGATED_REJECT_RECOVERY' : 'REJECT_RECOVERY';
+                $logDesc = auth()->user()->isDelegatedApprover()
+                    ? "Store Officer " . auth()->user()->name . " (Delegated) rejected return recovery request for {$issuedItem->description} submitted by {$editReq->user->name} on behalf of Admin."
+                    : "Admin rejected return recovery request for {$issuedItem->description} submitted by {$editReq->user->name}.";
+
                 \App\Models\SystemLog::create([
                     'user_id' => auth()->id(),
                     'event_type' => 'INVENTORY',
-                    'action' => 'REJECT_RECOVERY',
-                    'description' => "Admin rejected return recovery request for {$issuedItem->description} submitted by {$editReq->user->name}.",
+                    'action' => $logAction,
+                    'description' => $logDesc,
                     'severity' => 'warning',
                     'is_archived' => true,
                     'metadata' => [
@@ -1006,7 +1031,7 @@ class EditRequestController extends Controller
             'reason' => 'nullable|string'
         ]);
 
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -1076,11 +1101,16 @@ class EditRequestController extends Controller
 
                 \Illuminate\Support\Facades\DB::commit();
 
+                $logAction = auth()->user()->isDelegatedApprover() ? 'DELEGATED_AUTHORIZATION' : 'AUTHORIZATION';
+                $logDesc = auth()->user()->isDelegatedApprover()
+                    ? "Store Officer " . auth()->user()->name . " (Delegated) authorized STOCK RECONCILIATION request submitted by {$editReq->user->name} on behalf of Admin."
+                    : "Administrator authorized STOCK RECONCILIATION request submitted by {$editReq->user->name}.";
+
                 \App\Models\SystemLog::create([
                     'user_id' => auth()->id(),
                     'event_type' => 'SECURITY',
-                    'action' => 'AUTHORIZATION',
-                    'description' => "Administrator authorized STOCK RECONCILIATION request submitted by {$editReq->user->name}.",
+                    'action' => $logAction,
+                    'description' => $logDesc,
                     'severity' => 'info',
                     'ip_address' => request()->ip()
                 ]);
@@ -1178,7 +1208,7 @@ class EditRequestController extends Controller
             'general_note'   => 'nullable|string|max:1000',
         ]);
 
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -1331,11 +1361,16 @@ class EditRequestController extends Controller
             $adminMsg->update(['message' => $newMsg, 'is_automated' => true]);
         }
 
+        $logAction = auth()->user()->isDelegatedApprover() ? 'DELEGATED_ROLLBACK' : 'ROLLBACK';
+        $logDesc = auth()->user()->isDelegatedApprover()
+            ? "Store Officer " . auth()->user()->name . " (Delegated) rolled back SRA entry #{$id} submitted by {$editReq->user->name} for corrections on behalf of Admin."
+            : "Administrator rolled back SRA entry #{$id} submitted by {$editReq->user->name} for corrections.";
+
         \App\Models\SystemLog::create([
             'user_id'    => auth()->id(),
             'event_type' => 'SECURITY',
-            'action'     => 'ROLLBACK',
-            'description'=> "Administrator rolled back SRA entry #{$id} submitted by {$editReq->user->name} for corrections.",
+            'action'     => $logAction,
+            'description'=> $logDesc,
             'severity'   => 'warning',
             'ip_address' => request()->ip(),
         ]);

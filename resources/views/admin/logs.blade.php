@@ -70,11 +70,26 @@
                     </div>
                 </div>
             </div>
+            <div style="flex: 1; min-width: 240px;">
+                <div style="background: white; border: 1.5px solid #edf2f7; padding: 10px 18px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 8px 20px rgba(79,70,229,0.06)'" onmouseout="this.style.borderColor='#edf2f7'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.02)'">
+                    <div style="width: 36px; height: 36px; background: rgba(79, 70, 229, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="user-cog" style="width: 18px;"></i>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <label style="font-size: 0.6rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Authority Type</label>
+                        <select name="authority" onchange="this.form.submit()" style="width: 100%; background: transparent; border: none; padding: 0 20px 0 0; color: var(--text-main); font-weight: 800; font-size: 0.95rem; outline: none; cursor: pointer; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right center; background-size: 14px;">
+                            <option value="">All Authorities</option>
+                            <option value="standard" {{ request('authority') == 'standard' ? 'selected' : '' }}>Standard Actions</option>
+                            <option value="delegated" {{ request('authority') == 'delegated' ? 'selected' : '' }}>Delegated Approvals</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
                 <button type="submit" class="btn-primary" style="padding: 0.85rem 2rem; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(79,70,229,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(79,70,229,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(79,70,229,0.2)'">
                     <i data-lucide="search" style="width: 16px; display: inline-block; vertical-align: text-bottom; margin-right: 4px;"></i>
                 </button>
-                @if(request()->hasAny(['severity', 'event_type']) && (request('severity') != '' || request('event_type') != ''))
+                @if(request()->hasAny(['severity', 'event_type', 'authority']) && (request('severity') != '' || request('event_type') != '' || request('authority') != ''))
                 <a href="{{ route('admin.logs') }}" style="padding: 0.85rem 1.5rem; color: #ef4444; background: #fef2f2; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 800; transition: all 0.3s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">Reset</a>
                 @endif
             </div>
@@ -147,7 +162,14 @@
                                 @endif
                             </td>
                             <td style="padding: 1.25rem 2rem; max-width: 400px;">
-                                <p style="font-size: 0.85rem; color: var(--text-main); line-height: 1.5; margin: 0;">{{ $log->description }}</p>
+                                <p style="font-size: 0.85rem; color: var(--text-main); line-height: 1.5; margin: 0;">
+                                    @if(str_starts_with($log->action, 'DELEGATED_'))
+                                        <span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(79, 70, 229, 0.08); color: var(--primary); font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(79, 70, 229, 0.15); margin-right: 6px; text-transform: uppercase; letter-spacing: 0.02em;">
+                                            <i data-lucide="user-cog" style="width: 10px; height: 10px;"></i> Delegated
+                                        </span>
+                                    @endif
+                                    {{ $log->description }}
+                                </p>
                             </td>
                             <td style="padding: 1.25rem 2rem;">
                                 @php
@@ -211,6 +233,7 @@
                 <form action="{{ route('admin.logs') }}" method="GET" style="display: flex; align-items: center; gap: 0.75rem; border-left: 2px solid #e2e8f0; padding-left: 1.25rem;">
                     @if(request('severity')) <input type="hidden" name="severity" value="{{ request('severity') }}"> @endif
                     @if(request('event_type')) <input type="hidden" name="event_type" value="{{ request('event_type') }}"> @endif
+                    @if(request('authority')) <input type="hidden" name="authority" value="{{ request('authority') }}"> @endif
 
                     <span style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: var(--text-muted);">Rows per page:</span>
                     <select name="per_page" onchange="this.form.submit()" style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.35rem 1rem 0.35rem 0.5rem; font-size: 0.8rem; font-weight: 800; color: var(--primary); outline: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#e2e8f0'">

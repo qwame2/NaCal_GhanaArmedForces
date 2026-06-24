@@ -52,6 +52,12 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
         Role &amp; Privilege History
     </button>
+    @if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
+    <button class="pager-tab" id="tab-delegation" onclick="switchTab('delegation')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Authority Delegation
+    </button>
+    @endif
 </div>
 
 {{-- ── Panel: Store Officers ── --}}
@@ -514,7 +520,170 @@
     </div>
 </div>
 
+{{-- ── Panel: Authority Delegation ── --}}
+@if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
+<div id="panel-delegation" class="pager-panel">
+    @php
+        $delegatedId = \App\Models\Setting::get('delegated_approver_id');
+    @endphp
+    <div class="permissions-matrix-wrapper">
+        <div class="matrix-table">
+            <div class="m-header">
+                <div class="col-id">Store Officer</div>
+                <div class="col-ctrl">Delegate Approval Authority</div>
+                <div class="col-stat">Delegation Status</div>
+            </div>
+
+            <div class="m-body" id="delegationMatrixBody">
+                @forelse($storeOfficers->where('is_active', true) as $user)
+                <div class="m-row" data-user-id="{{ $user->id }}">
+                    <div class="col-id">
+                        <div class="m-avatar">
+                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
+                            <span class="m-pulse online"></span>
+                        </div>
+                        <div class="m-identity">
+                            <h4 class="m-name">{{ $user->name }}</h4>
+                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
+                                <span>@ {{ $user->username }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Approval Delegation">
+                                <input type="checkbox" class="delegation-toggle-switch" onchange="toggleDelegationState(this)" {{ $delegatedId == $user->id ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">{{ $delegatedId == $user->id ? 'Active' : 'Inactive' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-stat">
+                        <div class="badge-status {{ $delegatedId == $user->id ? 'authorized' : 'revoked' }}">
+                            <i data-lucide="{{ $delegatedId == $user->id ? 'shield-check' : 'shield-alert' }}"></i>
+                            {{ $delegatedId == $user->id ? 'DELEGATED' : 'STANDBY' }}
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
+                    No active store officers available for delegation.
+                </div>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 <style>
+    /* ── Delegation Card Styles (copied from settings) ── */
+    .cfg-card {
+        background: white;
+        border-radius: 28px;
+        border: 1px solid #f1f5f9;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+    .cfg-card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.75rem 2rem;
+        border-bottom: 1px solid #f8fafc;
+        background: linear-gradient(to right, #fafbff, white);
+    }
+    .cfg-icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+    }
+    .cfg-icon-box i {
+        width: 22px;
+        height: 22px;
+    }
+    .cfg-card-header h3 {
+        font-size: 1.1rem;
+        font-weight: 950;
+        color: #0f172a;
+        margin: 0;
+    }
+    .cfg-card-header p {
+        font-size: 0.78rem;
+        color: #94a3b8;
+        font-weight: 600;
+        margin: 2px 0 0;
+    }
+    .cfg-card-body {
+        padding: 2rem;
+    }
+    .cfg-text-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.75rem 1rem;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 14px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #1e293b;
+        outline: none;
+        transition: 0.25s;
+        background: white;
+    }
+    .cfg-text-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+    .btn-cfg-save {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0.85rem 2rem;
+        font-size: 0.9rem;
+        font-weight: 900;
+        color: white;
+        background: linear-gradient(135deg, var(--primary), #3b82f6);
+        border: none;
+        border-radius: 16px;
+        cursor: pointer;
+        box-shadow: 0 4px 18px rgba(79, 70, 229, 0.25);
+        transition: all 0.3s ease;
+    }
+    .btn-cfg-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(79, 70, 229, 0.35);
+    }
+    .otp-preset-btn {
+        padding: 0.6rem 1.2rem;
+        background: #ef4444;
+        border: 1.5px solid #ef4444;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.15);
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .otp-preset-btn:hover {
+        background: #dc2626;
+        border-color: #dc2626;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(239, 68, 68, 0.25);
+    }
+
     .swal-cancel-dark {
         background-color: #f1f5f9 !important;
         color: #475569 !important;
@@ -848,7 +1017,10 @@
 
         // Show/hide search vault (only relevant for matrix tabs)
         const sv = document.getElementById('searchVaultWrap');
-        if (sv) sv.style.display = (tab !== 'registrations') ? '' : 'none';
+        if (sv) sv.style.display = (tab !== 'registrations' && tab !== 'delegation') ? '' : 'none';
+
+        // Remember active tab
+        localStorage.setItem('active_permissions_tab', tab);
     }
 
     /* ── Personnel Filter ── */
@@ -904,6 +1076,80 @@
             row.classList.remove('syncing-row');
             checkbox.checked = !checkbox.checked;
             alert('A system error occurred.');
+        });
+    }
+
+    /* ── Delegation Toggle (AJAX) ── */
+    function toggleDelegationState(checkbox) {
+        const row = checkbox.closest('.m-row');
+        const userId = row.getAttribute('data-user-id');
+        const isChecked = checkbox.checked;
+        
+        // Temporarily disable checkboxes during sync
+        const allSwitches = document.querySelectorAll('.delegation-toggle-switch');
+        allSwitches.forEach(s => s.disabled = true);
+        row.classList.add('syncing-row');
+
+        const delegatedValue = isChecked ? userId : '';
+
+        // Prepare request
+        fetch('{{ route("admin.settings.update", [], false) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ delegated_approver_id: delegatedValue })
+        })
+        .then(res => {
+            allSwitches.forEach(s => s.disabled = false);
+            row.classList.remove('syncing-row');
+
+            if (res.ok) {
+                // Reset all other switches
+                allSwitches.forEach(s => {
+                    const otherRow = s.closest('.m-row');
+                    const otherLabel = otherRow.querySelector('.toggle-text .t-main');
+                    const otherBadge = otherRow.querySelector('.col-stat .badge-status');
+                    
+                    if (s !== checkbox) {
+                        s.checked = false;
+                        if (otherLabel) otherLabel.textContent = 'Inactive';
+                        if (otherBadge) {
+                            otherBadge.className = 'badge-status revoked';
+                            otherBadge.innerHTML = '<i data-lucide="shield-alert"></i> STANDBY';
+                        }
+                    } else {
+                        s.checked = isChecked;
+                        if (otherLabel) otherLabel.textContent = isChecked ? 'Active' : 'Inactive';
+                        if (otherBadge) {
+                            otherBadge.className = isChecked ? 'badge-status authorized' : 'badge-status revoked';
+                            otherBadge.innerHTML = isChecked 
+                                ? '<i data-lucide="shield-check"></i> DELEGATED' 
+                                : '<i data-lucide="shield-alert"></i> STANDBY';
+                        }
+                    }
+                });
+
+                if (window.lucide) lucide.createIcons();
+
+                const msg = isChecked ? 'Authority delegated successfully.' : 'Delegation authority revoked successfully.';
+                if (typeof showToast === 'function') {
+                    showToast(msg, 'success');
+                } else {
+                    Swal.fire({ icon: 'success', title: 'Success', text: msg, confirmButtonColor: '#4f46e5' });
+                }
+            } else {
+                checkbox.checked = !isChecked;
+                alert('A system error occurred while updating delegation.');
+            }
+        })
+        .catch(() => {
+            allSwitches.forEach(s => s.disabled = false);
+            row.classList.remove('syncing-row');
+            checkbox.checked = !isChecked;
+            alert('A network error occurred.');
         });
     }
 
@@ -1138,12 +1384,20 @@
 
         // Auto-open tab from server session (after approve/decline redirect)
         const serverTab = '{{ session('open_tab') }}';
-        if (serverTab === 'registrations') {
-            switchTab('registrations');
+        const savedTab = localStorage.getItem('active_permissions_tab');
+        
+        if (serverTab) {
+            switchTab(serverTab);
+        } else if (savedTab && document.getElementById('tab-' + savedTab)) {
+            switchTab(savedTab);
         } else {
             // Fallback: URL hash
             const hash = window.location.hash;
-            if (hash === '#registrations') switchTab('registrations');
+            if (hash === '#registrations') {
+                switchTab('registrations');
+            } else {
+                switchTab('store-officers');
+            }
         }
 
         // Show server-side flash messages as toasts
