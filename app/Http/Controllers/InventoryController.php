@@ -15,7 +15,7 @@ class InventoryController extends Controller
             abort(403, 'Unauthorized: Department Heads are only allowed to view received items and cannot make changes.');
         }
 
-        if (!auth()->user()->is_admin && !auth()->user()->can_add_inventory) {
+        if (!auth()->user()->is_admin && !auth()->user()->can_add_inventory && !auth()->user()->isDelegatedApprover()) {
             abort(403, 'Unauthorized: Permission Required');
         }
 
@@ -161,7 +161,7 @@ class InventoryController extends Controller
 
 
             // Create the Batch or Stage it for Approval
-            $is_admin = auth()->user()->is_admin;
+            $is_admin = auth()->user()->is_admin || auth()->user()->isDelegatedApprover();
             
             if (!$is_admin) {
                 // Divert to staged approval process (Don't save items yet)
@@ -180,8 +180,8 @@ class InventoryController extends Controller
                     'payload' => json_encode($payloadData)
                 ]);
 
-                // Send Approval Request to all Admins
-                $admins = \App\Models\User::where('is_admin', true)->where('registration_status', 'approved')->get();
+                // Send Approval Request to all Admins & Delegated Approver
+                $admins = \App\Models\User::getApproversQuery()->where('registration_status', 'approved')->get();
                 if ($admins->count() > 0) {
                     $itemNames = collect($validated['items'])->pluck('description')->take(3)->implode(', ');
                     if (count($validated['items']) > 3) $itemNames .= ' etc.';
@@ -213,7 +213,7 @@ class InventoryController extends Controller
                 }
 
                 // Send confirmation back to the user
-                $firstAdmin = \App\Models\User::where('is_admin', true)->where('registration_status', 'approved')->first();
+                $firstAdmin = \App\Models\User::getApproversQuery()->where('registration_status', 'approved')->first();
                 if ($firstAdmin) {
                     $confirmMsg = "<!-- sra_req_id:{$editReq->id} -->"
                         . "<div class='sra-awaiting-msg personnel-view' style='padding: 15px 18px; border: 1.5px solid #c7d2fe; border-radius: 16px; background: rgba(99,102,241,0.04); display: flex; align-items: center; gap: 12px;'>"

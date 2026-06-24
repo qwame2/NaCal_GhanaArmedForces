@@ -158,14 +158,23 @@ class SettingsController extends Controller
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
-        $admins = \App\Models\User::where('is_admin', true)
+        $admins = \App\Models\User::getApproversQuery()
             ->where('id', '!=', auth()->id())
             ->where('registration_status', 'approved')
             ->get();
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
             $colleagues = collect();
         } else {
-            $colleagues = \App\Models\User::where('is_admin', false)->where('id', '!=', auth()->id())->where('registration_status', 'approved')->get();
+            $delegatedId = \App\Models\Setting::get('delegated_approver_id');
+            $colleagues = \App\Models\User::where('is_admin', false)
+                ->where(function($q) use ($delegatedId) {
+                    if ($delegatedId) {
+                        $q->where('id', '!=', $delegatedId);
+                    }
+                })
+                ->where('id', '!=', auth()->id())
+                ->where('registration_status', 'approved')
+                ->get();
         }
         return view('messages.index', compact('admins', 'colleagues'));
     }

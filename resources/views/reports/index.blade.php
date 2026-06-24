@@ -175,7 +175,7 @@
             </div>
             <div style="flex: 1;">
                 <div class="stat-label">Total Received</div>
-                <div class="stat-value" style="color: #10b981;">{{ number_format((float)$totalReceivedQty) }} <span class="stat-unit">Units</span></div>
+                <div class="stat-value" style="color: #10b981;">{{ number_format((float)$totalReceivedQty) }} <span class="stat-unit">Item(s)</span></div>
                 <div class="stat-subtitle">{{ $totalReceivedBatches }} Received Batches</div>
             </div>
         </div>
@@ -186,7 +186,7 @@
             </div>
             <div style="flex: 1;">
                 <div class="stat-label">Total Issued</div>
-                <div class="stat-value" style="color: #f59e0b;">{{ number_format((float)$totalIssuedQty) }} <span class="stat-unit">Units</span></div>
+                <div class="stat-value" style="color: #f59e0b;">{{ number_format((float)$totalIssuedQty) }} <span class="stat-unit">Item(s)</span></div>
                 <div class="stat-subtitle">{{ $totalIssuedBatches }} Issued Records</div>
             </div>
         </div>
@@ -196,8 +196,8 @@
                 <i data-lucide="activity"></i>
             </div>
             <div style="flex: 1;">
-                <div class="stat-label">Net Movement</div>
-                <div class="stat-value" style="color: #6366f1;">{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }} <span class="stat-unit">Units</span></div>
+                <div class="stat-label">Stock Balance</div>
+                <div class="stat-value" style="color: #6366f1;">{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }} <span class="stat-unit">Item(s)</span></div>
                 <div class="stat-subtitle">Period Surplus (Received − Issued)</div>
             </div>
         </div>
@@ -322,6 +322,7 @@
                 'type'          => 'Received',
                 'category'      => $ledgeMap[$r->ledge_category] ?? ('Category ' . $r->ledge_category),
                 'description'   => $r->description,
+                'serial_number' => $r->serial_number,
                 'ref'           => preg_replace('/\s\[.*\]$/', '', $source ?: 'System'),
                 'ref_label'     => 'Supplier / Source',
                 'quantity'      => $r->qty ?? 0,
@@ -340,6 +341,7 @@
                 'type'          => 'Issued',
                 'category'      => $ledgeMap[$i->ledge_category] ?? ('Category ' . $i->ledge_category),
                 'description'   => $i->description,
+                'serial_number' => null,
                 'ref'           => $i->beneficiary ?? '—',
                 'ref_label'     => 'Beneficiary / Dept.',
                 'quantity'      => $i->quantity ?? 0,
@@ -463,6 +465,25 @@
                         <td data-label="Item / Category">
                             <div>
                                 <span class="item-desc" style="font-weight: 800; display: block; margin-bottom: 2px; color: var(--text-main);">{{ $row['description'] }}</span>
+                                @if(!empty($row['serial_number']))
+                                    @php
+                                        $snList = array_filter(array_map('trim', explode(',', $row['serial_number'])));
+                                        $count = count($snList);
+                                    @endphp
+                                    @if($count > 0)
+                                        <div class="serial-numbers-wrapper" style="margin-top: 4px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;">
+                                            <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(99, 102, 241, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:2px;"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
+                                                S/N: {{ implode(', ', array_slice($snList, 0, 3)) }}@if($count > 3)<span class="dots">...</span><span class="more-sns" style="display: none;">, {{ implode(', ', array_slice($snList, 3)) }}</span>@endif
+                                            </div>
+                                            @if($count > 3)
+                                                <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: var(--primary); outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    @endif
+                                @endif
                                 <span class="cat-badge" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 6px;">{{ $row['category'] }}</span>
                             </div>
                         </td>
@@ -1527,9 +1548,9 @@
 
             // 2. Stat cards
             const statVals = document.querySelectorAll('.stat-value');
-            if (statVals[0]) statVals[0].innerHTML = fmt(d.totalReceivedQty) + ' <span class="stat-unit">Units</span>';
-            if (statVals[1]) statVals[1].innerHTML = fmt(d.totalIssuedQty)   + ' <span class="stat-unit">Units</span>';
-            if (statVals[2]) statVals[2].innerHTML = fmt(Math.max(0, d.totalReceivedQty - d.totalIssuedQty)) + ' <span class="stat-unit">Units</span>';
+            if (statVals[0]) statVals[0].innerHTML = fmt(d.totalReceivedQty) + ' <span class="stat-unit">Item(s)</span>';
+            if (statVals[1]) statVals[1].innerHTML = fmt(d.totalIssuedQty)   + ' <span class="stat-unit">Item(s)</span>';
+            if (statVals[2]) statVals[2].innerHTML = fmt(Math.max(0, d.totalReceivedQty - d.totalIssuedQty)) + ' <span class="stat-unit">Item(s)</span>';
 
             const statSubs = document.querySelectorAll('.stat-subtitle');
             if (statSubs[0]) statSubs[0].textContent = d.totalReceivedBatches + ' Received Batches';
@@ -1576,7 +1597,7 @@
                 xaxis: { labels: { style: { fontSize: '11px', fontWeight: 700, fontFamily: 'Inter, sans-serif' }, formatter: v => v.toLocaleString() }, axisBorder: { show: false }, axisTicks: { show: false } },
                 yaxis: { labels: { style: { fontSize: '11px', fontWeight: 700, fontFamily: 'Inter, sans-serif', colors: txtColor }, maxWidth: 180 } },
                 legend: { show: false },
-                tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: v => v.toLocaleString() + ' units' } }
+                tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: v => v.toLocaleString() + ' Item(s)' } }
             };
 
             const recCard = document.querySelector('.received-chart-card');
@@ -1691,8 +1712,29 @@
                         </div>`;
                     }
 
+                    let serialHtml = '';
+                    if (row.serial_number) {
+                        const sns = row.serial_number.split(',').map(s => s.trim()).filter(Boolean);
+                        if (sns.length > 0) {
+                            serialHtml = `
+                                <div class="serial-numbers-wrapper" style="margin-top: 4px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;">
+                                    <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(99, 102, 241, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:2px;"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
+                                        S/N: ${sns.slice(0, 3).join(', ')}${sns.length > 3 ? `<span class="dots">...</span><span class="more-sns" style="display: none;">, ${sns.slice(3).join(', ')}</span>` : ''}
+                                    </div>
+                                    ${sns.length > 3 ? `
+                                        <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: var(--primary); outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }
+                    }
+
                     const itemHtml = `<div>
                         <span class="item-desc" style="font-weight:800;display:block;margin-bottom:2px;color:var(--text-main);">${esc(row.description)}</span>
+                        ${serialHtml}
                         <span class="cat-badge" style="font-size:0.7rem;padding:2px 6px;border-radius:6px;">${esc(row.category)}</span>
                     </div>`;
 
@@ -2348,7 +2390,7 @@
                     legend: { show: false },
                     tooltip: {
                         theme: isDark ? 'dark' : 'light',
-                        y: { formatter: (val) => val.toLocaleString() + ' units' }
+                        y: { formatter: (val) => val.toLocaleString() + ' Item(s)' }
                     }
                 };
 

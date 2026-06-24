@@ -207,6 +207,17 @@ class User extends Authenticatable implements LdapAuthenticatable
         return $delegatedId && (int)$delegatedId === (int)$this->id;
     }
 
+    public static function getApproversQuery()
+    {
+        $delegatedId = \App\Models\Setting::get('delegated_approver_id');
+        return self::where(function($q) use ($delegatedId) {
+            $q->where('is_admin', true);
+            if ($delegatedId) {
+                $q->orWhere('id', $delegatedId);
+            }
+        });
+    }
+
     public function getSecurityStatus(): array
     {
         return ['label' => 'Verified', 'color' => '#10b981'];

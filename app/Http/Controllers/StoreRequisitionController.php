@@ -196,7 +196,7 @@ class StoreRequisitionController extends Controller
                 ->where(fn($q) => $q->where('department', 'Stores')->orWhere('department', 'Store'))
                 ->where('is_active', true)
                 ->get();
-            $admins = User::where('is_admin', true)->where('is_active', true)->get();
+            $admins = User::getApproversQuery()->where('is_active', true)->get();
             $recipients = $storesHeads->concat($admins)->unique('id');
 
             foreach ($recipients as $recipient) {
@@ -528,10 +528,14 @@ class StoreRequisitionController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        // Notify all active admins and stores officers
-        $admins = User::where(function($q) {
+        // Notify all active admins, stores officers, and delegated approver
+        $delegatedId = \App\Models\Setting::get('delegated_approver_id');
+        $admins = User::where(function($q) use ($delegatedId) {
             $q->where('is_admin', true)
               ->orWhereIn('role', ['Store Officer', 'Dept. Head (Stores)']);
+            if ($delegatedId) {
+                $q->orWhere('id', $delegatedId);
+            }
         })->where('is_active', true)->get();
 
         foreach ($admins as $admin) {
@@ -1462,7 +1466,7 @@ class StoreRequisitionController extends Controller
                     }
                 } else {
                     // Notify Head of Stores (Admin) directly since Stores Dept Head approval is bypassed!
-                    $admins = User::where('is_admin', true)->where('is_active', true)->get();
+                    $admins = User::getApproversQuery()->where('is_active', true)->get();
                     foreach ($admins as $admin) {
                         $priorityLabel = strtoupper($req->priority);
                         $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
@@ -1488,7 +1492,7 @@ class StoreRequisitionController extends Controller
                 }
             } else {
                 // Notify Head of Stores (Admin)
-                $admins = User::where('is_admin', true)->where('is_active', true)->get();
+                $admins = User::getApproversQuery()->where('is_active', true)->get();
                 foreach ($admins as $admin) {
                     $priorityLabel = strtoupper($req->priority);
                     $itemCount = $req->items()->count();
@@ -1613,7 +1617,7 @@ class StoreRequisitionController extends Controller
             ]);
 
             // Notify all admins/head of stores
-            $admins = User::where('is_admin', true)->where('is_active', true)->get();
+            $admins = User::getApproversQuery()->where('is_active', true)->get();
             foreach ($admins as $admin) {
                 $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
                 $msg .= "<b style='color:#10b981;'>✅ SUGGESTED QUANTITY AGREED — Ref: #{$req->id}</b><br><br>";
@@ -1663,7 +1667,7 @@ class StoreRequisitionController extends Controller
 
             // Notify admins and selectively the main admin (Stores Department Head)
             // Head of stores (admin) always gets notified
-            $recipients = User::where('is_admin', true)->where('is_active', true)->get()->keyBy('id');
+            $recipients = User::getApproversQuery()->where('is_active', true)->get()->keyBy('id');
 
             // Stores Department Head (main-admin) gets notified if allowed to approve
             if ($requiresStoresDeptHeadApproval) {

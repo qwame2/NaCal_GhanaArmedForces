@@ -20,7 +20,7 @@ class EditRequestController extends Controller
         }
 
         $requestType = $request->get('request_type', 'edit');
-        if (!auth()->user()->is_admin && !auth()->user()->can_add_inventory && in_array($requestType, ['edit', 'edit_submission', 'delete'])) {
+        if (!auth()->user()->is_admin && !auth()->user()->can_add_inventory && !auth()->user()->isDelegatedApprover() && in_array($requestType, ['edit', 'edit_submission', 'delete'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized: You do not have permission to modify inventory records.'], 403);
         }
         $request->validate([
@@ -75,7 +75,7 @@ class EditRequestController extends Controller
             'status' => 'pending'
         ]);
 
-        $admins = User::where('is_admin', true)->get();
+        $admins = User::getApproversQuery()->get();
         if ($admins->count() > 0) {
             $typeLabel = $requestType === 'edit_submission' ? 'ENTRY EDIT' : strtoupper($requestType);
             $actionWord = ($requestType === 'edit' || $requestType === 'edit_submission') ? 'edit' : 'PERMANENTLY DELETE';
@@ -665,14 +665,13 @@ class EditRequestController extends Controller
             ]);
         }
 
-        // 2. Update the Admin's message (this view)
         // 2. Update ALL Admin messages for this request (Collaborative status sync)
-        $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+        $adminMsgs = Message::whereIn('receiver_id', User::getApproversQuery()->pluck('id'))
             ->where('edit_request_id', $editReq->id)
             ->get();
 
         if ($adminMsgs->isEmpty()) {
-            $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+            $adminMsgs = Message::whereIn('receiver_id', User::getApproversQuery()->pluck('id'))
                 ->where('created_at', '>=', now()->subDays(5))
                 ->where(function($q) use ($editReq) {
                     $q->where('edit_request_id', $editReq->id)
@@ -996,12 +995,12 @@ class EditRequestController extends Controller
         }
 
         // Update Admin Messages
-        $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+        $adminMsgs = Message::whereIn('receiver_id', User::getApproversQuery()->pluck('id'))
             ->where('edit_request_id', $editReq->id)
             ->get();
 
         if ($adminMsgs->isEmpty()) {
-            $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+            $adminMsgs = Message::whereIn('receiver_id', User::getApproversQuery()->pluck('id'))
                 ->where(function($q) use ($editReq) {
                     $q->where('edit_request_id', $editReq->id)
                       ->orWhere('message', 'like', "%recovery-actions-{$editReq->id}%");
@@ -1169,12 +1168,12 @@ class EditRequestController extends Controller
         }
 
         // Update Admin Messages
-        $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+        $adminMsgs = Message::whereIn('receiver_id', User::getApproversQuery()->pluck('id'))
             ->where('edit_request_id', $editReq->id)
             ->get();
 
         if ($adminMsgs->isEmpty()) {
-            $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+            $adminMsgs = Message::whereIn('receiver_id', User::getApproversQuery()->pluck('id'))
                 ->where(function($q) use ($editReq) {
                     $q->where('edit_request_id', $editReq->id)
                       ->orWhere('message', 'like', "%verification-actions-{$editReq->id}%");
@@ -1338,12 +1337,12 @@ class EditRequestController extends Controller
 
 
         // 2. Update the Admin's own oversight message to show "Rolled Back" status
-        $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+        $adminMsgs = Message::whereIn('receiver_id', User::getApproversQuery()->pluck('id'))
             ->where('edit_request_id', $editReq->id)
             ->get();
 
         if ($adminMsgs->isEmpty()) {
-            $adminMsgs = Message::whereIn('receiver_id', User::where('is_admin', true)->pluck('id'))
+            $adminMsgs = Message::whereIn('receiver_id', User::getApproversQuery()->pluck('id'))
                 ->where('created_at', '>=', now()->subDays(5))
                 ->where(function($q) use ($editReq) {
                     $q->where('edit_request_id', $editReq->id)

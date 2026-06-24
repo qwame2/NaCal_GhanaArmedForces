@@ -1641,7 +1641,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                     'status' => 'pending',
                     'payload' => json_encode(['updates' => $updates])
                 ]);
-                $admins = \App\Models\User::where('is_admin', true)->get();
+                $admins = \App\Models\User::getApproversQuery()->get();
                 if ($admins->count() > 0) {
                     $itemNames = collect($updates)->map(function($u) {
                         $item = \App\Models\InventoryItem::find($u['item_id']);

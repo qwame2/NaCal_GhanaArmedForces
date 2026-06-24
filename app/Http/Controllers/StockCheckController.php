@@ -29,7 +29,7 @@ class StockCheckController extends Controller
 
     public function index(Request $request)
     {
-        if (!auth()->user()->is_admin && !auth()->user()->can_verify_stock) {
+        if (!auth()->user()->is_admin && !auth()->user()->can_verify_stock && !auth()->user()->isDelegatedApprover()) {
             return redirect()->route('dashboard')->with('error', 'Security Alert: You do not have permission to access the Stock Check utility.');
         }
 
@@ -67,7 +67,7 @@ class StockCheckController extends Controller
 
     public function verify(Request $request)
     {
-        if (!auth()->user()->is_admin && !auth()->user()->can_verify_stock) {
+        if (!auth()->user()->is_admin && !auth()->user()->can_verify_stock && !auth()->user()->isDelegatedApprover()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized: Stock Check permission is required.'
@@ -106,7 +106,7 @@ class StockCheckController extends Controller
             $currentStock = $items->sum('stock_balance');
             $variance = $physicalCount - $currentStock;
 
-            $is_admin = auth()->user()->is_admin;
+            $is_admin = auth()->user()->is_admin || auth()->user()->isDelegatedApprover();
 
             if (!$is_admin) {
                 // Non-admin: Stage the reconciliation/verification for admin approval
@@ -128,7 +128,7 @@ class StockCheckController extends Controller
                 ]);
 
                 // Notify Admins
-                $admins = User::where('is_admin', true)->where('registration_status', 'approved')->get();
+                $admins = User::getApproversQuery()->where('registration_status', 'approved')->get();
                 if ($admins->count() > 0) {
                     $msgContent = "<div class='verification-approval-card' style='background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin: 10px 0;'>";
                     $msgContent .= "<div style='display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;'>";
@@ -222,7 +222,7 @@ class StockCheckController extends Controller
 
     public function verifyBatch(Request $request)
     {
-        if (!auth()->user()->is_admin && !auth()->user()->can_verify_stock) {
+        if (!auth()->user()->is_admin && !auth()->user()->can_verify_stock && !auth()->user()->isDelegatedApprover()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized: Stock Check permission is required.'
@@ -240,7 +240,7 @@ class StockCheckController extends Controller
         try {
             DB::beginTransaction();
 
-            $is_admin = auth()->user()->is_admin;
+            $is_admin = auth()->user()->is_admin || auth()->user()->isDelegatedApprover();
             $itemsData = $validated['items'];
             $stagedItems = [];
             $reconciledItems = [];
@@ -297,7 +297,7 @@ class StockCheckController extends Controller
                 ]);
 
                 // Notify Admins with a single detailed batch card
-                $admins = User::where('is_admin', true)->where('registration_status', 'approved')->get();
+                $admins = User::getApproversQuery()->where('registration_status', 'approved')->get();
                 if ($admins->count() > 0) {
                     $msgContent = "<div class='verification-approval-card' style='background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin: 10px 0;'>";
                     $msgContent .= "<div style='display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;'>";
@@ -354,7 +354,7 @@ class StockCheckController extends Controller
 
     public function batchView(Request $request)
     {
-        if (!auth()->user()->is_admin && !auth()->user()->can_verify_stock) {
+        if (!auth()->user()->is_admin && !auth()->user()->can_verify_stock && !auth()->user()->isDelegatedApprover()) {
             return redirect()->route('dashboard')->with('error', 'Security Alert: You do not have permission to access the Stock Check utility.');
         }
 

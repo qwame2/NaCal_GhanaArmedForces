@@ -22,11 +22,11 @@ class MessageController extends Controller
                 $sq->where('sender_id', $userId)->where('receiver_id', $authId);
             });
 
-            // ENHANCED COLLABORATION: If viewer is an administrator, also show automated 
-            // messages (SRA/Edit requests) sent from this user to ANY administrator.
-            // This ensures Admin B can see and approve requests originally sent to Admin A.
-            if ($authUser && $authUser->is_admin) {
-                $adminIds = User::where('is_admin', true)->where('registration_status', 'approved')->pluck('id')->toArray();
+            // ENHANCED COLLABORATION: If viewer is an administrator or delegated approver, also show automated 
+            // messages (SRA/Edit requests) sent from this user to ANY administrator/approver.
+            // This ensures Admin B/Delegate can see and approve requests originally sent to Admin A.
+            if ($authUser && ($authUser->is_admin || $authUser->isDelegatedApprover())) {
+                $adminIds = User::getApproversQuery()->where('registration_status', 'approved')->pluck('id')->toArray();
                 
                 $q->orWhere(function($sq) use ($userId, $adminIds) {
                     $sq->where('sender_id', $userId)
@@ -34,7 +34,7 @@ class MessageController extends Controller
                        ->whereIn('receiver_id', $adminIds);
                 });
                 
-                // Also show automated responses from ANY admin to this user
+                // Also show automated responses from ANY admin/approver to this user
                 $q->orWhere(function($sq) use ($userId, $adminIds) {
                     $sq->where('receiver_id', $userId)
                        ->where('is_automated', true)
@@ -49,7 +49,7 @@ class MessageController extends Controller
             $q->where('is_automated', false)
               ->orWhere('receiver_id', $authId); // Always show if you are the intended recipient
             
-            if ($authUser && $authUser->is_admin) {
+            if ($authUser && ($authUser->is_admin || $authUser->isDelegatedApprover())) {
                 $q->orWhere('is_automated', true);
             }
         });
@@ -156,8 +156,8 @@ class MessageController extends Controller
               });
         });
 
-        // If the user is not an administrator, exclude skipped administrative logs
-        if (auth()->check() && !auth()->user()->is_admin) {
+        // If the user is not an administrator or delegated approver, exclude skipped administrative logs
+        if (auth()->check() && !auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
             $query->where(function($q) {
                 $q->where('is_automated', false)
                   ->orWhere(function($sq) {
@@ -181,14 +181,14 @@ class MessageController extends Controller
             ->pluck('count', 'sender_id')
             ->toArray();
 
-        // If the logged in user is a store officer (non-admin), add active rollback requests count to admins
-        if (auth()->check() && !auth()->user()->is_admin) {
+        // If the logged in user is a store officer (non-admin) and not a delegated approver, add active rollback requests count to admins
+        if (auth()->check() && !auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
             $rollbackCount = \App\Models\EditRequest::where('user_id', $authId)
                 ->where('status', 'rollback')
                 ->count();
                 
             if ($rollbackCount > 0) {
-                $adminIds = User::where('is_admin', true)->pluck('id')->toArray();
+                $adminIds = User::getApproversQuery()->pluck('id')->toArray();
                 foreach ($adminIds as $adminId) {
                     $counts[$adminId] = ($counts[$adminId] ?? 0) + $rollbackCount;
                 }
@@ -216,8 +216,8 @@ class MessageController extends Controller
               });
         });
 
-        // If the user is not an administrator, exclude skipped administrative logs
-        if (auth()->check() && !auth()->user()->is_admin) {
+        // If the user is not an administrator or delegated approver, exclude skipped administrative logs
+        if (auth()->check() && !auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
             $query->where(function($q) {
                 $q->where('is_automated', false)
                   ->orWhere(function($sq) {

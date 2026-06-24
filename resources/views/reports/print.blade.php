@@ -385,15 +385,15 @@
     <div class="stats-summary-bar">
         <div class="stat-col">
             <div class="stat-col-label">Total Received</div>
-            <div class="stat-col-value"><strong>{{ number_format((float)$totalReceivedQty) }}</strong> <span>Units</span></div>
+            <div class="stat-col-value"><strong>{{ number_format((float)$totalReceivedQty) }}</strong> <span>Item(s)</span></div>
         </div>
         <div class="stat-col">
             <div class="stat-col-label">Total Issued</div>
-            <div class="stat-col-value"><strong>{{ number_format((float)$totalIssuedQty) }}</strong> <span>Units</span></div>
+            <div class="stat-col-value"><strong>{{ number_format((float)$totalIssuedQty) }}</strong> <span>Item(s)</span></div>
         </div>
         <div class="stat-col">
-            <div class="stat-col-label">Net Movement</div>
-            <div class="stat-col-value"><strong>{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }}</strong> <span>Units</span></div>
+            <div class="stat-col-label">Stock Balance</div>
+            <div class="stat-col-value"><strong>{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }}</strong> <span>Item(s)</span></div>
         </div>
     </div>
 
@@ -416,11 +416,11 @@
 
         // 2. Incoming inventory (Receivals)
         if ($totalReceivedQty > 0) {
-            $essay .= "On the incoming side, we successfully received a total of <strong>" . number_format($totalReceivedQty) . "</strong> units of stock, which arrived in <strong>" . $totalReceivedBatches . "</strong> separate batches. ";
+            $essay .= "On the incoming side, we successfully received a total of <strong>" . number_format($totalReceivedQty) . "</strong> Item(s) of stock, which arrived in <strong>" . $totalReceivedBatches . "</strong> separate batches. ";
             
             if (count($selectedItems) !== 1 && $receivedDistribution->count() > 0) {
                 $topReceived = $receivedDistribution->first();
-                $essay .= "Among the received items, the highest volume was for <strong>" . e($topReceived->description) . "</strong>, with a total of <strong>" . number_format($topReceived->total_qty) . "</strong> units incoming. ";
+                $essay .= "Among the received items, the highest volume was for <strong>" . e($topReceived->description) . "</strong>, with a total of <strong>" . number_format($topReceived->total_qty) . "</strong> Item(s) incoming. ";
             }
             
             $totalVariance = 0;
@@ -430,7 +430,7 @@
                 }
             }
             if ($totalVariance != 0) {
-                $essay .= "During receipt inspection, a total variance of <strong>" . ($totalVariance > 0 ? '+' : '') . number_format($totalVariance) . "</strong> units was recorded, representing the difference between the supplier invoice quantities and the physical quantities received in our warehouse. ";
+                $essay .= "During receipt inspection, a total variance of <strong>" . ($totalVariance > 0 ? '+' : '') . number_format($totalVariance) . "</strong> Item(s) was recorded, representing the difference between the supplier invoice quantities and the physical quantities received in our warehouse. ";
             } else {
                 $essay .= "All incoming shipments matched their expected quantities perfectly, with zero variance recorded. ";
             }
@@ -440,7 +440,7 @@
 
         // 3. Outgoing inventory (Issues)
         if ($totalIssuedQty > 0) {
-            $essay .= "Regarding stock distributions, we issued out a total of <strong>" . number_format($totalIssuedQty) . "</strong> units to meet operational requests. ";
+            $essay .= "Regarding stock distributions, we issued out a total of <strong>" . number_format($totalIssuedQty) . "</strong> Item(s) to meet operational requests. ";
             
             $deptCounts = [];
             $tempCount = 0;
@@ -459,7 +459,7 @@
                 arsort($deptCounts);
                 $topDept = key($deptCounts);
                 $topDeptQty = current($deptCounts);
-                $essay .= "The primary requestor was the <strong>" . e($topDept) . "</strong>, which received <strong>" . number_format($topDeptQty) . "</strong> units. ";
+                $essay .= "The primary requestor was the <strong>" . e($topDept) . "</strong>, which received <strong>" . number_format($topDeptQty) . "</strong> Item(s). ";
                 if (count($deptCounts) > 1) {
                     $otherDepts = array_slice(array_keys($deptCounts), 1, 2);
                     $essay .= "Other notable quantities were distributed to: " . implode(', ', $otherDepts) . ". ";
@@ -467,7 +467,7 @@
             }
             
             if ($tempCount > 0) {
-                $essay .= "Of the total outgoing items, <strong>" . number_format($tempCount) . "</strong> units were issued on a temporary basis (loans that must be returned to the store), while <strong>" . number_format($permCount) . "</strong> units were issued permanently. ";
+                $essay .= "Of the total outgoing items, <strong>" . number_format($tempCount) . "</strong> Item(s) were issued on a temporary basis (loans that must be returned to the store), while <strong>" . number_format($permCount) . "</strong> Item(s) were issued permanently. ";
             } else {
                 $essay .= "All distributions made during this period were permanent issuances to the respective departments. ";
             }
@@ -478,7 +478,7 @@
         // 4. Summary / Net
         $netMovement = (float)$totalReceivedQty - (float)$totalIssuedQty;
         if ($totalReceivedQty > 0 || $totalIssuedQty > 0) {
-            $essay .= "In summary, the net stock movement shows that we " . ($netMovement >= 0 ? "retained" : "reduced") . " our inventory levels by <strong>" . number_format(abs($netMovement)) . "</strong> units. ";
+            $essay .= "In summary, the stock balance shows that we " . ($netMovement >= 0 ? "retained" : "reduced") . " our inventory levels by <strong>" . number_format(abs($netMovement)) . "</strong> Item(s). ";
             if ($netMovement < 0) {
                 $essay .= "This indicates that our consumption rate exceeded our replenishment rate for this period. ";
             } else {
@@ -566,6 +566,7 @@
                 'type'          => 'Received',
                 'category'      => $ledgeMap[$r->ledge_category] ?? ('Category ' . $r->ledge_category),
                 'description'   => $r->description,
+                'serial_number' => $r->serial_number,
                 'ref'           => preg_replace('/\s\[.*\]$/', '', $source ?: 'System'),
                 'ref_label'     => 'Supplier / Source',
                 'quantity'      => $r->qty ?? 0,
@@ -582,6 +583,7 @@
                 'type'          => 'Issued',
                 'category'      => $ledgeMap[$i->ledge_category] ?? ('Category ' . $i->ledge_category),
                 'description'   => $i->description,
+                'serial_number' => null,
                 'ref'           => $i->beneficiary ?? '—',
                 'ref_label'     => 'Beneficiary / Dept.',
                 'quantity'      => $i->quantity ?? 0,
@@ -637,7 +639,21 @@
                     <td>
                         <span class="badge-category">{{ $row['category'] }}</span>
                     </td>
-                    <td style="font-weight: 700; text-transform: uppercase;">{{ $row['description'] }}</td>
+                    <td style="font-weight: 700; text-transform: uppercase;">
+                        {{ $row['description'] }}
+                        @if(!empty($row['serial_number']))
+                            @php
+                                $snList = array_filter(array_map('trim', explode(',', $row['serial_number'])));
+                                $count = count($snList);
+                            @endphp
+                            @if($count > 0)
+                                <div style="font-size: 8px; color: #4f46e5; font-weight: bold; margin-top: 3px; text-transform: none; display: flex; align-items: center; gap: 3px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
+                                    S/N: {{ implode(', ', $snList) }}
+                                </div>
+                            @endif
+                        @endif
+                    </td>
                     <td>
                         @if($row['type'] === 'Issued')
                             @if($row['status'] === 'Temporary')
