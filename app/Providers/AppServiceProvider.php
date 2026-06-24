@@ -19,7 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        try {
+        if (app()->environment() !== 'testing') {
+            try {
             \Illuminate\Support\Facades\Cache::remember('schema_healed_v12', 86400, function () {
                 // Ensure can_make_requisition column exists for requisitioner permission gating
                 if (\Illuminate\Support\Facades\Schema::hasTable('users')) {
@@ -254,8 +255,7 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Exception $e) {
             // Ignore
         }
-
-
+    }
 
         view()->composer(['layouts.dashboard', 'layouts.admin'], function ($view) {
             if (auth()->check()) {

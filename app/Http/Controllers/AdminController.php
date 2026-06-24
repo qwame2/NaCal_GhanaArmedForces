@@ -433,6 +433,39 @@ class AdminController extends Controller
         ]);
     }
 
+    public function getStoreOfficers()
+    {
+        if (!auth()->user()->is_admin) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $storeOfficers = User::where('role', 'Officer')
+            ->where('registration_status', 'approved')
+            ->orderBy('name')
+            ->get(['id', 'name', 'username', 'role', 'department', 'avatar',
+                   'is_active', 'is_online',
+                   'can_add_inventory', 'can_operate_logistics',
+                   'can_generate_reports', 'can_verify_stock']);
+
+        return response()->json([
+            'success' => true,
+            'users'   => $storeOfficers->map(fn($u) => [
+                'id'                    => $u->id,
+                'name'                  => $u->name,
+                'username'              => $u->username,
+                'role'                  => $u->role,
+                'department'            => $u->department,
+                'avatar'                => $u->avatar ? asset('storage/' . $u->avatar) : null,
+                'is_active'             => (bool) $u->is_active,
+                'is_online'             => (bool) $u->is_online,
+                'can_add_inventory'     => (bool) $u->can_add_inventory,
+                'can_operate_logistics' => (bool) $u->can_operate_logistics,
+                'can_generate_reports'  => (bool) $u->can_generate_reports,
+                'can_verify_stock'      => (bool) $u->can_verify_stock,
+            ]),
+        ]);
+    }
+
     public function updatePermission(Request $request)
     {
         if (!auth()->user()->is_admin) {
@@ -549,12 +582,6 @@ class AdminController extends Controller
         if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
-
-        // Self-heal: Mark ALL unread messages for this admin as read the moment they open the messages page.
-        // This ensures the persistent notification alarm stops immediately upon visiting the page.
-        \App\Models\Message::where('receiver_id', auth()->id())
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
 
         $users = User::where('is_admin', false)->where('registration_status', 'approved')->get();
         return view('admin.messages', compact('users'));

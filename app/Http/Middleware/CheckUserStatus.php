@@ -24,6 +24,11 @@ class CheckUserStatus
                 $request->session()->regenerateToken();
                 return redirect()->route('account.deactivated');
             }
+
+            // Sync online status for active authenticated requests
+            if (!$user->is_online) {
+                $user->update(['is_online' => true]);
+            }
         }
 
         return $next($request);

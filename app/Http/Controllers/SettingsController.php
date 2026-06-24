@@ -23,13 +23,6 @@ class SettingsController extends Controller
             'department' => 'nullable|string|max:100',
         ]);
 
-        if (strcasecmp($request->role, 'Requisitioner') === 0) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Professional Role cannot be Requisitioner.'
-            ], 422);
-        }
-
         $user = auth()->user();
         $user->update($request->only(['name', 'email', 'phone', 'role', 'department', 'service_number']));
 
@@ -152,12 +145,6 @@ class SettingsController extends Controller
 
     public function messages()
     {
-        // Self-heal: Mark all unread messages for the logged-in user as read when they visit the Comms Hub
-        // to prevent any phantom badges or database mismatch issues.
-        \App\Models\Message::where('receiver_id', auth()->id())
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
-
         $admins = \App\Models\User::getApproversQuery()
             ->where('id', '!=', auth()->id())
             ->where('registration_status', 'approved')

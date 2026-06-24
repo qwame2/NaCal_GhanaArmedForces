@@ -465,9 +465,12 @@
 
         /* Print Override */
         @media print {
+            @page {
+                margin: 0;
+            }
             body {
                 background: white;
-                padding: 0;
+                padding: 1.5cm 1.2cm;
             }
 
             .voucher-card {
@@ -502,10 +505,10 @@
             <!-- Header -->
             <div class="voucher-header">
                 <div class="logo-section">
-                    <img src="{{ asset('img/NACOC1.png') }}" alt="NACOC Logo" class="org-logo">
+                    <img src="{{ asset('img/NACOC.png') }}" alt="NACOC Logo" class="org-logo">
                     <div class="org-details">
-                        <h1>{{ \App\Models\Setting::get('organization_name', 'NACOC') }}</h1>
-                        <p>Inventory Logistics Department</p>
+                        <h1>{{ trim(str_ireplace('(nsims)', '', \App\Models\Setting::get('organization_name', 'NACOC'))) }}</h1>
+                        <p>Inventory Store Department</p>
                     </div>
                 </div>
                 <div class="voucher-title-box">
@@ -549,7 +552,7 @@
                 <!-- Column 2: Release Authorization -->
                 <div class="dashboard-card">
                     <div class="dashboard-card-title">
-                        LOGISTICS AUTHORIZATION
+                        STORE AUTHORIZER
                     </div>
                     <div class="dashboard-row">
                         <span class="dashboard-label">Requisition Ref:</span>
@@ -620,7 +623,7 @@
                 <!-- Requisition Narrative -->
                 <div class="text-block-card">
                     <div class="text-block-title">
-                        REQUISITION PURPOSE / JUSTIFICATION NARRATIVE
+                        REQUISITION PURPOSE
                     </div>
                     <p class="text-block-content">
                         "{{ $req->purpose }}"
@@ -630,7 +633,7 @@
                 <!-- Stores Remarks -->
                 <div class="text-block-card" style="border-left-color: var(--success);">
                     <div class="text-block-title">
-                        LOGISTICS DECISION EVALUATION & STORES REMARKS
+                        STORES DECISION EVALUATION & STORES REMARKS
                     </div>
                     <p class="text-block-content">
                         @if(!empty($req->admin_notes))
@@ -724,63 +727,9 @@
                 I hereby certify that the store items detailed in this voucher have been verified, approved, and released from the central logistics inventory database. The receiving department representative has inspected and verified the stock items as listed and confirmed physical receipt. These actions have been fully transacted and logged under formal procedures of the Logistics and Stores Division.
             </div>
 
-            <!-- Signatures Section -->
-            @php
-                // Fetch originating department head user to get their signature
-                $deptHeadUser = null;
-                if (!empty($receipt->approved_by_dept_head)) {
-                    $deptHeadUser = \App\Models\User::where('name', $receipt->approved_by_dept_head)->first();
-                }
-
-                // Fetch stores department head user
-                $storesDeptHead = \App\Models\User::whereIn('role', ['Main Admin', 'Department Head'])
-                    ->where(function($q) {
-                        $q->where('department', 'Stores')->orWhere('department', 'Store');
-                    })
-                    ->where('is_active', true)
-                    ->first();
-
-                // Fetch head of stores user
-                $storesHeadUser = null;
-                if (!empty($receipt->approved_by_stores_head)) {
-                    $storesHeadUser = \App\Models\User::where('name', $receipt->approved_by_stores_head)->first();
-                }
-                if (!$storesHeadUser) {
-                    $storesHeadUser = \App\Models\User::where('role', 'Main Admin')->first();
-                }
-            @endphp
-            <div class="signatures-section">
-                <!-- Column 1: Originating Department -->
-                <div class="signature-block">
-                    <div class="signature-space">
-                        <div style="height: 45px;"></div>
-                    </div>
-                    <div class="signature-line"></div>
-                    <div class="signature-title">{{ $receipt->approved_by_dept_head }}</div>
-                    <div class="signature-sub" style="font-weight: 800; margin-top: 4px;">Dept. Head ({{ $req->department }})</div>
-                    <div class="signature-sub" style="font-size: 0.58rem; color: var(--text-muted); margin-top: 2px;">ORIGINATING DEPARTMENT (REQUESTER / RECEIVER)</div>
-                </div>
-
-                <!-- Column 2: Department Head (Stores) -->
-                <div class="signature-block">
-                    <div class="signature-space">
-                        <div style="height: 45px;"></div>
-                    </div>
-                    <div class="signature-line"></div>
-                    <div class="signature-title">{{ $storesDeptHead ? $storesDeptHead->name : '........................................' }}</div>
-                    <div class="signature-sub" style="font-weight: 800; margin-top: 4px;">DEPT. HEAD (STORES)</div>
-                    <div class="signature-sub" style="font-size: 0.58rem; color: var(--text-muted); margin-top: 2px;">AUTHORIZED STORES DIRECTOR</div>
-                </div>
-
-                <!-- Column 3: Head of Stores -->
-                <div class="signature-block">
-                    <div class="signature-space">
-                        <div style="height: 45px;"></div>
-                    </div>
-                    <div class="signature-line"></div>
-                    <div class="signature-title">{{ $receipt->approved_by_stores_head ?? 'Head of Stores' }}</div>
-                    <div class="signature-sub" style="font-weight: 800; margin-top: 4px;">HEAD OF STORES</div>
-                </div>
+            <!-- System Footer Note -->
+            <div style="text-align: center; font-size: 0.68rem; color: var(--text-muted); margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1rem; font-style: italic; font-weight: 600; letter-spacing: 0.02em;">
+                this Voucher was generated through using the NACOC STORES INVENTORY MANAGEMENT SYSTEM (NSIMS)
             </div>
         </div>
     </div>

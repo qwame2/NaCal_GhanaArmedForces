@@ -1242,7 +1242,7 @@
                 avatar: '{{ auth()->user()->avatar ? Storage::url(auth()->user()->avatar) : "" }}'
             };
 
-            const displayRole = user.role.toLowerCase() === 'requisitioner' ? '' : user.role;
+            const displayRole = user.role || 'Requisitioner';
 
             Swal.fire({
                 title: `
@@ -1374,8 +1374,8 @@
                         Swal.showValidationMessage('Service Number is required');
                         return false;
                     }
-                    if (!role || role.toLowerCase() === 'requisitioner') {
-                        Swal.showValidationMessage('Professional Role is required and cannot be "Requisitioner"');
+                    if (!role) {
+                        Swal.showValidationMessage('Professional Role is required');
                         return false;
                     }
 

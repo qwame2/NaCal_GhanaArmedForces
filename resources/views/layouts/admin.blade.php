@@ -944,6 +944,16 @@
             }
         };
 
+        window.playDoubleBeep = function(type = 'receive') {
+            if (window._isPlayingDoubleBeep) return;
+            window._isPlayingDoubleBeep = true;
+            window.playNotificationSound(type);
+            setTimeout(() => {
+                window.playNotificationSound(type);
+                window._isPlayingDoubleBeep = false;
+            }, 3000);
+        };
+
         function playSynthSound(type = 'sent') {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -1068,7 +1078,9 @@
 
         // Real-time Admin Notification Refresh Logic
         window.refreshNotifications = function() {
-            fetch("{{ route('api.notifications', [], false) }}?_t=" + Date.now())
+            fetch("{{ route('api.notifications', [], false) }}?_t=" + Date.now(), {
+                credentials: 'same-origin'
+            })
                 .then(res => {
                     const contentType = res.headers.get("content-type");
                     if (res.status === 200 && contentType && contentType.indexOf("application/json") !== -1) {
@@ -1171,6 +1183,7 @@
 
             fetch("{{ route('api.notifications.dismiss', [], false) }}", {
                 method: 'POST',
+                credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1206,19 +1219,44 @@
                 _notifAlarm = null;
             }
         }
+        // Expose globally so messages page can silence alarm immediately on message open
+        window.stopNotifAlarm = _stopNotifAlarm;
 
         // Global Message Badge Sync
         window.refreshUnreadMessages = function() {
-            const isMessagePage = window.location.href.includes('/admin/messages');
+            const isMessagePage = window.location.href.includes('/admin/messages') || window.location.href.includes('/messages');
             if (isMessagePage) {
                 const badge = document.getElementById('global-unread-badge');
                 if (badge) badge.style.display = 'none';
                 _stopNotifAlarm();       // User is on messages page — stop alarm
                 _notifAlarmLastCount = 0; // Reset so alarm doesn’t restart on next page
+                
+                // Write active timestamp to localStorage so other tabs know messages page is open
+                localStorage.setItem('messages_page_active', Date.now());
+                if (!window._messagesPageActiveTimer) {
+                    window._messagesPageActiveTimer = setInterval(() => {
+                        localStorage.setItem('messages_page_active', Date.now());
+                    }, 5000);
+                }
+
+                // Clear active status on page unload
+                window.addEventListener('beforeunload', () => {
+                    localStorage.removeItem('messages_page_active');
+                });
                 return;
             }
 
-            fetch("{{ route('api.total-unread') }}?_t=" + Date.now())
+            // Check if messages page is active in any tab
+            const lastActive = localStorage.getItem('messages_page_active');
+            const isMessagesPageOpenElsewhere = lastActive && (Date.now() - parseInt(lastActive)) < 15000;
+            if (isMessagesPageOpenElsewhere) {
+                _stopNotifAlarm();
+                _notifAlarmLastCount = 0;
+            }
+
+            fetch("{{ route('api.total-unread') }}?_t=" + Date.now(), {
+                credentials: 'same-origin'
+            })
                 .then(res => {
                     const contentType = res.headers.get("content-type");
                     if (res.status === 200 && contentType && contentType.indexOf("application/json") !== -1) {
@@ -1230,7 +1268,7 @@
                     if (!data) return;
                     const badge = document.getElementById('global-unread-badge');
                     if (badge) {
-                        const totalDisplayCount = (data.count || 0) + (data.approvals_count || 0);
+                        const totalDisplayCount = (data.count || 0) + (data.approvals_count || 0) + (data.requested_approvals_count || 0);
                         if (totalDisplayCount > 0) {
                             badge.textContent = totalDisplayCount;
                             badge.style.display = 'block';
@@ -1241,22 +1279,39 @@
 
                     // Play a single beep if a new approval message is received
                     if (data.approvals_count > 0 && (typeof window._lastApprovalsCount === 'undefined' ? 0 : window._lastApprovalsCount) < data.approvals_count) {
-                        window.playNotificationSound('receive');
+                        window.playDoubleBeep('receive');
                     }
                     window._lastApprovalsCount = data.approvals_count || 0;
 
-                    // Alarm control: start if new unread appeared, stop when all read
-                    if (data.count > 0 && _notifAlarmLastCount === 0) {
+                    // Play a single beep if a new approval request is received
+                    if (data.requested_approvals_count > 0 && (typeof window._lastRequestedApprovalsCount === 'undefined' ? 0 : window._lastRequestedApprovalsCount) < data.requested_approvals_count) {
+                        window.playDoubleBeep('receive');
+                    }
+                    window._lastRequestedApprovalsCount = data.requested_approvals_count || 0;
+
+                    // Re-check messages page active in other tabs
+                    const lastActiveCheck = localStorage.getItem('messages_page_active');
+                    const isMessagesOpenElsewhere = lastActiveCheck && (Date.now() - parseInt(lastActiveCheck)) < 15000;
+
+                    // Alarm control: start if new unread appeared, stop when all read or messages page open
+                    if (data.count > 0 && _notifAlarmLastCount === 0 && !isMessagesOpenElsewhere) {
                         // New unread message(s) just arrived — start the alarm
                         _startNotifAlarm();
-                    } else if (data.count === 0 && _notifAlarm) {
-                        // All messages read — silence the alarm
+                    } else if ((data.count === 0 || isMessagesOpenElsewhere) && _notifAlarm) {
+                        // All messages read or messages page open — silence the alarm
                         _stopNotifAlarm();
                     }
-                    _notifAlarmLastCount = data.count;
+                    _notifAlarmLastCount = isMessagesOpenElsewhere ? 0 : data.count;
                 })
                 .catch(err => {});
         };
+
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'messages_page_active' && e.newValue) {
+                _stopNotifAlarm();
+                _notifAlarmLastCount = 0;
+            }
+        });
 
         setInterval(window.refreshUnreadMessages, 10000);
         window.refreshUnreadMessages();
@@ -1601,8 +1656,39 @@
 
             const offlineUrl = "{{ route('api.user.offline') }}";
             const csrfToken = "{{ csrf_token() }}";
+            let isInternalNavigation = false;
+
+            // Intercept link clicks to detect same-origin navigation
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (link && link.href) {
+                    try {
+                        const url = new URL(link.href);
+                        if (url.origin === window.location.origin) {
+                            isInternalNavigation = true;
+                        }
+                    } catch (err) {}
+                }
+            });
+
+            // Intercept form submissions
+            document.addEventListener('submit', () => {
+                isInternalNavigation = true;
+            });
+
+            // Intercept reload keys (F5, Ctrl+R, Cmd+R)
+            window.addEventListener('keydown', (e) => {
+                if (
+                    e.key === 'F5' || 
+                    (e.ctrlKey && e.key === 'r') || 
+                    (e.metaKey && e.key === 'r')
+                ) {
+                    isInternalNavigation = true;
+                }
+            });
 
             const handleExit = () => {
+                if (isInternalNavigation) return;
                 if (navigator.sendBeacon) {
                     const formData = new FormData();
                     formData.append('_token', csrfToken);

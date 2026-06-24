@@ -235,10 +235,18 @@ class MessageController extends Controller
             });
         }
 
-        // Exclude approval notifications from the persistent looping count
+        // Exclude approval notifications and requests from the persistent looping count
         $query->where(function($q) {
-            $q->where('message', 'not like', '%sra-approved-msg%')
-              ->orWhereNull('message');
+            $q->where(function($sq) {
+                $sq->where('message', 'not like', '%sra-approved-msg%')
+                  ->where('message', 'not like', '%sra-approval-card%')
+                  ->where('message', 'not like', '%edit-req-actions-%')
+                  ->where('message', 'not like', '%edit-req-msg%')
+                  ->where('message', 'not like', '%verification-approval-card%')
+                  ->where('message', 'not like', '%recovery-approval-card%')
+                  ->where('message', 'not like', '%requisition-msg%')
+                  ->where('message', 'not like', '%requisition-status-msg%');
+            })->orWhereNull('message');
         });
 
         $count = $query->count();
@@ -246,13 +254,30 @@ class MessageController extends Controller
         $approvalsCount = Message::where('is_archived', false)
             ->where('receiver_id', auth()->id())
             ->whereNull('read_at')
-            ->where('message', 'like', '%sra-approved-msg%')
+            ->where(function($q) {
+                $q->where('message', 'like', '%sra-approved-msg%')
+                  ->orWhere('message', 'like', '%requisition-status-msg%');
+            })
+            ->count();
+
+        $requestedApprovalsCount = Message::where('is_archived', false)
+            ->where('receiver_id', auth()->id())
+            ->whereNull('read_at')
+            ->where(function($q) {
+                $q->where('message', 'like', '%sra-approval-card%')
+                  ->orWhere('message', 'like', '%edit-req-actions-%')
+                  ->orWhere('message', 'like', '%edit-req-msg%')
+                  ->orWhere('message', 'like', '%verification-approval-card%')
+                  ->orWhere('message', 'like', '%recovery-approval-card%')
+                  ->orWhere('message', 'like', '%requisition-msg%');
+            })
             ->count();
 
         if (ob_get_length()) ob_clean();
         return response()->json([
             'count' => $count,
-            'approvals_count' => $approvalsCount
+            'approvals_count' => $approvalsCount,
+            'requested_approvals_count' => $requestedApprovalsCount
         ]);
     }
     public function getOnlineStatuses()

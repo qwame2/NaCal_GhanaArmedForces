@@ -125,7 +125,7 @@
                         <label>Professional Role *</label>
                         <div class="settings-field-wrapper">
                             <div class="settings-field-icon"><i data-lucide="shield"></i></div>
-                            <input type="text" id="prof-role" value="{{ auth()->user()->role === 'Requisitioner' ? '' : auth()->user()->role }}" class="modern-input" placeholder="e.g. Storekeeper" required>
+                            <input type="text" id="prof-role" value="{{ auth()->user()->role }}" class="modern-input" placeholder="e.g. Storekeeper" required>
                         </div>
                     </div>
                     <div class="form-group">
@@ -646,8 +646,8 @@
             showToast('Field Required', 'Service Number is mandatory.', 'warning');
             return;
         }
-        if (!role || role.toLowerCase() === 'requisitioner') {
-            showToast('Field Required', 'A valid Professional Role is mandatory and cannot be "Requisitioner".', 'warning');
+        if (!role) {
+            showToast('Field Required', 'A valid Professional Role is mandatory.', 'warning');
             return;
         }
 

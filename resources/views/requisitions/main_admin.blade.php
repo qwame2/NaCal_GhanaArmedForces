@@ -2000,23 +2000,42 @@
     // STAFF ACCESS PROVISIONING (Non-Stores Dept Heads only)
     // =====================================================================
     @if(!$isStoresHead)
-    async function loadTempAccounts() {
+    async function loadTempAccounts(isSilent = false) {
         const container = document.getElementById('tempAccountsList');
         if (!container) return;
+
+        if (!isSilent) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                    <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;"></i><br>Loading department staff directory...
+                </div>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
 
         try {
             const res = await fetch('{{ route("dept-head.temp-requisitioners.index") }}');
             const data = await res.json();
 
             if (!data.success || !data.accounts || data.accounts.length === 0) {
-                container.innerHTML = `
+                const emptyHtml = `
                     <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
                         <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
                         <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No department staff found</div>
                         <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any registered staff in your department will appear here.</div>
                     </div>`;
+                if (container.innerHTML !== emptyHtml) {
+                    container.innerHTML = emptyHtml;
+                }
+                window._lastStaffDataString = '';
                 return;
             }
+
+            const currentDataString = JSON.stringify(data.accounts);
+            if (isSilent && window._lastStaffDataString === currentDataString) {
+                // No change in staff data, skip DOM rendering to avoid blinking and preserve user state
+                return;
+            }
+            window._lastStaffDataString = currentDataString;
 
             let rows = data.accounts.map(acc => {
                 const isAccessActive = acc.can_make_requisition;
@@ -2060,7 +2079,9 @@
             container.innerHTML = `<div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">${rows}</div>`;
             if (typeof lucide !== 'undefined') lucide.createIcons();
         } catch (e) {
-            container.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load staff list.</div>`;
+            if (!isSilent) {
+                container.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load staff list.</div>`;
+            }
         }
     }
 
@@ -2264,6 +2285,10 @@
             
             if (updated && typeof lucide !== 'undefined') {
                 lucide.createIcons();
+            }
+
+            if (!isStoresHead) {
+                await loadTempAccounts(true);
             }
         } catch (e) {
             console.error('Silent refresh failed:', e);

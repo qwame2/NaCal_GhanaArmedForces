@@ -783,6 +783,8 @@ jQuery(document).ready(function($) {
 
                 if ($('#itemsContainer').children().length === 0) {
                     renderItemRows(1);
+                } else {
+                    updateRowBadges();
                 }
             } else {
                 $('#qtyControl').hide().css('opacity', 0);
@@ -795,6 +797,14 @@ jQuery(document).ready(function($) {
             console.error("Error in ledge selection handler:", err);
         }
     });
+
+    function updateRowBadges() {
+        const categoryText = $('#ledgeSelect option:selected').text().trim();
+        const suffix = categoryText ? ' - ' + categoryText : '';
+        $('#itemsContainer .item-entry-row').each(function(index) {
+            $(this).find('.badge-text').text('ITEM TYPE #' + (index + 1) + suffix);
+        });
+    }
 
     function renderItemRows(count, append = false) {
         const container = $('#itemsContainer');
@@ -809,14 +819,15 @@ jQuery(document).ready(function($) {
         const allPackages = [...new Set([...standardPackages, ...existingUnits])];
         const packageOptionsHtml = allPackages.map(pkg => `<option value="${pkg}">${pkg}</option>`).join('');
 
-
+        const categoryText = $('#ledgeSelect option:selected').text().trim();
+        const suffix = categoryText ? ' - ' + categoryText : '';
 
         for (let i = 0; i < count; i++) {
             const currentRows = container.children('.item-entry-row').length;
             const itemIdx = currentRows + 1;
             const rowHtml = `
                 <div class="item-entry-row" style="margin-bottom: 2rem; padding: 2rem 1.5rem 1.5rem 1.5rem; border: 1px solid var(--border-color); border-radius: 16px; background: var(--bg-card); position: relative;">
-                    <div class="row-badge" style="position: absolute; top: -12px; left: 1rem; background: var(--primary); color: white; padding: 2px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800;">ITEM TYPE #${itemIdx}</div>
+                    <div class="row-badge" style="position: absolute; top: -12px; left: 1rem; background: var(--primary); color: white; padding: 2px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800;"><span class="badge-text">ITEM TYPE #${itemIdx}${suffix}</span></div>
 
                     <button type="button" class="remove-row-btn" style="position: absolute; top: 1.25rem; right: 1.25rem; background: rgba(239, 68, 68, 0.1); color: var(--danger); border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition);">
                         <i data-lucide="trash-2" style="width: 16px;"></i>
@@ -1312,8 +1323,10 @@ jQuery(document).ready(function($) {
             $(this).remove();
             const currentCount = $('#itemsContainer').children('.item-entry-row').length;
             multiQtyInput.val(currentCount);
+            const categoryText = $('#ledgeSelect option:selected').text().trim();
+            const suffix = categoryText ? ' - ' + categoryText : '';
             $('#itemsContainer .item-entry-row').each(function(index) {
-                $(this).find('.row-badge').text('ITEM TYPE #' + (index + 1));
+                $(this).find('.badge-text').text('ITEM TYPE #' + (index + 1) + suffix);
             });
             if (typeof updateSubmitButtonState === 'function') {
                 updateSubmitButtonState();

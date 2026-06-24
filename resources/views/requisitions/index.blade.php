@@ -1824,7 +1824,7 @@
                     role: '{{ auth()->user()->role ?? "" }}',
                     service_number: '{{ auth()->user()->service_number ?? "" }}'
                 };
-                if (!user.name || user.name === user.username || !user.phone || !user.role || user.role.toLowerCase() === 'requisitioner' || !user.service_number) {
+                if (!user.name || user.name === user.username || !user.phone || !user.role || !user.service_number) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'Profile Incomplete',
@@ -1843,7 +1843,7 @@
                 window.location.href = "{{ route('requisitions.checkout') }}";
             });
 
-            @if(session('show_profile_modal') || empty(auth()->user()->name) || auth()->user()->name === auth()->user()->username || empty(auth()->user()->phone) || empty(auth()->user()->role) || strcasecmp(auth()->user()->role, 'Requisitioner') === 0 || empty(auth()->user()->service_number))
+            @if(session('show_profile_modal') || empty(auth()->user()->name) || auth()->user()->name === auth()->user()->username || empty(auth()->user()->phone) || empty(auth()->user()->role) || empty(auth()->user()->service_number))
                 setTimeout(() => {
                     openProfileCompletionModal();
                 }, 800);
@@ -1862,7 +1862,7 @@
                 avatar: '{{ auth()->user()->avatar ? Storage::url(auth()->user()->avatar) : "" }}'
             };
 
-            const displayRole = user.role.toLowerCase() === 'requisitioner' ? '' : user.role;
+            const displayRole = user.role || 'Requisitioner';
 
             Swal.fire({
                 title: `
@@ -1994,8 +1994,8 @@
                         Swal.showValidationMessage('Service Number is required');
                         return false;
                     }
-                    if (!role || role.toLowerCase() === 'requisitioner') {
-                        Swal.showValidationMessage('Professional Role is required and cannot be "Requisitioner"');
+                    if (!role) {
+                        Swal.showValidationMessage('Professional Role is required');
                         return false;
                     }
 

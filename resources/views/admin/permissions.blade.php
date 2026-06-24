@@ -74,103 +74,7 @@
             </div>
 
             <div class="m-body" id="storeOfficersBody">
-                @forelse($storeOfficers as $user)
-                <div class="m-row" data-user-id="{{ $user->id }}">
-                    <div class="col-id">
-                        <div class="m-avatar">
-                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
-                            <span class="m-pulse {{ $user->is_active ? 'online' : 'offline' }}"></span>
-                        </div>
-                        <div class="m-identity">
-                            <h4 class="m-name">{{ $user->name }}</h4>
-                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
-                                <span>@ {{ $user->username }}</span>
-                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
-                                    @if($user->role === 'Main Admin')
-                                        Head of Admin
-                                    @elseif($user->role === 'Officer')
-                                        Store Officer
-                                    @elseif($user->role === 'Dept Head HR')
-                                        Dept Head HR
-                                    @elseif($user->role === 'Head of Welfare')
-                                        Head of Welfare
-                                    @else
-                                        {{ $user->role }}
-                                    @endif
-                                </span>
-                                @if($user->department)
-                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
-                                    {{ $user->department }}
-                                </span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Inventory Entry">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_add_inventory')" {{ $user->can_add_inventory ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">Add/Edit Items</span>
-                                <span class="t-sub"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Logistics Operations">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_operate_logistics')" {{ $user->can_operate_logistics ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">Confirm Collection</span>
-                                <span class="t-sub"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Analytics Access">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_generate_reports')" {{ $user->can_generate_reports ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">View Reports</span>
-                                <span class="t-sub"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Stock Verification">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_verify_stock')" {{ $user->can_verify_stock ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">Stock Checks</span>
-                                <span class="t-sub"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-stat">
-                        <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
-                            <i data-lucide="{{ $user->is_active ? 'shield-check' : 'shield-alert' }}"></i>
-                            {{ $user->is_active ? 'AUTHORIZED' : 'SUSPENDED' }}
-                        </div>
-                    </div>
-                </div>
-                @empty
-                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
-                    No store officers registered.
-                </div>
-                @endforelse
+                @include('admin.partials.store_officers')
             </div>
         </div>
     </div>
@@ -1327,12 +1231,12 @@
     });
 
     function pollPendingRegistrations() {
-        fetch('{{ route("api.admin.pending-registrations", [], false) }}')
+        fetch('{{ route("api.admin.pending-registrations", [], false) }}', {
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json' }
+        })
             .then(res => {
-                const contentType = res.headers.get("content-type");
-                if (res.status === 200 && contentType && contentType.indexOf("application/json") !== -1) {
-                    return res.json();
-                }
+                if (res.status === 200) return res.json();
                 return null;
             })
             .then(data => {
@@ -1376,8 +1280,197 @@
             .catch(() => {});
     }
 
+    function pollStoreOfficers() {
+        // Only run when Store Officers tab is active
+        const tab = document.getElementById('tab-store-officers');
+        if (!tab || !tab.classList.contains('active')) return;
+
+        // Skip if any row is currently in a save/sync state
+        if (document.querySelector('.syncing-row')) return;
+
+        fetch('{{ route("api.admin.store-officers", [], false) }}', {
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json' }
+        })
+        .then(res => {
+            if (res.status === 200) return res.json();
+            return null;
+        })
+        .then(data => {
+            if (!data || !data.success || !Array.isArray(data.users)) return;
+
+            const body = document.getElementById('storeOfficersBody');
+            if (!body) return;
+
+            // Build a lookup of incoming users by id
+            const incoming = {};
+            data.users.forEach(u => { incoming[u.id] = u; });
+
+            // ── 1. Update / remove existing rows ──────────────────────
+            const existingRows = body.querySelectorAll('.m-row[data-user-id]');
+            const seenIds = new Set();
+
+            existingRows.forEach(row => {
+                const id = parseInt(row.dataset.userId, 10);
+                seenIds.add(id);
+
+                if (!incoming[id]) {
+                    // User was removed — fade out and delete
+                    row.style.transition = 'opacity 0.4s, max-height 0.4s';
+                    row.style.opacity = '0';
+                    row.style.overflow = 'hidden';
+                    row.style.maxHeight = row.offsetHeight + 'px';
+                    setTimeout(() => {
+                        row.style.maxHeight = '0';
+                        setTimeout(() => row.remove(), 400);
+                    }, 10);
+                    return;
+                }
+
+                const u = incoming[id];
+
+                // Online pulse
+                const pulse = row.querySelector('.m-pulse');
+                if (pulse) {
+                    const shouldBeOnline = u.is_active;
+                    const isOnline = pulse.classList.contains('online');
+                    if (shouldBeOnline !== isOnline) {
+                        pulse.classList.toggle('online', shouldBeOnline);
+                        pulse.classList.toggle('offline', !shouldBeOnline);
+                    }
+                }
+
+                // Status badge
+                const badge = row.querySelector('.badge-status');
+                if (badge) {
+                    const wantActive = u.is_active;
+                    const hasActive = badge.classList.contains('authorized');
+                    if (wantActive !== hasActive) {
+                        badge.classList.toggle('authorized', wantActive);
+                        badge.classList.toggle('revoked', !wantActive);
+                        const icon = badge.querySelector('i[data-lucide]');
+                        if (icon) {
+                            icon.setAttribute('data-lucide', wantActive ? 'shield-check' : 'shield-alert');
+                            if (window.lucide) lucide.createIcons({ nodes: [icon] });
+                        }
+                        badge.childNodes[badge.childNodes.length - 1].textContent =
+                            ' ' + (wantActive ? 'AUTHORIZED' : 'SUSPENDED');
+                    }
+                }
+
+                // Permission checkboxes (only if not actively being toggled)
+                const permMap = {
+                    'can_add_inventory':     0,
+                    'can_operate_logistics': 1,
+                    'can_generate_reports':  2,
+                    'can_verify_stock':      3,
+                };
+                const checkboxes = row.querySelectorAll('.normal-toggle input[type="checkbox"]');
+                Object.entries(permMap).forEach(([key, idx]) => {
+                    const cb = checkboxes[idx];
+                    if (cb && !cb.disabled && document.activeElement !== cb) {
+                        const should = u[key];
+                        if (cb.checked !== should) {
+                            cb.checked = should;
+                            // Silently update the adjacent label text if present
+                            const tMain = cb.closest('.toggle-group-wrap')?.querySelector('.t-main');
+                            if (tMain && tMain.textContent.trim() !== '') {
+                                // Only update non-empty t-main labels (Add/Edit Items etc. have empty labels)
+                            }
+                        }
+                    }
+                });
+            });
+
+            // ── 2. Add brand-new rows ──────────────────────────────────
+            data.users.forEach(u => {
+                if (seenIds.has(u.id)) return; // already exists
+
+                const defaultAvatar = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>`;
+                const avatarSrc = u.avatar || defaultAvatar;
+
+                const roleLabelMap = {
+                    'Main Admin': 'Head of Admin',
+                    'Officer':    'Store Officer',
+                    'Dept Head HR': 'Dept Head HR',
+                    'Head of Welfare': 'Head of Welfare',
+                };
+                const roleLabel = roleLabelMap[u.role] || u.role;
+
+                const deptBadge = u.department
+                    ? `<span class="badge-dept" style="font-size:0.65rem;background:#f0fdf4;color:#15803d;padding:2px 8px;border-radius:6px;font-weight:800;font-family:sans-serif;text-transform:uppercase;border:1px solid rgba(21,128,61,0.1);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${u.department}">${u.department}</span>`
+                    : '';
+
+                const perms = [
+                    ['can_add_inventory',     'Add/Edit Items',     'Toggle Inventory Entry'],
+                    ['can_operate_logistics', 'Confirm Collection', 'Toggle Logistics Operations'],
+                    ['can_generate_reports',  'View Reports',       'Toggle Analytics Access'],
+                    ['can_verify_stock',      'Stock Checks',       'Toggle Stock Verification'],
+                ];
+
+                const toggleCols = perms.map(([key, label, title]) => `
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="${title}">
+                                <input type="checkbox" onchange="toggleMatrixPermission(this,'${key}')" ${u[key] ? 'checked' : ''}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">${label}</span>
+                                <span class="t-sub"></span>
+                            </div>
+                        </div>
+                    </div>`).join('');
+
+                const html = `
+                <div class="m-row" data-user-id="${u.id}" style="opacity:0;transition:opacity 0.4s;">
+                    <div class="col-id">
+                        <div class="m-avatar">
+                            <img src="${avatarSrc}" alt="">
+                            <span class="m-pulse ${u.is_active ? 'online' : 'offline'}"></span>
+                        </div>
+                        <div class="m-identity">
+                            <h4 class="m-name">${u.name}</h4>
+                            <div class="m-handle" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px;">
+                                <span>@ ${u.username}</span>
+                                <span class="badge-role" style="font-size:0.65rem;background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:6px;font-weight:800;font-family:sans-serif;text-transform:uppercase;border:1px solid rgba(67,56,202,0.1);">${roleLabel}</span>
+                                ${deptBadge}
+                            </div>
+                        </div>
+                    </div>
+                    ${toggleCols}
+                    <div class="col-stat">
+                        <div class="badge-status ${u.is_active ? 'authorized' : 'revoked'}">
+                            <i data-lucide="${u.is_active ? 'shield-check' : 'shield-alert'}"></i>
+                            ${u.is_active ? 'AUTHORIZED' : 'SUSPENDED'}
+                        </div>
+                    </div>
+                </div>`;
+
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = html.trim();
+                const newRow = wrapper.firstElementChild;
+                body.appendChild(newRow);
+                // Trigger fade-in
+                requestAnimationFrame(() => { newRow.style.opacity = '1'; });
+                if (window.lucide) lucide.createIcons({ nodes: [newRow] });
+            });
+
+            // ── 3. Handle empty state ──────────────────────────────────
+            const hasRows = body.querySelectorAll('.m-row[data-user-id]').length > 0;
+            const emptyEl = body.querySelector('div:not(.m-row)');
+            if (!hasRows && !emptyEl) {
+                body.innerHTML = '<div style="padding:3rem;text-align:center;color:#94a3b8;font-weight:600;background:white;">No store officers registered.</div>';
+            } else if (hasRows && emptyEl) {
+                emptyEl.remove();
+            }
+        })
+        .catch(() => {});
+    }
+
     // Start polling every 10 seconds
     setInterval(pollPendingRegistrations, 10000);
+    setInterval(pollStoreOfficers, 10000);
 
     document.addEventListener('DOMContentLoaded', () => {
         if (window.lucide) lucide.createIcons();

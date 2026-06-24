@@ -507,6 +507,10 @@
                 avatar = item.getAttribute('data-user-avatar') || '';
             }
         }
+        // Silence the notification alarm the moment admin opens any message thread
+        if (typeof window.stopNotifAlarm === 'function') {
+            window.stopNotifAlarm();
+        }
         activeUserId = userId;
         previousMessageCount = null;
         document.getElementById('emptyState').style.display = 'none';

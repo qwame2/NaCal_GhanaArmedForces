@@ -15,7 +15,6 @@ return new class extends Migration
         try {
             Schema::table('inventory_items', function (Blueprint $table) {
                 $table->index('description');
-                $table->index('category');
             });
         } catch (\Exception $e) {
             // Index already exists or error
@@ -94,7 +93,6 @@ return new class extends Migration
         try {
             Schema::table('inventory_items', function (Blueprint $table) {
                 $table->dropIndex(['description']);
-                $table->dropIndex(['category']);
             });
         } catch (\Exception $e) {}
 

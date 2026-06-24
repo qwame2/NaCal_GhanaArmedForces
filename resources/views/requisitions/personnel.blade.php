@@ -698,7 +698,7 @@
                         @elseif(($req->main_admin_status ?? 'pending') === 'pending')
                         <span style="font-size:.75rem;color:var(--text-muted);font-style:italic;font-weight:700;">Awaiting Store Head Review</span>
                         @else
-                        <span style="font-size:.75rem;color:var(--text-muted);font-style:italic;font-weight:700;">Awaiting Admin Review</span>
+                        <span style="font-size:.75rem;color:#ef4444;font-style:italic;font-weight:700;">Awaiting Admin Review</span>
                         @endif
                     </td>
                     <td style="padding:1rem 1.5rem;text-align:center;">

@@ -47,7 +47,7 @@ class StoreRequisitionController extends Controller
     public function checkout(Request $request)
     {
         $user = auth()->user();
-        if (empty($user->name) || $user->name === $user->username || empty($user->phone) || empty($user->role) || strcasecmp($user->role, 'Requisitioner') === 0 || empty($user->service_number)) {
+        if (empty($user->name) || $user->name === $user->username || empty($user->phone) || empty($user->role) || empty($user->service_number)) {
             return redirect()->route('requisitions.index')->with('show_profile_modal', true);
         }
 
@@ -70,7 +70,7 @@ class StoreRequisitionController extends Controller
             ], 403);
         }
 
-        if (empty($user->name) || $user->name === $user->username || empty($user->phone) || empty($user->role) || strcasecmp($user->role, 'Requisitioner') === 0 || empty($user->service_number)) {
+        if (empty($user->name) || $user->name === $user->username || empty($user->phone) || empty($user->role) || empty($user->service_number)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Your profile is incomplete. Please complete your profile details (Full Name, Phone Number, Service Number, and Professional Role) before submitting a request.'
@@ -734,10 +734,36 @@ class StoreRequisitionController extends Controller
      */
     public function adminShow($id)
     {
-        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
+        $user = auth()->user();
+        $req = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])->findOrFail($id);
+
+        $isStoresHead = ($user->role === 'Main Admin' || strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0);
+        if (!$isStoresHead) {
+            $isBackup = ($user->role === 'Department Head' && in_array($user->department, ['Human Resource Management Department', 'Welfare Department']));
+            if ($isBackup) {
+                $primaryOnline = \App\Models\User::where(function($q) {
+                        $q->where('role', 'Main Admin')
+                          ->orWhere('role', 'Dept. Head (Stores)')
+                          ->orWhereIn('department', ['Stores', 'Store']);
+                    })
+                    ->where('is_online', true)
+                    ->where('is_active', true)
+                    ->exists();
+                if (!$primaryOnline) {
+                    $isStoresHead = true;
+                }
+            }
+        }
+
+        $canView = $user->is_admin || 
+                   $user->isDelegatedApprover() || 
+                   $isStoresHead ||
+                   ($user->role === 'Department Head' && strcasecmp($user->department, $req->department) === 0) ||
+                   ($req->requested_by === $user->id);
+
+        if (!$canView) {
             abort(403, 'Unauthorized');
         }
-        $req = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])->findOrFail($id);
 
         // Enrich items with current stock availability
         $items = $req->items->map(function ($item) {

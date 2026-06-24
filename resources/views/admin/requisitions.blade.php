@@ -1839,17 +1839,11 @@
         }
 
         if (submitBtn) {
-            if (cntReduced > 0) {
-                if (currentReqData && currentReqData.alternative_status === 'proposed') {
-                    submitBtn.disabled = true;
-                    submitBtn.style.opacity = '0.5';
-                    submitBtn.style.cursor = 'not-allowed';
-                    submitBtn.innerHTML = `<i data-lucide="clock" style="width:16px;"></i> Awaiting Response from ${currentReqData.department}`;
-                } else if (currentReqData && currentReqData.alternative_status === 'agreed') {
-                    submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision`;
-                } else {
-                    submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Send Suggested Qty to ${currentReqData.department}`;
-                }
+            if (currentReqData && currentReqData.alternative_status === 'proposed') {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+                submitBtn.style.cursor = 'not-allowed';
+                submitBtn.innerHTML = `<i data-lucide="clock" style="width:16px;"></i> Awaiting Response from ${currentReqData.department}`;
             } else {
                 submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision`;
             }
@@ -1975,13 +1969,8 @@
         const declineReason = document.getElementById('declineReason')?.value || '';
         const btn = document.getElementById('submitDecisionBtn');
 
-        // Propose suggested quantity flow
         let finalStatus = status;
         let altStatus = null;
-        if (cntReduced > 0 && (!currentReqData || currentReqData.alternative_status !== 'agreed')) {
-            finalStatus = 'pending';
-            altStatus = 'proposed';
-        }
 
         // Validate decline reason is provided when declining everything
         if (finalStatus === 'declined' && !declineReason.trim()) {
@@ -2023,11 +2012,7 @@
         } else {
             showToast('Error', data.message || 'Failed to process decision.', 'error');
             btn.disabled = false;
-            if (cntReduced > 0 && (!currentReqData || currentReqData.alternative_status !== 'agreed')) {
-                btn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Send Suggested Qty to ${currentReqData.department}`;
-            } else {
-                btn.innerHTML = '<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision';
-            }
+            btn.innerHTML = '<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision';
             lucide.createIcons();
         }
     }

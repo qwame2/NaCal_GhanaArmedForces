@@ -104,7 +104,7 @@ class StoreRequisition extends Model
             if (($this->main_admin_status ?? 'pending') === 'pending') {
                 return ['label' => 'Awaiting Store Head Review', 'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'];
             }
-            return ['label' => 'Awaiting Admin Review', 'color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'];
+            return ['label' => 'Awaiting Admin Review', 'color' => '#ef4444', 'bg' => 'rgba(239,68,68,0.1)'];
         }
 
         return match($this->status) {

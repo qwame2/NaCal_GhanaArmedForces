@@ -14,13 +14,12 @@ use App\Http\Controllers\ArchiveController;
 use LdapRecord\Container;
 
 // Self-healing auto-migration schema update (locked via file existence to prevent concurrent query and disk write overhead on every request/cache clear)
-if (!file_exists(storage_path('framework/routes_boot_self_healed_v9.lock'))) {
+if (app()->environment() !== 'testing' && !file_exists(storage_path('framework/routes_boot_self_healed_v9.lock'))) {
     try {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
 
         // Hot-patch indexes
         $patches = [
-            'ALTER TABLE inventory_items ADD INDEX inventory_items_category_index (category)',
             'ALTER TABLE messages ADD INDEX messages_is_archived_index (is_archived)',
             'ALTER TABLE system_logs ADD INDEX system_logs_is_archived_index (is_archived)',
             'ALTER TABLE edit_requests ADD INDEX edit_requests_status_index (status)',
@@ -1076,6 +1075,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/admin/permissions', [AdminController::class, 'permissions'])->name('admin.permissions');
     Route::post('/admin/permissions/update', [AdminController::class, 'updatePermission'])->name('admin.permissions.update');
     Route::get('/api/admin/pending-registrations', [AdminController::class, 'getPendingRegistrations'])->name('api.admin.pending-registrations');
+    Route::get('/api/admin/store-officers', [AdminController::class, 'getStoreOfficers'])->name('api.admin.store-officers');
     Route::post('/admin/logs/delete-multiple', [AdminController::class, 'destroyMultipleLogs'])->name('admin.logs.delete_multiple');
     Route::put('/admin/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
     Route::get('/admin/messages', [AdminController::class, 'messages'])->name('admin.messages');
