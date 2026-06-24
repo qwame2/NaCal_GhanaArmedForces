@@ -387,9 +387,23 @@
                             </div>
                             <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Batch #{{ $item->batch_id }}</div>
                             @if(!empty($item->serial_number))
-                                <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: rgba(99, 102, 241, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg> S/N: {{ $item->serial_number }}
-                                </div>
+                                @php
+                                    $snList = array_filter(array_map('trim', explode(',', $item->serial_number)));
+                                    $count = count($snList);
+                                @endphp
+                                @if($count > 0)
+                                    <div class="serial-numbers-wrapper" style="margin-top: 4px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;">
+                                        <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(99, 102, 241, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
+                                            S/N: {{ implode(', ', array_slice($snList, 0, 3)) }}@if($count > 3)<span class="dots">...</span><span class="more-sns" style="display: none;">, {{ implode(', ', array_slice($snList, 3)) }}</span>@endif
+                                        </div>
+                                        @if($count > 3)
+                                            <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: var(--primary); outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+                                            </button>
+                                        @endif
+                                    </div>
+                                @endif
                             @endif
                         </td>
                         <td data-label="Category" style="padding: 1.25rem 1.5rem;">
@@ -2153,16 +2167,40 @@
                         } else {
                             varianceHtml = `<span style="color: #94a3b8; font-weight: 800;">0</span>`;
                         }
+
+                        let serialHtml = '';
+                        if (item.serial_number) {
+                            const sns = item.serial_number.split(',').map(s => s.trim()).filter(Boolean);
+                            if (sns.length > 0) {
+                                const showSns = sns.slice(0, 3).join(', ');
+                                if (sns.length > 3) {
+                                    const hiddenSns = sns.slice(3).join(', ');
+                                    serialHtml = `
+                                        <div class="serial-numbers-wrapper" style="margin-top: 4px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;">
+                                            <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(99, 102, 241, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
+                                                S/N: ${showSns}<span class="dots">...</span><span class="more-sns" style="display: none;">, ${hiddenSns}</span>
+                                            </div>
+                                            <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: var(--primary); outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
+                                            </button>
+                                        </div>
+                                    `;
+                                } else {
+                                    serialHtml = `
+                                        <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: rgba(99, 102, 241, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg> S/N: ${item.serial_number}
+                                        </div>
+                                    `;
+                                }
+                            }
+                        }
                         
                         itemsHtml += `
                             <tr style="border-bottom: 1px solid var(--border-color); ${rowStyle}">
                                 <td style="padding: 1rem; color: var(--text-main); font-weight: 700;">
                                     <div>${item.description}</div>
-                                    ${item.serial_number ? `
-                                        <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: rgba(99, 102, 241, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg> S/N: ${item.serial_number}
-                                        </div>
-                                    ` : ''}
+                                    ${serialHtml}
                                     ${isCurrentSelected ? ' <span style="font-size: 0.65rem; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 6px; text-transform: uppercase;">Selected</span>' : ''}
                                 </td>
                                 <td style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; font-weight: 700;">${item.unit || '-'}</td>

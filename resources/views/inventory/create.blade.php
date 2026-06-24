@@ -449,7 +449,7 @@ jQuery(document).ready(function($) {
 
         Swal.fire({
             title: 'Bulk Import Serial Numbers',
-            text: `Enter or paste up to ${numInputs} serial numbers (separated by commas, spaces, or newlines):`,
+            text: `Enter or paste up to ${numInputs} serial numbers (separated by commas or newlines):`,
             input: 'textarea',
             inputPlaceholder: 'Paste here...',
             inputAttributes: {
@@ -464,28 +464,32 @@ jQuery(document).ready(function($) {
             preConfirm: (text) => {
                 if (!text) {
                     Swal.showValidationMessage('Please enter some serial numbers');
+                    return false;
                 }
-                return text;
+                const sns = text.split(/[\n\r,]+/).map(s => s.trim()).filter(Boolean);
+                if (sns.length !== numInputs) {
+                    Swal.showValidationMessage(`You must enter exactly ${numInputs} serial numbers (you entered ${sns.length}).`);
+                    return false;
+                }
+                return sns;
             }
         }).then((result) => {
             if (result.isConfirmed && result.value) {
-                const sns = result.value.split(/[\n,;\t]+/).map(s => s.trim()).filter(Boolean);
-                if (sns.length > 0) {
-                    $container.find('.serial-input-item').each((index, input) => {
-                        if (index < sns.length) {
-                            $(input).val(sns[index]);
-                        }
-                    });
-                    $container.find('.serial-input-item').first().trigger('input');
-                    
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Imported!',
-                        text: `Successfully imported ${Math.min(sns.length, numInputs)} serial number(s).`,
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                }
+                const sns = result.value;
+                $container.find('.serial-input-item').each((index, input) => {
+                    if (index < sns.length) {
+                        $(input).val(sns[index]);
+                    }
+                });
+                $container.find('.serial-input-item').first().trigger('input');
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Imported!',
+                    text: `Successfully imported ${sns.length} serial number(s).`,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
             }
         });
     });
