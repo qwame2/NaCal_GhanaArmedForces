@@ -58,6 +58,31 @@ class AppServiceProvider extends ServiceProvider
                             $table->string('collector_location')->nullable();
                         });
                     }
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'requires_dg_approval')) {
+                        \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->boolean('requires_dg_approval')->default(false);
+                        });
+                    }
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'dg_status')) {
+                        \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->string('dg_status')->nullable();
+                        });
+                    }
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'dg_approved_by')) {
+                        \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->string('dg_approved_by')->nullable();
+                        });
+                    }
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'dg_approved_at')) {
+                        \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->timestamp('dg_approved_at')->nullable();
+                        });
+                    }
+                    if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'dg_decline_reason')) {
+                        \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                            $table->text('dg_decline_reason')->nullable();
+                        });
+                    }
                 }
 
                 if (!\Illuminate\Support\Facades\Schema::hasTable('returned_items')) {
@@ -85,6 +110,15 @@ class AppServiceProvider extends ServiceProvider
                             'type' => 'json',
                             'group' => 'inventory',
                             'description' => 'Categories of items that require Department Head (Stores) approval before going to the Head of Stores.'
+                        ]);
+                    }
+                    if (!\App\Models\Setting::where('key', 'dg_approval_categories')->exists()) {
+                        \App\Models\Setting::create([
+                            'key' => 'dg_approval_categories',
+                            'value' => '[]',
+                            'type' => 'json',
+                            'group' => 'inventory',
+                            'description' => 'Categories of items that require Director General (DG) approval before going to the Head of Stores.'
                         ]);
                     }
                     if (!\App\Models\Setting::where('key', 'delegated_approver_id')->exists()) {

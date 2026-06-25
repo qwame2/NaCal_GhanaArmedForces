@@ -626,6 +626,9 @@
                                     <option value="Material Development Department">Material Development Department</option>
                                     <option value="Client Service Department">Client Service Department</option>
                                 </optgroup>
+                                <optgroup label="NON DEPARTMENTAL">
+                                    <option value="Non Departmental">Non Departmental</option>
+                                </optgroup>
                             </select>
                         </div>
                     </div>

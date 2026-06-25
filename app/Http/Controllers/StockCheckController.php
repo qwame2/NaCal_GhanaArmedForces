@@ -45,7 +45,8 @@ class StockCheckController extends Controller
                 MAX(inventory_items.unit) as unit,
                 SUM(inventory_items.stock_balance) as total_available,
                 SUM(inventory_items.qty) as total_received,
-                SUM(inventory_items.variance) as total_variance
+                SUM(inventory_items.variance) as total_variance,
+                MAX(inventory_batches.entry_date) as entry_date
             ')
             ->groupBy('inventory_items.description', 'inventory_batches.ledge_category');
 
@@ -58,6 +59,14 @@ class StockCheckController extends Controller
         // Category filter
         if ($request->has('category') && $request->category) {
             $query->where('inventory_batches.ledge_category', $request->category);
+        }
+
+        // Date range filter
+        if ($request->has('date_from') && $request->date_from) {
+            $query->whereDate('inventory_batches.entry_date', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $query->whereDate('inventory_batches.entry_date', '<=', $request->date_to);
         }
 
         $items = $query->orderBy('inventory_items.description', 'asc')->get();

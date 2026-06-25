@@ -268,7 +268,7 @@
                 <i data-lucide="clipboard-check" style="width: 18px;"></i>
                 Perform Stock Check
             </a>
-            <a href="{{ route('auditor.print') }}?date_from={{ request('date_from') }}&date_to={{ request('date_to') }}" target="_blank" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: var(--audit-primary); border-radius: 12px; border: 1.5px solid var(--audit-primary); background: rgba(99,102,241,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(99,102,241,0.05)'">
+            <a id="print-ledger-btn" href="{{ route('auditor.print') }}?date_from={{ request('date_from') }}&date_to={{ request('date_to') }}&search_query={{ request('search_query') }}&log_severity={{ request('log_severity') }}&log_event={{ request('log_event') }}" target="_blank" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: var(--audit-primary); border-radius: 12px; border: 1.5px solid var(--audit-primary); background: rgba(99,102,241,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(99,102,241,0.05)'">
                 <i data-lucide="printer" style="width: 18px;"></i>
                 Print Audit Ledger
             </a>
@@ -286,7 +286,7 @@
                 <div style="width: 32px; height: 32px; background: rgba(99,102,241,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="database" style="color: var(--audit-primary); width: 16px;"></i></div>
                 Audit Trail Logs
             </div>
-            <div class="stat-number">{{ number_format($totalLogsCount) }}</div>
+            <div class="stat-number" id="stat-total-logs">{{ number_format($totalLogsCount) }}</div>
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Total events archived in database</div>
         </div>
 
@@ -295,7 +295,7 @@
                 <div style="width: 32px; height: 32px; background: rgba(239,68,68,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="scale" style="color: #ef4444; width: 16px;"></i></div>
                 System Variance
             </div>
-            <div class="stat-number" style="color: {{ $totalVariance > 0 ? '#ef4444' : 'var(--text-main)' }};">{{ number_format($totalVariance) }}</div>
+            <div class="stat-number" id="stat-total-variance" style="color: {{ $totalVariance > 0 ? '#ef4444' : 'var(--text-main)' }};">{{ number_format($totalVariance) }}</div>
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Cumulative discrepancy logs</div>
         </div>
 
@@ -304,7 +304,7 @@
                 <div style="width: 32px; height: 32px; background: rgba(245,158,11,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="clock" style="color: #f59e0b; width: 16px;"></i></div>
                 Active Loans (Temp)
             </div>
-            <div class="stat-number">{{ number_format($activeLoansCount) }}</div>
+            <div class="stat-number" id="stat-active-loans">{{ number_format($activeLoansCount) }}</div>
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Unreturned temporary assets</div>
         </div>
     </div>
@@ -315,10 +315,16 @@
             Search & Filter Controls
         </div>
         <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-            <input type="text" name="search_query" class="filter-control-audit" placeholder="Search logs, items, names..." value="{{ request('search_query') }}" style="flex: 1; min-width: 240px;">
+            <input type="text" name="search_query" class="filter-control-audit" placeholder="Search..." value="{{ request('search_query') }}" style="width: 500px;">
 
-            <input type="date" name="date_from" class="filter-control-audit" title="From Date" value="{{ request('date_from') }}">
-            <input type="date" name="date_to" class="filter-control-audit" title="To Date" value="{{ request('date_to') }}">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">From:</span>
+                <input type="date" name="date_from" class="filter-control-audit" title="From Date" value="{{ request('date_from') }}">
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">To:</span>
+                <input type="date" name="date_to" class="filter-control-audit" title="To Date" value="{{ request('date_to') }}">
+            </div>
 
             <select name="log_severity" class="filter-control-audit">
                 <option value="">-- Severity --</option>
@@ -336,14 +342,9 @@
                 <option value="REQUISITION" {{ request('log_event') === 'REQUISITION' ? 'selected' : '' }}>Requisition</option>
             </select>
 
-            <button type="submit" class="filter-control-audit" style="background: var(--audit-primary); color: white; border: none; cursor: pointer; font-weight: 800; min-width: 100px;">
-                Filter
-            </button>
-            @if(request()->anyFilled(['search_query', 'date_from', 'date_to', 'log_severity', 'log_event']))
-                <a href="{{ route('auditor.dashboard') }}" class="filter-control-audit" style="background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1.5px solid #ef4444; text-decoration: none; text-align: center; font-weight: 800; min-width: 100px; display: inline-flex; align-items: center; justify-content: center;">
-                    Clear
-                </a>
-            @endif
+            <a href="{{ route('auditor.dashboard') }}" id="clear-filters-btn" class="filter-control-audit" style="display: {{ request()->anyFilled(['search_query', 'date_from', 'date_to', 'log_severity', 'log_event']) ? 'inline-flex' : 'none' }}; background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1.5px solid #ef4444; text-decoration: none; text-align: center; font-weight: 800; min-width: 100px; align-items: center; justify-content: center;">
+                Clear
+            </a>
         </div>
     </form>
 
@@ -772,6 +773,119 @@
         }
 
         if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        const form = document.querySelector('.filter-card-audit');
+        if (form) {
+            const selects = form.querySelectorAll('select');
+            const dates = form.querySelectorAll('input[type="date"]');
+            const searchInput = form.querySelector('input[name="search_query"]');
+
+            function performAuditAjaxFilter(url) {
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+
+                    // Swap stats
+                    const stats = ['stat-total-logs', 'stat-total-variance', 'stat-active-loans'];
+                    stats.forEach(id => {
+                        const newStatEl = doc.getElementById(id);
+                        const currentStatEl = document.getElementById(id);
+                        if (newStatEl && currentStatEl) {
+                            currentStatEl.innerHTML = newStatEl.innerHTML;
+                            if (newStatEl.getAttribute('style')) {
+                                currentStatEl.setAttribute('style', newStatEl.getAttribute('style'));
+                            }
+                        }
+                    });
+
+                    // Swap print button href
+                    const newPrintBtn = doc.getElementById('print-ledger-btn');
+                    const currentPrintBtn = document.getElementById('print-ledger-btn');
+                    if (newPrintBtn && currentPrintBtn) {
+                        currentPrintBtn.setAttribute('href', newPrintBtn.getAttribute('href'));
+                    }
+
+                    // Swap panels
+                    const panels = ['audit-trail-tab', 'received-items-tab', 'issued-items-tab', 'returned-items-tab'];
+                    panels.forEach(id => {
+                        const newPanel = doc.getElementById(id);
+                        const currentPanel = document.getElementById(id);
+                        if (newPanel && currentPanel) {
+                            currentPanel.innerHTML = newPanel.innerHTML;
+                        }
+                    });
+
+                    // Update Clear button visibility
+                    const clearBtn = document.getElementById('clear-filters-btn');
+                    if (clearBtn) {
+                        const hasFilter = Array.from(selects).some(s => s.value) || 
+                                          Array.from(dates).some(d => d.value) || 
+                                          (searchInput && searchInput.value.trim() !== '');
+                        clearBtn.style.display = hasFilter ? 'inline-flex' : 'none';
+                    }
+
+                    // Re-initialize lucide icons
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+                    // Update URL
+                    history.pushState(null, '', url);
+                })
+                .catch(error => {
+                    console.error('Audit filter fetch error:', error);
+                });
+            }
+
+            function triggerFilterSubmit() {
+                const formData = new FormData(form);
+                const params = new URLSearchParams(formData);
+                const url = form.getAttribute('action') + '?' + params.toString();
+                performAuditAjaxFilter(url);
+            }
+
+            selects.forEach(select => {
+                select.addEventListener('change', triggerFilterSubmit);
+            });
+
+            dates.forEach(date => {
+                date.addEventListener('change', triggerFilterSubmit);
+            });
+
+            if (searchInput) {
+                let debounceTimeout;
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(debounceTimeout);
+                    debounceTimeout = setTimeout(triggerFilterSubmit, 500); // 500ms debounce
+                });
+            }
+
+            // Intercept clear button click
+            const clearBtn = document.getElementById('clear-filters-btn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    form.reset();
+                    selects.forEach(s => s.value = '');
+                    dates.forEach(d => d.value = '');
+                    if (searchInput) searchInput.value = '';
+                    performAuditAjaxFilter(clearBtn.getAttribute('href'));
+                });
+            }
+
+            // Intercept pagination clicks using event delegation
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('.audit-page-btn');
+                if (link && link.tagName === 'A' && !link.classList.contains('disabled')) {
+                    e.preventDefault();
+                    performAuditAjaxFilter(link.getAttribute('href'));
+                }
+            });
+        }
     });
 </script>
 @endsection

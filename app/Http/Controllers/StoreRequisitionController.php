@@ -126,6 +126,19 @@ class StoreRequisitionController extends Controller
         }
 
         $isStoresDept = (strcasecmp($request->department, 'Stores') === 0 || strcasecmp($request->department, 'Store') === 0);
+
+        $requiresDgApproval = false;
+        $dgApprovalCategories = \App\Models\Setting::get('dg_approval_categories', []);
+        if (!is_array($dgApprovalCategories)) {
+            $dgApprovalCategories = json_decode($dgApprovalCategories, true) ?? [];
+        }
+        foreach ($request->items as $item) {
+            if (!empty($item['category']) && in_array($item['category'], $dgApprovalCategories)) {
+                $requiresDgApproval = true;
+                break;
+            }
+        }
+
         $requisition = StoreRequisition::create([
             'requester_name' => $request->requester_name,
             'department'     => $request->department,
@@ -136,6 +149,8 @@ class StoreRequisitionController extends Controller
             'status'         => 'pending',
             'usage_type'     => $request->usage_type,
             'origin_admin_status' => $isStoresDept ? 'approved' : 'pending',
+            'requires_dg_approval' => $requiresDgApproval,
+            'dg_status' => $requiresDgApproval ? 'pending' : null,
         ]);
 
         foreach ($request->items as $item) {
@@ -1003,6 +1018,14 @@ class StoreRequisitionController extends Controller
                 if ($req->main_admin_status !== 'approved') {
                     throw new \Exception('This requisition must be verified and approved by the Department Head first.');
                 }
+
+                $targetStatus = $request->status;
+                if (in_array($targetStatus, ['approved', 'partially_approved'])) {
+                    if ($req->requires_dg_approval && $req->dg_status !== 'approved') {
+                        throw new \Exception('This requisition requires Director General (DG) approval before final store processing.');
+                    }
+                }
+
                 $isPending = ($req->status === 'pending');
                 $targetStatus = $request->status;
 
@@ -1555,19 +1578,89 @@ class StoreRequisitionController extends Controller
                         ]);
                     }
                 } else {
-                    // Notify Head of Stores (Admin) directly since Stores Dept Head approval is bypassed!
+                    // Notify DG or Head of Stores (Admin) directly since Stores Dept Head approval is bypassed!
+                    if ($req->requires_dg_approval) {
+                        $dgs = User::where('role', 'Director General')->where('is_active', true)->get();
+                        foreach ($dgs as $dg) {
+                            $priorityLabel = strtoupper($req->priority);
+                            $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #8b5cf6;border-radius:12px;background:rgba(139,92,246,0.05);'>";
+                            $msg .= "<b style='color:#8b5cf6;'>📋 NEW REQUISITION AWAITING DG APPROVAL — {$priorityLabel} PRIORITY</b><br><br>";
+                            $msg .= "Department Head <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b> (Stores Dept Head approval bypassed).<br><br>";
+                            $msg .= "This requisition requires your command clearance.<br><br>";
+                            $msg .= "<b>Department:</b> {$req->department}<br>";
+                            $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
+                            $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br><br>";
+                            $msg .= "<a href='" . route('dg.dashboard') . "?open_id={$req->id}' style='display:inline-block;background:#8b5cf6;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition</a>";
+                            $msg .= "</div>";
+
+                            Message::create([
+                                'sender_id'    => auth()->id(),
+                                'receiver_id'  => $dg->id,
+                                'message'      => $msg,
+                                'is_automated' => true,
+                            ]);
+                        }
+                    } else {
+                        $admins = User::getApproversQuery()->where('is_active', true)->get();
+                        foreach ($admins as $admin) {
+                            $priorityLabel = strtoupper($req->priority);
+                            $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
+                            $msg .= "<b style='color:#10b981;'>📋 REQUISITION BYPASSED DEPT. HEAD (STORES) — {$priorityLabel} PRIORITY</b><br><br>";
+                            $msg .= "Department Head <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
+                            $msg .= "This requisition does not require Stores Department Head approval and has been escalated directly to you.<br><br>";
+                            $msg .= "<b>Department:</b> {$req->department}<br>";
+                            $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
+                            $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br>";
+                            if ($request->filled('admin_notes')) {
+                                $msg .= "<b>Dept Head Notes:</b> " . e($request->admin_notes) . "<br><br>";
+                            }
+                            $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Perform Final Head Review</a>";
+                            $msg .= "</div>";
+
+                            Message::create([
+                                'sender_id'    => auth()->id(),
+                                'receiver_id'  => $admin->id,
+                                'message'      => $msg,
+                                'is_automated' => true,
+                            ]);
+                        }
+                    }
+                }
+            } else {
+                // Notify DG or Head of Stores (Admin)
+                if ($req->requires_dg_approval) {
+                    $dgs = User::where('role', 'Director General')->where('is_active', true)->get();
+                    foreach ($dgs as $dg) {
+                        $priorityLabel = strtoupper($req->priority);
+                        $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #8b5cf6;border-radius:12px;background:rgba(139,92,246,0.05);'>";
+                        $msg .= "<b style='color:#8b5cf6;'>📋 NEW REQUISITION AWAITING DG APPROVAL — {$priorityLabel} PRIORITY</b><br><br>";
+                        $msg .= "Stores Department Head <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
+                        $msg .= "This requisition requires your command clearance.<br><br>";
+                        $msg .= "<b>Department:</b> {$req->department}<br>";
+                        $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
+                        $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br><br>";
+                        $msg .= "<a href='" . route('dg.dashboard') . "?open_id={$req->id}' style='display:inline-block;background:#8b5cf6;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition</a>";
+                        $msg .= "</div>";
+
+                        Message::create([
+                            'sender_id'    => auth()->id(),
+                            'receiver_id'  => $dg->id,
+                            'message'      => $msg,
+                            'is_automated' => true,
+                        ]);
+                    }
+                } else {
                     $admins = User::getApproversQuery()->where('is_active', true)->get();
                     foreach ($admins as $admin) {
                         $priorityLabel = strtoupper($req->priority);
                         $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
-                        $msg .= "<b style='color:#10b981;'>📋 REQUISITION BYPASSED DEPT. HEAD (STORES) — {$priorityLabel} PRIORITY</b><br><br>";
-                        $msg .= "Department Head <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
-                        $msg .= "This requisition does not require Stores Department Head approval and has been escalated directly to you.<br><br>";
+                        $msg .= "<b style='color:#10b981;'>📋 MAIN ADMIN APPROVED REQUISITION — {$priorityLabel} PRIORITY</b><br><br>";
+                        $msg .= "Stores Department Head <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
                         $msg .= "<b>Department:</b> {$req->department}<br>";
                         $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
                         $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br>";
                         if ($request->filled('admin_notes')) {
-                            $msg .= "<b>Dept Head Notes:</b> " . e($request->admin_notes) . "<br><br>";
+                            $msg .= "<b>Stores Head Notes:</b> " . e($request->admin_notes) . "<br><br>";
                         }
                         $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Perform Final Head Review</a>";
                         $msg .= "</div>";
@@ -1579,31 +1672,6 @@ class StoreRequisitionController extends Controller
                             'is_automated' => true,
                         ]);
                     }
-                }
-            } else {
-                // Notify Head of Stores (Admin)
-                $admins = User::getApproversQuery()->where('is_active', true)->get();
-                foreach ($admins as $admin) {
-                    $priorityLabel = strtoupper($req->priority);
-                    $itemCount = $req->items()->count();
-                    $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
-                    $msg .= "<b style='color:#10b981;'>📋 MAIN ADMIN APPROVED REQUISITION — {$priorityLabel} PRIORITY</b><br><br>";
-                    $msg .= "Stores Department Head <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
-                    $msg .= "<b>Department:</b> {$req->department}<br>";
-                    $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
-                    $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br>";
-                    if ($request->filled('admin_notes')) {
-                        $msg .= "<b>Stores Head Notes:</b> " . e($request->admin_notes) . "<br><br>";
-                    }
-                    $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Perform Final Head Review</a>";
-                    $msg .= "</div>";
-
-                    Message::create([
-                        'sender_id'    => auth()->id(),
-                        'receiver_id'  => $admin->id,
-                        'message'      => $msg,
-                        'is_automated' => true,
-                    ]);
                 }
             }
         } else {

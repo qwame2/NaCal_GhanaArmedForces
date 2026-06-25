@@ -23,7 +23,7 @@
                 <i data-lucide="refresh-cw" style="width: 18px;"></i>
                 Refresh
             </button>
-            <button onclick="window.print()" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--text-main);">
+            <button onclick="printAuditList()" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; color: var(--text-main);">
                 <i data-lucide="printer" style="width: 18px;"></i>
                 Print Audit List
             </button>
@@ -32,15 +32,15 @@
 
     <!-- Filters -->
     <div class="glass-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-        <form action="{{ route('stockcheck.index') }}" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: flex-end;">
-            <div>
+        <form id="stock-check-filter-form" action="{{ route('stockcheck.index') }}" method="GET" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+            <div style="flex: 2; min-width: 250px;">
                 <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Search Items</label>
                 <div style="position: relative;">
                     <i data-lucide="search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; color: var(--text-muted);"></i>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Search description..." style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-main); color: var(--text-main);">
                 </div>
             </div>
-            <div>
+            <div style="flex: 1; min-width: 200px;">
                 <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Category</label>
                 <select name="category" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-main); color: var(--text-main); font-family: inherit;">
                     <option value="">All Categories</option>
@@ -49,17 +49,23 @@
                     @endforeach
                 </select>
             </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <button type="submit" class="btn-primary" style="flex: 1; padding: 0.75rem; border-radius: 10px; border: none; background: var(--primary); color: white; cursor: pointer; font-weight: 600;">Apply Filters</button>
-                <a href="{{ route('stockcheck.index') }}" class="glass-card" style="padding: 0.75rem; border-radius: 10px; color: var(--text-main); display: flex; align-items: center; justify-content: center; width: 44px; text-decoration: none;">
-                    <i data-lucide="x" style="width: 18px;"></i>
-                </a>
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">From:</span>
+                <input type="date" name="date_from" value="{{ request('date_from') }}" style="padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-main); color: var(--text-main); font-family: inherit;">
             </div>
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">To:</span>
+                <input type="date" name="date_to" value="{{ request('date_to') }}" style="padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-main); color: var(--text-main); font-family: inherit;">
+            </div>
+            <a href="{{ route('stockcheck.index') }}" id="clear-filters-btn" class="glass-card" style="display: {{ request()->anyFilled(['search', 'category', 'date_from', 'date_to']) ? 'inline-flex' : 'none' }}; padding: 0.75rem 1.25rem; border-radius: 10px; color: #ef4444; border: 1.5px solid #ef4444; background: rgba(239, 68, 68, 0.05); align-items: center; gap: 0.5rem; text-decoration: none; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.05)'">
+                <i data-lucide="x" style="width: 16px;"></i>
+                Clear
+            </a>
         </form>
     </div>
 
     <!-- Results Table -->
-    <div class="glass-card" style="overflow: hidden; border-radius: 20px;">
+    <div id="stock-check-table-container" class="glass-card" style="overflow: hidden; border-radius: 20px;">
         <div class="table-scroll-wrapper" style="overflow-x: auto;">
             <table class="activity-table" style="width: 100%; min-width: 1000px; border-collapse: collapse;">
                 <thead>
@@ -69,6 +75,7 @@
                         </th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Description</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
+                        <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Received Date</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Package Type</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Total Received</th>
                         <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Stock Balance</th>
@@ -99,6 +106,9 @@
                                 {{ $ledgeMap[$item->ledge_category] ?? "Category " . $item->ledge_category }}
                             </span>
                         </td>
+                        <td data-label="Received Date" style="padding: 1.25rem 1.5rem; color: var(--text-muted); font-weight: 700;">
+                            {{ $item->entry_date ? \Carbon\Carbon::parse($item->entry_date)->format('d/m/Y') : '-' }}
+                        </td>
                         <td data-label="Package Type" style="padding: 1.25rem 1.5rem; color: var(--text-muted); font-weight: 600;">{{ $item->unit ?: 'Package Types' }}</td>
                         <td data-label="Total Received" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ number_format($received) }}</td>
                         <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; font-weight: 800; color: var(--text-main); font-size: 1.1rem;">{{ number_format($stock) }}</td>
@@ -121,7 +131,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" style="padding: 5rem 2rem; text-align: center;">
+                        <td colspan="10" style="padding: 5rem 2rem; text-align: center;">
                             <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
                                 <i data-lucide="package-search" style="width: 48px; color: var(--text-muted);"></i>
                                 <div style="font-weight: 700; color: var(--text-main);">No items found to verify</div>
@@ -851,6 +861,256 @@ function generateVerificationReport() {
     logoImg.onerror = () => buildPdf(null);
 }
 
+function printAuditList() {
+    const rows = [];
+    document.querySelectorAll('.activity-row').forEach(row => {
+        // Skip empty table row if it exists
+        if (row.querySelector('td[colspan]')) return;
+
+        const desc = row.querySelector('[data-label="Description"]').innerText.trim();
+        const cat = row.querySelector('[data-label="Category"]').innerText.trim();
+        const recDate = row.querySelector('[data-label="Received Date"]').innerText.trim();
+        const pkgType = row.querySelector('[data-label="Package Type"]').innerText.trim();
+        const totRec = row.querySelector('[data-label="Total Received"]').innerText.trim();
+        const stockBal = row.querySelector('[data-label="Stock Balance"]').innerText.trim();
+        const variance = row.querySelector('[data-label="Variance"]').innerText.trim();
+        const status = row.querySelector('[data-label="Status"]').innerText.trim();
+        rows.push({ desc, cat, recDate, pkgType, totRec, stockBal, variance, status });
+    });
+
+    if (rows.length === 0) {
+        Swal.fire({
+            title: 'No Data',
+            text: 'There are no items in the list to print.',
+            icon: 'warning',
+            confirmButtonColor: 'var(--primary)'
+        });
+        return;
+    }
+
+    const logoImg = new Image();
+    logoImg.src = "{{ asset('img/NACOC.png') }}";
+
+    const buildPdfList = (imgEl) => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+
+        // Brand Colors (Navy Blue & Slate)
+        const primaryColor = [15, 23, 42]; // Slate Dark
+        const slateDark = [15, 23, 42];
+        const textMuted = [100, 116, 139];
+        const bgLight = [248, 250, 252];
+        const borderLight = [226, 232, 240];
+
+        const searchVal = document.querySelector('input[name="search"]').value.trim();
+        const categorySelect = document.querySelector('select[name="category"]');
+        const categoryName = categorySelect && categorySelect.value ? categorySelect.options[categorySelect.selectedIndex].text : "All Categories";
+        const dateFrom = document.querySelector('input[name="date_from"]').value;
+        const dateTo = document.querySelector('input[name="date_to"]').value;
+        const verifierName = @json(auth()->user()->name);
+        const verifierRole = @json(auth()->user()->role);
+        const verifierRank = @json(auth()->user()->rank ?: 'N/A');
+
+        let pageNum = 1;
+
+        const drawHeader = (isFirst) => {
+            // Logo
+            if (imgEl) {
+                doc.addImage(imgEl, 'PNG', 172, 7, 22, 22);
+            }
+
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(8.5);
+            doc.setTextColor(...slateDark); // Slate Dark
+            doc.text("NARCOTICS CONTROL COMMISSION · NACOC", 15, 13);
+
+            doc.setFontSize(18);
+            doc.setTextColor(...slateDark);
+            doc.text("Stock Registry Audit Ledger", 15, 23);
+
+            let headerY = 42;
+
+            if (isFirst) {
+                // Info Box Summary (Only on page 1)
+                doc.setFillColor(...bgLight);
+                doc.roundedRect(15, 40, 180, 18, 2, 2, 'F');
+                doc.setDrawColor(...borderLight);
+                doc.roundedRect(15, 40, 180, 18, 2, 2, 'S');
+
+                doc.setFontSize(8);
+                doc.setTextColor(...slateDark);
+                doc.setFont("Helvetica", "bold");
+                doc.text("Search query:", 20, 45);
+                doc.setFont("Helvetica", "normal");
+                doc.text(searchVal || "None", 42, 45);
+
+                doc.setFont("Helvetica", "bold");
+                doc.text("Category:", 20, 51);
+                doc.setFont("Helvetica", "normal");
+                doc.text(categoryName, 42, 51);
+
+                doc.setFont("Helvetica", "bold");
+                doc.text("Date Range:", 100, 45);
+                doc.setFont("Helvetica", "normal");
+                const fromFmt = dateFrom ? dateFrom.split('-').reverse().join('/') : '';
+                const toFmt = dateTo ? dateTo.split('-').reverse().join('/') : '';
+                doc.text((fromFmt && toFmt) ? `${fromFmt} to ${toFmt}` : (fromFmt ? `From ${fromFmt}` : (toFmt ? `Until ${toFmt}` : "All time")), 120, 45);
+
+                doc.setFont("Helvetica", "bold");
+                doc.text("Generated By:", 100, 51);
+                doc.setFont("Helvetica", "normal");
+                doc.text(`${verifierRank} ${verifierName} (${verifierRole})`, 120, 51);
+
+                headerY = 64;
+            }
+
+            // Table Headers (Clean Minimal Borders)
+            doc.setDrawColor(...borderLight);
+            doc.setLineWidth(0.3);
+            doc.line(15, headerY, 195, headerY);
+            doc.line(15, headerY + 7, 195, headerY + 7);
+
+            doc.setFontSize(7.5);
+            doc.setTextColor(...slateDark);
+            doc.setFont("Helvetica", "bold");
+            doc.text("Description", 17, headerY + 4.5);
+            doc.text("Category", 67, headerY + 4.5);
+            doc.text("Rec. Date", 92, headerY + 4.5);
+            doc.text("Pkg Type", 112, headerY + 4.5);
+            doc.text("Rec. Qty", 132, headerY + 4.5);
+            doc.text("Stock Bal", 150, headerY + 4.5);
+            doc.text("Variance", 168, headerY + 4.5);
+            doc.text("Status", 182, headerY + 4.5);
+        };
+
+        const drawFooter = (totalPageCount) => {
+            doc.setDrawColor(...borderLight);
+            doc.setLineWidth(0.2);
+            doc.line(15, 276, 195, 276);
+
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(7.5);
+            doc.setTextColor(...textMuted);
+            doc.text(`Page ${pageNum} of ${totalPageCount}  ·  NACOC Stores Logistics & Inventory Control System`, 105, 281, { align: "center" });
+        };
+
+        // Draw first page header
+        drawHeader(true);
+
+        let currentY = 71;
+        const rowHeight = 7.5;
+        const pageLimit = 265; // Stop rows before footer
+
+        // Calculate pages first to write correct totalPageCount
+        let totalPages = 1;
+        let tempY = 71;
+        rows.forEach((row, i) => {
+            if (tempY + rowHeight > pageLimit) {
+                totalPages++;
+                tempY = 49;
+            } else {
+                tempY += rowHeight;
+            }
+        });
+
+        rows.forEach((row, i) => {
+            // If row exceeds page limit, add a page
+            if (currentY + rowHeight > pageLimit) {
+                drawFooter(totalPages);
+                doc.addPage();
+                pageNum++;
+                drawHeader(false);
+                currentY = 49;
+            }
+
+            // Zebra striping
+            if (i % 2 === 1) {
+                doc.setFillColor(...bgLight);
+                doc.rect(15, currentY, 180, rowHeight, 'F');
+            }
+
+            // Cell borders
+            doc.setDrawColor(...borderLight);
+            doc.rect(15, currentY, 180, rowHeight, 'S');
+
+            // Draw content
+            doc.setFontSize(7.5);
+            doc.setTextColor(...slateDark);
+
+            // Description - truncate if too long
+            doc.setFont("Helvetica", "bold");
+            const descTxt = doc.splitTextToSize(row.desc, 48)[0];
+            doc.text(descTxt, 17, currentY + 4.5);
+
+            // Category - truncate if too long
+            doc.setFont("Helvetica", "normal");
+            const catTxt = doc.splitTextToSize(row.cat, 23)[0];
+            doc.text(catTxt, 67, currentY + 4.5);
+
+            // Received Date
+            doc.text(row.recDate, 92, currentY + 4.5);
+
+            // Package Type
+            doc.text(row.pkgType, 112, currentY + 4.5);
+
+            // Total Received
+            doc.text(row.totRec, 132, currentY + 4.5);
+
+            // Stock Balance
+            doc.setFont("Helvetica", "bold");
+            doc.text(row.stockBal, 150, currentY + 4.5);
+
+            // Variance - color coded dot & bold number
+            let dotColor = [148, 163, 184]; // gray
+            let textColor = [71, 85, 105]; // slate dark
+            const varVal = parseFloat(row.variance.replace(/[^\d.-]/g, '')) || 0;
+            if (varVal > 0) {
+                dotColor = [16, 185, 129]; // green
+                textColor = [16, 185, 129];
+            } else if (varVal < 0) {
+                dotColor = [239, 68, 68]; // red
+                textColor = [239, 68, 68];
+            }
+            doc.setFillColor(...dotColor);
+            doc.circle(167.5, currentY + 3.8, 0.6, 'F');
+            doc.setFontSize(7.5);
+            doc.setFont("Helvetica", "bold");
+            doc.setTextColor(...textColor);
+            doc.text(row.variance, 169.5, currentY + 4.5);
+
+            // Status - Tailwind pill badge
+            let badgeBg = [240, 253, 244]; // light green
+            let badgeText = [22, 101, 52]; // dark green
+            if (row.status.includes('Low')) {
+                badgeBg = [254, 243, 199]; // light orange
+                badgeText = [146, 64, 14];
+            } else if (row.status.includes('Out')) {
+                badgeBg = [254, 242, 242]; // light red
+                badgeText = [153, 27, 27];
+            }
+            doc.setFillColor(...badgeBg);
+            doc.roundedRect(181.5, currentY + 1.75, 13, 4, 0.8, 0.8, 'F');
+            doc.setFontSize(6);
+            doc.setFont("Helvetica", "bold");
+            doc.setTextColor(...badgeText);
+            doc.text(row.status, 188, currentY + 4.6, { align: "center" });
+
+            currentY += rowHeight;
+        });
+
+        // Draw last page footer
+        drawFooter(totalPages);
+
+        // Auto print & Open print dialog
+        doc.autoPrint();
+        const blobUrl = doc.output('bloburl');
+        window.open(blobUrl, '_blank');
+    };
+
+    logoImg.onload = () => buildPdfList(logoImg);
+    logoImg.onerror = () => buildPdfList(null);
+}
+
 function toggleSelectAllItems(masterCb) {
     const checkboxes = document.querySelectorAll('.item-checkbox');
     checkboxes.forEach(cb => {
@@ -891,5 +1151,90 @@ function openBatchVerifyPage() {
 
     window.location.href = `{{ route('stockcheck.batch') }}?${params.toString()}`;
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('stock-check-filter-form');
+    if (form) {
+        const select = form.querySelector('select[name="category"]');
+        const searchInput = form.querySelector('input[name="search"]');
+        const dates = form.querySelectorAll('input[type="date"]');
+        const clearBtn = document.getElementById('clear-filters-btn');
+
+        function performStockCheckAjaxFilter(url) {
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Swap results table
+                const newTableContainer = doc.getElementById('stock-check-table-container');
+                const currentTableContainer = document.getElementById('stock-check-table-container');
+                if (newTableContainer && currentTableContainer) {
+                    currentTableContainer.innerHTML = newTableContainer.innerHTML;
+                }
+
+                // Update Clear button visibility
+                if (clearBtn) {
+                    const hasFilter = (select && select.value !== '') || 
+                                      (searchInput && searchInput.value.trim() !== '') ||
+                                      Array.from(dates).some(d => d.value !== '');
+                    clearBtn.style.display = hasFilter ? 'inline-flex' : 'none';
+                }
+
+                // Re-initialize checkboxes and batch actions state
+                updateBatchSelection();
+
+                // Re-initialize lucide icons
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+
+                // Update URL in browser history
+                history.pushState(null, '', url);
+            })
+            .catch(error => {
+                console.error('Stock check filter fetch error:', error);
+            });
+        }
+
+        function triggerFilterSubmit() {
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData);
+            const url = form.getAttribute('action') + '?' + params.toString();
+            performStockCheckAjaxFilter(url);
+        }
+
+        if (select) {
+            select.addEventListener('change', triggerFilterSubmit);
+        }
+
+        if (searchInput) {
+            let debounceTimeout;
+            searchInput.addEventListener('input', () => {
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(triggerFilterSubmit, 500); // 500ms debounce
+            });
+        }
+
+        dates.forEach(date => {
+            date.addEventListener('change', triggerFilterSubmit);
+        });
+
+        // Intercept clear button click
+        if (clearBtn) {
+            clearBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                form.reset();
+                if (select) select.value = '';
+                if (searchInput) searchInput.value = '';
+                dates.forEach(d => d.value = '');
+                performStockCheckAjaxFilter(clearBtn.getAttribute('href'));
+            });
+        }
+    }
+});
 </script>
 @endsection

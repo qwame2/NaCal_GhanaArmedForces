@@ -670,6 +670,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     // Director General Routes
     Route::get('/dg', [\App\Http\Controllers\DGController::class, 'index'])->name('dg.dashboard');
     Route::get('/dg/print', [\App\Http\Controllers\DGController::class, 'printReport'])->name('dg.print');
+    Route::post('/dg/requisitions/{id}/process', [\App\Http\Controllers\DGController::class, 'processRequisition'])->name('dg.requisitions.process');
 
     // Staff Access Provisioning Routes (Non-Stores Department Heads only)
     Route::get('/api/dept-head/temp-requisitioners', [\App\Http\Controllers\TempRequisitionerController::class, 'index'])->name('dept-head.temp-requisitioners.index');

@@ -842,6 +842,30 @@
         box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
     }
 
+    /* Special theme colors for the DG workflow cards */
+    .dg-workflow-container .workflow-cat-card-modern.active {
+        background: linear-gradient(145deg, #faf5ff 0%, #f3e8ff 100%);
+        border-color: #8b5cf6;
+        box-shadow: 0 8px 24px rgba(139, 92, 246, 0.06);
+    }
+    .dg-workflow-container .workflow-cat-card-modern.active:hover {
+        box-shadow: 0 12px 28px rgba(139, 92, 246, 0.1);
+    }
+    .dg-workflow-container .workflow-cat-card-modern.active .cat-circle {
+        background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+        box-shadow: 0 4px 8px rgba(139, 92, 246, 0.18);
+        color: #ffffff;
+        border-color: transparent;
+    }
+    .dg-workflow-container .workflow-cat-card-modern.active .status-label {
+        color: #8b5cf6;
+    }
+    .dg-workflow-container .workflow-cat-card-modern.active .indicator-dot {
+        background: #8b5cf6;
+        border-color: #8b5cf6;
+        box-shadow: 0 2px 6px rgba(139, 92, 246, 0.25);
+    }
+
     .flow-line {
         flex: 1;
         height: 3px;
@@ -1098,54 +1122,204 @@
                                 <div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%; padding: 0.5rem 0;" class="flow-nodes-container">
 
                                     <!-- Origin Node -->
-                                    <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 85px;">
-                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; box-shadow: 0 4px 12px rgba(79,70,229,0.15);">
-                                            <i data-lucide="user-check" style="width: 18px; height: 18px;"></i>
+                                    <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; box-shadow: 0 4px 12px rgba(79,70,229,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                            <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
                                         </div>
-                                        <span style="font-size: 0.72rem; font-weight: 850; color: #1e293b; white-space: nowrap;">Dept. Head</span>
-                                        <span class="flow-node-badge" style="background: #e0e7ff; color: #4f46e5;">Required</span>
+                                        <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Dept. Head</span>
+                                        <span class="flow-node-badge" style="background: #e0e7ff; color: #4f46e5; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
                                     </div>
 
-                                    <!-- Connector 1 -->
-                                    <div id="flow-line-1" class="flow-line {{ count($selectedCats) > 0 ? 'active' : 'dashed' }}"></div>
+                                    <!-- Connector 1 (Now connects to DG Node, so controlled by DG active state) -->
+                                    <div class="flow-line flow-line-2" style="flex: 1; height: 3px; transition: all 0.4s ease; background: #cbd5e1; margin-top: -16px;"></div>
 
-                                    <!-- Stores Head Node -->
-                                    <div id="flow-node-stores" class="flow-node {{ count($selectedCats) > 0 ? 'active' : 'bypass' }}" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 85px;">
-                                        @if(count($selectedCats) > 0)
-                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; box-shadow: 0 6px 15px rgba(79,70,229,0.2);">
-                                            <i data-lucide="package" style="width: 18px; height: 18px;"></i>
+                                    <!-- DG Node (Director Gen.) -->
+                                    <div class="flow-node flow-node-dg" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                        <div class="flow-node-icon" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                            <i data-lucide="user-cog" style="width: 15px; height: 15px;"></i>
                                         </div>
-                                        <span class="flow-node-label" style="font-size: 0.72rem; font-weight: 855; color: #1e293b; text-decoration: none;">Head of Admin</span>
-                                        <span class="flow-node-badge" style="background: rgba(79, 70, 229, 0.1); color: #4f46e5;">Required</span>
-                                        @else
-                                        <div class="flow-node-icon" style="background: #f8fafc; border: 2.5px solid #cbd5e1; color: #64748b; box-shadow: none;">
-                                            <i data-lucide="package" style="width: 18px; height: 18px;"></i>
-                                        </div>
-                                        <span class="flow-node-label" style="font-size: 0.72rem; font-weight: 855; color: #94a3b8; text-decoration: line-through;">Head of Admin</span>
-                                        <span class="flow-node-badge" style="background: #fef2f2; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.1);">Bypassed</span>
-                                        @endif
+                                        <span class="flow-node-label" style="font-size: 0.65rem; font-weight: 855; white-space: nowrap;">Director Gen.</span>
+                                        <span class="flow-node-badge" style="font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;"></span>
                                     </div>
 
-                                    <!-- Connector 2 -->
-                                    <div id="flow-line-2" class="flow-line {{ count($selectedCats) > 0 ? 'active' : 'dashed' }}"></div>
+                                    <!-- Connector 2 (Now connects to Stores Head, so controlled by Stores Head active state) -->
+                                    <div class="flow-line flow-line-1" style="flex: 1; height: 3px; transition: all 0.4s ease; background: #cbd5e1; margin-top: -16px;"></div>
+
+                                    <!-- Stores Head Node (Head of Admin) -->
+                                    <div class="flow-node flow-node-stores" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                        <div class="flow-node-icon" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                            <i data-lucide="package" style="width: 15px; height: 15px;"></i>
+                                        </div>
+                                        <span class="flow-node-label" style="font-size: 0.65rem; font-weight: 855; white-space: nowrap;">Head of Admin</span>
+                                        <span class="flow-node-badge" style="font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;"></span>
+                                    </div>
+
+                                    <!-- Connector 3 (Connects to Head of Stores, always active) -->
+                                    <div class="flow-line flow-line-3" style="flex: 1; height: 3px; transition: all 0.4s ease; background: #cbd5e1; margin-top: -16px;"></div>
 
                                     <!-- Head of Stores Node -->
-                                    <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 85px;">
-                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.15);">
-                                            <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                                    <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                            <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
                                         </div>
-                                        <span style="font-size: 0.72rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
-                                        <span class="flow-node-badge" style="background: #d1fae5; color: #065f46;">Final Sign</span>
+                                        <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
+                                        <span class="flow-node-badge" style="background: #d1fae5; color: #065f46; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Final Sign</span>
                                     </div>
 
                                 </div>
 
-                                <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; line-height: 1.45; text-align: center; background: #f8fafc; border-radius: 12px; padding: 8px 12px; border: 1px solid #f1f5f9; transition: all 0.3s ease;" id="workflow-helper-hint">
-                                    @if(count($selectedCats) > 0)
-                                    Route routes through <strong>Stores Department Head</strong> for <strong style="color: #4f46e5;">{{ count($selectedCats) }}</strong> selected categories.
-                                    @else
-                                    Currently bypassing intermediate step due to settings configuration.
-                                    @endif
+                                <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; line-height: 1.45; text-align: center; background: #f8fafc; border-radius: 12px; padding: 8px 12px; border: 1px solid #f1f5f9; transition: all 0.3s ease;" class="workflow-helper-hint">
+                                </div>
+                            </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Director General (DG) Approval Workflow --}}
+            <div class="workflow-card-modern dg-workflow-container" style="margin-top: 1.5rem;">
+                @php
+                $dgSelectedCats = \App\Models\Setting::get('dg_approval_categories', []);
+                if (!is_array($dgSelectedCats)) {
+                    $dgSelectedCats = json_decode($dgSelectedCats, true) ?? [];
+                }
+                @endphp
+                <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1.25rem;">
+                        <div class="cfg-icon-box" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15); width: 50px; height: 50px; border-radius: 16px;">
+                            <i data-lucide="user-cog" style="width: 24px; height: 24px; color: white;"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-weight: 955; font-size: 1.25rem; color: #0f172a; margin: 0; letter-spacing: -0.03em;">Director General (DG) Approval Workflow</h3>
+                            <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review and sign-off by the Director General.</p>
+                        </div>
+                    </div>
+                    <span id="dg-workflow-active-badge" style="background: rgba(139,92,246,0.08); color: #8b5cf6; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(139,92,246,0.15); box-shadow: 0 2px 4px rgba(139,92,246,0.02); transition: all 0.3s ease;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #8b5cf6; transition: all 0.3s ease;" id="dg-workflow-badge-dot"></span>
+                        <span id="dg-workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($dgSelectedCats) }}</span>
+                    </span>
+                </div>
+                <div class="cfg-card-body" style="padding: 2.5rem; background: #ffffff;">
+                    <input type="hidden" name="dg_approval_categories_present" value="1">
+
+                    <!-- Hidden real multi-select to preserve native settings submission -->
+                    <select name="dg_approval_categories[]" id="dg_approval_categories" multiple="multiple" style="display: none;">
+                        @foreach($categories ?? [] as $code => $name)
+                        <option value="{{ $code }}" {{ in_array($code, $dgSelectedCats) ? 'selected' : '' }}>{{ $code }}</option>
+                        @endforeach
+                    </select>
+
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+
+                        <!-- Premium Interactive Card Selection Grid -->
+                        <div class="workflow-cat-grid-modern">
+                            @foreach($categories ?? [] as $code => $name)
+                            @php $isActive = in_array($code, $dgSelectedCats); @endphp
+                            <div class="workflow-cat-card-modern {{ $isActive ? 'active' : '' }}"
+                                onclick="toggleDGWorkflowCategory('{{ $code }}', this)">
+
+                                <!-- Glowing corner accent for active state -->
+                                <div class="corner-glow"></div>
+
+                                <!-- Category Code Circle -->
+                                <div class="cat-circle">
+                                    {{ $code }}
+                                </div>
+
+                                <!-- Name & Status -->
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-weight: 855; font-size: 0.88rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $name }}</div>
+                                    <div class="status-label">
+                                        {{ $isActive ? 'Requires DG' : 'Bypasses DG' }}
+                                    </div>
+                                </div>
+
+                                <!-- Indicator Circle -->
+                                <div class="indicator-dot">
+                                    <i data-lucide="check" style="width: 11px; height: 11px; color: white; display: {{ $isActive ? 'block' : 'none' }};"></i>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Workflow Explainer Graphic and Logic Info Card -->
+                        <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
+
+                            <!-- Sleek Gradient Alert Card -->
+                            <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(99, 102, 241, 0.01) 100%);
+                                            border: 1.5px solid #edf2f7;
+                                            border-radius: 24px;
+                                            padding: 1.75rem 2rem;
+                                            display: flex;
+                                            gap: 1.25rem;
+                                            align-items: flex-start;">
+                                <div style="width: 42px; height: 42px; background: rgba(139,92,246,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #8b5cf6; flex-shrink: 0; margin-top: 2px;">
+                                    <i data-lucide="info" style="width: 20px; height: 20px;"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <h5 style="margin: 0 0 6px 0; font-size: 0.95rem; font-weight: 855; color: #1e293b; letter-spacing: -0.010em;">DG Smart Routing Protocol Active</h5>
+                                    <p style="margin: 0; font-size: 0.8rem; color: #475569; line-height: 1.6; font-weight: 600;">
+                                        When item categories are configured above, any submitted requisition containing matching items will be routed for manual review by the <strong>Director General</strong> prior to final confirmation and stock deduction. Requisitions consisting solely of bypassed categories skip the DG approval stage completely.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Mini Infographic Visualizer Card -->
+                            <div style="background: linear-gradient(to bottom, #fafbff, #ffffff); border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
+                                <div style="font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; text-align: center; margin-bottom: 0.25rem;">Live Approval Routing Pathway</div>
+
+                                <div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%; padding: 0.5rem 0;" class="flow-nodes-container">
+
+                                    <!-- Origin Node -->
+                                    <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; box-shadow: 0 4px 12px rgba(79,70,229,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                            <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
+                                        </div>
+                                        <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Dept. Head</span>
+                                        <span class="flow-node-badge" style="background: #e0e7ff; color: #4f46e5; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
+                                    </div>
+
+                                    <!-- Connector 1 (Now connects to DG Node, so controlled by DG active state) -->
+                                    <div class="flow-line flow-line-2" style="flex: 1; height: 3px; transition: all 0.4s ease; background: #cbd5e1; margin-top: -16px;"></div>
+
+                                    <!-- DG Node (Director Gen.) -->
+                                    <div class="flow-node flow-node-dg" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                        <div class="flow-node-icon" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                            <i data-lucide="user-cog" style="width: 15px; height: 15px;"></i>
+                                        </div>
+                                        <span class="flow-node-label" style="font-size: 0.65rem; font-weight: 855; white-space: nowrap;">Director Gen.</span>
+                                        <span class="flow-node-badge" style="font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;"></span>
+                                    </div>
+
+                                    <!-- Connector 2 (Now connects to Stores Head, so controlled by Stores Head active state) -->
+                                    <div class="flow-line flow-line-1" style="flex: 1; height: 3px; transition: all 0.4s ease; background: #cbd5e1; margin-top: -16px;"></div>
+
+                                    <!-- Stores Head Node (Head of Admin) -->
+                                    <div class="flow-node flow-node-stores" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                        <div class="flow-node-icon" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                            <i data-lucide="package" style="width: 15px; height: 15px;"></i>
+                                        </div>
+                                        <span class="flow-node-label" style="font-size: 0.65rem; font-weight: 855; white-space: nowrap;">Head of Admin</span>
+                                        <span class="flow-node-badge" style="font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;"></span>
+                                    </div>
+
+                                    <!-- Connector 3 (Connects to Head of Stores, always active) -->
+                                    <div class="flow-line flow-line-3" style="flex: 1; height: 3px; transition: all 0.4s ease; background: #cbd5e1; margin-top: -16px;"></div>
+
+                                    <!-- Head of Stores Node -->
+                                    <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                            <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
+                                        </div>
+                                        <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
+                                        <span class="flow-node-badge" style="background: #d1fae5; color: #065f46; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Final Sign</span>
+                                    </div>
+
+                                </div>
+
+                                <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; line-height: 1.45; text-align: center; background: #f8fafc; border-radius: 12px; padding: 8px 12px; border: 1px solid #f1f5f9; transition: all 0.3s ease;" class="workflow-helper-hint">
                                 </div>
                             </div>
 
@@ -2381,7 +2555,7 @@
 
             const dot = card.querySelector('.indicator-dot');
             if (dot) {
-                const checkIcon = dot.querySelector('i');
+                const checkIcon = dot.querySelector('i, svg');
                 if (checkIcon) checkIcon.style.display = 'none';
             }
 
@@ -2397,7 +2571,7 @@
 
             const dot = card.querySelector('.indicator-dot');
             if (dot) {
-                const checkIcon = dot.querySelector('i');
+                const checkIcon = dot.querySelector('i, svg');
                 if (checkIcon) checkIcon.style.display = 'block';
             }
 
@@ -2405,110 +2579,146 @@
         }
 
         // Trigger change event on select to ensure any listeners match
-        $(select).trigger('change');
+        select.dispatchEvent(new Event('change'));
+
+        // Update the visual flowchart in real-time
+        updateWorkflowFlowchart();
+    }
+
+    function toggleDGWorkflowCategory(code, card) {
+        const select = document.getElementById('dg_approval_categories');
+        const option = select.querySelector(`option[value="${code}"]`);
+
+        if (!option) return;
+
+        const isCurrentlyActive = card.classList.contains('active');
+
+        if (isCurrentlyActive) {
+            // Deactivate
+            card.classList.remove('active');
+
+            const label = card.querySelector('.status-label');
+            if (label) {
+                label.textContent = 'Bypasses DG';
+            }
+
+            const dot = card.querySelector('.indicator-dot');
+            if (dot) {
+                const checkIcon = dot.querySelector('i, svg');
+                if (checkIcon) checkIcon.style.display = 'none';
+            }
+
+            option.selected = false;
+        } else {
+            // Activate
+            card.classList.add('active');
+
+            const label = card.querySelector('.status-label');
+            if (label) {
+                label.textContent = 'Requires DG';
+            }
+
+            const dot = card.querySelector('.indicator-dot');
+            if (dot) {
+                const checkIcon = dot.querySelector('i, svg');
+                if (checkIcon) checkIcon.style.display = 'block';
+            }
+
+            option.selected = true;
+        }
+
+        // Trigger change event on select to ensure any listeners match
+        select.dispatchEvent(new Event('change'));
 
         // Update the visual flowchart in real-time
         updateWorkflowFlowchart();
     }
 
     function updateWorkflowFlowchart() {
-        const select = document.getElementById('stores_dept_head_approval_categories');
-        const activeCount = $(select).val()?.length || 0;
+        const selectStores = document.getElementById('stores_dept_head_approval_categories');
+        const activeCountStores = selectStores ? Array.from(selectStores.selectedOptions).length : 0;
 
-        // Update header badge
-        const badgeText = document.getElementById('workflow-badge-text');
-        const badgeDot = document.getElementById('workflow-badge-dot');
-        const badgeContainer = document.getElementById('workflow-active-badge');
+        const selectDG = document.getElementById('dg_approval_categories');
+        const activeCountDG = selectDG ? Array.from(selectDG.selectedOptions).length : 0;
 
-        if (badgeText) {
-            badgeText.textContent = `Active Categories: ${activeCount}`;
-        }
-
-        if (activeCount > 0) {
-            if (badgeDot) badgeDot.style.background = '#4f46e5';
-            if (badgeContainer) {
-                badgeContainer.style.background = 'rgba(79, 70, 229, 0.08)';
-                badgeContainer.style.color = '#4f46e5';
-                badgeContainer.style.borderColor = 'rgba(79, 70, 229, 0.2)';
+        // Update HOD header badge
+        const badgeTextStores = document.getElementById('workflow-badge-text');
+        const badgeDotStores = document.getElementById('workflow-badge-dot');
+        const badgeContainerStores = document.getElementById('workflow-active-badge');
+        if (badgeTextStores) badgeTextStores.textContent = `Active Categories: ${activeCountStores}`;
+        if (activeCountStores > 0) {
+            if (badgeDotStores) badgeDotStores.style.background = '#4f46e5';
+            if (badgeContainerStores) {
+                badgeContainerStores.style.background = 'rgba(79, 70, 229, 0.08)';
+                badgeContainerStores.style.color = '#4f46e5';
+                badgeContainerStores.style.borderColor = 'rgba(79, 70, 229, 0.2)';
             }
         } else {
-            if (badgeDot) badgeDot.style.background = '#64748b';
-            if (badgeContainer) {
-                badgeContainer.style.background = 'rgba(100, 116, 139, 0.08)';
-                badgeContainer.style.color = '#64748b';
-                badgeContainer.style.borderColor = 'rgba(100, 116, 139, 0.2)';
+            if (badgeDotStores) badgeDotStores.style.background = '#64748b';
+            if (badgeContainerStores) {
+                badgeContainerStores.style.background = 'rgba(100, 116, 139, 0.08)';
+                badgeContainerStores.style.color = '#64748b';
+                badgeContainerStores.style.borderColor = 'rgba(100, 116, 139, 0.2)';
             }
         }
 
-        const node = document.getElementById('flow-node-stores');
-        const line1 = document.getElementById('flow-line-1');
-        const line2 = document.getElementById('flow-line-2');
-        const hint = document.getElementById('workflow-helper-hint');
+        // Update DG header badge
+        const badgeTextDG = document.getElementById('dg-workflow-badge-text');
+        const badgeDotDG = document.getElementById('dg-workflow-badge-dot');
+        const badgeContainerDG = document.getElementById('dg-workflow-active-badge');
+        if (badgeTextDG) badgeTextDG.textContent = `Active Categories: ${activeCountDG}`;
+        if (activeCountDG > 0) {
+            if (badgeDotDG) badgeDotDG.style.background = '#8b5cf6';
+            if (badgeContainerDG) {
+                badgeContainerDG.style.background = 'rgba(139, 92, 246, 0.08)';
+                badgeContainerDG.style.color = '#8b5cf6';
+                badgeContainerDG.style.borderColor = 'rgba(139, 92, 246, 0.2)';
+            }
+        } else {
+            if (badgeDotDG) badgeDotDG.style.background = '#64748b';
+            if (badgeContainerDG) {
+                badgeContainerDG.style.background = 'rgba(100, 116, 139, 0.08)';
+                badgeContainerDG.style.color = '#64748b';
+                badgeContainerDG.style.borderColor = 'rgba(100, 116, 139, 0.2)';
+            }
+        }
 
-        if (activeCount > 0) {
-            // Stores Head is Required
-            if (node) {
-                node.classList.remove('bypass');
-                node.classList.add('active');
+        // Update ALL Stores Head flow nodes
+        document.querySelectorAll('.flow-node-stores').forEach(node => {
+            const iconBox = node.querySelector('.flow-node-icon');
+            const label = node.querySelector('.flow-node-label');
+            const badge = node.querySelector('.flow-node-badge');
 
-                const iconBox = node.querySelector('.flow-node-icon');
+            if (activeCountStores > 0) {
+                node.className = 'flow-node flow-node-stores active';
                 if (iconBox) {
                     iconBox.style.background = 'linear-gradient(135deg, #4f46e5, #3730a3)';
                     iconBox.style.color = '#ffffff';
                     iconBox.style.borderColor = 'transparent';
                     iconBox.style.boxShadow = '0 6px 15px rgba(79,70,229,0.2)';
                 }
-
-                const label = node.querySelector('.flow-node-label');
                 if (label) {
                     label.style.color = '#1e293b';
                     label.style.textDecoration = 'none';
                 }
-
-                const badge = node.querySelector('.flow-node-badge');
                 if (badge) {
                     badge.textContent = 'Required';
                     badge.style.background = 'rgba(79, 70, 229, 0.1)';
                     badge.style.color = '#4f46e5';
                     badge.style.borderColor = 'transparent';
                 }
-            }
-
-            if (line1) {
-                line1.classList.remove('dashed');
-                line1.classList.add('active');
-                line1.style.background = '#4f46e5';
-            }
-            if (line2) {
-                line2.classList.remove('dashed');
-                line2.classList.add('active');
-                line2.style.background = '#4f46e5';
-            }
-
-            if (hint) {
-                hint.innerHTML = `Route routes through <strong>Stores Department Head</strong> for <strong style="color: #4f46e5;">${activeCount}</strong> selected category${activeCount == 1 ? '' : 'ies'}.`;
-            }
-        } else {
-            // Stores Head is Bypassed
-            if (node) {
-                node.classList.remove('active');
-                node.classList.add('bypass');
-
-                const iconBox = node.querySelector('.flow-node-icon');
+            } else {
+                node.className = 'flow-node flow-node-stores bypass';
                 if (iconBox) {
                     iconBox.style.background = '#f8fafc';
                     iconBox.style.color = '#64748b';
                     iconBox.style.borderColor = '#cbd5e1';
                     iconBox.style.boxShadow = 'none';
                 }
-
-                const label = node.querySelector('.flow-node-label');
                 if (label) {
                     label.style.color = '#94a3b8';
                     label.style.textDecoration = 'line-through';
                 }
-
-                const badge = node.querySelector('.flow-node-badge');
                 if (badge) {
                     badge.textContent = 'Bypassed';
                     badge.style.background = '#fef2f2';
@@ -2516,22 +2726,97 @@
                     badge.style.borderColor = 'rgba(239, 68, 68, 0.1)';
                 }
             }
+        });
 
-            if (line1) {
-                line1.classList.remove('active');
-                line1.classList.add('dashed');
-                line1.style.background = '';
-            }
-            if (line2) {
-                line2.classList.remove('active');
-                line2.classList.add('dashed');
-                line2.style.background = '';
-            }
+        // Update ALL DG flow nodes
+        document.querySelectorAll('.flow-node-dg').forEach(node => {
+            const iconBox = node.querySelector('.flow-node-icon');
+            const label = node.querySelector('.flow-node-label');
+            const badge = node.querySelector('.flow-node-badge');
 
-            if (hint) {
-                hint.innerHTML = 'Currently bypassing intermediate step due to settings configuration.';
+            if (activeCountDG > 0) {
+                node.className = 'flow-node flow-node-dg active';
+                if (iconBox) {
+                    iconBox.style.background = 'linear-gradient(135deg, #8b5cf6, #6d28d9)';
+                    iconBox.style.color = '#ffffff';
+                    iconBox.style.borderColor = 'transparent';
+                    iconBox.style.boxShadow = '0 6px 15px rgba(139,92,246,0.2)';
+                }
+                if (label) {
+                    label.style.color = '#1e293b';
+                    label.style.textDecoration = 'none';
+                }
+                if (badge) {
+                    badge.textContent = 'Required';
+                    badge.style.background = 'rgba(139, 92, 246, 0.1)';
+                    badge.style.color = '#8b5cf6';
+                    badge.style.borderColor = 'transparent';
+                }
+            } else {
+                node.className = 'flow-node flow-node-dg bypass';
+                if (iconBox) {
+                    iconBox.style.background = '#f8fafc';
+                    iconBox.style.color = '#64748b';
+                    iconBox.style.borderColor = '#cbd5e1';
+                    iconBox.style.boxShadow = 'none';
+                }
+                if (label) {
+                    label.style.color = '#94a3b8';
+                    label.style.textDecoration = 'line-through';
+                }
+                if (badge) {
+                    badge.textContent = 'Bypassed';
+                    badge.style.background = '#fef2f2';
+                    badge.style.color = '#ef4444';
+                    badge.style.borderColor = 'rgba(239, 68, 68, 0.1)';
+                }
             }
-        }
+        });
+
+        // Update lines
+        document.querySelectorAll('.flow-line-1').forEach(line => {
+            if (activeCountStores > 0) {
+                line.className = 'flow-line flow-line-1 active';
+                line.style.background = '#4f46e5';
+            } else {
+                line.className = 'flow-line flow-line-1 dashed';
+                line.style.background = '';
+            }
+        });
+
+        document.querySelectorAll('.flow-line-2').forEach(line => {
+            if (activeCountDG > 0) {
+                line.className = 'flow-line flow-line-2 active';
+                line.style.background = '#8b5cf6';
+            } else {
+                line.className = 'flow-line flow-line-2 dashed';
+                line.style.background = '';
+            }
+        });
+
+        document.querySelectorAll('.flow-line-3').forEach(line => {
+            // Since Head of Stores is always required:
+            line.className = 'flow-line flow-line-3 active';
+            line.style.background = '#10b981';
+        });
+
+        // Update hints
+        document.querySelectorAll('.workflow-helper-hint').forEach(hint => {
+            const isStoresCard = hint.closest('.workflow-card-modern').querySelector('h3').textContent.includes('Stores');
+            if (isStoresCard) {
+                if (activeCountStores > 0) {
+                    hint.innerHTML = `Routing through <strong>Head of Admin</strong> for <strong style="color: #4f46e5;">${activeCountStores}</strong> selected category${activeCountStores == 1 ? '' : 'ies'}.`;
+                } else {
+                    hint.innerHTML = 'Currently bypassing intermediate Stores Head step due to settings configuration.';
+                }
+            } else {
+                if (activeCountDG > 0) {
+                    hint.innerHTML = `Routing through <strong>Director General</strong> for <strong style="color: #8b5cf6;">${activeCountDG}</strong> selected category${activeCountDG == 1 ? '' : 'ies'}.`;
+                } else {
+                    hint.innerHTML = 'Currently bypassing intermediate Director General step due to settings configuration.';
+                }
+            }
+        });
     }
 
     async function uploadSignatureFileAdmin(input) {

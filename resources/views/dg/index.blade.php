@@ -295,15 +295,18 @@
     {{-- Header --}}
     <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
         <div>
-            <div style="font-size: .7rem; font-weight: 800; color: var(--dg-primary); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 4px;">
-                Executive Command Center
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <div style="font-size: .7rem; font-weight: 800; color: var(--dg-primary); text-transform: uppercase; letter-spacing: .12em;">
+                    Director General Command Center
+                </div>
+                <span style="background: rgba(99, 102, 241, 0.15); color: var(--dg-primary); font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; padding: 2px 8px; border-radius: 9999px; border: 1px solid rgba(99, 102, 241, 0.25);">
+                    DG ONLY
+                </span>
             </div>
             <h1 style="font-size: 1.75rem; font-weight: 900; color: var(--text-main); letter-spacing: -.03em; margin: 0;">
-                Oversight Command Center
+                Director General Oversight Terminal
             </h1>
-            <p style="font-size: .9rem; color: var(--text-muted); margin: 6px 0 0;">
-                Consolidated real-time operational metrics, audit trails, and staff requisitions list.
-            </p>
+
         </div>
         <div style="display: flex; gap: 10px;">
             <a id="btn-print-dg-report" href="{{ route('dg.print') }}?date_from={{ request('date_from') }}&date_to={{ request('date_to') }}" target="_blank" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: var(--dg-primary); border-radius: 12px; border: 1.5px solid var(--dg-primary); background: rgba(99,102,241,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(99,102,241,0.05)'">
@@ -373,7 +376,10 @@
         <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
             <input type="text" id="dg-search-query" name="search_query" class="filter-control-dg" placeholder="Search entries, descriptions, names..." value="{{ request('search_query') }}" style="flex: 1; min-width: 240px;">
 
+            <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">From:</span>
             <input type="date" id="dg-date-from" name="date_from" class="filter-control-dg" title="From Date" value="{{ request('date_from') }}">
+
+            <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">To:</span>
             <input type="date" id="dg-date-to" name="date_to" class="filter-control-dg" title="To Date" value="{{ request('date_to') }}">
 
             <select id="dg-log-severity" name="log_severity" class="filter-control-dg">
@@ -392,9 +398,6 @@
                 <option value="declined" {{ request('req_status') === 'declined' ? 'selected' : '' }}>Declined</option>
             </select>
 
-            <button type="submit" id="btn-dg-filter" class="filter-control-dg" style="background: var(--dg-primary); color: white; border: none; cursor: pointer; font-weight: 800; min-width: 100px;">
-                Filter
-            </button>
             @if(request()->anyFilled(['search_query', 'date_from', 'date_to', 'log_severity', 'req_status']))
                 <a id="btn-dg-clear" href="{{ route('dg.dashboard') }}" class="filter-control-dg" style="background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1.5px solid #ef4444; text-decoration: none; text-align: center; font-weight: 800; min-width: 100px; display: inline-flex; align-items: center; justify-content: center;">
                     Clear
@@ -520,9 +523,9 @@
 
     {{-- PANEL 2: STOCK BALANCE REGISTRY --}}
     <div id="dg-stock-oversight-tab" class="dg-tab-panel">
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium);">
-            <div style="overflow-x: auto;">
-                <table class="dg-table">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; box-shadow: var(--shadow-premium); position: relative;">
+            <div style="position: relative;">
+                <table class="dg-table" style="border-radius: 20px;">
                     <thead>
                         <tr>
                             <th>Entry Date</th>
@@ -541,8 +544,18 @@
                                 <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
                                     {{ $item->entry_date ? \Carbon\Carbon::parse($item->entry_date)->format('d/m/Y') : '-' }}
                                 </td>
-                                <td style="font-weight: 800; color: var(--text-main);">
-                                    {{ $item->description }}
+                                <td style="color: var(--text-main);">
+                                    <div style="font-weight: 800;">{{ $item->description }}</div>
+                                    @if(!empty($item->serial_number))
+                                        <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;">
+                                            <span style="font-weight: 700;">S/N:</span> <code style="font-family: monospace; background: rgba(0,0,0,0.05); padding: 1px 4px; border-radius: 4px;">{{ $item->serial_number }}</code>
+                                        </div>
+                                    @endif
+                                    @if(!empty($item->remarks))
+                                        <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px; font-style: italic;">
+                                            {{ $item->remarks }}
+                                        </div>
+                                    @endif
                                 </td>
                                 <td>
                                     <span class="badge-event">{{ $ledgeMap[$item->ledge_category] ?? $item->ledge_category }}</span>
@@ -559,8 +572,61 @@
                                 <td style="font-weight: 700;">
                                     {{ $item->acquisition_type }}
                                 </td>
-                                <td style="font-weight: 700; color: var(--text-muted);">
-                                    {{ $item->supplier_name ?: ($item->donor_name ?: 'System') }}
+                                <td style="position: relative;">
+                                    @if($item->supplier_name)
+                                        @php
+                                            $registry = \App\Models\Setting::get('suppliers_registry', []);
+                                            $supDetails = $registry[$item->supplier_name] ?? null;
+                                        @endphp
+                                         <div style="display: flex; align-items: center; gap: 6px;">
+                                             <div style="font-weight: 800; color: var(--text-main);">{{ $item->supplier_name }}</div>
+                                             @if($supDetails)
+                                                 <button onclick="toggleSupplierDetails(this)" style="background: rgba(99, 102, 241, 0.1); border: 1.5px solid rgba(99, 102, 241, 0.2); cursor: pointer; padding: 4px; color: var(--dg-primary); display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; transition: all 0.2s; outline: none; margin-left: 4px;" class="supplier-toggle-btn" onmouseover="this.style.background='rgba(99, 102, 241, 0.2)'; this.style.borderColor='rgba(99, 102, 241, 0.3)';" onmouseout="this.style.background='rgba(99, 102, 241, 0.1)'; this.style.borderColor='rgba(99, 102, 241, 0.2)';">
+                                                     <i data-lucide="chevron-down" style="width: 12px; height: 12px; stroke-width: 3.5;"></i>
+                                                 </button>
+                                             @endif
+                                         </div>
+                                         @if($supDetails)
+                                             <div class="supplier-details-container" style="position: absolute; top: calc(100% - 4px); right: 12px; z-index: 999; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); width: 240px; display: none; flex-direction: column; gap: 6px; line-height: 1.3; text-align: left;">
+                                                 <div style="font-size: 0.65rem; font-weight: 800; color: var(--dg-primary); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-bottom: 4px;">
+                                                     Supplier Details
+                                                 </div>
+                                                 @if(!empty($supDetails['phone']))
+                                                     <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-main); font-weight: 600;">
+                                                         <i data-lucide="phone" style="width: 12px; height: 12px; stroke-width: 2.5; color: var(--dg-primary);"></i> {{ $supDetails['phone'] }}
+                                                     </span>
+                                                 @endif
+                                                 @if(!empty($supDetails['email']))
+                                                     <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-main); font-weight: 600; word-break: break-all;">
+                                                         <i data-lucide="mail" style="width: 12px; height: 12px; stroke-width: 2.5; color: var(--dg-primary);"></i> {{ $supDetails['email'] }}
+                                                     </span>
+                                                 @endif
+                                                 @if(!empty($supDetails['address']))
+                                                     <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-main); font-weight: 600;">
+                                                         <i data-lucide="map-pin" style="width: 12px; height: 12px; stroke-width: 2.5; color: var(--dg-primary);"></i> {{ $supDetails['address'] }}
+                                                     </span>
+                                                 @endif
+                                                 @if(!empty($supDetails['delivery_person']))
+                                                     <div style="border-top: 1px solid var(--border-color); margin-top: 4px; padding-top: 6px; display: flex; flex-direction: column; gap: 3px;">
+                                                         <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Representative</div>
+                                                         <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-main); font-weight: 600;">
+                                                             <i data-lucide="user" style="width: 12px; height: 12px; stroke-width: 2.5; color: var(--dg-primary);"></i> {{ $supDetails['delivery_person'] }}
+                                                         </span>
+                                                         @if(!empty($supDetails['delivery_phone']))
+                                                             <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; color: var(--text-muted); font-weight: 500; padding-left: 18px;">
+                                                                 {{ $supDetails['delivery_phone'] }}
+                                                             </span>
+                                                         @endif
+                                                     </div>
+                                                 @endif
+                                             </div>
+                                         @endif
+                                    @elseif($item->donor_name)
+                                        <div style="font-weight: 800; color: var(--text-main);">{{ $item->donor_name }}</div>
+                                        <span style="font-size: 0.65rem; color: #a1a1aa; text-transform: uppercase; font-weight: 800;">Donor Contribution</span>
+                                    @else
+                                        <span style="color: var(--text-muted); font-weight: 500;">System</span>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
@@ -612,13 +678,36 @@
                             <th>Usage</th>
                             <th>Status</th>
                             <th>Date Requested</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($requisitions as $req)
                             <tr class="dg-row">
-                                <td style="font-weight: 900; font-family: monospace; color: var(--dg-primary);">
-                                    {{ $req->unique_id }}
+                                <td style="font-weight: 900; font-family: monospace; color: var(--dg-primary); position: relative;">
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <span>{{ $req->unique_id }}</span>
+                                        <button onclick="toggleRequisitionItems(this)" style="background: rgba(99, 102, 241, 0.1); border: 1.5px solid rgba(99, 102, 241, 0.2); cursor: pointer; padding: 4px; color: var(--dg-primary); display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; transition: all 0.2s; outline: none;" class="req-items-toggle-btn" onmouseover="this.style.background='rgba(99, 102, 241, 0.2)'; this.style.borderColor='rgba(99, 102, 241, 0.3)';" onmouseout="this.style.background='rgba(99, 102, 241, 0.1)'; this.style.borderColor='rgba(99, 102, 241, 0.2)';" type="button">
+                                            <i data-lucide="chevron-down" style="width: 12px; height: 12px; stroke-width: 3.5;"></i>
+                                        </button>
+                                    </div>
+                                    <div class="req-items-container" style="position: absolute; top: calc(100% - 4px); left: 12px; z-index: 999; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); width: 280px; display: none; flex-direction: column; gap: 6px; line-height: 1.3; text-align: left; font-family: sans-serif;">
+                                         <div style="font-size: 0.65rem; font-weight: 800; color: var(--dg-primary); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-bottom: 4px;">
+                                             Requested Items
+                                         </div>
+                                         <div style="display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto;" class="custom-scrollbar">
+                                             @foreach($req->items as $item)
+                                                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px; font-size: 0.75rem;">
+                                                     <div style="font-weight: 700; color: var(--text-main); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $item->description }}">
+                                                         {{ $item->description }}
+                                                     </div>
+                                                     <div style="font-weight: 800; color: var(--dg-primary); margin-left: 8px; flex-shrink: 0;">
+                                                         {{ $item->quantity_requested }} {{ $item->unit }}
+                                                     </div>
+                                                 </div>
+                                             @endforeach
+                                         </div>
+                                    </div>
                                 </td>
                                 <td style="font-weight: 800;">
                                     {{ $req->requester_name }}
@@ -652,6 +741,39 @@
                                 </td>
                                 <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
                                     {{ $req->created_at->format('d/m/Y H:i') }}
+                                </td>
+                                <td>
+                                    @if($req->requires_dg_approval && ($req->dg_status ?? 'pending') === 'pending' && $req->main_admin_status === 'approved')
+                                        <div style="display: flex; gap: 6px; align-items: center;">
+                                            <button onclick="approveRequisition({{ $req->id }}, this)" class="dg-action-btn approve" style="padding: 6px 12px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; font-size: 0.72rem; font-weight: 800; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; display: inline-flex; align-items: center; gap: 4px;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
+                                                <i data-lucide="check-circle" style="width: 13px; height: 13px;"></i> Approve
+                                            </button>
+                                            <button onclick="openDeclineModal({{ $req->id }}, this)" class="dg-action-btn decline" style="padding: 6px 12px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 8px; font-size: 0.72rem; font-weight: 800; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; display: inline-flex; align-items: center; gap: 4px;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
+                                                <i data-lucide="x-circle" style="width: 13px; height: 13px;"></i> Decline
+                                            </button>
+                                        </div>
+                                    @elseif($req->requires_dg_approval)
+                                        @if(($req->dg_status ?? 'pending') === 'approved')
+                                            <span class="dg-badge success" style="font-size: 0.65rem;">
+                                                <i data-lucide="check" style="width: 10px; height: 10px;"></i> DG Approved
+                                            </span>
+                                        @elseif(($req->dg_status ?? 'pending') === 'declined')
+                                            <div style="display: flex; flex-direction: column; gap: 3px;">
+                                                <span class="dg-badge danger" style="font-size: 0.65rem;">
+                                                    <i data-lucide="x" style="width: 10px; height: 10px;"></i> DG Declined
+                                                </span>
+                                                @if($req->dg_decline_reason)
+                                                    <div style="font-size: 0.65rem; color: var(--text-muted); font-style: italic; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $req->dg_decline_reason }}">
+                                                        Reason: {{ $req->dg_decline_reason }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">-</span>
+                                        @endif
+                                    @else
+                                        <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">-</span>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
@@ -769,7 +891,86 @@
 
 </div>
 
+{{-- Decline Requisition Modal --}}
+<div id="dg-decline-modal" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); z-index: 99999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;">
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 2rem; width: 440px; max-width: 90%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; gap: 1.25rem; transform: scale(0.95); transition: transform 0.3s ease;" id="dg-decline-modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 36px; height: 36px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #ef4444;">
+                    <i data-lucide="x-circle" style="width: 20px; height: 20px;"></i>
+                </div>
+                <h3 style="font-weight: 900; font-size: 1.15rem; color: var(--text-main); margin: 0; letter-spacing: -0.02em;">Decline Requisition</h3>
+            </div>
+            <button onclick="closeDeclineModal()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='var(--text-muted)'">
+                <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+            </button>
+        </div>
+        <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600; line-height: 1.5;">
+            Please state the official reason for declining requisition <strong style="color: var(--text-main);" id="decline-modal-req-id">#00000</strong>. This description will be sent back to the requester.
+        </div>
+        <div>
+            <textarea id="decline-reason-input" class="filter-control-dg" placeholder="Enter details on why this request is declined..." style="width: 100%; min-height: 120px; font-family: inherit; resize: vertical; box-sizing: border-box;" required></textarea>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button onclick="closeDeclineModal()" style="padding: 10px 18px; background: var(--bg-main); border: 1.5px solid var(--border-color); color: var(--text-main); border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: background 0.2s;">
+                Cancel
+            </button>
+            <button id="decline-submit-btn" onclick="submitDecline()" style="padding: 10px 20px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 12px; font-weight: 900; font-size: 0.8rem; cursor: pointer; transition: transform 0.25s, box-shadow 0.25s;">
+                Decline Requisition
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
+    let dgSearchTimeout = null;
+
+    function toggleSupplierDetails(btn) {
+        const container = btn.closest('td').querySelector('.supplier-details-container');
+        if (container) {
+            const isHidden = window.getComputedStyle(container).display === 'none';
+            // Hide all other supplier detail containers first
+            document.querySelectorAll('.supplier-details-container').forEach(c => {
+                if (c !== container) {
+                    c.style.display = 'none';
+                    const parentBtn = c.closest('td').querySelector('.supplier-toggle-btn');
+                    if (parentBtn) parentBtn.style.transform = 'rotate(0deg)';
+                }
+            });
+
+            if (isHidden) {
+                container.style.display = 'flex';
+                btn.style.transform = 'rotate(180deg)';
+            } else {
+                container.style.display = 'none';
+                btn.style.transform = 'rotate(0deg)';
+            }
+        }
+    }
+
+    function toggleRequisitionItems(btn) {
+        const container = btn.closest('td').querySelector('.req-items-container');
+        if (container) {
+            const isHidden = window.getComputedStyle(container).display === 'none';
+            // Hide all other requisition items detail containers first
+            document.querySelectorAll('.req-items-container').forEach(c => {
+                if (c !== container) {
+                    c.style.display = 'none';
+                    const parentBtn = c.closest('td').querySelector('.req-items-toggle-btn');
+                    if (parentBtn) parentBtn.style.transform = 'rotate(0deg)';
+                }
+            });
+
+            if (isHidden) {
+                container.style.display = 'flex';
+                btn.style.transform = 'rotate(180deg)';
+            } else {
+                container.style.display = 'none';
+                btn.style.transform = 'rotate(0deg)';
+            }
+        }
+    }
+
     function switchDGTab(panelId, btn) {
         // Toggle Buttons
         document.querySelectorAll('.dg-tab-btn').forEach(b => b.classList.remove('active'));
@@ -781,17 +982,397 @@
 
         // Store active tab in localStorage
         localStorage.setItem('active_dg_tab', panelId);
+
+        // Dynamically show/hide Severity and Status dropdowns
+        const severitySelect = document.getElementById('dg-log-severity');
+        const statusSelect = document.getElementById('dg-req-status');
+        
+        if (severitySelect) {
+            severitySelect.style.display = (panelId === 'dg-audit-trail-tab') ? 'inline-block' : 'none';
+        }
+        
+        if (statusSelect) {
+            statusSelect.style.display = (panelId === 'dg-staff-reqs-tab') ? 'inline-block' : 'none';
+        }
+    }
+
+    function reloadDGData() {
+        const form = document.getElementById('dg-filter-form');
+        if (!form) return;
+
+        const formData = new FormData(form);
+        const params = new URLSearchParams(formData);
+        
+        // Remove empty params
+        for (const [key, value] of [...params.entries()]) {
+            if (!value) {
+                params.delete(key);
+            }
+        }
+        
+        const queryString = params.toString();
+        const fetchUrl = `{{ route('dg.dashboard') }}${queryString ? '?' + queryString : ''}`;
+        
+        // Update browser URL
+        history.pushState(null, '', fetchUrl);
+        
+        // Update print button href
+        const printBtn = document.getElementById('btn-print-dg-report');
+        if (printBtn) {
+            const dateFrom = params.get('date_from') || '';
+            const dateTo = params.get('date_to') || '';
+            printBtn.setAttribute('href', `{{ route('dg.print') }}?date_from=${encodeURIComponent(dateFrom)}&date_to=${encodeURIComponent(dateTo)}`);
+        }
+
+        // Show/hide Clear button dynamically
+        let anyFilled = false;
+        const inputsToCheck = ['search_query', 'date_from', 'date_to', 'log_severity', 'req_status'];
+        inputsToCheck.forEach(name => {
+            if (params.get(name)) anyFilled = true;
+        });
+
+        // Update clear button container or handle its existence
+        const clearBtn = document.getElementById('btn-dg-clear');
+        if (anyFilled) {
+            if (!clearBtn) {
+                const btnContainer = form.querySelector('div[style*="display: flex"]');
+                const clearLink = document.createElement('a');
+                clearLink.id = 'btn-dg-clear';
+                clearLink.href = '{{ route("dg.dashboard") }}';
+                clearLink.className = 'filter-control-dg';
+                clearLink.style.cssText = 'background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1.5px solid #ef4444; text-decoration: none; text-align: center; font-weight: 800; min-width: 100px; display: inline-flex; align-items: center; justify-content: center;';
+                clearLink.innerText = 'Clear';
+                clearLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    form.reset();
+                    reloadDGData();
+                });
+                btnContainer.appendChild(clearLink);
+            }
+        } else {
+            if (clearBtn) {
+                clearBtn.remove();
+            }
+        }
+
+        fetch(fetchUrl)
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // 1. Update stats cards numbers
+                const statNumbers = document.querySelectorAll('.stat-number');
+                const newStatNumbers = doc.querySelectorAll('.stat-number');
+                statNumbers.forEach((stat, idx) => {
+                    if (newStatNumbers[idx]) {
+                        stat.innerHTML = newStatNumbers[idx].innerHTML;
+                    }
+                });
+
+                // 2. Update all tab panels
+                const tabPanels = ['dg-audit-trail-tab', 'dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab'];
+                tabPanels.forEach(panelId => {
+                    const oldPanel = document.getElementById(panelId);
+                    const newPanel = doc.getElementById(panelId);
+                    if (oldPanel && newPanel) {
+                        oldPanel.innerHTML = newPanel.innerHTML;
+                    }
+                });
+
+                // Re-initialize lucide icons on dynamically loaded contents
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+                
+                // Intercept new pagination links
+                bindDGPaginationLinks();
+            })
+            .catch(err => console.error('Error fetching filtered data:', err));
+    }
+
+    function bindDGPaginationLinks() {
+        document.querySelectorAll('.dg-page-btn').forEach(link => {
+            if (link.tagName.toLowerCase() === 'a') {
+                // Remove existing listeners by cloning or just clean check
+                const newLink = link.cloneNode(true);
+                link.parentNode.replaceChild(newLink, link);
+                newLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const url = newLink.getAttribute('href');
+                    
+                    history.pushState(null, '', url);
+                    
+                    fetch(url)
+                        .then(res => res.text())
+                        .then(html => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            
+                            // Only update tab panels and pagination
+                            const tabPanels = ['dg-audit-trail-tab', 'dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab'];
+                            tabPanels.forEach(panelId => {
+                                const oldPanel = document.getElementById(panelId);
+                                const newPanel = doc.getElementById(panelId);
+                                if (oldPanel && newPanel) {
+                                    oldPanel.innerHTML = newPanel.innerHTML;
+                                }
+                            });
+                            
+                            if (typeof lucide !== 'undefined') {
+                                lucide.createIcons();
+                            }
+                            
+                            bindDGPaginationLinks();
+                            
+                            // Scroll panel back to top
+                            const activePanel = document.querySelector('.dg-tab-panel.active');
+                            if (activePanel) {
+                                activePanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            }
+                        });
+                });
+            }
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         // Restore tab
-        const savedTab = localStorage.getItem('active_dg_tab');
-        if (savedTab) {
-            const btn = Array.from(document.querySelectorAll('.dg-tab-btn')).find(b => b.getAttribute('onclick').includes(savedTab));
-            if (btn) btn.click();
+        const savedTab = localStorage.getItem('active_dg_tab') || 'dg-audit-trail-tab';
+        const btn = Array.from(document.querySelectorAll('.dg-tab-btn')).find(b => b.getAttribute('onclick').includes(savedTab));
+        if (btn) {
+            btn.click();
+        } else {
+            const defaultBtn = document.getElementById('tab-btn-audit-trail');
+            if (defaultBtn) defaultBtn.click();
         }
 
         if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // Dismiss supplier/requisition popups when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.supplier-toggle-btn') && !e.target.closest('.supplier-details-container')) {
+                document.querySelectorAll('.supplier-details-container').forEach(c => {
+                    c.style.display = 'none';
+                    const parentBtn = c.closest('td').querySelector('.supplier-toggle-btn');
+                    if (parentBtn) parentBtn.style.transform = 'rotate(0deg)';
+                });
+            }
+            if (!e.target.closest('.req-items-toggle-btn') && !e.target.closest('.req-items-container')) {
+                document.querySelectorAll('.req-items-container').forEach(c => {
+                    c.style.display = 'none';
+                    const parentBtn = c.closest('td').querySelector('.req-items-toggle-btn');
+                    if (parentBtn) parentBtn.style.transform = 'rotate(0deg)';
+                });
+            }
+        });
+
+        // Close decline modal when clicking outside content area
+        document.getElementById('dg-decline-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('dg-decline-modal')) {
+                closeDeclineModal();
+            }
+        });
+
+        // Setup filter input listeners
+        const form = document.getElementById('dg-filter-form');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                reloadDGData();
+            });
+
+            // Bind change events to select and date inputs
+            form.querySelectorAll('select, input[type="date"]').forEach(input => {
+                input.addEventListener('change', () => {
+                    reloadDGData();
+                });
+            });
+
+            // Bind input events to search text input
+            const searchInput = document.getElementById('dg-search-query');
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(dgSearchTimeout);
+                    dgSearchTimeout = setTimeout(() => {
+                        reloadDGData();
+                    }, 500);
+                });
+            }
+
+            // Clear button click listener
+            const clearBtn = document.getElementById('btn-dg-clear');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    form.reset();
+                    reloadDGData();
+                });
+            }
+        }
+
+        // Bind initially loaded pagination links
+        bindDGPaginationLinks();
     });
+
+    let currentDeclineId = null;
+
+    function openDeclineModal(id, btn) {
+        currentDeclineId = id;
+        const modal = document.getElementById('dg-decline-modal');
+        const content = document.getElementById('dg-decline-modal-content');
+        const idLabel = document.getElementById('decline-modal-req-id');
+        const textInput = document.getElementById('decline-reason-input');
+
+        if (idLabel) idLabel.textContent = `#${id}`;
+        if (textInput) textInput.value = '';
+
+        if (modal && content) {
+            modal.style.opacity = '1';
+            modal.style.pointerEvents = 'auto';
+            content.style.transform = 'scale(1)';
+        }
+    }
+
+    function closeDeclineModal() {
+        currentDeclineId = null;
+        const modal = document.getElementById('dg-decline-modal');
+        const content = document.getElementById('dg-decline-modal-content');
+
+        if (modal && content) {
+            modal.style.opacity = '0';
+            modal.style.pointerEvents = 'none';
+            content.style.transform = 'scale(0.95)';
+        }
+    }
+
+    async function submitDecline() {
+        if (!currentDeclineId) return;
+        const reasonInput = document.getElementById('decline-reason-input');
+        const reason = reasonInput ? reasonInput.value.trim() : '';
+
+        if (!reason) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Reason Required',
+                text: 'Please provide a reason for declining this requisition.',
+                confirmButtonColor: '#6366f1'
+            });
+            return;
+        }
+
+        const submitBtn = document.getElementById('decline-submit-btn');
+        const originalHtml = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i data-lucide="loader-2" class="animate-spin" style="width:16px;"></i> Processing...';
+        if (window.lucide) lucide.createIcons();
+
+        try {
+            const res = await fetch(`/dg/requisitions/${currentDeclineId}/process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: 'declined',
+                    decline_reason: reason
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                closeDeclineModal();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Requisition Declined',
+                    text: data.message,
+                    confirmButtonColor: '#10b981'
+                });
+                reloadDGData();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Failed',
+                    text: data.message || 'Could not decline requisition.',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Connection Error',
+                text: 'Could not communicate with the server.',
+                confirmButtonColor: '#ef4444'
+            });
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalHtml;
+            if (window.lucide) lucide.createIcons();
+        }
+    }
+
+    async function approveRequisition(id, btn) {
+        const confirmResult = await Swal.fire({
+            title: 'Approve Requisition?',
+            text: `Are you sure you want to approve store requisition #${id}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Approve'
+        });
+
+        if (!confirmResult.isConfirmed) return;
+
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin" style="width:13px; height:13px;"></i> Approving...';
+        if (window.lucide) lucide.createIcons();
+
+        try {
+            const res = await fetch(`/dg/requisitions/${id}/process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: 'approved'
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Approved Successfully',
+                    text: data.message,
+                    confirmButtonColor: '#10b981'
+                });
+                reloadDGData();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Failed',
+                    text: data.message || 'Could not approve requisition.',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        } catch (err) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Connection Error',
+                text: 'Could not communicate with the server.',
+                confirmButtonColor: '#ef4444'
+            });
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            if (window.lucide) lucide.createIcons();
+        }
+    }
 </script>
 @endsection

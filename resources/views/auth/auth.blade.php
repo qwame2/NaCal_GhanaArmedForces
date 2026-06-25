@@ -449,8 +449,8 @@
                 <h2 style="color: var(--text-main); font-size: 1.6rem; font-weight: 950; letter-spacing: -0.04em; margin-bottom: 0.15rem;">NACOC</h2>
                 <p style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Stores Inventory Management System(NSIMs)</p>
 
-                <!-- Target Interface Selector -->
-                <div class="interface-selector" style="margin-top: 1.5rem; width: 100%; max-width: 300px; margin-inline: auto;">
+                <!-- Target Interface Selector (Hidden for security) -->
+                <div class="interface-selector" style="display: none !important; margin-top: 1.5rem; width: 100%; max-width: 300px; margin-inline: auto;">
                     <input type="hidden" name="target_interface" id="targetInterfaceInput" value="user">
                     <div class="interface-pill active" onclick="setInterface('user', this)">
                         <i data-lucide="layout-grid"></i>
@@ -462,8 +462,8 @@
                     </div>
                 </div>
 
-                <!-- Dynamic Auth Tabs Container -->
-                <div class="auth-tabs" id="authTabsContainer" style="margin-top: 1.5rem; margin-inline: auto; display: flex; justify-content: center; transition: all 0.3s ease;">
+                <!-- Dynamic Auth Tabs Container (Hidden) -->
+                <div class="auth-tabs" id="authTabsContainer" style="display: none !important; margin-top: 1.5rem; margin-inline: auto; justify-content: center; transition: all 0.3s ease;">
                     <!-- Dynamically populated by setInterface -->
                 </div>
             </div>
@@ -510,6 +510,10 @@
                             <button type="submit" class="auth-btn-primary" style="background: var(--primary) !important; height: 56px; font-size: 1rem; border-radius: 20px; margin-top: 1rem; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);">
                                 <span>Login</span>
                             </button>
+
+                            <div id="registerToggleContainer" style="text-align: center; margin-top: 1rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
+                                Don't have an account? <a href="javascript:void(0)" onclick="toggleAuth('register')" style="color: var(--primary); text-decoration: none;">Register</a>
+                            </div>
                         </form>
                     </div>
 
@@ -619,6 +623,10 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                                 <span>Register Account</span>
                             </button>
+
+                            <div style="text-align: center; margin-top: 1rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
+                                Already have an account? <a href="javascript:void(0)" onclick="toggleAuth('login')" style="color: var(--primary); text-decoration: none;">Login</a>
+                            </div>
                         </form>
 
                         <!-- User Self Registration -->
@@ -728,6 +736,9 @@
                                                 <option value="Material Development Department">Material Development Department</option>
                                                 <option value="Client Service Department">Client Service Department</option>
                                             </optgroup>
+                                            <optgroup label="NON DEPARTMENTAL">
+                                                <option value="Non Departmental">Non Departmental</option>
+                                            </optgroup>
                                         </select>
                                     </div>
                                 </div>
@@ -786,6 +797,10 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                                 <span>Submit Registration Request</span>
                             </button>
+
+                            <div style="text-align: center; margin-top: 1rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
+                                Already have an account? <a href="javascript:void(0)" onclick="toggleAuth('login')" style="color: var(--primary); text-decoration: none;">Login</a>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -1252,6 +1267,15 @@
             toggleAuth('login');
         }
 
+        const toggleContainer = document.getElementById('registerToggleContainer');
+        if (toggleContainer) {
+            if (val === 'admin') {
+                toggleContainer.style.display = (!ADMIN_EXISTS) ? 'block' : 'none';
+            } else {
+                toggleContainer.style.display = ALLOW_REGISTRATION ? 'block' : 'none';
+            }
+        }
+
         checkForgotEligibility();
         updateViewportHeight();
     }
@@ -1362,13 +1386,12 @@
 
 
 
-        // Initialize Default Interface based on session flash
-        @if(session('target_admin'))
-            const adminPill = Array.from(document.querySelectorAll('.interface-pill')).find(el => el.textContent.trim() === 'Command Center');
-            setInterface('admin', adminPill);
-        @else
+        // Initialize Default Interface based on admin existence (hiding pills from view)
+        if (!ADMIN_EXISTS) {
+            setInterface('admin', document.querySelectorAll('.interface-pill')[1]);
+        } else {
             setInterface('user', document.querySelector('.interface-pill.active'));
-        @endif
+        }
 
         if (typeof lucide !== 'undefined') lucide.createIcons();
 

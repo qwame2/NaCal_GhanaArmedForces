@@ -9,6 +9,7 @@ use App\Models\ReturnedItem;
 use App\Models\StoreRequisition;
 use App\Models\User;
 use App\Models\Setting;
+use App\Models\Message;
 use Illuminate\Http\Request;
 
 class DGController extends Controller
@@ -65,6 +66,7 @@ class DGController extends Controller
                 'inventory_items.*',
                 'inventory_batches.entry_date',
                 'inventory_batches.supplier_name',
+                'inventory_batches.donor_name',
                 'inventory_batches.ledge_category',
                 'inventory_batches.acquisition_type'
             )
@@ -143,7 +145,14 @@ class DGController extends Controller
         $receivedQuery = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->where('inventory_batches.approval_status', '=', 'approved')
-            ->select('inventory_items.*', 'inventory_batches.entry_date', 'inventory_batches.supplier_name', 'inventory_batches.ledge_category')
+            ->select(
+                'inventory_items.*',
+                'inventory_batches.entry_date',
+                'inventory_batches.supplier_name',
+                'inventory_batches.donor_name',
+                'inventory_batches.ledge_category',
+                'inventory_batches.acquisition_type'
+            )
             ->orderBy('inventory_batches.entry_date', 'desc');
         $reqsQuery = StoreRequisition::with('requester')->orderBy('created_at', 'desc');
         $usersQuery = User::where('registration_status', 'approved')->orderBy('name', 'asc');
@@ -177,5 +186,152 @@ class DGController extends Controller
             'ledgeMap',
             'dg'
         ));
+    }
+
+    public function processRequisition(Request $request, $id)
+    {
+        if (auth()->user()->role !== 'Director General') {
+            abort(403, 'Access Restricted: Director General clearance required.');
+        }
+
+        $request->validate([
+            'status' => 'required|in:approved,declined',
+            'decline_reason' => 'required_if:status,declined|nullable|string|max:2000',
+        ]);
+
+        $req = StoreRequisition::findOrFail($id);
+        if (!$req->requires_dg_approval) {
+            return response()->json(['success' => false, 'message' => 'This requisition does not require DG approval.'], 400);
+        }
+        if ($req->dg_status !== 'pending') {
+            return response()->json(['success' => false, 'message' => 'Requisition has already been processed by DG.'], 400);
+        }
+        if ($req->main_admin_status !== 'approved') {
+            return response()->json(['success' => false, 'message' => 'Requisition must be approved by Stores Dept Head first.'], 400);
+        }
+
+        if ($request->status === 'approved') {
+            $req->dg_status = 'approved';
+            $req->dg_approved_by = auth()->user()->name;
+            $req->dg_approved_at = now();
+            $req->save();
+
+            // Log
+            SystemLog::create([
+                'user_id' => auth()->id(),
+                'event_type' => 'REQUISITION',
+                'action' => 'DG_APPROVE',
+                'description' => "Director General " . auth()->user()->name . " approved store requisition #{$req->id} from department: {$req->department}.",
+                'severity' => 'info',
+                'metadata' => ['requisition_id' => $req->id],
+                'ip_address' => $request->ip(),
+            ]);
+
+            // Notify Head of Stores (Admin)
+            $admins = User::getApproversQuery()->where('is_active', true)->get();
+            foreach ($admins as $admin) {
+                $priorityLabel = strtoupper($req->priority);
+                $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
+                $msg .= "<b style='color:#10b981;'>✅ DG APPROVED REQUISITION — {$priorityLabel} PRIORITY</b><br><br>";
+                $msg .= "Director General <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
+                $msg .= "This requisition has been cleared for final processing and stock checkout.<br><br>";
+                $msg .= "<b>Department:</b> {$req->department}<br>";
+                $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
+                $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br><br>";
+                $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Perform Final Head Review</a>";
+                $msg .= "</div>";
+
+                Message::create([
+                    'sender_id' => auth()->id(),
+                    'receiver_id' => $admin->id,
+                    'message' => $msg,
+                    'is_automated' => true,
+                ]);
+            }
+
+            // Notify HOD
+            $hods = User::where('role', 'Department Head')->where('department', $req->department)->where('is_active', true)->get();
+            foreach ($hods as $hod) {
+                $msg = "<div class='personnel-view requisition-status-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
+                $msg .= "<b style='color:#10b981;'>📋 DG APPROVED REQUISITION</b><br><br>";
+                $msg .= "Director General has approved requisition Ref: #<b>{$req->id}</b>.<br><br>";
+                $msg .= "</div>";
+                Message::create([
+                    'sender_id' => auth()->id(),
+                    'receiver_id' => $hod->id,
+                    'message' => $msg,
+                    'is_automated' => true,
+                ]);
+            }
+
+            $message = "Requisition #{$req->id} approved successfully.";
+        } else {
+            $req->dg_status = 'declined';
+            $req->status = 'declined';
+            $req->dg_decline_reason = $request->decline_reason;
+            $req->dg_approved_by = auth()->user()->name;
+            $req->dg_approved_at = now();
+            $req->save();
+
+            // Log
+            SystemLog::create([
+                'user_id' => auth()->id(),
+                'event_type' => 'REQUISITION',
+                'action' => 'DG_DECLINE',
+                'description' => "Director General " . auth()->user()->name . " declined store requisition #{$req->id} from department: {$req->department}.",
+                'severity' => 'warning',
+                'metadata' => ['requisition_id' => $req->id],
+                'ip_address' => $request->ip(),
+            ]);
+
+            // Notify Requester
+            if ($req->requested_by) {
+                $msg  = "<div class='personnel-view requisition-status-msg' style='padding:15px;border:1px solid #ef4444;border-radius:12px;background:rgba(239,68,68,0.02);'>";
+                $msg .= "<b style='color:#ef4444;'>📋 REQUISITION DECLINED BY DIRECTOR GENERAL</b><br><br>";
+                $msg .= "Your store requisition (Ref: #{$req->id}) from <b>{$req->department}</b> has been <b>DECLINED</b> by the Director General.<br><br>";
+                if ($request->decline_reason) {
+                    $msg .= "<div style='margin-top:8px;padding:10px 14px;background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:10px;font-size:0.85rem;color:#7f1d1d;'><b>Reason for Decline:</b> " . e($request->decline_reason) . "</div><br>";
+                }
+                $msg .= "<a href='" . route('requisitions.index') . "' style='display:inline-block;background:#ef4444;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>View My Requisitions</a>";
+                $msg .= "</div>";
+
+                Message::create([
+                    'sender_id' => auth()->id(),
+                    'receiver_id' => $req->requested_by,
+                    'message' => $msg,
+                    'is_automated' => true,
+                ]);
+            }
+
+            // Notify Stores Head and HOD
+            $recipients = User::where(function($q) use ($req) {
+                $q->where('role', 'Main Admin')
+                  ->orWhere(fn($sq) => $sq->where('role', 'Department Head')->where('department', $req->department));
+            })->where('is_active', true)->get();
+
+            foreach ($recipients as $recipient) {
+                $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #ef4444;border-radius:12px;background:rgba(239,68,68,0.05);'>";
+                $msg .= "<b style='color:#ef4444;'>❌ DG DECLINED REQUISITION — Ref: #{$req->id}</b><br><br>";
+                $msg .= "Director General has <b>DECLINED</b> store requisition Ref: #<b>{$req->id}</b>.<br><br>";
+                if ($request->decline_reason) {
+                    $msg .= "<b>Reason:</b> " . e($request->decline_reason) . "<br><br>";
+                }
+                $msg .= "</div>";
+
+                Message::create([
+                    'sender_id' => auth()->id(),
+                    'receiver_id' => $recipient->id,
+                    'message' => $msg,
+                    'is_automated' => true,
+                ]);
+            }
+
+            $message = "Requisition #{$req->id} declined successfully.";
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+        ]);
     }
 }

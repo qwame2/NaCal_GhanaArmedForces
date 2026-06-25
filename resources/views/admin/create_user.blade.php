@@ -663,7 +663,7 @@
                             'Project Management Department', 'Human Resource Management Department', 'Welfare Department',
                             'Religious Affairs Department', 'Internal & External Training Department', 'Public Affairs Department',
                             'International Relations Department', 'Material Development Department', 'Client Service Department',
-                            'Stores', 'Store', 'Internal Audit'
+                            'Stores', 'Store', 'Internal Audit', 'Non Departmental'
                         ];
                         
                         if (!empty($selectedDept) && !in_array($selectedDept, $standardDepts)) {
@@ -770,6 +770,9 @@
                                             <option value="International Relations Department" {{ $selectedDept === 'International Relations Department' ? 'selected' : '' }}>International Relations Department</option>
                                             <option value="Material Development Department" {{ $selectedDept === 'Material Development Department' ? 'selected' : '' }}>Material Development Department</option>
                                             <option value="Client Service Department" {{ $selectedDept === 'Client Service Department' ? 'selected' : '' }}>Client Service Department</option>
+                                        </optgroup>
+                                        <optgroup label="NON DEPARTMENTAL">
+                                            <option value="Non Departmental" {{ $selectedDept === 'Non Departmental' ? 'selected' : '' }}>Non Departmental</option>
                                         </optgroup>
                                         <option value="custom" {{ $isCustomDept ? 'selected' : '' }}>-- Custom / Other Department --</option>
                                     </select>
@@ -956,6 +959,9 @@
                                     <option value="International Relations Department">International Relations Department</option>
                                     <option value="Material Development Department">Material Development Department</option>
                                     <option value="Client Service Department">Client Service Department</option>
+                                </optgroup>
+                                <optgroup label="NON DEPARTMENTAL">
+                                    <option value="Non Departmental">Non Departmental</option>
                                 </optgroup>
                                 <option value="custom">-- Custom / Other Department --</option>
                             </select>

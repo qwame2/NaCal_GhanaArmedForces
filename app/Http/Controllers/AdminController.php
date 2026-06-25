@@ -949,6 +949,15 @@ class AdminController extends Controller
                     $catSetting->save();
                 }
             }
+
+            // Handle dg_approval_categories multi-select clear
+            if (!$request->has('dg_approval_categories')) {
+                $dgCatSetting = \App\Models\Setting::where('key', 'dg_approval_categories')->first();
+                if ($dgCatSetting) {
+                    $dgCatSetting->value = json_encode([]);
+                    $dgCatSetting->save();
+                }
+            }
         }
 
         \App\Models\SystemLog::create([

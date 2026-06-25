@@ -465,57 +465,17 @@ class AuthController extends Controller
             // CIA SECURITY ENFORCEMENT: Prime the current tab for security lock
             $request->session()->flash('just_logged_in', true);
             
-            $target = $request->target_interface; // 'admin' or 'personnel'
-
-            // SCENARIO 1: User tried to enter ADMIN terminal
-            if ($target === 'admin') {
-                if (in_array($user->role, ['Main Admin', 'Department Head'])) {
-                    return redirect()->route('main-admin.requisitions');
-                } elseif ($user->role === 'Auditor') {
-                    return redirect()->route('auditor.dashboard');
-                } elseif ($user->role === 'Director General') {
-                    return redirect()->route('dg.dashboard');
-                } elseif ($user->is_admin) {
-                    return redirect()->route('admin.index');
-                } else {
-                    Auth::logout();
-                    $request->session()->invalidate();
-                    $request->session()->regenerateToken();
-                    return redirect()->route('login')->with('error', 'Security Violation: Administrative clearance required for this terminal.');
-                }
-            }
-
-            // SCENARIO 2: User tried to enter PERSONNEL terminal
-            if ($target === 'user') {
-                if (in_array($user->role, ['Main Admin', 'Department Head'])) {
-                    return redirect()->route('main-admin.requisitions');
-                }
-                if ($user->is_admin) {
-                    return redirect()->route('admin.index');
-                }
-                if ($user->role === 'Auditor') {
-                    return redirect()->route('auditor.dashboard');
-                }
-                if ($user->role === 'Director General') {
-                    return redirect()->route('dg.dashboard');
-                }
-                if ($user->role === 'Requisitioner') {
-                    return redirect()->route('requisitions.index');
-                }
-                return redirect()->route('dashboard');
-            }
-
             // Log the login
             \App\Models\SystemLog::create([
                 'user_id' => $user->id,
                 'event_type' => 'AUTH',
                 'action' => 'LOGIN',
-                'description' => "User authenticated and entered " . ($target === 'admin' ? 'Administrative' : 'Personnel') . " terminal. (Auth Source: " . ($user->guid ? 'Active Directory' : 'Local Database') . ")",
+                'description' => "User authenticated and entered system. (Auth Source: " . ($user->guid ? 'Active Directory' : 'Local Database') . ")",
                 'severity' => 'info',
                 'ip_address' => $request->ip()
             ]);
 
-            // Default fallback based on role
+            // Route user based on their specific role
             if (in_array($user->role, ['Main Admin', 'Department Head'])) {
                 return redirect()->route('main-admin.requisitions');
             } elseif ($user->role === 'Auditor') {

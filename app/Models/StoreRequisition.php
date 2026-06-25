@@ -48,6 +48,11 @@ class StoreRequisition extends Model
         'origin_approved_by',
         'stores_approved_by',
         'alternative_status',
+        'requires_dg_approval',
+        'dg_status',
+        'dg_approved_by',
+        'dg_approved_at',
+        'dg_decline_reason',
     ];
 
     protected $casts = [
@@ -103,6 +108,9 @@ class StoreRequisition extends Model
             }
             if (($this->main_admin_status ?? 'pending') === 'pending') {
                 return ['label' => 'Awaiting Store Head Review', 'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'];
+            }
+            if ($this->requires_dg_approval && ($this->dg_status ?? 'pending') === 'pending') {
+                return ['label' => 'Awaiting DG Approval', 'color' => '#8b5cf6', 'bg' => 'rgba(139,92,246,0.1)'];
             }
             return ['label' => 'Awaiting Admin Review', 'color' => '#ef4444', 'bg' => 'rgba(239,68,68,0.1)'];
         }
