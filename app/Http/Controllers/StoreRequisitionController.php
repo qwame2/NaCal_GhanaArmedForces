@@ -229,7 +229,7 @@ class StoreRequisitionController extends Controller
     /**
      * Personnel: View status of requisitions (API).
      */
-    public function myRequisitions()
+    public function myRequisitions(Request $request)
     {
         $query = StoreRequisition::with(['items', 'requester', 'collector']);
 
@@ -238,46 +238,79 @@ class StoreRequisitionController extends Controller
             $query->where('requested_by', auth()->id());
         }
 
-        $requisitions = $query->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($req) {
-                return [
-                    'id'             => $req->id,
-                    'unique_id'      => $req->unique_id,
-                    'department'     => $req->department,
-                    'requester_name' => $req->requester_name,
-                    'requester_phone'=> $req->requester?->phone ?? 'N/A',
-                    'requester_email'=> $req->requester?->email ?? 'N/A',
-                    'purpose'        => $req->purpose,
-                    'priority'       => $req->priority,
-                    'priority_badge' => $req->priority_badge,
-                    'status'         => $req->status,
-                    'status_badge'   => $req->status_badge,
-                    'usage_type'     => $req->usage_type,
-                    'usage_type_badge' => $req->usage_type_badge,
-                    'admin_notes'    => $req->admin_notes,
-                    'decline_reason' => $req->decline_reason,
-                    'created_at'     => $req->created_at->format('d/m/y H:i'),
-                    'processed_at'   => $req->processed_at?->format('d/m/y H:i'),
-                    'collected_at'   => $req->collected_at?->format('d/m/y H:i'),
-                    'collected_by_name' => $req->collector?->name,
-                    'collector_name' => $req->collector_name,
-                    'collector_contact' => $req->collector_contact,
-                    'collector_location' => $req->collector_location,
-                    'items'          => $req->items->map(fn($i) => [
-                        'description'        => $i->description,
-                        'category'           => $i->category,
-                        'unit'               => $i->unit,
-                        'quantity_requested' => $i->quantity_requested,
-                        'quantity_approved'  => $i->quantity_approved,
-                        'alternative_description'       => $i->alternative_description,
-                        'alternative_quantity_approved' => $i->alternative_quantity_approved !== null ? (float)$i->alternative_quantity_approved : null,
-                        'remarks'            => $i->remarks,
-                    ]),
-                ];
+        // Apply search query
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function($q) use ($search) {
+                $parsedId = preg_replace('/[^0-9]/', '', $search);
+                if (!empty($parsedId)) {
+                    $q->where('id', 'LIKE', '%' . $parsedId . '%');
+                }
+                
+                $q->orWhere('unique_id', 'LIKE', '%' . $search . '%')
+                  ->orWhere('department', 'LIKE', '%' . $search . '%')
+                  ->orWhere('purpose', 'LIKE', '%' . $search . '%')
+                  ->orWhereHas('items', function($ki) use ($search) {
+                      $ki->where('description', 'LIKE', '%' . $search . '%');
+                  });
             });
+        }
 
-        return response()->json($requisitions);
+        $perPage = (int) $request->input('per_page', 5);
+        if ($perPage < 1 || $perPage > 100) {
+            $perPage = 5;
+        }
+
+        $paginator = $query->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+
+        $requisitions = collect($paginator->items())->map(function ($req) {
+            return [
+                'id'             => $req->id,
+                'unique_id'      => $req->unique_id,
+                'department'     => $req->department,
+                'requester_name' => $req->requester_name,
+                'requester_phone'=> $req->requester?->phone ?? 'N/A',
+                'requester_email'=> $req->requester?->email ?? 'N/A',
+                'purpose'        => $req->purpose,
+                'priority'       => $req->priority,
+                'priority_badge' => $req->priority_badge,
+                'status'         => $req->status,
+                'status_badge'   => $req->status_badge,
+                'origin_admin_status' => $req->origin_admin_status ?? 'pending',
+                'usage_type'     => $req->usage_type,
+                'usage_type_badge' => $req->usage_type_badge,
+                'admin_notes'    => $req->admin_notes,
+                'decline_reason' => $req->decline_reason,
+                'created_at'     => $req->created_at->format('d/m/y H:i'),
+                'processed_at'   => $req->processed_at?->format('d/m/y H:i'),
+                'collected_at'   => $req->collected_at?->format('d/m/y H:i'),
+                'collected_by_name' => $req->collector?->name,
+                'collector_name' => $req->collector_name,
+                'collector_contact' => $req->collector_contact,
+                'collector_location' => $req->collector_location,
+                'items'          => $req->items->map(fn($i) => [
+                    'description'        => $i->description,
+                    'category'           => $i->category,
+                    'unit'               => $i->unit,
+                    'quantity_requested' => $i->quantity_requested,
+                    'quantity_approved'  => $i->quantity_approved,
+                    'alternative_description'       => $i->alternative_description,
+                    'alternative_quantity_approved' => $i->alternative_quantity_approved !== null ? (float)$i->alternative_quantity_approved : null,
+                    'remarks'            => $i->remarks,
+                ]),
+            ];
+        });
+
+        return response()->json([
+            'data'         => $requisitions,
+            'current_page' => $paginator->currentPage(),
+            'last_page'    => $paginator->lastPage(),
+            'per_page'     => $paginator->perPage(),
+            'total'        => $paginator->total(),
+            'from'         => $paginator->firstItem(),
+            'to'           => $paginator->lastItem(),
+        ]);
     }
 
     public function collect(Request $request, $id)
@@ -495,6 +528,14 @@ class StoreRequisitionController extends Controller
 
         if (!$isRequester && !$isDeptHead) {
             return response()->json(['success' => false, 'message' => 'You are not authorized to follow up on this requisition.'], 403);
+        }
+
+        // Requisitioners can only follow up AFTER their dept head has reviewed and approved
+        if ($isRequester && !$isDeptHead && ($req->origin_admin_status ?? 'pending') === 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'You can only follow up after your Department Head has reviewed and approved the request.'
+            ], 400);
         }
 
         $isPendingStore = ($req->status === 'pending');
@@ -1314,8 +1355,15 @@ class StoreRequisitionController extends Controller
         if ($request->filled('department')) {
             $query->where('department', 'LIKE', '%' . $request->department . '%');
         }
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
 
-        $requisitions = $query->paginate(5)->withQueryString();
+        $requisitions = $query->paginate(15)->withQueryString();
+
         $ledgeMap = Setting::getCategories();
 
         // Calculate scoped stats
@@ -1351,7 +1399,23 @@ class StoreRequisitionController extends Controller
             $hasOverdueReturn = \App\Http\Controllers\TempRequisitionerController::hasOverdueReturn(auth()->user()->department);
         }
 
+        // AJAX request — return rendered partials as JSON
+        if ($request->ajax()) {
+            $rowsHtml = view('requisitions._req_table_rows', compact('requisitions'))->render();
+            $paginationHtml = $requisitions->hasPages()
+                ? view('requisitions._req_pagination', compact('requisitions'))->render()
+                : '';
+            return response()->json([
+                'rows'       => $rowsHtml,
+                'pagination' => $paginationHtml,
+                'total'      => $requisitions->total(),
+                'from'       => $requisitions->firstItem() ?? 0,
+                'to'         => $requisitions->lastItem() ?? 0,
+            ]);
+        }
+
         return view('requisitions.main_admin', compact('requisitions', 'ledgeMap', 'stats', 'hasOverdueReturn'));
+
     }
 
     /**
@@ -2091,6 +2155,134 @@ class StoreRequisitionController extends Controller
         $dueSoonItems = $dueSoonItems->sortBy('days_diff')->values();
 
         return view('requisitions.overdue', compact('overdueItems', 'dueSoonItems', 'isStoresHead'));
+    }
+
+    /**
+     * Main Admin / Dept Head: Track staff requests pipeline.
+     */
+    public function trackRequests(Request $request)
+    {
+        if (!in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
+            abort(403);
+        }
+
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        if (!$isStoresHead) {
+            $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+            if ($isBackup) {
+                $primaryOnline = \App\Models\User::where(function($q) {
+                        $q->where('role', 'Main Admin')
+                          ->orWhere('role', 'Dept. Head (Stores)')
+                          ->orWhereIn('department', ['Stores', 'Store']);
+                    })
+                    ->where('is_online', true)
+                    ->where('is_active', true)
+                    ->exists();
+                if (!$primaryOnline) {
+                    $isStoresHead = true;
+                }
+            }
+        }
+
+        $query = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])
+            ->orderBy('created_at', 'desc');
+
+        // Apply department scoping for HODs
+        if (!$isStoresHead) {
+            $query->where('department', auth()->user()->department);
+        }
+
+        // Apply custom status tracking filters
+        if ($request->filled('tracking_status')) {
+            $ts = $request->tracking_status;
+            if ($ts === 'awaiting_hod') {
+                $query->where('origin_admin_status', 'pending')->where('status', 'pending');
+            } elseif ($ts === 'awaiting_stores') {
+                $query->where('origin_admin_status', 'approved')->where('main_admin_status', 'pending')->where('status', 'pending');
+            } elseif ($ts === 'ready_collection') {
+                $query->whereIn('status', ['approved', 'partially_approved'])->whereNull('collected_at');
+            } elseif ($ts === 'collected') {
+                $query->whereNotNull('collected_at');
+            } elseif ($ts === 'declined') {
+                $query->where(function($q) {
+                    $q->where('status', 'declined')
+                      ->orWhere('origin_admin_status', 'declined')
+                      ->orWhere('main_admin_status', 'declined');
+                });
+            }
+        }
+
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
+        }
+
+        if ($request->filled('department')) {
+            $query->where('department', 'LIKE', '%' . $request->department . '%');
+        }
+
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function($q) use ($search) {
+                $parsedId = preg_replace('/[^0-9]/', '', $search);
+                if (!empty($parsedId)) {
+                    $q->where('id', $parsedId);
+                }
+                $q->orWhere('requester_name', 'LIKE', '%' . $search . '%')
+                  ->orWhereHas('items', function($ki) use ($search) {
+                      $ki->where('description', 'LIKE', '%' . $search . '%');
+                  });
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $requisitions = $query->paginate(12)->withQueryString();
+        $ledgeMap = Setting::getCategories();
+
+        // Calculate statistics for the tracking page
+        $statsQuery = StoreRequisition::query();
+        if (!$isStoresHead) {
+            $statsQuery->where('department', auth()->user()->department);
+        }
+
+        $statsData = (clone $statsQuery)->selectRaw("
+            SUM(CASE WHEN origin_admin_status = 'pending' AND status = 'pending' THEN 1 ELSE 0 END) as awaiting_hod,
+            SUM(CASE WHEN origin_admin_status = 'approved' AND main_admin_status = 'pending' AND status = 'pending' THEN 1 ELSE 0 END) as awaiting_stores,
+            SUM(CASE WHEN (status = 'approved' OR status = 'partially_approved') AND collected_at IS NULL THEN 1 ELSE 0 END) as ready_collection,
+            SUM(CASE WHEN collected_at IS NOT NULL THEN 1 ELSE 0 END) as collected,
+            SUM(CASE WHEN status = 'declined' OR origin_admin_status = 'declined' OR main_admin_status = 'declined' THEN 1 ELSE 0 END) as declined
+        ")->first();
+
+        $stats = [
+            'awaiting_hod'      => (int) ($statsData->awaiting_hod ?? 0),
+            'awaiting_stores'   => (int) ($statsData->awaiting_stores ?? 0),
+            'ready_collection'  => (int) ($statsData->ready_collection ?? 0),
+            'collected'         => (int) ($statsData->collected ?? 0),
+            'declined'          => (int) ($statsData->declined ?? 0),
+            'total'             => $requisitions->total(),
+        ];
+
+        if ($request->ajax()) {
+            $cardsHtml = view('requisitions._track_cards', compact('requisitions', 'isStoresHead'))->render();
+            $paginationHtml = $requisitions->hasPages()
+                ? view('requisitions._req_pagination', compact('requisitions'))->render()
+                : '';
+            return response()->json([
+                'cards'      => $cardsHtml,
+                'pagination' => $paginationHtml,
+                'total'      => $requisitions->total(),
+                'from'       => $requisitions->firstItem() ?? 0,
+                'to'         => $requisitions->lastItem() ?? 0,
+                'stats'      => $stats
+            ]);
+        }
+
+        return view('requisitions.track', compact('requisitions', 'ledgeMap', 'stats', 'isStoresHead'));
     }
 }
 

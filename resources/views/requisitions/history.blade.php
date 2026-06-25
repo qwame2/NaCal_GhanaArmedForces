@@ -790,9 +790,22 @@
                     <i data-lucide="clock" style="width: 22px; color: var(--store-orange);"></i>
                     My Requisition Log History
                 </h3>
-                <button class="refresh-btn" onclick="loadMyRequisitions()">
-                    <i data-lucide="refresh-cw" style="width: 14px;"></i> Refresh Log
-                </button>
+                <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                    <!-- Page Size Selector -->
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: var(--text-muted);">
+                        <span>Show</span>
+                        <select id="history-per-page" style="padding: 0.5rem 1.75rem 0.5rem 0.75rem; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-main) url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E&quot;) no-repeat right 8px center; background-size: 11px; appearance: none; color: var(--text-main); font-weight: 800; cursor: pointer; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--store-orange)'" onblur="this.style.borderColor='var(--border-color)'">
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+                        <span>entries</span>
+                    </div>
+                    <button class="refresh-btn" onclick="loadMyRequisitions()">
+                        <i data-lucide="refresh-cw" style="width: 14px;"></i> Refresh Log
+                    </button>
+                </div>
             </div>
 
             <div id="history-items-list">
@@ -808,14 +821,30 @@
         let allRequisitions = [];
         let searchQuery = '';
         let currentPage = 1;
-        const itemsPerPage = 5;
+        let totalPages = 1;
+        let totalItems = 0;
+        let startIndex = 0;
+        let endIndex = 0;
 
         // Dynamic API loader for user requisitions
         async function loadMyRequisitions() {
             const container = document.getElementById('history-items-list');
             try {
-                const response = await fetch('{{ route("requisitions.my") }}');
-                allRequisitions = await response.json();
+                const perPage = document.getElementById('history-per-page')?.value || 5;
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    search: searchQuery,
+                    per_page: perPage
+                });
+                const response = await fetch('{{ route("requisitions.my") }}?' + params.toString());
+                const resJson = await response.json();
+                
+                allRequisitions = resJson.data;
+                currentPage = resJson.current_page;
+                totalPages = resJson.last_page;
+                totalItems = resJson.total;
+                startIndex = resJson.from ? (resJson.from - 1) : 0;
+                endIndex = resJson.to || 0;
                 
                 // Track state transitions/changes locally
                 const snapshotKey = 'requisitions_status_snapshot';
@@ -895,7 +924,12 @@
                     }
                 });
 
-                localStorage.setItem(snapshotKey, JSON.stringify(currentSnapshot));
+                let mergedSnapshot = {};
+                if (savedSnapshot) {
+                    try { mergedSnapshot = JSON.parse(savedSnapshot); } catch(e) {}
+                }
+                Object.assign(mergedSnapshot, currentSnapshot);
+                localStorage.setItem(snapshotKey, JSON.stringify(mergedSnapshot));
 
                 if (movements.length > 0) {
                     let alertHtml = `<div style="text-align: left; max-height: 380px; overflow-y: auto;">`;
@@ -927,7 +961,7 @@
 
                 renderHistoryList();
             } catch(e) {
-                /* console print removed */
+                console.error(e);
                 container.innerHTML = `
                     <div style="padding: 3rem 1.5rem; text-align: center; color: var(--danger-color);">
                         <i data-lucide="alert-triangle" style="width: 32px; height: 32px; margin: 0 auto 0.75rem auto;"></i>
@@ -938,23 +972,11 @@
             }
         }
 
-        // Live Javascript history filters
+        // Live server-side history rendering
         function renderHistoryList() {
             const container = document.getElementById('history-items-list');
-            const q = searchQuery.toLowerCase().trim();
 
-            const filtered = allRequisitions.filter(req => {
-                if (!q) return true;
-                const uniqueId = req.unique_id || ('REQ-' + String(req.id).padStart(5, '0'));
-                const matchId = req.id.toString().includes(q);
-                const matchUniqueId = uniqueId.toLowerCase().includes(q);
-                const matchDept = req.department.toLowerCase().includes(q);
-                const matchPurpose = req.purpose.toLowerCase().includes(q);
-                const matchItems = req.items.some(i => i.description.toLowerCase().includes(q));
-                return matchId || matchUniqueId || matchDept || matchPurpose || matchItems;
-            });
-
-            if (filtered.length === 0) {
+            if (allRequisitions.length === 0) {
                 container.innerHTML = `
                     <div style="padding: 4rem 1.5rem; text-align: center; color: var(--text-muted);">
                         <i data-lucide="search" style="width: 42px; height: 42px; margin: 0 auto 1rem auto; opacity: 0.3; color: var(--store-orange);"></i>
@@ -966,20 +988,7 @@
                 return;
             }
 
-            const totalItems = filtered.length;
-            const totalPages = Math.ceil(totalItems / itemsPerPage);
-            if (currentPage > totalPages) {
-                currentPage = totalPages;
-            }
-            if (currentPage < 1) {
-                currentPage = 1;
-            }
-
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
-            const paginated = filtered.slice(startIndex, endIndex);
-
-            let itemsHtml = paginated.map(req => {
+            let itemsHtml = allRequisitions.map(req => {
                 let isCollected = req.collected_at !== null && req.collected_at !== undefined;
                 let completedSteps = 1;
                 let activeStep = 2;
@@ -1103,7 +1112,7 @@
                         ` : ''}
 
                         <div class="requisition-actions-row" style="margin-top: 1rem; display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
-                            ${req.status === 'pending' ? `
+                            ${req.status === 'pending' && req.origin_admin_status === 'approved' ? `
                                 <button class="action-btn-followup" onclick="sendFollowUp(${req.id}, this)" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--warning-color); padding: 8px 16px; border-radius: 10px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;">
                                     <i data-lucide="bell" style="width: 14px;"></i> Follow Up
                                 </button>
@@ -1156,7 +1165,7 @@
 
         function goToPage(page) {
             currentPage = page;
-            renderHistoryList();
+            loadMyRequisitions();
             document.querySelector('.history-card').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -1217,17 +1226,31 @@
             }
         }
 
+        let debounceTimer = null;
+
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             loadMyRequisitions();
 
-            // Search filter binding
+            // Search filter binding with debounce
             const searchInput = document.getElementById('history-search');
             searchInput.addEventListener('input', (e) => {
                 searchQuery = e.target.value;
                 currentPage = 1;
-                renderHistoryList();
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    loadMyRequisitions();
+                }, 400);
             });
+
+            // Per page dropdown binding
+            const perPageSelect = document.getElementById('history-per-page');
+            if (perPageSelect) {
+                perPageSelect.addEventListener('change', () => {
+                    currentPage = 1;
+                    loadMyRequisitions();
+                });
+            }
         });
 
         function openProfileCompletionModal() {

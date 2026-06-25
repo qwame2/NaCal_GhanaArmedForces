@@ -263,4 +263,138 @@ class ApiTest extends TestCase
         $item->refresh();
         $this->assertEquals(5.0, (float) $item->quantity_approved);
     }
+
+    /**
+     * Test that the myRequisitions API is correctly paginated and searchable.
+     */
+    public function test_my_requisitions_api_is_paginated(): void
+    {
+        // Hot-patch database columns in sqlite memory for testing
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'main_admin_status')) {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('main_admin_status')->default('pending');
+            });
+        }
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'origin_admin_status')) {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('origin_admin_status')->default('pending');
+            });
+        }
+
+        $user = User::factory()->create(['role' => 'Requisitioner', 'registration_status' => 'approved']);
+        
+        // Create 6 requisitions for this user
+        for ($i = 1; $i <= 6; $i++) {
+            \App\Models\StoreRequisition::create([
+                'requester_name' => $user->name,
+                'department' => 'IT Department',
+                'requested_by' => $user->id,
+                'purpose' => "UniqueRequisitionPurpose {$i}",
+                'priority' => 'normal',
+                'status' => 'pending',
+                'usage_type' => 'permanent',
+            ]);
+        }
+
+        // 1. Get first page
+        $response = $this->actingAs($user)->get('/api/my-requisitions?page=1');
+        $response->assertStatus(200)
+                 ->assertJsonStructure([
+                     'data',
+                     'current_page',
+                     'last_page',
+                     'per_page',
+                     'total',
+                     'from',
+                     'to'
+                 ]);
+
+        $data = $response->json();
+        $this->assertCount(5, $data['data']);
+        $this->assertEquals(6, $data['total']);
+        $this->assertEquals(2, $data['last_page']);
+        $this->assertEquals(1, $data['current_page']);
+
+        // 2. Get second page
+        $response2 = $this->actingAs($user)->get('/api/my-requisitions?page=2');
+        $response2->assertStatus(200);
+        $data2 = $response2->json();
+        $this->assertCount(1, $data2['data']);
+        $this->assertEquals(2, $data2['current_page']);
+
+        // 2b. Custom perPage test (per_page=3)
+        $responsePerPage = $this->actingAs($user)->get('/api/my-requisitions?page=1&per_page=3');
+        $responsePerPage->assertStatus(200);
+        $dataPerPage = $responsePerPage->json();
+        $this->assertCount(3, $dataPerPage['data']);
+        $this->assertEquals(6, $dataPerPage['total']);
+        $this->assertEquals(2, $dataPerPage['last_page']);
+        $this->assertEquals(3, $dataPerPage['per_page']);
+
+        // 3. Search filter matching
+        $responseSearch = $this->actingAs($user)->get('/api/my-requisitions?search=UniqueRequisitionPurpose+3');
+        $responseSearch->assertStatus(200);
+        $dataSearch = $responseSearch->json();
+        $this->assertEquals(1, $dataSearch['total']);
+        $this->assertEquals('UniqueRequisitionPurpose 3', $dataSearch['data'][0]['purpose']);
+
+        // 4. Search filter mismatch
+        $responseNoMatch = $this->actingAs($user)->get('/api/my-requisitions?search=NonExistentSearchTerm');
+        $responseNoMatch->assertStatus(200);
+        $dataNoMatch = $responseNoMatch->json();
+        $this->assertEquals(0, $dataNoMatch['total']);
+        $this->assertCount(0, $dataNoMatch['data']);
+    }
+
+    /**
+     * Test that the notification icon is hidden on other department head pages.
+     */
+    public function test_notification_icon_is_hidden_on_other_dept_head_pages(): void
+    {
+        // Hot-patch database columns in sqlite memory for testing (ignoring schema cache issues)
+        try {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('main_admin_status')->default('pending');
+            });
+        } catch (\Exception $e) {}
+        try {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('origin_admin_status')->default('pending');
+            });
+        } catch (\Exception $e) {}
+        try {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('alternative_status')->nullable();
+            });
+        } catch (\Exception $e) {}
+
+        // Case 1: Other Department Head (role: Department Head, department: Welfare) on main-admin.requisitions
+        $hod = User::factory()->create([
+            'role' => 'Department Head',
+            'department' => 'Welfare',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($hod)->get(route('main-admin.requisitions'));
+        $response->assertStatus(200);
+        $response->assertDontSee('id="notification-btn"', false);
+
+        // Case 2: Other Department Head on track-requests
+        $responseTrack = $this->actingAs($hod)->get(route('main-admin.track-requests'));
+        $responseTrack->assertStatus(200);
+        $responseTrack->assertDontSee('id="notification-btn"', false);
+
+        // Case 3: Stores Department Head (Main Admin) on main-admin.requisitions (should still see notification btn)
+        $storesHead = User::factory()->create([
+            'role' => 'Main Admin',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $responseStores = $this->actingAs($storesHead)->get(route('main-admin.requisitions'));
+        $responseStores->assertStatus(200);
+        $responseStores->assertSee('id="notification-btn"', false);
+    }
 }

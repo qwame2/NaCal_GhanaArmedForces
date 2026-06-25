@@ -658,6 +658,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
     // Main Admin Requisition Routes
     Route::get('/main-admin/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'mainAdminIndex'])->name('main-admin.requisitions');
+    Route::get('/main-admin/track-requests', [\App\Http\Controllers\StoreRequisitionController::class, 'trackRequests'])->name('main-admin.track-requests');
     Route::post('/main-admin/requisitions/{id}/process', [\App\Http\Controllers\StoreRequisitionController::class, 'mainAdminProcess'])->name('main-admin.requisitions.process');
     Route::post('/main-admin/requisitions/{id}/alternative-response', [\App\Http\Controllers\StoreRequisitionController::class, 'mainAdminAlternativeResponse'])->name('main-admin.requisitions.alternative-response');
     Route::get('/overdue-assets', [\App\Http\Controllers\StoreRequisitionController::class, 'overdueAssets'])->name('requisitions.overdue');

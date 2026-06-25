@@ -168,7 +168,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('main-admin.requisitions', ['status' => 'approved']) }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && request('status') === 'approved') ? 'active' : '' }}" data-tooltip="Track Staff Requests">
+                    <a href="{{ route('main-admin.track-requests') }}" class="nav-link {{ request()->routeIs('main-admin.track-requests') ? 'active' : '' }}" data-tooltip="Track Staff Requests">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="10" x="2" y="6" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="7.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
                         <span>Track Staff Requests</span>
                     </a>
@@ -361,6 +361,17 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     <span id="global-unread-badge" style="display: none; position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 99px; border: 2px solid var(--bg-main); transition: var(--transition);">0</span>
                 </a>
+                @php
+                    $isOtherDeptHeadPage = false;
+                    if (auth()->check()) {
+                        $user = auth()->user();
+                        $isStoresHead = ($user->role === 'Main Admin' || strcasecmp($user->department, 'Stores') === 0 || strcasecmp($user->department, 'Store') === 0);
+                        if (!$isStoresHead && request()->routeIs(['main-admin.requisitions', 'main-admin.track-requests'])) {
+                            $isOtherDeptHeadPage = true;
+                        }
+                    }
+                @endphp
+                @if(!$isOtherDeptHeadPage)
                 <div style="height: 32px; width: 1px; background: var(--border-color);"></div>
                 <div class="icon-btn" id="notification-btn" style="position: relative; cursor: pointer; transition: var(--transition);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
@@ -401,6 +412,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
                 <div class="icon-btn" id="theme-toggle" style="border: none; background: transparent;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="theme-icon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
                 </div>
@@ -856,6 +868,9 @@
             // Starts when there are unread messages; stops when count hits 0 or user opens messages page.
             let _notifAlarm = null;
             let _notifAlarmLastCount = 0;
+            window._firstUnreadPoll = true;  // skip beep on first poll (page load/refresh)
+            window._lastApprovalsCount = 0;
+            window._lastRequestedApprovalsCount = 0;
 
             function _startNotifAlarm() {
                 if (_notifAlarm) return; // already running
@@ -929,16 +944,19 @@
                             }
                         }
 
-                        // Play a single beep if a new approval message is received
-                        if (data.approvals_count > 0 && (typeof window._lastApprovalsCount === 'undefined' ? 0 : window._lastApprovalsCount) < data.approvals_count) {
-                            window.playDoubleBeep('receive');
+                        // Play a single beep only when counts genuinely increase (skip first poll to avoid beep on page refresh)
+                        if (window._firstUnreadPoll) {
+                            // First poll: just record baseline counts, no beep
+                            window._firstUnreadPoll = false;
+                        } else {
+                            if (data.approvals_count > 0 && window._lastApprovalsCount < data.approvals_count) {
+                                window.playDoubleBeep('receive');
+                            }
+                            if (data.requested_approvals_count > 0 && window._lastRequestedApprovalsCount < data.requested_approvals_count) {
+                                window.playDoubleBeep('receive');
+                            }
                         }
                         window._lastApprovalsCount = data.approvals_count || 0;
-
-                        // Play a single beep if a new approval request is received
-                        if (data.requested_approvals_count > 0 && (typeof window._lastRequestedApprovalsCount === 'undefined' ? 0 : window._lastRequestedApprovalsCount) < data.requested_approvals_count) {
-                            window.playDoubleBeep('receive');
-                        }
                         window._lastRequestedApprovalsCount = data.requested_approvals_count || 0;
 
                         // Re-check messages page active in other tabs

@@ -894,315 +894,216 @@
     @endif
 
     {{-- Filters Toolbar --}}
-
     <div class="filter-card">
         <div class="filter-header">
-            <i data-lucide="sliders-horizontal" style="width: 14px; height: 14px; color: #10b981;"></i>
+            <i data-lucide="sliders-horizontal" style="width:14px;height:14px;color:#10b981;"></i>
             <span>Filter Criteria</span>
         </div>
         <form method="GET" class="filter-row" id="filter-form" action="{{ route('main-admin.requisitions') }}">
-            <div class="filter-field-wrapper" style="min-width: 220px; flex: 1.5;">
-                <i data-lucide="activity" class="filter-icon" style="width: 14px; height: 14px;"></i>
-                <select name="status" onchange="this.form.submit()" class="filter-control">
-                    <option value="pending" {{ request('status', 'pending')==='pending'?'selected':'' }}>Awaiting My Review</option>
-                    <option value="approved" {{ request('status')==='approved'?'selected':'' }}>Approved History</option>
-                    <option value="declined" {{ request('status')==='declined'?'selected':'' }}>Declined History</option>
-                    <option value="history" {{ request('status')==='history'?'selected':'' }}>Oversight History (All)</option>
+            {{-- Status --}}
+            <div class="filter-field-wrapper" style="min-width:200px;flex:1.5;">
+                <i data-lucide="activity" class="filter-icon" style="width:14px;height:14px;"></i>
+                <select name="status" class="filter-control" id="filter-status">
+                    <option value="pending"  {{ request('status','pending')==='pending'  ?'selected':'' }}>Awaiting My Review</option>
+                    <option value="approved" {{ request('status')==='approved' ?'selected':'' }}>Approved History</option>
+                    <option value="declined" {{ request('status')==='declined' ?'selected':'' }}>Declined History</option>
+                    <option value="history"  {{ request('status')==='history'  ?'selected':'' }}>Oversight History (All)</option>
                 </select>
             </div>
-
-            <div class="filter-field-wrapper" style="min-width: 160px; flex: 1;">
-                <i data-lucide="alert-circle" class="filter-icon" style="width: 14px; height: 14px;"></i>
-                <select name="priority" onchange="this.form.submit()" class="filter-control">
+            {{-- Priority --}}
+            <div class="filter-field-wrapper" style="min-width:150px;flex:1;">
+                <i data-lucide="alert-circle" class="filter-icon" style="width:14px;height:14px;"></i>
+                <select name="priority" class="filter-control" id="filter-priority">
                     <option value="">All Priorities</option>
                     <option value="urgent" {{ request('priority')==='urgent'?'selected':'' }}>Urgent</option>
                     <option value="normal" {{ request('priority')==='normal'?'selected':'' }}>Normal</option>
-                    <option value="low" {{ request('priority')==='low'?'selected':'' }}>Low</option>
+                    <option value="low"    {{ request('priority')==='low'   ?'selected':'' }}>Low</option>
                 </select>
             </div>
-
-            <div class="filter-field-wrapper" style="min-width: 220px; flex: 1.5;">
-                <i data-lucide="building" class="filter-icon" style="width: 15px; height: 15px;"></i>
-                <input type="text" name="department" value="{{ request('department') }}" placeholder="Filter by department..." class="filter-control" autocomplete="off" onchange="this.form.submit()">
+            {{-- Department --}}
+            <div class="filter-field-wrapper" style="min-width:200px;flex:1.5;">
+                <i data-lucide="building" class="filter-icon" style="width:14px;height:14px;"></i>
+                <input type="text" name="department" id="filter-department" value="{{ request('department') }}" placeholder="Filter by department..." class="filter-control" autocomplete="off">
             </div>
-
-            @if(request()->anyFilled(['status','priority','department']) && !(request()->has('status') && request('status') === 'pending' && !request()->has('priority') && !request()->has('department')))
-            <a href="{{ route('main-admin.requisitions') }}" class="filter-clear-btn">
-                <i data-lucide="x-circle" style="width:16px; height:16px;"></i>
-                <span>Clear Filters</span>
-            </a>
-            @endif
+            {{-- Date From --}}
+            <div class="filter-field-wrapper" style="min-width:160px;flex:1;">
+                <i data-lucide="calendar" class="filter-icon" style="width:14px;height:14px;"></i>
+                <input type="date" name="date_from" id="filter-date-from" value="{{ request('date_from') }}" class="filter-control" title="From date">
+            </div>
+            {{-- Date To --}}
+            <div class="filter-field-wrapper" style="min-width:160px;flex:1;">
+                <i data-lucide="calendar" class="filter-icon" style="width:14px;height:14px;"></i>
+                <input type="date" name="date_to" id="filter-date-to" value="{{ request('date_to') }}" class="filter-control" title="To date">
+            </div>
+            {{-- Clear --}}
+            <button type="button" id="filter-clear-btn" class="filter-clear-btn" style="display:none;">
+                <i data-lucide="x-circle" style="width:16px;height:16px;"></i>
+                <span>Clear</span>
+            </button>
         </form>
-    {{-- Card Requisition List --}}
-    <div id="oversight-table-wrapper">
-        <div class="table-container">
-            <table class="oversight-table">
-            <thead>
-                <tr>
-                    <th style="width: 15%;">Requisition Ref</th>
-                    <th style="width: 20%;">Department & Requester</th>
-                    <th style="width: 25%;">Requested Items</th>
-                    <th style="width: 20%;">Purpose / Return Date</th>
-                    <th style="width: 12%;">Timeline Status</th>
-                    <th style="width: 8%; text-align: center;">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($requisitions as $req)
-                    @php
-                        $pb = $req->priority_badge;
-                        $status = $isStoresHead ? $req->main_admin_status : $req->origin_admin_status;
-                        $generalStatusBadge = $req->status_badge;
-                        $utb = $req->usage_type_badge;
-                    @endphp
-                    <tr class="oversight-row animate-slide-up">
-                        <td data-label="Requisition Ref">
-                            <span class="history-ref" style="margin-bottom: 6px; display: inline-block;">{{ $req->unique_id ?: ('REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT)) }}</span>
-                            <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                                <span class="status-pill" style="background: {{ $utb['bg'] }}; color: {{ $utb['color'] }}; font-size: 0.62rem; padding: 2px 8px;">
-                                    {{ $utb['label'] }}
-                                </span>
-                                <span class="status-pill" style="background: {{ $pb['bg'] }}; color: {{ $pb['color'] }}; font-size: 0.62rem; padding: 2px 8px;">
-                                    {{ $pb['label'] }}
-                                </span>
-                            </div>
-                        </td>
-
-                        <td data-label="Department & Requester">
-                            <div style="font-weight: 800; color: var(--text-main);">{{ $req->requester_name }}{{ $req->rank_or_title ? ' (' . $req->rank_or_title . ')' : '' }}</div>
-                            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600; margin-top: 2px;">
-                                Dept: <strong style="color: var(--text-main);">{{ $req->department }}</strong>
-                            </div>
-                            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">
-                                <i data-lucide="calendar" style="width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 2px;"></i>{{ $req->created_at->format('d/m/y H:i') }}
-                            </div>
-                        </td>
-
-                        <td data-label="Requested Items">
-                            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-                                @foreach($req->items as $item)
-                                    @php
-                                        $approvedVal = $item->quantity_approved !== null ? (float)$item->quantity_approved : null;
-                                        $altApprovedVal = $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : 0;
-                                    @endphp
-                                    <span class="table-item-pill" title="{{ $item->description }}">
-                                        {{ Str::limit($item->description, 20) }}
-                                        <span class="table-item-qty">— {{ number_format($item->quantity_requested, 0) }} {{ $item->unit }}</span>
-                                        @if($approvedVal !== null)
-                                            <span class="table-item-approved">({{ number_format($approvedVal + $altApprovedVal, 0) }})</span>
-                                        @endif
-                                    </span>
-                                @endforeach
-                            </div>
-                        </td>
-
-                        <td data-label="Purpose / Return Date">
-                            @php
-                                $purposeText = $req->purpose;
-                                $returnDateHtml = '';
-                                $dateMatch = [];
-                                if (preg_match('/\[Expected Return Date:\s*([^\]]+)\]/i', $purposeText, $dateMatch)) {
-                                    $rawDate = trim($dateMatch[1]);
-                                    $formattedDate = $rawDate;
-                                    try {
-                                        $dateObj = \Carbon\Carbon::parse($rawDate);
-                                        $formattedDate = $dateObj->format('d/m/y');
-                                    } catch (\Exception $e) {
-                                        $parts = explode('-', $rawDate);
-                                        if (count($parts) === 3 && strlen($parts[0]) === 4) {
-                                            $formattedDate = $parts[2] . '/' . $parts[1] . '/' . substr($parts[0], 2);
-                                        }
-                                    }
-                                    $returnDateHtml = '<div style="margin-top: 4px;"><span class="status-pill" style="background: rgba(234, 88, 12, 0.08); color: #ea580c; border: 1px solid rgba(234, 88, 12, 0.2); font-size: 0.65rem; padding: 2px 8px;">🔄 Due back: ' . $formattedDate . '</span></div>';
-                                    $purposeText = trim(preg_replace('/\[Expected Return Date:\s*[^\]]+\]/i', '', $purposeText));
-                                }
-                            @endphp
-                            <div class="purpose-quote-inline" title="{{ $purposeText }}" style="display: flex; align-items: flex-start; gap: 4px;">
-                                <i data-lucide="quote" style="width: 10px; height: 10px; color: var(--store-orange); transform: scaleX(-1); flex-shrink: 0; margin-top: 3px;"></i>
-                                <span>{{ $purposeText }}</span>
-                            </div>
-                            {!! $returnDateHtml !!}
-                        </td>
-
-                        <td data-label="Timeline / Status">
-                            @php
-                                $isCollected = !is_null($req->collected_at);
-                                $isDeclined = $req->status === 'declined' || $req->origin_admin_status === 'declined' || $req->main_admin_status === 'declined';
-                                $isPartially = $req->status === 'partially_approved';
-                                $isApproved = $req->status === 'approved';
-
-                                $completedSteps = 1;
-                                $activeStep = 2;
-
-                                if ($isCollected) {
-                                    $completedSteps = 4;
-                                } elseif ($isApproved || $isPartially) {
-                                    $completedSteps = 3;
-                                    $activeStep = 4;
-                                } elseif ($isDeclined) {
-                                    $completedSteps = 1;
-                                    $activeStep = 2;
-                                } else {
-                                    if ($req->origin_admin_status === 'approved') {
-                                        $completedSteps = 2;
-                                        $activeStep = 3;
-                                    } else {
-                                        $completedSteps = 1;
-                                        $activeStep = 2;
-                                    }
-                                }
-                            @endphp
-                            <div style="font-weight: 800; font-size: 0.72rem; text-transform: uppercase; color: {{ $isDeclined ? '#ef4444' : ($isCollected ? '#10b981' : '#6366f1') }}; display: flex; align-items: center; gap: 4px;">
-                                <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: {{ $isDeclined ? '#ef4444' : ($isCollected ? '#10b981' : '#6366f1') }};"></span>
-                                {{ $generalStatusBadge['label'] }}
-                            </div>
-                            <div class="mini-tracker">
-                                <div class="mini-step completed" title="Submitted">
-                                    <span class="mini-dot"><i data-lucide="file-text" style="width: 8px; height: 8px;"></i></span>
-                                </div>
-                                <div class="mini-line completed"></div>
-
-                                @php
-                                    $step2Class = '';
-                                    if ($completedSteps >= 2) {
-                                        $step2Class = 'completed';
-                                    } elseif ($isDeclined) {
-                                        $step2Class = 'declined';
-                                    } elseif ($activeStep === 2) {
-                                        $step2Class = 'active';
-                                    }
-                                @endphp
-                                <div class="mini-step {{ $step2Class }}" title="{{ $isDeclined ? 'Declined' : 'Under Review' }}">
-                                    <span class="mini-dot"><i data-lucide="{{ $isDeclined ? 'x' : 'activity' }}" style="width: 8px; height: 8px;"></i></span>
-                                </div>
-                                <div class="mini-line {{ $completedSteps >= 2 ? 'completed' : '' }}"></div>
-
-                                @php
-                                    $step3Class = '';
-                                    if ($completedSteps >= 3) {
-                                        $step3Class = 'completed';
-                                    } elseif ($activeStep === 3) {
-                                        $step3Class = 'active';
-                                    }
-                                @endphp
-                                <div class="mini-step {{ $step3Class }}" title="{{ $isPartially ? 'Partially Approved' : 'Approved' }}">
-                                    <span class="mini-dot"><i data-lucide="{{ $isPartially ? 'alert-triangle' : 'check' }}" style="width: 8px; height: 8px;"></i></span>
-                                </div>
-                                <div class="mini-line {{ $completedSteps >= 3 ? 'completed' : '' }}"></div>
-
-                                @php
-                                    $step4Class = '';
-                                    if ($completedSteps >= 4) {
-                                        $step4Class = 'completed';
-                                    } elseif ($activeStep === 4) {
-                                        $step4Class = 'active';
-                                    }
-                                @endphp
-                                <div class="mini-step {{ $step4Class }}" title="Collection">
-                                    <span class="mini-dot"><i data-lucide="package-open" style="width: 8px; height: 8px;"></i></span>
-                                </div>
-                            </div>
-                        </td>
-
-                        <td data-label="Action" style="text-align: center; white-space: nowrap;">
-                            @if(($req->alternative_status ?? '') === 'proposed')
-                                <button onclick="openRequisitionModal({{ $req->id }})"
-                                    style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: rgba(249, 115, 22, 0.08); border: 1.5px solid rgba(249, 115, 22, 0.2); color: var(--store-orange); padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;"
-                                    onmouseover="this.style.background='var(--store-orange)'; this.style.color='white';"
-                                    onmouseout="this.style.background='rgba(249, 115, 22, 0.08)'; this.style.color='var(--store-orange)';">
-                                    <i data-lucide="shuffle" style="width: 14px; height: 14px;"></i> Pending Qty Suggestion
-                                </button>
-                            @elseif($status === 'pending')
-                                <button onclick="openRequisitionModal({{ $req->id }})"
-                                    style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: rgba(16, 185, 129, 0.08); border: 1.5px solid rgba(16, 185, 129, 0.2); color: #10b981; padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;"
-                                    onmouseover="this.style.background='#10b981'; this.style.color='white';"
-                                    onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981';">
-                                    <i data-lucide="shield-alert" style="width: 14px; height: 14px;"></i> Review
-                                </button>
-                            @elseif(($status === 'approved' && $req->status === 'pending') || (in_array($req->status, ['approved', 'partially_approved']) && is_null($req->collected_at)))
-                                <button onclick="sendFollowUp({{ $req->id }}, this)"
-                                    style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: rgba(245, 158, 11, 0.08); border: 1.5px solid rgba(245, 158, 11, 0.2); color: var(--warning-color); padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;"
-                                    onmouseover="this.style.background='var(--warning-color)'; this.style.color='white';"
-                                    onmouseout="this.style.background='rgba(245, 158, 11, 0.08)'; this.style.color='var(--warning-color)';">
-                                    <i data-lucide="bell" style="width: 14px; height: 14px;"></i> Follow Up
-                                </button>
-                            @elseif(in_array($req->status, ['approved', 'partially_approved']) && !is_null($req->collected_at))
-                                <button onclick="openRequisitionModal({{ $req->id }})"
-                                    style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: rgba(249, 115, 22, 0.08); border: 1.5px solid rgba(249, 115, 22, 0.2); color: var(--store-orange); padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;"
-                                    onmouseover="this.style.background='var(--store-orange)'; this.style.color='white';"
-                                    onmouseout="this.style.background='rgba(249, 115, 22, 0.08)'; this.style.color='var(--store-orange)';">
-                                    <i data-lucide="truck" style="width: 14px; height: 14px;"></i> Track
-                                </button>
-                            @else
-                                <button onclick="openRequisitionModal({{ $req->id }})"
-                                    style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; background: rgba(99, 102, 241, 0.08); border: 1.5px solid rgba(99, 102, 241, 0.2); color: #4f46e5; padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;"
-                                    onmouseover="this.style.background='#4f46e5'; this.style.color='white';"
-                                    onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='#4f46e5';">
-                                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i> View
-                                </button>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 5rem 2rem; border-bottom: none;">
-                            <div style="text-align:center; color:var(--text-muted);">
-                                <i data-lucide="inbox" style="width:40px; height:40px; margin: 0 auto 1rem auto; opacity:.25; color:#10b981; display:block;"></i>
-                                <h4 style="font-weight:900;color:var(--text-main); margin:0;">All Caught Up!</h4>
-                                <p style="font-size:.85rem; margin-top:6px;">No requisitions matches your current filter.</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
     </div>
 
-        {{-- Pagination --}}
-        @if($requisitions->hasPages())
-        <div style="padding: 1.5rem; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; background: var(--bg-card); border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04);">
-            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">
-                Showing
-                <span style="color: var(--text-main); font-weight: 900;">{{ $requisitions->firstItem() ?? 0 }}</span>
-                to
-                <span style="color: var(--text-main); font-weight: 900;">{{ $requisitions->lastItem() ?? 0 }}</span>
-                of
-                <span style="color: var(--text-main); font-weight: 900;">{{ $requisitions->total() }}</span>
-                entries
-            </div>
+    {{-- Requisition Table --}}
+    <div id="oversight-table-wrapper" style="position:relative;">
 
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                {{-- Previous --}}
-                @if($requisitions->onFirstPage())
-                    <span style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-main); color: var(--text-muted); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); opacity: 0.5; cursor: not-allowed;">Prev</span>
-                @else
-                    <a href="{{ $requisitions->appends(request()->query())->previousPageUrl() }}" style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">Prev</a>
-                @endif
-
-                {{-- Page Numbers --}}
-                <div style="display: flex; gap: 0.25rem;">
-                    @foreach($requisitions->appends(request()->query())->getUrlRange(max(1, $requisitions->currentPage()-2), min($requisitions->lastPage(), $requisitions->currentPage()+2)) as $page => $url)
-                        @if($page == $requisitions->currentPage())
-                            <span style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--primary); color: white; font-size: 0.85rem; font-weight: 900; box-shadow: 0 4px 10px rgba(99,102,241,0.2);">{{ $page }}</span>
-                        @else
-                            <a href="{{ $url }}" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.85rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">{{ $page }}</a>
-                        @endif
-                    @endforeach
-                </div>
-
-                {{-- Next --}}
-                @if($requisitions->hasMorePages())
-                    <a href="{{ $requisitions->appends(request()->query())->nextPageUrl() }}" style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">Next</a>
-                @else
-                    <span style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-main); color: var(--text-muted); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); opacity: 0.5; cursor: not-allowed;">Next</span>
-                @endif
+        {{-- Loading overlay --}}
+        <div id="table-loading" style="display:none;position:absolute;inset:0;background:rgba(var(--bg-card-rgb,255,255,255),.75);backdrop-filter:blur(2px);z-index:10;border-radius:20px;align-items:center;justify-content:center;">
+            <div style="display:flex;align-items:center;gap:10px;padding:1rem 1.75rem;background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.06);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" style="animation:spin 0.7s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                <span style="font-size:0.82rem;font-weight:800;color:var(--text-muted);">Loading...</span>
             </div>
         </div>
-        @endif
-    </div>
-    </div>
-</div>
 
+        <div class="table-container">
+            <table class="oversight-table">
+                <thead>
+                    <tr>
+                        <th>Ref</th>
+                        <th>Requester &amp; Dept</th>
+                        <th>Items Requested</th>
+                        <th>Purpose</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Usage</th>
+                        <th>Submitted</th>
+                    </tr>
+                </thead>
+                <tbody id="req-tbody">
+                    @include('requisitions._req_table_rows')
+                </tbody>
+            </table>
+        </div>
+
+        {{-- Pagination (dynamic) --}}
+        <div id="req-pagination-wrap">
+            @include('requisitions._req_pagination')
+        </div>
+    </div>
+    </div>
+
+    @push('scripts')
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #table-loading { display:none; }
+        #table-loading.active { display:flex !important; }
+    </style>
+    <script>
+    (function() {
+        const ROUTE   = '{{ route('main-admin.requisitions') }}';
+        const CSRF    = '{{ csrf_token() }}';
+        let currentPage = 1;
+        let debounceTimer = null;
+
+        // --- Helpers ---
+        function getFilters() {
+            return {
+                status:      document.getElementById('filter-status')?.value || '',
+                priority:    document.getElementById('filter-priority')?.value || '',
+                department:  document.getElementById('filter-department')?.value || '',
+                date_from:   document.getElementById('filter-date-from')?.value || '',
+                date_to:     document.getElementById('filter-date-to')?.value || '',
+                page:        currentPage,
+            };
+        }
+
+        function hasActiveFilters(f) {
+            return f.priority || f.department || f.date_from || f.date_to ||
+                   (f.status && f.status !== 'pending');
+        }
+
+        function showLoading(on) {
+            const el = document.getElementById('table-loading');
+            if (el) el.classList.toggle('active', on);
+        }
+
+        function updateClearBtn(f) {
+            const btn = document.getElementById('filter-clear-btn');
+            if (btn) btn.style.display = hasActiveFilters(f) ? 'inline-flex' : 'none';
+        }
+
+        // --- Main fetch ---
+        function fetchTable(page) {
+            currentPage = page || 1;
+            const f = getFilters();
+            updateClearBtn(f);
+
+            const params = new URLSearchParams(f);
+            // Update browser URL without reload
+            history.replaceState(null, '', ROUTE + '?' + params.toString());
+
+            showLoading(true);
+            fetch(ROUTE + '?' + params.toString(), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': CSRF,
+                    'Accept': 'application/json',
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                const tbody = document.getElementById('req-tbody');
+                const pagWrap = document.getElementById('req-pagination-wrap');
+                if (tbody)   tbody.innerHTML   = data.rows;
+                if (pagWrap) pagWrap.innerHTML  = data.pagination;
+                // Re-init lucide icons for newly injected HTML
+                if (window.lucide) lucide.createIcons();
+                // Re-bind pagination clicks
+                bindPaginationClicks();
+                showLoading(false);
+            })
+            .catch(() => showLoading(false));
+        }
+
+        // --- Bind pagination link clicks ---
+        function bindPaginationClicks() {
+            document.querySelectorAll('.ajax-page-btn').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = parseInt(this.dataset.page);
+                    if (!isNaN(page)) fetchTable(page);
+                });
+            });
+        }
+
+        // --- Wire filters ---
+        function wireFilters() {
+            // Instant on select/date change
+            ['filter-status', 'filter-priority', 'filter-date-from', 'filter-date-to'].forEach(function(id) {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', function() { fetchTable(1); });
+            });
+            // Debounced on text input
+            const deptInput = document.getElementById('filter-department');
+            if (deptInput) {
+                deptInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(function() { fetchTable(1); }, 400);
+                });
+            }
+            // Clear button
+            const clearBtn = document.getElementById('filter-clear-btn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function() {
+                    document.getElementById('filter-status').value    = 'pending';
+                    document.getElementById('filter-priority').value  = '';
+                    document.getElementById('filter-department').value = '';
+                    document.getElementById('filter-date-from').value = '';
+                    document.getElementById('filter-date-to').value   = '';
+                    fetchTable(1);
+                });
+            }
+        }
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show clear button if filters already active on load
+            updateClearBtn(getFilters());
+            wireFilters();
+            bindPaginationClicks();
+        });
+    })();
+    </script>
+    @endpush
 @push('modals')
 {{-- Oversight Approval & Detail Modal --}}
 <div class="modal-overlay" id="reqModal" onclick="if(event.target===this)closeModal()">

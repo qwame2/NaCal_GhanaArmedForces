@@ -1203,6 +1203,9 @@
         // Starts when there are unread messages; stops when count hits 0 or user opens messages page.
         let _notifAlarm = null;
         let _notifAlarmLastCount = 0;
+        window._firstUnreadPoll = true;  // skip beep on first poll (page load/refresh)
+        window._lastApprovalsCount = 0;
+        window._lastRequestedApprovalsCount = 0;
 
         function _startNotifAlarm() {
             if (_notifAlarm) return; // already running
@@ -1277,16 +1280,19 @@
                         }
                     }
 
-                    // Play a single beep if a new approval message is received
-                    if (data.approvals_count > 0 && (typeof window._lastApprovalsCount === 'undefined' ? 0 : window._lastApprovalsCount) < data.approvals_count) {
-                        window.playDoubleBeep('receive');
+                    // Play a single beep only when counts genuinely increase (skip first poll to avoid beep on page refresh)
+                    if (window._firstUnreadPoll) {
+                        // First poll: just record baseline counts, no beep
+                        window._firstUnreadPoll = false;
+                    } else {
+                        if (data.approvals_count > 0 && window._lastApprovalsCount < data.approvals_count) {
+                            window.playDoubleBeep('receive');
+                        }
+                        if (data.requested_approvals_count > 0 && window._lastRequestedApprovalsCount < data.requested_approvals_count) {
+                            window.playDoubleBeep('receive');
+                        }
                     }
                     window._lastApprovalsCount = data.approvals_count || 0;
-
-                    // Play a single beep if a new approval request is received
-                    if (data.requested_approvals_count > 0 && (typeof window._lastRequestedApprovalsCount === 'undefined' ? 0 : window._lastRequestedApprovalsCount) < data.requested_approvals_count) {
-                        window.playDoubleBeep('receive');
-                    }
                     window._lastRequestedApprovalsCount = data.requested_approvals_count || 0;
 
                     // Re-check messages page active in other tabs
