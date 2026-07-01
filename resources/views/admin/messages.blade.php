@@ -2724,35 +2724,76 @@
                 const providerName = batch ? ((batch.acquisition_type === 'Donor' ? (batch.donor_name || batch.supplier_name) : batch.supplier_name) || '') : '';
                 const cleanProviderName = providerName.replace(/\s\[.*\]$/, '').trim();
 
-                if (cleanProviderName && cleanProviderName !== 'N/A') {
+                const inlineDiv = document.getElementById(`supplier-stats-inline-${reqId}`);
+                if (inlineDiv && cleanProviderName && cleanProviderName !== 'N/A') {
+                    // Populate initial supplier info synchronously using local batch data (contains delivery person and phone)
+                    inlineDiv.innerHTML = `
+                        <div style="margin-bottom: 2rem; background: #f8fafc; border-radius: 18px; border: 1px solid #e2e8f0; overflow: hidden;">
+                            <div style="display: flex; align-items: stretch; gap: 0;">
+                                <!-- Avatar Block -->
+                                <div style="background: linear-gradient(170deg, #f0f9ff 0%, #e0f2fe 100%); padding: 1.5rem 1.25rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-width: 130px; flex-shrink: 0; border-right: 1px solid #bae6fd; position: relative; overflow: hidden;">
+                                    <div style="position: absolute; top: -18px; right: -18px; width: 80px; height: 80px; border-radius: 50%; background: rgba(14, 165, 233, 0.08);"></div>
+                                    <div style="position: absolute; bottom: -10px; left: -10px; width: 50px; height: 50px; border-radius: 50%; background: rgba(14, 165, 233, 0.06);"></div>
+                                    <div style="width: 52px; height: 52px; border-radius: 50%; background: white; border: 3px solid #7dd3fc; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(14, 165, 233, 0.2); position: relative; z-index: 1;">
+                                        <i data-lucide="building-2" style="width: 24px; height: 24px; color: #0284c7;"></i>
+                                    </div>
+                                    <div style="background: #0284c7; color: white; font-size: 0.75rem; font-weight: 900; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: absolute; top: 50%; right: calc(50% - 38px); transform: translateY(-32px); border: 2px solid white; box-shadow: 0 2px 6px rgba(2,132,199,0.3); z-index: 2;">
+                                        ${cleanProviderName.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1; font-size: 0.6rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.1em; position: relative; z-index: 1;">${batch.acquisition_type === 'Donor' ? 'Donor' : 'Supplier'}</div>
+                                </div>
+
+                                <!-- Name + Contact Info -->
+                                <div style="flex: 1; background: white; padding: 1.25rem 1.75rem; border-left: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; gap: 0.85rem;">
+                                    <div>
+                                        <div style="font-size: 0.6rem; font-weight: 800; color: #06b6d4; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 3px;">${batch.acquisition_type === 'Donor' ? 'Donor Name' : 'Company Name'}</div>
+                                        <div style="font-size: 1.15rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">${cleanProviderName}</div>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 1.5rem;">
+                                        <div>
+                                            <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Contact Person</div>
+                                            <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_person || 'N/A'}</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Contact Person Number</div>
+                                            <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_phone || 'N/A'}</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person</div>
+                                            <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.driver_name || 'N/A'}</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person Number</div>
+                                            <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.driver_phone || 'N/A'}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+                    // Load statistics and full registry details asynchronously
                     fetch(`/api/supplier-stats/${encodeURIComponent(cleanProviderName)}`)
                         .then(r => r.json())
                         .then(sData => {
-                            const inlineDiv = document.getElementById(`supplier-stats-inline-${reqId}`);
-                            if (!sData.error && inlineDiv) {
+                            if (!sData.error) {
                                 const s = sData.supplier;
                                 const stats = sData.stats;
                                 inlineDiv.innerHTML = `
                                     <div style="margin-bottom: 2rem; background: #f8fafc; border-radius: 18px; border: 1px solid #e2e8f0; overflow: hidden;">
-
                                         <!-- Top: Avatar + Name + Stats row -->
                                         <div style="display: flex; align-items: stretch; gap: 0;">
-
                                             <!-- Avatar Block -->
                                             <div style="background: linear-gradient(170deg, #f0f9ff 0%, #e0f2fe 100%); padding: 1.5rem 1.25rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-width: 130px; flex-shrink: 0; border-right: 1px solid #bae6fd; position: relative; overflow: hidden;">
-                                                <!-- Decorative ring -->
                                                 <div style="position: absolute; top: -18px; right: -18px; width: 80px; height: 80px; border-radius: 50%; background: rgba(14, 165, 233, 0.08);"></div>
                                                 <div style="position: absolute; bottom: -10px; left: -10px; width: 50px; height: 50px; border-radius: 50%; background: rgba(14, 165, 233, 0.06);"></div>
-
-                                                <!-- Icon -->
                                                 <div style="width: 52px; height: 52px; border-radius: 50%; background: white; border: 3px solid #7dd3fc; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(14, 165, 233, 0.2); position: relative; z-index: 1;">
                                                     <i data-lucide="building-2" style="width: 24px; height: 24px; color: #0284c7;"></i>
                                                 </div>
-                                                <!-- Initial badge -->
                                                 <div style="background: #0284c7; color: white; font-size: 0.75rem; font-weight: 900; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: absolute; top: 50%; right: calc(50% - 38px); transform: translateY(-32px); border: 2px solid white; box-shadow: 0 2px 6px rgba(2,132,199,0.3); z-index: 2;">
                                                     ${s.name ? s.name.charAt(0).toUpperCase() : '?'}
                                                 </div>
-                                                <!-- Label -->
                                                 <div style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1; font-size: 0.6rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.1em; position: relative; z-index: 1;">${batch.acquisition_type === 'Donor' ? 'Donor' : 'Supplier'}</div>
                                             </div>
 
@@ -2765,11 +2806,19 @@
                                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 1.5rem;">
                                                     <div>
                                                         <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Contact Person</div>
-                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_person || s.delivery_person || 'N/A'}</div>
+                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_person || s.contact_person || s.delivery_person || 'N/A'}</div>
                                                     </div>
                                                     <div>
                                                         <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Contact Person Number</div>
-                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_phone || s.delivery_phone || 'N/A'}</div>
+                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_phone || s.contact_phone || s.delivery_phone || 'N/A'}</div>
+                                                    </div>
+                                                    <div>
+                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person</div>
+                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.driver_name || s.delivery_person || 'N/A'}</div>
+                                                    </div>
+                                                    <div>
+                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person Number</div>
+                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.driver_phone || s.delivery_phone || 'N/A'}</div>
                                                     </div>
                                                     <div>
                                                         <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Company Phone</div>
@@ -2798,16 +2847,13 @@
                                                     <div style="font-size: 0.6rem; font-weight: 800; color: #4ade80; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;">Last Delivery</div>
                                                 </div>
                                             </div>
-
                                         </div>
-
                                         <!-- Notes Footer -->
                                         ${s.desc ? `
                                         <div style="padding: 0.9rem 1.75rem; border-top: 1px solid #e2e8f0; display: flex; align-items: flex-start; gap: 10px; background: white;">
                                             <i data-lucide="info" style="width: 14px; height: 14px; color: #94a3b8; flex-shrink: 0; margin-top: 2px;"></i>
                                             <p style="margin: 0; font-size: 0.83rem; color: #64748b; line-height: 1.55;">${s.desc}</p>
                                         </div>` : ''}
-
                                     </div>
                                 `;
                                 if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -2882,19 +2928,33 @@
 
                             <div style="display: flex; flex-direction: column; gap: 12px;">
                                 <div style="display: flex; gap: 10px; align-items: flex-start;">
-                                    <i data-lucide="user" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
-                                    <div>
-                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Contact Person</div>
-                                        <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.delivery_person || 'N/A'}</div>
-                                    </div>
-                                </div>
-                                <div style="display: flex; gap: 10px; align-items: flex-start;">
-                                    <i data-lucide="phone" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
-                                    <div>
-                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Contact Person Number</div>
-                                        <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.delivery_phone || 'N/A'}</div>
-                                    </div>
-                                </div>
+                                                    <i data-lucide="user" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
+                                                    <div>
+                                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Contact Person</div>
+                                                        <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.contact_person || s.delivery_person || 'N/A'}</div>
+                                                    </div>
+                                                </div>
+                                                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                                    <i data-lucide="phone" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
+                                                    <div>
+                                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Contact Person Number</div>
+                                                        <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.contact_phone || s.delivery_phone || 'N/A'}</div>
+                                                    </div>
+                                                </div>
+                                                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                                    <i data-lucide="user" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
+                                                    <div>
+                                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Delivery Person</div>
+                                                        <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.delivery_person || 'N/A'}</div>
+                                                    </div>
+                                                </div>
+                                                <div style="display: flex; gap: 10px; align-items: flex-start;">
+                                                    <i data-lucide="phone" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
+                                                    <div>
+                                                        <div style="font-size: 0.7rem; font-weight: 700; color: #94a3b8;">Delivery Person Number</div>
+                                                        <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">${s.delivery_phone || 'N/A'}</div>
+                                                    </div>
+                                                </div>
                                 <div style="display: flex; gap: 10px; align-items: flex-start;">
                                     <i data-lucide="phone" style="width: 16px; color: #94a3b8; margin-top: 2px;"></i>
                                     <div>

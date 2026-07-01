@@ -706,7 +706,7 @@
                     <span style="width: 36px; height: 36px; background: rgba(255, 255, 255, 0.2); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                         <i data-lucide="info" style="width: 20px; height: 20px;"></i>
                     </span>
-                    Transaction Entry Details
+                    Supplier Details
                 </h3>
                 <p id="viewModalSubtitle" style="margin: 4px 0 0; font-size: 0.9rem; color: rgba(255, 255, 255, 0.85); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Batch Reference</p>
             </div>
@@ -729,27 +729,32 @@
                 <table><tbody id="viewItemsList"></tbody></table>
             </div>
 
-            <!-- Logistics Entity & Delivery Details -->
-            <div style="background: #ffffff; border: 2px solid #e2e8f0; border-radius: 20px; padding: 2rem; border-left: 6px solid #10b981; box-shadow: 0 12px 28px rgba(0,0,0,0.04); transition: all 0.3s;">
-                <h4 style="margin: 0 0 1.5rem 0; font-size: 1.05rem; text-transform: uppercase; color: #334155; font-weight: 900; letter-spacing: 0.08em; display: flex; align-items: center; gap: 10px;">
-                    <i data-lucide="truck" style="width: 22px; height: 22px; color: #10b981;"></i>
-                    Logistics Entity & Delivery
-                </h4>
-                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.05rem; font-weight: 600; border-bottom: 1px dashed #e2e8f0; padding-bottom: 12px;">
-                        <span id="viewEntityLabel" style="color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Supplier Name</span>
-                        <span id="viewEntityDisplay" style="color: #0f172a; font-weight: 900; font-size: 1.15rem;">-</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.05rem; font-weight: 600; border-bottom: 1px dashed #e2e8f0; padding-bottom: 12px;">
-                        <span style="color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Contact Person</span>
-                        <span id="viewDeliveryPerson" style="color: #0f172a; font-weight: 900; font-size: 1.15rem;">-</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.05rem; font-weight: 600; padding-bottom: 4px;">
-                        <span style="color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">Contact Person Number</span>
-                        <span id="viewDeliveryPhone" style="color: #0f172a; font-weight: 900; font-size: 1.15rem;">-</span>
-                    </div>
+            <!-- Supplier Details -->
+            <div style="background: #ffffff; border: 1px solid #e8ecf0; border-radius: 14px; overflow: hidden;">
+                <div style="padding: 1rem 1.5rem; border-bottom: 1px solid #e8ecf0; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="building-2" style="width: 16px; height: 16px; color: #64748b;"></i>
+                    <span style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; color: #475569;">Supplier Details</span>
                 </div>
+
+                <!-- Supplier Profile Table -->
+                <div id="viewSupplierTableWrapper">
+                    <table id="viewSupplierTable" style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+                        <tbody id="viewSupplierTableBody">
+                            <tr>
+                                <td colspan="2" style="padding: 1.5rem; text-align: center; color: #94a3b8; font-style: italic; font-size: 0.85rem;">Loading supplier details...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Hidden spans kept alive for JS compatibility -->
+                <span id="viewEntityLabel" style="display:none;">Supplier Name</span>
+                <span id="viewEntityDisplay" style="display:none;">-</span>
+                <span id="viewDeliveryPerson" style="display:none;">-</span>
+                <span id="viewDeliveryPhone" style="display:none;">-</span>
             </div>
+
+
         </div>
 
         <!-- Modal Footer -->
@@ -2061,6 +2066,7 @@
         document.getElementById('viewEntityDisplay').innerText = 'Loading...';
         document.getElementById('viewDeliveryPerson').innerText = 'Loading...';
         document.getElementById('viewDeliveryPhone').innerText = 'Loading...';
+        document.getElementById('viewSupplierTableBody').innerHTML = '<tr><td colspan="2" style="padding:1.5rem;text-align:center;color:#94a3b8;font-style:italic;">Loading supplier details...</td></tr>';
         document.getElementById('viewPrintBtn').style.display = 'none';
         document.getElementById('viewSraBtn').style.display = 'none';
         
@@ -2125,9 +2131,54 @@
                 const rawName = isDonor ? (batch.donor_name || batch.supplier_name) : batch.supplier_name;
                 const entityName = (rawName || 'Unknown').replace(/\[.*?\]/g, '').trim();
                 document.getElementById('viewEntityDisplay').innerText = entityName;
-                
                 document.getElementById('viewDeliveryPerson').innerText = batch.delivery_person || 'N/A';
                 document.getElementById('viewDeliveryPhone').innerText = batch.delivery_phone || 'N/A';
+
+                // Build the full supplier details table
+                const supplierProfile = data.supplier_profile;
+                const tbody = document.getElementById('viewSupplierTableBody');
+                const labelType = isDonor ? 'Donor' : 'Supplier';
+                let rows = '';
+                let rowIndex = 0;
+
+                const addRow = (label, value, isBold = false) => {
+                    const val = (value && String(value).trim()) ? String(value).trim() : '<span style="color:#c0c8d4;">—</span>';
+                    const bg = rowIndex % 2 === 0 ? '#ffffff' : '#f8fafc';
+                    const valStyle = isBold
+                        ? 'color:#0f172a;font-weight:700;'
+                        : 'color:#374151;font-weight:500;';
+                    rows += `
+                        <tr style="background:${bg};">
+                            <td style="padding:0.65rem 1.25rem;color:#94a3b8;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;width:36%;border-bottom:1px solid #f1f5f9;">${label}</td>
+                            <td style="padding:0.65rem 1.25rem;${valStyle}font-size:0.9rem;word-break:break-word;border-bottom:1px solid #f1f5f9;">${val}</td>
+                        </tr>`;
+                    rowIndex++;
+                };
+
+                if (supplierProfile) {
+                    addRow(`${labelType} Name`, supplierProfile.name || entityName, true);
+                    addRow('Phone', supplierProfile.phone);
+                    addRow('Email', supplierProfile.email);
+                    addRow('Address', supplierProfile.address);
+                    addRow('Contact Person', supplierProfile.contact_person || batch.delivery_person);
+                    addRow('Contact Phone', supplierProfile.contact_phone || batch.delivery_phone);
+                    addRow('Delivery / Driver', supplierProfile.delivery_person);
+                    addRow('Driver Phone', supplierProfile.delivery_phone);
+                    if (supplierProfile.desc) {
+                        addRow('Description', supplierProfile.desc);
+                    }
+                } else {
+                    addRow(`${labelType} Name`, entityName, true);
+                    addRow('Contact Person', batch.delivery_person);
+                    addRow('Contact Phone', batch.delivery_phone);
+                    rows += `
+                        <tr>
+                            <td colspan="2" style="padding:0.75rem 1.25rem;color:#cbd5e1;font-size:0.8rem;font-style:italic;">No additional supplier profile found in registry.</td>
+                        </tr>`;
+                }
+                tbody.innerHTML = rows;
+
+
                 
                 // Show printable buttons if not pending draft
                 if (!isPending) {

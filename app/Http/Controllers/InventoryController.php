@@ -40,20 +40,7 @@ class InventoryController extends Controller
             $registryData = json_decode($registryData, true) ?? [];
         }
         $registrySuppliers = is_array($registryData) ? array_keys($registryData) : [];
-        $dbSuppliers = \App\Models\InventoryBatch::where('acquisition_type', 'Supplier')
-            ->whereNotNull('supplier_name')
-            ->distinct()
-            ->pluck('supplier_name')
-            ->map(function($name) use ($registrySuppliers) {
-                $clean = preg_replace('/\s\[.*\]$/', '', $name);
-                foreach ($registrySuppliers as $regName) {
-                    if (strcasecmp($regName, $clean) === 0) {
-                        return $regName;
-                    }
-                }
-                return $clean;
-            })->toArray();
-        $allSuppliers = collect(array_merge($registrySuppliers, $dbSuppliers))
+        $allSuppliers = collect($registrySuppliers)
             ->filter(function ($item) {
                 return strtolower(trim($item)) !== 'system';
             })
@@ -123,7 +110,8 @@ class InventoryController extends Controller
             ];
         })->values();
 
-        return view('inventory.create', compact('ledgeMap', 'allSuppliers', 'allDonors', 'existingItems'));
+        $suppliersRegistry = is_array($registryData) ? $registryData : [];
+        return view('inventory.create', compact('ledgeMap', 'allSuppliers', 'allDonors', 'existingItems', 'suppliersRegistry'));
     }
 
     public function store(Request $request)
@@ -138,8 +126,13 @@ class InventoryController extends Controller
             'supplier_status' => 'required|string',
             'donor_name' => 'nullable|string',
             'acquisition_type' => 'required|string',
+            'driver_name' => 'nullable|string',
+            'driver_phone' => ['nullable', 'string', 'regex:/^(N\/A|\d{10})$/i'],
             'delivery_person' => 'nullable|string',
             'delivery_phone' => ['nullable', 'string', 'regex:/^(N\/A|\d{10})$/i'],
+            'supplier_phone' => 'nullable|string',
+            'supplier_email' => 'nullable|email',
+            'supplier_address' => 'nullable|string',
             'entry_date' => 'required',
             'arrival_date' => 'required|date',
             'items' => 'required|array|min:1',
@@ -252,6 +245,8 @@ class InventoryController extends Controller
                 'acquisition_type' => $validated['acquisition_type'],
                 'delivery_person' => $validated['delivery_person'] ?? null,
                 'delivery_phone' => $validated['delivery_phone'] ?? null,
+                'driver_name' => $validated['driver_name'] ?? null,
+                'driver_phone' => $validated['driver_phone'] ?? null,
                 'entry_date' => $validated['entry_date'],
                 'arrival_date' => $validated['arrival_date'],
                 'approval_status' => 'approved',
@@ -266,46 +261,59 @@ class InventoryController extends Controller
                 $batch->items()->create($itemData);
             }
 
-            // Update the supplier's delivery person and phone in the database and registry if configured
+            // Update the supplier's contact details in the database and registry
             if (!empty($validated['supplier_name'])) {
                 $cleanSupplier = trim(preg_replace('/\s\[.*\]$/', '', $validated['supplier_name']));
+                
+                $updateData = [];
+                if (isset($validated['delivery_person'])) {
+                    $updateData['contact_person'] = trim($validated['delivery_person']);
+                }
+                if (isset($validated['driver_name'])) {
+                    $updateData['delivery_person'] = trim($validated['driver_name']);
+                }
+                if (isset($validated['delivery_phone'])) {
+                    $updateData['contact_phone'] = trim($validated['delivery_phone']);
+                }
+                if (isset($validated['driver_phone'])) {
+                    $updateData['delivery_phone'] = trim($validated['driver_phone']);
+                }
+                if (isset($validated['supplier_phone'])) $updateData['phone'] = trim($validated['supplier_phone']);
+                if (isset($validated['supplier_email'])) $updateData['email'] = trim($validated['supplier_email']);
+                if (isset($validated['supplier_address'])) $updateData['address'] = trim($validated['supplier_address']);
+                
                 $supplierModel = \App\Models\Supplier::where('name', $cleanSupplier)
                     ->orWhere('name', $validated['supplier_name'])
                     ->first();
+                    
                 if ($supplierModel) {
-                    $updateData = [];
-                    if (isset($validated['delivery_person'])) {
-                        $updateData['delivery_person'] = trim($validated['delivery_person']);
-                    }
-                    if (isset($validated['delivery_phone'])) {
-                        $updateData['delivery_phone'] = trim($validated['delivery_phone']);
-                    }
                     if (!empty($updateData)) {
                         $supplierModel->update($updateData);
                     }
-                    
-                    // Also update in settings registry
-                    $setting = \App\Models\Setting::where('key', 'suppliers_registry')->first();
-                    if ($setting) {
-                        $registry = json_decode($setting->value ?? '{}', true) ?? [];
-                        $updatedRegistry = false;
-                        foreach ($registry as $key => &$details) {
-                            if (strcasecmp(trim($key), $cleanSupplier) === 0 || strcasecmp(trim($key), trim($validated['supplier_name'])) === 0) {
-                                if (isset($updateData['delivery_person'])) {
-                                    $details['delivery_person'] = $updateData['delivery_person'];
-                                }
-                                if (isset($updateData['delivery_phone'])) {
-                                    $details['delivery_phone'] = $updateData['delivery_phone'];
-                                }
-                                $updatedRegistry = true;
-                                break;
+                } else {
+                    $createData = array_merge(['name' => $cleanSupplier], $updateData);
+                    \App\Models\Supplier::create($createData);
+                }
+                
+                // Also update in settings registry
+                $setting = \App\Models\Setting::where('key', 'suppliers_registry')->first();
+                if ($setting) {
+                    $registry = json_decode($setting->value ?? '{}', true) ?? [];
+                    $found = false;
+                    foreach ($registry as $key => &$details) {
+                        if (strcasecmp(trim($key), $cleanSupplier) === 0 || strcasecmp(trim($key), trim($validated['supplier_name'])) === 0) {
+                            foreach ($updateData as $k => $v) {
+                                $details[$k] = $v;
                             }
-                        }
-                        if ($updatedRegistry) {
-                            $setting->value = json_encode($registry);
-                            $setting->save();
+                            $found = true;
+                            break;
                         }
                     }
+                    if (!$found) {
+                        $registry[$cleanSupplier] = $updateData;
+                    }
+                    $setting->value = json_encode($registry);
+                    $setting->save();
                 }
             }
 

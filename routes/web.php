@@ -542,20 +542,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 $registryData = json_decode($registryData, true) ?? [];
             }
             $registrySuppliers = is_array($registryData) ? array_keys($registryData) : [];
-            $dbSuppliers = \App\Models\InventoryBatch::where('acquisition_type', 'Supplier')
-                ->whereNotNull('supplier_name')
-                ->distinct()
-                ->pluck('supplier_name')
-                ->map(function($name) use ($registrySuppliers) {
-                    $clean = preg_replace('/\s\[.*\]$/', '', $name);
-                    foreach ($registrySuppliers as $regName) {
-                        if (strcasecmp($regName, $clean) === 0) {
-                            return $regName;
-                        }
-                    }
-                    return $clean;
-                })->toArray();
-            $allSuppliers = collect(array_merge($registrySuppliers, $dbSuppliers))
+            $allSuppliers = collect($registrySuppliers)
                 ->filter(function ($item) {
                     return strtolower(trim($item)) !== 'system';
                 })
@@ -1088,6 +1075,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::patch('/admin/users/{id}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('admin.users.toggle_status');
     Route::post('/admin/self-deactivate', [AdminController::class, 'deactivateSelf'])->name('admin.self_deactivate');
 
+    Route::get('/admin/suppliers', [AdminController::class, 'suppliers'])->name('admin.suppliers');
     Route::get('/admin/settings', [AdminController::class, 'settings'])->name('admin.settings');
     Route::post('/admin/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
     Route::post('/admin/settings/category', [AdminController::class, 'addCategory'])->name('admin.settings.category');
@@ -1345,8 +1333,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         \App\Models\InventoryBatch::selfHealSchema();
 
         $namesStr = trim($request->input('name'));
-        $deliveryPerson = trim($request->input('delivery_person'));
-        $deliveryPhone = trim($request->input('delivery_phone'));
+        $contactPerson = trim($request->input('contact_person'));
+        $contactPhone = trim($request->input('contact_phone'));
         $phone = trim($request->input('phone'));
         $email = trim($request->input('email'));
         $address = trim($request->input('address'));
@@ -1360,17 +1348,30 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
         $addedCount = 0;
         foreach ($names as $name) {
-            \App\Models\Supplier::updateOrCreate(
-                ['name' => $name],
-                [
-                    'delivery_person' => $deliveryPerson,
-                    'delivery_phone' => $deliveryPhone,
-                    'phone' => $phone,
-                    'email' => $email,
-                    'address' => $address,
-                    'desc' => $desc
-                ]
-            );
+            $existing = \App\Models\Supplier::where('name', $name)->first();
+            if ($existing) {
+                // Update only admin-managed fields; preserve delivery_person/delivery_phone set by Store Officers
+                $existing->update([
+                    'contact_person'  => $contactPerson ?: $existing->contact_person,
+                    'contact_phone'   => $contactPhone ?: $existing->contact_phone,
+                    'phone'           => $phone,
+                    'email'           => $email,
+                    'address'         => $address,
+                    'desc'            => $desc,
+                ]);
+            } else {
+                \App\Models\Supplier::create([
+                    'name'            => $name,
+                    'contact_person'  => $contactPerson,
+                    'contact_phone'   => $contactPhone,
+                    'delivery_person' => null,
+                    'delivery_phone'  => null,
+                    'phone'           => $phone,
+                    'email'           => $email,
+                    'address'         => $address,
+                    'desc'            => $desc,
+                ]);
+            }
             $addedCount++;
         }
 

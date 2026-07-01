@@ -91,7 +91,7 @@
     </div>
 </div>
 @empty
-<div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
+<div class="m-empty-state" style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
     No store officers registered.
 </div>
 @endforelse

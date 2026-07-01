@@ -352,8 +352,8 @@
                     foreach ($suppliersRegistry as $k => $v) {
                         if (strcasecmp(trim($k), trim($entityDisplay)) === 0 || ($supplierName && strcasecmp(trim($k), trim($supplierName)) === 0)) {
                             $entityDisplay = $k;
-                            $deliveryPerson = $v['delivery_person'] ?? '';
-                            $deliveryPhone = $v['delivery_phone'] ?? '';
+                            $deliveryPerson = $v['contact_person'] ?? $v['delivery_person'] ?? '';
+                            $deliveryPhone = $v['contact_phone'] ?? $v['delivery_phone'] ?? '';
                             break;
                         }
                     }

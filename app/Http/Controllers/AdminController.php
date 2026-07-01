@@ -1184,4 +1184,33 @@ class AdminController extends Controller
 
         return response()->json(['success' => true, 'history' => $history]);
     }
+
+    public function suppliers()
+    {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover() && strcasecmp(auth()->user()->department ?? '', 'Stores') !== 0 && strcasecmp(auth()->user()->department ?? '', 'Store') !== 0) {
+            abort(403);
+        }
+        $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
+        
+        // Populate stats for each supplier
+        foreach ($suppliersRegistry as $name => &$details) {
+            $cleanName = trim(preg_replace('/\[.*?\]/', '', $name));
+            $batches = \App\Models\InventoryBatch::where(function($q) use ($name, $cleanName) {
+                    $q->where('supplier_name', $name)->orWhere('supplier_name', $cleanName);
+                })
+                ->where('supplier_status', '!=', 'System Draft')
+                ->whereNotNull('arrival_date')
+                ->orderBy('arrival_date', 'asc')
+                ->get();
+
+            $details['total_deliveries'] = $batches->count();
+            $details['first_delivery'] = $batches->first() ? \Carbon\Carbon::parse($batches->first()->arrival_date)->format('Y-m-d') : null;
+            $details['last_delivery'] = $batches->last() ? \Carbon\Carbon::parse($batches->last()->arrival_date)->format('Y-m-d') : null;
+            $details['all_deliveries'] = $batches->pluck('arrival_date')->map(function($d) {
+                return \Carbon\Carbon::parse($d)->format('Y-m-d');
+            })->toArray();
+        }
+        
+        return view('admin.suppliers', compact('suppliersRegistry'));
+    }
 }

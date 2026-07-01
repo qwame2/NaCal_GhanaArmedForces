@@ -64,6 +64,8 @@ class Setting extends Model
                 return \Illuminate\Support\Facades\Cache::remember('setting_suppliers_registry', 86400, function() {
                     return \App\Models\Supplier::all()->keyBy('name')->map(function($supplier) {
                         return [
+                            'contact_person' => $supplier->contact_person,
+                            'contact_phone' => $supplier->contact_phone,
                             'delivery_person' => $supplier->delivery_person,
                             'delivery_phone' => $supplier->delivery_phone,
                             'phone' => $supplier->phone,

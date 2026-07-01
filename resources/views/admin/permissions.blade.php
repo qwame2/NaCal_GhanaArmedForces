@@ -1458,9 +1458,9 @@
 
             // ── 3. Handle empty state ──────────────────────────────────
             const hasRows = body.querySelectorAll('.m-row[data-user-id]').length > 0;
-            const emptyEl = body.querySelector('div:not(.m-row)');
+            const emptyEl = body.querySelector('.m-empty-state');
             if (!hasRows && !emptyEl) {
-                body.innerHTML = '<div style="padding:3rem;text-align:center;color:#94a3b8;font-weight:600;background:white;">No store officers registered.</div>';
+                body.innerHTML = '<div class="m-empty-state" style="padding:3rem;text-align:center;color:#94a3b8;font-weight:600;background:white;">No store officers registered.</div>';
             } else if (hasRows && emptyEl) {
                 emptyEl.remove();
             }

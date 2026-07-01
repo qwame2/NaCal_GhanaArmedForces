@@ -115,22 +115,35 @@ class ReceivedItemsController extends Controller
             return response()->json($response);
         }
 
-        // Attach delivery person and phone to proposed batch
+        // Attach contact person and driver details to proposed batch
         $cleanSupplier = trim(preg_replace('/\[.*?\]/', '', $data['supplier_name'] ?? ''));
         $deliveryPerson = $data['delivery_person'] ?? '';
         $deliveryPhone = $data['delivery_phone'] ?? '';
-        if (empty($deliveryPerson)) {
-            foreach ($suppliersRegistry as $supplier) {
-                if (strcasecmp(trim($supplier->name), $cleanSupplier) === 0 || (isset($data['supplier_name']) && strcasecmp(trim($supplier->name), trim($data['supplier_name'])) === 0)) {
-                    $data['supplier_name'] = $supplier->name;
-                    $deliveryPerson = $supplier->delivery_person ?? '';
-                    $deliveryPhone = $supplier->delivery_phone ?? '';
-                    break;
+        $driverName = $data['driver_name'] ?? '';
+        $driverPhone = $data['driver_phone'] ?? '';
+
+        foreach ($suppliersRegistry as $supplier) {
+            if (strcasecmp(trim($supplier->name), $cleanSupplier) === 0 || (isset($data['supplier_name']) && strcasecmp(trim($supplier->name), trim($data['supplier_name'])) === 0)) {
+                $data['supplier_name'] = $supplier->name;
+                if (empty($deliveryPerson)) {
+                    $deliveryPerson = $supplier->contact_person ?? $supplier->delivery_person ?? '';
                 }
+                if (empty($deliveryPhone)) {
+                    $deliveryPhone = $supplier->contact_phone ?? $supplier->delivery_phone ?? '';
+                }
+                if (empty($driverName)) {
+                    $driverName = $supplier->delivery_person ?? '';
+                }
+                if (empty($driverPhone)) {
+                    $driverPhone = $supplier->delivery_phone ?? '';
+                }
+                break;
             }
         }
         $data['delivery_person'] = $deliveryPerson;
         $data['delivery_phone'] = $deliveryPhone;
+        $data['driver_name'] = $driverName;
+        $data['driver_phone'] = $driverPhone;
 
         // Add total_in_system to items
         if (isset($data['items']) && is_array($data['items'])) {
@@ -164,16 +177,22 @@ class ReceivedItemsController extends Controller
                 $origClean = trim(preg_replace('/\[.*?\]/', '', $originalBatch->supplier_name ?? ''));
                 $origDelivery = '';
                 $origPhone = '';
+                $origDriver = '';
+                $origDriverPhone = '';
                 foreach ($suppliersRegistry as $supplier) {
                     if (strcasecmp(trim($supplier->name), $origClean) === 0 || strcasecmp(trim($supplier->name), trim($originalBatch->supplier_name)) === 0) {
                         $originalBatch->supplier_name = $supplier->name;
-                        $origDelivery = $supplier->delivery_person ?? '';
-                        $origPhone = $supplier->delivery_phone ?? '';
+                        $origDelivery = $supplier->contact_person ?? $supplier->delivery_person ?? '';
+                        $origPhone = $supplier->contact_phone ?? $supplier->delivery_phone ?? '';
+                        $origDriver = $supplier->delivery_person ?? '';
+                        $origDriverPhone = $supplier->delivery_phone ?? '';
                         break;
                     }
                 }
                 $originalBatch->delivery_person = $origDelivery;
                 $originalBatch->delivery_phone = $origPhone;
+                $originalBatch->driver_name = $origDriver;
+                $originalBatch->driver_phone = $origDriverPhone;
 
                 $origDescriptions = $originalBatch->items->pluck('description')->filter()->unique()->toArray();
                 $origSums = \App\Models\InventoryItem::whereIn('description', $origDescriptions)
@@ -350,16 +369,26 @@ class ReceivedItemsController extends Controller
         if (is_string($registryData)) {
             $registryData = json_decode($registryData, true) ?? [];
         }
+        
+        $suppliersRegistryWithStats = $registryData;
+        if (is_array($suppliersRegistryWithStats)) {
+            foreach ($suppliersRegistryWithStats as $name => &$details) {
+                $cleanName = trim(preg_replace('/\[.*?\]/', '', $name));
+                $batches = \App\Models\InventoryBatch::where(function($q) use ($name, $cleanName) {
+                        $q->where('supplier_name', $name)->orWhere('supplier_name', $cleanName);
+                    })
+                    ->where('supplier_status', '!=', 'System Draft')
+                    ->whereNotNull('arrival_date')
+                    ->orderBy('arrival_date', 'asc')
+                    ->get();
+
+                $details['first_delivery'] = $batches->first() ? \Carbon\Carbon::parse($batches->first()->arrival_date)->format('Y-m-d') : null;
+                $details['last_delivery'] = $batches->last() ? \Carbon\Carbon::parse($batches->last()->arrival_date)->format('Y-m-d') : null;
+            }
+        }
+
         $registrySuppliers = is_array($registryData) ? array_keys($registryData) : [];
-        $dbSuppliers = InventoryBatch::where('acquisition_type', 'Supplier')
-            ->where('supplier_status', '!=', 'System Draft')
-            ->select('supplier_name')
-            ->distinct()
-            ->pluck('supplier_name')
-            ->map(function($name) {
-                return preg_replace('/\s\[.*\]$/', '', $name);
-            })->toArray();
-        $allSuppliers = collect(array_merge($registrySuppliers, $dbSuppliers))
+        $allSuppliers = collect($registrySuppliers)
             ->filter(function ($item) {
                 return strtolower(trim($item)) !== 'system';
             })
@@ -401,7 +430,8 @@ class ReceivedItemsController extends Controller
             'searchQtySum',
             'itemAggregates',
             'allSuppliers',
-            'allDonors'
+            'allDonors',
+            'suppliersRegistryWithStats'
         ));
     }
 
@@ -634,9 +664,22 @@ class ReceivedItemsController extends Controller
             ->get();
 
         if ($request->has('json')) {
+            // Enrich with full supplier profile if available
+            $supplierProfile = null;
+            $cleanSupplier = trim(preg_replace('/\[.*?\]/', '', $batch->supplier_name ?? ''));
+            if ($cleanSupplier) {
+                $supplierModel = \App\Models\Supplier::where('name', $cleanSupplier)
+                    ->orWhere('name', $batch->supplier_name)
+                    ->first();
+                if ($supplierModel) {
+                    $supplierProfile = $supplierModel->toArray();
+                }
+            }
+
             return response()->json([
                 'batch' => $batch,
-                'history' => $history
+                'history' => $history,
+                'supplier_profile' => $supplierProfile,
             ]);
         }
 
@@ -763,28 +806,62 @@ class ReceivedItemsController extends Controller
 
     public function getSupplierStats($name)
     {
-        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
-        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
+        $user = auth()->user();
+        // Allow Admins, Head of Stores, and any user in the Stores department
+        $isStoresPersonnel = (
+            $user->is_admin ||
+            $user->role === 'Head of Stores' ||
+            $user->role === 'Main Admin' ||
+            strcasecmp($user->department ?? '', 'Stores') === 0 ||
+            strcasecmp($user->department ?? '', 'Store') === 0
+        );
+
+        if (!$isStoresPersonnel) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $cleanName = trim(preg_replace('/\[.*?\]/', '', $name));
-        $supplier = \App\Models\Supplier::where('name', $cleanName)->first();
+        $supplier = \App\Models\Supplier::where('name', $cleanName)
+            ->orWhere('name', $name)
+            ->first();
         
+        // Fallback: build a minimal supplier object from the settings registry
         if (!$supplier) {
-            return response()->json(['error' => 'Supplier not found'], 404);
+            $registryData = \App\Models\Setting::get('suppliers_registry', []);
+            if (is_string($registryData)) {
+                $registryData = json_decode($registryData, true) ?? [];
+            }
+            $registryEntry = null;
+            foreach ($registryData as $key => $details) {
+                if (strcasecmp(trim($key), $cleanName) === 0 || strcasecmp(trim($key), trim($name)) === 0) {
+                    $registryEntry = array_merge(['name' => $key], is_array($details) ? $details : []);
+                    break;
+                }
+            }
+            if ($registryEntry) {
+                // Return a synthetic supplier object from registry data
+                $supplier = (object) $registryEntry;
+            } else {
+                return response()->json(['error' => 'Supplier not found'], 404);
+            }
         }
 
         // Calculate stats
-        $totalDeliveries = \App\Models\InventoryBatch::where('supplier_name', $name)
+        $totalDeliveries = \App\Models\InventoryBatch::where(function($q) use ($name, $cleanName) {
+                $q->where('supplier_name', $name)->orWhere('supplier_name', $cleanName);
+            })
             ->where('supplier_status', '!=', 'System Draft')
             ->count();
 
-        $totalItemsSupplied = \App\Models\InventoryItem::whereHas('batch', function($q) use ($name) {
-            $q->where('supplier_name', $name)->where('supplier_status', '!=', 'System Draft');
+        $totalItemsSupplied = \App\Models\InventoryItem::whereHas('batch', function($q) use ($name, $cleanName) {
+            $q->where(function($q2) use ($name, $cleanName) {
+                $q2->where('supplier_name', $name)->orWhere('supplier_name', $cleanName);
+            })->where('supplier_status', '!=', 'System Draft');
         })->sum('qty');
 
-        $lastDelivery = \App\Models\InventoryBatch::where('supplier_name', $name)
+        $lastDelivery = \App\Models\InventoryBatch::where(function($q) use ($name, $cleanName) {
+                $q->where('supplier_name', $name)->orWhere('supplier_name', $cleanName);
+            })
             ->where('supplier_status', '!=', 'System Draft')
             ->orderBy('arrival_date', 'desc')
             ->first();

@@ -192,6 +192,12 @@
                         <span>Returned Items</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.suppliers') }}" class="nav-link {{ request()->routeIs('admin.suppliers') ? 'active' : '' }}" data-tooltip="Suppliers Details">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
+                        <span>Suppliers Details</span>
+                    </a>
+                </li>
                 @endif
             @else
                 <li class="nav-item">
@@ -863,9 +869,9 @@
                 });
             };
 
-            // Global Message Badge Sync + Persistent Notification Alarm
-            // _notifAlarm: holds the setInterval ID for the repeating beep.
-            // Starts when there are unread messages; stops when count hits 0 or user opens messages page.
+            // Global Message Badge Sync + Notification Double-Beep
+            // _notifAlarm: used to debounce so the double-beep only fires once per new batch.
+            // Plays exactly two beeps when a new message arrives, then stops.
             let _notifAlarm = null;
             let _notifAlarmLastCount = 0;
             window._firstUnreadPoll = true;  // skip beep on first poll (page load/refresh)
@@ -873,17 +879,18 @@
             window._lastRequestedApprovalsCount = 0;
 
             function _startNotifAlarm() {
-                if (_notifAlarm) return; // already running
-                // Play immediately on start, then repeat every 4 seconds
+                if (_notifAlarm) return; // already played for this batch, debounce
+                // Play exactly two beeps: immediately + once more after 600ms, then stop
                 window.playNotificationSound('receive');
-                _notifAlarm = setInterval(() => {
+                _notifAlarm = setTimeout(() => {
                     window.playNotificationSound('receive');
-                }, 4000);
+                    _notifAlarm = null; // reset so next new message can trigger again
+                }, 600);
             }
 
             function _stopNotifAlarm() {
                 if (_notifAlarm) {
-                    clearInterval(_notifAlarm);
+                    clearTimeout(_notifAlarm);
                     _notifAlarm = null;
                 }
             }
@@ -944,34 +951,30 @@
                             }
                         }
 
-                        // Play a single beep only when counts genuinely increase (skip first poll to avoid beep on page refresh)
+                        // Re-check messages page active in other tabs
+                        const lastActiveCheck = localStorage.getItem('messages_page_active');
+                        const isMessagesOpenElsewhere = lastActiveCheck && (Date.now() - parseInt(lastActiveCheck)) < 15000;
+
+                        // Skip ALL beeps on the first poll (page load/refresh) — just record baseline
                         if (window._firstUnreadPoll) {
-                            // First poll: just record baseline counts, no beep
                             window._firstUnreadPoll = false;
+                            _notifAlarmLastCount = data.count || 0;
                         } else {
+                            // Beep twice when approval counts increase
                             if (data.approvals_count > 0 && window._lastApprovalsCount < data.approvals_count) {
                                 window.playDoubleBeep('receive');
                             }
                             if (data.requested_approvals_count > 0 && window._lastRequestedApprovalsCount < data.requested_approvals_count) {
                                 window.playDoubleBeep('receive');
                             }
+                            // Beep twice when a new message arrives (count genuinely increased)
+                            if (data.count > _notifAlarmLastCount && !isMessagesOpenElsewhere) {
+                                _startNotifAlarm();
+                            }
+                            _notifAlarmLastCount = isMessagesOpenElsewhere ? 0 : data.count;
                         }
                         window._lastApprovalsCount = data.approvals_count || 0;
                         window._lastRequestedApprovalsCount = data.requested_approvals_count || 0;
-
-                        // Re-check messages page active in other tabs
-                        const lastActiveCheck = localStorage.getItem('messages_page_active');
-                        const isMessagesOpenElsewhere = lastActiveCheck && (Date.now() - parseInt(lastActiveCheck)) < 15000;
-
-                        // Alarm control: start if new unread appeared, stop when all read or messages page open
-                        if (data.count > 0 && _notifAlarmLastCount === 0 && !isMessagesOpenElsewhere) {
-                            // New unread message(s) just arrived — start the alarm
-                            _startNotifAlarm();
-                        } else if ((data.count === 0 || isMessagesOpenElsewhere) && _notifAlarm) {
-                            // All messages read or messages page open — silence the alarm
-                            _stopNotifAlarm();
-                        }
-                        _notifAlarmLastCount = isMessagesOpenElsewhere ? 0 : data.count;
                     })
                     .catch(err => {});
             };

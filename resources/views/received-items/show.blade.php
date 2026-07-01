@@ -84,8 +84,8 @@
                     foreach ($suppliersRegistry as $k => $v) {
                         if (strcasecmp(trim($k), trim($provider)) === 0 || ($batch->supplier_name && strcasecmp(trim($k), trim($batch->supplier_name)) === 0)) {
                             $provider = $k;
-                            $deliveryPerson = $v['delivery_person'] ?? '';
-                            $deliveryPhone = $v['delivery_phone'] ?? '';
+                            $deliveryPerson = $v['contact_person'] ?? $v['delivery_person'] ?? '';
+                            $deliveryPhone = $v['contact_phone'] ?? $v['delivery_phone'] ?? '';
                             break;
                         }
                     }

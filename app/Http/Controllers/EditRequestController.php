@@ -499,6 +499,8 @@ class EditRequestController extends Controller
                         'acquisition_type' => $data['acquisition_type'],
                         'delivery_person' => $data['delivery_person'] ?? null,
                         'delivery_phone' => $data['delivery_phone'] ?? null,
+                        'driver_name' => $data['driver_name'] ?? null,
+                        'driver_phone' => $data['driver_phone'] ?? null,
                         'entry_date' => $data['entry_date'] ?? now(),
                         'arrival_date' => $data['arrival_date'],
                         'recorded_by' => $editReq->user_id,
@@ -523,46 +525,59 @@ class EditRequestController extends Controller
                         'ip_address' => request()->ip()
                     ]);
 
-                    // Update the supplier's delivery person and phone in the database and registry if configured
+                    // Update the supplier's contact details in the database and registry if configured
                     if (!empty($data['supplier_name'])) {
                         $cleanSupplier = trim(preg_replace('/\s\[.*\]$/', '', $data['supplier_name']));
+                        
+                        $updateData = [];
+                        if (isset($data['delivery_person'])) {
+                            $updateData['contact_person'] = trim($data['delivery_person']);
+                        }
+                        if (isset($data['driver_name'])) {
+                            $updateData['delivery_person'] = trim($data['driver_name']);
+                        }
+                        if (isset($data['delivery_phone'])) {
+                            $updateData['contact_phone'] = trim($data['delivery_phone']);
+                        }
+                        if (isset($data['driver_phone'])) {
+                            $updateData['delivery_phone'] = trim($data['driver_phone']);
+                        }
+                        if (isset($data['supplier_phone'])) $updateData['phone'] = trim($data['supplier_phone']);
+                        if (isset($data['supplier_email'])) $updateData['email'] = trim($data['supplier_email']);
+                        if (isset($data['supplier_address'])) $updateData['address'] = trim($data['supplier_address']);
+                        
                         $supplierModel = \App\Models\Supplier::where('name', $cleanSupplier)
                             ->orWhere('name', $data['supplier_name'])
                             ->first();
+                            
                         if ($supplierModel) {
-                            $updateData = [];
-                            if (isset($data['delivery_person'])) {
-                                $updateData['delivery_person'] = trim($data['delivery_person']);
-                            }
-                            if (isset($data['delivery_phone'])) {
-                                $updateData['delivery_phone'] = trim($data['delivery_phone']);
-                            }
                             if (!empty($updateData)) {
                                 $supplierModel->update($updateData);
                             }
-                            
-                            // Also update in settings registry
-                            $setting = \App\Models\Setting::where('key', 'suppliers_registry')->first();
-                            if ($setting) {
-                                    $registry = json_decode($setting->value ?? '{}', true) ?? [];
-                                    $updatedRegistry = false;
-                                    foreach ($registry as $key => &$details) {
-                                        if (strcasecmp(trim($key), $cleanSupplier) === 0 || strcasecmp(trim($key), trim($data['supplier_name'])) === 0) {
-                                            if (isset($updateData['delivery_person'])) {
-                                                $details['delivery_person'] = $updateData['delivery_person'];
-                                            }
-                                            if (isset($updateData['delivery_phone'])) {
-                                                $details['delivery_phone'] = $updateData['delivery_phone'];
-                                            }
-                                            $updatedRegistry = true;
-                                            break;
-                                        }
+                        } else {
+                            $createData = array_merge(['name' => $cleanSupplier], $updateData);
+                            \App\Models\Supplier::create($createData);
+                        }
+                        
+                        // Also update in settings registry
+                        $setting = \App\Models\Setting::where('key', 'suppliers_registry')->first();
+                        if ($setting) {
+                            $registry = json_decode($setting->value ?? '{}', true) ?? [];
+                            $found = false;
+                            foreach ($registry as $key => &$details) {
+                                if (strcasecmp(trim($key), $cleanSupplier) === 0 || strcasecmp(trim($key), trim($data['supplier_name'])) === 0) {
+                                    foreach ($updateData as $k => $v) {
+                                        $details[$k] = $v;
                                     }
-                                    if ($updatedRegistry) {
-                                        $setting->value = json_encode($registry);
-                                        $setting->save();
-                                    }
+                                    $found = true;
+                                    break;
+                                }
                             }
+                            if (!$found) {
+                                $registry[$cleanSupplier] = $updateData;
+                            }
+                            $setting->value = json_encode($registry);
+                            $setting->save();
                         }
                     }
                 }

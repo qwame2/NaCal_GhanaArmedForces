@@ -83,7 +83,30 @@
                                     <option value="{{ $supplier }}">{{ $supplier }}</option>
                                     @endforeach
                                 </select>
-                                <div id="deliveryPersonGroup" style="display: none; margin-top: 0.75rem;">
+                                <div id="deliveryPersonGroup" style="margin-top: 0.75rem;">
+                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
+                                         <div>
+                                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                                                 <i data-lucide="phone" style="width: 14px; color: var(--primary);"></i>
+                                                 Contact Number
+                                             </label>
+                                             <input type="text" id="supplierPhoneInput" class="form-control" placeholder="Enter supplier phone" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                         </div>
+                                         <div>
+                                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                                                 <i data-lucide="mail" style="width: 14px; color: var(--primary);"></i>
+                                                 Email Address
+                                             </label>
+                                             <input type="email" id="supplierEmailInput" class="form-control" placeholder="Enter supplier email" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                         </div>
+                                     </div>
+                                     <div style="margin-bottom: 0.75rem;">
+                                         <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                                             <i data-lucide="map-pin" style="width: 14px; color: var(--primary);"></i>
+                                             Physical Address
+                                         </label>
+                                         <input type="text" id="supplierAddressInput" class="form-control" placeholder="Enter supplier physical address" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                     </div>
                                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                          <div>
                                              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
@@ -98,6 +121,22 @@
                                                  Contact Person Number <span style="color: #ef4444; margin-left: 2px;">*</span>
                                              </label>
                                              <input type="text" id="deliveryPersonPhoneInput" maxlength="10" class="form-control" placeholder="Enter phone number" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                         </div>
+                                     </div>
+                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
+                                         <div>
+                                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                                                 <i data-lucide="truck" style="width: 14px; color: var(--primary);"></i>
+                                                 Delivery Person Name <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                             </label>
+                                             <input type="text" id="driverNameInput" class="form-control" placeholder="Enter driver's name" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                         </div>
+                                         <div>
+                                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                                                 <i data-lucide="phone" style="width: 14px; color: var(--primary);"></i>
+                                                 Delivery Person Number <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                             </label>
+                                             <input type="text" id="driverPhoneInput" maxlength="10" class="form-control" placeholder="Enter driver's phone" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
                                          </div>
                                      </div>
                                  </div>
@@ -670,8 +709,13 @@ jQuery(document).ready(function($) {
             supplier_status: supplierStatus,
             donor_name: donorName || null,
             acquisition_type: acquisitionType,
+            driver_name: $('#deliveryPersonGroup').is(':visible') ? ($('#driverNameInput').val() || '').trim() : null,
+            driver_phone: $('#deliveryPersonGroup').is(':visible') ? ($('#driverPhoneInput').val() || '').trim() : null,
             delivery_person: $('#deliveryPersonGroup').is(':visible') ? ($('#deliveryPersonInput').val() || '').trim() : null,
             delivery_phone: $('#deliveryPersonGroup').is(':visible') ? ($('#deliveryPersonPhoneInput').val() || '').trim() : null,
+            supplier_phone: $('#deliveryPersonGroup').is(':visible') ? ($('#supplierPhoneInput').val() || '').trim() : null,
+            supplier_email: $('#deliveryPersonGroup').is(':visible') ? ($('#supplierEmailInput').val() || '').trim() : null,
+            supplier_address: $('#deliveryPersonGroup').is(':visible') ? ($('#supplierAddressInput').val() || '').trim() : null,
             entry_date: $('#entryDate').val(),
             arrival_date: $('#arrivalDate').val(),
             items: items
@@ -1274,9 +1318,11 @@ jQuery(document).ready(function($) {
     const suppliersRegistry = @json(\App\Models\Setting::get('suppliers_registry', []));
     $('#supplierNameSelect').on('change', function() {
         const name = $(this).val();
-        const deliveryGroup = $('#deliveryPersonGroup');
         const deliveryInput = $('#deliveryPersonInput');
         const deliveryPhoneInput = $('#deliveryPersonPhoneInput');
+        const supplierPhoneInput = $('#supplierPhoneInput');
+        const supplierEmailInput = $('#supplierEmailInput');
+        const supplierAddressInput = $('#supplierAddressInput');
 
         let details = null;
         if (name) {
@@ -1289,19 +1335,18 @@ jQuery(document).ready(function($) {
             }
         }
 
-        if (name) {
-            if (details) {
-                deliveryInput.val(details.delivery_person || '');
-                deliveryPhoneInput.val(details.delivery_phone || '');
-            } else {
-                deliveryInput.val('');
-                deliveryPhoneInput.val('');
-            }
-            deliveryGroup.slideDown(250);
+        if (name && details) {
+            deliveryInput.val(details.contact_person || details.delivery_person || '');
+            deliveryPhoneInput.val(details.contact_phone || details.delivery_phone || '');
+            supplierPhoneInput.val(details.phone || '');
+            supplierEmailInput.val(details.email || '');
+            supplierAddressInput.val(details.address || '');
         } else {
-            deliveryGroup.slideUp(200);
             deliveryInput.val('');
             deliveryPhoneInput.val('');
+            supplierPhoneInput.val('');
+            supplierEmailInput.val('');
+            supplierAddressInput.val('');
         }
     });
 

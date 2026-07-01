@@ -41,6 +41,26 @@ class InventoryBatch extends Model
             }
         }
 
+        if (Schema::hasTable('suppliers')) {
+            $hasContactPerson = Schema::hasColumn('suppliers', 'contact_person');
+            $hasContactPhone = Schema::hasColumn('suppliers', 'contact_phone');
+            if (!$hasContactPerson || !$hasContactPhone) {
+                try {
+                    Schema::table('suppliers', function (Blueprint $table) use ($hasContactPerson, $hasContactPhone) {
+                        if (!$hasContactPerson) {
+                            $table->string('contact_person')->nullable()->after('name');
+                        }
+                        if (!$hasContactPhone) {
+                            $table->string('contact_phone')->nullable()->after($hasContactPerson ? 'contact_person' : 'name');
+                        }
+                    });
+                } catch (\Exception $e) {
+                    $success = false;
+                    // Ignore concurrent schema updates or errors
+                }
+            }
+        }
+
         if (Schema::hasTable('inventory_batches')) {
             $hasPerson = Schema::hasColumn('inventory_batches', 'delivery_person');
             $hasPhone = Schema::hasColumn('inventory_batches', 'delivery_phone');
