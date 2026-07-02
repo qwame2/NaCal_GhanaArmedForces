@@ -2474,6 +2474,9 @@
 
                         return `
                         <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 1rem 1.5rem; width: 40px; text-align: center;">
+                                <input type="checkbox" class="item-rollback-checkbox" data-desc="${item.description}" style="width: 16px; height: 16px; accent-color: #ef4444; cursor: pointer;">
+                            </td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a; ${isDescChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10b981;' : ''}">
                                 <div>${item.description}</div>
                                 ${serialHtml}
@@ -2670,7 +2673,7 @@
                         <h3 style="font-size: 1rem; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; display: flex; align-items: center; gap: 8px;">
                             <i data-lucide="list-checks" style="width: 20px; color: #4f46e5;"></i> Items in This Entry (${batch.items.length})
                         </h3>
-                        <button onclick="window.rollbackEntry(${reqId})" style="background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: 0.2s; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);" onmouseover="this.style.background='#d97706'" onmouseout="this.style.background='#f59e0b'">
+                        <button class="sra-rollback-btn-right" onclick="window.rollbackEntry(${reqId})" style="background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: 0.2s; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);">
                             <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Rollback Group
                         </button>
                     </div>
@@ -2678,6 +2681,9 @@
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
                                 <tr>
+                                    <th style="padding: 1.25rem 1.5rem; width: 40px; text-align: center;">
+                                        <input type="checkbox" id="toggle-all-rollback" onclick="let checked = this.checked; document.querySelectorAll('.item-rollback-checkbox').forEach(cb => { cb.checked = checked; $(cb).trigger('change'); });" style="width: 16px; height: 16px; accent-color: #ef4444; cursor: pointer;">
+                                    </th>
                                     <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Item Description</th>
                                     <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
                                     <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Received Qty</th>
@@ -2691,7 +2697,7 @@
                             </tbody>
                             <tfoot style="background: #f8fafc; border-top: 2px solid #e2e8f0;">
                                 <tr>
-                                    <td colspan="2" style="padding: 1rem 1.5rem; font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
+                                    <td colspan="3" style="padding: 1rem 1.5rem; font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
                                         Total Items in This Entry
                                     </td>
                                     <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #4f46e5;">
@@ -3083,6 +3089,10 @@
     window.rollbackEntry = function(reqId) {
         if (typeof Swal === 'undefined') { alert('Cannot open rollback dialog.'); return; }
 
+        const selectedItems = Array.from(document.querySelectorAll('.item-rollback-checkbox:checked')).map(cb => cb.getAttribute('data-desc'));
+        const hasSelection = selectedItems.length > 0;
+        const selectedText = hasSelection ? `Correction required for: ${selectedItems.join(', ')}` : '';
+
         const FIELDS = [
             { key: 'supplier_status',  label: 'Delivery Status' },
             { key: 'arrival_date',     label: 'Received Date (Manual)' },
@@ -3096,6 +3106,18 @@
 
         const fieldsHtml = FIELDS.map(f => {
             let inputHtml = '';
+            let isChecked = false;
+            let noteVal = '';
+
+            if (hasSelection && (f.key === 'item_description' || f.key === 'item_qty')) {
+                isChecked = true;
+                noteVal = selectedText;
+            }
+
+            let displayStyle = isChecked ? 'block' : 'none';
+            let rowBg = isChecked ? '#fff5f5' : '#f8fafc';
+            let borderCol = isChecked ? '#fca5a5' : '#e2e8f0';
+
             let onchangeJs = `this.closest('.rb-field-row').querySelector('.rb-note-wrap').style.display = this.checked ? 'block' : 'none'; this.closest('.rb-field-row').style.background = this.checked ? '#fff5f5' : '#f8fafc'; this.closest('.rb-field-row').style.borderColor = this.checked ? '#fca5a5' : '#e2e8f0';`;
             
             if (f.key === 'item_unit') {
@@ -3108,8 +3130,8 @@
                 onchangeJs += ` if (this.checked) { setTimeout(() => { $(this.closest('.rb-field-row')).find('.select2-unit-rollback').select2({ placeholder: 'Select or type package type...', tags: true, width: '100%', dropdownParent: $('.swal-rollback-popup') }); }, 50); }`;
             } else {
                 inputHtml = `
-                    <input type="text" class="rb-field-note" data-key="${f.key}"
-                           placeholder="Correction note for this field (e.g. 'Use XYZ Ltd instead')..."
+                    <input type="text" class="rb-field-note" data-key="${f.key}" value="${noteVal}"
+                           placeholder="Correction note for this field (e.g. 'Use XYZ Ltd instead')...."
                            style="width: 100%; font-size: 0.82rem; border: 1.5px solid #fca5a5; border-radius: 8px; padding: 7px 10px; font-family: inherit; color: #1e293b; background: white; outline: none; box-sizing: border-box;"
                            onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 3px rgba(239,68,68,0.12)'"
                            onblur="this.style.borderColor='#fca5a5'; this.style.boxShadow='none'">
@@ -3117,14 +3139,14 @@
             }
 
             return `
-            <div class="rb-field-row" style="display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; transition: background 0.2s;">
+            <div class="rb-field-row" style="display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 12px; border: 1px solid ${borderCol}; background: ${rowBg}; transition: background 0.2s;">
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
-                    <input type="checkbox" class="rb-field-check" data-key="${f.key}"
+                    <input type="checkbox" class="rb-field-check" data-key="${f.key}" ${isChecked ? 'checked' : ''}
                            style="width: 16px; height: 16px; accent-color: #ef4444; cursor: pointer; flex-shrink: 0;"
                            onchange="${onchangeJs}">
                     <span style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${f.label}</span>
                 </label>
-                <div class="rb-note-wrap" style="display: none; padding-left: 24px; margin-top: 4px;">
+                <div class="rb-note-wrap" style="display: ${displayStyle}; padding-left: 24px; margin-top: 4px;">
                     ${inputHtml}
                 </div>
             </div>
@@ -3292,6 +3314,32 @@
             });
         });
     };
+
+    // Item selection rollback listener
+    $(document).on('change', '.item-rollback-checkbox', function() {
+        const checkedCount = $('.item-rollback-checkbox:checked').length;
+        const btn = document.querySelector('.sra-rollback-btn-right');
+        if (btn) {
+            if (checkedCount > 0) {
+                btn.innerHTML = `<i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Rollback Selected (${checkedCount})`;
+                btn.style.background = '#ef4444';
+                btn.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.25)';
+            } else {
+                btn.innerHTML = `<i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Rollback Group`;
+                btn.style.background = '#f59e0b';
+                btn.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.25)';
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    });
+
+    $(document).on('mouseenter', '.sra-rollback-btn-right', function() {
+        const checkedCount = $('.item-rollback-checkbox:checked').length;
+        this.style.background = checkedCount > 0 ? '#dc2626' : '#d97706';
+    }).on('mouseleave', '.sra-rollback-btn-right', function() {
+        const checkedCount = $('.item-rollback-checkbox:checked').length;
+        this.style.background = checkedCount > 0 ? '#ef4444' : '#f59e0b';
+    });
 
     // Relocate oversight elements to body to ensure fixed overlay covers viewport without parent transforms clipping it
     document.addEventListener('DOMContentLoaded', function() {
