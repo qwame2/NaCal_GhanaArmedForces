@@ -65,10 +65,15 @@
                 {{ $req->created_at->format('H:i') }}
             </div>
         </td>
+        <td data-label="Actions">
+            <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(99,102,241,0.08); color: #4f46e5; border: 1.5px solid rgba(99,102,241,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#4f46e5'; this.style.color='white'; this.style.borderColor='#4f46e5';" onmouseout="this.style.background='rgba(99,102,241,0.08)'; this.style.color='#4f46e5'; this.style.borderColor='rgba(99,102,241,0.2);'">
+                <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
+            </button>
+        </td>
     </tr>
 @empty
     <tr>
-        <td colspan="8" style="text-align:center;padding:4rem 2rem;border-bottom:none;">
+        <td colspan="9" style="text-align:center;padding:4rem 2rem;border-bottom:none;">
             <i data-lucide="inbox" style="width:36px;height:36px;margin:0 auto 0.75rem;display:block;opacity:.25;color:#10b981;"></i>
             <div style="font-weight:900;color:var(--text-main);margin-bottom:4px;">All Caught Up!</div>
             <div style="font-size:.82rem;color:var(--text-muted);">No requisitions match your current filter.</div>

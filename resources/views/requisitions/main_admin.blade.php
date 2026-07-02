@@ -966,6 +966,7 @@
                         <th>Status</th>
                         <th>Usage</th>
                         <th>Submitted</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="req-tbody">
