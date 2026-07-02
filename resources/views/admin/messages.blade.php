@@ -2666,6 +2666,14 @@
                     <div id="supplier-stats-inline-${reqId}"></div>
                     ${previousHtml}
                     ${proposedTitle}
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="font-size: 1rem; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="list-checks" style="width: 20px; color: #4f46e5;"></i> Items in This Entry (${batch.items.length})
+                        </h3>
+                        <button onclick="window.rollbackEntry(${reqId})" style="background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: 0.2s; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);" onmouseover="this.style.background='#d97706'" onmouseout="this.style.background='#f59e0b'">
+                            <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Rollback Group
+                        </button>
+                    </div>
                     <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem;">
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
