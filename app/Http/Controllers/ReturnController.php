@@ -16,7 +16,7 @@ class ReturnController extends Controller
     public function index(Request $request)
     {
         \App\Http\Controllers\StoreRequisitionController::checkOverdueTemporaryItems();
-        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
             abort(403, 'Unauthorized. Access restricted to Department Head (Stores) and Store Officers.');
         }
@@ -211,7 +211,7 @@ class ReturnController extends Controller
 
     public function history()
     {
-        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
             return response()->json([], 403);
         }

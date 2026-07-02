@@ -371,7 +371,7 @@ class AppServiceProvider extends ServiceProvider
                     $view->with('pendingRequisitionsCount', 0);
                     
                     // Main Admin count of pending requisitions awaiting review
-                    $isStoresHead = (strcasecmp(auth()->user()->department, 'Stores') === 0 || strcasecmp(auth()->user()->department, 'Store') === 0);
+                    $isStoresHead = (strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
                     if (!$isStoresHead) {
                         $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
                         if ($isBackup) {
