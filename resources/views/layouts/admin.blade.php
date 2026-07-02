@@ -840,8 +840,10 @@
                         <span class="u-name">{{ auth()->user()->name }}</span>
                         @if(auth()->user()->isDelegatedApprover())
                             <span class="u-role">Delegated Approver</span>
+                        @elseif(auth()->user()->role === 'Main Admin')
+                            <span class="u-role">Head of Admin</span>
                         @else
-                            <span class="u-role">Head of Stores</span>
+                            <span class="u-role">{{ auth()->user()->role }}</span>
                         @endif
                     </div>
                 </a>

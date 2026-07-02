@@ -459,9 +459,9 @@ class AuthController extends Controller
                     // Fallback in case the sessions table is not available or configured
                 }
 
-                // ENFORCEMENT: Block different admin accounts from simultaneous sessions.
-                // We allow the same admin to re-login (handles accidental tab closures).
-                $otherAdminOnline = User::where('is_admin', true)
+                // ENFORCEMENT: Block different accounts of the same administrative role from simultaneous sessions.
+                // We allow the same user to re-login (handles accidental tab closures).
+                $otherAdminOnline = User::where('role', $user->role)
                     ->where('is_online', true)
                     ->where('id', '!=', $user->id)
                     ->exists();
