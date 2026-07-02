@@ -1,0 +1,5 @@
+sudo rm -f 
+/var/www/NaCal_GhanaArmedForces/bootstrap/cache/routes-v7.php 
+/var/www/NaCal_GhanaArmedForces/bootstrap/cache/routes.php 
+/var/www/NaCal_GhanaArmedForces/bootstrap/cache/config.php
+

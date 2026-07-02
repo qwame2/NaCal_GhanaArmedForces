@@ -442,6 +442,23 @@ class AuthController extends Controller
                 // If the "remember" flag was somehow bypassed, force it to false for the session
                 $request->session()->put('auth.remember', false);
                 
+                // Clean up stale admin "is_online" statuses by checking database session activity.
+                // If an admin has no session activity within the last 5 minutes, reset their status to offline.
+                try {
+                    $activeSessionUserIds = \Illuminate\Support\Facades\DB::table('sessions')
+                        ->where('last_activity', '>=', now()->subMinutes(5)->timestamp)
+                        ->whereNotNull('user_id')
+                        ->pluck('user_id')
+                        ->toArray();
+
+                    User::where('is_admin', true)
+                        ->where('is_online', true)
+                        ->whereNotIn('id', $activeSessionUserIds)
+                        ->update(['is_online' => false]);
+                } catch (\Exception $e) {
+                    // Fallback in case the sessions table is not available or configured
+                }
+
                 // ENFORCEMENT: Block different admin accounts from simultaneous sessions.
                 // We allow the same admin to re-login (handles accidental tab closures).
                 $otherAdminOnline = User::where('is_admin', true)

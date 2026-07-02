@@ -691,7 +691,7 @@
             </div>
             <div class="brand-text" style="flex: 1; min-width: 0;">
                 <h1 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ \App\Models\Setting::get('organization_name', 'ADMIN CORE') }}</h1>
-                <span>Inventory Management System(NSIMs)</span>
+                <span>Stores Inventory Management System(NSIMs)</span>
             </div>
             <button type="button" class="sidebar-minimize-btn" id="sidebar-minimize-btn" title="Minimize Sidebar">
                 <i data-lucide="chevron-left" id="minimize-icon" style="width: 16px; height: 16px;"></i>
