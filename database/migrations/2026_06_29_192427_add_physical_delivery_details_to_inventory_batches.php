@@ -11,8 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        try {
+            \App\Models\InventoryBatch::selfHealSchema();
+        } catch (\Exception $e) {
+            // Ignore self heal failures during migration boot
+        }
+
         Schema::table('inventory_batches', function (Blueprint $table) {
-            $table->string('driver_name')->nullable()->after('delivery_phone');
+            $afterCol = Schema::hasColumn('inventory_batches', 'delivery_phone') ? 'delivery_phone' : 'arrival_date';
+            $table->string('driver_name')->nullable()->after($afterCol);
             $table->string('driver_phone')->nullable()->after('driver_name');
         });
     }
