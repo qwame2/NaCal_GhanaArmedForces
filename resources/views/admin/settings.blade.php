@@ -1789,9 +1789,6 @@
     }
 
 
-    });
-
-
 
     function populateThresholdForm(keyword, threshold, category) {
         // Set category first to trigger the keyword dropdown update

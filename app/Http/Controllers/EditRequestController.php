@@ -491,28 +491,35 @@ class EditRequestController extends Controller
 
                 } else {
                     // CREATE THE ACTUAL RECORDS (SRA Creation)
-                    $batch = InventoryBatch::create([
-                        'ledge_category' => $data['ledge_category'],
-                        'supplier_name' => $data['supplier_name'],
-                        'supplier_status' => $data['supplier_status'],
-                        'donor_name' => $data['donor_name'] ?? null,
-                        'acquisition_type' => $data['acquisition_type'],
-                        'delivery_person' => $data['delivery_person'] ?? null,
-                        'delivery_phone' => $data['delivery_phone'] ?? null,
-                        'driver_name' => $data['driver_name'] ?? null,
-                        'driver_phone' => $data['driver_phone'] ?? null,
-                        'entry_date' => $data['entry_date'] ?? now(),
-                        'arrival_date' => $data['arrival_date'],
-                        'recorded_by' => $editReq->user_id,
-                        'approval_status' => 'approved',
-                        'approved_by' => auth()->id(),
-                        'approved_at' => now(),
-                    ]);
+                    // Group items by category
+                    $itemsByCategory = collect($data['items'])->groupBy('ledge_category');
+                    $batch = null;
 
-                    foreach ($data['items'] as $item) {
-                        $itemData = $item;
-                        unset($itemData['ledge_balance']);
-                        $batch->items()->create($itemData);
+                    foreach ($itemsByCategory as $cat => $catItems) {
+                        $batch = InventoryBatch::create([
+                            'ledge_category' => $cat,
+                            'supplier_name' => $data['supplier_name'],
+                            'supplier_status' => $data['supplier_status'],
+                            'donor_name' => $data['donor_name'] ?? null,
+                            'acquisition_type' => $data['acquisition_type'],
+                            'delivery_person' => $data['delivery_person'] ?? null,
+                            'delivery_phone' => $data['delivery_phone'] ?? null,
+                            'driver_name' => $data['driver_name'] ?? null,
+                            'driver_phone' => $data['driver_phone'] ?? null,
+                            'entry_date' => $data['entry_date'] ?? now(),
+                            'arrival_date' => $data['arrival_date'],
+                            'recorded_by' => $editReq->user_id,
+                            'approval_status' => 'approved',
+                            'approved_by' => auth()->id(),
+                            'approved_at' => now(),
+                        ]);
+
+                        foreach ($catItems as $item) {
+                            $itemData = $item;
+                            unset($itemData['ledge_balance']);
+                            unset($itemData['ledge_category']);
+                            $batch->items()->create($itemData);
+                        }
                     }
 
                     \App\Models\SystemLog::create([

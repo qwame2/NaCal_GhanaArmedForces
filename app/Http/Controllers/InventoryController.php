@@ -136,6 +136,7 @@ class InventoryController extends Controller
             'entry_date' => 'required',
             'arrival_date' => 'required|date',
             'items' => 'required|array|min:1',
+            'items.*.ledge_category' => 'required|string',
             'items.*.description' => 'required|string',
             'items.*.serial_number' => 'nullable|string',
             'items.*.unit' => 'required|string',
@@ -236,29 +237,36 @@ class InventoryController extends Controller
                 ]);
             }
 
-            // IF ADMIN: Create the Batch Immediately
-            $batch = InventoryBatch::create([
-                'ledge_category' => $validated['ledge_category'],
-                'supplier_name' => $validated['supplier_name'],
-                'supplier_status' => $validated['supplier_status'],
-                'donor_name' => $validated['donor_name'],
-                'acquisition_type' => $validated['acquisition_type'],
-                'delivery_person' => $validated['delivery_person'] ?? null,
-                'delivery_phone' => $validated['delivery_phone'] ?? null,
-                'driver_name' => $validated['driver_name'] ?? null,
-                'driver_phone' => $validated['driver_phone'] ?? null,
-                'entry_date' => $validated['entry_date'],
-                'arrival_date' => $validated['arrival_date'],
-                'approval_status' => 'approved',
-                'approved_by' => auth()->id(),
-                'approved_at' => now(),
-            ]);
+            // Group items by category
+            $itemsByCategory = collect($validated['items'])->groupBy('ledge_category');
+            $batch = null;
 
-            // Create the Items
-            foreach ($validated['items'] as $item) {
-                $itemData = $item;
-                unset($itemData['ledge_balance']);
-                $batch->items()->create($itemData);
+            foreach ($itemsByCategory as $cat => $catItems) {
+                // IF ADMIN: Create the Batch Immediately
+                $batch = InventoryBatch::create([
+                    'ledge_category' => $cat,
+                    'supplier_name' => $validated['supplier_name'],
+                    'supplier_status' => $validated['supplier_status'],
+                    'donor_name' => $validated['donor_name'],
+                    'acquisition_type' => $validated['acquisition_type'],
+                    'delivery_person' => $validated['delivery_person'] ?? null,
+                    'delivery_phone' => $validated['delivery_phone'] ?? null,
+                    'driver_name' => $validated['driver_name'] ?? null,
+                    'driver_phone' => $validated['driver_phone'] ?? null,
+                    'entry_date' => $validated['entry_date'],
+                    'arrival_date' => $validated['arrival_date'],
+                    'approval_status' => 'approved',
+                    'approved_by' => auth()->id(),
+                    'approved_at' => now(),
+                ]);
+
+                // Create the Items
+                foreach ($catItems as $item) {
+                    $itemData = $item;
+                    unset($itemData['ledge_balance']);
+                    unset($itemData['ledge_category']);
+                    $batch->items()->create($itemData);
+                }
             }
 
             // Update the supplier's contact details in the database and registry

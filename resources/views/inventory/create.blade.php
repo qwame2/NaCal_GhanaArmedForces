@@ -309,6 +309,7 @@
 <script>
 jQuery(document).ready(function($) {
     window.originalRollbackPayload = null;
+    const categoryOptionsHtml = `@foreach($ledgeMap as $code => $name)<option value="{{ $code }}">Category {{ $code }} - {{ $name }}</option>@endforeach`;
 
     // Global listener to close and blur select2 when an item is selected
     $(document).on('select2:select', '.item-select-dynamic', function() {
@@ -405,7 +406,7 @@ jQuery(document).ready(function($) {
     const itemDetails = $('#itemDetails');
 
     function updateSerialInputs($row) {
-        const selectedLedge = ($('#ledgeSelect').val() || '').toUpperCase().trim();
+        const selectedLedge = ($row.find('.row-ledge-category').val() || '').toUpperCase().trim();
         const isSerialCategory = ['C', 'J', 'D'].includes(selectedLedge);
         const $container = $row.find('.serial-inputs-container');
         
@@ -631,7 +632,11 @@ jQuery(document).ready(function($) {
             const qty = ($(this).find('.row-qty').val() || '').trim();
             const physQty = ($(this).find('.row-stock-balance').val() || '').trim();
             const status = $('#supplierStatusSelect').val();
+            const itemCat = ($(this).find('.row-ledge-category').val() || '').trim();
 
+            if (!itemCat) {
+                missingFields.push(`Item Type #${itemIdx}: Category`);
+            }
             if (!desc) {
                 missingFields.push(`Item Type #${itemIdx}: Description`);
             }
@@ -681,7 +686,8 @@ jQuery(document).ready(function($) {
                 stock_balance: $(this).find('.row-stock-balance').val(),
                 qty: $(this).find('.row-qty').val(),
                 variance: $(this).find('.row-variance').val() || '0',
-                remarks: $(this).find('.row-remarks').val()
+                remarks: $(this).find('.row-remarks').val(),
+                ledge_category: $(this).find('.row-ledge-category').val()
             });
         });
 
@@ -807,22 +813,13 @@ jQuery(document).ready(function($) {
                 itemDetails.slideDown(400);
                 $('#formFooter').fadeIn(400);
 
-                // Update any existing item dropdowns to reflect the new ledge category
-                $('.item-select-dynamic').each(function() {
-                    const $select = $(this);
-                    const filtered = (existingDBItems || []).filter(item => item && (item.ledge_category || '').toUpperCase().trim() === selectedLedge);
-
-                    let optionsHtml = '<option value=""></option>';
-                    filtered.forEach(item => {
-                        optionsHtml += `<option value="${item.description}">${item.description}</option>`;
-                    });
-
-                    $select.html(optionsHtml);
-                    $select.val(null).trigger('change.select2').trigger('change');
-                });
-
+                // Update any existing row categories to reflect the new master category
                 $('.item-entry-row').each(function() {
-                    updateSerialInputs($(this));
+                    const $row = $(this);
+                    const $rowLedgeSelect = $row.find('.row-ledge-category');
+                    if ($rowLedgeSelect.val() !== selectedLedge) {
+                        $rowLedgeSelect.val(selectedLedge).trigger('change.select2').trigger('change');
+                    }
                 });
 
                 if ($('#itemsContainer').children().length === 0) {
@@ -843,10 +840,11 @@ jQuery(document).ready(function($) {
     });
 
     function updateRowBadges() {
-        const categoryText = $('#ledgeSelect option:selected').text().trim();
-        const suffix = categoryText ? ' - ' + categoryText : '';
         $('#itemsContainer .item-entry-row').each(function(index) {
-            $(this).find('.badge-text').text('ITEM TYPE #' + (index + 1) + suffix);
+            const $row = $(this);
+            const categoryText = $row.find('.row-ledge-category option:selected').text().trim();
+            const suffix = categoryText ? ' - ' + categoryText : '';
+            $row.find('.badge-text').text('ITEM TYPE #' + (index + 1) + suffix);
         });
     }
 
@@ -855,8 +853,6 @@ jQuery(document).ready(function($) {
         if (!append) container.empty();
 
         const selectedLedge = ($('#ledgeSelect').val() || '').toUpperCase().trim();
-        const filteredItems = (existingDBItems || []).filter(item => item && (item.ledge_category || '').toUpperCase().trim() === selectedLedge);
-        const isSerialCategory = ['C', 'J', 'D'].includes(selectedLedge);
 
         const standardPackages = ['PIECE(S)', 'PACK', 'BOXES', 'CARTON', 'BAG', 'ROLL', 'SET', 'REAM', 'BOTTLE', 'PACKAGE TYPE'];
         const existingUnits = (existingDBItems || []).map(item => (item && item.unit || '').toUpperCase().trim()).filter(Boolean);
@@ -878,43 +874,54 @@ jQuery(document).ready(function($) {
                     </button>
 
                     <div class="form-grid">
-                        <div class="form-group full-width">
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="layers" style="width: 12px; color: var(--primary);"></i>
+                                Category Section (Search & Select) <span style="color: #ef4444; margin-left: 2px;">*</span>
+                            </label>
+                            <select class="row-ledge-category" style="width: 100%;" required>
+                                <option value=""></option>
+                                ${categoryOptionsHtml}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
                              <label style="display: flex; align-items: center; gap: 6px;">
                                  <i data-lucide="search" style="width: 12px; color: var(--primary);"></i>
                                  Item Description (Search & Select) <span style="color: #ef4444; margin-left: 2px;">*</span>
                              </label>
                              <select class="item-select-dynamic" style="width: 100%;" required>
                                  <option value=""></option>
-                                 ${filteredItems.map(item => `<option value="${item.description}">${item.description}</option>`).join('')}
                              </select>
-                            <div class="existing-stats" style="display: none; margin-top: 0.85rem; padding: 1rem; background: var(--bg-main); border-radius: 14px; border: 1px dashed var(--border-color); animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
-                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div style="width: 32px; height: 32px; background: rgba(99, 102, 241, 0.15); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.15);">
-                                            <i data-lucide="layers" style="width: 16px;"></i>
-                                        </div>
-                                        <div>
-                                            <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Previous Balance</div>
-                                            <div class="stat-stock-balance" style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">0</div>
-                                        </div>
+                        </div>
+
+                        <div class="existing-stats full-width" style="display: none; margin-top: 0.85rem; padding: 1rem; background: var(--bg-main); border-radius: 14px; border: 1px dashed var(--border-color); animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 32px; height: 32px; background: rgba(99, 102, 241, 0.15); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.15);">
+                                        <i data-lucide="layers" style="width: 16px;"></i>
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.15); color: var(--secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.15);">
-                                            <i data-lucide="package" style="width: 16px;"></i>
-                                        </div>
-                                        <div>
-                                            <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Previously Received</div>
-                                            <div class="stat-received-qty" style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">0</div>
-                                        </div>
+                                    <div>
+                                        <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Previous Balance</div>
+                                        <div class="stat-stock-balance" style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">0</div>
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div style="width: 32px; height: 32px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);">
-                                            <i data-lucide="plus-circle" style="width: 16px;"></i>
-                                        </div>
-                                        <div>
-                                            <div class="lbl-dynamic-stock-balance" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Stock Balance</div>
-                                            <div class="stat-dynamic-stock-balance" style="font-size: 0.95rem; font-weight: 800; color: #3b82f6;">0</div>
-                                        </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.15); color: var(--secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.15);">
+                                        <i data-lucide="package" style="width: 16px;"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Previously Received</div>
+                                        <div class="stat-received-qty" style="font-size: 0.95rem; font-weight: 800; color: var(--text-main);">0</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 32px; height: 32px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.15);">
+                                        <i data-lucide="plus-circle" style="width: 16px;"></i>
+                                    </div>
+                                    <div>
+                                        <div class="lbl-dynamic-stock-balance" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Stock Balance</div>
+                                        <div class="stat-dynamic-stock-balance" style="font-size: 0.95rem; font-weight: 800; color: #3b82f6;">0</div>
                                     </div>
                                 </div>
                             </div>
@@ -959,7 +966,7 @@ jQuery(document).ready(function($) {
 
                         <div class="form-group full-width">
                             <div class="remarks-serial-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; width: 100%;">
-                                <div class="serial-number-group" style="\${isSerialCategory ? '' : 'display: none;'}">
+                                <div class="serial-number-group" style="display: none;">
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                                         <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 0;">
                                             <i data-lucide="barcode" style="width: 12px; color: var(--primary);"></i>
@@ -991,6 +998,48 @@ jQuery(document).ready(function($) {
             const qtyInput = $row.find('.row-qty');
             const varianceInput = $row.find('.row-variance');
             const statsPanel = $row.find('.existing-stats');
+
+            // Initialize Select2 for Row Category
+            const $rowLedgeSelect = $row.find('.row-ledge-category');
+            $rowLedgeSelect.select2({
+                placeholder: "Search and Select Category",
+                width: '100%'
+            });
+
+            if (selectedLedge) {
+                $rowLedgeSelect.val(selectedLedge).trigger('change.select2');
+            }
+
+            // Function to update items dropdown and serials container based on row category
+            function updateRowItemsAndSerials() {
+                const rowLedge = ($rowLedgeSelect.val() || '').toUpperCase().trim();
+                const $select = $row.find('.item-select-dynamic');
+                const filtered = (existingDBItems || []).filter(item => item && (item.ledge_category || '').toUpperCase().trim() === rowLedge);
+
+                let optionsHtml = '<option value=""></option>';
+                filtered.forEach(item => {
+                    optionsHtml += `<option value="${item.description}">${item.description}</option>`;
+                });
+
+                $select.html(optionsHtml);
+                $select.trigger('change.select2').trigger('change');
+                
+                // Show/hide serial number inputs based on row category
+                const isSerial = ['C', 'J', 'D'].includes(rowLedge);
+                if (isSerial) {
+                    $row.find('.serial-number-group').show();
+                } else {
+                    $row.find('.serial-number-group').hide();
+                    $row.find('.row-serial-number').val('');
+                    $row.find('.serial-inputs-container').empty();
+                }
+                updateSerialInputs($row);
+            }
+
+            $rowLedgeSelect.on('change select2:select', function() {
+                updateRowItemsAndSerials();
+                updateRowBadges();
+            });
 
             // Initialize Select2 for Item Description
             $row.find('.item-select-dynamic').select2({
@@ -1056,7 +1105,7 @@ jQuery(document).ready(function($) {
                     $unitInput.val(null).trigger('change');
                 } else if (window._unitRules) {
                     const descUpper = selectedDesc.toUpperCase().trim();
-                    const currentCat = ($('#ledgeSelect').val() || '').toUpperCase().trim();
+                    const currentCat = ($row.find('.row-ledge-category').val() || '').toUpperCase().trim();
 
                     const matchedUnit = Object.entries(window._unitRules).find(([kw, rule]) => {
                         const upperKw = kw.toUpperCase().trim();
@@ -1431,6 +1480,8 @@ jQuery(document).ready(function($) {
                             $('.item-entry-row').each(function(index) {
                                 const item = batch.items[index];
                                 const $row = $(this);
+                                const itemCat = item.ledge_category || batch.ledge_category;
+                                $row.find('.row-ledge-category').val(itemCat).trigger('change.select2');
                                 $row.find('.item-select-dynamic').val(item.description).trigger('change');
                                 $row.find('.row-qty').focus();
                             });
@@ -1525,6 +1576,9 @@ jQuery(document).ready(function($) {
                                 const itm  = items[idx];
                                 const $row = $(this);
                                 if (!itm) return;
+
+                                const itemCat = itm.ledge_category || payload.ledge_category;
+                                $row.find('.row-ledge-category').val(itemCat).trigger('change.select2');
 
                                 const descSel = $row.find('.item-select-dynamic');
                                 if (descSel.find('option[value="' + itm.description + '"]').length === 0) {
