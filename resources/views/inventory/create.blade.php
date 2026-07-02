@@ -1508,6 +1508,7 @@ jQuery(document).ready(function($) {
             .then(data => {
                 const payload       = data.payload || {};
                 const flaggedFields = data.flagged_fields || {};
+                const flaggedItems  = data.flagged_items || [];
                 const generalNote   = data.general_note || '';
 
                 if (!payload || Object.keys(payload).length === 0) return;
@@ -1607,10 +1608,10 @@ jQuery(document).ready(function($) {
                                 updateSerialInputs($row);
                             });
 
-                            _applyRollbackHighlights(flaggedFields);
+                            _applyRollbackHighlights(flaggedFields, flaggedItems);
                         }, 300);
                     } else {
-                        setTimeout(() => _applyRollbackHighlights(flaggedFields), 300);
+                        setTimeout(() => _applyRollbackHighlights(flaggedFields, flaggedItems), 300);
                     }
 
                 }, 500);
@@ -1622,45 +1623,82 @@ jQuery(document).ready(function($) {
             });
     }
 
-    function _applyRollbackHighlights(flaggedFields) {
+    function _applyRollbackHighlights(flaggedFields, flaggedItems) {
         if (!flaggedFields || Object.keys(flaggedFields).length === 0) return;
 
         const RED_BORDER = '2px solid #b91c1c';
         const RED_SHADOW = '0 0 0 4px rgba(185,28,28,0.15)';
 
-        const FIELD_MAP = {
+        // 1. Highlight global fields (supplier details, dates, etc.)
+        const GLOBAL_FIELD_MAP = {
             supplier_name:    () => [$('#supplierNameSelect').parent().find('.select2-selection').length ? $('#supplierNameSelect').parent().find('.select2-selection') : $('#supplierNameSelect').closest('.select2-container')],
             supplier_status:  () => [$('#supplierStatusSelect').parent().find('.select2-selection').length ? $('#supplierStatusSelect').parent().find('.select2-selection') : $('#supplierStatusSelect')],
             arrival_date:     () => [$('#arrivalDate')],
             entry_date:       () => [$('#arrivalDate')],
             ledge_category:   () => [$('#ledgeSelect').parent().find('.select2-selection').length ? $('#ledgeSelect').parent().find('.select2-selection') : $('#ledgeSelect').closest('.select2-container')],
             acquisition_type: () => [$('#isDonorCheckbox').closest('label')],
-            item_description: () => $('.item-select-dynamic').closest('.select2-container').toArray().map(el => $(el)),
-            item_qty:         () => $('.row-qty').toArray().map(el => $(el)),
-            item_unit:        () => $('.row-unit').toArray().map(el => $(el)),
-            item_remarks:     () => $('.row-remarks').toArray().map(el => $(el)),
-            item_serial_number: () => $('.serial-inputs-container').toArray().map(el => $(el)),
         };
 
-        Object.keys(flaggedFields).forEach(key => {
-            const note   = flaggedFields[key];
-            const getEls = FIELD_MAP[key];
-            if (!getEls) return;
+        Object.keys(GLOBAL_FIELD_MAP).forEach(key => {
+            if (flaggedFields[key]) {
+                const note   = flaggedFields[key];
+                const getEls = GLOBAL_FIELD_MAP[key];
+                if (!getEls) return;
 
-            const els = getEls();
-            els.forEach(($el, i) => {
-                if (!$el || !$el.length) return;
+                const els = getEls();
+                els.forEach(($el, i) => {
+                    if (!$el || !$el.length) return;
 
-                $el.css({ 'border': RED_BORDER, 'box-shadow': RED_SHADOW, 'border-radius': '8px', 'transition': 'all 0.3s' });
+                    $el.css({ 'border': RED_BORDER, 'box-shadow': RED_SHADOW, 'border-radius': '8px', 'transition': 'all 0.3s' });
 
-                const hintClass = 'rb-hint-' + key;
-                const parentContainer = $el.closest('.form-group, .select2-container, div').parent();
-                if (parentContainer.find('.' + hintClass).length === 0) {
-                    const hintHtml = `<div class="${hintClass}" style="margin-top:5px; font-size:0.76rem; font-weight:700; color:#ef4444; display:flex; align-items:flex-start; gap:5px; line-height:1.4;">
-                        <svg style="width:12px;height:12px;flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
-                        <span><b>Admin:</b> ${$('<div>').text(note).html()}</span>
-                    </div>`;
-                    $el.parent().after(hintHtml);
+                    const hintClass = 'rb-hint-' + key;
+                    if ($el.parent().find('.' + hintClass).length === 0) {
+                        const hintHtml = `<div class="${hintClass}" style="margin-top:5px; font-size:0.76rem; font-weight:700; color:#ef4444; display:flex; align-items:flex-start; gap:5px; line-height:1.4;">
+                            <svg style="width:12px;height:12px;flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
+                            <span><b>Admin:</b> ${$('<div>').text(note).html()}</span>
+                        </div>`;
+                        $el.parent().after(hintHtml);
+                    }
+                });
+            }
+        });
+
+        // 2. Highlight row-specific fields (only for rows whose description matches flaggedItems, if flaggedItems is not empty)
+        const hasFlaggedItems = flaggedItems && flaggedItems.length > 0;
+
+        $('.item-entry-row').each(function() {
+            const $row = $(this);
+            const descVal = ($row.find('.item-select-dynamic').val() || '').trim();
+
+            // If flaggedItems list exists, only apply row highlights if this item's description matches
+            if (hasFlaggedItems && !flaggedItems.includes(descVal)) {
+                return;
+            }
+
+            const rowFieldsMap = {
+                item_description: () => $row.find('.item-select-dynamic').parent().find('.select2-selection').length ? $row.find('.item-select-dynamic').parent().find('.select2-selection') : $row.find('.item-select-dynamic').closest('.select2-container'),
+                item_qty:         () => $row.find('.row-qty'),
+                item_unit:        () => $row.find('.row-unit').parent().find('.select2-selection').length ? $row.find('.row-unit').parent().find('.select2-selection') : $row.find('.row-unit').closest('.select2-container'),
+                item_remarks:     () => $row.find('.row-remarks'),
+                item_serial_number: () => $row.find('.serial-inputs-container'),
+            };
+
+            Object.keys(rowFieldsMap).forEach(key => {
+                if (flaggedFields[key]) {
+                    const note = flaggedFields[key];
+                    const $el = rowFieldsMap[key]();
+                    if ($el && $el.length) {
+                        $el.css({ 'border': RED_BORDER, 'box-shadow': RED_SHADOW, 'border-radius': '8px', 'transition': 'all 0.3s' });
+
+                        const hintClass = 'rb-hint-' + key;
+                        if ($el.parent().find('.' + hintClass).length === 0) {
+                            const hintHtml = `<div class="${hintClass}" style="margin-top:5px; font-size:0.76rem; font-weight:700; color:#ef4444; display:flex; align-items:flex-start; gap:5px; line-height:1.4;">
+                                <svg style="width:12px;height:12px;flex-shrink:0;margin-top:1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
+                                <span><b>Admin:</b> ${$('<div>').text(note).html()}</span>
+                            </div>`;
+                            $el.parent().after(hintHtml);
+                        }
+                    }
                 }
             });
         });

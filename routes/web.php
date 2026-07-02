@@ -1411,6 +1411,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             'status'          => $editReq->status,
             'payload'         => $payload,
             'flagged_fields'  => $rollbackData['flagged'] ?? [],
+            'flagged_items'   => $rollbackData['items'] ?? [],
             'general_note'    => $rollbackData['note'] ?? '',
         ]);
     })->name('api.sra-rollback');

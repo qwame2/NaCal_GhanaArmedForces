@@ -1227,6 +1227,7 @@ class EditRequestController extends Controller
         $request->validate([
             'flagged_fields' => 'nullable|array',
             'general_note'   => 'nullable|string|max:1000',
+            'flagged_items'  => 'nullable|array',
         ]);
 
         if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
@@ -1238,6 +1239,7 @@ class EditRequestController extends Controller
         $editReq->rollback_fields = json_encode([
             'flagged' => $request->input('flagged_fields', []),
             'note'    => $request->input('general_note', ''),
+            'items'   => $request->input('flagged_items', []),
         ]);
         $editReq->save();
 

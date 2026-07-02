@@ -3173,6 +3173,16 @@
                         Select the fields that need to be corrected and provide a brief note for each. The user will see these highlighted in <b style="color: #ef4444;">red</b> on their form.
                     </p>
 
+                    ${hasSelection ? `
+                    <div style="background: rgba(239, 68, 68, 0.08); border: 1.5px solid #fecaca; border-radius: 12px; padding: 12px 16px; margin-bottom: 1.25rem; display: flex; align-items: flex-start; gap: 10px;">
+                        <svg style="width: 18px; height: 18px; color: #ef4444; flex-shrink: 0; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.72rem; font-weight: 800; color: #ef4444; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px;">Selected Items for Rollback</div>
+                            <div style="font-size: 0.88rem; font-weight: 800; color: #7f1d1d; line-height: 1.45; word-break: break-word;">${selectedItems.map(item => `&bull; ${item}`).join('<br>')}</div>
+                        </div>
+                    </div>
+                    ` : ''}
+
                     <div style="display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; padding-right: 4px; margin-bottom: 1.25rem;">
                         ${fieldsHtml}
                     </div>
@@ -3276,6 +3286,7 @@
                 body: JSON.stringify({
                     flagged_fields: flaggedFields,
                     general_note: generalNote,
+                    flagged_items: selectedItems,
                 })
             })
             .then(res => {
