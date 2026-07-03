@@ -708,6 +708,16 @@ jQuery(document).ready(function($) {
         const donorName = isDonor ? supplierOrDonorName : null;
         const supplierName = isDonor ? null : supplierOrDonorName;
 
+        if (window.originalRollbackPayload && window.originalRollbackPayload.items) {
+            const currentDescriptions = items.map(i => i.description.trim().toUpperCase());
+            window.originalRollbackPayload.items.forEach(origItem => {
+                const origDesc = (origItem.description || '').trim().toUpperCase();
+                if (!currentDescriptions.includes(origDesc)) {
+                    items.push(JSON.parse(JSON.stringify(origItem)));
+                }
+            });
+        }
+
         const payload = {
             _token: '{{ csrf_token() }}',
             ledge_category: ledgeSelect.val(),
@@ -1512,7 +1522,15 @@ jQuery(document).ready(function($) {
                 const generalNote   = data.general_note || '';
 
                 if (!payload || Object.keys(payload).length === 0) return;
+
+                // Keep the full original payload intact in window.originalRollbackPayload
                 window.originalRollbackPayload = JSON.parse(JSON.stringify(payload));
+
+                // Filter items to show only the ones selected by the Head of Stores for rollback
+                let renderItems = payload.items || [];
+                if (flaggedItems && flaggedItems.length > 0) {
+                    renderItems = renderItems.filter(itm => flaggedItems.includes(itm.description));
+                }
 
                 // Add a red alert banner above the form controls
                 const bannerHtml = `
@@ -1567,14 +1585,13 @@ jQuery(document).ready(function($) {
                         $('#supplierStatusSelect').val(payload.supplier_status).trigger('change');
                     }
 
-                    const items = payload.items || [];
-                    if (items.length > 0) {
-                        $('#multiQty').val(items.length);
-                        renderItemRows(items.length);
+                    if (renderItems.length > 0) {
+                        $('#multiQty').val(renderItems.length);
+                        renderItemRows(renderItems.length);
 
                         setTimeout(() => {
                             $('.item-entry-row').each(function(idx) {
-                                const itm  = items[idx];
+                                const itm  = renderItems[idx];
                                 const $row = $(this);
                                 if (!itm) return;
 

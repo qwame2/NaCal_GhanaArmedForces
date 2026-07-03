@@ -34,6 +34,17 @@
                 <i data-lucide="plus" style="width: 20px;"></i>
                 New Entry
             </a>
+            <a href="{{ auth()->user()->can_add_inventory ? route('inventory.discrepancy') : '#' }}"
+                @if(!auth()->user()->can_add_inventory)
+                style="padding: 0.85rem 1.75rem; border-radius: 12px; border: none; background: #cbd5e1; color: white; display: flex; align-items: center; gap: 0.75rem; cursor: not-allowed; transition: var(--transition); text-decoration: none;"
+                disabled title="Unauthorized: Permission Required"
+                @else
+                class="btn-primary"
+                style="padding: 0.85rem 1.75rem; border-radius: 12px; border: none; background: #ef4444; color: white; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: var(--transition); text-decoration: none; box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.3);"
+                @endif>
+                <i data-lucide="file-text" style="width: 20px;"></i>
+                Record Existing Item
+            </a>
         </div>
     </div>
 
@@ -66,7 +77,7 @@
 
             .dashboard-actions-mobile {
                 display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
                 gap: 0.75rem !important;
                 width: 100% !important;
                 margin-top: 0.5rem !important;

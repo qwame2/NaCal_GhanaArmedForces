@@ -2428,6 +2428,9 @@
                         } catch(e) {}
                         return entryRaw;
                     })();
+
+                    const isDiscrepancy = batch.items.some(item => item.book_qty !== undefined && item.book_qty !== null);
+
                     const itemsHtml = batch.items.map(item => {
                         let isQtyChanged = false;
                         let isStockChanged = false;
@@ -2472,6 +2475,10 @@
                             }
                         }
 
+                        const varianceVal = parseFloat(item.qty || 0) - parseFloat(item.book_qty || 0);
+                        const displayVariance = (varianceVal > 0 ? '+' : '') + varianceVal;
+                        const varianceColor = varianceVal === 0 ? '#10b981' : (varianceVal > 0 ? '#10b981' : '#ef4444');
+
                         return `
                         <tr style="border-bottom: 1px solid #f1f5f9;">
                             <td style="padding: 1rem 1.5rem; width: 40px; text-align: center;">
@@ -2492,11 +2499,16 @@
                                 ` : ''}
                             </td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: ${isQtyChanged ? '#10b981' : '#0f172a'}; text-align: right; ${isQtyChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 2px solid #10b981;' : ''}">${(parseFloat(item.qty) || 0).toLocaleString()}</td>
+                            ${isDiscrepancy ? `
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #4f46e5; text-align: right;">${(parseFloat(item.book_qty) || 0).toLocaleString()}</td>
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: ${varianceColor}; text-align: right;">${displayVariance}</td>
+                            ` : `
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: ${isStockChanged ? '#10b981' : '#4f46e5'}; text-align: right; ${isStockChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 2px solid #10b981;' : ''}">${(parseFloat(item.stock_balance) || 0).toLocaleString()}</td>
+                            `}
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0284c7; text-align: right;">${(parseFloat(item.total_in_system) || 0).toLocaleString()}</td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #64748b; font-style: italic; max-width: 200px; word-break: break-word; ${isRemarksChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 2px solid #10b981;' : ''}">${item.remarks || '-- No specific notes --'}</td>
                         </tr>
-                    `;
+                        `;
                     }).join('');
 
                     let previousHtml = '';
@@ -2601,9 +2613,6 @@
                         <button onclick="typeof window.rollbackEntry === 'function' ? window.rollbackEntry(${reqId}) : alert('Rollback functionality pending implementation')" style="margin-right: auto; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
                             <i data-lucide="rotate-ccw" style="width: 18px;"></i> Rollback
                         </button>
-                        <button onclick="${rejectFn}" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
-                            <i data-lucide="x-circle" style="width: 18px;"></i> Reject
-                        </button>
                         <button onclick="${approveFn}" style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
                             <i data-lucide="check-circle" style="width: 18px;"></i> ${isEditSubmission ? 'Approve Changes' : 'Approve Entry'}
                         </button>
@@ -2686,8 +2695,13 @@
                                     </th>
                                     <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Item Description</th>
                                     <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
-                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Received Qty</th>
+                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">${isDiscrepancy ? 'Received Qty (Actual)' : 'Received Qty'}</th>
+                                    ${isDiscrepancy ? `
+                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Book Qty (Ledger)</th>
+                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #ef4444; text-transform: uppercase; letter-spacing: 0.05em;">Discrepancy</th>
+                                    ` : `
                                     <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Stock Bal.</th>
+                                    `}
                                     <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em;">Total in System</th>
                                     <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Remarks</th>
                                 </tr>
@@ -2703,9 +2717,18 @@
                                     <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #4f46e5;">
                                         ${batch.items.reduce((sum, i) => sum + (parseFloat(i.qty) || 0), 0).toLocaleString()}
                                     </td>
+                                    ${isDiscrepancy ? `
+                                    <td style="padding: 1rem 1.5rem; text-align: right; font-size: 0.85rem; font-weight: 800; color: #94a3b8;">
+                                        ${batch.items.reduce((sum, i) => sum + (parseFloat(i.book_qty) || 0), 0).toLocaleString()} <span style="font-size: 0.7rem; font-weight: 600;">book count</span>
+                                    </td>
+                                    <td style="padding: 1rem 1.5rem; text-align: right; font-size: 0.85rem; font-weight: 800; color: #94a3b8;">
+                                        ${batch.items.reduce((sum, i) => sum + (parseFloat(i.qty || 0) - parseFloat(i.book_qty || 0)), 0).toLocaleString()} <span style="font-size: 0.7rem; font-weight: 600;">total discrepancy</span>
+                                    </td>
+                                    ` : `
                                     <td style="padding: 1rem 1.5rem; text-align: right; font-size: 0.85rem; font-weight: 800; color: #94a3b8;">
                                         ${batch.items.reduce((sum, i) => sum + (parseFloat(i.stock_balance) || 0), 0).toLocaleString()} <span style="font-size: 0.7rem; font-weight: 600;">total bal.</span>
                                     </td>
+                                    `}
                                     <td style="padding: 1rem 1.5rem;"></td>
                                     <td style="padding: 1rem 1.5rem;"></td>
                                 </tr>
@@ -3107,11 +3130,10 @@
         const fieldsHtml = FIELDS.map(f => {
             let inputHtml = '';
             let isChecked = false;
-            let noteVal = '';
+            let placeholderVal = "Correction note for this field (e.g. 'Use XYZ Ltd instead')....";
 
             if (hasSelection && (f.key === 'item_description' || f.key === 'item_qty')) {
-                isChecked = true;
-                noteVal = selectedText;
+                placeholderVal = selectedText;
             }
 
             let displayStyle = isChecked ? 'block' : 'none';
@@ -3130,8 +3152,8 @@
                 onchangeJs += ` if (this.checked) { setTimeout(() => { $(this.closest('.rb-field-row')).find('.select2-unit-rollback').select2({ placeholder: 'Select or type package type...', tags: true, width: '100%', dropdownParent: $('.swal-rollback-popup') }); }, 50); }`;
             } else {
                 inputHtml = `
-                    <input type="text" class="rb-field-note" data-key="${f.key}" value="${noteVal}"
-                           placeholder="Correction note for this field (e.g. 'Use XYZ Ltd instead')...."
+                    <input type="text" class="rb-field-note" data-key="${f.key}" value=""
+                           placeholder="${placeholderVal}"
                            style="width: 100%; font-size: 0.82rem; border: 1.5px solid #fca5a5; border-radius: 8px; padding: 7px 10px; font-family: inherit; color: #1e293b; background: white; outline: none; box-sizing: border-box;"
                            onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 3px rgba(239,68,68,0.12)'"
                            onblur="this.style.borderColor='#fca5a5'; this.style.boxShadow='none'">

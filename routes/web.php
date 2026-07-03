@@ -625,6 +625,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
 
     Route::get('/inventory/create', [InventoryController::class, 'create'])->name('inventory.create');
+    Route::get('/inventory/discrepancy', [InventoryController::class, 'createDiscrepancy'])->name('inventory.discrepancy');
+    Route::post('/inventory/discrepancy', [InventoryController::class, 'storeDiscrepancy'])->name('inventory.discrepancy.store');
     Route::get('/inventory/low-stock', [InventoryController::class, 'lowStockMonitor'])->name('inventory.low-stock');
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     Route::get('/received-items', [ReceivedItemsController::class, 'index'])->name('receiveditems');
