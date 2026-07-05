@@ -527,15 +527,22 @@
                     $v = (float)$transaction->variance;
                     $stClass = 'status-success';
                     $stText = 'Received';
-                    if ($v < 0) {
-                        $stClass='status-warning' ;
-                        $stText='Issued' ;
-                        } elseif ($transaction->variance == 'Expired') {
-                        $stClass = 'status-danger';
-                        $stText = 'Expired';
+                    if (!is_null($transaction->book_qty)) {
+                        if ($v != 0) {
+                            $stClass = 'status-warning';
+                            $stText = 'Discrepancy';
                         }
-                        @endphp
-                        <span class="status-badge {{ $stClass }}">{{ $stText }}</span>
+                    } else {
+                        if ($v < 0) {
+                            $stClass = 'status-warning';
+                            $stText = 'Issued';
+                        } elseif ($transaction->variance == 'Expired') {
+                            $stClass = 'status-danger';
+                            $stText = 'Expired';
+                        }
+                    }
+                    @endphp
+                    <span class="status-badge {{ $stClass }}">{{ $stText }}</span>
                 </td>
                 <td data-label="Stock Bal." style="font-weight: 700;">{{ is_numeric($transaction->stock_balance) ? number_format($transaction->stock_balance, 0) : $transaction->stock_balance }}</td>
             </tr>

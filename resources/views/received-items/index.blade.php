@@ -110,6 +110,12 @@
                 <i data-lucide="{{ request('status') === 'pending_approval' ? 'x-circle' : 'clock' }}" style="width: 16px;"></i>
                 {{ request('status') === 'pending_approval' ? 'Clear Approvals' : 'Pending Approvals' }}
             </a>
+
+            <!-- Baseline Stock Button -->
+            <a href="{{ request()->fullUrlWithQuery(['status' => request('status') === 'baseline' ? null : 'baseline']) }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: {{ request('status') === 'baseline' ? '1.5px solid #10b981' : '1.5px solid var(--border-color)' }}; background: {{ request('status') === 'baseline' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-card)' }}; color: {{ request('status') === 'baseline' ? '#10b981' : 'var(--text-main)' }}; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 0.85rem;">
+                <i data-lucide="{{ request('status') === 'baseline' ? 'x-circle' : 'database' }}" style="width: 16px;"></i>
+                {{ request('status') === 'baseline' ? 'Clear Baseline' : 'Baseline Stock' }}
+            </a>
         </div>
 
         <!-- Vertical Divider -->
@@ -405,6 +411,14 @@
                                     </div>
                                 @endif
                             @endif
+                            @if(is_numeric($item->variance) && (float)$item->variance != 0 && !empty($item->remarks))
+                                <div style="margin-top: 4px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+                                    <div class="variance-remark" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.15); font-size: 0.72rem; padding: 3px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                        <span>Explan.: {{ $item->remarks }}</span>
+                                    </div>
+                                </div>
+                            @endif
                         </td>
                         <td data-label="Category" style="padding: 1.25rem 1.5rem;">
                             <span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
@@ -493,7 +507,7 @@
                             @endif
                         </td>
                         <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ number_format((float)($item->qty ?? 0)) }}</td>
-                        <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">{{ number_format((float)($item->stock_balance ?? 0)) }}</td>
+                        <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">{{ number_format((float)(!is_null($item->book_qty) ? $item->book_qty : ($item->stock_balance ?? 0))) }}</td>
                         <td data-label="Variance" style="padding: 1.25rem 1.5rem;">
                             <span style="font-weight: 800; color: {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '#10b981' : (is_numeric($item->variance) && (float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">
                                 {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '+' : '' }}{{ is_numeric($item->variance) ? number_format((float)$item->variance) : $item->variance }}
@@ -2046,6 +2060,67 @@
 <script>
     const ledgeMap = @json($ledgeMap);
 
+    function formatSerialNumbersDisplay(serialStr, isProposed = true) {
+        if (!serialStr) return '';
+        const sns = serialStr.split(',').map(s => s.trim()).filter(Boolean);
+        if (sns.length === 0) return '';
+
+        const badgeBg = isProposed ? 'rgba(99, 102, 241, 0.05)' : 'rgba(239, 68, 68, 0.05)';
+        const badgeColor = isProposed ? 'var(--primary)' : '#ef4444';
+        const borderColor = isProposed ? 'rgba(99, 102, 241, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+
+        function makeChipHtml(sn) {
+            const match = sn.match(/^(.*?)\s*\(Rim:\s*(\d+)\)$/i);
+            if (match) {
+                const snPart = match[1].trim();
+                const rimPart = match[2].trim();
+                return `
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${borderColor}; font-size: 0.76rem; padding: 4px 10px; border-radius: 8px; font-weight: 800; margin: 2px 0;">
+                        <i data-lucide="disc" style="width: 12px; height: 12px; color: ${badgeColor}; flex-shrink: 0;"></i>
+                        <span>S/N: <strong style="color: var(--text-main);">${snPart || 'N/A'}</strong></span>
+                        <span style="color: var(--border-color); font-weight: 300;">|</span>
+                        <span>Rim: <strong style="color: var(--text-main);">${rimPart}"</strong></span>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${borderColor}; font-size: 0.76rem; padding: 4px 10px; border-radius: 8px; font-weight: 800; margin: 2px 0;">
+                        <i data-lucide="barcode" style="width: 12px; height: 12px; color: ${badgeColor}; flex-shrink: 0;"></i>
+                        <span>S/N: <strong style="color: var(--text-main);">${sn}</strong></span>
+                    </div>
+                `;
+            }
+        }
+
+        const showSns = sns.slice(0, 3);
+        const hiddenSns = sns.slice(3);
+
+        const firstThreeHtml = showSns.map(makeChipHtml).join(' ');
+
+        if (hiddenSns.length > 0) {
+            const remainingHtml = hiddenSns.map(makeChipHtml).join(' ');
+            return `
+                <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                        ${firstThreeHtml}
+                        <button type="button" onclick="let next = this.nextElementSibling; let isHidden = next.style.display === 'none'; next.style.display = isHidden ? 'flex' : 'none'; this.innerHTML = isHidden ? 'Show Less' : 'Show More (+${hiddenSns.length})';" style="background: transparent; border: 1.5px dashed ${borderColor}; color: ${badgeColor}; font-size: 0.72rem; padding: 4px 10px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.2s; outline: none; margin: 2px 0; display: inline-flex; align-items: center; gap: 4px;" onmouseover="this.style.background='${badgeBg}'" onmouseout="this.style.background='transparent'">
+                            Show More (+${hiddenSns.length})
+                        </button>
+                        <div class="hidden-sns-list" style="display: none; flex-wrap: wrap; gap: 6px; align-items: center; width: 100%;">
+                            ${remainingHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            return `
+                <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                    ${firstThreeHtml}
+                </div>
+            `;
+        }
+    }
+
     let currentBatchId = null;
 
     function viewItemDetails(batchOrReqId, itemId, isPending) {
@@ -2219,33 +2294,7 @@
                             varianceHtml = `<span style="color: #94a3b8; font-weight: 800;">0</span>`;
                         }
 
-                        let serialHtml = '';
-                        if (item.serial_number) {
-                            const sns = item.serial_number.split(',').map(s => s.trim()).filter(Boolean);
-                            if (sns.length > 0) {
-                                const showSns = sns.slice(0, 3).join(', ');
-                                if (sns.length > 3) {
-                                    const hiddenSns = sns.slice(3).join(', ');
-                                    serialHtml = `
-                                        <div class="serial-numbers-wrapper" style="margin-top: 4px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;">
-                                            <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(99, 102, 241, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
-                                                S/N: ${showSns}<span class="dots">...</span><span class="more-sns" style="display: none;">, ${hiddenSns}</span>
-                                            </div>
-                                            <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: var(--primary); outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
-                                            </button>
-                                        </div>
-                                    `;
-                                } else {
-                                    serialHtml = `
-                                        <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: rgba(99, 102, 241, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg> S/N: ${item.serial_number}
-                                        </div>
-                                    `;
-                                }
-                            }
-                        }
+                        let serialHtml = formatSerialNumbersDisplay(item.serial_number, true);
                         
                         itemsHtml += `
                             <tr style="border-bottom: 1px solid var(--border-color); ${rowStyle}">

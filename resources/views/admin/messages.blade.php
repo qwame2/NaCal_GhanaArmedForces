@@ -129,8 +129,8 @@
         position: fixed;
         top: 52%;
         left: 50%;
-        width: 95%;
-        max-width: 1240px;
+        width: 98%;
+        max-width: 1600px;
         height: 85vh;
         background: #f8fafc;
         z-index: 100000 !important;
@@ -482,6 +482,67 @@
     let countInterval = null;
     let onlineStatuses = {};
     let previousMessageCount = null;
+
+    function formatSerialNumbersDisplay(serialStr, isProposed = true) {
+        if (!serialStr) return '';
+        const sns = serialStr.split(',').map(s => s.trim()).filter(Boolean);
+        if (sns.length === 0) return '';
+
+        const badgeBg = isProposed ? 'rgba(99, 102, 241, 0.05)' : 'rgba(239, 68, 68, 0.05)';
+        const badgeColor = isProposed ? '#4f46e5' : '#ef4444';
+        const borderColor = isProposed ? 'rgba(99, 102, 241, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+
+        function makeChipHtml(sn) {
+            const match = sn.match(/^(.*?)\s*\(Rim:\s*(\d+)\)$/i);
+            if (match) {
+                const snPart = match[1].trim();
+                const rimPart = match[2].trim();
+                return `
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${borderColor}; font-size: 0.76rem; padding: 4px 10px; border-radius: 8px; font-weight: 800; margin: 2px 0;">
+                        <i data-lucide="disc" style="width: 12px; height: 12px; color: ${badgeColor}; flex-shrink: 0;"></i>
+                        <span>S/N: <strong style="color: #0f172a;">${snPart || 'N/A'}</strong></span>
+                        <span style="color: #cbd5e1; font-weight: 300;">|</span>
+                        <span>Rim: <strong style="color: #0f172a;">${rimPart}"</strong></span>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${borderColor}; font-size: 0.76rem; padding: 4px 10px; border-radius: 8px; font-weight: 800; margin: 2px 0;">
+                        <i data-lucide="barcode" style="width: 12px; height: 12px; color: ${badgeColor}; flex-shrink: 0;"></i>
+                        <span>S/N: <strong style="color: #0f172a;">${sn}</strong></span>
+                    </div>
+                `;
+            }
+        }
+
+        const showSns = sns.slice(0, 3);
+        const hiddenSns = sns.slice(3);
+
+        const firstThreeHtml = showSns.map(makeChipHtml).join(' ');
+
+        if (hiddenSns.length > 0) {
+            const remainingHtml = hiddenSns.map(makeChipHtml).join(' ');
+            return `
+                <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                        ${firstThreeHtml}
+                        <button type="button" onclick="let next = this.nextElementSibling; let isHidden = next.style.display === 'none'; next.style.display = isHidden ? 'flex' : 'none'; this.innerHTML = isHidden ? 'Show Less' : 'Show More (+${hiddenSns.length})';" style="background: transparent; border: 1.5px dashed ${borderColor}; color: ${badgeColor}; font-size: 0.72rem; padding: 4px 10px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.2s; outline: none; margin: 2px 0; display: inline-flex; align-items: center; gap: 4px;" onmouseover="this.style.background='${badgeBg}'" onmouseout="this.style.background='transparent'">
+                            Show More (+${hiddenSns.length})
+                        </button>
+                        <div class="hidden-sns-list" style="display: none; flex-wrap: wrap; gap: 6px; align-items: center; width: 100%;">
+                            ${remainingHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            return `
+                <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                    ${firstThreeHtml}
+                </div>
+            `;
+        }
+    }
 
     function filterNetwork() {
         const term = document.getElementById('networkSearch').value.toLowerCase();
@@ -1946,34 +2007,9 @@
                     </td>
                 </tr>
             `;
+        } else {
             items.forEach((item, idx) => {
-                let serialHtml = '';
-                if (item.serial_number) {
-                    const sns = item.serial_number.split(',').map(s => s.trim()).filter(Boolean);
-                    if (sns.length > 0) {
-                        const showSns = sns.slice(0, 3).join(', ');
-                        if (sns.length > 3) {
-                            const hiddenSns = sns.slice(3).join(', ');
-                            serialHtml = `
-                                <div class="serial-numbers-wrapper" style="margin-top: 4px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;">
-                                    <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(99, 102, 241, 0.08); color: #4f46e5; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
-                                        S/N: ${showSns}<span class="dots">...</span><span class="more-sns" style="display: none;">, ${hiddenSns}</span>
-                                    </div>
-                                    <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: #4f46e5; outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
-                                    </button>
-                                </div>
-                            `;
-                        } else {
-                            serialHtml = `
-                                <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: rgba(99, 102, 241, 0.08); color: #4f46e5; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg> S/N: ${item.serial_number}
-                                </div>
-                            `;
-                        }
-                    }
-                }
+                let serialHtml = formatSerialNumbersDisplay(item.serial_number, true);
 
                 tableRows += `
                 <tr style="border-bottom: 1px solid #f1f5f9;">
@@ -2290,627 +2326,11 @@
     };
 
     window.showEntryPreview = function(reqId, btn) {
-        if (typeof window.ensureOversightElementsRelocated === 'function') window.ensureOversightElementsRelocated();
-        if (window._entryPreviewLoading) return;
-
-        window._entryPreviewLoading = true;
-
         if (btn) {
             btn.disabled = true;
-            btn.innerHTML = `<svg style="width:14px;height:14px;animation:spin 1s linear infinite;display:inline;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Loading...`;
+            btn.innerHTML = `<svg style="width:14px;height:14px;animation:spin 1s linear infinite;display:inline-flex;margin-right:6px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Loading...`;
         }
-
-        // Immediately open the overlay with a loading skeleton
-        window.showOversightPanelLoading('Loading Entry Details...', 'Fetching the requested stock entry information...');
-
-        fetch(`{{ url('/api/sra-preview') }}/${reqId}`, {
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = `<i data-lucide="eye" style="width:16px;"></i> Preview Entry Details`;
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
-                }
-
-                window._entryPreviewLoading = false;
-
-                const batch = data.batch || { items: [] };
-                let content = '';
-
-                if (data.request_type === 'issue_submission') {
-                    const itemsHtml = batch.items.map((item, idx) => {
-                        return `
-                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem; border-bottom: 1px dashed #e2e8f0; background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; transition: all 0.3s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}'">
-                            <div style="display: flex; align-items: center; gap: 1.25rem;">
-                                <div style="width: 48px; height: 48px; background: rgba(99, 102, 241, 0.1); color: #4f46e5; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; border: 1px solid rgba(99, 102, 241, 0.2);">
-                                    ${idx + 1}
-                                </div>
-                                <div>
-                                    <div style="font-weight: 900; font-size: 1.1rem; color: #0f172a; margin-bottom: 4px;">${item.description}</div>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <span style="font-size: 0.7rem; font-weight: 800; color: #4f46e5; background: rgba(79, 70, 229, 0.1); padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em;">CATEGORY ${item.category || '-'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="text-align: right; background: white; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
-                                <div style="font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;">Quantity to Issue</div>
-                                <div style="font-size: 1.5rem; font-weight: 900; color: #f59e0b; display: flex; align-items: baseline; gap: 4px; justify-content: flex-end;">
-                                    ${parseFloat(item.qty).toLocaleString()}
-                                    <span style="font-size: 0.85rem; color: #64748b; font-weight: 700;">${item.unit || 'Package Types'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    }).join('');
-
-                    content = `
-                    <div style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 3.5rem 3rem 2.5rem 3rem; border-bottom: 1px solid #e2e8f0; position: relative;">
-                        <button onclick="window.closeOversightPanel()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 10;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
-                            <i data-lucide="x" style="width: 18px;"></i>
-                        </button>
-
-                        <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 2rem;">
-                            <div style="display: flex; align-items: center; gap: 1.5rem;">
-                                <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);">
-                                    <i data-lucide="package-minus" style="width: 32px; height: 32px;"></i>
-                                </div>
-                                <div>
-                                    <div style="font-size: 0.75rem; font-weight: 800; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Disbursement Authorization</div>
-                                    <h2 style="margin: 0; font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -0.03em;">Issuance Details</h2>
-                                    <p style="margin: 6px 0 0; font-size: 0.95rem; color: #64748b; font-weight: 500;">Initiated by <b>${data.recorded_by_name}</b> on ${data.created_at}</p>
-                                </div>
-                            </div>
-
-                            <div style="display: flex; gap: 2rem; background: white; padding: 1.25rem 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;">
-                                <div>
-                                    <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">User Department</label>
-                                    <div style="font-size: 1.1rem; font-weight: 900; color: #1e293b; display: flex; align-items: center; gap: 8px;">
-                                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></div>
-                                        ${batch.beneficiary}
-                                    </div>
-                                </div>
-                                <div style="width: 1px; height: 40px; background: #e2e8f0; align-self: center;"></div>
-                                <div>
-                                    <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Approving Authority</label>
-                                    <div style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">${batch.authority}</div>
-                                </div>
-                                <div style="width: 1px; height: 40px; background: #e2e8f0; align-self: center;"></div>
-                                <div>
-                                    <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Issuance Type</label>
-                                    <span style="font-size: 0.85rem; font-weight: 900; color: #f59e0b; background: rgba(245, 158, 11, 0.1); padding: 4px 12px; border-radius: 8px; border: 1px dashed rgba(245, 158, 11, 0.3);">${batch.issuance_type}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="padding: 2.5rem 3rem; flex: 1; overflow-y: auto; background: #f8fafc;">
-                        <h3 style="font-size: 1rem; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
-                            <i data-lucide="list-checks" style="width: 20px; color: #4f46e5;"></i> Items to Disburse (${batch.items.length})
-                        </h3>
-                        <div style="background: white; border-radius: 24px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.03); margin-bottom: 2rem;">
-                            ${itemsHtml}
-                        </div>
-                    </div>
-                `;
-                } else {
-                    const prevBatch = data.previous_batch || null;
-                    const formattedArrival = (() => {
-                        if (!batch.arrival_date) return 'N/A';
-                        try {
-                            const parts = batch.arrival_date.split('-');
-                            if (parts.length === 3) {
-                                return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`;
-                            }
-                        } catch(e) {}
-                        return batch.arrival_date;
-                    })();
-
-                    const formattedEntry = (() => {
-                        const entryRaw = batch.entry_date || data.created_at;
-                        if (!entryRaw) return 'N/A';
-                        try {
-                            if (entryRaw.includes('/') && entryRaw.includes(':')) {
-                                return entryRaw;
-                            }
-                            const spaceParts = entryRaw.split(' ');
-                            if (spaceParts.length === 2) {
-                                const dateParts = spaceParts[0].split('-');
-                                const timeParts = spaceParts[1].split(':');
-                                if (dateParts.length === 3 && timeParts.length >= 2) {
-                                    return `${dateParts[2]}/${dateParts[1]}/${dateParts[0].slice(-2)} ${timeParts[0]}:${timeParts[1]}`;
-                                }
-                            }
-                        } catch(e) {}
-                        return entryRaw;
-                    })();
-
-                    const isDiscrepancy = batch.items.some(item => item.book_qty !== undefined && item.book_qty !== null);
-
-                    const itemsHtml = batch.items.map(item => {
-                        let isQtyChanged = false;
-                        let isStockChanged = false;
-                        let isDescChanged = false;
-                        let isRemarksChanged = false;
-
-                        if (prevBatch && prevBatch.items) {
-                            const prevItem = prevBatch.items.find(i => i.id == item.id);
-                            if (prevItem) {
-                                if (parseFloat(item.qty || 0) !== parseFloat(prevItem.qty || 0)) isQtyChanged = true;
-                                if (parseFloat(item.stock_balance || 0) !== parseFloat(prevItem.stock_balance || 0)) isStockChanged = true;
-                                if ((item.description || '').trim() !== (prevItem.description || '').trim()) isDescChanged = true;
-                                if ((item.remarks || '').trim() !== (prevItem.remarks || '').trim()) isRemarksChanged = true;
-                            }
-                        }
-
-                        let serialHtml = '';
-                        if (item.serial_number) {
-                            const sns = item.serial_number.split(',').map(s => s.trim()).filter(Boolean);
-                            if (sns.length > 0) {
-                                const showSns = sns.slice(0, 3).join(', ');
-                                if (sns.length > 3) {
-                                    const hiddenSns = sns.slice(3).join(', ');
-                                    serialHtml = `
-                                        <div class="serial-numbers-wrapper" style="margin-top: 4px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;">
-                                            <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(99, 102, 241, 0.08); color: #4f46e5; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
-                                                S/N: ${showSns}<span class="dots">...</span><span class="more-sns" style="display: none;">, ${hiddenSns}</span>
-                                            </div>
-                                            <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: #4f46e5; outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
-                                            </button>
-                                        </div>
-                                    `;
-                                } else {
-                                    serialHtml = `
-                                        <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: rgba(99, 102, 241, 0.08); color: #4f46e5; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg> S/N: ${item.serial_number}
-                                        </div>
-                                    `;
-                                }
-                            }
-                        }
-
-                        const varianceVal = parseFloat(item.qty || 0) - parseFloat(item.book_qty || 0);
-                        const displayVariance = (varianceVal > 0 ? '+' : '') + varianceVal;
-                        const varianceColor = varianceVal === 0 ? '#10b981' : (varianceVal > 0 ? '#10b981' : '#ef4444');
-
-                        return `
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 1rem 1.5rem; width: 40px; text-align: center;">
-                                <input type="checkbox" class="item-rollback-checkbox" data-desc="${item.description}" style="width: 16px; height: 16px; accent-color: #ef4444; cursor: pointer;">
-                            </td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #0f172a; ${isDescChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10b981;' : ''}">
-                                <div>${item.description}</div>
-                                ${serialHtml}
-                                ${isDescChanged ? '<div style="font-size: 0.65rem; color: #10b981; margin-top: 4px;">Modified</div>' : ''}
-                            </td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">
-                                ${item.unit || 'Package Types'}
-                                ${item.location ? `
-                                    <div style="font-size: 0.7rem; font-weight: 600; color: #4f46e5; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin" style="color: #4f46e5;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                                        ${item.location}
-                                    </div>
-                                ` : ''}
-                            </td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: ${isQtyChanged ? '#10b981' : '#0f172a'}; text-align: right; ${isQtyChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 2px solid #10b981;' : ''}">${(parseFloat(item.qty) || 0).toLocaleString()}</td>
-                            ${isDiscrepancy ? `
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #4f46e5; text-align: right;">${(parseFloat(item.book_qty) || 0).toLocaleString()}</td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: ${varianceColor}; text-align: right;">${displayVariance}</td>
-                            ` : `
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: ${isStockChanged ? '#10b981' : '#4f46e5'}; text-align: right; ${isStockChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 2px solid #10b981;' : ''}">${(parseFloat(item.stock_balance) || 0).toLocaleString()}</td>
-                            `}
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0284c7; text-align: right;">${(parseFloat(item.total_in_system) || 0).toLocaleString()}</td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #64748b; font-style: italic; max-width: 200px; word-break: break-word; ${isRemarksChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 2px solid #10b981;' : ''}">${item.remarks || '-- No specific notes --'}</td>
-                        </tr>
-                        `;
-                    }).join('');
-
-                    let previousHtml = '';
-                    let proposedTitle = '';
-
-                    if (data.request_type === 'edit_submission' && data.previous_batch) {
-                        proposedTitle = `
-                        <h3 style="font-size: 0.95rem; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
-                            <i data-lucide="edit-3" style="width: 18px;"></i> Proposed Changes
-                        </h3>
-                    `;
-
-                        const prevBatch = data.previous_batch;
-                        const prevItemsHtml = prevBatch.items.map(item => {
-                            let serialHtml = '';
-                            if (item.serial_number) {
-                                const sns = item.serial_number.split(',').map(s => s.trim()).filter(Boolean);
-                                if (sns.length > 0) {
-                                    const showSns = sns.slice(0, 3).join(', ');
-                                    if (sns.length > 3) {
-                                        const hiddenSns = sns.slice(3).join(', ');
-                                        serialHtml = `
-                                            <div class="serial-numbers-wrapper" style="margin-top: 4px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;">
-                                                <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(220, 38, 38, 0.08); color: #dc2626; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
-                                                    S/N: ${showSns}<span class="dots">...</span><span class="more-sns" style="display: none;">, ${hiddenSns}</span>
-                                                </div>
-                                                <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: #dc2626; outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(220, 38, 38, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
-                                                </button>
-                                            </div>
-                                        `;
-                                    } else {
-                                        serialHtml = `
-                                            <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: rgba(220, 38, 38, 0.08); color: #dc2626; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800;">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg> S/N: ${item.serial_number}
-                                            </div>
-                                        `;
-                                    }
-                                }
-                            }
-                            return `
-                            <tr style="border-bottom: 1px solid #fee2e2;">
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 700; color: #7f1d1d;">
-                                    <div>${item.description}</div>
-                                    ${serialHtml}
-                                </td>
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #991b1b;">
-                                    ${item.unit || 'Package Types'}
-                                    ${item.location ? `
-                                        <div style="font-size: 0.7rem; font-weight: 600; color: #7f1d1d; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin" style="color: #7f1d1d;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                                            ${item.location}
-                                        </div>
-                                    ` : ''}
-                                </td>
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #7f1d1d; text-align: right;">${parseFloat(item.qty).toLocaleString()}</td>
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #7f1d1d; text-align: right;">${parseFloat(item.stock_balance).toLocaleString()}</td>
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #7f1d1d; text-align: right;">${(parseFloat(item.total_in_system) || 0).toLocaleString()}</td>
-                                <td style="padding: 1rem 1.5rem; font-size: 0.8rem; color: #991b1b; font-style: italic; max-width: 200px; word-break: break-word;">${item.remarks || '-- No specific notes --'}</td>
-                            </tr>
-                        `;
-                        }).join('');
-
-                        previousHtml = `
-                    <div style="margin-bottom: 2.5rem;">
-                        <h3 style="font-size: 0.95rem; font-weight: 900; color: #ef4444; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
-                            <i data-lucide="history" style="width: 18px;"></i> Original Entry (Before Edit)
-                        </h3>
-                        <div style="background: #fffafa; border-radius: 20px; border: 1px solid #fecaca; overflow: hidden; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.05);">
-                            <table style="width: 100%; border-collapse: collapse;">
-                                <thead style="background: #fef2f2; border-bottom: 1px solid #fca5a5;">
-                                    <tr>
-                                        <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Item Description</th>
-                                        <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
-                                        <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Received Qty</th>
-                                        <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Stock Bal.</th>
-                                        <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Total in System</th>
-                                        <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 0.05em;">Remarks</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${prevItemsHtml}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                `;
-                    }
-
-                    let footerHtml = '';
-                    const isEditSubmission = data.request_type === 'edit_submission';
-                    if (data.status === 'pending') {
-                        const rejectFn = isEditSubmission
-                            ? `window.processEditRequest(${reqId}, 'canceled', this)`
-                            : `window.processSraCreationApproval(${reqId}, 'rejected', this)`;
-                        const approveFn = isEditSubmission
-                            ? `window.processEditRequest(${reqId}, 'approved', this)`
-                            : `window.processSraCreationApproval(${reqId}, 'approved', this)`;
-                        footerHtml = `
-                    <div id="oversight-actions-${reqId}" style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0;">
-                        <button onclick="typeof window.rollbackEntry === 'function' ? window.rollbackEntry(${reqId}) : alert('Rollback functionality pending implementation')" style="margin-right: auto; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
-                            <i data-lucide="rotate-ccw" style="width: 18px;"></i> Rollback
-                        </button>
-                        <button onclick="${approveFn}" style="background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
-                            <i data-lucide="check-circle" style="width: 18px;"></i> ${isEditSubmission ? 'Approve Changes' : 'Approve Entry'}
-                        </button>
-                    </div>
-                `;
-                    } else {
-                        const isApproved = data.status === 'approved';
-                        const color = isApproved ? '#10b981' : '#dc2626';
-                        const bgColor = isApproved ? 'rgba(16, 185, 129, 0.1)' : 'rgba(220, 38, 38, 0.1)';
-                        const labelText = isApproved ? 'APPROVED & SAVED' : 'REJECTED';
-                        footerHtml = `
-                    <div style="background: white; border-top: 1px solid #e2e8f0; padding: 1.5rem 3rem; display: flex; justify-content: center; align-items: center; gap: 1rem; border-radius: 0 0 28px 28px; flex-shrink: 0; position: relative;">
-                        <button onclick="typeof window.rollbackEntry === 'function' ? window.rollbackEntry(${reqId}) : alert('Rollback functionality pending implementation')" style="position: absolute; left: 3rem; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
-                            <i data-lucide="rotate-ccw" style="width: 18px;"></i> Rollback
-                        </button>
-                        <div style="padding: 12px 24px; border-radius: 12px; background: ${bgColor}; color: ${color}; font-weight: 950; border: 1.5px solid ${color}; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;">
-                            <i data-lucide="${isApproved ? 'check-circle' : 'alert-circle'}" style="width: 18px;"></i> ${labelText}
-                        </div>
-                    </div>
-                `;
-                    }
-
-                    content = `
-                <div style="background: white; padding: 3.5rem 3rem 2.5rem 3rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: relative;">
-                    <button onclick="window.closeOversightPanel()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 10;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#0f172a'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
-                        <i data-lucide="x" style="width: 18px;"></i>
-                    </button>
-
-                    <div style="display: flex; align-items: center; gap: 1.5rem;">
-                        <div style="width: 56px; height: 56px; background: rgba(79, 70, 229, 0.1); color: #4f46e5; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
-                            <i data-lucide="package-search" style="width: 28px; height: 28px;"></i>
-                        </div>
-                        <div>
-                            <h2 style="margin: 0; font-size: 1.5rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">Stock Entry Details</h2>
-                            <p style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 500;">User: <b>${data.recorded_by_name}</b> &nbsp;&bull;&nbsp; Submission: ${data.created_at}</p>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
-                        <div style="text-align: right;">
-                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Received Date</label>
-                            <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">${formattedArrival}</span>
-                        </div>
-                        <div style="width: 1px; height: 35px; background: #e2e8f0; align-self: center;"></div>
-                        <div style="text-align: right;">
-                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Entry Date</label>
-                            <span style="font-size: 0.95rem; font-weight: 700; color: #0f172a;">${formattedEntry}</span>
-                        </div>
-                        <div style="width: 1px; height: 35px; background: #e2e8f0; align-self: center;"></div>
-                        <div style="text-align: right;">
-                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Supply Status</label>
-                            <span style="font-size: 0.95rem; font-weight: 700; color: #1e293b;">${batch.supplier_status || 'Full Delivery'}</span>
-                        </div>
-                        <div style="width: 1px; height: 35px; background: #e2e8f0; align-self: center;"></div>
-                        <div style="text-align: right;">
-                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Category</label>
-                            <span style="font-size: 0.95rem; font-weight: 800; color: #4f46e5; background: rgba(79, 70, 229, 0.1); padding: 2px 10px; border-radius: 6px;">${data.ledge_name}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="padding: 2.5rem 3rem; flex: 1; overflow-y: auto;">
-                    <div id="supplier-stats-inline-${reqId}"></div>
-                    ${previousHtml}
-                    ${proposedTitle}
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 10px;">
-                        <h3 style="font-size: 1rem; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; display: flex; align-items: center; gap: 8px;">
-                            <i data-lucide="list-checks" style="width: 20px; color: #4f46e5;"></i> Items in This Entry (${batch.items.length})
-                        </h3>
-                        <button class="sra-rollback-btn-right" onclick="window.rollbackEntry(${reqId})" style="background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: 0.2s; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);">
-                            <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Rollback Group
-                        </button>
-                    </div>
-                    <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                                <tr>
-                                    <th style="padding: 1.25rem 1.5rem; width: 40px; text-align: center;">
-                                        <input type="checkbox" id="toggle-all-rollback" onclick="let checked = this.checked; document.querySelectorAll('.item-rollback-checkbox').forEach(cb => { cb.checked = checked; $(cb).trigger('change'); });" style="width: 16px; height: 16px; accent-color: #ef4444; cursor: pointer;">
-                                    </th>
-                                    <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Item Description</th>
-                                    <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
-                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">${isDiscrepancy ? 'Received Qty (Actual)' : 'Received Qty'}</th>
-                                    ${isDiscrepancy ? `
-                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Book Qty (Ledger)</th>
-                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #ef4444; text-transform: uppercase; letter-spacing: 0.05em;">Discrepancy</th>
-                                    ` : `
-                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Stock Bal.</th>
-                                    `}
-                                    <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em;">Total in System</th>
-                                    <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Remarks</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${itemsHtml}
-                            </tbody>
-                            <tfoot style="background: #f8fafc; border-top: 2px solid #e2e8f0;">
-                                <tr>
-                                    <td colspan="3" style="padding: 1rem 1.5rem; font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
-                                        Total Items in This Entry
-                                    </td>
-                                    <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #4f46e5;">
-                                        ${batch.items.reduce((sum, i) => sum + (parseFloat(i.qty) || 0), 0).toLocaleString()}
-                                    </td>
-                                    ${isDiscrepancy ? `
-                                    <td style="padding: 1rem 1.5rem; text-align: right; font-size: 0.85rem; font-weight: 800; color: #94a3b8;">
-                                        ${batch.items.reduce((sum, i) => sum + (parseFloat(i.book_qty) || 0), 0).toLocaleString()} <span style="font-size: 0.7rem; font-weight: 600;">book count</span>
-                                    </td>
-                                    <td style="padding: 1rem 1.5rem; text-align: right; font-size: 0.85rem; font-weight: 800; color: #94a3b8;">
-                                        ${batch.items.reduce((sum, i) => sum + (parseFloat(i.qty || 0) - parseFloat(i.book_qty || 0)), 0).toLocaleString()} <span style="font-size: 0.7rem; font-weight: 600;">total discrepancy</span>
-                                    </td>
-                                    ` : `
-                                    <td style="padding: 1rem 1.5rem; text-align: right; font-size: 0.85rem; font-weight: 800; color: #94a3b8;">
-                                        ${batch.items.reduce((sum, i) => sum + (parseFloat(i.stock_balance) || 0), 0).toLocaleString()} <span style="font-size: 0.7rem; font-weight: 600;">total bal.</span>
-                                    </td>
-                                    `}
-                                    <td style="padding: 1rem 1.5rem;"></td>
-                                    <td style="padding: 1rem 1.5rem;"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-
-                    <div style="padding: 1.5rem; background: #fffbeb; border-radius: 16px; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 1.25rem;">
-                        <div style="width: 40px; height: 40px; background: #f59e0b; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <i data-lucide="shield-alert" style="width: 20px;"></i>
-                        </div>
-                        <div style="flex: 1;">
-                            <span style="display: block; font-size: 0.9rem; font-weight: 800; color: #92400e;">Entry Review in Progress</span>
-                            <span style="font-size: 0.8rem; color: #b45309;">Please check the quantities carefully before you approve this entry.</span>
-                        </div>
-                    </div>
-                </div>
-                ${footerHtml}
-            `;
-                }
-
-                document.getElementById('oversightPanelContent').innerHTML = content;
-                document.getElementById('oversightOverlay').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('oversightOverlay').classList.add('show');
-                    document.getElementById('oversightSidePanel').classList.add('open');
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
-                }, 10);
-
-                const providerName = batch ? ((batch.acquisition_type === 'Donor' ? (batch.donor_name || batch.supplier_name) : batch.supplier_name) || '') : '';
-                const cleanProviderName = providerName.replace(/\s\[.*\]$/, '').trim();
-
-                const inlineDiv = document.getElementById(`supplier-stats-inline-${reqId}`);
-                if (inlineDiv && cleanProviderName && cleanProviderName !== 'N/A') {
-                    // Populate initial supplier info synchronously using local batch data (contains delivery person and phone)
-                    inlineDiv.innerHTML = `
-                        <div style="margin-bottom: 2rem; background: #f8fafc; border-radius: 18px; border: 1px solid #e2e8f0; overflow: hidden;">
-                            <div style="display: flex; align-items: stretch; gap: 0;">
-                                <!-- Avatar Block -->
-                                <div style="background: linear-gradient(170deg, #f0f9ff 0%, #e0f2fe 100%); padding: 1.5rem 1.25rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-width: 130px; flex-shrink: 0; border-right: 1px solid #bae6fd; position: relative; overflow: hidden;">
-                                    <div style="position: absolute; top: -18px; right: -18px; width: 80px; height: 80px; border-radius: 50%; background: rgba(14, 165, 233, 0.08);"></div>
-                                    <div style="position: absolute; bottom: -10px; left: -10px; width: 50px; height: 50px; border-radius: 50%; background: rgba(14, 165, 233, 0.06);"></div>
-                                    <div style="width: 52px; height: 52px; border-radius: 50%; background: white; border: 3px solid #7dd3fc; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(14, 165, 233, 0.2); position: relative; z-index: 1;">
-                                        <i data-lucide="building-2" style="width: 24px; height: 24px; color: #0284c7;"></i>
-                                    </div>
-                                    <div style="background: #0284c7; color: white; font-size: 0.75rem; font-weight: 900; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: absolute; top: 50%; right: calc(50% - 38px); transform: translateY(-32px); border: 2px solid white; box-shadow: 0 2px 6px rgba(2,132,199,0.3); z-index: 2;">
-                                        ${cleanProviderName.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1; font-size: 0.6rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.1em; position: relative; z-index: 1;">${batch.acquisition_type === 'Donor' ? 'Donor' : 'Supplier'}</div>
-                                </div>
-
-                                <!-- Name + Contact Info -->
-                                <div style="flex: 1; background: white; padding: 1.25rem 1.75rem; border-left: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; gap: 0.85rem;">
-                                    <div>
-                                        <div style="font-size: 0.6rem; font-weight: 800; color: #06b6d4; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 3px;">${batch.acquisition_type === 'Donor' ? 'Donor Name' : 'Company Name'}</div>
-                                        <div style="font-size: 1.15rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">${cleanProviderName}</div>
-                                    </div>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 1.5rem;">
-                                        <div>
-                                            <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Contact Person</div>
-                                            <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_person || 'N/A'}</div>
-                                        </div>
-                                        <div>
-                                            <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Contact Person Number</div>
-                                            <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_phone || 'N/A'}</div>
-                                        </div>
-                                        <div>
-                                            <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person</div>
-                                            <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.driver_name || 'N/A'}</div>
-                                        </div>
-                                        <div>
-                                            <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person Number</div>
-                                            <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.driver_phone || 'N/A'}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
-
-                    // Load statistics and full registry details asynchronously
-                    fetch(`/api/supplier-stats/${encodeURIComponent(cleanProviderName)}`)
-                        .then(r => r.json())
-                        .then(sData => {
-                            if (!sData.error) {
-                                const s = sData.supplier;
-                                const stats = sData.stats;
-                                inlineDiv.innerHTML = `
-                                    <div style="margin-bottom: 2rem; background: #f8fafc; border-radius: 18px; border: 1px solid #e2e8f0; overflow: hidden;">
-                                        <!-- Top: Avatar + Name + Stats row -->
-                                        <div style="display: flex; align-items: stretch; gap: 0;">
-                                            <!-- Avatar Block -->
-                                            <div style="background: linear-gradient(170deg, #f0f9ff 0%, #e0f2fe 100%); padding: 1.5rem 1.25rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-width: 130px; flex-shrink: 0; border-right: 1px solid #bae6fd; position: relative; overflow: hidden;">
-                                                <div style="position: absolute; top: -18px; right: -18px; width: 80px; height: 80px; border-radius: 50%; background: rgba(14, 165, 233, 0.08);"></div>
-                                                <div style="position: absolute; bottom: -10px; left: -10px; width: 50px; height: 50px; border-radius: 50%; background: rgba(14, 165, 233, 0.06);"></div>
-                                                <div style="width: 52px; height: 52px; border-radius: 50%; background: white; border: 3px solid #7dd3fc; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(14, 165, 233, 0.2); position: relative; z-index: 1;">
-                                                    <i data-lucide="building-2" style="width: 24px; height: 24px; color: #0284c7;"></i>
-                                                </div>
-                                                <div style="background: #0284c7; color: white; font-size: 0.75rem; font-weight: 900; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: absolute; top: 50%; right: calc(50% - 38px); transform: translateY(-32px); border: 2px solid white; box-shadow: 0 2px 6px rgba(2,132,199,0.3); z-index: 2;">
-                                                    ${s.name ? s.name.charAt(0).toUpperCase() : '?'}
-                                                </div>
-                                                <div style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0369a1; font-size: 0.6rem; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.1em; position: relative; z-index: 1;">${batch.acquisition_type === 'Donor' ? 'Donor' : 'Supplier'}</div>
-                                            </div>
-
-                                            <!-- Name + Contact Info -->
-                                            <div style="flex: 1; background: white; padding: 1.25rem 1.75rem; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; gap: 0.85rem;">
-                                                <div>
-                                                    <div style="font-size: 0.6rem; font-weight: 800; color: #06b6d4; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 3px;">${batch.acquisition_type === 'Donor' ? 'Donor Name' : 'Company Name'}</div>
-                                                    <div style="font-size: 1.15rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">${s.name}</div>
-                                                </div>
-                                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 1.5rem;">
-                                                    <div>
-                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Contact Person</div>
-                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_person || s.contact_person || s.delivery_person || 'N/A'}</div>
-                                                    </div>
-                                                    <div>
-                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Contact Person Number</div>
-                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.delivery_phone || s.contact_phone || s.delivery_phone || 'N/A'}</div>
-                                                    </div>
-                                                    <div>
-                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person</div>
-                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.driver_name || s.delivery_person || 'N/A'}</div>
-                                                    </div>
-                                                    <div>
-                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person Number</div>
-                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${batch.driver_phone || s.delivery_phone || 'N/A'}</div>
-                                                    </div>
-                                                    <div>
-                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Company Phone</div>
-                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${s.phone || 'N/A'}</div>
-                                                    </div>
-                                                    <div>
-                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Email</div>
-                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${s.email || 'N/A'}</div>
-                                                    </div>
-                                                    <div>
-                                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Address</div>
-                                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${s.address || 'N/A'}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Stats Panel -->
-                                            <div style="background: #f0fdf4; padding: 1.25rem 1.5rem; display: flex; flex-direction: column; justify-content: center; gap: 1rem; min-width: 140px; flex-shrink: 0;">
-                                                <div style="text-align: center;">
-                                                    <div style="font-size: 2rem; font-weight: 900; color: #16a34a; line-height: 1;">${stats.total_deliveries.toLocaleString()}</div>
-                                                    <div style="font-size: 0.6rem; font-weight: 800; color: #4ade80; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;">Total Deliveries</div>
-                                                </div>
-                                                <div style="height: 1px; background: #bbf7d0;"></div>
-                                                <div style="text-align: center;">
-                                                    <div style="font-size: 0.85rem; font-weight: 800; color: #15803d; line-height: 1.2;">${stats.last_delivery}</div>
-                                                    <div style="font-size: 0.6rem; font-weight: 800; color: #4ade80; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;">Last Delivery</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- Notes Footer -->
-                                        ${s.desc ? `
-                                        <div style="padding: 0.9rem 1.75rem; border-top: 1px solid #e2e8f0; display: flex; align-items: flex-start; gap: 10px; background: white;">
-                                            <i data-lucide="info" style="width: 14px; height: 14px; color: #94a3b8; flex-shrink: 0; margin-top: 2px;"></i>
-                                            <p style="margin: 0; font-size: 0.83rem; color: #64748b; line-height: 1.55;">${s.desc}</p>
-                                        </div>` : ''}
-                                    </div>
-                                `;
-                                if (typeof lucide !== 'undefined') lucide.createIcons();
-                            }
-                        })
-                        .catch(e => { /* console print removed */ });
-                }
-            })
-            .catch(err => {
-                window._entryPreviewLoading = false;
-                window.closeOversightPanel();
-                /* console print removed */
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = `<i data-lucide="eye" style="width:16px;"></i> Preview Entry Details`;
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
-                }
-                if (typeof Swal !== 'undefined') Swal.fire('Error', 'Could not load entry details.', 'error');
-                else alert('Could not load entry details.');
-            });
+        window.location.href = `{{ url('/sra-preview') }}/${reqId}`;
     };
 
     window.closeRemainderPreview = function() {

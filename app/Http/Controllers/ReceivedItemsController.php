@@ -27,54 +27,16 @@ class ReceivedItemsController extends Controller
 
     public function preview($id)
     {
-        \App\Models\InventoryBatch::selfHealSchema();
-        $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
-        if (in_array(auth()->user()->role, ['Main Admin', 'Department Head']) && !$isStoresHead) {
-            abort(403, 'Unauthorized.');
+        $response = $this->previewApi($id);
+        if ($response->getStatusCode() !== 200) {
+            abort($response->getStatusCode());
         }
-
-        $req = \App\Models\EditRequest::findOrFail($id);
-        $data = json_decode($req->payload, true);
+        $data = json_decode($response->getContent(), true);
         
-        $descriptions = collect($data['items'] ?? [])->pluck('description')->filter()->unique()->toArray();
-        $sums = \App\Models\InventoryItem::whereIn('description', $descriptions)
-            ->selectRaw('description, SUM(stock_balance) as total')
-            ->groupBy('description')
-            ->pluck('total', 'description')
-            ->toArray();
-
-        // Mock a batch object for the view
-        $batch = (object)[
-            'id' => 'DRAFT',
-            'ledge_category' => $data['ledge_category'],
-            'supplier_name' => $data['supplier_name'],
-            'supplier_status' => $data['supplier_status'],
-            'donor_name' => $data['donor_name'] ?? null,
-            'acquisition_type' => $data['acquisition_type'],
-            'delivery_person' => $data['delivery_person'] ?? null,
-            'entry_date' => $data['entry_date'],
-            'arrival_date' => $data['arrival_date'],
-            'approval_status' => 'pending',
-            'approved_at' => null,
-            'created_at' => $req->created_at, // Use the request creation date as mock
-            'recorded_by_name' => $req->user->name ?? 'Personnel',
-            'recorder' => (object)['name' => $req->user->name ?? 'Personnel'],
-            'items' => collect($data['items'] ?? [])->map(function($i) use ($sums) {
-                $item = (object)$i;
-                $item->ledger_id = $item->ledger_id ?? '-';
-                $item->remarks = $item->remarks ?? '';
-                $item->stock_balance = $item->stock_balance ?? 0;
-                $item->variance = $item->variance ?? 0;
-                $item->total_in_system = floatval($sums[$item->description ?? ''] ?? 0);
-                return $item;
-            })
-        ];
-
         $admin = auth()->user();
-        $ledgeMap = $this->getLedgeMap();
         $history = collect(); 
 
-        return view('received-items.preview_details', compact('batch', 'admin', 'ledgeMap', 'history'));
+        return view('received-items.preview_details', compact('data', 'admin', 'history'));
     }
 
     public function previewApi($id)
@@ -271,6 +233,8 @@ class ReceivedItemsController extends Controller
                   ->where('item_type', 'batch')
                   ->where('status', 'pending');
             });
+        } elseif ($request->has('status') && $request->status === 'baseline') {
+            $query->whereNotNull('inventory_items.book_qty');
         }
 
         // Ledge Category filter

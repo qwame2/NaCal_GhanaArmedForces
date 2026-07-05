@@ -1,7 +1,7 @@
 @extends('layouts.dashboard')
 @section('content')
 @php
-    $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
+    $isStoresHead = (auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
     if (!$isStoresHead) {
         $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
         if ($isBackup) {

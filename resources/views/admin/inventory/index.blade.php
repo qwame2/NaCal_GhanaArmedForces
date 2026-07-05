@@ -552,6 +552,14 @@
                                     <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $item->unit ?? 'Package Types' }})</span>
                                 </div>
                                 <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Batch #{{ $item->batch_id }}</div>
+                                @if(is_numeric($item->variance) && (float)$item->variance != 0 && !empty($item->remarks))
+                                    <div style="margin-top: 4px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+                                        <div class="variance-remark" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.15); font-size: 0.72rem; padding: 3px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                            <span>Explan.: {{ $item->remarks }}</span>
+                                        </div>
+                                    </div>
+                                @endif
                             </td>
                             <td data-label="Category" style="padding: 1.25rem 1.5rem;">
                                 <span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">

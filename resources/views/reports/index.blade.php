@@ -326,7 +326,7 @@
                 'ref'           => preg_replace('/\s\[.*\]$/', '', $source ?: 'System'),
                 'ref_label'     => 'Supplier / Source',
                 'quantity'      => $r->qty ?? 0,
-                'stock_bal'     => $r->stock_balance ?? 0,
+                'stock_bal'     => !is_null($r->book_qty) ? $r->book_qty : ($r->stock_balance ?? 0),
                 'previous_stock'=> '—',
                 'variance'      => $r->variance ?? '—',
                 'status'        => '—',

@@ -138,7 +138,7 @@ class InventoryItem extends Model
         }
 
         // Fallback for historical data
-        return ((float)$this->stock_balance - (float)$this->qty) > 0;
+        return false;
     }
 
     public function hasOverdueTemporaryLoan()

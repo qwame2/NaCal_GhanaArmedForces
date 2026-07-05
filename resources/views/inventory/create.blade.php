@@ -429,16 +429,51 @@ jQuery(document).ready(function($) {
 
         $row.find('.serial-number-group').show();
 
-        // Get currently typed values from the inputs if any exist
-        let currentValues = $container.find('.serial-input-item').map(function() {
-            return $(this).val();
-        }).get();
+        // Check if Tyre in Transport
+        const descText = ($row.find('.item-select-dynamic').val() || '').toUpperCase().trim();
+        const isTyre = (selectedLedge === 'D' && (descText.includes('TYRE') || descText.includes('TYRES')));
 
-        // If no inputs exist yet, check if there is an existing joined value in .row-serial-number
-        if (currentValues.length === 0) {
+        const $label = $row.find('.serial-number-group label');
+        const $bulkBtn = $row.find('.btn-bulk-paste');
+        if (isTyre) {
+            $label.html(`<i data-lucide="disc" style="width: 12px; color: var(--primary);"></i> Tyre Details (Serial & Rim)`);
+            $bulkBtn.hide();
+            $container.css('grid-template-columns', 'repeat(auto-fill, minmax(200px, 1fr))');
+        } else {
+            $label.html(`<i data-lucide="barcode" style="width: 12px; color: var(--primary);"></i> Serial Number(s)`);
+            $bulkBtn.show();
+            $container.css('grid-template-columns', 'repeat(auto-fill, minmax(130px, 1fr))');
+        }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // Get currently typed values from the inputs if any exist
+        let currentSns = [];
+        let currentRims = [];
+        const existingWrappers = $container.find('.serial-input-wrapper');
+        if (existingWrappers.length > 0) {
+            existingWrappers.each(function() {
+                currentSns.push($(this).find('.serial-input-item').val() || '');
+                currentRims.push($(this).find('.rim-input-item').val() || '');
+            });
+        } else {
+            // Read from raw joined string
             const rawVal = $row.find('.row-serial-number').val();
             if (rawVal) {
-                currentValues = rawVal.split(',').map(s => s.trim());
+                const parts = rawVal.split(',').map(s => s.trim());
+                parts.forEach(part => {
+                    const match = part.match(/^(.*?)\s*\(Rim:\s*(\d+)\)$/i);
+                    if (match) {
+                        currentSns.push(match[1].trim());
+                        currentRims.push(match[2].trim());
+                    } else if (part.includes('(Rim:')) {
+                        const rimMatch = part.match(/\(Rim:\s*(\d+)\)/i);
+                        currentRims.push(rimMatch ? rimMatch[1].trim() : '');
+                        currentSns.push(part.replace(/\(Rim:\s*\d+\)/i, '').trim());
+                    } else {
+                        currentSns.push(part.trim());
+                        currentRims.push('');
+                    }
+                });
             }
         }
 
@@ -446,29 +481,74 @@ jQuery(document).ready(function($) {
         
         // Create multiple inputs
         for (let i = 0; i < qty; i++) {
-            const val = currentValues[i] || '';
-            const inputHtml = `
+            const snVal = currentSns[i] || '';
+            const rimVal = currentRims[i] || '';
+            const inputHtml = isTyre ? `
+                <div class="serial-input-wrapper" style="border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); display: flex; flex-direction: column; padding: 8px; gap: 6px; width: 100%;">
+                    <span style="font-size: 0.72rem; font-weight: 800; color: var(--primary); opacity: 0.8; user-select: none;">Tyre #${i+1}</span>
+                    <div style="display: flex; gap: 6px; width: 100%;">
+                        <input type="text" class="serial-input-item" value="${snVal}" placeholder="Serial Number" style="flex: 2; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); padding: 4px 8px; border-radius: 6px; font-family: inherit; font-size: 0.8rem; font-weight: 600; outline: none; width: 100%;">
+                        <input type="number" class="rim-input-item" value="${rimVal}" min="1" placeholder="Rim" style="flex: 1; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); padding: 4px 8px; border-radius: 6px; font-family: inherit; font-size: 0.8rem; font-weight: 600; outline: none; width: 100%;">
+                    </div>
+                </div>
+            ` : `
                 <div class="serial-input-wrapper">
                     <span style="font-size: 0.72rem; font-weight: 800; color: var(--primary); opacity: 0.8; user-select: none;">#${i+1}</span>
-                    <input type="text" class="serial-input-item" value="${val}" placeholder="S/N ${i+1}" style="flex: 1; border: none; background: transparent; color: var(--text-main); padding: 2px 4px; font-family: inherit; font-size: 0.82rem; font-weight: 600; outline: none; width: 100%;">
+                    <input type="text" class="serial-input-item" value="${snVal}" placeholder="S/N ${i+1}" style="flex: 1; border: none; background: transparent; color: var(--text-main); padding: 2px 4px; font-family: inherit; font-size: 0.82rem; font-weight: 600; outline: none; width: 100%;">
                 </div>
             `;
             $container.append(inputHtml);
         }
 
         // Update the joined hidden/manifest value
-        const sns = $container.find('.serial-input-item').map(function() {
-            return ($(this).val() || '').trim();
-        }).get().filter(Boolean).join(', ');
-        $row.find('.row-serial-number').val(sns);
+        const values = [];
+        if (isTyre) {
+            $container.find('.serial-input-wrapper').each(function() {
+                const sn = ($(this).find('.serial-input-item').val() || '').trim();
+                const rim = ($(this).find('.rim-input-item').val() || '').trim();
+                if (sn && rim) {
+                    values.push(`${sn} (Rim: ${rim})`);
+                } else if (sn) {
+                    values.push(sn);
+                } else if (rim) {
+                    values.push(`(Rim: ${rim})`);
+                }
+            });
+        } else {
+            $container.find('.serial-input-item').each(function() {
+                const sn = ($(this).val() || '').trim();
+                if (sn) values.push(sn);
+            });
+        }
+        $row.find('.row-serial-number').val(values.join(', '));
     }
 
-    $(document).on('input', '.serial-input-item', function() {
+    $(document).on('input', '.serial-input-item, .rim-input-item', function() {
         const $row = $(this).closest('.item-entry-row');
-        const sns = $row.find('.serial-input-item').map(function() {
-            return ($(this).val() || '').trim();
-        }).get().filter(Boolean).join(', ');
-        $row.find('.row-serial-number').val(sns);
+        const selectedLedge = ($row.find('.row-ledge-category').val() || '').toUpperCase().trim();
+        const descText = ($row.find('.item-select-dynamic').val() || '').toUpperCase().trim();
+        const isTyre = (selectedLedge === 'D' && (descText.includes('TYRE') || descText.includes('TYRES')));
+
+        const values = [];
+        if (isTyre) {
+            $row.find('.serial-input-wrapper').each(function() {
+                const sn = ($(this).find('.serial-input-item').val() || '').trim();
+                const rim = ($(this).find('.rim-input-item').val() || '').trim();
+                if (sn && rim) {
+                    values.push(`${sn} (Rim: ${rim})`);
+                } else if (sn) {
+                    values.push(sn);
+                } else if (rim) {
+                    values.push(`(Rim: ${rim})`);
+                }
+            });
+        } else {
+            $row.find('.serial-input-item').each(function() {
+                const sn = ($(this).val() || '').trim();
+                if (sn) values.push(sn);
+            });
+        }
+        $row.find('.row-serial-number').val(values.join(', '));
     });
 
     $(document).on('click', '.btn-bulk-paste', function(e) {
@@ -633,12 +713,16 @@ jQuery(document).ready(function($) {
             const physQty = ($(this).find('.row-stock-balance').val() || '').trim();
             const status = $('#supplierStatusSelect').val();
             const itemCat = ($(this).find('.row-ledge-category').val() || '').trim();
+            const unit = ($(this).find('.row-unit').val() || '').trim();
 
             if (!itemCat) {
                 missingFields.push(`Item Type #${itemIdx}: Category`);
             }
             if (!desc) {
                 missingFields.push(`Item Type #${itemIdx}: Description`);
+            }
+            if (!unit) {
+                missingFields.push(`Item Type #${itemIdx}: Package Types`);
             }
             if (!qty) {
                 missingFields.push(`Item Type #${itemIdx}: Received Qty`);
@@ -940,10 +1024,10 @@ jQuery(document).ready(function($) {
                         <div class="form-group">
                             <label style="display: flex; align-items: center; gap: 6px;">
                                 <i data-lucide="tag" style="width: 12px; color: var(--primary);"></i>
-                                Package Types
+                                Package Types <span style="color: #ef4444; margin-left: 2px;">*</span>
                             </label>
                             <div class="unit-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
-                                <select class="row-unit" style="width: 100%;">
+                                <select class="row-unit" style="width: 100%;" required>
                                     <option value=""></option>
                                     ${packageOptionsHtml}
                                 </select>
@@ -1016,10 +1100,6 @@ jQuery(document).ready(function($) {
                 width: '100%'
             });
 
-            if (selectedLedge) {
-                $rowLedgeSelect.val(selectedLedge).trigger('change.select2');
-            }
-
             // Function to update items dropdown and serials container based on row category
             function updateRowItemsAndSerials() {
                 const rowLedge = ($rowLedgeSelect.val() || '').toUpperCase().trim();
@@ -1050,6 +1130,12 @@ jQuery(document).ready(function($) {
                 updateRowItemsAndSerials();
                 updateRowBadges();
             });
+
+            if (selectedLedge) {
+                $rowLedgeSelect.val(selectedLedge).trigger('change');
+            } else {
+                updateRowItemsAndSerials();
+            }
 
             // Initialize Select2 for Item Description
             $row.find('.item-select-dynamic').select2({
@@ -1193,6 +1279,7 @@ jQuery(document).ready(function($) {
                     qtyInput.removeAttr('placeholder');
                     varianceInput.attr('placeholder', '0');
                     updateStatsPanel();
+                    updateSerialInputs($row);
                 } else {
                     statsPanel.slideUp(300);
                     $row.find('.duplicate-warning').remove();

@@ -70,6 +70,7 @@
                 <div class="col-ctrl">Confirm Collection</div>
                 <div class="col-ctrl">Report Access</div>
                 <div class="col-ctrl">Stock Check</div>
+                <div class="col-ctrl">Place Requisition</div>
                 <div class="col-stat">Clearance Status</div>
             </div>
 
@@ -1364,6 +1365,7 @@
                     'can_operate_logistics': 1,
                     'can_generate_reports':  2,
                     'can_verify_stock':      3,
+                    'can_make_requisition':  4,
                 };
                 const checkboxes = row.querySelectorAll('.normal-toggle input[type="checkbox"]');
                 Object.entries(permMap).forEach(([key, idx]) => {
@@ -1406,6 +1408,7 @@
                     ['can_operate_logistics', 'Confirm Collection', 'Toggle Logistics Operations'],
                     ['can_generate_reports',  'View Reports',       'Toggle Analytics Access'],
                     ['can_verify_stock',      'Stock Checks',       'Toggle Stock Verification'],
+                    ['can_make_requisition',  'Place Requisition',  'Allow this store officer to place requisition requests'],
                 ];
 
                 const toggleCols = perms.map(([key, label, title]) => `

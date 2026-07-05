@@ -371,7 +371,7 @@ class AppServiceProvider extends ServiceProvider
                     $view->with('pendingRequisitionsCount', 0);
                     
                     // Main Admin count of pending requisitions awaiting review
-                    $isStoresHead = (strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
+                    $isStoresHead = (auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
                     if (!$isStoresHead) {
                         $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
                         if ($isBackup) {
@@ -388,10 +388,28 @@ class AppServiceProvider extends ServiceProvider
                             }
                         }
                     }
+                    $hasActiveStoresHead = \App\Models\User::where('role', 'Head of Stores')->where('is_active', true)->exists()
+                        || \App\Models\User::where('role', 'Department Head')->whereIn('department', ['Stores', 'Store'])->where('is_active', true)->exists();
+                    $isStoresHOD = (auth()->user()->role === 'Head of Stores')
+                        || (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Stores', 'Store']))
+                        || (auth()->user()->role === 'Main Admin' && !$hasActiveStoresHead);
+
                     if ($isStoresHead) {
                         $mainRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
-                            ->where('origin_admin_status', 'approved')
-                            ->where('main_admin_status', 'pending')
+                            ->where(function($q) use ($isStoresHOD) {
+                                if ($isStoresHOD) {
+                                    $q->where(function($q2) {
+                                        $q2->where('origin_admin_status', 'approved')
+                                           ->where('main_admin_status', 'pending');
+                                    })
+                                    ->orWhere(function($q2) {
+                                        $q2->where('origin_admin_status', 'pending')
+                                           ->whereIn('department', ['Stores', 'Store']);
+                                    });
+                                } else {
+                                    $q->whereRaw('1 = 0');
+                                }
+                            })
                             ->count();
                     } else {
                         $mainRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')

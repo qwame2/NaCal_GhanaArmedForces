@@ -82,6 +82,19 @@
                         <input type="date" id="arrivalDate" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600;" required>
                     </div>
 
+                    <!-- Delivery Status -->
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                            <i data-lucide="activity" style="width: 14px; color: var(--primary);"></i>
+                            Delivery Status <span style="color: #ef4444; margin-left: 2px;">*</span>
+                        </label>
+                        <select id="supplierStatusSelect" style="width: 100%;" required>
+                            <option value=""></option>
+                            <option value="Full Delivery">Full Delivery</option>
+                            <option value="Partial Delivery">Partial Delivery</option>
+                        </select>
+                    </div>
+
                     <!-- Number of Items -->
                     <div id="qtyControl" class="form-group" style="display: none; opacity: 0;">
                         <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
@@ -223,6 +236,56 @@
             placeholder: 'Select Supplier/Source',
             width: '100%',
             tags: true
+        });
+
+        $('#supplierStatusSelect').select2({
+            placeholder: 'Select Status',
+            width: '100%'
+        });
+
+        // Toggle Delivery Status and Update Labels
+        $('#supplierStatusSelect').on('change', function() {
+            const status = $(this).val();
+            if (status === 'Partial Delivery') {
+                container.children('.item-entry-row').each(function() {
+                    const $row = $(this);
+                    $row.find('.row-book-qty').closest('.form-group').find('label').html(
+                        `<i data-lucide="book-open" style="width: 14px; color: var(--primary);"></i> Expected / Invoice Qty <span style="color: #ef4444; margin-left: 2px;">*</span>`
+                    );
+                    $row.find('.row-received-qty').closest('.form-group').find('label').html(
+                        `<i data-lucide="check-square" style="width: 14px; color: var(--primary);"></i> Actual Received Qty <span style="color: #ef4444; margin-left: 2px;">*</span>`
+                    );
+                    $row.find('.row-calculated-discrepancy').closest('.form-group').find('label').html(
+                        `<i data-lucide="alert-triangle" style="width: 14px; color: #ef4444;"></i> Calculated Variance`
+                    );
+                    $row.find('.row-explanation').closest('.form-group').find('label').html(
+                        `<i data-lucide="help-circle" style="width: 14px; color: #ef4444;"></i> Explanation / Remarks`
+                    );
+                });
+                $('#itemDetails h3').html(
+                    `<i data-lucide="package" style="color: #ef4444; width: 22px; height: 22px;"></i> Deliveries List`
+                );
+            } else {
+                container.children('.item-entry-row').each(function() {
+                    const $row = $(this);
+                    $row.find('.row-book-qty').closest('.form-group').find('label').html(
+                        `<i data-lucide="book-open" style="width: 14px; color: var(--primary);"></i> Book Quantity <span style="color: #ef4444; margin-left: 2px;">*</span>`
+                    );
+                    $row.find('.row-received-qty').closest('.form-group').find('label').html(
+                        `<i data-lucide="check-square" style="width: 14px; color: var(--primary);"></i> Received Quantity <span style="color: #ef4444; margin-left: 2px;">*</span>`
+                    );
+                    $row.find('.row-calculated-discrepancy').closest('.form-group').find('label').html(
+                        `<i data-lucide="alert-triangle" style="width: 14px; color: #ef4444;"></i> Calculated Discrepancy`
+                    );
+                    $row.find('.row-explanation').closest('.form-group').find('label').html(
+                        `<i data-lucide="help-circle" style="width: 14px; color: #ef4444;"></i> Discrepancy Explanation`
+                    );
+                });
+                $('#itemDetails h3').html(
+                    `<i data-lucide="package" style="color: #ef4444; width: 22px; height: 22px;"></i> Discrepant Items List`
+                );
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         });
 
         // Set default date collected
@@ -409,13 +472,49 @@
                             </div>
                         </div>
 
+                        <!-- Serial / Rim Sizes Group -->
+                        <div class="serial-number-group" style="display: none; margin-top: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0;">
+                                    <i data-lucide="barcode" style="width: 14px; color: var(--primary);"></i>
+                                    Serial Number(s)
+                                </label>
+                                <button type="button" class="btn-bulk-paste" style="background: none; border: none; color: var(--primary); font-size: 0.72rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 6px; transition: all 0.2s;">
+                                    <i data-lucide="clipboard" style="width: 11px; height: 11px;"></i> Bulk Import
+                                </button>
+                            </div>
+                            <input type="hidden" class="row-serial-number">
+                            <div class="serial-inputs-container" style="max-height: 200px; overflow-y: auto; padding: 6px; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.4rem; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-main);"></div>
+                        </div>
+
                         <!-- Discrepancy Explanation -->
                         <div class="form-group" style="margin-top: 1.5rem;">
                             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
                                 <i data-lucide="help-circle" style="width: 14px; color: #ef4444;"></i>
                                 Discrepancy Explanation
                             </label>
-                            <textarea class="row-explanation form-control" placeholder="Explain why the discrepancy occurred..." style="width: 100%; min-height: 80px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; resize: vertical;"></textarea>
+                            <select class="row-explanation form-control" style="width: 100%;">
+                                <option value=""></option>
+                                <option value="Counting Error">Counting Error</option>
+                                <option value="Data Entry Error">Data Entry Error</option>
+                                <option value="Damaged Items">Damaged Items</option>
+                                <option value="Lost Items">Lost Items</option>
+                                <option value="Theft/Shrinkage">Theft/Shrinkage</option>
+                                <option value="Expired Items">Expired Items</option>
+                                <option value="Issued but Not Recorded">Issued but Not Recorded</option>
+                                <option value="Received but Not Recorded">Received but Not Recorded</option>
+                                <option value="Wrong Item Recorded">Wrong Item Recorded</option>
+                                <option value="Packaging Difference">Packaging Difference</option>
+                                <option value="Supplier Short Delivery">Supplier Short Delivery</option>
+                                <option value="Supplier Over Delivery">Supplier Over Delivery</option>
+                                <option value="Stock Adjustment">Stock Adjustment</option>
+                                <option value="Transfer Between Stores">Transfer Between Stores</option>
+                                <option value="System Synchronization Error">System Synchronization Error</option>
+                                <option value="Others">Others</option>
+                            </select>
+                            <div class="others-textarea-wrapper" style="display: none; margin-top: 0.75rem;">
+                                <textarea class="row-explanation-custom form-control" placeholder="Please specify other reason..." style="width: 100%; min-height: 80px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; resize: vertical;"></textarea>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -440,7 +539,7 @@
                     filteredItems.forEach(item => {
                         optionsHtml += `<option value="${item.description}">${item.description}</option>`;
                     });
-                    $itemSelect.html(optionsHtml);
+                    $itemSelect.html(optionsHtml).trigger('change');
                 }
 
                 // Default to header selection and populate
@@ -476,6 +575,25 @@
                     placeholder: 'Select Package Type',
                     width: '100%',
                     tags: true
+                });
+
+                // Initialize Select2 on discrepancy explanation dropdown
+                const $rowExplanationSelect = $row.find('.row-explanation');
+                const $othersWrapper = $row.find('.others-textarea-wrapper');
+                $rowExplanationSelect.select2({
+                    placeholder: 'Select Discrepancy Explanation',
+                    width: '100%'
+                });
+
+                $rowExplanationSelect.on('change select2:select', function() {
+                    const val = $(this).val();
+                    if (val === 'Others') {
+                        $othersWrapper.slideDown(200);
+                        $row.find('.row-explanation-custom').attr('required', true);
+                    } else {
+                        $othersWrapper.slideUp(200);
+                        $row.find('.row-explanation-custom').removeAttr('required').val('');
+                    }
                 });
 
                 // Auto-fill Package Type if matches existing DB item
@@ -514,6 +632,130 @@
                     }
                 });
 
+                // Serial Numbers / Rim Sizes handler
+                function updateSerialInputs() {
+                    const selectedLedge = ($rowLedgeSelect.val() || '').toUpperCase().trim();
+                    const isSerialCategory = ['C', 'J', 'D'].includes(selectedLedge);
+                    const $container = $row.find('.serial-inputs-container');
+                    const $group = $row.find('.serial-number-group');
+
+                    if (!isSerialCategory) {
+                        $container.empty();
+                        $group.hide();
+                        $row.find('.row-serial-number').val('');
+                        return;
+                    }
+
+                    const qty = parseInt($receivedQtyInput.val()) || 0;
+                    if (qty <= 0) {
+                        $container.empty();
+                        $group.hide();
+                        $row.find('.row-serial-number').val('');
+                        return;
+                    }
+
+                    $group.show();
+
+                    // Check if Tyre in Transport
+                    const descText = ($itemSelect.val() || '').toUpperCase().trim();
+                    const isTyre = (selectedLedge === 'D' && (descText.includes('TYRE') || descText.includes('TYRES')));
+
+                    const $label = $row.find('.serial-number-group label');
+                    const $bulkBtn = $row.find('.btn-bulk-paste');
+                    if (isTyre) {
+                        $label.html(`<i data-lucide="disc" style="width: 14px; color: var(--primary);"></i> Tyre Details (Serial & Rim)`);
+                        $bulkBtn.hide();
+                        $container.css('grid-template-columns', 'repeat(auto-fill, minmax(200px, 1fr))');
+                    } else {
+                        $label.html(`<i data-lucide="barcode" style="width: 14px; color: var(--primary);"></i> Serial Number(s)`);
+                        $bulkBtn.show();
+                        $container.css('grid-template-columns', 'repeat(auto-fill, minmax(130px, 1fr))');
+                    }
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+                    // Get current values
+                    let currentSns = [];
+                    let currentRims = [];
+                    const existingWrappers = $container.find('.serial-input-wrapper');
+                    if (existingWrappers.length > 0) {
+                        existingWrappers.each(function() {
+                            currentSns.push($(this).find('.serial-input-item').val() || '');
+                            currentRims.push($(this).find('.rim-input-item').val() || '');
+                        });
+                    } else {
+                        // Read from raw joined string
+                        const rawVal = $row.find('.row-serial-number').val();
+                        if (rawVal) {
+                            const parts = rawVal.split(',').map(s => s.trim());
+                            parts.forEach(part => {
+                                const match = part.match(/^(.*?)\s*\(Rim:\s*(\d+)\)$/i);
+                                if (match) {
+                                    currentSns.push(match[1].trim());
+                                    currentRims.push(match[2].trim());
+                                } else if (part.includes('(Rim:')) {
+                                    const rimMatch = part.match(/\(Rim:\s*(\d+)\)/i);
+                                    currentRims.push(rimMatch ? rimMatch[1].trim() : '');
+                                    currentSns.push(part.replace(/\(Rim:\s*\d+\)/i, '').trim());
+                                } else {
+                                    currentSns.push(part.trim());
+                                    currentRims.push('');
+                                }
+                            });
+                        }
+                    }
+
+                    $container.empty();
+
+                    for (let i = 0; i < qty; i++) {
+                        const snVal = currentSns[i] || '';
+                        const rimVal = currentRims[i] || '';
+                        const inputHtml = isTyre ? `
+                            <div class="serial-input-wrapper" style="border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); display: flex; flex-direction: column; padding: 8px; gap: 6px; width: 100%;">
+                                <span style="font-size: 0.72rem; font-weight: 800; color: var(--primary); opacity: 0.8; user-select: none;">Tyre #${i+1}</span>
+                                <div style="display: flex; gap: 6px; width: 100%;">
+                                    <input type="text" class="serial-input-item" value="${snVal}" placeholder="Serial Number" style="flex: 2; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); padding: 4px 8px; border-radius: 6px; font-family: inherit; font-size: 0.8rem; font-weight: 600; outline: none; width: 100%;">
+                                    <input type="number" class="rim-input-item" value="${rimVal}" min="1" placeholder="Rim" style="flex: 1; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); padding: 4px 8px; border-radius: 6px; font-family: inherit; font-size: 0.8rem; font-weight: 600; outline: none; width: 100%;">
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="serial-input-wrapper">
+                                <span style="font-size: 0.72rem; font-weight: 800; color: var(--primary); opacity: 0.8; user-select: none;">#${i+1}</span>
+                                <input type="text" class="serial-input-item" value="${snVal}" placeholder="S/N ${i+1}" style="flex: 1; border: none; background: transparent; color: var(--text-main); padding: 2px 4px; font-family: inherit; font-size: 0.82rem; font-weight: 600; outline: none; width: 100%;">
+                            </div>
+                        `;
+                        $container.append(inputHtml);
+                    }
+
+                    const values = [];
+                    if (isTyre) {
+                        $container.find('.serial-input-wrapper').each(function() {
+                            const sn = ($(this).find('.serial-input-item').val() || '').trim();
+                            const rim = ($(this).find('.rim-input-item').val() || '').trim();
+                            if (sn && rim) {
+                                values.push(`${sn} (Rim: ${rim})`);
+                            } else if (sn) {
+                                values.push(sn);
+                            } else if (rim) {
+                                values.push(`(Rim: ${rim})`);
+                            }
+                        });
+                    } else {
+                        $container.find('.serial-input-item').each(function() {
+                            const sn = ($(this).val() || '').trim();
+                            if (sn) values.push(sn);
+                        });
+                    }
+                    $row.find('.row-serial-number').val(values.join(', '));
+                }
+
+                $rowLedgeSelect.add($itemSelect).on('change select2:select', function() {
+                    updateSerialInputs();
+                });
+
+                $receivedQtyInput.on('input', function() {
+                    updateSerialInputs();
+                });
+
                 // Remove Row button listener
                 $row.find('.remove-row-btn').on('click', function() {
                     $row.remove();
@@ -524,6 +766,7 @@
 
             if (typeof lucide !== 'undefined') lucide.createIcons();
             updateRowBadges();
+            $('#supplierStatusSelect').trigger('change');
         }
 
         // Update badges suffix
@@ -554,9 +797,11 @@
             const driverPhone = $('#driverPhoneInput').val().trim();
 
             const missing = [];
+            const deliveryStatus = $('#supplierStatusSelect').val();
             if (!ledge) missing.push("Category Section");
             if (!supplier) missing.push("Supplier / Source");
             if (!dateCollected) missing.push("Date Collected");
+            if (!deliveryStatus) missing.push("Delivery Status");
 
             if (!deliveryPerson) missing.push("Contact Person Name");
             if (!deliveryPhone) {
@@ -580,7 +825,13 @@
                 const unit = ($(this).find('.row-unit-select').val() || '').trim();
                 const bookQty = $(this).find('.row-book-qty').val();
                 const receivedQty = $(this).find('.row-received-qty').val();
-                const explanation = $(this).find('.row-explanation').val().trim();
+                let explanation = ($(this).find('.row-explanation').val() || '').trim();
+                if (explanation === 'Others') {
+                    explanation = ($(this).find('.row-explanation-custom').val() || '').trim();
+                }
+                const serialNum = $(this).find('.row-serial-number').val();
+
+                const isTyre = (rowLedge === 'D' && (desc.toUpperCase().includes('TYRE') || desc.toUpperCase().includes('TYRES')));
 
                 if (!rowLedge) missing.push(`Item Type #${idx}: Category Section`);
                 if (!desc) missing.push(`Item Type #${idx}: Description`);
@@ -588,13 +839,29 @@
                 if (bookQty === '') missing.push(`Item Type #${idx}: Book Quantity`);
                 if (receivedQty === '') missing.push(`Item Type #${idx}: Received Quantity`);
 
+                if (isTyre) {
+                    const parsedQty = parseInt(receivedQty) || 0;
+                    let rimsCount = 0;
+                    if (serialNum) {
+                        const parts = serialNum.split(',').map(s => s.trim());
+                        parts.forEach(part => {
+                            if (part.includes('(Rim:')) {
+                                rimsCount++;
+                            }
+                        });
+                    }
+                    if (rimsCount < parsedQty) {
+                        missing.push(`Item Type #${idx}: Rim Size for all ${parsedQty} Tyres must be specified`);
+                    }
+                }
+
                 items.push({
                     ledge_category: rowLedge,
                     description: desc,
-                    serial_number: null,
+                    serial_number: serialNum || null,
                     unit: unit,
                     qty: receivedQty,
-                    stock_balance: receivedQty,
+                    stock_balance: bookQty,
                     variance: (parseFloat(receivedQty) || 0) - (parseFloat(bookQty) || 0),
                     remarks: explanation,
                     book_qty: bookQty,
@@ -634,7 +901,7 @@
                 _token: '{{ csrf_token() }}',
                 ledge_category: ledge,
                 supplier_name: supplier,
-                supplier_status: 'Full Delivery',
+                supplier_status: deliveryStatus,
                 donor_name: null,
                 acquisition_type: 'Supplier',
                 entry_date: formattedEntryDate,
@@ -692,6 +959,97 @@
                     });
                     btn.html(originalHtml).prop('disabled', false);
                     if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+            });
+        });
+
+        $(document).on('input', '.serial-input-item, .rim-input-item', function() {
+            const $row = $(this).closest('.item-entry-row');
+            const selectedLedge = ($row.find('.row-ledge-select').val() || '').toUpperCase().trim();
+            const descText = ($row.find('.row-item-select').val() || '').toUpperCase().trim();
+            const isTyre = (selectedLedge === 'D' && (descText.includes('TYRE') || descText.includes('TYRES')));
+
+            const values = [];
+            if (isTyre) {
+                $row.find('.serial-input-wrapper').each(function() {
+                    const sn = ($(this).find('.serial-input-item').val() || '').trim();
+                    const rim = ($(this).find('.rim-input-item').val() || '').trim();
+                    if (sn && rim) {
+                        values.push(`${sn} (Rim: ${rim})`);
+                    } else if (sn) {
+                        values.push(sn);
+                    } else if (rim) {
+                        values.push(`(Rim: ${rim})`);
+                    }
+                });
+            } else {
+                $row.find('.serial-input-item').each(function() {
+                    const sn = ($(this).val() || '').trim();
+                    if (sn) values.push(sn);
+                });
+            }
+            $row.find('.row-serial-number').val(values.join(', '));
+        });
+
+        $(document).on('click', '.btn-bulk-paste', function(e) {
+            e.preventDefault();
+            const $row = $(this).closest('.item-entry-row');
+            const $container = $row.find('.serial-inputs-container');
+            const numInputs = $container.find('.serial-input-item').length;
+            
+            if (numInputs === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Input Fields',
+                    text: 'Please set a valid item quantity first to generate input fields.',
+                    confirmButtonColor: 'var(--primary)'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Bulk Import Serial Numbers',
+                text: `Enter or paste up to ${numInputs} serial numbers (separated by commas or newlines):`,
+                input: 'textarea',
+                inputPlaceholder: 'Paste here...',
+                inputAttributes: {
+                    autocapitalize: 'off',
+                    autocomplete: 'off',
+                    autocorrect: 'off'
+                },
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary)',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Import',
+                preConfirm: (text) => {
+                    if (!text) {
+                        Swal.showValidationMessage('Please enter some serial numbers');
+                        return false;
+                    }
+                    const sns = text.split(/[\n\r,]+/).map(s => s.trim()).filter(Boolean);
+                    if (sns.length !== numInputs) {
+                        Swal.showValidationMessage(`You must enter exactly ${numInputs} serial numbers (you entered ${sns.length}).`);
+                        return false;
+                    }
+                    return sns;
+                }
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    const sns = result.value;
+                    $container.find('.serial-input-item').each((index, input) => {
+                        if (index < sns.length) {
+                            $(input).val(sns[index]);
+                        }
+                    });
+                    $container.find('.serial-input-item').first().trigger('input');
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Imported!',
+                        text: `Successfully imported ${sns.length} serial number(s).`,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
                 }
             });
         });

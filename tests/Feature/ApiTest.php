@@ -397,4 +397,266 @@ class ApiTest extends TestCase
         $responseStores->assertStatus(200);
         $responseStores->assertSee('id="notification-btn"', false);
     }
+
+    /**
+     * Test that Store Officer requisitions route only through Head of Stores, excluding Head of Admin.
+     */
+    public function test_store_officer_requisition_flow_excludes_head_of_admin(): void
+    {
+        // Hot-patch database columns in sqlite memory for testing
+        try {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('main_admin_status')->default('pending');
+            });
+        } catch (\Exception $e) {}
+        try {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('origin_admin_status')->default('pending');
+            });
+        } catch (\Exception $e) {}
+
+        $headOfStores = User::factory()->create([
+            'role' => 'Head of Stores',
+            'department' => '',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $mainAdmin = User::factory()->create([
+            'role' => 'Main Admin',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $storeOfficer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'phone' => '0241112222',
+            'service_number' => 'SRV123',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        // Create stocks
+        $admin = User::first() ?? User::factory()->create(['is_admin' => true]);
+        $batchA = \App\Models\InventoryBatch::create([
+            'ledge_category' => 'A',
+            'supplier_status' => 'Approved',
+            'approval_status' => 'approved',
+            'entry_date' => now()->toDateString(),
+            'recorded_by' => $admin->id,
+        ]);
+        \App\Models\InventoryItem::create([
+            'batch_id' => $batchA->id,
+            'description' => 'Office Pen',
+            'stock_balance' => 50,
+            'unit' => 'Piece',
+        ]);
+
+        $batchS = \App\Models\InventoryBatch::create([
+            'ledge_category' => 'S',
+            'supplier_status' => 'Approved',
+            'approval_status' => 'approved',
+            'entry_date' => now()->toDateString(),
+            'recorded_by' => $admin->id,
+        ]);
+        \App\Models\InventoryItem::create([
+            'batch_id' => $batchS->id,
+            'description' => 'Special Store Item',
+            'stock_balance' => 50,
+            'unit' => 'Piece',
+        ]);
+
+        // Configure S as a Stores Head approval category
+        \App\Models\Setting::updateOrCreate(
+            ['key' => 'stores_dept_head_approval_categories'],
+            ['value' => json_encode(['S'])]
+        );
+
+        // Case 1: Store Officer submits requisition for category 'A' (not in Stores Head approval categories)
+        // It should skip all approvals and be directly ready for collection/issuance
+        $response1 = $this->actingAs($storeOfficer)->postJson('/requisitions', [
+            'requester_name' => $storeOfficer->name,
+            'department' => 'Stores',
+            'rank_or_title' => 'Officer',
+            'purpose' => 'Immediate store use',
+            'priority' => 'normal',
+            'usage_type' => 'permanent',
+            'items' => [
+                [
+                    'description' => 'Office Pen',
+                    'category' => 'A',
+                    'unit' => 'Piece',
+                    'quantity_requested' => 5,
+                    'remarks' => '',
+                ]
+            ]
+        ]);
+        $response1->assertStatus(200);
+
+        $req1 = \App\Models\StoreRequisition::where('purpose', 'Immediate store use')->first();
+        $this->assertNotNull($req1);
+        $this->assertEquals('pending', $req1->origin_admin_status);
+        $this->assertEquals('approved', $req1->main_admin_status);
+
+        // Head of Stores approves Case 1 HOD part
+        $responseProcessHead1 = $this->actingAs($headOfStores)->post(route('main-admin.requisitions.process', $req1->id), [
+            'status' => 'approved',
+        ]);
+        $responseProcessHead1->assertStatus(200);
+
+        $req1->refresh();
+        $this->assertEquals('approved', $req1->origin_admin_status);
+        $this->assertEquals('approved', $req1->main_admin_status);
+
+        // Case 2: Store Officer submits requisition for category 'S' (requires Stores Head approval)
+        // It starts as origin_admin_status = 'pending', main_admin_status = 'pending'
+        $response2 = $this->actingAs($storeOfficer)->postJson('/requisitions', [
+            'requester_name' => $storeOfficer->name,
+            'department' => 'Stores',
+            'rank_or_title' => 'Officer',
+            'purpose' => 'Special store use',
+            'priority' => 'normal',
+            'usage_type' => 'permanent',
+            'items' => [
+                [
+                    'description' => 'Special Store Item',
+                    'category' => 'S',
+                    'unit' => 'Piece',
+                    'quantity_requested' => 5,
+                    'remarks' => '',
+                ]
+            ]
+        ]);
+        $response2->assertStatus(200);
+
+        $req2 = \App\Models\StoreRequisition::where('purpose', 'Special store use')->first();
+        $this->assertNotNull($req2);
+        $this->assertEquals('pending', $req2->origin_admin_status);
+        $this->assertEquals('pending', $req2->main_admin_status);
+
+        // A. Verify Main Admin does NOT see Case 2 requisition in pending reviews
+        $responseMainAdmin = $this->actingAs($mainAdmin)->get(route('main-admin.requisitions'));
+        $responseMainAdmin->assertStatus(200);
+        $responseMainAdmin->assertDontSee("Special store use");
+
+        // B. Verify Head of Stores DOES see Case 2 requisition in pending reviews (since it is pending origin_admin_status)
+        $responseHeadOfStores = $this->actingAs($headOfStores)->get(route('main-admin.requisitions'));
+        $responseHeadOfStores->assertStatus(200);
+        $responseHeadOfStores->assertSee("Special store use");
+
+        // C. Try to process/approve as Main Admin (should be unauthorized/forbidden because they are not the HOD fallback)
+        $responseProcessMain = $this->actingAs($mainAdmin)->post(route('main-admin.requisitions.process', $req2->id), [
+            'status' => 'approved',
+        ]);
+        $responseProcessMain->assertStatus(400);
+
+        // D. Head of Stores approves the first-tier HOD part for Case 2
+        $responseProcessHead2First = $this->actingAs($headOfStores)->post(route('main-admin.requisitions.process', $req2->id), [
+            'status' => 'approved',
+        ]);
+        $responseProcessHead2First->assertStatus(200);
+
+        $req2->refresh();
+        $this->assertEquals('approved', $req2->origin_admin_status);
+        $this->assertEquals('pending', $req2->main_admin_status); // Still pending second-tier
+
+        // E. Head of Stores approves the second-tier Stores Head part for Case 2
+        $responseProcessHead2Second = $this->actingAs($headOfStores)->post(route('main-admin.requisitions.process', $req2->id), [
+            'status' => 'approved',
+        ]);
+        $responseProcessHead2Second->assertStatus(200);
+
+        $req2->refresh();
+        $this->assertEquals('approved', $req2->origin_admin_status);
+        $this->assertEquals('approved', $req2->main_admin_status);
+    }
+
+    public function test_stores_department_head_as_stores_hod(): void
+    {
+        // Hot-patch database columns in sqlite memory for testing
+        try {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('main_admin_status')->default('pending');
+            });
+        } catch (\Exception $e) {}
+        try {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('origin_admin_status')->default('pending');
+            });
+        } catch (\Exception $e) {}
+
+        $storesDeptHead = User::factory()->create([
+            'role' => 'Department Head',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $storeOfficer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'phone' => '0241112222',
+            'service_number' => 'SRV123',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        // Create stocks
+        $admin = User::first() ?? User::factory()->create(['is_admin' => true]);
+        $batch = \App\Models\InventoryBatch::create([
+            'ledge_category' => 'A',
+            'supplier_status' => 'Approved',
+            'approval_status' => 'approved',
+            'entry_date' => now()->toDateString(),
+            'recorded_by' => $admin->id,
+        ]);
+        \App\Models\InventoryItem::create([
+            'batch_id' => $batch->id,
+            'description' => 'Office Pen',
+            'stock_balance' => 50,
+            'unit' => 'Piece',
+        ]);
+
+        // Submit requisition
+        $response = $this->actingAs($storeOfficer)->postJson('/requisitions', [
+            'requester_name' => $storeOfficer->name,
+            'department' => 'Stores',
+            'rank_or_title' => 'Officer',
+            'purpose' => 'For stores use',
+            'priority' => 'normal',
+            'usage_type' => 'permanent',
+            'items' => [
+                [
+                    'description' => 'Office Pen',
+                    'category' => 'A',
+                    'unit' => 'Piece',
+                    'quantity_requested' => 5,
+                    'remarks' => '',
+                ]
+            ]
+        ]);
+        $response->assertStatus(200);
+
+        $req = \App\Models\StoreRequisition::where('purpose', 'For stores use')->first();
+        $this->assertNotNull($req);
+        $this->assertEquals('pending', $req->origin_admin_status);
+        $this->assertEquals('approved', $req->main_admin_status);
+
+        // Verify Stores Department Head sees the pending request
+        $responseView = $this->actingAs($storesDeptHead)->get(route('main-admin.requisitions'));
+        $responseView->assertStatus(200);
+        $responseView->assertSee("For stores use");
+
+        // Verify Stores Department Head can approve it
+        $responseApprove = $this->actingAs($storesDeptHead)->post(route('main-admin.requisitions.process', $req->id), [
+            'status' => 'approved',
+        ]);
+        $responseApprove->assertStatus(200);
+
+        $req->refresh();
+        $this->assertEquals('approved', $req->origin_admin_status);
+        $this->assertEquals('approved', $req->main_admin_status);
+    }
 }

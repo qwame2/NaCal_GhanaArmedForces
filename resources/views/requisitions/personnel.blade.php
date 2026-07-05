@@ -540,10 +540,21 @@
 <div style="padding:2rem;">
 
     {{-- Header --}}
-    <div style="margin-bottom:2rem;">
-        <div style="font-size:.7rem;font-weight:800;color:#4f46e5;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">Store Operations</div>
-        <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Store Requisitions Management</h1>
-        <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">Track, review, and confirm physical collection of department items</p>
+    <div style="margin-bottom:2rem; display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+        <div>
+            <div style="font-size:.7rem;font-weight:800;color:#4f46e5;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">Store Operations</div>
+            <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Store Requisitions Management</h1>
+            <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">Track, review, and confirm physical collection of department items</p>
+        </div>
+        @if(auth()->user()->can_make_requisition)
+        <button onclick="openNewReqPanel()" id="new-req-btn"
+            style="display:inline-flex;align-items:center;gap:8px;padding:.75rem 1.5rem;background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);color:white;border:none;border-radius:14px;font-weight:800;font-size:.875rem;cursor:pointer;box-shadow:0 4px 15px rgba(79,70,229,.3);transition:all .25s cubic-bezier(.16,1,.3,1);flex-shrink:0;"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 25px rgba(79,70,229,.4)'"
+            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 15px rgba(79,70,229,.3)'">
+            <i data-lucide="plus-circle" style="width:17px;height:17px;"></i>
+            New Requisition
+        </button>
+        @endif
     </div>
 
     {{-- Stats --}}
@@ -787,6 +798,203 @@
     </div>
 </div>
 @endpush
+
+{{-- ════════════════════════════════════════════════════════
+     NEW REQUISITION SLIDE-OVER PANEL
+     ════════════════════════════════════════════════════════ --}}
+@push('modals')
+<div id="newReqOverlay" onclick="if(event.target===this)closeNewReqPanel()" style="position:fixed;inset:0;width:100vw;height:100vh;background:rgba(15,23,42,.5);backdrop-filter:blur(6px);z-index:99998;display:none;align-items:flex-start;justify-content:flex-end;">
+    <div id="newReqPanel" style="background:var(--bg-card);width:100%;max-width:1100px;height:100vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:-30px 0 80px rgba(15,23,42,.18);transform:translateX(100%);transition:transform .4s cubic-bezier(.16,1,.3,1);">
+
+        {{-- Panel Header --}}
+        <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:linear-gradient(135deg,rgba(79,70,229,.04) 0%,transparent 100%);">
+            <div style="display:flex;align-items:center;gap:1rem;">
+                <div style="width:44px;height:44px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(79,70,229,.3);">
+                    <i data-lucide="clipboard-plus" style="width:20px;color:white;"></i>
+                </div>
+                <div>
+                    <h2 style="margin:0;font-size:1.1rem;font-weight:900;color:var(--text-main);">New Requisition</h2>
+                    <p style="margin:0;font-size:.78rem;color:var(--text-muted);font-weight:500;">Fill in the details to place a store request</p>
+                </div>
+            </div>
+            <button onclick="closeNewReqPanel()" style="background:var(--bg-main);border:none;width:36px;height:36px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;" onmouseover="this.style.background='rgba(239,68,68,.1)'" onmouseout="this.style.background='var(--bg-main)'">
+                <i data-lucide="x" style="width:18px;color:var(--text-muted);"></i>
+            </button>
+        </div>
+
+        {{-- Step Progress Bar --}}
+        <div style="padding:1rem 2rem;border-bottom:1px solid var(--border-color);flex-shrink:0;">
+            <div style="display:flex;align-items:center;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div class="nr-step-bubble active" id="nr-bubble-1">1</div>
+                    <span class="nr-step-label active" id="nr-label-1">Details</span>
+                </div>
+                <div style="flex:1;height:2px;background:var(--border-color);margin:0 .75rem;border-radius:2px;position:relative;">
+                    <div id="nr-progress-1" style="position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,#4f46e5,#7c3aed);border-radius:2px;transition:width .4s;"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div class="nr-step-bubble" id="nr-bubble-2">2</div>
+                    <span class="nr-step-label" id="nr-label-2">Items</span>
+                </div>
+                <div style="flex:1;height:2px;background:var(--border-color);margin:0 .75rem;border-radius:2px;position:relative;">
+                    <div id="nr-progress-2" style="position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,#4f46e5,#7c3aed);border-radius:2px;transition:width .4s;"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div class="nr-step-bubble" id="nr-bubble-3">3</div>
+                    <span class="nr-step-label" id="nr-label-3">Review</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Panel Body (scrollable) --}}
+        <div style="flex:1;overflow-y:auto;padding:1.75rem 2rem;" class="modal-body">
+
+            {{-- STEP 1: REQUESTER DETAILS --}}
+            <div id="nr-step-1">
+                <div style="margin-bottom:1.5rem;">
+                    <div style="font-size:.7rem;font-weight:800;color:#4f46e5;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Requester Information</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Full Name <span style="color:#ef4444;">*</span></label>
+                            <input type="text" id="nr-requester-name" value="{{ auth()->user()->name }}" placeholder="Full name of requester" style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;transition:.2s;" onfocus="this.style.borderColor='#4f46e5';this.style.boxShadow='0 0 0 4px rgba(79,70,229,.12)'" onblur="this.style.borderColor='var(--border-color)';this.style.boxShadow=''">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Department <span style="color:#ef4444;">*</span></label>
+                            <input type="text" id="nr-department" value="{{ auth()->user()->department ?? '' }}" placeholder="e.g. Stores, Logistics" style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;transition:.2s;" onfocus="this.style.borderColor='#4f46e5';this.style.boxShadow='0 0 0 4px rgba(79,70,229,.12)'" onblur="this.style.borderColor='var(--border-color)';this.style.boxShadow=''">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Rank / Title</label>
+                            <input type="text" id="nr-rank" value="{{ auth()->user()->rank_or_title ?? '' }}" placeholder="e.g. Sergeant, Officer" style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;transition:.2s;" onfocus="this.style.borderColor='#4f46e5';this.style.boxShadow='0 0 0 4px rgba(79,70,229,.12)'" onblur="this.style.borderColor='var(--border-color)';this.style.boxShadow=''">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Priority <span style="color:#ef4444;">*</span></label>
+                            <div style="display:flex;gap:.5rem;">
+                                <button type="button" class="nr-priority-btn" data-val="low" onclick="selectNrPriority('low')" style="flex:1;padding:.65rem .5rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-muted);font-weight:800;font-size:.75rem;cursor:pointer;transition:.2s;">Low</button>
+                                <button type="button" class="nr-priority-btn" data-val="normal" onclick="selectNrPriority('normal')" style="flex:1;padding:.65rem .5rem;border:1.5px solid #4f46e5;border-radius:10px;background:rgba(79,70,229,.08);color:#4f46e5;font-weight:800;font-size:.75rem;cursor:pointer;transition:.2s;">Normal</button>
+                                <button type="button" class="nr-priority-btn" data-val="urgent" onclick="selectNrPriority('urgent')" style="flex:1;padding:.65rem .5rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-muted);font-weight:800;font-size:.75rem;cursor:pointer;transition:.2s;">🔴 Urgent</button>
+                            </div>
+                            <input type="hidden" id="nr-priority" value="normal">
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-bottom:1.5rem;">
+                    <div style="font-size:.7rem;font-weight:800;color:#4f46e5;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Usage Type <span style="color:#ef4444;">*</span></div>
+                    <div style="display:flex;gap:1rem;">
+                        <label style="flex:1;display:flex;align-items:center;gap:.75rem;padding:1rem;border:1.5px solid #4f46e5;background:rgba(79,70,229,.04);border-radius:12px;cursor:pointer;transition:.2s;" id="nr-usage-perm-label" onclick="selectNrUsage('permanent')">
+                            <input type="radio" name="nr_usage" id="nr-usage-permanent" value="permanent" checked style="accent-color:#4f46e5;width:16px;height:16px;">
+                            <div>
+                                <div style="font-weight:800;font-size:.88rem;color:var(--text-main);">Permanent</div>
+                                <div style="font-size:.72rem;color:var(--text-muted);">Item will not be returned</div>
+                            </div>
+                        </label>
+                        <label style="flex:1;display:flex;align-items:center;gap:.75rem;padding:1rem;border:1.5px solid var(--border-color);border-radius:12px;cursor:pointer;transition:.2s;" id="nr-usage-temp-label" onclick="selectNrUsage('temporary')">
+                            <input type="radio" name="nr_usage" id="nr-usage-temporary" value="temporary" style="accent-color:#f59e0b;width:16px;height:16px;">
+                            <div>
+                                <div style="font-weight:800;font-size:.88rem;color:var(--text-main);">Temporary</div>
+                                <div style="font-size:.72rem;color:var(--text-muted);">Item will be returned after use</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Purpose / Justification <span style="color:#ef4444;">*</span></label>
+                    <textarea id="nr-purpose" rows="3" placeholder="State the reason for this requisition..." style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;resize:vertical;transition:.2s;" onfocus="this.style.borderColor='#4f46e5';this.style.boxShadow='0 0 0 4px rgba(79,70,229,.12)'" onblur="this.style.borderColor='var(--border-color)';this.style.boxShadow=''"></textarea>
+                </div>
+            </div>
+
+            {{-- STEP 2: ITEM SELECTION --}}
+            <div id="nr-step-2" style="display:none;">
+                <div style="font-size:.7rem;font-weight:800;color:#4f46e5;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;">Select Items to Request</div>
+
+                {{-- Layout: Catalog (left) | Cart (right) --}}
+                <div style="display:grid;grid-template-columns:1fr 420px;gap:1.25rem;height:calc(100vh - 320px);min-height:420px;">
+
+                    {{-- LEFT: Item Catalog --}}
+                    <div style="display:flex;flex-direction:column;gap:.75rem;overflow:hidden;">
+                        {{-- Search + Category Filter --}}
+                        <div style="display:flex;gap:.5rem;align-items:center;">
+                            <div style="position:relative;flex:1;">
+                                <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;color:var(--text-muted);pointer-events:none;"></i>
+                                <input type="text" id="nr-item-search" placeholder="Search items..." autocomplete="off"
+                                    style="width:100%;box-sizing:border-box;padding:.6rem 1rem .6rem 2.2rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.83rem;font-weight:600;outline:none;transition:.2s;"
+                                    onfocus="this.style.borderColor='#4f46e5'"
+                                    onblur="this.style.borderColor='var(--border-color)'"
+                                    oninput="nrFilterCatalog(this.value)">
+                            </div>
+                        </div>
+
+                        {{-- Category Tabs --}}
+                        <div id="nr-cat-tabs" style="display:flex;gap:.4rem;flex-wrap:wrap;"></div>
+
+                        {{-- Items Grid (scrollable) --}}
+                        <div id="nr-catalog-grid" style="flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;align-content:start;padding-right:6px;"></div>
+                        <div id="nr-catalog-empty" style="display:none;text-align:center;padding:2rem;color:var(--text-muted);">
+                            <i data-lucide="search-x" style="width:24px;opacity:.3;display:block;margin:0 auto .5rem;"></i>
+                            <p style="margin:0;font-size:.82rem;font-weight:600;">No items match your search.</p>
+                        </div>
+                    </div>
+
+                    {{-- RIGHT: Selected Cart --}}
+                    <div style="display:flex;flex-direction:column;gap:.5rem;background:var(--bg-main);border:1.5px solid var(--border-color);border-radius:14px;padding:.85rem;overflow:hidden;">
+                        <div style="font-size:.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;">
+                            <span>Selected Items</span>
+                            <span id="nr-cart-count" style="background:#4f46e5;color:white;font-size:.65rem;font-weight:900;padding:2px 7px;border-radius:8px;">0</span>
+                        </div>
+                        <div id="nr-items-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;"></div>
+                        <div id="nr-items-empty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--text-muted);padding:1rem;">
+                            <i data-lucide="shopping-cart" style="width:22px;opacity:.25;margin-bottom:.5rem;"></i>
+                            <p style="margin:0;font-size:.75rem;font-weight:600;line-height:1.5;">Click any item<br>on the left to add it</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- STEP 3: REVIEW --}}
+            <div id="nr-step-3" style="display:none;">
+                <div style="font-size:.7rem;font-weight:800;color:#4f46e5;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Review Your Requisition</div>
+                <div id="nr-review-content"></div>
+            </div>
+
+        </div>
+
+        {{-- Panel Footer --}}
+        <div style="padding:1.25rem 2rem;border-top:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-shrink:0;background:var(--bg-card);">
+            <button id="nr-btn-back" onclick="nrGoBack()" style="display:none;padding:.75rem 1.5rem;border:1.5px solid var(--border-color);border-radius:12px;background:var(--bg-main);color:var(--text-muted);font-weight:800;font-size:.85rem;cursor:pointer;align-items:center;gap:8px;transition:.2s;">
+                <i data-lucide="arrow-left" style="width:15px;"></i> Back
+            </button>
+            <div style="flex:1;"></div>
+            <button id="nr-btn-cancel" onclick="closeNewReqPanel()" style="padding:.75rem 1.5rem;border:1.5px solid var(--border-color);border-radius:12px;background:var(--bg-main);color:var(--text-muted);font-weight:800;font-size:.85rem;cursor:pointer;transition:.2s;">
+                Cancel
+            </button>
+            <button id="nr-btn-next" onclick="nrGoNext()" style="padding:.75rem 1.75rem;border:none;border-radius:12px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;font-weight:800;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(79,70,229,.25);transition:.2s;">
+                Next <i data-lucide="arrow-right" style="width:15px;"></i>
+            </button>
+            <button id="nr-btn-submit" onclick="submitNewReq()" style="display:none;padding:.75rem 1.75rem;border:none;border-radius:12px;background:linear-gradient(135deg,#10b981,#059669);color:white;font-weight:800;font-size:.85rem;cursor:pointer;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(16,185,129,.25);transition:.2s;">
+                <i data-lucide="send" style="width:15px;"></i> Submit Requisition
+            </button>
+        </div>
+    </div>
+</div>
+@endpush
+
+<style>
+.nr-step-bubble {
+    width:30px;height:30px;border-radius:50%;background:var(--bg-main);border:2px solid var(--border-color);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:var(--text-muted);
+    transition:all .3s cubic-bezier(.16,1,.3,1);
+}
+.nr-step-bubble.active {
+    background:linear-gradient(135deg,#4f46e5,#7c3aed);border-color:#4f46e5;color:white;
+    box-shadow:0 4px 10px rgba(79,70,229,.3);
+}
+.nr-step-bubble.done {
+    background:linear-gradient(135deg,#10b981,#059669);border-color:#10b981;color:white;
+    box-shadow:0 4px 10px rgba(16,185,129,.25);
+}
+.nr-step-label { font-size:.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;transition:color .3s; }
+.nr-step-label.active { color:#4f46e5; }
+.nr-step-label.done { color:#10b981; }
+</style>
 
 <script>
     const loggedInUserRole = "{{ auth()->user()->role }}";
@@ -1456,5 +1664,467 @@
         // Start polling every 10 seconds
         setInterval(pollStoreRequisitions, 10000);
     });
+
+    // ════════════════════════════════════════════════════════
+    // NEW REQUISITION SLIDE-OVER LOGIC
+    // ════════════════════════════════════════════════════════
+    const nrAvailableItems = @json($availableItems);
+    const nrLedgeMap = @json($ledgeMap);
+    let nrCurrentStep = 1;
+    let nrCartItems = [];
+    let nrSelectedPriority = 'normal';
+    let nrSelectedUsage = 'permanent';
+
+    function openNewReqPanel() {
+        nrCurrentStep = 1;
+        nrCartItems = [];
+        nrSelectedPriority = 'normal';
+        nrSelectedUsage = 'permanent';
+        nrActiveCat = 'all';
+        nrCatalogSearch = '';
+        resetNrForm();
+        nrUpdateStep();
+        const overlay = document.getElementById('newReqOverlay');
+        const panel   = document.getElementById('newReqPanel');
+        overlay.style.display = 'flex';
+        setTimeout(() => {
+            panel.style.transform = 'translateX(0)';
+            // Build catalog after panel is visible
+            nrBuildCatalogTabs();
+            nrRenderCatalog();
+            if (window.lucide) lucide.createIcons();
+        }, 15);
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeNewReqPanel() {
+        const overlay = document.getElementById('newReqOverlay');
+        const panel   = document.getElementById('newReqPanel');
+        panel.style.transform = 'translateX(100%)';
+        setTimeout(() => { overlay.style.display = 'none'; }, 400);
+        document.body.style.overflow = '';
+    }
+
+    function resetNrForm() {
+        document.getElementById('nr-requester-name').value = '{{ addslashes(auth()->user()->name) }}';
+        document.getElementById('nr-department').value = '{{ addslashes(auth()->user()->department ?? "") }}';
+        document.getElementById('nr-rank').value = '{{ addslashes(auth()->user()->rank_or_title ?? "") }}';
+        document.getElementById('nr-purpose').value = '';
+        const srch = document.getElementById('nr-item-search');
+        if (srch) srch.value = '';
+        nrRenderCartPanel();
+        selectNrPriority('normal');
+        selectNrUsage('permanent');
+        document.getElementById('nr-review-content').innerHTML = '';
+    }
+
+    function nrUpdateStep() {
+        [1,2,3].forEach(s => {
+            document.getElementById(`nr-step-${s}`).style.display = (s === nrCurrentStep) ? 'block' : 'none';
+            const bubble = document.getElementById(`nr-bubble-${s}`);
+            const label  = document.getElementById(`nr-label-${s}`);
+            if (s < nrCurrentStep) {
+                bubble.className = 'nr-step-bubble done';
+                bubble.innerHTML = '✓';
+                label.className = 'nr-step-label done';
+            } else if (s === nrCurrentStep) {
+                bubble.className = 'nr-step-bubble active';
+                bubble.innerHTML = s;
+                label.className = 'nr-step-label active';
+            } else {
+                bubble.className = 'nr-step-bubble';
+                bubble.innerHTML = s;
+                label.className = 'nr-step-label';
+            }
+        });
+
+        document.getElementById('nr-progress-1').style.width = (nrCurrentStep > 1 ? '100%' : '0');
+        document.getElementById('nr-progress-2').style.width = (nrCurrentStep > 2 ? '100%' : '0');
+
+        const btnBack   = document.getElementById('nr-btn-back');
+        const btnNext   = document.getElementById('nr-btn-next');
+        const btnSubmit = document.getElementById('nr-btn-submit');
+
+        if (nrCurrentStep === 1) {
+            btnBack.style.display   = 'none';
+            btnNext.style.display   = 'inline-flex';
+            btnSubmit.style.display = 'none';
+        } else if (nrCurrentStep === 2) {
+            btnBack.style.display   = 'inline-flex';
+            btnNext.style.display   = 'inline-flex';
+            btnSubmit.style.display = 'none';
+        } else {
+            btnBack.style.display   = 'inline-flex';
+            btnNext.style.display   = 'none';
+            btnSubmit.style.display = 'inline-flex';
+        }
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function nrGoNext() {
+        if (nrCurrentStep === 1) {
+            const name    = document.getElementById('nr-requester-name').value.trim();
+            const dept    = document.getElementById('nr-department').value.trim();
+            const purpose = document.getElementById('nr-purpose').value.trim();
+            if (!name || !dept || !purpose) {
+                Swal.fire({ icon:'warning', title:'Missing Fields', text:'Please fill in Full Name, Department, and Purpose.', confirmButtonColor:'#4f46e5' });
+                return;
+            }
+        } else if (nrCurrentStep === 2) {
+            if (nrCartItems.length === 0) {
+                Swal.fire({ icon:'warning', title:'No Items Added', text:'Please add at least one item to your requisition.', confirmButtonColor:'#4f46e5' });
+                return;
+            }
+            const invalidQty = nrCartItems.find(i => !i.qty || parseFloat(i.qty) <= 0);
+            if (invalidQty) {
+                Swal.fire({ icon:'warning', title:'Invalid Quantity', text:`Please enter a valid quantity for: ${invalidQty.description}`, confirmButtonColor:'#4f46e5' });
+                return;
+            }
+            nrBuildReview();
+        }
+        nrCurrentStep++;
+        nrUpdateStep();
+    }
+
+    function nrGoBack() {
+        nrCurrentStep--;
+        nrUpdateStep();
+    }
+
+    function selectNrPriority(val) {
+        nrSelectedPriority = val;
+        document.getElementById('nr-priority').value = val;
+        document.querySelectorAll('.nr-priority-btn').forEach(btn => {
+            const v = btn.dataset.val;
+            if (v === val) {
+                if (v === 'urgent')      { btn.style.borderColor='#dc2626'; btn.style.background='rgba(220,38,38,.08)'; btn.style.color='#dc2626'; }
+                else if (v === 'normal') { btn.style.borderColor='#4f46e5'; btn.style.background='rgba(79,70,229,.08)'; btn.style.color='#4f46e5'; }
+                else                     { btn.style.borderColor='#64748b'; btn.style.background='rgba(100,116,139,.08)'; btn.style.color='#64748b'; }
+            } else {
+                btn.style.borderColor='var(--border-color)'; btn.style.background='var(--bg-card)'; btn.style.color='var(--text-muted)';
+            }
+        });
+    }
+
+    function selectNrUsage(val) {
+        nrSelectedUsage = val;
+        document.getElementById('nr-usage-permanent').checked = (val === 'permanent');
+        document.getElementById('nr-usage-temporary').checked = (val === 'temporary');
+        const permLabel = document.getElementById('nr-usage-perm-label');
+        const tempLabel = document.getElementById('nr-usage-temp-label');
+        if (val === 'permanent') {
+            permLabel.style.borderColor = '#4f46e5'; permLabel.style.background = 'rgba(79,70,229,.04)';
+            tempLabel.style.borderColor = 'var(--border-color)'; tempLabel.style.background = '';
+        } else {
+            tempLabel.style.borderColor = '#f59e0b'; tempLabel.style.background = 'rgba(245,158,11,.04)';
+            permLabel.style.borderColor = 'var(--border-color)'; permLabel.style.background = '';
+        }
+    }
+
+    // ── Item Catalog (Step 2) ──────────────────────────────
+    let nrActiveCat = 'all';
+    let nrCatalogSearch = '';
+
+    // Build category tabs from available items
+    function nrBuildCatalogTabs() {
+        const tabsEl = document.getElementById('nr-cat-tabs');
+        if (!tabsEl) return;
+        const cats = {};
+        nrAvailableItems.forEach(i => {
+            const key = i.ledge_category || '';
+            cats[key] = (cats[key] || 0) + 1;
+        });
+        const allCount = nrAvailableItems.length;
+        let html = `<button onclick="nrSetCat('all')" id="nr-tab-all"
+            style="padding:.35rem .85rem;border-radius:999px;border:1.5px solid #4f46e5;background:rgba(79,70,229,.1);color:#4f46e5;font-weight:800;font-size:.7rem;cursor:pointer;transition:.2s;white-space:nowrap;">
+            All <span style="opacity:.7;">(${allCount})</span>
+        </button>`;
+        Object.entries(cats).sort((a,b) => b[1]-a[1]).forEach(([cat, cnt]) => {
+            const label = (cat && nrLedgeMap[cat]) ? nrLedgeMap[cat] : (cat || 'Uncategorised');
+            html += `<button onclick="nrSetCat('${cat}')" id="nr-tab-${cat}"
+                style="padding:.35rem .85rem;border-radius:999px;border:1.5px solid var(--border-color);background:var(--bg-card);color:var(--text-muted);font-weight:800;font-size:.7rem;cursor:pointer;transition:.2s;white-space:nowrap;">
+                ${label} <span style="opacity:.7;">(${cnt})</span>
+            </button>`;
+        });
+        tabsEl.innerHTML = html;
+    }
+
+    function nrSetCat(cat) {
+        nrActiveCat = cat;
+        // Update tab styles
+        document.querySelectorAll('[id^="nr-tab-"]').forEach(btn => {
+            const isSel = btn.id === `nr-tab-${cat}`;
+            btn.style.borderColor  = isSel ? '#4f46e5' : 'var(--border-color)';
+            btn.style.background   = isSel ? 'rgba(79,70,229,.1)' : 'var(--bg-card)';
+            btn.style.color        = isSel ? '#4f46e5' : 'var(--text-muted)';
+        });
+        nrRenderCatalog();
+    }
+
+    function nrFilterCatalog(query) {
+        nrCatalogSearch = (query || '').toLowerCase().trim();
+        nrRenderCatalog();
+    }
+
+    // Keeps track of the currently filtered items so index refs stay valid
+    let nrFilteredItems = [];
+
+    function nrRenderCatalog() {
+        const grid  = document.getElementById('nr-catalog-grid');
+        const empty = document.getElementById('nr-catalog-empty');
+        if (!grid) return;
+
+        let items = nrAvailableItems;
+        if (nrActiveCat !== 'all') {
+            items = items.filter(i => (i.ledge_category || '') === nrActiveCat);
+        }
+        if (nrCatalogSearch) {
+            items = items.filter(i => i.description.toLowerCase().includes(nrCatalogSearch));
+        }
+        nrFilteredItems = items; // save so click handler can look up by index
+
+        if (items.length === 0) {
+            grid.style.display  = 'none';
+            empty.style.display = 'block';
+            return;
+        }
+        grid.style.display  = 'grid';
+        empty.style.display = 'none';
+
+        grid.innerHTML = items.map((item, idx) => {
+            const catName    = (item.ledge_category && nrLedgeMap[item.ledge_category]) ? nrLedgeMap[item.ledge_category] : (item.ledge_category || '');
+            const stock      = parseFloat(item.total_stock) || 0;
+            const stockColor = stock > 10 ? '#10b981' : stock > 0 ? '#f59e0b' : '#ef4444';
+            const stockLabel = stock > 10 ? 'In Stock' : stock > 0 ? 'Low Stock' : 'Out of Stock';
+            const inCart     = !!nrCartItems.find(c => c.description === item.description && c.category === item.ledge_category);
+
+            return `<div class="nr-catalog-card" data-nr-idx="${idx}"
+                style="background:var(--bg-card);border:1.5px solid ${inCart ? '#4f46e5' : 'var(--border-color)'};border-radius:12px;padding:.85rem;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:.4rem;position:relative;${inCart ? 'background:rgba(79,70,229,.04);' : ''}">
+                ${inCart ? `<div style="position:absolute;top:8px;right:8px;width:18px;height:18px;background:#4f46e5;border-radius:50%;display:flex;align-items:center;justify-content:center;"><svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg></div>` : ''}
+                <div style="font-size:.78rem;font-weight:800;color:var(--text-main);line-height:1.3;${inCart ? 'padding-right:22px;' : ''}">${item.description}</div>
+                ${catName ? `<div style="font-size:.65rem;font-weight:700;color:#4f46e5;background:rgba(79,70,229,.08);padding:1px 6px;border-radius:5px;align-self:flex-start;">${catName}</div>` : ''}
+                <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;">
+                    <span style="font-size:.65rem;font-weight:800;color:${stockColor};background:${stockColor}18;padding:2px 6px;border-radius:5px;">${stockLabel}</span>
+                    <span style="font-size:.65rem;font-weight:700;color:var(--text-muted);">${stock} ${item.unit || 'units'}</span>
+                </div>
+            </div>`;
+        }).join('');
+
+        // Single delegated click listener on the grid
+        grid.onclick = function(e) {
+            const card = e.target.closest('.nr-catalog-card');
+            if (!card) return;
+            const idx  = parseInt(card.dataset.nrIdx, 10);
+            const item = nrFilteredItems[idx];
+            if (!item) return;
+            nrCatalogToggleItem(item);
+        };
+
+        // Hover effects via delegation
+        grid.onmouseover = function(e) {
+            const card = e.target.closest('.nr-catalog-card');
+            if (!card) return;
+            card.style.boxShadow = '0 4px 14px rgba(79,70,229,.12)';
+            if (!nrCartItems.find(c => c.description === nrFilteredItems[parseInt(card.dataset.nrIdx,10)]?.description)) {
+                card.style.borderColor = 'rgba(79,70,229,.4)';
+            }
+        };
+        grid.onmouseout = function(e) {
+            const card = e.target.closest('.nr-catalog-card');
+            if (!card) return;
+            card.style.boxShadow = '';
+            const item = nrFilteredItems[parseInt(card.dataset.nrIdx, 10)];
+            if (item && nrCartItems.find(c => c.description === item.description && c.category === item.ledge_category)) {
+                card.style.borderColor = '#4f46e5';
+            } else {
+                card.style.borderColor = 'var(--border-color)';
+            }
+        };
+    }
+
+    function nrCatalogToggleItem(item) {
+        const desc = item.description;
+        const cat  = item.ledge_category;
+        const existIdx = nrCartItems.findIndex(c => c.description === desc && c.category === cat);
+        if (existIdx !== -1) {
+            nrCartItems.splice(existIdx, 1); // toggle off
+        } else {
+            nrCartItems.push({ description: desc, category: cat, unit: item.unit || 'units', stock: parseFloat(item.total_stock) || 0, qty: 1, remarks: '' });
+        }
+        nrRenderCatalog();
+        nrRenderCartPanel();
+    }
+
+    // Legacy alias kept for removeNrItem calls inside cart panel
+    function nrCatalogAddItem(itemJson) {
+        const itemObj = typeof itemJson === 'string' ? JSON.parse(itemJson) : itemJson;
+        nrCatalogToggleItem(itemObj);
+    }
+
+    function removeNrItem(idx) {
+        nrCartItems.splice(idx, 1);
+        nrRenderCatalog();   // update card checkmarks
+        nrRenderCartPanel();
+    }
+
+    // Re-use legacy alias for reset path
+    function nrRenderItemsEmpty() { nrRenderCartPanel(); }
+    function nrRenderItemsList()  { nrRenderCartPanel(); }
+
+    function nrRenderCartPanel() {
+        const list  = document.getElementById('nr-items-list');
+        const empty = document.getElementById('nr-items-empty');
+        const count = document.getElementById('nr-cart-count');
+        if (count) count.textContent = nrCartItems.length;
+
+        if (!list) return;
+
+        if (nrCartItems.length === 0) {
+            list.innerHTML = '';
+            if (empty) empty.style.display = 'flex';
+        } else {
+            if (empty) empty.style.display = 'none';
+            list.innerHTML = nrCartItems.map((item, idx) => {
+                const stockColor = item.stock > 10 ? '#10b981' : item.stock > 0 ? '#f59e0b' : '#ef4444';
+                return `<div style="background:var(--bg-card);border:1.5px solid var(--border-color);border-radius:10px;padding:.65rem .85rem;">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;margin-bottom:.5rem;">
+                        <div style="font-size:.78rem;font-weight:800;color:var(--text-main);line-height:1.3;flex:1;">${item.description}</div>
+                        <button onclick="removeNrItem(${idx})" style="width:22px;height:22px;flex-shrink:0;border:none;border-radius:6px;background:rgba(239,68,68,.08);color:#ef4444;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;" onmouseover="this.style.background='#ef4444';this.style.color='white'" onmouseout="this.style.background='rgba(239,68,68,.08)';this.style.color='#ef4444'">
+                            <svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><line x1='18' y1='6' x2='6' y2='18'/><line x1='6' y1='6' x2='18' y2='18'/></svg>
+                        </button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:.5rem;">
+                        <div style="display:flex;align-items:center;border:1.5px solid var(--border-color);border-radius:7px;overflow:hidden;background:var(--bg-main);flex-shrink:0;">
+                            <button type="button" onclick="adjustNrQty(${idx},-1)" style="padding:.2rem .5rem;border:none;background:transparent;cursor:pointer;color:var(--text-muted);font-weight:900;font-size:.9rem;transition:.15s;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='transparent'">−</button>
+                            <input type="number" min="0.01" step="0.01" value="${item.qty}" onchange="updateNrQty(${idx},this.value)" style="width:38px;text-align:center;border:none;background:transparent;font-family:inherit;font-weight:700;font-size:.8rem;color:var(--text-main);outline:none;padding:.2rem 0;">
+                            <button type="button" onclick="adjustNrQty(${idx},1)" style="padding:.2rem .5rem;border:none;background:transparent;cursor:pointer;color:var(--text-muted);font-weight:900;font-size:.9rem;transition:.15s;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='transparent'">+</button>
+                        </div>
+                        <input type="text" value="${item.remarks}" placeholder="Remarks..." oninput="updateNrRemarks(${idx},this.value)" style="flex:1;min-width:0;padding:.3rem .5rem;border:1.5px solid var(--border-color);border-radius:7px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.72rem;font-weight:600;outline:none;transition:.2s;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='var(--border-color)'">
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function adjustNrQty(idx, delta) {
+        let val = parseFloat(nrCartItems[idx].qty) + delta;
+        if (val < 0.01) val = 0.01;
+        nrCartItems[idx].qty = Math.round(val * 100) / 100;
+        nrRenderCartPanel();
+    }
+    function updateNrQty(idx, val) {
+        nrCartItems[idx].qty = parseFloat(val) || 0.01;
+    }
+    function updateNrRemarks(idx, val) {
+        nrCartItems[idx].remarks = val;
+    }
+
+    // ── Step 3: Review Builder ─────────────────────────────
+    function nrBuildReview() {
+        const name    = document.getElementById('nr-requester-name').value.trim();
+        const dept    = document.getElementById('nr-department').value.trim();
+        const rank    = document.getElementById('nr-rank').value.trim();
+        const purpose = document.getElementById('nr-purpose').value.trim();
+        const priorityColors = { urgent:'#dc2626', normal:'#4f46e5', low:'#64748b' };
+        const usageColors    = { permanent:'#4f46e5', temporary:'#f59e0b' };
+
+        let html = `
+        <div style="background:var(--bg-main);border:1.5px solid var(--border-color);border-radius:14px;padding:1.25rem;margin-bottom:1rem;">
+            <div style="font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;">Requester Details</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem .5rem;font-size:.85rem;">
+                <div><span style="font-weight:700;color:var(--text-muted);font-size:.75rem;">Name</span><br><span style="font-weight:800;color:var(--text-main);">${name}</span></div>
+                <div><span style="font-weight:700;color:var(--text-muted);font-size:.75rem;">Department</span><br><span style="font-weight:800;color:var(--text-main);">${dept}</span></div>
+                ${rank ? `<div><span style="font-weight:700;color:var(--text-muted);font-size:.75rem;">Rank/Title</span><br><span style="font-weight:800;color:var(--text-main);">${rank}</span></div>` : ''}
+                <div><span style="font-weight:700;color:var(--text-muted);font-size:.75rem;">Priority</span><br><span style="font-weight:800;color:${priorityColors[nrSelectedPriority]};text-transform:capitalize;">${nrSelectedPriority}</span></div>
+                <div><span style="font-weight:700;color:var(--text-muted);font-size:.75rem;">Usage Type</span><br><span style="font-weight:800;color:${usageColors[nrSelectedUsage]};text-transform:capitalize;">${nrSelectedUsage}</span></div>
+            </div>
+            <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border-color);">
+                <span style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Purpose:</span>
+                <p style="margin:4px 0 0;font-size:.85rem;font-weight:600;color:var(--text-main);font-style:italic;">&ldquo;${purpose}&rdquo;</p>
+            </div>
+        </div>
+        <div style="background:var(--bg-main);border:1.5px solid var(--border-color);border-radius:14px;overflow:hidden;margin-bottom:1rem;">
+            <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border-color);">
+                <div style="font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Items Requested (${nrCartItems.length})</div>
+            </div>
+            ${nrCartItems.map(item => {
+                const catName = (item.category && nrLedgeMap[item.category]) ? nrLedgeMap[item.category] : (item.category || '');
+                return `<div style="padding:.85rem 1.25rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+                    <div>
+                        <div style="font-size:.88rem;font-weight:800;color:var(--text-main);">${item.description}</div>
+                        ${catName ? `<div style="font-size:.7rem;color:#4f46e5;font-weight:700;">${catName}</div>` : ''}
+                        ${item.remarks ? `<div style="font-size:.72rem;color:var(--text-muted);font-style:italic;">${item.remarks}</div>` : ''}
+                    </div>
+                    <div style="text-align:right;flex-shrink:0;">
+                        <span style="font-size:1rem;font-weight:900;color:var(--text-main);">${item.qty}</span>
+                        <span style="font-size:.78rem;color:var(--text-muted);"> ${item.unit}</span>
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>
+        <div style="background:rgba(16,185,129,.05);border:1.5px solid rgba(16,185,129,.2);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:.75rem;">
+            <i data-lucide="info" style="width:16px;color:#10b981;flex-shrink:0;margin-top:2px;"></i>
+            <p style="margin:0;font-size:.8rem;font-weight:600;color:var(--text-muted);">Please review all details carefully. Once submitted, this requisition will be routed to the department head and stores admin for approval.</p>
+        </div>`;
+
+        document.getElementById('nr-review-content').innerHTML = html;
+        if (window.lucide) lucide.createIcons();
+    }
+
+    // ── Submit ─────────────────────────────────────────────
+    async function submitNewReq() {
+        const btn = document.getElementById('nr-btn-submit');
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.style.opacity = '0.8';
+        btn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;"></div> Submitting...';
+
+        const payload = {
+            requester_name: document.getElementById('nr-requester-name').value.trim(),
+            department:     document.getElementById('nr-department').value.trim(),
+            rank_or_title:  document.getElementById('nr-rank').value.trim(),
+            priority:       nrSelectedPriority,
+            usage_type:     nrSelectedUsage,
+            purpose:        document.getElementById('nr-purpose').value.trim(),
+            items: nrCartItems.map(i => ({
+                description:        i.description,
+                category:           i.category,
+                unit:               i.unit,
+                quantity_requested: parseFloat(i.qty),
+                remarks:            i.remarks || null,
+            }))
+        };
+
+        try {
+            const resp = await fetch('{{ route("requisitions.store") }}', {
+                method: 'POST',
+                headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN':'{{ csrf_token() }}', 'Accept':'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                closeNewReqPanel();
+                Swal.fire({
+                    icon:'success',
+                    title:'Requisition Submitted!',
+                    html:`Your store requisition <b>#${data.id}</b> has been submitted successfully and the relevant approvers have been notified.`,
+                    confirmButtonColor:'#4f46e5'
+                }).then(() => location.reload());
+            } else {
+                Swal.fire({ icon:'error', title:'Submission Failed', text: data.message || 'An error occurred.', confirmButtonColor:'#4f46e5' });
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.innerHTML = originalHTML;
+            }
+        } catch (err) {
+            Swal.fire({ icon:'error', title:'Network Error', text:'Could not connect to the server. Please try again.', confirmButtonColor:'#4f46e5' });
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerHTML = originalHTML;
+        }
+    }
 </script>
 @endsection

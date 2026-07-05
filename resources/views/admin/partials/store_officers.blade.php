@@ -83,6 +83,19 @@
         </div>
     </div>
 
+    <div class="col-ctrl">
+        <div class="toggle-group-wrap">
+            <label class="normal-toggle" title="Allow this store officer to place requisition requests">
+                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_make_requisition')" {{ ($user->can_make_requisition ?? false) ? 'checked' : '' }}>
+                <div class="toggle-slider"></div>
+            </label>
+            <div class="toggle-text">
+                <span class="t-main">{{ ($user->can_make_requisition ?? false) ? 'Enabled' : 'Disabled' }}</span>
+                <span class="t-sub">Place requests</span>
+            </div>
+        </div>
+    </div>
+
     <div class="col-stat">
         <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
             <i data-lucide="{{ $user->is_active ? 'shield-check' : 'shield-alert' }}"></i>

@@ -46,6 +46,7 @@ class StoreRequisition extends Model
         'collector_location',
         'origin_admin_status',
         'origin_approved_by',
+        'main_admin_status',
         'stores_approved_by',
         'alternative_status',
         'requires_dg_approval',
