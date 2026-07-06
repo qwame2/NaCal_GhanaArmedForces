@@ -34,6 +34,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         Requisitioners
     </button>
+    <button class="pager-tab" id="tab-departments" onclick="switchTab('departments')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="9" y1="22" x2="9" y2="16"></line><line x1="15" y1="22" x2="15" y2="16"></line><line x1="9" y1="16" x2="15" y2="16"></line><path d="M8 6h2v2H8V6zm0 4h2v2H8v-2zm8-4h2v2h-2V6zm0 4h2v2h-2v-2z"></path></svg>
+        Departmental Tab
+    </button>
     <button class="pager-tab" id="tab-dept-heads" onclick="switchTab('dept-heads')">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Other Dept. Heads
@@ -158,6 +162,72 @@
                     No requisitioners registered.
                 </div>
                 @endforelse
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ── Panel: Departments ── --}}
+<div id="panel-departments" class="pager-panel">
+    <div class="permissions-matrix-wrapper">
+        <div class="matrix-table">
+            <div class="m-header">
+                <div class="col-id" style="flex: 0 0 450px;">Department Name</div>
+                <div class="col-ctrl" style="flex: 1;">Total Staff (Active)</div>
+                <div class="col-req-ctrl" style="flex: 0 0 250px;">Requisition Status</div>
+                <div class="col-stat" style="flex: 0 0 200px;">Clearance Status</div>
+            </div>
+
+            <div class="m-body" id="departmentsBody">
+                @foreach($allDepartments as $dept)
+                @php
+                    $isDeptDisabled = in_array(strtolower(trim($dept)), array_map('strtolower', array_map('trim', $disabledDepts)));
+                @endphp
+                <div class="m-row" data-department="{{ $dept }}">
+                    <div class="col-id" style="flex: 0 0 450px;">
+                        <div class="m-avatar" style="background: linear-gradient(135deg, #3b82f6, #6366f1); display: flex; align-items: center; justify-content: center; color: white;">
+                            <i data-lucide="building" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div class="m-identity">
+                            <h4 class="m-name">{{ $dept }}</h4>
+                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; color: var(--text-muted); font-size: 0.75rem;">
+                                <span>Sector Identity</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl" style="flex: 1;">
+                        <span style="font-weight: 800; font-size: 1rem; color: var(--text-main); background: #f1f5f9; padding: 4px 12px; border-radius: 8px;">
+                            {{ $userCounts[$dept] ?? 0 }} Staff
+                        </span>
+                    </div>
+
+                    {{-- Requisition Toggle --}}
+                    <div class="col-req-ctrl" style="flex: 0 0 250px;">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="{{ auth()->user()->role === 'Head of Stores' ? 'Allow or block this department from making requisitions' : 'Only Head of Stores can change this' }}">
+                                @if(auth()->user()->role === 'Head of Stores')
+                                    <input type="checkbox" onchange="toggleDepartmentStatus(this)" {{ !$isDeptDisabled ? 'checked' : '' }}>
+                                @else
+                                    <input type="checkbox" disabled style="opacity: 0.6; cursor: not-allowed;" {{ !$isDeptDisabled ? 'checked' : '' }}>
+                                @endif
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">{{ !$isDeptDisabled ? 'Allowed' : 'Blocked' }}</span>
+                                <span class="t-sub">Requisition Request</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-stat" style="flex: 0 0 200px;">
+                        <div class="badge-status {{ !$isDeptDisabled ? 'authorized' : 'revoked' }}">
+                            <i data-lucide="{{ !$isDeptDisabled ? 'shield-check' : 'shield-alert' }}"></i>
+                            {{ !$isDeptDisabled ? 'ACTIVE' : 'DISABLED' }}
+                        </div>
+                    </div>
+                </div>
+                @endforeach
             </div>
         </div>
     </div>
@@ -922,10 +992,57 @@
 
         // Show/hide search vault (only relevant for matrix tabs)
         const sv = document.getElementById('searchVaultWrap');
-        if (sv) sv.style.display = (tab !== 'registrations' && tab !== 'delegation') ? '' : 'none';
+        if (sv) sv.style.display = (tab !== 'registrations' && tab !== 'delegation' && tab !== 'departments') ? '' : 'none';
 
         // Remember active tab
         localStorage.setItem('active_permissions_tab', tab);
+    }
+
+    function toggleDepartmentStatus(checkbox) {
+        const row = checkbox.closest('.m-row');
+        const dept = row.getAttribute('data-department');
+        const value = checkbox.checked ? 1 : 0;
+        row.classList.add('syncing-row');
+
+        fetch('{{ route("admin.permissions.toggle_department", [], false) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ department: dept, value: value })
+        })
+        .then(r => r.json())
+        .then(data => {
+            row.classList.remove('syncing-row');
+            if (!data.success) {
+                checkbox.checked = !checkbox.checked;
+                alert('Failed to update department status: ' + data.message);
+            } else {
+                const label = checkbox.closest('.toggle-group-wrap')?.querySelector('.t-main');
+                if (label) label.textContent = checkbox.checked ? 'Allowed' : 'Blocked';
+                
+                const badge = row.querySelector('.col-stat .badge-status');
+                if (badge) {
+                    const wantActive = checkbox.checked;
+                    badge.classList.toggle('authorized', wantActive);
+                    badge.classList.toggle('revoked', !wantActive);
+                    const icon = badge.querySelector('i[data-lucide]');
+                    if (icon) {
+                        icon.setAttribute('data-lucide', wantActive ? 'shield-check' : 'shield-alert');
+                        if (window.lucide) lucide.createIcons({ nodes: [icon] });
+                    }
+                    badge.childNodes[badge.childNodes.length - 1].textContent =
+                        ' ' + (wantActive ? 'ACTIVE' : 'DISABLED');
+                }
+            }
+        })
+        .catch(() => {
+            row.classList.remove('syncing-row');
+            checkbox.checked = !checkbox.checked;
+            alert('A system error occurred.');
+        });
     }
 
     /* ── Personnel Filter ── */

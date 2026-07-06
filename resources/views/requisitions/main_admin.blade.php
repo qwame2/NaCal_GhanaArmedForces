@@ -1133,6 +1133,7 @@
 
 <script>
     const isStoresHead = {{ $isStoresHead ? 'true' : 'false' }};
+    const isBackupActive = {{ ($isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])) ? 'true' : 'false' }};
     let currentReqId = null;
 
     async function openRequisitionModal(id) {
@@ -1246,7 +1247,7 @@
                 `<span style="color:#10b981;font-size:.7rem;font-weight:700;">✔ Sufficient Stock</span>` :
                 `<span style="color:#ef4444;font-size:.7rem;font-weight:700;">⚠ Short Stock</span>`;
 
-            const stockLine = isStoresHead ?
+            const stockLine = isStoresHead && !isBackupActive ?
                 ` · Stock: ${parseFloat(item.current_stock).toLocaleString()} (${stockInfo})` :
                 '';
 

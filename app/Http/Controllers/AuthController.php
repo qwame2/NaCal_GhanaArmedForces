@@ -459,19 +459,7 @@ class AuthController extends Controller
                     // Fallback in case the sessions table is not available or configured
                 }
 
-                // ENFORCEMENT: Block different accounts of the same administrative role from simultaneous sessions.
-                // We allow the same user to re-login (handles accidental tab closures).
-                $otherAdminOnline = User::where('role', $user->role)
-                    ->where('is_online', true)
-                    ->where('id', '!=', $user->id)
-                    ->exists();
-                
-                if ($otherAdminOnline) {
-                    Auth::logout();
-                    $request->session()->invalidate();
-                    $request->session()->regenerateToken();
-                    return redirect()->route('login')->with('error', 'Strategic Command Alert: A different Administrative session is already established. Concurrent Command access is prohibited.');
-                }
+                // Concurrent session restriction disabled per requirements.
             }
 
             $user->update([

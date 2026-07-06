@@ -1,29 +1,33 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Checkout Cart | Central Store</title>
+@extends('layouts.dashboard')
 
-    <!-- Local Font Assets -->
-    <link href="{{ asset('css/css2.css') }}" rel="stylesheet">
-
-    <!-- CSS Assets -->
-    <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
-    <!-- Select2 CSS -->
-    <link href="{{ asset('css/vendor/select2.min.css') }}" rel="stylesheet" />
-
-    <!-- Scripts -->
-    <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
-    <!-- Select2 JS -->
-    <script src="{{ asset('js/vendor/select2.min.js') }}"></script>
-    <script src="{{ asset('js/lucide.min.js') }}"></script>
-    <script src="{{ asset('js/sweetalert2@11.js') }}"></script>
-
-
-
+@section('content')
+    @php
+        $isOtherHOD = in_array(auth()->user()->role, ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+            && (strcasecmp(auth()->user()->department ?? '', 'Stores') !== 0 && strcasecmp(auth()->user()->department ?? '', 'Store') !== 0);
+    @endphp
     <style>
+        /* Hide standard top nav to maintain storefront custom header */
+        .top-nav {
+            display: none !important;
+        }
+        .content-body {
+            padding: 0 !important;
+        }
+        @if(!$isOtherHOD)
+        .sidebar {
+            display: none !important;
+        }
+        .main-wrapper {
+            margin-left: 0 !important;
+            width: 100% !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        body:not(.sidebar-collapsed) .main-wrapper {
+            margin-left: 0 !important;
+            width: 100% !important;
+        }
+        @endif
         :root {
             --font-display: 'Outfit', sans-serif;
             --font-sans: 'Outfit', sans-serif;
@@ -614,6 +618,20 @@
         </a>
     </div>
 
+    @if($isDepartmentDisabled)
+    <div style="max-width: 1200px; margin: 2rem auto 0; padding: 1.5rem 2rem; background: #fef2f2; border: 2px dashed #fca5a5; border-radius: 24px; display: flex; align-items: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(220, 38, 38, 0.05); animation: slideIn 0.4s ease; box-sizing: border-box;">
+        <div style="width: 52px; height: 52px; background: #fee2e2; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #dc2626; flex-shrink: 0;">
+            <i data-lucide="shield-alert" style="width: 26px; height: 26px;"></i>
+        </div>
+        <div>
+            <h4 style="font-size: 1.05rem; font-weight: 850; color: #991b1b; margin: 0;">Department Requisition Disabled</h4>
+            <p style="font-size: 0.85rem; color: #b91c1c; font-weight: 600; margin: 4px 0 0;">
+                Strategic Notice: Requisition access for the <b>{{ auth()->user()->department ?? 'unassigned' }}</b> department has been temporarily suspended by the Head of Stores. Submissions are blocked.
+            </p>
+        </div>
+    </div>
+    @endif
+
     <!-- --- MAIN LAYOUT --- -->
     <main class="checkout-layout" id="main-layout">
 
@@ -729,8 +747,12 @@
                     <textarea id="purpose" class="form-input" rows="4" required placeholder="Describe the operational purpose of these supplies..." style="resize: vertical;"></textarea>
                 </div>
 
-                <button type="submit" class="submit-btn" id="submit-checkout-btn">
-                    <i data-lucide="send" style="width: 18px;"></i> Submit Requisition
+                <button type="submit" class="submit-btn" id="submit-checkout-btn" {{ $isDepartmentDisabled ? 'disabled' : '' }}>
+                    @if($isDepartmentDisabled)
+                        <i data-lucide="shield-alert" style="width: 18px;"></i> Submissions Suspended
+                    @else
+                        <i data-lucide="send" style="width: 18px;"></i> Submit Requisition
+                    @endif
                 </button>
             </form>
         </aside>
@@ -1029,5 +1051,4 @@
             });
         });
     </script>
-</body>
-</html>
+@endsection

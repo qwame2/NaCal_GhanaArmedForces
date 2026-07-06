@@ -100,7 +100,9 @@ class AdminController extends Controller
 
         // Default attributes based on the assigned role:
         if ($role === 'Main Admin') {
-            $user->department = 'Stores';
+            if (empty($user->department) || in_array(strtolower(trim($user->department)), ['stores', 'store'])) {
+                $user->department = 'Stores';
+            }
             $user->is_admin = true;
             $user->is_temp_account = false;
             $user->can_make_requisition = false;
@@ -414,7 +416,83 @@ class AdminController extends Controller
             ->get();
 
         $pendingUsers = User::where('registration_status', 'pending')->orderBy('created_at', 'desc')->get();
-        return view('admin.permissions', compact('storeOfficers', 'requisitioners', 'deptHeads', 'auditors', 'directorGenerals', 'pendingUsers'));
+
+        $allDepartments = User::whereNotNull('department')
+            ->where('department', '!=', '')
+            ->distinct()
+            ->pluck('department')
+            ->toArray();
+        sort($allDepartments);
+
+        $userCounts = [];
+        foreach ($allDepartments as $dept) {
+            $userCounts[$dept] = User::where('department', $dept)->where('registration_status', 'approved')->count();
+        }
+
+        $disabledDepts = \App\Models\Setting::get('disabled_requisition_departments', []);
+        if (is_string($disabledDepts)) {
+            $disabledDepts = json_decode($disabledDepts, true) ?? [];
+        }
+        if (!is_array($disabledDepts)) {
+            $disabledDepts = [];
+        }
+
+        return view('admin.permissions', compact('storeOfficers', 'requisitioners', 'deptHeads', 'auditors', 'directorGenerals', 'pendingUsers', 'allDepartments', 'userCounts', 'disabledDepts'));
+    }
+
+    public function toggleDepartmentPermission(Request $request)
+    {
+        if (!auth()->user()->is_admin) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        if (auth()->user()->role !== 'Head of Stores') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized. Only the Head of Stores can modify department requisition access.'], 403);
+        }
+
+        $request->validate([
+            'department' => 'required|string',
+            'value' => 'required|boolean'
+        ]);
+
+        $dept = trim($request->department);
+        $isDisabled = !$request->value;
+
+        $disabledDepts = \App\Models\Setting::get('disabled_requisition_departments', []);
+        if (is_string($disabledDepts)) {
+            $disabledDepts = json_decode($disabledDepts, true) ?? [];
+        }
+        if (!is_array($disabledDepts)) {
+            $disabledDepts = [];
+        }
+
+        $normalized = array_map('strtolower', array_map('trim', $disabledDepts));
+        $deptLower = strtolower($dept);
+
+        if ($isDisabled) {
+            if (!in_array($deptLower, $normalized)) {
+                $disabledDepts[] = $dept;
+            }
+        } else {
+            $disabledDepts = array_values(array_filter($disabledDepts, function($d) use ($deptLower) {
+                return strtolower(trim($d)) !== $deptLower;
+            }));
+        }
+
+        \App\Models\Setting::set('disabled_requisition_departments', $disabledDepts, 'json', 'general', 'Disabled departments from making requisitions');
+
+        $actionWord = $isDisabled ? 'DISABLED' : 'ENABLED';
+
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'DEPARTMENT_TOGGLE',
+            'description' => "Head of Stores {$actionWord} requisition access for the entire [{$dept}] department.",
+            'severity' => 'warning',
+            'ip_address' => $request->ip()
+        ]);
+
+        return response()->json(['success' => true, 'message' => "Department requisition access {$actionWord}."]);
     }
 
     public function getPendingRegistrations()

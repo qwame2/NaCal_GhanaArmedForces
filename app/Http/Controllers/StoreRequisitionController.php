@@ -41,7 +41,21 @@ class StoreRequisitionController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('requisitions.index', compact('availableItems', 'ledgeMap', 'myRequisitions'));
+        $user = auth()->user();
+        $disabledDepts = Setting::get('disabled_requisition_departments', []);
+        if (is_string($disabledDepts)) {
+            $disabledDepts = json_decode($disabledDepts, true) ?? [];
+        }
+        if (!is_array($disabledDepts)) {
+            $disabledDepts = [];
+        }
+        $normalizedDisabledDepts = array_map(function($dept) {
+            return strtolower(trim($dept));
+        }, $disabledDepts);
+        
+        $isDepartmentDisabled = in_array(strtolower(trim($user->department ?? '')), $normalizedDisabledDepts);
+
+        return view('requisitions.index', compact('availableItems', 'ledgeMap', 'myRequisitions', 'isDepartmentDisabled'));
     }
 
     public function checkout(Request $request)
@@ -51,8 +65,21 @@ class StoreRequisitionController extends Controller
             return redirect()->route('requisitions.index')->with('show_profile_modal', true);
         }
 
+        $disabledDepts = Setting::get('disabled_requisition_departments', []);
+        if (is_string($disabledDepts)) {
+            $disabledDepts = json_decode($disabledDepts, true) ?? [];
+        }
+        if (!is_array($disabledDepts)) {
+            $disabledDepts = [];
+        }
+        $normalizedDisabledDepts = array_map(function($dept) {
+            return strtolower(trim($dept));
+        }, $disabledDepts);
+        
+        $isDepartmentDisabled = in_array(strtolower(trim($user->department ?? '')), $normalizedDisabledDepts);
+
         $ledgeMap = Setting::getCategories();
-        return view('requisitions.checkout', compact('ledgeMap'));
+        return view('requisitions.checkout', compact('ledgeMap', 'isDepartmentDisabled'));
     }
 
     /**
@@ -62,8 +89,29 @@ class StoreRequisitionController extends Controller
     {
         $user = auth()->user();
 
-        // Permission gate: admin may revoke the ability to submit requests
-        if (isset($user->can_make_requisition) && !$user->can_make_requisition) {
+        $disabledDepts = Setting::get('disabled_requisition_departments', []);
+        if (is_string($disabledDepts)) {
+            $disabledDepts = json_decode($disabledDepts, true) ?? [];
+        }
+        if (!is_array($disabledDepts)) {
+            $disabledDepts = [];
+        }
+        $normalizedDisabledDepts = array_map(function($dept) {
+            return strtolower(trim($dept));
+        }, $disabledDepts);
+
+        if (in_array(strtolower(trim($user->department ?? '')), $normalizedDisabledDepts) || in_array(strtolower(trim($request->department ?? '')), $normalizedDisabledDepts)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your department has been disabled from making requisition requests by the administrator.'
+            ], 403);
+        }
+
+        $isOtherHOD = in_array($user->role, ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+            && (strcasecmp($user->department ?? '', 'Stores') !== 0 && strcasecmp($user->department ?? '', 'Store') !== 0);
+
+        // Permission gate: admin may revoke the ability to submit requests (exempt other HODs)
+        if (!$isOtherHOD && isset($user->can_make_requisition) && !$user->can_make_requisition) {
             return response()->json([
                 'success' => false,
                 'message' => 'You do not have permission to submit requisition requests. Please contact your administrator.'
@@ -153,6 +201,8 @@ class StoreRequisitionController extends Controller
             }
         }
 
+        $isHODOfThisDept = $isOtherHOD && (strcasecmp($user->department ?? '', $request->department) === 0);
+
         $requisition = StoreRequisition::create([
             'requester_name' => $request->requester_name,
             'department'     => $request->department,
@@ -162,8 +212,8 @@ class StoreRequisitionController extends Controller
             'priority'       => $request->priority,
             'status'         => 'pending',
             'usage_type'     => $request->usage_type,
-            'origin_admin_status' => 'pending',
-            'origin_approved_by'  => null,
+            'origin_admin_status' => $isHODOfThisDept ? 'approved' : 'pending',
+            'origin_approved_by'  => $isHODOfThisDept ? $user->name : null,
             'main_admin_status'   => ($isStoresDept && !$requiresStoresDeptHeadApproval) ? 'approved' : 'pending',
             'requires_dg_approval' => $requiresDgApproval,
             'dg_status' => $requiresDgApproval ? 'pending' : null,
@@ -1369,11 +1419,13 @@ class StoreRequisitionController extends Controller
             || (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Stores', 'Store']))
             || (auth()->user()->role === 'Main Admin' && !$hasActiveStoresHead);
 
+        $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
+
         if ($request->filled('status')) {
             if ($request->status === 'pending') {
                 if ($isStoresHead) {
                     $query->where('status', 'pending')
-                          ->where(function($q) use ($isStoresHOD) {
+                          ->where(function($q) use ($isStoresHOD, $isBackupActive) {
                               $q->where(function($q2) {
                                   $q2->where('origin_admin_status', 'approved')
                                      ->where('main_admin_status', 'pending');
@@ -1382,6 +1434,15 @@ class StoreRequisitionController extends Controller
                                   $q->orWhere(function($q2) {
                                       $q2->where('origin_admin_status', 'pending')
                                          ->whereIn('department', ['Stores', 'Store']);
+                                  });
+                              }
+                              if ($isBackupActive) {
+                                  $q->orWhere(function($q2) {
+                                      $q2->where('department', auth()->user()->department)
+                                         ->where(function($q3) {
+                                             $q3->where('origin_admin_status', 'pending')
+                                                ->orWhere('alternative_status', 'proposed');
+                                         });
                                   });
                               }
                           });
@@ -1396,19 +1457,49 @@ class StoreRequisitionController extends Controller
                 }
             } elseif ($request->status === 'approved') {
                 if ($isStoresHead) {
-                    $query->where('main_admin_status', 'approved');
+                    if ($isBackupActive) {
+                        $query->where(function($q) {
+                            $q->where('main_admin_status', 'approved')
+                              ->orWhere(function($q2) {
+                                  $q2->where('department', auth()->user()->department)
+                                     ->where('origin_admin_status', 'approved');
+                              });
+                        });
+                    } else {
+                        $query->where('main_admin_status', 'approved');
+                    }
                 } else {
                     $query->where('origin_admin_status', 'approved');
                 }
             } elseif ($request->status === 'declined') {
                 if ($isStoresHead) {
-                    $query->where('main_admin_status', 'declined');
+                    if ($isBackupActive) {
+                        $query->where(function($q) {
+                            $q->where('main_admin_status', 'declined')
+                              ->orWhere(function($q2) {
+                                  $q2->where('department', auth()->user()->department)
+                                     ->where('origin_admin_status', 'declined');
+                              });
+                        });
+                    } else {
+                        $query->where('main_admin_status', 'declined');
+                    }
                 } else {
                     $query->where('origin_admin_status', 'declined');
                 }
             } elseif ($request->status === 'history') {
                 if ($isStoresHead) {
-                    $query->whereIn('main_admin_status', ['approved', 'declined']);
+                    if ($isBackupActive) {
+                        $query->where(function($q) {
+                            $q->whereIn('main_admin_status', ['approved', 'declined'])
+                              ->orWhere(function($q2) {
+                                  $q2->where('department', auth()->user()->department)
+                                     ->whereIn('origin_admin_status', ['approved', 'declined']);
+                              });
+                        });
+                    } else {
+                        $query->whereIn('main_admin_status', ['approved', 'declined']);
+                    }
                 } else {
                     $query->whereIn('origin_admin_status', ['approved', 'declined']);
                 }
@@ -1416,7 +1507,7 @@ class StoreRequisitionController extends Controller
         } else {
             if ($isStoresHead) {
                 $query->where('status', 'pending')
-                      ->where(function($q) use ($isStoresHOD) {
+                      ->where(function($q) use ($isStoresHOD, $isBackupActive) {
                           $q->where(function($q2) {
                               $q2->where('origin_admin_status', 'approved')
                                  ->where('main_admin_status', 'pending');
@@ -1425,6 +1516,15 @@ class StoreRequisitionController extends Controller
                               $q->orWhere(function($q2) {
                                   $q2->where('origin_admin_status', 'pending')
                                      ->whereIn('department', ['Stores', 'Store']);
+                              });
+                          }
+                          if ($isBackupActive) {
+                              $q->orWhere(function($q2) {
+                                  $q2->where('department', auth()->user()->department)
+                                     ->where(function($q3) {
+                                         $q3->where('origin_admin_status', 'pending')
+                                            ->orWhere('alternative_status', 'proposed');
+                                     });
                               });
                           }
                       });
@@ -1458,13 +1558,24 @@ class StoreRequisitionController extends Controller
 
         // Calculate scoped stats
         if ($isStoresHead) {
-            $statsData = StoreRequisition::selectRaw("
+            if ($isBackupActive) {
+                $statsData = StoreRequisition::selectRaw("
+                    SUM(CASE WHEN status = 'pending' AND (
+                        (origin_admin_status = 'approved' AND main_admin_status = 'pending')
+                        OR (department = ? AND (origin_admin_status = 'pending' OR alternative_status = 'proposed'))
+                    ) THEN 1 ELSE 0 END) as pending,
+                    SUM(CASE WHEN main_admin_status = 'approved' OR (department = ? AND origin_admin_status = 'approved') THEN 1 ELSE 0 END) as approved,
+                    SUM(CASE WHEN main_admin_status = 'declined' OR (department = ? AND origin_admin_status = 'declined') THEN 1 ELSE 0 END) as declined
+                ", [auth()->user()->department, auth()->user()->department, auth()->user()->department])->first();
+            } else {
+                $statsData = StoreRequisition::selectRaw("
                     SUM(CASE WHEN store_requisitions.status = 'pending' AND (
                         (store_requisitions.origin_admin_status = 'approved' AND store_requisitions.main_admin_status = 'pending') " . ($isStoresHOD ? "OR (store_requisitions.origin_admin_status = 'pending' AND store_requisitions.department IN ('Stores', 'Store'))" : "") . "
                     ) THEN 1 ELSE 0 END) as pending,
                     SUM(CASE WHEN store_requisitions.main_admin_status = 'approved' THEN 1 ELSE 0 END) as approved,
                     SUM(CASE WHEN store_requisitions.main_admin_status = 'declined' THEN 1 ELSE 0 END) as declined
                 ")->first();
+            }
 
             $stats = [
                 'pending'  => (int) ($statsData->pending ?? 0),
@@ -1557,7 +1668,8 @@ class StoreRequisitionController extends Controller
             || (auth()->user()->role === 'Main Admin' && !$hasActiveStoresHead);
 
         // Check if the stores head is acting as the originating HOD for a Stores department request
-        $isActingAsOriginHOD = $isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending';
+        $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
+            || (auth()->user()->role === 'Department Head' && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending');
 
         if (!$isStoresHead || $isActingAsOriginHOD) {
             // Originating department head check
@@ -1581,7 +1693,8 @@ class StoreRequisitionController extends Controller
         }
 
         if ($request->status === 'approved') {
-            $isActingAsOriginHOD = $isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending';
+            $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
+                || (auth()->user()->role === 'Department Head' && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending');
 
             $requiresStoresDeptHeadApproval = false;
             if (!$isStoresHead || $isActingAsOriginHOD) {

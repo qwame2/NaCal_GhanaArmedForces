@@ -1,25 +1,33 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>My Requisition History | {{ \App\Models\Setting::get('organization_name', 'NACOC') }} Central Store</title>
+@extends('layouts.dashboard')
 
-    <!-- Local Fonts for Premium Offline Look -->
-    <link href="{{ asset('css/css2.css') }}" rel="stylesheet">
-
-    <!-- CSS Assets -->
-    <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
-    
-    <!-- Scripts -->
-    <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
-    <script src="{{ asset('js/lucide.min.js') }}"></script>
-    <script src="{{ asset('js/sweetalert2@11.js') }}"></script>
-
-
-    
+@section('content')
+    @php
+        $isOtherHOD = in_array(auth()->user()->role, ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+            && (strcasecmp(auth()->user()->department ?? '', 'Stores') !== 0 && strcasecmp(auth()->user()->department ?? '', 'Store') !== 0);
+    @endphp
     <style>
+        /* Hide standard top nav to maintain storefront custom header */
+        .top-nav {
+            display: none !important;
+        }
+        .content-body {
+            padding: 0 !important;
+        }
+        @if(!$isOtherHOD)
+        .sidebar {
+            display: none !important;
+        }
+        .main-wrapper {
+            margin-left: 0 !important;
+            width: 100% !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        body:not(.sidebar-collapsed) .main-wrapper {
+            margin-left: 0 !important;
+            width: 100% !important;
+        }
+        @endif
         :root {
             --font-display: 'Outfit', sans-serif;
             --font-sans: 'Outfit', sans-serif;
@@ -1507,5 +1515,4 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     </script>
-</body>
-</html>
+@endsection

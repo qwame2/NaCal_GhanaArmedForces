@@ -83,6 +83,29 @@
 </head>
 
 <body>
+    @php
+        $isActingStoresHead = false;
+        if (auth()->check()) {
+            $isStoresHead = (auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
+            if (!$isStoresHead) {
+                $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+                if ($isBackup) {
+                    $primaryOnline = \App\Models\User::where(function($q) {
+                            $q->where('role', 'Main Admin')
+                              ->orWhere('role', 'Dept. Head (Stores)')
+                              ->orWhereIn('department', ['Stores', 'Store']);
+                        })
+                        ->where('is_online', true)
+                        ->where('is_active', true)
+                        ->exists();
+                    if (!$primaryOnline) {
+                        $isStoresHead = true;
+                    }
+                }
+            }
+            $isActingStoresHead = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
+        }
+    @endphp
     <div class="toast-container" id="toast-container"></div>
     <div id="sidebar-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 950; display: none; backdrop-filter: blur(4px);"></div>
 
@@ -173,7 +196,19 @@
                         <span>Track Staff Requests</span>
                     </a>
                 </li>
-                @if(auth()->user()->role === 'Main Admin' || (strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0))
+                @php
+                    $isOtherHOD = in_array(auth()->user()->role, ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+                        && (strcasecmp(auth()->user()->department ?? '', 'Stores') !== 0 && strcasecmp(auth()->user()->department ?? '', 'Store') !== 0);
+                @endphp
+                @if($isOtherHOD)
+                <li class="nav-item">
+                    <a href="{{ route('requisitions.index') }}" class="nav-link {{ request()->routeIs(['requisitions.index', 'requisitions.checkout']) ? 'active' : '' }}" data-tooltip="Make Request">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                        <span>Make Request</span>
+                    </a>
+                </li>
+                @endif
+                @if((auth()->user()->role === 'Main Admin' || (strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0)) && !$isActingStoresHead)
                 <li class="nav-item">
                     <a href="{{ route('receiveditems') }}" class="nav-link {{ request()->routeIs('receiveditems') ? 'active' : '' }}" data-tooltip="Received Items Log">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="M12 7H7.5"/><path d="m10 5-2.5 2 2.5 2"/></svg>
@@ -206,6 +241,7 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
+                @if(!$isActingStoresHead)
                 <li class="nav-item">
                     <a href="{{ route('receiveditems') }}" class="nav-link {{ request()->routeIs('receiveditems') ? 'active' : '' }}" data-tooltip="Received Items Log">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="M12 7H7.5"/><path d="m10 5-2.5 2 2.5 2"/></svg>
@@ -226,6 +262,7 @@
                         <span>Returns</span>
                     </a>
                 </li>
+                @endif
 
                 <li class="nav-item">
                     <a href="{{ route('personnel.requisitions') }}" class="nav-link {{ request()->routeIs('personnel.requisitions') ? 'active' : '' }}" data-tooltip="Store Requisitions">

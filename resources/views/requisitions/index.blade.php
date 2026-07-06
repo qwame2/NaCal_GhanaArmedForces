@@ -1,25 +1,33 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Storefront | {{ \App\Models\Setting::get('organization_name', 'NACOC') }} Central Store</title>
+@extends('layouts.dashboard')
 
-    <!-- Local Fonts for Premium Offline Look -->
-    <link href="{{ asset('css/css2.css') }}" rel="stylesheet">
-
-    <!-- CSS Assets -->
-    <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
-
-    <!-- Scripts -->
-    <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
-    <script src="{{ asset('js/lucide.min.js') }}"></script>
-    <script src="{{ asset('js/sweetalert2@11.js') }}"></script>
-
-
-
+@section('content')
+    @php
+        $isOtherHOD = in_array(auth()->user()->role, ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+            && (strcasecmp(auth()->user()->department ?? '', 'Stores') !== 0 && strcasecmp(auth()->user()->department ?? '', 'Store') !== 0);
+    @endphp
     <style>
+        /* Hide standard top nav to maintain storefront custom header */
+        .top-nav {
+            display: none !important;
+        }
+        .content-body {
+            padding: 0 !important;
+        }
+        @if(!$isOtherHOD)
+        .sidebar {
+            display: none !important;
+        }
+        .main-wrapper {
+            margin-left: 0 !important;
+            width: 100% !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        body:not(.sidebar-collapsed) .main-wrapper {
+            margin-left: 0 !important;
+            width: 100% !important;
+        }
+        @endif
         :root {
             --font-display: 'Outfit', sans-serif;
             --font-sans: 'Outfit', sans-serif;
@@ -1527,6 +1535,20 @@
         </div>
     </section>
 
+    @if($isDepartmentDisabled)
+    <div style="max-width: 1400px; margin: 2rem auto 0; padding: 1.5rem 2rem; background: #fef2f2; border: 2px dashed #fca5a5; border-radius: 24px; display: flex; align-items: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(220, 38, 38, 0.05); animation: slideIn 0.4s ease;">
+        <div style="width: 52px; height: 52px; background: #fee2e2; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #dc2626; flex-shrink: 0;">
+            <i data-lucide="shield-alert" style="width: 26px; height: 26px;"></i>
+        </div>
+        <div>
+            <h4 style="font-size: 1.05rem; font-weight: 850; color: #991b1b; margin: 0;">Department Requisition Disabled</h4>
+            <p style="font-size: 0.85rem; color: #b91c1c; font-weight: 600; margin: 4px 0 0;">
+                Strategic Notice: Requisition access for the <b>{{ auth()->user()->department ?? 'unassigned' }}</b> department has been temporarily suspended by the Head of Stores.
+            </p>
+        </div>
+    </div>
+    @endif
+
     <div id="shop-grid-start"></div>
 
     <!-- --- MAIN STOREFRONT LAYOUT --- -->
@@ -1631,7 +1653,11 @@
                                 </div>
 
                                 <div class="product-actions">
-                                    @if($stockVal > 0)
+                                    @if($isDepartmentDisabled)
+                                        <button class="add-cart-btn" style="background:var(--border-color); color:var(--text-muted); cursor:not-allowed;" disabled>
+                                            Disabled
+                                        </button>
+                                    @elseif($stockVal > 0)
                                         <div class="qty-controls">
                                             <button class="qty-btn" onclick="adjustProductQty({{ $idx }}, -1)">
                                                 <i data-lucide="minus" style="width: 12px;"></i>
@@ -2104,5 +2130,4 @@
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     </script>
-</body>
-</html>
+@endsection

@@ -394,20 +394,29 @@ class AppServiceProvider extends ServiceProvider
                         || (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Stores', 'Store']))
                         || (auth()->user()->role === 'Main Admin' && !$hasActiveStoresHead);
 
+                    $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
+
                     if ($isStoresHead) {
                         $mainRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
-                            ->where(function($q) use ($isStoresHOD) {
-                                if ($isStoresHOD) {
-                                    $q->where(function($q2) {
-                                        $q2->where('origin_admin_status', 'approved')
-                                           ->where('main_admin_status', 'pending');
-                                    })
-                                    ->orWhere(function($q2) {
+                            ->where(function($q) use ($isStoresHOD, $isBackupActive) {
+                                $q->where(function($q2) {
+                                    $q2->where('origin_admin_status', 'approved')
+                                       ->where('main_admin_status', 'pending');
+                                });
+                                if ($isStoresHOD && !$isBackupActive) {
+                                    $q->orWhere(function($q2) {
                                         $q2->where('origin_admin_status', 'pending')
                                            ->whereIn('department', ['Stores', 'Store']);
                                     });
-                                } else {
-                                    $q->whereRaw('1 = 0');
+                                }
+                                if ($isBackupActive) {
+                                    $q->orWhere(function($q2) {
+                                        $q2->where('department', auth()->user()->department)
+                                           ->where(function($q3) {
+                                               $q3->where('origin_admin_status', 'pending')
+                                                  ->orWhere('alternative_status', 'proposed');
+                                           });
+                                    });
                                 }
                             })
                             ->count();

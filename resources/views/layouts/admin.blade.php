@@ -678,6 +678,29 @@
     </style>
 </head>
 <body>
+    @php
+        $isActingStoresHead = false;
+        if (auth()->check()) {
+            $isStoresHead = (auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
+            if (!$isStoresHead) {
+                $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+                if ($isBackup) {
+                    $primaryOnline = \App\Models\User::where(function($q) {
+                            $q->where('role', 'Main Admin')
+                              ->orWhere('role', 'Dept. Head (Stores)')
+                              ->orWhereIn('department', ['Stores', 'Store']);
+                        })
+                        ->where('is_online', true)
+                        ->where('is_active', true)
+                        ->exists();
+                    if (!$primaryOnline) {
+                        $isStoresHead = true;
+                    }
+                }
+            }
+            $isActingStoresHead = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
+        }
+    @endphp
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <aside class="sidebar" id="sidebar">
         <script>
@@ -718,12 +741,14 @@
                         <span>Inventory Oversight</span>
                     </a>
                 </li>
+                @if(!$isActingStoresHead)
                 <li>
                     <a href="{{ route('admin.suppliers') }}" class="nav-link {{ request()->routeIs('admin.suppliers') ? 'active' : '' }}" title="Suppliers Details">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
                         <span>Suppliers Details</span>
                     </a>
                 </li>
+                @endif
                 <li>
                     <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" title="Report Generation">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/><path d="M12 13v5"/><path d="M16 13v5"/><path d="M8 13v5"/></svg>
