@@ -1,4 +1,4 @@
-@extends(auth()->user()->is_admin ? 'layouts.admin' : 'layouts.dashboard')
+@extends((auth()->user()->is_admin && auth()->user()->role !== 'Main Admin') ? 'layouts.admin' : 'layouts.dashboard')
 
 @section('content')
 <div class="animate-slide-up">

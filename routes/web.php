@@ -214,6 +214,7 @@ Route::post('/reset-password', [AuthController::class, 'resetWithOtp'])->name('p
 Route::post('/api/user/offline', [AuthController::class, 'markOffline'])->name('api.user.offline');
 Route::get('/api/check-reset-status', [AuthController::class, 'checkResetStatus'])->name('api.check-reset-status');
 Route::get('/api/check-forgot-eligibility', [AuthController::class, 'checkForgotEligibility'])->name('api.check-forgot-eligibility');
+Route::get('/api/get-department-head', [AuthController::class, 'getDepartmentHead'])->name('api.get-department-head');
 
 
 
@@ -253,6 +254,13 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         // Redirect Requisitioners to their designated page
         if (auth()->user()->role === 'Requisitioner') {
             return redirect()->route('requisitions.index');
+        }
+
+        if (request()->has('refresh')) {
+            \Illuminate\Support\Facades\Cache::forget('dashboard_metrics_data');
+            \Illuminate\Support\Facades\Cache::forget('global_low_stock_alerts');
+            \Illuminate\Support\Facades\Cache::forget('global_expired_alerts');
+            return redirect()->route('dashboard');
         }
 
         $dashboardData = \Illuminate\Support\Facades\Cache::remember('dashboard_metrics_data', 600, function () {
@@ -661,9 +669,12 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/dg/print', [\App\Http\Controllers\DGController::class, 'printReport'])->name('dg.print');
     Route::post('/dg/requisitions/{id}/process', [\App\Http\Controllers\DGController::class, 'processRequisition'])->name('dg.requisitions.process');
 
-    // Staff Access Provisioning Routes (Non-Stores Department Heads only)
+    // Staff Access Provisioning & Registration Approval Routes
     Route::get('/api/dept-head/temp-requisitioners', [\App\Http\Controllers\TempRequisitionerController::class, 'index'])->name('dept-head.temp-requisitioners.index');
     Route::post('/dept-head/staff/{id}/toggle-request-access', [\App\Http\Controllers\TempRequisitionerController::class, 'toggleRequestAccess'])->name('dept-head.staff.toggle-request-access');
+    Route::get('/api/dept-head/pending-registrations', [\App\Http\Controllers\TempRequisitionerController::class, 'pendingRegistrations'])->name('dept-head.pending-registrations');
+    Route::post('/dept-head/registration/{id}/approve', [\App\Http\Controllers\TempRequisitionerController::class, 'approveRegistration'])->name('dept-head.registration.approve');
+    Route::post('/dept-head/registration/{id}/reject', [\App\Http\Controllers\TempRequisitionerController::class, 'rejectRegistration'])->name('dept-head.registration.reject');
 
     Route::get('/received-items/{id}', [ReceivedItemsController::class, 'show'])->name('receiveditems.show');
     Route::put('/received-items/{id}', [ReceivedItemsController::class, 'update'])->name('receiveditems.update');

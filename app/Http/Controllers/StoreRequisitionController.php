@@ -416,10 +416,27 @@ class StoreRequisitionController extends Controller
             } catch (\Exception $e) {}
         }
 
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'collector_staff_id')) {
+            try {
+                \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('collector_staff_id')->nullable();
+                });
+            } catch (\Exception $e) {}
+        }
+
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('receipts', 'collector_staff_id')) {
+            try {
+                \Illuminate\Support\Facades\Schema::table('receipts', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('collector_staff_id')->nullable();
+                });
+            } catch (\Exception $e) {}
+        }
+
         $request->validate([
             'collector_name' => 'required|string|max:255',
             'collector_contact' => 'required|string|max:100',
             'collector_location' => 'required|string|max:255',
+            'collector_staff_id' => 'required|string|max:100',
         ]);
 
         $req = StoreRequisition::findOrFail($id);
@@ -441,6 +458,7 @@ class StoreRequisitionController extends Controller
         $req->collector_name = $request->collector_name;
         $req->collector_contact = $request->collector_contact;
         $req->collector_location = $request->collector_location;
+        $req->collector_staff_id = $request->collector_staff_id;
         $req->save();
 
         // Create an Issuance and IssuedItems to represent this given out/collected asset
@@ -487,7 +505,7 @@ class StoreRequisitionController extends Controller
             'user_id'    => auth()->id(),
             'event_type' => 'REQUISITION',
             'action'     => 'COLLECT_REQUISITION',
-            'description'=> auth()->user()->name . " confirmed physical collection of store requisition #{$req->id} by {$req->collector_name} ({$req->collector_contact}) to location {$req->collector_location}.",
+            'description'=> auth()->user()->name . " confirmed physical collection of store requisition #{$req->id} by {$req->collector_name} (Staff ID: {$req->collector_staff_id}, Contact: {$req->collector_contact}) to location {$req->collector_location}.",
             'severity'   => 'info',
             'metadata'   => ['requisition_id' => $req->id],
             'ip_address' => $request->ip(),
@@ -517,6 +535,7 @@ class StoreRequisitionController extends Controller
                 'collector_name' => $req->collector_name,
                 'collector_contact' => $req->collector_contact,
                 'collector_location' => $req->collector_location,
+                'collector_staff_id' => $req->collector_staff_id,
                 'collected_at' => $req->collected_at,
                 'issued_by' => auth()->id(),
                 'approved_by_dept_head' => $req->origin_approved_by ?? ($req->department . ' Department Head'),
@@ -573,6 +592,7 @@ class StoreRequisitionController extends Controller
                 'collector_name' => $req->collector_name ?? 'N/A',
                 'collector_contact' => $req->collector_contact ?? 'N/A',
                 'collector_location' => $req->collector_location ?? 'N/A',
+                'collector_staff_id' => $req->collector_staff_id ?? 'N/A',
                 'collected_at' => $req->collected_at,
                 'issued_by' => $req->collected_by ?? 1,
                 'approved_by_dept_head' => $req->origin_approved_by ?? ($req->department . ' Department Head'),

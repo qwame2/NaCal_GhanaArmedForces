@@ -980,6 +980,7 @@
             </div>{{-- /cfg-card --}}
             @endforeach
 
+            @if(auth()->user()->role === 'Main Admin')
             {{-- Stores Department Head Approval Workflow --}}
             <div class="workflow-card-modern">
                 @php
@@ -1130,7 +1131,9 @@
                     </div>
                 </div>
             </div>
+            @endif
 
+            @if(auth()->user()->role === 'Main Admin')
             {{-- Director General (DG) Approval Workflow --}}
             <div class="workflow-card-modern dg-workflow-container" style="margin-top: 1.5rem;">
                 @php
@@ -1280,6 +1283,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             {{-- Sticky Save Bar --}}
             <div class="cfg-save-bar">

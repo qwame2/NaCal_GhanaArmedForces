@@ -680,6 +680,18 @@
                             </div>
 
                             <div class="form-grid" style="margin-top: 0.5rem;">
+                                {{-- Requisitioner Toggle Switch --}}
+                                <div class="input-modern-group" style="grid-column: span 2; display: flex; align-items: center; justify-content: space-between; background: rgba(99, 102, 241, 0.03); padding: 0.9rem 1.25rem; border: 1px dashed rgba(99, 102, 241, 0.2); border-radius: 20px;">
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-main);">Register as Requisitioner</span>
+                                        <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">Toggle if you are requesting items on behalf of your department</span>
+                                    </div>
+                                    <label class="switch-container" style="position: relative; display: inline-block; width: 50px; height: 26px; user-select: none;">
+                                        <input type="checkbox" name="is_requisitioner" id="isRequisitionerToggle" value="1" style="opacity: 0; width: 0; height: 0;">
+                                        <span class="switch-slider round" style="position: absolute; cursor: pointer; inset: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px;"></span>
+                                    </label>
+                                </div>
+
                                 <div class="input-modern-group">
                                     <label>Department <span style="color: #ef4444;">*</span></label>
                                     <div class="input-wrapper">
@@ -750,6 +762,19 @@
                                         <input type="text" name="service_number" placeholder="e.g. SN-8942" required>
                                     </div>
                                 </div>
+
+                                {{-- Department Head display --}}
+                                <div class="input-modern-group" id="deptHeadGroup" style="display: none; grid-column: span 2;">
+                                    <label>Departmental Head <span style="color: #ef4444;">*</span></label>
+                                    <div class="input-wrapper" style="background: rgba(0,0,0,0.03);">
+                                        <div class="icon-box"><i data-lucide="user-check"></i></div>
+                                        <input type="text" id="deptHeadName" readonly placeholder="Select a department to view HOD" style="cursor: not-allowed; color: var(--text-muted);">
+                                    </div>
+                                    <div id="deptHeadWarning" style="display: none; margin-top: 0.5rem; padding: 0.75rem 1rem; background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; font-size: 0.75rem; font-weight: 700; color: #ef4444; align-items: center; gap: 8px;">
+                                        <i data-lucide="alert-circle" style="width: 14px; height: 14px; flex-shrink: 0; color: #ef4444;"></i>
+                                        <span>Strategic Alert: No registered &amp; approved Department Head found for this department. Registration is locked.</span>
+                                    </div>
+                                </div>
                             </div>
 
                             {{-- Section: Security --}}
@@ -808,6 +833,27 @@
         </div>
 
 <style>
+    /* Requisitioner Toggle Switch Styles */
+    .switch-container input:checked + .switch-slider {
+        background-color: var(--primary) !important;
+    }
+    .switch-container input:focus + .switch-slider {
+        box-shadow: 0 0 1px var(--primary);
+    }
+    .switch-container input:checked + .switch-slider:before {
+        transform: translateX(24px) !important;
+    }
+    .switch-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
     .input-modern-group label {
         display: block;
         font-size: 0.75rem;
@@ -1368,6 +1414,73 @@
     // Handle window resize to keep height accurate
     window.addEventListener('resize', updateViewportHeight);
 
+    function checkDepartmentHead() {
+        const toggle = document.getElementById('isRequisitionerToggle');
+        const deptSelect = document.getElementById('selfDeptSelect');
+        const deptHeadGroup = document.getElementById('deptHeadGroup');
+        const deptHeadName = document.getElementById('deptHeadName');
+        const deptHeadWarning = document.getElementById('deptHeadWarning');
+        const submitBtn = document.querySelector('#userSelfRegisterForm button[type="submit"]');
+
+        if (!toggle || !toggle.checked) {
+            if (deptHeadGroup) deptHeadGroup.style.display = 'none';
+            if (deptHeadWarning) deptHeadWarning.style.display = 'none';
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+            }
+            return;
+        }
+
+        const dept = deptSelect ? deptSelect.value : '';
+        if (deptHeadGroup) deptHeadGroup.style.display = 'block';
+
+        if (!dept) {
+            if (deptHeadName) deptHeadName.value = '';
+            if (deptHeadWarning) deptHeadWarning.style.display = 'none';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+                submitBtn.style.cursor = 'not-allowed';
+            }
+            return;
+        }
+
+        // Fetch Department Head via API
+        fetch(`/api/get-department-head?department=${encodeURIComponent(dept)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.registered) {
+                    if (deptHeadName) deptHeadName.value = data.name;
+                    if (deptHeadWarning) deptHeadWarning.style.display = 'none';
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '1';
+                        submitBtn.style.cursor = 'pointer';
+                    }
+                } else {
+                    if (deptHeadName) deptHeadName.value = 'NOT REGISTERED YET';
+                    if (deptHeadWarning) deptHeadWarning.style.display = 'flex';
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.style.opacity = '0.5';
+                        submitBtn.style.cursor = 'not-allowed';
+                    }
+                }
+                updateViewportHeight();
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            })
+            .catch(err => {
+                console.error(err);
+                if (deptHeadName) deptHeadName.value = 'Error fetching details';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.5';
+                }
+            });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const loginFormEl = document.getElementById('loginSubmitForm');
         if (loginFormEl) {
@@ -1444,6 +1557,16 @@
             $('#selfDeptSelect').select2({
                 placeholder: "-- Select Department --",
                 allowClear: true
+            });
+
+            // Listen to select change
+            $('#selfDeptSelect').on('change', function() {
+                checkDepartmentHead();
+            });
+
+            // Listen to toggle change
+            $('#isRequisitionerToggle').on('change', function() {
+                checkDepartmentHead();
             });
 
 

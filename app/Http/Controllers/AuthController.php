@@ -164,8 +164,11 @@ class AuthController extends Controller
         $targetUser = User::where('username', $samAccountName)->first();
 
         // SECURITY ENFORCEMENT: Block pending self-registrations
-        if ($targetUser && $targetUser->registration_status === 'pending') {
-            return back()->with('error', 'Your registration request is pending approval by the Admin. Please try again later.')->withInput();
+        if ($targetUser && in_array($targetUser->registration_status, ['pending', 'pending_hod'])) {
+            $errorMsg = $targetUser->registration_status === 'pending_hod'
+                ? 'Your registration request is pending approval by your Department Head. Please try again later.'
+                : 'Your registration request is pending approval by the Admin. Please try again later.';
+            return back()->with('error', $errorMsg)->withInput();
         }
 
         // SECURITY ENFORCEMENT: Block rejected self-registrations
@@ -843,6 +846,30 @@ class AuthController extends Controller
         return response()->json(['eligible' => false]);
     }
 
+    public function getDepartmentHead(Request $request)
+    {
+        $department = $request->query('department');
+        if (!$department) {
+            return response()->json(['registered' => false]);
+        }
+
+        $deptHead = User::whereIn('role', ['Department Head', 'Main Admin'])
+            ->where('department', $department)
+            ->where('is_active', true)
+            ->where('registration_status', 'approved')
+            ->first();
+
+        if ($deptHead) {
+            return response()->json([
+                'registered' => true,
+                'name' => $deptHead->name,
+                'id' => $deptHead->id,
+            ]);
+        }
+
+        return response()->json(['registered' => false]);
+    }
+
     public function selfRegister(Request $request)
     {
         $allowRegistration = \Illuminate\Support\Facades\Schema::hasTable('settings')
@@ -891,21 +918,37 @@ class AuthController extends Controller
             'password.regex' => 'Passwords must contain at least one number.',
         ]);
 
+        $isRequisitioner = $request->has('is_requisitioner');
+        $deptHeadId = null;
+
+        if ($isRequisitioner) {
+            $deptHead = User::whereIn('role', ['Department Head', 'Main Admin'])
+                ->where('department', $request->department)
+                ->where('is_active', true)
+                ->where('registration_status', 'approved')
+                ->first();
+
+            if (!$deptHead) {
+                return back()->with('error', 'Strategic Alert: No registered Department Head found for this department. Registration is locked.')->withInput();
+            }
+            $deptHeadId = $deptHead->id;
+        }
+
         try {
             $user = new User([
                 'name' => $request->name,
                 'username' => $request->username,
                 'password' => $request->password,
-                'role' => null,
+                'role' => $isRequisitioner ? 'Requisitioner' : null,
                 'department' => $request->department,
                 'rank' => null,
                 'phone' => $request->phone,
                 'service_number' => $request->service_number,
-                'sponsored_by' => null,
+                'sponsored_by' => $deptHeadId,
                 'is_admin' => false,
                 'is_temp_account' => false,
                 'is_active' => false,
-                'registration_status' => 'pending',
+                'registration_status' => $isRequisitioner ? 'pending_hod' : 'pending',
                 'must_change_password' => false,
             ]);
 
@@ -921,8 +964,12 @@ class AuthController extends Controller
                 'ip_address' => $request->ip()
             ]);
 
+            $successMsg = $isRequisitioner
+                ? 'Your registration request has been submitted successfully. Please wait for your Departmental Head\'s approval.'
+                : 'Your registration request has been submitted successfully. Please wait for Admin approval.';
+
             return redirect()->route('login')
-                ->with('success', 'Your registration request has been submitted successfully. Please wait for Admin approval.');
+                ->with('success', $successMsg);
         } catch (\Exception $e) {
             return back()->with('error', 'Critical System Failure: ' . $e->getMessage())->withInput();
         }

@@ -508,11 +508,11 @@
                     <img src="{{ asset('img/NACOC.png') }}" alt="NACOC Logo" class="org-logo">
                     <div class="org-details">
                         <h1>{{ trim(str_ireplace('(nsims)', '', \App\Models\Setting::get('organization_name', 'NACOC'))) }}</h1>
-                        <p>Inventory Store Department</p>
+                        <p>Stores Inventory Management System</p>
                     </div>
                 </div>
                 <div class="voucher-title-box">
-                    <div class="voucher-badge">Issue & Release Voucher</div>
+                    <div class="voucher-badge">Issuance Receipt</div>
                     <div class="voucher-number">{{ str_replace('-LEGACY', '', $receipt->receipt_number) }}</div>
                     <div class="receipt-date">
                         Date Released: {{ $receipt->collected_at ? $receipt->collected_at->format('d M Y, H:i') : now()->format('d M Y, H:i') }}
@@ -525,7 +525,7 @@
                 <!-- Column 1: Requester Profile -->
                 <div class="dashboard-card">
                     <div class="dashboard-card-title">
-                        REQUISITIONER PARAMETERS
+                        REQUISITIONER INFO
                     </div>
                     <div class="dashboard-row">
                         <span class="dashboard-label">Officer:</span>
@@ -552,7 +552,7 @@
                 <!-- Column 2: Release Authorization -->
                 <div class="dashboard-card">
                     <div class="dashboard-card-title">
-                        STORE AUTHORIZER
+                        STORE ISSUER INFO
                     </div>
                     <div class="dashboard-row">
                         <span class="dashboard-label">Requisition Ref:</span>
@@ -593,11 +593,15 @@
                 <!-- Column 3: Physical Release Log -->
                 <div class="dashboard-card">
                     <div class="dashboard-card-title">
-                        PHYSICAL COLLECTION LOG
+                        PHYSICAL COLLECTION INFO
                     </div>
                     <div class="dashboard-row">
                         <span class="dashboard-label">Collector:</span>
                         <span class="dashboard-value" title="{{ $receipt->collector_name }}">{{ $receipt->collector_name }}</span>
+                    </div>
+                    <div class="dashboard-row">
+                        <span class="dashboard-label">Staff ID:</span>
+                        <span class="dashboard-value">{{ $receipt->collector_staff_id ?? 'N/A' }}</span>
                     </div>
                     <div class="dashboard-row">
                         <span class="dashboard-label">Contact No:</span>
@@ -620,7 +624,7 @@
 
             <!-- Narratives / Purposes -->
             <div class="text-details-container">
-                <!-- Requisition Narrative -->
+                <!-- Requisition Narrative 
                 <div class="text-block-card">
                     <div class="text-block-title">
                         REQUISITION PURPOSE
@@ -628,9 +632,9 @@
                     <p class="text-block-content">
                         "{{ $req->purpose }}"
                     </p>
-                </div>
+                </div> -->
 
-                <!-- Stores Remarks -->
+                <!-- Stores Remarks
                 <div class="text-block-card" style="border-left-color: var(--success);">
                     <div class="text-block-title">
                         STORES DECISION EVALUATION & STORES REMARKS
@@ -642,20 +646,20 @@
                             "Requisition evaluation complete. Requested items were validated against central inventory stock balances and issued out under formal guidelines."
                         @endif
                     </p>
-                </div>
+                </div> -->
             </div>
 
             <!-- Table breakdown -->
             <div class="table-section-title">
-                Itemized Store Release & Allocation Breakdown
+                Itemized Breakdown
             </div>
 
             <table class="voucher-table">
                 <thead>
                     <tr>
                         <th style="width: 7%; text-align: center;">S/N</th>
-                        <th style="width: 15%;">Store Category</th>
-                        <th style="width: 48%;">Line Item & Release Specifications</th>
+                        <th style="width: 15%;">Category</th>
+                        <th style="width: 48%;">Item Details</th>
                         <th style="width: 15%; text-align: right;">Qty Requested</th>
                         <th style="width: 15%; text-align: right;">Qty Released</th>
                     </tr>

@@ -30,10 +30,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         Store Officers
     </button>
-    <button class="pager-tab" id="tab-requisitioners" onclick="switchTab('requisitioners')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        Requisitioners
-    </button>
+
     <button class="pager-tab" id="tab-departments" onclick="switchTab('departments')">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="9" y1="22" x2="9" y2="16"></line><line x1="15" y1="22" x2="15" y2="16"></line><line x1="9" y1="16" x2="15" y2="16"></line><path d="M8 6h2v2H8V6zm0 4h2v2H8v-2zm8-4h2v2h-2V6zm0 4h2v2h-2v-2z"></path></svg>
         Departmental Tab
@@ -85,87 +82,7 @@
     </div>
 </div>
 
-{{-- ── Panel: Requisitioners ── --}}
-<div id="panel-requisitioners" class="pager-panel">
-    <div class="permissions-matrix-wrapper">
-        <div class="matrix-table">
-            <div class="m-header">
-                <div class="col-id">Personnel</div>
-                <div class="col-req-ctrl">Make Requests</div>
-                <div class="col-req-ctrl">Report Access</div>
-                <div class="col-stat">Clearance Status</div>
-            </div>
 
-            <div class="m-body" id="requisitionersBody">
-                @forelse($requisitioners as $user)
-                <div class="m-row" data-user-id="{{ $user->id }}">
-                    <div class="col-id">
-                        <div class="m-avatar">
-                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
-                            <span class="m-pulse {{ $user->is_active ? 'online' : 'offline' }}"></span>
-                        </div>
-                        <div class="m-identity">
-                            <h4 class="m-name">{{ $user->name }}</h4>
-                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
-                                <span>@ {{ $user->username }}</span>
-                                @if($user->department)
-                                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.1); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
-                                    {{ $user->department }}
-                                </span>
-                                @endif
-                                @if($user->sponsor)
-                                <span style="font-size: 0.65rem; background: #f5f3ff; color: #6d28d9; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-family: sans-serif; border: 1px solid rgba(109,40,217,0.1); white-space: nowrap;">
-                                    via {{ $user->sponsor->name }}
-                                </span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Make Requests toggle --}}
-                    <div class="col-req-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Allow or block this user from submitting requisition requests">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_make_requisition')" {{ ($user->can_make_requisition ?? true) ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">{{ ($user->can_make_requisition ?? true) ? 'Allowed' : 'Blocked' }}</span>
-                                <span class="t-sub">Submit requests</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Report Access toggle --}}
-                    <div class="col-req-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Report Access">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_generate_reports')" {{ $user->can_generate_reports ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">View Reports</span>
-                                <span class="t-sub"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-stat">
-                        <div class="badge-status {{ $user->is_active ? 'authorized' : 'revoked' }}">
-                            <i data-lucide="{{ $user->is_active ? 'shield-check' : 'shield-alert' }}"></i>
-                            {{ $user->is_active ? 'AUTHORIZED' : 'SUSPENDED' }}
-                        </div>
-                    </div>
-                </div>
-                @empty
-                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
-                    No requisitioners registered.
-                </div>
-                @endforelse
-            </div>
-        </div>
-    </div>
-</div>
 
 {{-- ── Panel: Departments ── --}}
 <div id="panel-departments" class="pager-panel">
@@ -1266,12 +1183,7 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
 
-                // Swap out the Requisitioners matrix body
-                const newReqs = doc.getElementById('requisitionersBody');
-                const currentReqs = document.getElementById('requisitionersBody');
-                if (newReqs && currentReqs) {
-                    currentReqs.innerHTML = newReqs.innerHTML;
-                }
+
 
                 // Swap out the Dept Heads matrix body
                 const newDept = doc.getElementById('deptHeadsBody');

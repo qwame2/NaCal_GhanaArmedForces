@@ -288,6 +288,167 @@
         50% { transform: scale(1.1); opacity: 1; }
         100% { transform: scale(0.9); opacity: 0.8; }
     }
+    /* ── Workflow Redesign ── */
+    .workflow-card-modern {
+        background: white;
+        border-radius: 28px;
+        border: 1.5px solid var(--border-color);
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.03);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .workflow-card-modern:hover {
+        border-color: #c7d2fe;
+        box-shadow: 0 16px 40px rgba(79, 70, 229, 0.06);
+    }
+
+    .workflow-cat-grid-modern {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .workflow-cat-card-modern {
+        background: var(--bg-main);
+        border: 2px solid var(--border-color);
+        border-radius: 20px;
+        padding: 1.25rem 1.5rem;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        position: relative;
+        overflow: hidden;
+        user-select: none;
+    }
+
+    .workflow-cat-card-modern:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+        background: #ffffff;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.02);
+    }
+
+    .workflow-cat-card-modern.active {
+        background: linear-gradient(145deg, #f5f7ff 0%, #edf1ff 100%);
+        border-color: #8b5cf6;
+        box-shadow: 0 8px 24px rgba(139, 92, 246, 0.06);
+    }
+
+    .workflow-cat-card-modern.active:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(139, 92, 246, 0.1);
+    }
+
+    .workflow-cat-card-modern .corner-glow {
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        width: 50px;
+        height: 50px;
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.25s ease;
+        pointer-events: none;
+    }
+
+    .workflow-cat-card-modern.active .corner-glow {
+        opacity: 1;
+    }
+
+    .workflow-cat-card-modern .cat-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #8b5cf6;
+        font-weight: 900;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #e2e8f0;
+        transition: all 0.25s ease;
+        flex-shrink: 0;
+    }
+
+    .workflow-cat-card-modern.active .cat-circle {
+        background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+        color: #ffffff;
+        border-color: transparent;
+        box-shadow: 0 4px 8px rgba(139, 92, 246, 0.18);
+    }
+
+    .workflow-cat-card-modern .status-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #64748b;
+        margin-top: 2px;
+        transition: color 0.25s;
+    }
+
+    .workflow-cat-card-modern.active .status-label {
+        color: #8b5cf6;
+    }
+
+    .workflow-cat-card-modern .indicator-dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid #cbd5e1;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s ease;
+        flex-shrink: 0;
+        margin-left: auto;
+    }
+
+    .workflow-cat-card-modern.active .indicator-dot {
+        background: #8b5cf6;
+        border-color: #8b5cf6;
+        box-shadow: 0 2px 6px rgba(139, 92, 246, 0.25);
+    }
+
+    .flow-line {
+        flex: 1;
+        height: 3px;
+        transition: all 0.4s ease;
+        background: #cbd5e1;
+        margin-top: -20px;
+    }
+
+    .flow-line.active {
+        background: #4f46e5;
+        box-shadow: 0 0 8px rgba(79, 70, 229, 0.25);
+    }
+
+    .flow-line.dashed {
+        background: repeating-linear-gradient(to right, #cbd5e1 0px, #cbd5e1 6px, transparent 6px, transparent 12px);
+    }
+
+    .flow-node-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .flow-node-badge {
+        font-size: 0.6rem;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+    }
 </style>
 
 <div style="padding: 2rem;">
@@ -423,6 +584,10 @@
         <button id="tab-btn-user-presence" class="dg-tab-btn" onclick="switchDGTab('dg-user-presence-tab', this)">
             <i data-lucide="users" style="width: 16px;"></i>
             User Presence Overview
+        </button>
+        <button id="tab-btn-workflow-config" class="dg-tab-btn" onclick="switchDGTab('dg-workflow-config-tab', this)">
+            <i data-lucide="user-cog" style="width: 16px;"></i>
+            Approval Workflow Configuration
         </button>
     </div>
 
@@ -889,6 +1054,180 @@
         </div>
     </div>
 
+    {{-- PANEL 5: APPROVAL WORKFLOW CONFIGURATION --}}
+    <div id="dg-workflow-config-tab" class="dg-tab-panel">
+        @php
+            $dgSelectedCats = \App\Models\Setting::get('dg_approval_categories', []);
+            if (!is_array($dgSelectedCats)) {
+                $dgSelectedCats = json_decode($dgSelectedCats, true) ?? [];
+            }
+            $selectedCats = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
+            if (!is_array($selectedCats)) {
+                $selectedCats = json_decode($selectedCats, true) ?? [];
+            }
+        @endphp
+        <div class="workflow-card-modern dg-workflow-container">
+            <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1.25rem;">
+                    <div class="cfg-icon-box" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15); width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white;">
+                        <i data-lucide="user-cog" style="width: 24px; height: 24px; color: white;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-weight: 955; font-size: 1.25rem; color: #0f172a; margin: 0; letter-spacing: -0.03em;">Director General (DG) Approval Workflow</h3>
+                        <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review and sign-off by you (Director General).</p>
+                    </div>
+                </div>
+                <span id="dg-workflow-active-badge" style="background: rgba(139,92,246,0.08); color: #8b5cf6; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(139,92,246,0.15); box-shadow: 0 2px 4px rgba(139,92,246,0.02); transition: all 0.3s ease;">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #8b5cf6; transition: all 0.3s ease;" id="dg-workflow-badge-dot"></span>
+                    <span id="dg-workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($dgSelectedCats) }}</span>
+                </span>
+            </div>
+            <div class="cfg-card-body" style="padding: 2.5rem; background: #ffffff;">
+                <form action="{{ route('admin.settings.update') }}" method="POST" id="dg-configs-dashboard">
+                    @csrf
+                    <input type="hidden" name="settings_form" value="1">
+                    <input type="hidden" name="dg_approval_categories_present" value="1">
+
+                    <!-- Hidden real multi-select to preserve native settings submission -->
+                    <select name="dg_approval_categories[]" id="dg_approval_categories" multiple="multiple" style="display: none;">
+                        @foreach($ledgeMap ?? [] as $code => $name)
+                        <option value="{{ $code }}" {{ in_array($code, $dgSelectedCats) ? 'selected' : '' }}>{{ $code }}</option>
+                        @endforeach
+                    </select>
+
+                    <!-- Hidden real multi-select for Stores categories to avoid JS failures (Read-Only) -->
+                    <select id="stores_dept_head_approval_categories" multiple="multiple" style="display: none;">
+                        @foreach($ledgeMap ?? [] as $code => $name)
+                        <option value="{{ $code }}" {{ in_array($code, $selectedCats) ? 'selected' : '' }}>{{ $code }}</option>
+                        @endforeach
+                    </select>
+
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+
+                        <!-- Premium Interactive Card Selection Grid -->
+                        <div class="workflow-cat-grid-modern">
+                            @foreach($ledgeMap ?? [] as $code => $name)
+                            @php $isActive = in_array($code, $dgSelectedCats); @endphp
+                            <div class="workflow-cat-card-modern {{ $isActive ? 'active' : '' }}"
+                                onclick="toggleDGWorkflowCategory('{{ $code }}', this)">
+
+                                <!-- Glowing corner accent for active state -->
+                                <div class="corner-glow"></div>
+
+                                <!-- Category Code Circle -->
+                                <div class="cat-circle">
+                                    {{ $code }}
+                                </div>
+
+                                <!-- Name & Status -->
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-weight: 855; font-size: 0.88rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $name }}</div>
+                                    <div class="status-label">
+                                        {{ $isActive ? 'Requires DG' : 'Bypasses DG' }}
+                                    </div>
+                                </div>
+
+                                <!-- Indicator Circle -->
+                                <div class="indicator-dot">
+                                    <i data-lucide="check" style="width: 11px; height: 11px; color: white; display: {{ $isActive ? 'block' : 'none' }};"></i>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Workflow Explainer Graphic and Logic Info Card -->
+                        <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
+
+                            <!-- Sleek Gradient Alert Card -->
+                            <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(99, 102, 241, 0.01) 100%);
+                                            border: 1.5px solid #edf2f7;
+                                            border-radius: 24px;
+                                            padding: 1.75rem 2rem;
+                                            display: flex;
+                                            gap: 1.25rem;
+                                            align-items: flex-start;">
+                                <div style="width: 42px; height: 42px; background: rgba(139,92,246,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #8b5cf6; flex-shrink: 0; margin-top: 2px;">
+                                    <i data-lucide="info" style="width: 20px; height: 20px;"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <h5 style="margin: 0 0 6px 0; font-size: 0.95rem; font-weight: 855; color: #1e293b; letter-spacing: -0.010em;">DG Smart Routing Protocol Active</h5>
+                                    <p style="margin: 0; font-size: 0.8rem; color: #475569; line-height: 1.6; font-weight: 600;">
+                                        When item categories are configured above, any submitted requisition containing matching items will be routed for manual review by you (Director General) prior to final confirmation and stock deduction. Requisitions consisting solely of bypassed categories skip the DG approval stage completely.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Mini Infographic Visualizer Card -->
+                            <div style="background: linear-gradient(to bottom, #fafbff, #ffffff); border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
+                                <div style="font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; text-align: center; margin-bottom: 0.25rem;">Live Approval Routing Pathway</div>
+
+                                <div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%; padding: 0.5rem 0;" class="flow-nodes-container">
+
+                                    <!-- Origin Node -->
+                                    <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; box-shadow: 0 4px 12px rgba(79,70,229,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                            <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
+                                        </div>
+                                        <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Dept. Head</span>
+                                        <span class="flow-node-badge" style="background: #e0e7ff; color: #4f46e5; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
+                                    </div>
+
+                                    <!-- Connector 1 (Now connects to DG Node, so controlled by DG active state) -->
+                                    <div class="flow-line flow-line-2" style="flex: 1; height: 3px; transition: all 0.4s ease; background: #cbd5e1; margin-top: -16px;"></div>
+
+                                    <!-- DG Node (Director Gen.) -->
+                                    <div class="flow-node flow-node-dg" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                        <div class="flow-node-icon" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                            <i data-lucide="user-cog" style="width: 15px; height: 15px;"></i>
+                                        </div>
+                                        <span class="flow-node-label" style="font-size: 0.65rem; font-weight: 855; white-space: nowrap;">Director Gen.</span>
+                                        <span class="flow-node-badge" style="font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;"></span>
+                                    </div>
+
+                                    <!-- Connector 2 (Now connects to Stores Head, so controlled by Stores Head active state) -->
+                                    <div class="flow-line flow-line-1" style="flex: 1; height: 3px; transition: all 0.4s ease; background: #cbd5e1; margin-top: -16px;"></div>
+
+                                    <!-- Stores Head Node (Head of Admin) -->
+                                    <div class="flow-node flow-node-stores" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                        <div class="flow-node-icon" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                            <i data-lucide="package" style="width: 15px; height: 15px;"></i>
+                                        </div>
+                                        <span class="flow-node-label" style="font-size: 0.65rem; font-weight: 855; white-space: nowrap;">Head of Admin</span>
+                                        <span class="flow-node-badge" style="font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;"></span>
+                                    </div>
+
+                                    <!-- Connector 3 (Connects to Head of Stores, always active) -->
+                                    <div class="flow-line flow-line-3" style="flex: 1; height: 3px; transition: all 0.4s ease; background: #cbd5e1; margin-top: -16px;"></div>
+
+                                    <!-- Head of Stores Node -->
+                                    <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                            <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
+                                        </div>
+                                        <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
+                                        <span class="flow-node-badge" style="background: #d1fae5; color: #065f46; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Final Sign</span>
+                                    </div>
+
+                                </div>
+
+                                <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; line-height: 1.45; text-align: center; background: #f8fafc; border-radius: 12px; padding: 8px 12px; border: 1px solid #f1f5f9; transition: all 0.3s ease;" class="workflow-helper-hint">
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Submit trigger -->
+                        <div style="display: flex; justify-content: flex-end; margin-top: 1rem; margin-bottom: 1.5rem;">
+                            <button type="submit" style="padding: 0.75rem 2rem; border-radius: 12px; border: none; background: #8b5cf6; color: white; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#8b5cf6'">
+                                <i data-lucide="save" style="width: 18px; height: 18px;"></i> Save DG Workflow Changes
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
 </div>
 
 {{-- Decline Requisition Modal --}}
@@ -994,6 +1333,16 @@
         if (statusSelect) {
             statusSelect.style.display = (panelId === 'dg-staff-reqs-tab') ? 'inline-block' : 'none';
         }
+
+        const filterForm = document.getElementById('dg-filter-form');
+        if (filterForm) {
+            filterForm.style.display = (panelId === 'dg-workflow-config-tab') ? 'none' : 'block';
+        }
+
+        const printBtn = document.getElementById('btn-print-dg-report');
+        if (printBtn) {
+            printBtn.style.display = (panelId === 'dg-workflow-config-tab') ? 'none' : 'inline-flex';
+        }
     }
 
     function reloadDGData() {
@@ -1071,7 +1420,7 @@
                 });
 
                 // 2. Update all tab panels
-                const tabPanels = ['dg-audit-trail-tab', 'dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab'];
+                const tabPanels = ['dg-audit-trail-tab', 'dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab', 'dg-workflow-config-tab'];
                 tabPanels.forEach(panelId => {
                     const oldPanel = document.getElementById(panelId);
                     const newPanel = doc.getElementById(panelId);
@@ -1110,7 +1459,7 @@
                             const doc = parser.parseFromString(html, 'text/html');
                             
                             // Only update tab panels and pagination
-                            const tabPanels = ['dg-audit-trail-tab', 'dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab'];
+                            const tabPanels = ['dg-audit-trail-tab', 'dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab', 'dg-workflow-config-tab'];
                             tabPanels.forEach(panelId => {
                                 const oldPanel = document.getElementById(panelId);
                                 const newPanel = doc.getElementById(panelId);
@@ -1213,6 +1562,10 @@
 
         // Bind initially loaded pagination links
         bindDGPaginationLinks();
+
+        if (document.getElementById('dg_approval_categories')) {
+            updateWorkflowFlowchart();
+        }
     });
 
     let currentDeclineId = null;
@@ -1373,6 +1726,211 @@
             btn.innerHTML = originalHtml;
             if (window.lucide) lucide.createIcons();
         }
+    }
+
+    function toggleDGWorkflowCategory(code, card) {
+        const select = document.getElementById('dg_approval_categories');
+        if (!select) return;
+        const option = select.querySelector(`option[value="${code}"]`);
+
+        if (!option) return;
+
+        const isCurrentlyActive = card.classList.contains('active');
+
+        if (isCurrentlyActive) {
+            // Deactivate
+            card.classList.remove('active');
+
+            const label = card.querySelector('.status-label');
+            if (label) {
+                label.textContent = 'Bypasses DG';
+            }
+
+            const dot = card.querySelector('.indicator-dot');
+            if (dot) {
+                const checkIcon = dot.querySelector('i, svg');
+                if (checkIcon) checkIcon.style.display = 'none';
+            }
+
+            option.selected = false;
+        } else {
+            // Activate
+            card.classList.add('active');
+
+            const label = card.querySelector('.status-label');
+            if (label) {
+                label.textContent = 'Requires DG';
+            }
+
+            const dot = card.querySelector('.indicator-dot');
+            if (dot) {
+                const checkIcon = dot.querySelector('i, svg');
+                if (checkIcon) checkIcon.style.display = 'block';
+            }
+
+            option.selected = true;
+        }
+
+        // Trigger change event on select to ensure any listeners match
+        select.dispatchEvent(new Event('change'));
+
+        // Update the visual flowchart in real-time
+        updateWorkflowFlowchart();
+    }
+
+    function updateWorkflowFlowchart() {
+        const selectStores = document.getElementById('stores_dept_head_approval_categories');
+        if (!selectStores) return;
+        const activeCountStores = Array.from(selectStores.options).filter(opt => opt.selected).length;
+
+        const selectDG = document.getElementById('dg_approval_categories');
+        const activeCountDG = selectDG ? Array.from(selectDG.selectedOptions).length : 0;
+
+        // Update DG header badge
+        const badgeTextDG = document.getElementById('dg-workflow-badge-text');
+        const badgeDotDG = document.getElementById('dg-workflow-badge-dot');
+        const badgeContainerDG = document.getElementById('dg-workflow-active-badge');
+        if (badgeTextDG) badgeTextDG.textContent = `Active Categories: ${activeCountDG}`;
+        if (activeCountDG > 0) {
+            if (badgeDotDG) badgeDotDG.style.background = '#8b5cf6';
+            if (badgeContainerDG) {
+                badgeContainerDG.style.background = 'rgba(139, 92, 246, 0.08)';
+                badgeContainerDG.style.color = '#8b5cf6';
+                badgeContainerDG.style.borderColor = 'rgba(139, 92, 246, 0.2)';
+            }
+        } else {
+            if (badgeDotDG) badgeDotDG.style.background = '#64748b';
+            if (badgeContainerDG) {
+                badgeContainerDG.style.background = 'rgba(100, 116, 139, 0.08)';
+                badgeContainerDG.style.color = '#64748b';
+                badgeContainerDG.style.borderColor = 'rgba(100, 116, 139, 0.2)';
+            }
+        }
+
+        // Update ALL Stores Head flow nodes
+        document.querySelectorAll('.flow-node-stores').forEach(node => {
+            const iconBox = node.querySelector('.flow-node-icon');
+            const label = node.querySelector('.flow-node-label');
+            const badge = node.querySelector('.flow-node-badge');
+
+            if (activeCountStores > 0) {
+                node.className = 'flow-node flow-node-stores active';
+                if (iconBox) {
+                    iconBox.style.background = 'linear-gradient(135deg, #4f46e5, #3730a3)';
+                    iconBox.style.color = '#ffffff';
+                    iconBox.style.borderColor = 'transparent';
+                    iconBox.style.boxShadow = '0 6px 15px rgba(79,70,229,0.2)';
+                }
+                if (label) {
+                    label.style.color = '#1e293b';
+                    label.style.textDecoration = 'none';
+                }
+                if (badge) {
+                    badge.textContent = 'Required';
+                    badge.style.background = 'rgba(79, 70, 229, 0.1)';
+                    badge.style.color = '#4f46e5';
+                    badge.style.borderColor = 'transparent';
+                }
+            } else {
+                node.className = 'flow-node flow-node-stores bypass';
+                if (iconBox) {
+                    iconBox.style.background = '#f8fafc';
+                    iconBox.style.color = '#64748b';
+                    iconBox.style.borderColor = '#cbd5e1';
+                    iconBox.style.boxShadow = 'none';
+                }
+                if (label) {
+                    label.style.color = '#94a3b8';
+                    label.style.textDecoration = 'line-through';
+                }
+                if (badge) {
+                    badge.textContent = 'Bypassed';
+                    badge.style.background = '#fef2f2';
+                    badge.style.color = '#ef4444';
+                    badge.style.borderColor = 'rgba(239, 68, 68, 0.1)';
+                }
+            }
+        });
+
+        // Update ALL DG flow nodes
+        document.querySelectorAll('.flow-node-dg').forEach(node => {
+            const iconBox = node.querySelector('.flow-node-icon');
+            const label = node.querySelector('.flow-node-label');
+            const badge = node.querySelector('.flow-node-badge');
+
+            if (activeCountDG > 0) {
+                node.className = 'flow-node flow-node-dg active';
+                if (iconBox) {
+                    iconBox.style.background = 'linear-gradient(135deg, #8b5cf6, #6d28d9)';
+                    iconBox.style.color = '#ffffff';
+                    iconBox.style.borderColor = 'transparent';
+                    iconBox.style.boxShadow = '0 6px 15px rgba(139,92,246,0.2)';
+                }
+                if (label) {
+                    label.style.color = '#1e293b';
+                    label.style.textDecoration = 'none';
+                }
+                if (badge) {
+                    badge.textContent = 'Required';
+                    badge.style.background = 'rgba(139, 92, 246, 0.1)';
+                    badge.style.color = '#8b5cf6';
+                    badge.style.borderColor = 'transparent';
+                }
+            } else {
+                node.className = 'flow-node flow-node-dg bypass';
+                if (iconBox) {
+                    iconBox.style.background = '#f8fafc';
+                    iconBox.style.color = '#64748b';
+                    iconBox.style.borderColor = '#cbd5e1';
+                    iconBox.style.boxShadow = 'none';
+                }
+                if (label) {
+                    label.style.color = '#94a3b8';
+                    label.style.textDecoration = 'line-through';
+                }
+                if (badge) {
+                    badge.textContent = 'Bypassed';
+                    badge.style.background = '#fef2f2';
+                    badge.style.color = '#ef4444';
+                    badge.style.borderColor = 'rgba(239, 68, 68, 0.1)';
+                }
+            }
+        });
+
+        // Update lines
+        document.querySelectorAll('.flow-line-1').forEach(line => {
+            if (activeCountStores > 0) {
+                line.className = 'flow-line flow-line-1 active';
+                line.style.background = '#4f46e5';
+            } else {
+                line.className = 'flow-line flow-line-1 dashed';
+                line.style.background = '';
+            }
+        });
+
+        document.querySelectorAll('.flow-line-2').forEach(line => {
+            if (activeCountDG > 0) {
+                line.className = 'flow-line flow-line-2 active';
+                line.style.background = '#8b5cf6';
+            } else {
+                line.className = 'flow-line flow-line-2 dashed';
+                line.style.background = '';
+            }
+        });
+
+        document.querySelectorAll('.flow-line-3').forEach(line => {
+            line.className = 'flow-line flow-line-3 active';
+            line.style.background = '#10b981';
+        });
+
+        // Update hints
+        document.querySelectorAll('.workflow-helper-hint').forEach(hint => {
+            if (activeCountDG > 0) {
+                hint.innerHTML = `Routing through <strong>Director General</strong> for <strong style="color: #8b5cf6;">${activeCountDG}</strong> selected category${activeCountDG == 1 ? '' : 'ies'}.`;
+            } else {
+                hint.innerHTML = 'Currently bypassing intermediate Director General step due to settings configuration.';
+            }
+        });
     }
 </script>
 @endsection

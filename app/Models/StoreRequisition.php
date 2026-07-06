@@ -44,6 +44,7 @@ class StoreRequisition extends Model
         'collector_name',
         'collector_contact',
         'collector_location',
+        'collector_staff_id',
         'origin_admin_status',
         'origin_approved_by',
         'main_admin_status',

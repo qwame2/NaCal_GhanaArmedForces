@@ -180,4 +180,117 @@ class TempRequisitionerController extends Controller
             'can_make_requisition' => $staff->can_make_requisition
         ]);
     }
+
+    /**
+     * GET /api/dept-head/pending-registrations
+     * List all pending requisitioner registrations for the HOD's department.
+     */
+    public function pendingRegistrations(Request $request)
+    {
+        $head = auth()->user();
+
+        if (!in_array($head->role, ['Department Head', 'Main Admin'])) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        $pending = User::where('department', $head->department)
+            ->where('registration_status', 'pending_hod')
+            ->where('role', 'Requisitioner')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn($u) => [
+                'id'             => $u->id,
+                'name'           => $u->name,
+                'username'       => $u->username,
+                'phone'          => $u->phone,
+                'service_number' => $u->service_number,
+                'created_at'     => $u->created_at ? $u->created_at->format('d/m/y H:i') : 'N/A',
+            ]);
+
+        return response()->json(['success' => true, 'pending' => $pending]);
+    }
+
+    /**
+     * POST /dept-head/registration/{id}/approve
+     * Approve a pending requisitioner registration.
+     */
+    public function approveRegistration(Request $request, int $id)
+    {
+        $head = auth()->user();
+
+        if (!in_array($head->role, ['Department Head', 'Main Admin'])) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        $staff = User::where('id', $id)
+            ->where('department', $head->department)
+            ->where('registration_status', 'pending_hod')
+            ->where('role', 'Requisitioner')
+            ->first();
+
+        if (!$staff) {
+            return response()->json(['success' => false, 'message' => 'Registration request not found or not in your department.'], 404);
+        }
+
+        $staff->registration_status = 'approved';
+        $staff->is_active = true;
+        $staff->can_make_requisition = true;
+        $staff->sponsored_by = $head->id;
+        $staff->save();
+
+        SystemLog::create([
+            'user_id'     => $head->id,
+            'event_type'  => 'SECURITY',
+            'action'      => 'APPROVE_USER_REGISTRATION_HOD',
+            'description' => "Department Head {$head->name} approved requisitioner registration for @{$staff->username}.",
+            'severity'    => 'info',
+            'ip_address'  => $request->ip(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Registration request for @{$staff->username} has been approved successfully."
+        ]);
+    }
+
+    /**
+     * POST /dept-head/registration/{id}/reject
+     * Reject a pending requisitioner registration.
+     */
+    public function rejectRegistration(Request $request, int $id)
+    {
+        $head = auth()->user();
+
+        if (!in_array($head->role, ['Department Head', 'Main Admin'])) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        $staff = User::where('id', $id)
+            ->where('department', $head->department)
+            ->where('registration_status', 'pending_hod')
+            ->where('role', 'Requisitioner')
+            ->first();
+
+        if (!$staff) {
+            return response()->json(['success' => false, 'message' => 'Registration request not found or not in your department.'], 404);
+        }
+
+        $staff->registration_status = 'rejected';
+        $staff->is_active = false;
+        $staff->save();
+
+        SystemLog::create([
+            'user_id'     => $head->id,
+            'event_type'  => 'SECURITY',
+            'action'      => 'REJECT_USER_REGISTRATION_HOD',
+            'description' => "Department Head {$head->name} rejected requisitioner registration for @{$staff->username}.",
+            'severity'    => 'warning',
+            'ip_address'  => $request->ip(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Registration request for @{$staff->username} has been declined."
+        ]);
+    }
 }

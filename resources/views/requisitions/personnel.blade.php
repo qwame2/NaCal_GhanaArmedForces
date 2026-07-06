@@ -856,25 +856,17 @@
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                         <div style="display:flex;flex-direction:column;gap:6px;">
                             <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Full Name <span style="color:#ef4444;">*</span></label>
-                            <input type="text" id="nr-requester-name" value="{{ auth()->user()->name }}" placeholder="Full name of requester" style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;transition:.2s;" onfocus="this.style.borderColor='#4f46e5';this.style.boxShadow='0 0 0 4px rgba(79,70,229,.12)'" onblur="this.style.borderColor='var(--border-color)';this.style.boxShadow=''">
+                            <input type="text" id="nr-requester-name" value="{{ auth()->user()->name }}" readonly placeholder="Full name of requester" style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;transition:.2s;cursor:not-allowed;opacity:0.85;">
                         </div>
                         <div style="display:flex;flex-direction:column;gap:6px;">
                             <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Department <span style="color:#ef4444;">*</span></label>
-                            <input type="text" id="nr-department" value="{{ auth()->user()->department ?? '' }}" placeholder="e.g. Stores, Logistics" style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;transition:.2s;" onfocus="this.style.borderColor='#4f46e5';this.style.boxShadow='0 0 0 4px rgba(79,70,229,.12)'" onblur="this.style.borderColor='var(--border-color)';this.style.boxShadow=''">
+                            <input type="text" id="nr-department" value="{{ auth()->user()->department ?? '' }}" readonly placeholder="e.g. Stores, Logistics" style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;transition:.2s;cursor:not-allowed;opacity:0.85;">
                         </div>
                         <div style="display:flex;flex-direction:column;gap:6px;">
-                            <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Rank / Title</label>
+                            <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Rank</label>
                             <input type="text" id="nr-rank" value="{{ auth()->user()->rank_or_title ?? '' }}" placeholder="e.g. Sergeant, Officer" style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;transition:.2s;" onfocus="this.style.borderColor='#4f46e5';this.style.boxShadow='0 0 0 4px rgba(79,70,229,.12)'" onblur="this.style.borderColor='var(--border-color)';this.style.boxShadow=''">
                         </div>
-                        <div style="display:flex;flex-direction:column;gap:6px;">
-                            <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Priority <span style="color:#ef4444;">*</span></label>
-                            <div style="display:flex;gap:.5rem;">
-                                <button type="button" class="nr-priority-btn" data-val="low" onclick="selectNrPriority('low')" style="flex:1;padding:.65rem .5rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-muted);font-weight:800;font-size:.75rem;cursor:pointer;transition:.2s;">Low</button>
-                                <button type="button" class="nr-priority-btn" data-val="normal" onclick="selectNrPriority('normal')" style="flex:1;padding:.65rem .5rem;border:1.5px solid #4f46e5;border-radius:10px;background:rgba(79,70,229,.08);color:#4f46e5;font-weight:800;font-size:.75rem;cursor:pointer;transition:.2s;">Normal</button>
-                                <button type="button" class="nr-priority-btn" data-val="urgent" onclick="selectNrPriority('urgent')" style="flex:1;padding:.65rem .5rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-card);color:var(--text-muted);font-weight:800;font-size:.75rem;cursor:pointer;transition:.2s;">🔴 Urgent</button>
-                            </div>
-                            <input type="hidden" id="nr-priority" value="normal">
-                        </div>
+                        <input type="hidden" id="nr-priority" value="normal">
                     </div>
                 </div>
                 <div style="margin-bottom:1.5rem;">
@@ -1191,6 +1183,10 @@
                             <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collector_name || 'N/A'}</div>
                         </div>
                         <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem;">
+                            <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Collector Staff ID</div>
+                            <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collector_staff_id || 'N/A'}</div>
+                        </div>
+                        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:0.75rem 1rem; grid-column: span 2;">
                             <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:2px;">Collector Contact</div>
                             <div style="font-size:0.9rem; font-weight:900; color:var(--text-main);">${data.collector_contact || 'N/A'}</div>
                         </div>
@@ -1227,6 +1223,10 @@
                             <input type="text" id="modalCollectorName" oninput="validateModalCollectorInputs()" placeholder="Collector Full Name *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 4px rgba(16, 185, 129, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
                         </div>
                         <div style="position:relative; display:flex; align-items:center;">
+                            <i data-lucide="user" style="position:absolute; left:12px; color:var(--text-muted); width:16px; height:16px; pointer-events:none;"></i>
+                            <input type="text" id="modalCollectorStaffId" oninput="validateModalCollectorInputs()" placeholder="Collector Staff ID *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 4px rgba(16, 185, 129, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
+                        </div>
+                        <div style="position:relative; display:flex; align-items:center; grid-column: span 2;">
                             <i data-lucide="phone" style="position:absolute; left:12px; color:var(--text-muted); width:16px; height:16px; pointer-events:none;"></i>
                             <input type="text" id="modalCollectorContact" oninput="validateModalCollectorInputs()" placeholder="Collector Contact Number *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 4px rgba(16, 185, 129, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
                         </div>
@@ -1322,15 +1322,17 @@
         const nameInput = document.getElementById('modalCollectorName');
         const contactInput = document.getElementById('modalCollectorContact');
         const locationInput = document.getElementById('modalCollectorLocation');
+        const staffIdInput = document.getElementById('modalCollectorStaffId');
         const confirmBtn = document.getElementById('modalConfirmBtn');
         
-        if (!nameInput || !contactInput || !locationInput || !confirmBtn) return;
+        if (!nameInput || !contactInput || !locationInput || !staffIdInput || !confirmBtn) return;
         
         const nameVal = nameInput.value.trim();
         const contactVal = contactInput.value.trim();
         const locationVal = locationInput.value.trim();
+        const staffIdVal = staffIdInput.value.trim();
         
-        if (nameVal && contactVal && locationVal) {
+        if (nameVal && contactVal && locationVal && staffIdVal) {
             confirmBtn.disabled = false;
             confirmBtn.style.background = '#10b981';
             confirmBtn.style.color = 'white';
@@ -1360,25 +1362,29 @@
         const modalNameInput = document.getElementById('modalCollectorName');
         const modalContactInput = document.getElementById('modalCollectorContact');
         const modalLocationInput = document.getElementById('modalCollectorLocation');
+        const modalStaffIdInput = document.getElementById('modalCollectorStaffId');
 
         let collector_name = '';
         let collector_contact = '';
         let collector_location = '';
+        let collector_staff_id = '';
 
-        if (isModalOpen && modalNameInput && modalContactInput && modalLocationInput) {
+        if (isModalOpen && modalNameInput && modalContactInput && modalLocationInput && modalStaffIdInput) {
             // Triggered from modal
             collector_name = modalNameInput.value.trim();
             collector_contact = modalContactInput.value.trim();
             collector_location = modalLocationInput.value.trim();
+            collector_staff_id = modalStaffIdInput.value.trim();
 
-            if (!collector_name || !collector_contact || !collector_location) {
+            if (!collector_name || !collector_contact || !collector_location || !collector_staff_id) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Required Fields Missing',
-                    text: 'Please enter the Collector Name, Contact Number, and Location inside the Collector Information section before confirming collection.',
+                    text: 'Please enter the Collector Name, Staff ID, Contact Number, and Location inside the Collector Information section before confirming collection.',
                     confirmButtonColor: '#10b981'
                 });
                 if (!collector_name) modalNameInput.style.borderColor = '#ef4444';
+                if (!collector_staff_id) modalStaffIdInput.style.borderColor = '#ef4444';
                 if (!collector_contact) modalContactInput.style.borderColor = '#ef4444';
                 if (!collector_location) modalLocationInput.style.borderColor = '#ef4444';
                 return;
@@ -1389,6 +1395,7 @@
                 html: `Confirm physical collection of items for store requisition <b>#${id}</b>?<br><br>` +
                       `<div style="text-align:left; background:var(--bg-main); border:1px solid var(--border-color); border-radius:12px; padding:12px; font-size:0.85rem;">` +
                       `<b>Collector Name:</b> ${collector_name}<br>` +
+                      `<b>Collector Staff ID:</b> ${collector_staff_id}<br>` +
                       `<b>Collector Contact:</b> ${collector_contact}<br>` +
                       `<b>Collection Location/Destination:</b> ${collector_location}` +
                       `</div>`,
@@ -1400,7 +1407,7 @@
                 cancelButtonColor: '#94a3b8'
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    await executeCollectionFetch(id, btn, collector_name, collector_contact, collector_location);
+                    await executeCollectionFetch(id, btn, collector_name, collector_contact, collector_location, collector_staff_id);
                 }
             });
 
@@ -1411,6 +1418,7 @@
                 html:
                     '<p style="font-size:0.85rem; margin-bottom:15px; color:var(--text-muted);">Please enter the details of the person physically collecting the items.</p>' +
                     '<input id="swal-input-name" class="swal2-input" placeholder="Collector Full Name" style="margin-top:0; margin-bottom:12px; width:80%; font-family:inherit; font-size:0.88rem; font-weight:700;">' +
+                    '<input id="swal-input-staff-id" class="swal2-input" placeholder="Collector Staff ID" style="margin-top:0; margin-bottom:12px; width:80%; font-family:inherit; font-size:0.88rem; font-weight:700;">' +
                     '<input id="swal-input-contact" class="swal2-input" placeholder="Collector Contact Number" style="margin-top:0; margin-bottom:12px; width:80%; font-family:inherit; font-size:0.88rem; font-weight:700;">' +
                     '<input id="swal-input-location" class="swal2-input" placeholder="Collection Location/Destination" style="margin-top:0; width:80%; font-family:inherit; font-size:0.88rem; font-weight:700;">',
                 focusConfirm: false,
@@ -1421,23 +1429,24 @@
                 cancelButtonColor: '#94a3b8',
                 preConfirm: () => {
                     const name = document.getElementById('swal-input-name').value.trim();
+                    const staff_id = document.getElementById('swal-input-staff-id').value.trim();
                     const contact = document.getElementById('swal-input-contact').value.trim();
                     const location = document.getElementById('swal-input-location').value.trim();
-                    if (!name || !contact || !location) {
-                        Swal.showValidationMessage('Please fill out Collector Name, Contact Number, and Location');
+                    if (!name || !staff_id || !contact || !location) {
+                        Swal.showValidationMessage('Please fill out Collector Name, Staff ID, Contact Number, and Location');
                         return false;
                     }
-                    return { name: name, contact: contact, location: location };
+                    return { name: name, staff_id: staff_id, contact: contact, location: location };
                 }
             }).then(async (result) => {
                 if (result.isConfirmed) {
-                    await executeCollectionFetch(id, btn, result.value.name, result.value.contact, result.value.location);
+                    await executeCollectionFetch(id, btn, result.value.name, result.value.contact, result.value.location, result.value.staff_id);
                 }
             });
         }
     }
 
-    async function executeCollectionFetch(id, btn, collector_name, collector_contact, collector_location) {
+    async function executeCollectionFetch(id, btn, collector_name, collector_contact, collector_location, collector_staff_id) {
         const originalHTML = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px;"></div> Processing...';
@@ -1452,7 +1461,8 @@
                 body: JSON.stringify({
                     collector_name: collector_name,
                     collector_contact: collector_contact,
-                    collector_location: collector_location
+                    collector_location: collector_location,
+                    collector_staff_id: collector_staff_id
                 })
             });
 
@@ -2036,8 +2046,7 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem .5rem;font-size:.85rem;">
                 <div><span style="font-weight:700;color:var(--text-muted);font-size:.75rem;">Name</span><br><span style="font-weight:800;color:var(--text-main);">${name}</span></div>
                 <div><span style="font-weight:700;color:var(--text-muted);font-size:.75rem;">Department</span><br><span style="font-weight:800;color:var(--text-main);">${dept}</span></div>
-                ${rank ? `<div><span style="font-weight:700;color:var(--text-muted);font-size:.75rem;">Rank/Title</span><br><span style="font-weight:800;color:var(--text-main);">${rank}</span></div>` : ''}
-                <div><span style="font-weight:700;color:var(--text-muted);font-size:.75rem;">Priority</span><br><span style="font-weight:800;color:${priorityColors[nrSelectedPriority]};text-transform:capitalize;">${nrSelectedPriority}</span></div>
+                ${rank ? `<div><span style="font-weight:700;color:var(--text-muted);font-size:.75rem;">Rank</span><br><span style="font-weight:800;color:var(--text-main);">${rank}</span></div>` : ''}
                 <div><span style="font-weight:700;color:var(--text-muted);font-size:.75rem;">Usage Type</span><br><span style="font-weight:800;color:${usageColors[nrSelectedUsage]};text-transform:capitalize;">${nrSelectedUsage}</span></div>
             </div>
             <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border-color);">

@@ -19,7 +19,7 @@
         </div>
 
         <div class="dashboard-actions-mobile" style="display: flex; gap: 1rem;">
-            <button class="btn-secondary" style="background: var(--bg-main); border: none; padding: 0.875rem 1.5rem; border-radius: 1rem; color: var(--text-main); font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: var(--transition);">
+            <button class="btn-secondary" onclick="window.location.href='{{ route('dashboard', ['refresh' => 1]) }}'" style="background: var(--bg-main); border: none; padding: 0.875rem 1.5rem; border-radius: 1rem; color: var(--text-main); font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: var(--transition);">
                 <i data-lucide="refresh-cw" style="width: 18px;"></i>
                 Refresh
             </button>

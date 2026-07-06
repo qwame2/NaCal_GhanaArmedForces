@@ -15,6 +15,7 @@ class Receipt extends Model
         'collector_name',
         'collector_contact',
         'collector_location',
+        'collector_staff_id',
         'collected_at',
         'issued_by',
         'approved_by_dept_head',

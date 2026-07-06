@@ -794,6 +794,168 @@
             gap: 1rem;
         }
     }
+
+    /* ── Stores Dept Head Workflow Redesign ── */
+    .workflow-card-modern {
+        background: white;
+        border-radius: 28px;
+        border: 1.5px solid var(--border-color);
+        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.03);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .workflow-card-modern:hover {
+        border-color: #c7d2fe;
+        box-shadow: 0 16px 40px rgba(79, 70, 229, 0.06);
+    }
+
+    .workflow-cat-grid-modern {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .workflow-cat-card-modern {
+        background: var(--bg-main);
+        border: 2px solid var(--border-color);
+        border-radius: 20px;
+        padding: 1.25rem 1.5rem;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        position: relative;
+        overflow: hidden;
+        user-select: none;
+    }
+
+    .workflow-cat-card-modern:hover {
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+        background: #ffffff;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.02);
+    }
+
+    .workflow-cat-card-modern.active {
+        background: linear-gradient(145deg, #f5f7ff 0%, #edf1ff 100%);
+        border-color: #4f46e5;
+        box-shadow: 0 8px 24px rgba(79, 70, 229, 0.06);
+    }
+
+    .workflow-cat-card-modern.active:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(79, 70, 229, 0.1);
+    }
+
+    .workflow-cat-card-modern .corner-glow {
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        width: 50px;
+        height: 50px;
+        background: radial-gradient(circle, rgba(79, 70, 229, 0.2) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.25s ease;
+        pointer-events: none;
+    }
+
+    .workflow-cat-card-modern.active .corner-glow {
+        opacity: 1;
+    }
+
+    .workflow-cat-card-modern .cat-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: #ffffff;
+        color: #4f46e5;
+        font-weight: 900;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #e2e8f0;
+        transition: all 0.25s ease;
+        flex-shrink: 0;
+    }
+
+    .workflow-cat-card-modern.active .cat-circle {
+        background: linear-gradient(135deg, #4f46e5, #3730a3);
+        color: #ffffff;
+        border-color: transparent;
+        box-shadow: 0 4px 8px rgba(79, 70, 229, 0.18);
+    }
+
+    .workflow-cat-card-modern .status-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #64748b;
+        margin-top: 2px;
+        transition: color 0.25s;
+    }
+
+    .workflow-cat-card-modern.active .status-label {
+        color: #4f46e5;
+    }
+
+    .workflow-cat-card-modern .indicator-dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid #cbd5e1;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s ease;
+        flex-shrink: 0;
+        margin-left: auto;
+    }
+
+    .workflow-cat-card-modern.active .indicator-dot {
+        background: #4f46e5;
+        border-color: #4f46e5;
+        box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
+    }
+
+    .flow-line {
+        flex: 1;
+        height: 3px;
+        transition: all 0.4s ease;
+        background: #cbd5e1;
+        margin-top: -20px;
+    }
+
+    .flow-line.active {
+        background: #4f46e5;
+        box-shadow: 0 0 8px rgba(79, 70, 229, 0.25);
+    }
+
+    .flow-line.dashed {
+        background: repeating-linear-gradient(to right, #cbd5e1 0px, #cbd5e1 6px, transparent 6px, transparent 12px);
+    }
+
+    .flow-node-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .flow-node-badge {
+        font-size: 0.6rem;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+    }
 </style>
 
 <div style="padding:2rem;">
@@ -845,9 +1007,185 @@
         </div>
     </div>
 
+    @if(auth()->user()->role === 'Main Admin')
+    @php
+        $selectedCats = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
+        if (!is_array($selectedCats)) {
+            $selectedCats = json_decode($selectedCats, true) ?? [];
+        }
+        $dgSelectedCats = \App\Models\Setting::get('dg_approval_categories', []);
+        if (!is_array($dgSelectedCats)) {
+            $dgSelectedCats = json_decode($dgSelectedCats, true) ?? [];
+        }
+    @endphp
+    {{-- Stores Department Head Approval Workflow --}}
+    <div class="workflow-card-modern">
+        <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 1.25rem;">
+                <div class="cfg-icon-box" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); box-shadow: 0 8px 20px rgba(79,70,229,0.15); width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white;">
+                    <i data-lucide="shield-check" style="width: 24px; height: 24px; color: white;"></i>
+                </div>
+                <div>
+                    <h3 style="font-weight: 955; font-size: 1.25rem; color: #0f172a; margin: 0; letter-spacing: -0.03em;">Stores Dept. Head Approval Workflow</h3>
+                    <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review by the Department Head (Stores).</p>
+                </div>
+            </div>
+            <span id="workflow-active-badge" style="background: rgba(79,70,229,0.08); color: #4f46e5; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(79,70,229,0.15); box-shadow: 0 2px 4px rgba(79,70,229,0.02); transition: all 0.3s ease;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #4f46e5; transition: all 0.3s ease;" id="workflow-badge-dot"></span>
+                <span id="workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($selectedCats) }}</span>
+            </span>
+        </div>
+        <div class="cfg-card-body" style="padding: 2.5rem; background: #ffffff;">
+            <form action="{{ route('admin.settings.update') }}" method="POST" id="core-configs-dashboard">
+                @csrf
+                <input type="hidden" name="settings_form" value="1">
+                <input type="hidden" name="stores_dept_head_approval_categories_present" value="1">
+
+                <!-- Hidden real multi-select to preserve native settings submission -->
+                <select name="stores_dept_head_approval_categories[]" id="stores_dept_head_approval_categories" multiple="multiple" style="display: none;">
+                    @foreach($ledgeMap ?? [] as $code => $name)
+                    <option value="{{ $code }}" {{ in_array($code, $selectedCats) ? 'selected' : '' }}>{{ $code }}</option>
+                    @endforeach
+                </select>
+
+                <!-- Hidden real multi-select for DG categories to avoid JS failures (Read-Only) -->
+                <select id="dg_approval_categories" multiple="multiple" style="display: none;">
+                    @foreach($ledgeMap ?? [] as $code => $name)
+                    <option value="{{ $code }}" {{ in_array($code, $dgSelectedCats) ? 'selected' : '' }}>{{ $code }}</option>
+                    @endforeach
+                </select>
+
+                <div style="display: flex; flex-direction: column; gap: 2rem;">
+
+                    <!-- Premium Interactive Card Selection Grid -->
+                    <div class="workflow-cat-grid-modern">
+                        @foreach($ledgeMap ?? [] as $code => $name)
+                        @php $isActive = in_array($code, $selectedCats); @endphp
+                        <div class="workflow-cat-card-modern {{ $isActive ? 'active' : '' }}"
+                            onclick="toggleWorkflowCategory('{{ $code }}', this)">
+
+                            <!-- Glowing corner accent for active state -->
+                            <div class="corner-glow"></div>
+
+                            <!-- Category Code Circle -->
+                            <div class="cat-circle">
+                                {{ $code }}
+                            </div>
+
+                            <!-- Name & Status -->
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-weight: 855; font-size: 0.88rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $name }}</div>
+                                <div class="status-label">
+                                    {{ $isActive ? 'Requires Stores Head' : 'Bypasses Stores Head' }}
+                                </div>
+                            </div>
+
+                            <!-- Indicator Circle -->
+                            <div class="indicator-dot">
+                                <i data-lucide="check" style="width: 11px; height: 11px; color: white; display: {{ $isActive ? 'block' : 'none' }};"></i>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    <!-- Workflow Explainer Graphic and Logic Info Card -->
+                    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
+
+                        <!-- Sleek Gradient Alert Card -->
+                        <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.03) 0%, rgba(99, 102, 241, 0.01) 100%);
+                                        border: 1.5px solid #edf2f7;
+                                        border-radius: 24px;
+                                        padding: 1.75rem 2rem;
+                                        display: flex;
+                                        gap: 1.25rem;
+                                        align-items: flex-start;">
+                            <div style="width: 42px; height: 42px; background: rgba(79,70,229,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #4f46e5; flex-shrink: 0; margin-top: 2px;">
+                                <i data-lucide="info" style="width: 20px; height: 20px;"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <h5 style="margin: 0 0 6px 0; font-size: 0.95rem; font-weight: 855; color: #1e293b; letter-spacing: -0.010em;">Smart Routing Protocol Active</h5>
+                                <p style="margin: 0; font-size: 0.8rem; color: #475569; line-height: 1.6; font-weight: 600;">
+                                    When item categories are configured above, any submitted requisition containing matching items will be routed for manual review by the <strong>Department Head (Stores)</strong> prior to final confirmation. Requisitions consisting solely of bypassed categories skip the Stores Department Head approval stage completely, saving processing time and avoiding administration bottlenecks.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Mini Infographic Visualizer Card -->
+                        <div style="background: linear-gradient(to bottom, #fafbff, #ffffff); border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
+                            <div style="font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; text-align: center; margin-bottom: 0.25rem;">Live Approval Routing Pathway</div>
+
+                            <div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%; padding: 0.5rem 0;" class="flow-nodes-container">
+
+                                <!-- Origin Node -->
+                                <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                    <div class="flow-node-icon" style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; box-shadow: 0 4px 12px rgba(79,70,229,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
+                                    </div>
+                                    <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Dept. Head</span>
+                                    <span class="flow-node-badge" style="background: #e0e7ff; color: #4f46e5; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
+                                </div>
+
+                                <!-- Connector 1 (Now connects to DG Node, so controlled by DG active state) -->
+                                <div class="flow-line flow-line-2" style="flex: 1; height: 3px; transition: all 0.4s ease; background: #cbd5e1; margin-top: -16px;"></div>
+
+                                <!-- DG Node (Director Gen.) -->
+                                <div class="flow-node flow-node-dg" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                    <div class="flow-node-icon" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <i data-lucide="user-cog" style="width: 15px; height: 15px;"></i>
+                                    </div>
+                                    <span class="flow-node-label" style="font-size: 0.65rem; font-weight: 855; white-space: nowrap;">Director Gen.</span>
+                                    <span class="flow-node-badge" style="font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;"></span>
+                                </div>
+
+                                <!-- Connector 2 (Now connects to Stores Head, so controlled by Stores Head active state) -->
+                                <div class="flow-line flow-line-1" style="flex: 1; height: 3px; transition: all 0.4s ease; background: #cbd5e1; margin-top: -16px;"></div>
+
+                                <!-- Stores Head Node (Head of Admin) -->
+                                <div class="flow-node flow-node-stores" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                    <div class="flow-node-icon" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <i data-lucide="package" style="width: 15px; height: 15px;"></i>
+                                    </div>
+                                    <span class="flow-node-label" style="font-size: 0.65rem; font-weight: 855; white-space: nowrap;">Head of Admin</span>
+                                    <span class="flow-node-badge" style="font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;"></span>
+                                </div>
+
+                                <!-- Connector 3 (Connects to Head of Stores, always active) -->
+                                <div class="flow-line flow-line-3" style="flex: 1; height: 3px; transition: all 0.4s ease; background: #cbd5e1; margin-top: -16px;"></div>
+
+                                <!-- Head of Stores Node -->
+                                <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
+                                    <div class="flow-node-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
+                                    </div>
+                                    <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
+                                    <span class="flow-node-badge" style="background: #d1fae5; color: #065f46; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Final Sign</span>
+                                </div>
+
+                            </div>
+
+                            <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; line-height: 1.45; text-align: center; background: #f8fafc; border-radius: 12px; padding: 8px 12px; border: 1px solid #f1f5f9; transition: all 0.3s ease;" class="workflow-helper-hint">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Submit trigger -->
+                    <div style="display: flex; justify-content: flex-end; margin-top: 1rem; margin-bottom: 1.5rem;">
+                        <button type="submit" style="padding: 0.75rem 2rem; border-radius: 12px; border: none; background: #4f46e5; color: white; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#3730a3'" onmouseout="this.style.background='#4f46e5'">
+                            <i data-lucide="save" style="width: 18px; height: 18px;"></i> Save Workflow Changes
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+ 
+    @endif
+
     {{-- Staff Access Provisioning (Non-Stores Department Heads only) --}}
-    @if(!$isStoresHead)
-    <div id="provisioningSection" style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);padding:1.75rem;margin-bottom:2rem;box-shadow:0 4px 20px rgba(0,0,0,0.04);">
+    {{-- Staff Access & Registration Approvals (All Department Heads) --}}
+    <div id="provisioningSection" style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);padding:1.75rem;margin-bottom:2rem;box-shadow:0 4px 20px rgba(0,0,0,0.04); display: {{ $isStoresHead ? 'none' : 'block' }};">
         @if(!empty($hasOverdueReturn))
         <div style="background: linear-gradient(135deg, rgba(254, 242, 242, 0.65) 0%, rgba(254, 226, 226, 0.35) 100%); border-left: 5px solid #ef4444; border-top: 1px solid rgba(239, 68, 68, 0.1); border-right: 1px solid rgba(239, 68, 68, 0.1); border-bottom: 1px solid rgba(239, 68, 68, 0.1); border-radius: 16px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 1.25rem; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.05); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
             <div style="width: 40px; height: 40px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; animation: alertPulse 2s infinite;">
@@ -876,22 +1214,33 @@
                 </div>
                 <div>
                     <div style="font-size:.68rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.1em;">Dept. Access Management</div>
-                    <div style="font-size:1rem;font-weight:800;color:var(--text-main);margin-top:1px;">Staff Access Provisioning</div>
+                    <div style="font-size:1rem;font-weight:800;color:var(--text-main);margin-top:1px;">Staff Access &amp; Approvals</div>
                 </div>
             </div>
         </div>
 
+        @if(!$isStoresHead)
         {{-- Department Staff Accounts Table --}}
-        <div id="tempAccountsContainer">
-            <div style="font-size:.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.85rem;">Department Staff Access & Permissions</div>
+        <div id="tempAccountsContainer" style="margin-bottom: 2rem;">
+            <div style="font-size:.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.85rem;">Department Staff Access &amp; Permissions</div>
             <div id="tempAccountsList">
                 <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
                     <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;"></i><br>Loading department staff directory...
                 </div>
             </div>
         </div>
+        @endif
+
+        {{-- Department Pending Registrations Table --}}
+        <div id="pendingRegistrationsContainer">
+            <div style="font-size:.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.85rem;">Pending Staff Registrations</div>
+            <div id="pendingRegistrationsList">
+                <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                    <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;"></i><br>Loading pending registrations...
+                </div>
+            </div>
+        </div>
     </div>
-    @endif
 
     {{-- Filters Toolbar --}}
     <div class="filter-card">
@@ -1899,6 +2248,170 @@
         });
     }
 
+    async function loadPendingRegistrations(isSilent = false) {
+        const container = document.getElementById('pendingRegistrationsList');
+        if (!container) return;
+
+        if (!isSilent) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                    <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;"></i><br>Loading pending registrations...
+                </div>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        try {
+            const res = await fetch('{{ route("dept-head.pending-registrations") }}');
+            const data = await res.json();
+
+            if (!data.success || !data.pending || data.pending.length === 0) {
+                const emptyHtml = `
+                    <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
+                        <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
+                        <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No pending registrations</div>
+                        <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any pending staff registrations in your department will appear here.</div>
+                    </div>`;
+                if (container.innerHTML !== emptyHtml) {
+                    container.innerHTML = emptyHtml;
+                }
+                if (isStoresHead) {
+                    const section = document.getElementById('provisioningSection');
+                    if (section) section.style.display = 'none';
+                }
+                window._lastPendingRegsString = '';
+                return;
+            }
+
+            const currentDataString = JSON.stringify(data.pending);
+            if (isSilent && window._lastPendingRegsString === currentDataString) {
+                return;
+            }
+            window._lastPendingRegsString = currentDataString;
+
+            // Make sure the section is visible
+            const section = document.getElementById('provisioningSection');
+            if (section) section.style.display = 'block';
+
+            let rows = data.pending.map(reg => {
+                return `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:.75rem;">
+                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(99,102,241,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#6366f1;">
+                            ${(reg.name || reg.username).charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${reg.name}</div>
+                            <div style="font-size:.7rem;color:var(--text-muted);">Requisitioner · @${reg.username} · Phone: ${reg.phone} · Staff ID: ${reg.service_number}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(245,158,11,.1);color:#d97706;">
+                            PENDING HOD APPROVAL
+                        </span>
+                        <button onclick="approveRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;">
+                            <i data-lucide="user-check" style="width:13px;height:13px;"></i> Approve
+                        </button>
+                        <button onclick="rejectRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;">
+                            <i data-lucide="user-x" style="width:13px;height:13px;"></i> Decline
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `<div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">${rows}</div>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        } catch (e) {
+            if (!isSilent) {
+                container.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load pending registrations list.</div>`;
+            }
+        }
+    }
+
+    async function approveRegistration(id, username) {
+        const confirm = await Swal.fire({
+            title: 'Approve Registration?',
+            text: `Are you sure you want to approve requisitioner privileges for @${username}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Approve',
+            cancelButtonText: 'Cancel'
+        });
+        if (!confirm.isConfirmed) return;
+
+        try {
+            const res = await fetch(`/dept-head/registration/${id}/approve`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire({ 
+                    title: 'Approved!', 
+                    text: data.message, 
+                    icon: 'success', 
+                    timer: 2000, 
+                    showConfirmButton: false 
+                });
+                loadPendingRegistrations();
+                if (typeof loadTempAccounts === 'function') {
+                    loadTempAccounts();
+                }
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        } catch (e) {
+            Swal.fire('Error', 'Network error while approving registration.', 'error');
+        }
+    }
+
+    async function rejectRegistration(id, username) {
+        const confirm = await Swal.fire({
+            title: 'Decline Registration Request?',
+            text: `Are you sure you want to decline registration request for @${username}? This account will be deactivated.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Decline',
+            cancelButtonText: 'Cancel'
+        });
+        if (!confirm.isConfirmed) return;
+
+        try {
+            const res = await fetch(`/dept-head/registration/${id}/reject`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire({ 
+                    title: 'Declined!', 
+                    text: data.message, 
+                    icon: 'success', 
+                    timer: 2000, 
+                    showConfirmButton: false 
+                });
+                loadPendingRegistrations();
+                if (typeof loadTempAccounts === 'function') {
+                    loadTempAccounts();
+                }
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        } catch (e) {
+            Swal.fire('Error', 'Network error while declining registration.', 'error');
+        }
+    }
+
     // =====================================================================
     // STAFF ACCESS PROVISIONING (Non-Stores Dept Heads only)
     // =====================================================================
@@ -2101,6 +2614,7 @@
         @if(!$isStoresHead)
         loadTempAccounts();
         @endif
+        loadPendingRegistrations();
 
         // Auto-open specific requisition if open_id is present in query parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -2190,6 +2704,7 @@
                 lucide.createIcons();
             }
 
+            await loadPendingRegistrations(true);
             if (!isStoresHead) {
                 await loadTempAccounts(true);
             }
@@ -2197,5 +2712,227 @@
             console.error('Silent refresh failed:', e);
         }
     }, 10000);
+
+    function toggleWorkflowCategory(code, card) {
+        const select = document.getElementById('stores_dept_head_approval_categories');
+        if (!select) return;
+        const option = select.querySelector(`option[value="${code}"]`);
+
+        if (!option) return;
+
+        const isCurrentlyActive = card.classList.contains('active');
+
+        if (isCurrentlyActive) {
+            // Deactivate
+            card.classList.remove('active');
+
+            const label = card.querySelector('.status-label');
+            if (label) {
+                label.textContent = 'Bypasses Stores Head';
+            }
+
+            const dot = card.querySelector('.indicator-dot');
+            if (dot) {
+                const checkIcon = dot.querySelector('i, svg');
+                if (checkIcon) checkIcon.style.display = 'none';
+            }
+
+            option.selected = false;
+        } else {
+            // Activate
+            card.classList.add('active');
+
+            const label = card.querySelector('.status-label');
+            if (label) {
+                label.textContent = 'Requires Stores Head';
+            }
+
+            const dot = card.querySelector('.indicator-dot');
+            if (dot) {
+                const checkIcon = dot.querySelector('i, svg');
+                if (checkIcon) checkIcon.style.display = 'block';
+            }
+
+            option.selected = true;
+        }
+
+        // Trigger change event on select to ensure any listeners match
+        select.dispatchEvent(new Event('change'));
+
+        // Update the visual flowchart in real-time
+        updateWorkflowFlowchart();
+    }
+
+    function updateWorkflowFlowchart() {
+        const selectStores = document.getElementById('stores_dept_head_approval_categories');
+        if (!selectStores) return;
+        const activeCountStores = Array.from(selectStores.selectedOptions).length;
+
+        const selectDG = document.getElementById('dg_approval_categories');
+        const activeCountDG = selectDG ? Array.from(selectDG.selectedOptions).length : 0;
+
+        // Update HOD header badge
+        const badgeTextStores = document.getElementById('workflow-badge-text');
+        const badgeDotStores = document.getElementById('workflow-badge-dot');
+        const badgeContainerStores = document.getElementById('workflow-active-badge');
+        if (badgeTextStores) badgeTextStores.textContent = `Active Categories: ${activeCountStores}`;
+        if (activeCountStores > 0) {
+            if (badgeDotStores) badgeDotStores.style.background = '#4f46e5';
+            if (badgeContainerStores) {
+                badgeContainerStores.style.background = 'rgba(79, 70, 229, 0.08)';
+                badgeContainerStores.style.color = '#4f46e5';
+                badgeContainerStores.style.borderColor = 'rgba(79, 70, 229, 0.2)';
+            }
+        } else {
+            if (badgeDotStores) badgeDotStores.style.background = '#64748b';
+            if (badgeContainerStores) {
+                badgeContainerStores.style.background = 'rgba(100, 116, 139, 0.08)';
+                badgeContainerStores.style.color = '#64748b';
+                badgeContainerStores.style.borderColor = 'rgba(100, 116, 139, 0.2)';
+            }
+        }
+
+        // Update ALL Stores Head flow nodes
+        document.querySelectorAll('.flow-node-stores').forEach(node => {
+            const iconBox = node.querySelector('.flow-node-icon');
+            const label = node.querySelector('.flow-node-label');
+            const badge = node.querySelector('.flow-node-badge');
+
+            if (activeCountStores > 0) {
+                node.className = 'flow-node flow-node-stores active';
+                if (iconBox) {
+                    iconBox.style.background = 'linear-gradient(135deg, #4f46e5, #3730a3)';
+                    iconBox.style.color = '#ffffff';
+                    iconBox.style.borderColor = 'transparent';
+                    iconBox.style.boxShadow = '0 6px 15px rgba(79,70,229,0.2)';
+                }
+                if (label) {
+                    label.style.color = '#1e293b';
+                    label.style.textDecoration = 'none';
+                }
+                if (badge) {
+                    badge.textContent = 'Required';
+                    badge.style.background = 'rgba(79, 70, 229, 0.1)';
+                    badge.style.color = '#4f46e5';
+                    badge.style.borderColor = 'transparent';
+                }
+            } else {
+                node.className = 'flow-node flow-node-stores bypass';
+                if (iconBox) {
+                    iconBox.style.background = '#f8fafc';
+                    iconBox.style.color = '#64748b';
+                    iconBox.style.borderColor = '#cbd5e1';
+                    iconBox.style.boxShadow = 'none';
+                }
+                if (label) {
+                    label.style.color = '#94a3b8';
+                    label.style.textDecoration = 'line-through';
+                }
+                if (badge) {
+                    badge.textContent = 'Bypassed';
+                    badge.style.background = '#fef2f2';
+                    badge.style.color = '#ef4444';
+                    badge.style.borderColor = 'rgba(239, 68, 68, 0.1)';
+                }
+            }
+        });
+
+        // Update ALL DG flow nodes
+        document.querySelectorAll('.flow-node-dg').forEach(node => {
+            const iconBox = node.querySelector('.flow-node-icon');
+            const label = node.querySelector('.flow-node-label');
+            const badge = node.querySelector('.flow-node-badge');
+
+            if (activeCountDG > 0) {
+                node.className = 'flow-node flow-node-dg active';
+                if (iconBox) {
+                    iconBox.style.background = 'linear-gradient(135deg, #8b5cf6, #6d28d9)';
+                    iconBox.style.color = '#ffffff';
+                    iconBox.style.borderColor = 'transparent';
+                    iconBox.style.boxShadow = '0 6px 15px rgba(139,92,246,0.2)';
+                }
+                if (label) {
+                    label.style.color = '#1e293b';
+                    label.style.textDecoration = 'none';
+                }
+                if (badge) {
+                    badge.textContent = 'Required';
+                    badge.style.background = 'rgba(139, 92, 246, 0.1)';
+                    badge.style.color = '#8b5cf6';
+                    badge.style.borderColor = 'transparent';
+                }
+            } else {
+                node.className = 'flow-node flow-node-dg bypass';
+                if (iconBox) {
+                    iconBox.style.background = '#f8fafc';
+                    iconBox.style.color = '#64748b';
+                    iconBox.style.borderColor = '#cbd5e1';
+                    iconBox.style.boxShadow = 'none';
+                }
+                if (label) {
+                    label.style.color = '#94a3b8';
+                    label.style.textDecoration = 'line-through';
+                }
+                if (badge) {
+                    badge.textContent = 'Bypassed';
+                    badge.style.background = '#fef2f2';
+                    badge.style.color = '#ef4444';
+                    badge.style.borderColor = 'rgba(239, 68, 68, 0.1)';
+                }
+            }
+        });
+
+        // Update lines
+        document.querySelectorAll('.flow-line-1').forEach(line => {
+            if (activeCountStores > 0) {
+                line.className = 'flow-line flow-line-1 active';
+                line.style.background = '#4f46e5';
+            } else {
+                line.className = 'flow-line flow-line-1 dashed';
+                line.style.background = '';
+            }
+        });
+
+        document.querySelectorAll('.flow-line-2').forEach(line => {
+            if (activeCountDG > 0) {
+                line.className = 'flow-line flow-line-2 active';
+                line.style.background = '#8b5cf6';
+            } else {
+                line.className = 'flow-line flow-line-2 dashed';
+                line.style.background = '';
+            }
+        });
+
+        document.querySelectorAll('.flow-line-3').forEach(line => {
+            line.className = 'flow-line flow-line-3 active';
+            line.style.background = '#10b981';
+        });
+
+        // Update hints
+        document.querySelectorAll('.workflow-helper-hint').forEach(hint => {
+            const isStoresCard = hint.closest('.workflow-card-modern').querySelector('h3').textContent.includes('Stores');
+            if (isStoresCard) {
+                if (activeCountStores > 0) {
+                    hint.innerHTML = `Routing through <strong>Head of Admin</strong> for <strong style="color: #4f46e5;">${activeCountStores}</strong> selected category${activeCountStores == 1 ? '' : 'ies'}.`;
+                } else {
+                    hint.innerHTML = 'Currently bypassing intermediate Stores Head step due to settings configuration.';
+                }
+            } else {
+                if (activeCountDG > 0) {
+                    hint.innerHTML = `Routing through <strong>Director General</strong> for <strong style="color: #8b5cf6;">${activeCountDG}</strong> selected category${activeCountDG == 1 ? '' : 'ies'}.`;
+                } else {
+                    hint.innerHTML = 'Currently bypassing intermediate Director General step due to settings configuration.';
+                }
+            }
+        });
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('stores_dept_head_approval_categories') || document.getElementById('dg_approval_categories')) {
+            updateWorkflowFlowchart();
+        }
+    });
 </script>
 @endsection

@@ -947,11 +947,11 @@ class AdminController extends Controller
 
     public function updateSettings(\Illuminate\Http\Request $request)
     {
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->is_admin && auth()->user()->role !== 'Director General') {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
-        $inputs = $request->except('_token');
+        $inputs = $request->except(['_token', 'settings_form', 'stores_dept_head_approval_categories_present', 'dg_approval_categories_present']);
 
         foreach ($inputs as $key => $value) {
             $setting = \App\Models\Setting::where('key', $key)->first();
@@ -1020,7 +1020,7 @@ class AdminController extends Controller
             }
 
             // Handle stores_dept_head_approval_categories multi-select clear
-            if (!$request->has('stores_dept_head_approval_categories')) {
+            if ($request->has('stores_dept_head_approval_categories_present') && !$request->has('stores_dept_head_approval_categories')) {
                 $catSetting = \App\Models\Setting::where('key', 'stores_dept_head_approval_categories')->first();
                 if ($catSetting) {
                     $catSetting->value = json_encode([]);
@@ -1029,7 +1029,7 @@ class AdminController extends Controller
             }
 
             // Handle dg_approval_categories multi-select clear
-            if (!$request->has('dg_approval_categories')) {
+            if ($request->has('dg_approval_categories_present') && !$request->has('dg_approval_categories')) {
                 $dgCatSetting = \App\Models\Setting::where('key', 'dg_approval_categories')->first();
                 if ($dgCatSetting) {
                     $dgCatSetting->value = json_encode([]);
@@ -1038,11 +1038,12 @@ class AdminController extends Controller
             }
         }
 
+        $roleName = auth()->user()->role === 'Director General' ? 'Director General' : 'Administrator';
         \App\Models\SystemLog::create([
             'user_id' => auth()->id(),
             'event_type' => 'SECURITY',
             'action' => 'UPDATE_SETTINGS',
-            'description' => "Administrator updated system settings.",
+            'description' => "{$roleName} updated system settings.",
             'severity' => 'warning',
             'ip_address' => request()->ip()
         ]);
