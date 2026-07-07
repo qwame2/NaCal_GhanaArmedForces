@@ -1007,7 +1007,7 @@
         </div>
     </div>
 
-    @if(auth()->user()->role === 'Main Admin')
+    @if(auth()->user()->role === 'Main Admin' && !in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']))
     @php
         $selectedCats = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
         if (!is_array($selectedCats)) {

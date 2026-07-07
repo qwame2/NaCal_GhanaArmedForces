@@ -980,7 +980,7 @@
             </div>{{-- /cfg-card --}}
             @endforeach
 
-            @if(auth()->user()->role === 'Main Admin')
+            @if(auth()->user()->role === 'Main Admin' && !in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']))
             {{-- Stores Department Head Approval Workflow --}}
             <div class="workflow-card-modern">
                 @php
@@ -1133,7 +1133,7 @@
             </div>
             @endif
 
-            @if(auth()->user()->role === 'Main Admin')
+            @if(auth()->user()->role === 'Main Admin' && !in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']))
             {{-- Director General's Approval Workflow --}}
             <div class="workflow-card-modern dg-workflow-container" style="margin-top: 1.5rem;">
                 @php
