@@ -1614,6 +1614,12 @@
             }
         }
 
+        // Preserve current page pagination parameter
+        const currentUrlParams = new URLSearchParams(window.location.search);
+        if (currentUrlParams.has('page')) {
+            searchParams.append('page', currentUrlParams.get('page'));
+        }
+
         const url = form.action + '?' + searchParams.toString();
 
         try {

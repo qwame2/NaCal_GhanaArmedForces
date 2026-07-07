@@ -575,11 +575,11 @@
         </button>
         <button id="tab-btn-stock-oversight" class="dg-tab-btn" onclick="switchDGTab('dg-stock-oversight-tab', this)">
             <i data-lucide="archive" style="width: 16px;"></i>
-            Stock Balance Registry
+            Item Stock Balances
         </button>
         <button id="tab-btn-staff-reqs" class="dg-tab-btn" onclick="switchDGTab('dg-staff-reqs-tab', this)">
             <i data-lucide="file-text" style="width: 16px;"></i>
-            Staff Requisitions Registry
+            Staff Requisitions
         </button>
         <button id="tab-btn-user-presence" class="dg-tab-btn" onclick="switchDGTab('dg-user-presence-tab', this)">
             <i data-lucide="users" style="width: 16px;"></i>
@@ -839,6 +839,8 @@
                             <th>Requester</th>
                             <th>Department</th>
                             <th>Purpose</th>
+                            <th>Items</th>
+                            <th>Total Qty</th>
                             <th>Priority</th>
                             <th>Usage</th>
                             <th>Status</th>
@@ -885,6 +887,21 @@
                                 </td>
                                 <td style="max-width: 250px; line-height: 1.4; color: var(--text-main); font-weight: 500;">
                                     {{ $req->purpose }}
+                                </td>
+                                <td>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 280px; align-items: center;">
+                                        @foreach($req->items->take(3) as $item)
+                                        <span style="font-size: .7rem; font-weight: 700; color: var(--text-main); background: var(--bg-main); border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 6px; white-space: nowrap;">
+                                            {{ Str::limit($item->description, 20) }} ({{ number_format($item->quantity_requested,0) }})
+                                        </span>
+                                        @endforeach
+                                        @if($req->items->count() > 3)
+                                        <span style="font-size: .7rem; font-weight: 700; color: var(--dg-primary); background: rgba(99, 102, 241, 0.1); padding: 2px 8px; border-radius: 6px; white-space: nowrap;">+{{ $req->items->count() - 3 }} more</span>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td style="font-weight: 800; text-align: center; color: var(--text-main);">
+                                    {{ number_format($req->items->sum('quantity_requested'), 0) }}
                                 </td>
                                 <td>
                                     @php $p = $req->priority_badge; @endphp
@@ -943,7 +960,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+                                <td colspan="11" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
                                     <i data-lucide="file-text" style="width: 40px; height: 40px; margin-bottom: 1rem; opacity: 0.25;"></i>
                                     <p style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">No staff requisitions registered.</p>
                                 </td>

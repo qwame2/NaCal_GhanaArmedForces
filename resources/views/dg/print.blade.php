@@ -250,7 +250,7 @@
     <div class="page-break"></div>
 
     {{-- II. STOCK BALANCE REGISTRY --}}
-    <div class="section-title">II. Stock Balance Oversight Registry</div>
+    <div class="section-title">II. Item Stock Balances</div>
     <table class="audit-print-table">
         <thead>
             <tr>
@@ -319,8 +319,8 @@
 
     <div class="page-break"></div>
 
-    {{-- III. STAFF REQUISITIONS REGISTRY --}}
-    <div class="section-title">III. Staff Requisitions Registry</div>
+    {{-- III. STAFF REQUISITIONS --}}
+    <div class="section-title">III. Staff Requisitions</div>
     <table class="audit-print-table">
         <thead>
             <tr>

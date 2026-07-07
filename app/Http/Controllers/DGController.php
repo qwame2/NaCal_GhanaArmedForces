@@ -84,8 +84,8 @@ class DGController extends Controller
         }
         $inventoryItems = $itemsQuery->paginate(10, ['*'], 'items_page')->withQueryString();
 
-        // 3. Staff Requisitions Registry (All requisitions & status checks)
-        $reqsQuery = StoreRequisition::with('requester')->orderBy('created_at', 'desc');
+        // 3. Staff Requisitions (All requisitions & status checks)
+        $reqsQuery = StoreRequisition::with(['items', 'requester'])->orderBy('created_at', 'desc');
         if ($request->filled('req_status')) {
             $reqsQuery->where('status', $request->req_status);
         }
