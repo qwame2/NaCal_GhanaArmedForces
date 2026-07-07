@@ -240,7 +240,6 @@
         <div class="matrix-table">
             <div class="m-header">
                 <div class="col-id">Personnel</div>
-                <div class="col-req-ctrl">Report Access</div>
                 <div class="col-stat">Clearance Status</div>
             </div>
 
@@ -264,20 +263,6 @@
                                     {{ $user->department }}
                                 </span>
                                 @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Report Access toggle --}}
-                    <div class="col-req-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Report Access">
-                                <input type="checkbox" onchange="toggleMatrixPermission(this, 'can_generate_reports')" {{ $user->can_generate_reports ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">View Reports</span>
-                                <span class="t-sub"></span>
                             </div>
                         </div>
                     </div>

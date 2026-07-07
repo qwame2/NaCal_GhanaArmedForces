@@ -153,7 +153,7 @@
                                     <div class="dot"></div>
                                     Store Officer
                                 </div>
-                            @elseif($user->role === 'Requisitioner')
+                            @elseif($user->role === 'Requisitioner' || $user->role === 'Requisitioners')
                                 <div class="clearance-pill requisitioner">
                                     <div class="dot"></div>
                                     Requisitioner
@@ -242,6 +242,19 @@
                         @endforeach
                     </select>
                 </form>
+            </div>
+            <div class="custom-pagination">
+                @if ($users->onFirstPage())
+                <span class="page-btn disabled">Previous</span>
+                @else
+                <a href="{{ $users->appends(request()->query())->previousPageUrl() }}" class="page-btn">Previous</a>
+                @endif
+
+                @if ($users->hasMorePages())
+                <a href="{{ $users->appends(request()->query())->nextPageUrl() }}" class="page-btn">Next</a>
+                @else
+                <span class="page-btn disabled">Next</span>
+                @endif
             </div>
         </div>
     </div>

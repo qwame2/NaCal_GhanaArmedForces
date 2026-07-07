@@ -1625,16 +1625,70 @@
             
             const newTable = doc.getElementById('requisitions-table-container');
             if (newTable) {
-                const currentIds = Array.from(container.querySelectorAll('.req-table-row'))
-                    .map(row => row.dataset.reqId ? `${row.dataset.reqId}-${row.dataset.status}-${row.dataset.collected}` : '').join(',');
-                const newIds = Array.from(newTable.querySelectorAll('.req-table-row'))
-                    .map(row => row.dataset.reqId ? `${row.dataset.reqId}-${row.dataset.status}-${row.dataset.collected}` : '').join(',');
-
-                if (currentIds !== newIds) {
-                    container.innerHTML = newTable.innerHTML;
-                    if (window.lucide) {
-                        window.lucide.createIcons();
+                const currentTbody = container.querySelector('tbody');
+                const newTbody = newTable.querySelector('tbody');
+                
+                if (currentTbody && newTbody) {
+                    const currentRows = currentTbody.querySelectorAll('.req-table-row');
+                    const newRows = newTbody.querySelectorAll('.req-table-row');
+                    
+                    if (currentRows.length === newRows.length) {
+                        // Compare row by row and update only changed rows to prevent visual blinking
+                        for (let i = 0; i < currentRows.length; i++) {
+                            const cRow = currentRows[i];
+                            const nRow = newRows[i];
+                            
+                            const cKey = `${cRow.dataset.reqId}-${cRow.dataset.status}-${cRow.dataset.collected}`;
+                            const nKey = `${nRow.dataset.reqId}-${nRow.dataset.status}-${nRow.dataset.collected}`;
+                            
+                            if (cKey !== nKey) {
+                                cRow.innerHTML = nRow.innerHTML;
+                                cRow.dataset.status = nRow.dataset.status;
+                                cRow.dataset.collected = nRow.dataset.collected;
+                                
+                                if (window.lucide) {
+                                    window.lucide.createIcons({
+                                        node: cRow
+                                    });
+                                }
+                            }
+                        }
+                    } else {
+                        // If row count changed, update only tbody
+                        currentTbody.innerHTML = newTbody.innerHTML;
+                        if (window.lucide) {
+                            window.lucide.createIcons({
+                                node: currentTbody
+                            });
+                        }
                     }
+
+                    // Update pagination if changed without blinking the main structure
+                    const currentTable = container.querySelector('table');
+                    const newTableEl = newTable.querySelector('table');
+                    const currentPagination = currentTable ? currentTable.nextElementSibling : null;
+                    const newPagination = newTableEl ? newTableEl.nextElementSibling : null;
+
+                    if (currentPagination && newPagination) {
+                        if (currentPagination.innerHTML !== newPagination.innerHTML) {
+                            currentPagination.innerHTML = newPagination.innerHTML;
+                            if (window.lucide) {
+                                window.lucide.createIcons({
+                                    node: currentPagination
+                                });
+                            }
+                        }
+                    } else if (newPagination && !currentPagination) {
+                        container.appendChild(newPagination.cloneNode(true));
+                        if (window.lucide) {
+                            window.lucide.createIcons({
+                                node: container.lastElementChild
+                            });
+                        }
+                    } else if (!newPagination && currentPagination) {
+                        currentPagination.remove();
+                    }
+                    
                     bindPaginationClicks();
                 }
             }
