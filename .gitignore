@@ -26,3 +26,9 @@ Thumbs.db
 /scratch/
 /scratch/*
 
+# PWA files: Ensure they are always tracked by Git
+!/public/manifest.json
+!/public/sw.js
+!/public/offline.html
+!/public/img/cropped_circle_image.png
+!/public/img/NACOC1.png
