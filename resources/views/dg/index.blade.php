@@ -1090,7 +1090,7 @@
                         <i data-lucide="user-cog" style="width: 24px; height: 24px; color: white;"></i>
                     </div>
                     <div>
-                        <h3 style="font-weight: 955; font-size: 1.25rem; color: #0f172a; margin: 0; letter-spacing: -0.03em;">Director General (DG) Approval Workflow</h3>
+                        <h3 style="font-weight: 955; font-size: 1.25rem; color: #0f172a; margin: 0; letter-spacing: -0.03em;">Director General's Approval Workflow</h3>
                         <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review and sign-off by you (Director General).</p>
                     </div>
                 </div>
