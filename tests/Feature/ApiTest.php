@@ -1052,6 +1052,14 @@ class ApiTest extends TestCase
         $viewAsStoresPersonnel->assertSee('class="mini-tracker"', false);
         $viewAsStoresPersonnel->assertSee('class="table-item-pill"', false);
         $viewAsStoresPersonnel->assertSee('Test Item Description', false);
+        $viewAsStoresPersonnel->assertSee('Ref', false);
+        $viewAsStoresPersonnel->assertSee('Requester &amp; Dept', false);
+        $viewAsStoresPersonnel->assertSee('Items Requested', false);
+        $viewAsStoresPersonnel->assertSee('Purpose', false);
+        $viewAsStoresPersonnel->assertSee('Usage', false);
+        $viewAsStoresPersonnel->assertSee('Submitted', false);
+        $viewAsStoresPersonnel->assertSee('Actions', false);
+        $viewAsStoresPersonnel->assertSee('class="history-ref"', false);
 
         // Render personnel page as Welfare HOD
         $viewAsWelfarePersonnel = $this->actingAs($welfareHOD)
@@ -1062,6 +1070,9 @@ class ApiTest extends TestCase
                 'availableItems' => collect(),
             ]);
         $viewAsWelfarePersonnel->assertDontSee('class="mini-tracker"', false);
+        $viewAsWelfarePersonnel->assertSee('Department / Requester', false);
+        $viewAsWelfarePersonnel->assertSee('Collection Action', false);
+        $viewAsWelfarePersonnel->assertSee('Review', false);
     }
 }
 

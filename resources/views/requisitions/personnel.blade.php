@@ -653,6 +653,17 @@
         color: #10b981;
         font-weight: 800;
     }
+
+    .history-ref {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(249, 115, 22, 0.08);
+        color: #f97316;
+        border: 1px solid rgba(249, 115, 22, 0.2);
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-weight: 800;
+    }
 </style>
 
 <div style="padding:2rem;">
@@ -765,49 +776,86 @@
     <div id="requisitions-table-container" style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);overflow:hidden; transition: opacity 0.2s ease;">
         <table style="width:100%;border-collapse:collapse;">
             <thead style="background:var(--bg-main);">
-                <tr>
-                    <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Department / Requester</th>
-                    <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Items</th>
-                    <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Priority</th>
-                    <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Status</th>
-                    <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Date</th>
-                    <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Collection Action</th>
-                    <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Review</th>
-                </tr>
+                @if(auth()->user()->role === 'Head of Stores')
+                    <tr>
+                        <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Ref</th>
+                        <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Requester &amp; Dept</th>
+                        <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Items Requested</th>
+                        <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Purpose</th>
+                        <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Priority</th>
+                        <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Status</th>
+                        <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Usage</th>
+                        <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Submitted</th>
+                        <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Actions</th>
+                    </tr>
+                @else
+                    <tr>
+                        <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Department / Requester</th>
+                        <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Items</th>
+                        <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Priority</th>
+                        <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Status</th>
+                        <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Date</th>
+                        <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Collection Action</th>
+                        <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Review</th>
+                    </tr>
+                @endif
             </thead>
             <tbody>
                 @forelse($requisitions as $req)
-                @php $sb = $req->status_badge; $pb = $req->priority_badge; @endphp
+                @php 
+                    $sb = $req->status_badge; 
+                    $pb = $req->priority_badge; 
+                    $utb = $req->usage_type_badge;
+                    $purposeText = trim(preg_replace('/\[Expected Return Date:\s*[^\]]+\]/i', '', $req->purpose));
+                @endphp
                 <tr class="req-table-row" data-req-id="{{ $req->id }}" data-status="{{ $req->status }}" data-collected="{{ $req->collected_at ? '1' : '0' }}">
-                    <td style="padding:1rem 1.5rem;">
-                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                            <div style="font-size:.9rem;font-weight:800;color:var(--text-main);">{{ $req->department }}</div>
-                            @php $utb = $req->usage_type_badge; @endphp
-                            <span class="pill" style="background:{{ $utb['bg'] }}; color:{{ $utb['color'] }}; font-size: 0.6rem; padding: 2px 6px; border-radius: 6px; font-weight:800; text-transform:none; letter-spacing:0;">{{ $utb['label'] }}</span>
-                        </div>
-                        <div style="font-size:.75rem;color:var(--text-muted);font-weight:600;">{{ $req->requester_name }}{{ $req->rank_or_title ? ' · '.$req->rank_or_title : '' }}</div>
-                    </td>
-                    <td style="padding:1rem 1.5rem;">
-                        <div style="display:flex;flex-wrap:wrap;gap:4px;">
-                            @foreach($req->items as $item)
-                                @php
-                                    $approvedVal = $item->quantity_approved !== null ? (float)$item->quantity_approved : null;
-                                    $altApproved = $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : 0;
-                                @endphp
-                                <span class="table-item-pill" title="{{ $item->description }}">
-                                    {{ Str::limit($item->description, 20) }}
-                                    <span class="table-item-qty">×{{ number_format($item->quantity_requested,0) }}</span>
-                                    @if($approvedVal !== null)
-                                        <span class="table-item-approved">(✓{{ number_format($approvedVal+$altApproved,0) }})</span>
-                                    @endif
-                                </span>
-                            @endforeach
-                        </div>
-                    </td>
-                    <td style="padding:1rem 1.5rem;text-align:center;"><span class="pill" style="background:{{ $pb['bg'] }};color:{{ $pb['color'] }};">{{ $pb['label'] }}</span></td>
-                    <td style="padding:1rem 1.5rem;text-align:center;">
-                        <span class="pill" style="background:{{ $sb['bg'] }};color:{{ $sb['color'] }};">● {{ $sb['label'] }}</span>
-                        @if(auth()->user()->role === 'Head of Stores')
+                    @if(auth()->user()->role === 'Head of Stores')
+                        <!-- 1. Ref -->
+                        <td style="padding:1rem 1.5rem;">
+                            <span class="history-ref" style="font-size:0.75rem;">
+                                {{ $req->unique_id ?: ('REQ-'.str_pad($req->id,5,'0',STR_PAD_LEFT)) }}
+                            </span>
+                        </td>
+                        <!-- 2. Requester & Dept -->
+                        <td style="padding:1rem 1.5rem;">
+                            <div style="font-weight:800;color:var(--text-main);font-size:0.85rem;">
+                                {{ $req->requester_name }}{{ $req->rank_or_title ? ' ('.$req->rank_or_title.')' : '' }}
+                            </div>
+                            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">
+                                {{ $req->department }}
+                            </div>
+                        </td>
+                        <!-- 3. Items Requested -->
+                        <td style="padding:1rem 1.5rem;">
+                            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                                @foreach($req->items as $item)
+                                    @php
+                                        $approvedVal = $item->quantity_approved !== null ? (float)$item->quantity_approved : null;
+                                        $altApproved = $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : 0;
+                                    @endphp
+                                    <span class="table-item-pill" title="{{ $item->description }}">
+                                        {{ Str::limit($item->description, 20) }}
+                                        <span class="table-item-qty">×{{ number_format($item->quantity_requested,0) }}</span>
+                                        @if($approvedVal !== null)
+                                            <span class="table-item-approved">(✓{{ number_format($approvedVal+$altApproved,0) }})</span>
+                                        @endif
+                                    </span>
+                                @endforeach
+                            </div>
+                        </td>
+                        <!-- 4. Purpose -->
+                        <td style="padding:1rem 1.5rem;">
+                            <div style="font-size:0.8rem;color:var(--text-muted);font-weight:600;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="{{ $purposeText }}">
+                                {{ $purposeText }}
+                            </div>
+                        </td>
+                        <!-- 5. Priority -->
+                        <td style="padding:1rem 1.5rem;text-align:center;">
+                            <span class="pill" style="background:{{ $pb['bg'] }};color:{{ $pb['color'] }};">{{ $pb['label'] }}</span>
+                        </td>
+                        <!-- 6. Status -->
+                        <td style="padding:1rem 1.5rem;text-align:center;">
+                            <span class="pill" style="background:{{ $sb['bg'] }};color:{{ $sb['color'] }};">● {{ $sb['label'] }}</span>
                             @php
                                 $pipeline = $req->tracking_pipeline;
                                 $step1 = $pipeline['hod'];
@@ -859,47 +907,91 @@
                                     Next: <span style="color:var(--text-main);font-weight:800;">{{ $req->approver_name }}</span>
                                 </div>
                             @endif
-                        @endif
-                    </td>
-                    <td style="padding:1rem 1.5rem;font-size:.78rem;color:var(--text-muted);font-weight:600;">{{ $req->created_at->format('d/m/y') }}<br>{{ $req->created_at->format('H:i') }}</td>
-                    <td style="padding:1rem 1.5rem;text-align:center;">
-                        @if(in_array($req->status, ['approved', 'partially_approved']))
-                            @if($req->collected_at)
-                            <span style="font-size:.78rem;color:#10b981;font-weight:800;display:inline-flex;align-items:center;gap:4px;">
-                                <i data-lucide="check-circle" style="width:14px;"></i> Collected
-                            </span>
-                            @elseif(auth()->user()->can_operate_logistics)
-                            <button onclick="confirmCollection({{ $req->id }}, this)"
-                                style="background:rgba(16,185,129,.1);color:#10b981;border:none;padding:.5rem 1rem;border-radius:10px;font-weight:800;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;" onmouseover="this.style.background='#10b981';this.style.color='white'" onmouseout="this.style.background='rgba(16,185,129,.1)';this.style.color='#10b981'">
-                                <i data-lucide="package-check" style="width:14px;"></i> Confirm Collection
+                        </td>
+                        <!-- 7. Usage -->
+                        <td style="padding:1rem 1.5rem;text-align:center;">
+                            <span class="pill" style="background:{{ $utb['bg'] }};color:{{ $utb['color'] }};">{{ $utb['label'] }}</span>
+                        </td>
+                        <!-- 8. Submitted -->
+                        <td style="padding:1rem 1.5rem;font-size:.78rem;color:var(--text-muted);font-weight:600;">
+                            <div>{{ $req->created_at->format('d/m/y') }}</div>
+                            <div style="font-size:0.7rem;color:var(--text-muted);">{{ $req->created_at->format('H:i') }}</div>
+                        </td>
+                        <!-- 9. Actions -->
+                        <td style="padding:1rem 1.5rem;text-align:center;">
+                            <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(99,102,241,0.08); color: #4f46e5; border: 1.5px solid rgba(99,102,241,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#4f46e5'; this.style.color='white'; this.style.borderColor='#4f46e5';" onmouseout="this.style.background='rgba(99,102,241,0.08)'; this.style.color='#4f46e5'; this.style.borderColor='rgba(99,102,241,0.2);'">
+                                <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
                             </button>
-                            @else
-                            <span style="font-size:.75rem;color:#ef4444;font-style:italic;font-weight:800;display:inline-flex;align-items:center;gap:3px;">
-                                <i data-lucide="info" style="width:13px;height:13px;"></i> Not Permitted to Confirm Collection
+                        </td>
+                    @else
+                        <td style="padding:1rem 1.5rem;">
+                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                <div style="font-size:.9rem;font-weight:800;color:var(--text-main);">{{ $req->department }}</div>
+                                <span class="pill" style="background:{{ $utb['bg'] }}; color:{{ $utb['color'] }}; font-size: 0.6rem; padding: 2px 6px; border-radius: 6px; font-weight:800; text-transform:none; letter-spacing:0;">{{ $utb['label'] }}</span>
+                            </div>
+                            <div style="font-size:.75rem;color:var(--text-muted);font-weight:600;">{{ $req->requester_name }}{{ $req->rank_or_title ? ' · '.$req->rank_or_title : '' }}</div>
+                        </td>
+                        <td style="padding:1rem 1.5rem;">
+                            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                                @foreach($req->items as $item)
+                                    @php
+                                        $approvedVal = $item->quantity_approved !== null ? (float)$item->quantity_approved : null;
+                                        $altApproved = $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : 0;
+                                    @endphp
+                                    <span class="table-item-pill" title="{{ $item->description }}">
+                                        {{ Str::limit($item->description, 20) }}
+                                        <span class="table-item-qty">×{{ number_format($item->quantity_requested,0) }}</span>
+                                        @if($approvedVal !== null)
+                                            <span class="table-item-approved">(✓{{ number_format($approvedVal+$altApproved,0) }})</span>
+                                        @endif
+                                    </span>
+                                @endforeach
+                            </div>
+                        </td>
+                        <td style="padding:1rem 1.5rem;text-align:center;"><span class="pill" style="background:{{ $pb['bg'] }};color:{{ $pb['color'] }};">{{ $pb['label'] }}</span></td>
+                        <td style="padding:1rem 1.5rem;text-align:center;">
+                            <span class="pill" style="background:{{ $sb['bg'] }};color:{{ $sb['color'] }};">● {{ $sb['label'] }}</span>
+                        </td>
+                        <td style="padding:1rem 1.5rem;font-size:.78rem;color:var(--text-muted);font-weight:600;">{{ $req->created_at->format('d/m/y') }}<br>{{ $req->created_at->format('H:i') }}</td>
+                        <td style="padding:1rem 1.5rem;text-align:center;">
+                            @if(in_array($req->status, ['approved', 'partially_approved']))
+                                @if($req->collected_at)
+                                <span style="font-size:.78rem;color:#10b981;font-weight:800;display:inline-flex;align-items:center;gap:4px;">
+                                    <i data-lucide="check-circle" style="width:14px;"></i> Collected
+                                </span>
+                                @elseif(auth()->user()->can_operate_logistics)
+                                <button onclick="confirmCollection({{ $req->id }}, this)"
+                                    style="background:rgba(16,185,129,.1);color:#10b981;border:none;padding:.5rem 1rem;border-radius:10px;font-weight:800;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;" onmouseover="this.style.background='#10b981';this.style.color='white'" onmouseout="this.style.background='rgba(16,185,129,.1)';this.style.color='#10b981'">
+                                    <i data-lucide="package-check" style="width:14px;"></i> Confirm Collection
+                                </button>
+                                @else
+                                <span style="font-size:.75rem;color:#ef4444;font-style:italic;font-weight:800;display:inline-flex;align-items:center;gap:3px;">
+                                    <i data-lucide="info" style="width:13px;height:13px;"></i> Not Permitted to Confirm Collection
+                                </span>
+                                @endif
+                            @elseif($req->status === 'declined')
+                            <span style="font-size:.75rem;color:#ef4444;font-weight:800;display:inline-flex;align-items:center;gap:4px;">
+                                <i data-lucide="x-circle" style="width:13px;"></i> Declined
                             </span>
+                            @elseif(($req->origin_admin_status ?? 'pending') === 'pending')
+                            <span style="font-size:.75rem;color:var(--text-muted);font-style:italic;font-weight:700;">Awaiting Dept Head Approval</span>
+                            @elseif(($req->main_admin_status ?? 'pending') === 'pending')
+                            <span style="font-size:.75rem;color:var(--text-muted);font-style:italic;font-weight:700;">Awaiting Authorizer Review</span>
+                            @else
+                            <span style="font-size:.75rem;color:#ef4444;font-style:italic;font-weight:700;">Awaiting Admin Review</span>
                             @endif
-                        @elseif($req->status === 'declined')
-                        <span style="font-size:.75rem;color:#ef4444;font-weight:800;display:inline-flex;align-items:center;gap:4px;">
-                            <i data-lucide="x-circle" style="width:13px;"></i> Declined
-                        </span>
-                        @elseif(($req->origin_admin_status ?? 'pending') === 'pending')
-                        <span style="font-size:.75rem;color:var(--text-muted);font-style:italic;font-weight:700;">Awaiting Dept Head Approval</span>
-                        @elseif(($req->main_admin_status ?? 'pending') === 'pending')
-                        <span style="font-size:.75rem;color:var(--text-muted);font-style:italic;font-weight:700;">Awaiting Authorizer Review</span>
-                        @else
-                        <span style="font-size:.75rem;color:#ef4444;font-style:italic;font-weight:700;">Awaiting Admin Review</span>
-                        @endif
-                    </td>
-                    <td style="padding:1rem 1.5rem;text-align:center;">
-                        <button onclick="openRequisitionModal({{ $req->id }})"
-                            style="background:rgba(99,102,241,.1);color:#4f46e5;border:none;padding:.5rem 1rem;border-radius:10px;font-weight:800;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;" onmouseover="this.style.background='#4f46e5';this.style.color='white'" onmouseout="this.style.background='rgba(99,102,241,.1)';this.style.color='#4f46e5'">
-                            <i data-lucide="eye" style="width:14px;"></i> View Detail
-                        </button>
-                    </td>
+                        </td>
+                        <td style="padding:1rem 1.5rem;text-align:center;">
+                            <button onclick="openRequisitionModal({{ $req->id }})"
+                                style="background:rgba(99,102,241,.1);color:#4f46e5;border:none;padding:.5rem 1rem;border-radius:10px;font-weight:800;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;" onmouseover="this.style.background='#4f46e5';this.style.color='white'" onmouseout="this.style.background='rgba(99,102,241,.1)';this.style.color='#4f46e5'">
+                                <i data-lucide="eye" style="width:14px;"></i> View Detail
+                            </button>
+                        </td>
+                    @endif
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" style="padding:3rem;text-align:center;color:var(--text-muted);">
+                    <td colspan="{{ auth()->user()->role === 'Head of Stores' ? 9 : 7 }}" style="padding:3rem;text-align:center;color:var(--text-muted);">
                         <i data-lucide="inbox" style="width:32px;margin-bottom:.75rem;opacity:.3;"></i>
                         <p style="font-weight:700;color:var(--text-main);">No requisitions found</p>
                         <p style="font-size:.85rem;">Department requests will appear here.</p>
