@@ -660,9 +660,9 @@
     {{-- Header --}}
     <div style="margin-bottom:2rem; display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
         <div>
-            <div style="font-size:.7rem;font-weight:800;color:#4f46e5;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">Store Operations</div>
-            <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Store Requisitions Management</h1>
-            <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">Track, review, and confirm physical collection of department items</p>
+            <div style="font-size:.7rem;font-weight:800;color:#4f46e5;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">Store Management</div>
+            <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Store Requisitions</h1>
+            <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">Review and process department item requests</p>
         </div>
         @if(auth()->user()->can_make_requisition)
         <button onclick="openNewReqPanel()" id="new-req-btn"
