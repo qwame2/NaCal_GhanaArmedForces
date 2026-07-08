@@ -996,6 +996,14 @@ class ApiTest extends TestCase
             'requires_dg_approval' => false,
         ]);
 
+        \App\Models\StoreRequisitionItem::create([
+            'requisition_id' => $req->id,
+            'description' => 'Test Item Description',
+            'category' => 'A',
+            'unit' => 'Piece',
+            'quantity_requested' => 10,
+        ]);
+
         // Clean settings to ensure categories do not require approval
         \App\Models\Setting::set('stores_dept_head_approval_categories', [], 'json');
 
@@ -1022,6 +1030,8 @@ class ApiTest extends TestCase
         $viewAsStores->assertSee('class="mini-tracker"', false);
         $viewAsStores->assertSee('title="Awaiting HOD Review', false);
         $viewAsStores->assertSee('Next:', false);
+        $viewAsStores->assertSee('class="table-item-pill"', false);
+        $viewAsStores->assertSee('Test Item Description', false);
 
         // Render the view row partial as Welfare HOD (should NOT see mini-tracker)
         $viewAsWelfare = $this->actingAs($welfareHOD)
@@ -1040,6 +1050,8 @@ class ApiTest extends TestCase
                 'availableItems' => collect(),
             ]);
         $viewAsStoresPersonnel->assertSee('class="mini-tracker"', false);
+        $viewAsStoresPersonnel->assertSee('class="table-item-pill"', false);
+        $viewAsStoresPersonnel->assertSee('Test Item Description', false);
 
         // Render personnel page as Welfare HOD
         $viewAsWelfarePersonnel = $this->actingAs($welfareHOD)

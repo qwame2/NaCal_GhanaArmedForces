@@ -628,6 +628,31 @@
     .mini-step.bypassed .mini-label {
         color: #94a3b8;
     }
+
+    /* Inline Items styling */
+    .table-item-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: var(--text-main);
+        background: var(--bg-main);
+        border: 1px solid var(--border-color);
+        padding: 4px 10px;
+        border-radius: 8px;
+        margin: 2px;
+    }
+
+    .table-item-qty {
+        color: #f97316;
+        font-weight: 800;
+    }
+
+    .table-item-approved {
+        color: #10b981;
+        font-weight: 800;
+    }
 </style>
 
 <div style="padding:2rem;">
@@ -764,14 +789,19 @@
                     </td>
                     <td style="padding:1rem 1.5rem;">
                         <div style="display:flex;flex-wrap:wrap;gap:4px;">
-                            @foreach($req->items->take(3) as $item)
-                            <span style="font-size:.7rem;font-weight:700;color:var(--text-main);background:var(--bg-main);border:1px solid var(--border-color);padding:2px 8px;border-radius:6px;">
-                                {{ Str::limit($item->description, 20) }} ({{ number_format($item->quantity_requested,0) }})
-                            </span>
+                            @foreach($req->items as $item)
+                                @php
+                                    $approvedVal = $item->quantity_approved !== null ? (float)$item->quantity_approved : null;
+                                    $altApproved = $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : 0;
+                                @endphp
+                                <span class="table-item-pill" title="{{ $item->description }}">
+                                    {{ Str::limit($item->description, 20) }}
+                                    <span class="table-item-qty">×{{ number_format($item->quantity_requested,0) }}</span>
+                                    @if($approvedVal !== null)
+                                        <span class="table-item-approved">(✓{{ number_format($approvedVal+$altApproved,0) }})</span>
+                                    @endif
+                                </span>
                             @endforeach
-                            @if($req->items->count() > 3)
-                            <span style="font-size:.7rem;font-weight:700;color:#4f46e5;background:rgba(79,70,229,.1);padding:2px 8px;border-radius:6px;">+{{ $req->items->count()-3 }} more</span>
-                            @endif
                         </div>
                     </td>
                     <td style="padding:1rem 1.5rem;text-align:center;"><span class="pill" style="background:{{ $pb['bg'] }};color:{{ $pb['color'] }};">{{ $pb['label'] }}</span></td>
