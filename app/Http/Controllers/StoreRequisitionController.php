@@ -1446,26 +1446,17 @@ class StoreRequisitionController extends Controller
             if ($request->status === 'pending') {
                 if ($isStoresHead) {
                     $query->where('status', 'pending')
-                          ->where(function($q) use ($isStoresHOD, $isBackupActive) {
-                              $q->where(function($q2) {
-                                  $q2->where('origin_admin_status', 'approved')
-                                     ->where('main_admin_status', 'pending');
-                              });
-                              if ($isStoresHOD) {
-                                  $q->orWhere(function($q2) {
-                                      $q2->where('origin_admin_status', 'pending')
-                                         ->whereIn('department', ['Stores', 'Store']);
-                                  });
-                              }
-                              if ($isBackupActive) {
-                                  $q->orWhere(function($q2) {
-                                      $q2->where('department', auth()->user()->department)
-                                         ->where(function($q3) {
-                                             $q3->where('origin_admin_status', 'pending')
-                                                ->orWhere('alternative_status', 'proposed');
-                                         });
-                                  });
-                              }
+                          ->where(function($q) use ($isStoresHOD) {
+                              $q->whereNotIn('department', ['Stores', 'Store'])
+                                 ->orWhere(function($q2) use ($isStoresHOD) {
+                                     $q2->whereIn('department', ['Stores', 'Store'])
+                                        ->where(function($q3) use ($isStoresHOD) {
+                                            $q3->where('origin_admin_status', 'approved');
+                                            if ($isStoresHOD) {
+                                                $q3->orWhere('origin_admin_status', 'pending');
+                                            }
+                                        });
+                                 });
                           });
                 } else {
                     $query->where(function($q) {
@@ -1528,26 +1519,17 @@ class StoreRequisitionController extends Controller
         } else {
             if ($isStoresHead) {
                 $query->where('status', 'pending')
-                      ->where(function($q) use ($isStoresHOD, $isBackupActive) {
-                          $q->where(function($q2) {
-                              $q2->where('origin_admin_status', 'approved')
-                                 ->where('main_admin_status', 'pending');
-                          });
-                          if ($isStoresHOD) {
-                              $q->orWhere(function($q2) {
-                                  $q2->where('origin_admin_status', 'pending')
-                                     ->whereIn('department', ['Stores', 'Store']);
-                              });
-                          }
-                          if ($isBackupActive) {
-                              $q->orWhere(function($q2) {
-                                  $q2->where('department', auth()->user()->department)
-                                     ->where(function($q3) {
-                                         $q3->where('origin_admin_status', 'pending')
-                                            ->orWhere('alternative_status', 'proposed');
-                                     });
-                              });
-                          }
+                      ->where(function($q) use ($isStoresHOD) {
+                          $q->whereNotIn('department', ['Stores', 'Store'])
+                            ->orWhere(function($q2) use ($isStoresHOD) {
+                                $q2->whereIn('department', ['Stores', 'Store'])
+                                   ->where(function($q3) use ($isStoresHOD) {
+                                       $q3->where('origin_admin_status', 'approved');
+                                       if ($isStoresHOD) {
+                                           $q3->orWhere('origin_admin_status', 'pending');
+                                       }
+                                   });
+                            });
                       });
             } else {
                 $query->where(function($q) {

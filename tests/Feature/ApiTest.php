@@ -959,5 +959,97 @@ class ApiTest extends TestCase
         $itReq->refresh();
         $this->assertEquals('approved', $itReq->main_admin_status);
     }
+
+    public function test_head_of_stores_tracking_pipeline_attribute_and_view(): void
+    {
+        // Hot-patch database columns in sqlite memory for testing
+        try {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('main_admin_status')->default('pending');
+            });
+        } catch (\Exception $e) {}
+        try {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('origin_admin_status')->default('pending');
+            });
+        } catch (\Exception $e) {}
+        try {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('alternative_status')->nullable();
+            });
+        } catch (\Exception $e) {}
+
+        $requester = User::factory()->create(['role' => 'Requisitioner', 'department' => 'Welfare Department', 'registration_status' => 'approved']);
+        $storesHOD = User::factory()->create(['role' => 'Head of Stores', 'department' => 'Stores', 'registration_status' => 'approved']);
+        $welfareHOD = User::factory()->create(['role' => 'Department Head', 'department' => 'Welfare Department', 'registration_status' => 'approved']);
+
+        $req = \App\Models\StoreRequisition::create([
+            'requester_name' => $requester->name,
+            'department' => 'Welfare Department',
+            'requested_by' => $requester->id,
+            'purpose' => 'Tracking test request',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'usage_type' => 'permanent',
+            'origin_admin_status' => 'pending',
+            'main_admin_status' => 'pending',
+            'requires_dg_approval' => false,
+        ]);
+
+        // Clean settings to ensure categories do not require approval
+        \App\Models\Setting::set('stores_dept_head_approval_categories', [], 'json');
+
+        // Verify the attribute directly
+        $pipeline = $req->tracking_pipeline;
+        $this->assertArrayHasKey('hod', $pipeline);
+        $this->assertArrayHasKey('stores_hod', $pipeline);
+        $this->assertArrayHasKey('dg', $pipeline);
+        $this->assertArrayHasKey('head_of_stores', $pipeline);
+
+        // HOD review should be active/pending since origin_admin_status is pending
+        $this->assertEquals('active', $pipeline['hod']['status']);
+        // Stores HOD should be bypassed because categories do not require it
+        $this->assertEquals('bypassed', $pipeline['stores_hod']['status']);
+        // DG should be bypassed because requires_dg_approval is false
+        $this->assertEquals('bypassed', $pipeline['dg']['status']);
+        // Head of Stores should be pending
+        $this->assertEquals('pending', $pipeline['head_of_stores']['status']);
+
+        // Render the view row partial as Head of Stores (should see mini-tracker)
+        $viewAsStores = $this->actingAs($storesHOD)
+            ->view('requisitions._req_table_rows', ['requisitions' => collect([$req])]);
+        
+        $viewAsStores->assertSee('class="mini-tracker"', false);
+        $viewAsStores->assertSee('title="Awaiting HOD Review', false);
+        $viewAsStores->assertSee('Next:', false);
+
+        // Render the view row partial as Welfare HOD (should NOT see mini-tracker)
+        $viewAsWelfare = $this->actingAs($welfareHOD)
+            ->view('requisitions._req_table_rows', ['requisitions' => collect([$req])]);
+        
+        $viewAsWelfare->assertDontSee('class="mini-tracker"', false);
+        $viewAsWelfare->assertDontSee('title="Awaiting HOD Review', false);
+
+        // Render personnel page as Head of Stores
+        $stats = ['pending' => 1, 'urgent' => 0, 'approved' => 0, 'partially_approved' => 0, 'declined' => 0];
+        $viewAsStoresPersonnel = $this->actingAs($storesHOD)
+            ->view('requisitions.personnel', [
+                'requisitions' => new \Illuminate\Pagination\LengthAwarePaginator(collect([$req]), 1, 15),
+                'stats' => $stats,
+                'ledgeMap' => [],
+                'availableItems' => collect(),
+            ]);
+        $viewAsStoresPersonnel->assertSee('class="mini-tracker"', false);
+
+        // Render personnel page as Welfare HOD
+        $viewAsWelfarePersonnel = $this->actingAs($welfareHOD)
+            ->view('requisitions.personnel', [
+                'requisitions' => new \Illuminate\Pagination\LengthAwarePaginator(collect([$req]), 1, 15),
+                'stats' => $stats,
+                'ledgeMap' => [],
+                'availableItems' => collect(),
+            ]);
+        $viewAsWelfarePersonnel->assertDontSee('class="mini-tracker"', false);
+    }
 }
 

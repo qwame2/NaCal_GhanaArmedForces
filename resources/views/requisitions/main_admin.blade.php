@@ -657,6 +657,12 @@
         color: white;
     }
 
+    .mini-step.bypassed .mini-dot {
+        background: #f1f5f9;
+        border-color: var(--border-color);
+        color: #94a3b8;
+    }
+
     .mini-line {
         flex: 1;
         height: 2px;
@@ -687,6 +693,10 @@
 
     .mini-step.declined .mini-label {
         color: var(--danger-color);
+    }
+
+    .mini-step.bypassed .mini-label {
+        color: #94a3b8;
     }
 
     /* Inline Items styling */
@@ -1711,8 +1721,25 @@
         </div>`;
 
         // Check if processed already
-        let isProcessed = isStoresHead ? (data.main_admin_status !== 'pending') : (data.origin_admin_status !== 'pending' && data.alternative_status !== 'proposed');
+        let isProcessed = isStoresHead 
+            ? (data.main_admin_status !== 'pending' || data.origin_admin_status === 'pending') 
+            : (data.origin_admin_status !== 'pending' && data.alternative_status !== 'proposed');
         let decisionHtml = '';
+
+        if (isStoresHead && data.origin_admin_status === 'pending') {
+            decisionHtml = `
+            <div style="background: rgba(99, 102, 241, 0.05); border: 1.5px dashed rgba(99, 102, 241, 0.25); border-radius: 16px; padding: 1.25rem; margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width:34px; height:34px; background:rgba(99, 102, 241, 0.1); color:#6366f1; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="clock" style="width:16px; height:16px; color:#6366f1;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Pending HOD Approval</h4>
+                        <p style="margin:2px 0 0; font-size:0.75rem; color:var(--text-muted); font-weight:600;">This requisition must be approved by the originating department head first.</p>
+                    </div>
+                </div>
+            </div>`;
+        }
 
         if (!isProcessed) {
             if (data.alternative_status === 'proposed' && !isStoresHead) {

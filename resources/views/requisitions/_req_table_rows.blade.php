@@ -51,6 +51,67 @@
             <span class="status-pill" style="background:{{ $sb['bg'] }};color:{{ $sb['color'] }};font-size:0.65rem;">
                 ● {{ $sb['label'] }}
             </span>
+            @if(auth()->user()->role === 'Head of Stores')
+                @php
+                    $pipeline = $req->tracking_pipeline;
+                    $step1 = $pipeline['hod'];
+                    $step2 = $pipeline['stores_hod'];
+                    $step3 = $pipeline['dg'];
+                    $step4 = $pipeline['head_of_stores'];
+                @endphp
+                <div class="mini-tracker" style="max-width: 190px; gap: 2px; margin-top: 8px;">
+                    <!-- Step 1: HOD -->
+                    <div class="mini-step {{ $step1['status'] }}" title="{{ $step1['label'] }} (Reviewer: {{ $step1['user'] }})">
+                        <div class="mini-dot">
+                            <i data-lucide="{{ $step1['icon'] }}" style="width: 10px; height: 10px;"></i>
+                        </div>
+                        <span class="mini-label">HOD</span>
+                    </div>
+                    
+                    <div class="mini-line {{ in_array($step2['status'], ['completed', 'active', 'declined']) && $step2['status'] !== 'bypassed' ? 'completed' : '' }}"></div>
+                    
+                    <!-- Step 2: Stores HOD -->
+                    <div class="mini-step {{ $step2['status'] }}" title="{{ $step2['label'] }} (Reviewer: {{ $step2['user'] }})">
+                        <div class="mini-dot">
+                            <i data-lucide="{{ $step2['icon'] }}" style="width: 10px; height: 10px;"></i>
+                        </div>
+                        <span class="mini-label">Stores HOD</span>
+                    </div>
+                    
+                    <div class="mini-line {{ in_array($step3['status'], ['completed', 'active', 'declined']) && $step3['status'] !== 'bypassed' ? 'completed' : '' }}"></div>
+                    
+                    <!-- Step 3: DG -->
+                    <div class="mini-step {{ $step3['status'] }}" title="{{ $step3['label'] }} (Reviewer: {{ $step3['user'] }})">
+                        <div class="mini-dot">
+                            <i data-lucide="{{ $step3['icon'] }}" style="width: 10px; height: 10px;"></i>
+                        </div>
+                        <span class="mini-label">DG</span>
+                    </div>
+                    
+                    <div class="mini-line {{ in_array($step4['status'], ['completed', 'active', 'declined']) && $step4['status'] !== 'bypassed' ? 'completed' : '' }}"></div>
+                    
+                    <!-- Step 4: Stores Final -->
+                    <div class="mini-step {{ $step4['status'] }}" title="{{ $step4['label'] }} (Reviewer: {{ $step4['user'] }})">
+                        <div class="mini-dot">
+                            <i data-lucide="{{ $step4['icon'] }}" style="width: 10px; height: 10px;"></i>
+                        </div>
+                        <span class="mini-label">Stores Final</span>
+                    </div>
+                </div>
+                @if($req->status === 'pending')
+                    <div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;font-weight:600;">
+                        Next: <span style="color:var(--text-main);font-weight:800;">{{ $req->approver_name }}</span>
+                    </div>
+                @endif
+            @else
+                @if(auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0)
+                    @if($req->status === 'pending')
+                        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;font-weight:600;">
+                            Next: <span style="color:var(--text-main);font-weight:800;">{{ $req->approver_name }}</span>
+                        </div>
+                    @endif
+                @endif
+            @endif
         </td>
         <td data-label="Usage">
             <span class="status-pill" style="background:{{ $utb['bg'] }};color:{{ $utb['color'] }};font-size:0.65rem;">

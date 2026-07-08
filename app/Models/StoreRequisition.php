@@ -109,7 +109,7 @@ class StoreRequisition extends Model
                 return ['label' => 'Awaiting Dept Head Approval', 'color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'];
             }
             if (($this->main_admin_status ?? 'pending') === 'pending') {
-                return ['label' => 'Awaiting Store Head Review', 'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'];
+                return ['label' => 'Awaiting Authorizer Review', 'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'];
             }
             if ($this->requires_dg_approval && ($this->dg_status ?? 'pending') === 'pending') {
                 return ['label' => 'Awaiting DG Approval', 'color' => '#8b5cf6', 'bg' => 'rgba(139,92,246,0.1)'];
@@ -132,4 +132,118 @@ class StoreRequisition extends Model
             default     => ['label' => 'Permanent', 'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.1)'],
         };
     }
+
+    protected static $deptHeadsCache = null;
+
+    public function getApproverNameAttribute(): string
+    {
+        if (($this->origin_admin_status ?? 'pending') === 'pending') {
+            if (self::$deptHeadsCache === null) {
+                self::$deptHeadsCache = \App\Models\User::where('role', 'Department Head')
+                    ->where('is_active', true)
+                    ->get()
+                    ->keyBy(fn($u) => strtolower(trim($u->department)));
+            }
+            $key = strtolower(trim($this->department));
+            $hod = self::$deptHeadsCache->get($key);
+            return $hod ? $hod->name . ' (HOD)' : 'Department Head';
+        }
+        if (($this->main_admin_status ?? 'pending') === 'pending') {
+            return 'Authorizer';
+        }
+        if ($this->requires_dg_approval && ($this->dg_status ?? 'pending') === 'pending') {
+            return 'Director General';
+        }
+        return 'N/A';
+    }
+
+    public function getTrackingPipelineAttribute(): array
+    {
+        $steps = [];
+        $hodStatus = $this->origin_admin_status;
+        $finalStatus = $this->status;
+
+        // Step 1: HOD Review
+        if ($hodStatus === 'declined' || ($hodStatus === 'pending' && $finalStatus === 'declined')) {
+            $steps['hod'] = ['label' => 'HOD Declined', 'status' => 'declined', 'icon' => 'x', 'user' => $this->origin_approved_by ?? 'Department Head'];
+        } elseif ($hodStatus === 'approved') {
+            $steps['hod'] = ['label' => 'HOD Approved', 'status' => 'completed', 'icon' => 'check', 'user' => $this->origin_approved_by];
+        } else {
+            $hodName = 'Department Head';
+            $key = strtolower(trim($this->department));
+            if (self::$deptHeadsCache === null) {
+                self::$deptHeadsCache = \App\Models\User::where('role', 'Department Head')
+                    ->where('is_active', true)
+                    ->get()
+                    ->keyBy(fn($u) => strtolower(trim($u->department)));
+            }
+            $hod = self::$deptHeadsCache->get($key);
+            if ($hod) {
+                $hodName = $hod->name;
+            }
+            $steps['hod'] = ['label' => 'Awaiting HOD Review', 'status' => 'active', 'icon' => 'clock', 'user' => $hodName];
+        }
+
+        // Step 2: Stores HOD Review
+        $storesApprovalCategories = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
+        if (is_string($storesApprovalCategories)) {
+            $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
+        }
+        $requiresStoresDeptHeadApproval = false;
+        foreach ($this->items as $item) {
+            if (in_array($item->category, $storesApprovalCategories)) {
+                $requiresStoresDeptHeadApproval = true;
+                break;
+            }
+        }
+
+        if (!$requiresStoresDeptHeadApproval) {
+            $steps['stores_hod'] = ['label' => 'Stores HOD Bypassed', 'status' => 'bypassed', 'icon' => 'minus', 'user' => 'N/A'];
+        } else {
+            $storesStatus = $this->main_admin_status;
+            if ($hodStatus === 'declined' || ($hodStatus === 'pending' && $finalStatus === 'declined')) {
+                $steps['stores_hod'] = ['label' => 'Stores HOD Bypassed', 'status' => 'bypassed', 'icon' => 'minus', 'user' => 'N/A'];
+            } elseif ($storesStatus === 'declined' || ($storesStatus === 'pending' && $finalStatus === 'declined')) {
+                $steps['stores_hod'] = ['label' => 'Stores HOD Declined', 'status' => 'declined', 'icon' => 'x', 'user' => $this->stores_approved_by ?? 'Stores Department Head'];
+            } elseif ($storesStatus === 'approved') {
+                $steps['stores_hod'] = ['label' => 'Stores HOD Approved', 'status' => 'completed', 'icon' => 'check', 'user' => $this->stores_approved_by];
+            } elseif ($hodStatus === 'approved') {
+                $steps['stores_hod'] = ['label' => 'Awaiting Stores HOD Review', 'status' => 'active', 'icon' => 'clock', 'user' => 'Stores Department Head'];
+            } else {
+                $steps['stores_hod'] = ['label' => 'Pending Stores HOD Review', 'status' => 'pending', 'icon' => 'circle', 'user' => 'Stores Department Head'];
+            }
+        }
+
+        // Step 3: DG Approval
+        if (!$this->requires_dg_approval) {
+            $steps['dg'] = ['label' => 'DG Bypassed', 'status' => 'bypassed', 'icon' => 'minus', 'user' => 'N/A'];
+        } else {
+            $dgStatus = $this->dg_status;
+            if ($hodStatus === 'declined' || $this->main_admin_status === 'declined' || $finalStatus === 'declined') {
+                $steps['dg'] = ['label' => 'DG Bypassed', 'status' => 'bypassed', 'icon' => 'minus', 'user' => 'N/A'];
+            } elseif ($dgStatus === 'declined') {
+                $steps['dg'] = ['label' => 'DG Declined', 'status' => 'declined', 'icon' => 'x', 'user' => 'Director General'];
+            } elseif ($dgStatus === 'approved') {
+                $steps['dg'] = ['label' => 'DG Approved', 'status' => 'completed', 'icon' => 'check', 'user' => $this->dg_approved_by ?? 'Director General'];
+            } elseif ($hodStatus === 'approved' && ($this->main_admin_status === 'approved' || !$requiresStoresDeptHeadApproval)) {
+                $steps['dg'] = ['label' => 'Awaiting DG Approval', 'status' => 'active', 'icon' => 'clock', 'user' => 'Director General'];
+            } else {
+                $steps['dg'] = ['label' => 'Pending DG Approval', 'status' => 'pending', 'icon' => 'circle', 'user' => 'Director General'];
+            }
+        }
+
+        // Step 4: Head of Stores Final Review
+        if ($hodStatus === 'declined' || $this->main_admin_status === 'declined' || ($this->requires_dg_approval && $this->dg_status === 'declined') || $finalStatus === 'declined') {
+            $steps['head_of_stores'] = ['label' => 'No Review (Declined)', 'status' => 'bypassed', 'icon' => 'minus', 'user' => 'N/A'];
+        } elseif (in_array($finalStatus, ['approved', 'partially_approved'])) {
+            $steps['head_of_stores'] = ['label' => 'Issued / Completed', 'status' => 'completed', 'icon' => 'check', 'user' => $this->processor?->name ?? 'Head of Stores'];
+        } elseif ($hodStatus === 'approved' && ($this->main_admin_status === 'approved' || !$requiresStoresDeptHeadApproval) && (!$this->requires_dg_approval || $this->dg_status === 'approved')) {
+            $steps['head_of_stores'] = ['label' => 'Awaiting Head of Stores Review', 'status' => 'active', 'icon' => 'clock', 'user' => 'Head of Stores'];
+        } else {
+            $steps['head_of_stores'] = ['label' => 'Pending Head of Stores Review', 'status' => 'pending', 'icon' => 'circle', 'user' => 'Head of Stores'];
+        }
+
+        return $steps;
+    }
 }
+
