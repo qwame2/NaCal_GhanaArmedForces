@@ -295,6 +295,10 @@
 </div>
 
 <style>
+    .main-wrapper > *:not(header) {
+        max-width: 2000px !important;
+    }
+
     /* Tab System Layout styling */
     .pager-tab.active {
         background: var(--primary) !important;

@@ -661,7 +661,26 @@ class AdminController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
-        $users = User::where('is_admin', false)->where('registration_status', 'approved')->get();
+        $currentUserId = auth()->id();
+        $users = User::where('is_admin', false)
+            ->where('registration_status', 'approved')
+            ->select('users.*')
+            ->selectSub(function ($query) use ($currentUserId) {
+                $query->selectRaw('MAX(created_at)')
+                    ->from('messages')
+                    ->where(function ($q) use ($currentUserId) {
+                        $q->whereColumn('sender_id', 'users.id')
+                          ->where('receiver_id', $currentUserId);
+                    })
+                    ->orWhere(function ($q) use ($currentUserId) {
+                        $q->whereColumn('receiver_id', 'users.id')
+                          ->where('sender_id', $currentUserId);
+                    });
+            }, 'latest_message_time')
+            ->orderByDesc('latest_message_time')
+            ->orderBy('name')
+            ->get();
+
         return view('admin.messages', compact('users'));
     }
 

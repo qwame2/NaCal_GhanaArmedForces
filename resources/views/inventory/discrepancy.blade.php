@@ -27,6 +27,15 @@
         background: rgba(239, 68, 68, 0.2) !important;
         color: #ef4444 !important;
     }
+    #toggleSupplierSection:hover label {
+        color: var(--primary) !important;
+    }
+    #toggleSupplierSection:hover #supplierToggleArrow {
+        color: var(--primary) !important;
+    }
+    .rotate-180 {
+        transform: rotate(180deg) !important;
+    }
 </style>
 
 <div class="animate-slide-up" id="discrepancyPageContainer">
@@ -77,7 +86,7 @@
                     <div class="form-group">
                         <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
                             <i data-lucide="calendar" style="width: 14px; color: var(--primary);"></i>
-                            Date Collected <span style="color: #ef4444; margin-left: 2px;">*</span>
+                            Received On<span style="color: #ef4444; margin-left: 2px;">*</span>
                         </label>
                         <input type="date" id="arrivalDate" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600;" required>
                     </div>
@@ -105,73 +114,82 @@
                     </div>
 
                     <!-- Supplier / Source (Full Info) -->
-                    <div class="form-group" style="grid-column: 1 / -1;">
-                        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
-                            <i data-lucide="truck" style="width: 14px; color: var(--primary);"></i>
-                            Supplier / Source Name (Search or Type) <span style="color: #ef4444; margin-left: 2px;">*</span>
-                        </label>
-                        <select id="supplierSelect" style="width: 100%;" required>
-                            <option value=""></option>
-                            @foreach($allSuppliers as $supplier)
-                                <option value="{{ $supplier }}">{{ $supplier }}</option>
-                            @endforeach
-                        </select>
+                    <div class="form-group" style="grid-column: 1 / -1; border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; background: var(--bg-card); transition: all 0.3s ease;">
+                        <div id="toggleSupplierSection" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 750; color: var(--text-main); margin-bottom: 0; cursor: pointer;">
+                                <i data-lucide="truck" style="width: 16px; color: var(--primary);"></i>
+                                Supplier / Source Name (Search or Type)
+                            </label>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span id="supplierSummaryBadge" style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700; display: none;"></span>
+                                <i data-lucide="chevron-down" id="supplierToggleArrow" style="width: 18px; height: 18px; color: var(--text-muted); transition: transform 0.3s ease;"></i>
+                            </div>
+                        </div>
 
-                        <!-- Supplier Contact & Delivery Details -->
-                        <div id="deliveryPersonGroup" style="margin-top: 1.25rem; background: rgba(0,0,0,0.01); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 16px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
-                                <div>
+                        <div id="supplierSectionContent" style="display: none; margin-top: 1.25rem; border-top: 1px dashed var(--border-color); padding-top: 1.25rem;">
+                            <select id="supplierSelect" style="width: 100%;">
+                                <option value=""></option>
+                                @foreach($allSuppliers as $supplier)
+                                    <option value="{{ $supplier }}">{{ $supplier }}</option>
+                                @endforeach
+                            </select>
+
+                            <!-- Supplier Contact & Delivery Details -->
+                            <div id="deliveryPersonGroup" style="margin-top: 1.25rem; background: rgba(0,0,0,0.01); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 16px;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
+                                    <div>
+                                        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+                                            <i data-lucide="phone" style="width: 12px; color: var(--primary);"></i>
+                                            Supplier Phone
+                                        </label>
+                                        <input type="text" id="supplierPhoneInput" class="form-control" placeholder="Enter supplier phone number" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                    </div>
+                                    <div>
+                                        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
+                                            <i data-lucide="mail" style="width: 12px; color: var(--primary);"></i>
+                                            Supplier Email
+                                        </label>
+                                        <input type="email" id="supplierEmailInput" class="form-control" placeholder="Enter supplier email address" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                    </div>
+                                </div>
+                                <div style="margin-bottom: 0.75rem;">
                                     <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
-                                        <i data-lucide="phone" style="width: 12px; color: var(--primary);"></i>
-                                        Supplier Phone
+                                        <i data-lucide="map-pin" style="width: 12px; color: var(--primary);"></i>
+                                        Supplier Physical Address
                                     </label>
-                                    <input type="text" id="supplierPhoneInput" class="form-control" placeholder="Enter supplier phone number" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                    <input type="text" id="supplierAddressInput" class="form-control" placeholder="Enter supplier physical address" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
                                 </div>
-                                <div>
-                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
-                                        <i data-lucide="mail" style="width: 12px; color: var(--primary);"></i>
-                                        Supplier Email
-                                    </label>
-                                    <input type="email" id="supplierEmailInput" class="form-control" placeholder="Enter supplier email address" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
+                                    <div>
+                                        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                                            <i data-lucide="user" style="width: 12px; color: var(--primary);"></i>
+                                            Contact Person Name
+                                        </label>
+                                        <input type="text" id="deliveryPersonInput" class="form-control" placeholder="Contact person name" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                    </div>
+                                    <div>
+                                        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                                            <i data-lucide="phone" style="width: 12px; color: var(--primary);"></i>
+                                            Contact Person Number
+                                        </label>
+                                        <input type="text" id="deliveryPersonPhoneInput" maxlength="10" class="form-control" placeholder="Contact number (10 digits)" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                    </div>
                                 </div>
-                            </div>
-                            <div style="margin-bottom: 0.75rem;">
-                                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;">
-                                    <i data-lucide="map-pin" style="width: 12px; color: var(--primary);"></i>
-                                    Supplier Physical Address
-                                </label>
-                                <input type="text" id="supplierAddressInput" class="form-control" placeholder="Enter supplier physical address" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem;">
-                                <div>
-                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
-                                        <i data-lucide="user" style="width: 12px; color: var(--primary);"></i>
-                                        Contact Person Name <span style="color: #ef4444; margin-left: 2px;">*</span>
-                                    </label>
-                                    <input type="text" id="deliveryPersonInput" class="form-control" placeholder="Contact person name" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;" required>
-                                </div>
-                                <div>
-                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
-                                        <i data-lucide="phone" style="width: 12px; color: var(--primary);"></i>
-                                        Contact Person Number <span style="color: #ef4444; margin-left: 2px;">*</span>
-                                    </label>
-                                    <input type="text" id="deliveryPersonPhoneInput" maxlength="10" class="form-control" placeholder="Contact number (10 digits)" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;" required>
-                                </div>
-                            </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div>
-                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
-                                        <i data-lucide="truck" style="width: 12px; color: var(--primary);"></i>
-                                        Delivery Person Name <span style="color: #ef4444; margin-left: 2px;">*</span>
-                                    </label>
-                                    <input type="text" id="driverNameInput" class="form-control" placeholder="Driver name" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;" required>
-                                </div>
-                                <div>
-                                    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
-                                        <i data-lucide="phone" style="width: 12px; color: var(--primary);"></i>
-                                        Delivery Person Number <span style="color: #ef4444; margin-left: 2px;">*</span>
-                                    </label>
-                                    <input type="text" id="driverPhoneInput" maxlength="10" class="form-control" placeholder="Driver phone (10 digits)" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;" required>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <div>
+                                        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                                            <i data-lucide="truck" style="width: 12px; color: var(--primary);"></i>
+                                            Delivery Person Name
+                                        </label>
+                                        <input type="text" id="driverNameInput" class="form-control" placeholder="Driver name" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                    </div>
+                                    <div>
+                                        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                                            <i data-lucide="phone" style="width: 12px; color: var(--primary);"></i>
+                                            Delivery Person Number
+                                        </label>
+                                        <input type="text" id="driverPhoneInput" maxlength="10" class="form-control" placeholder="Driver phone (10 digits)" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -197,7 +215,7 @@
             </div>
 
             <!-- Form Footer / Submit -->
-            <div id="formFooter" style="display: none; border-top: 1px solid var(--border-color); padding-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
+            <div id="formFooter" style="display: none; border-top: 1px solid var(--border-color); padding-top: 2rem; gap: 1rem; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
                 <a href="{{ route('dashboard') }}" class="glass-card" style="padding: 1.15rem 2.5rem; text-decoration: none; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; justify-content: center; border-radius: 14px;">
                     Cancel
                 </a>
@@ -226,17 +244,53 @@
         const container = $('#itemsContainer');
         const multiQtyInput = $('#multiQty');
 
+        const supplierSelect = $('#supplierSelect');
+        const supplierContent = $('#supplierSectionContent');
+        const toggleSupplierSection = $('#toggleSupplierSection');
+        const supplierToggleArrow = $('#supplierToggleArrow');
+        const supplierSummaryBadge = $('#supplierSummaryBadge');
+
+        // Ensure hidden state is tracked by jQuery (allows .show() to restore correct display: flex)
+        formFooter.hide();
+        itemDetails.hide();
+
         // Initialize Select2 dropdowns
         ledgeSelect.select2({
             placeholder: 'Select Category',
             width: '100%'
         });
 
-        $('#supplierSelect').select2({
+        supplierSelect.select2({
             placeholder: 'Select Supplier/Source',
             width: '100%',
             tags: true
         });
+
+        // Toggle Supplier Section
+        toggleSupplierSection.on('click', function() {
+            supplierContent.slideToggle(300, function() {
+                // If it becomes visible, make sure Select2 works correctly
+                if ($(this).is(':visible')) {
+                    supplierSelect.select2({
+                        placeholder: 'Select Supplier/Source',
+                        width: '100%',
+                        tags: true
+                    });
+                }
+            });
+            supplierToggleArrow.toggleClass('rotate-180');
+        });
+
+        // Update supplier summary badge dynamically
+        function updateSupplierSummary() {
+            const val = supplierSelect.val();
+            if (val) {
+                supplierSummaryBadge.text(val).show();
+            } else {
+                supplierSummaryBadge.hide();
+            }
+        }
+        supplierSelect.on('change', updateSupplierSummary);
 
         $('#supplierStatusSelect').select2({
             placeholder: 'Select Status',
@@ -292,35 +346,43 @@
         $('#arrivalDate').val(new Date().toISOString().split('T')[0]);
 
         // Handle Ledge Selection change
-        ledgeSelect.on('change select2:select', function() {
-            const selectedLedge = ($(this).val() || '').toUpperCase().trim();
-            if (selectedLedge) {
-                $('#qtyControl').show().animate({ opacity: 1 }, 400);
-                itemDetails.slideDown(400);
-                formFooter.fadeIn(400);
+        function handleLedgeChange() {
+            try {
+                const selectedLedge = String(ledgeSelect.val() || '').toUpperCase().trim();
+                if (selectedLedge) {
+                    $('#qtyControl').show().animate({ opacity: 1 }, 400);
+                    itemDetails.slideDown(400);
+                    formFooter.css('display', 'flex');
 
-                if (container.children().length === 0) {
-                    renderItemRows(1);
-                    multiQtyInput.val(1);
+                    if (container.children().length === 0) {
+                        renderItemRows(1);
+                        multiQtyInput.val(1);
+                    } else {
+                        // Update any child categories if they exist
+                        $('.item-entry-row').each(function() {
+                            const $row = $(this);
+                            const rowLedge = $row.find('.row-ledge-select');
+                            if (rowLedge.val() !== selectedLedge) {
+                                rowLedge.val(selectedLedge).trigger('change');
+                            }
+                        });
+                        updateRowBadges();
+                    }
                 } else {
-                    // Update any child categories if they exist
-                    $('.item-entry-row').each(function() {
-                        const $row = $(this);
-                        const rowLedge = $row.find('.row-ledge-category');
-                        if (rowLedge.val() !== selectedLedge) {
-                            rowLedge.val(selectedLedge).trigger('change');
-                        }
-                    });
-                    updateRowBadges();
+                    $('#qtyControl').hide().css('opacity', 0);
+                    itemDetails.slideUp(400);
+                    formFooter.hide();
+                    container.empty();
+                    multiQtyInput.val(1);
                 }
-            } else {
-                $('#qtyControl').hide().css('opacity', 0);
-                itemDetails.slideUp(400);
-                formFooter.fadeOut(400);
-                container.empty();
-                multiQtyInput.val(1);
+            } catch (err) {
+                console.error("Error in master category select handler:", err);
             }
-        });
+        }
+
+        ledgeSelect.on('change', handleLedgeChange);
+        ledgeSelect.on('select2:select', handleLedgeChange);
+        ledgeSelect.on('select2:unselect', handleLedgeChange);
 
         // Supplier Registry autofill
         const suppliersRegistry = @json($suppliersRegistry);
@@ -378,12 +440,12 @@
         function renderItemRows(count, append = false) {
             if (!append) container.empty();
 
-            const selectedLedge = (ledgeSelect.val() || '').toUpperCase().trim();
+            const selectedLedge = String(ledgeSelect.val() || '').toUpperCase().trim();
             const categoryText = $('#ledgeSelect option:selected').text().trim();
             const suffix = categoryText ? ' - ' + categoryText : '';
 
             const standardPackages = ['PIECE(S)', 'PACK', 'BOXES', 'CARTON', 'BAG', 'ROLL', 'SET', 'REAM', 'BOTTLE'];
-            const existingUnits = (existingDBItems || []).map(item => (item && item.unit || '').toUpperCase().trim()).filter(Boolean);
+            const existingUnits = (existingDBItems || []).map(item => String(item && item.unit || '').toUpperCase().trim()).filter(Boolean);
             const allPackages = [...new Set([...standardPackages, ...existingUnits])];
             const packageOptionsHtml = allPackages.map(pkg => `<option value="${pkg}">${pkg}</option>`).join('');
 
@@ -533,8 +595,8 @@
 
                 // Function to update item options dynamically based on row Category Section
                 function updateItemSelectOptions() {
-                    const rowLedge = ($rowLedgeSelect.val() || '').toUpperCase().trim();
-                    const filteredItems = (existingDBItems || []).filter(item => item && (item.ledge_category || '').toUpperCase().trim() === rowLedge);
+                    const rowLedge = String($rowLedgeSelect.val() || '').toUpperCase().trim();
+                    const filteredItems = (existingDBItems || []).filter(item => item && String(item.ledge_category || '').toUpperCase().trim() === rowLedge);
                     let optionsHtml = '<option value=""></option>';
                     filteredItems.forEach(item => {
                         optionsHtml += `<option value="${item.description}">${item.description}</option>`;
@@ -544,7 +606,7 @@
 
                 // Default to header selection and populate
                 if (selectedLedge) {
-                    $rowLedgeSelect.val(selectedLedge).trigger('change.select2');
+                    $rowLedgeSelect.val(selectedLedge).trigger('change');
                 }
                 updateItemSelectOptions();
 
@@ -598,10 +660,10 @@
 
                 // Auto-fill Package Type if matches existing DB item
                 $itemSelect.on('change', function() {
-                    const desc = ($(this).val() || '').trim().toUpperCase();
-                    const matched = (existingDBItems || []).find(item => item && (item.description || '').toUpperCase().trim() === desc);
+                    const desc = String($(this).val() || '').trim().toUpperCase();
+                    const matched = (existingDBItems || []).find(item => item && String(item.description || '').toUpperCase().trim() === desc);
                     if (matched && matched.unit) {
-                        const unitVal = matched.unit.toUpperCase().trim();
+                        const unitVal = String(matched.unit).toUpperCase().trim();
                         if ($rowUnitSelect.find('option[value="' + unitVal + '"]').length === 0) {
                             $rowUnitSelect.append(new Option(unitVal, unitVal, true, true));
                         }
@@ -634,7 +696,7 @@
 
                 // Serial Numbers / Rim Sizes handler
                 function updateSerialInputs() {
-                    const selectedLedge = ($rowLedgeSelect.val() || '').toUpperCase().trim();
+                    const selectedLedge = String($rowLedgeSelect.val() || '').toUpperCase().trim();
                     const isSerialCategory = ['C', 'J', 'D'].includes(selectedLedge);
                     const $container = $row.find('.serial-inputs-container');
                     const $group = $row.find('.serial-number-group');
@@ -657,7 +719,7 @@
                     $group.show();
 
                     // Check if Tyre in Transport
-                    const descText = ($itemSelect.val() || '').toUpperCase().trim();
+                    const descText = String($itemSelect.val() || '').toUpperCase().trim();
                     const isTyre = (selectedLedge === 'D' && (descText.includes('TYRE') || descText.includes('TYRES')));
 
                     const $label = $row.find('.serial-number-group label');
@@ -761,6 +823,7 @@
                     $row.remove();
                     updateRowBadges();
                     multiQtyInput.val(container.children('.item-entry-row').length);
+                    saveFormState();
                 });
             }
 
@@ -799,21 +862,14 @@
             const missing = [];
             const deliveryStatus = $('#supplierStatusSelect').val();
             if (!ledge) missing.push("Category Section");
-            if (!supplier) missing.push("Supplier / Source");
             if (!dateCollected) missing.push("Date Collected");
             if (!deliveryStatus) missing.push("Delivery Status");
 
-            if (!deliveryPerson) missing.push("Contact Person Name");
-            if (!deliveryPhone) {
-                missing.push("Contact Person Number");
-            } else if (deliveryPhone.toUpperCase() !== 'N/A' && !/^\d{10}$/.test(deliveryPhone)) {
+            if (deliveryPhone && deliveryPhone.toUpperCase() !== 'N/A' && !/^\d{10}$/.test(deliveryPhone)) {
                 missing.push("Contact Person Number (must be a 10-digit number or N/A)");
             }
 
-            if (!driverName) missing.push("Delivery Person Name");
-            if (!driverPhone) {
-                missing.push("Delivery Person Number");
-            } else if (driverPhone.toUpperCase() !== 'N/A' && !/^\d{10}$/.test(driverPhone)) {
+            if (driverPhone && driverPhone.toUpperCase() !== 'N/A' && !/^\d{10}$/.test(driverPhone)) {
                 missing.push("Delivery Person Number (must be a 10-digit number or N/A)");
             }
 
@@ -874,6 +930,15 @@
             }
 
             if (missing.length > 0) {
+                const hasSupplierErrors = missing.some(m => 
+                    m.includes("Contact Person Number") || 
+                    m.includes("Delivery Person Number")
+                );
+                if (hasSupplierErrors) {
+                    $('#supplierSectionContent').slideDown(300);
+                    $('#supplierToggleArrow').addClass('rotate-180');
+                }
+
                 Swal.fire({
                     icon: 'warning',
                     title: 'Required Fields Missing',
@@ -922,6 +987,7 @@
                 data: payload,
                 success: function(response) {
                     if (response.success) {
+                        localStorage.removeItem('inventory_discrepancy_draft');
                         if (response.is_pending) {
                             if (typeof window.playNotificationSound === 'function') {
                                 window.playNotificationSound('sent');
@@ -965,8 +1031,8 @@
 
         $(document).on('input', '.serial-input-item, .rim-input-item', function() {
             const $row = $(this).closest('.item-entry-row');
-            const selectedLedge = ($row.find('.row-ledge-select').val() || '').toUpperCase().trim();
-            const descText = ($row.find('.row-item-select').val() || '').toUpperCase().trim();
+            const selectedLedge = String($row.find('.row-ledge-select').val() || '').toUpperCase().trim();
+            const descText = String($row.find('.row-item-select').val() || '').toUpperCase().trim();
             const isTyre = (selectedLedge === 'D' && (descText.includes('TYRE') || descText.includes('TYRES')));
 
             const values = [];
@@ -1052,7 +1118,184 @@
                     });
                 }
             });
+        }); // end .btn-bulk-paste click handler
+
+        // Save Form State to LocalStorage
+        window.isRestoringDraft = false;
+        function saveFormState() {
+            if (window.isRestoringDraft) return;
+
+            const items = [];
+            container.children('.item-entry-row').each(function() {
+                const ledgeCategory = $(this).find('.row-ledge-select').val() || '';
+                const desc = $(this).find('.row-item-select').val() || '';
+                const unit = $(this).find('.row-unit-select').val() || '';
+                const bookQty = $(this).find('.row-book-qty').val() || '';
+                const qty = $(this).find('.row-received-qty').val() || '';
+                const calculatedDiscrepancy = $(this).find('.row-calculated-discrepancy').val() || '';
+                const serialNumber = $(this).find('.row-serial-number').val() || '';
+                const explanation = $(this).find('.row-explanation').val() || '';
+                const explanationCustom = $(this).find('.row-explanation-custom').val() || '';
+
+                // Individual serials/rims
+                const serials = [];
+                const rims = [];
+                $(this).find('.serial-input-wrapper').each(function() {
+                    serials.push($(this).find('.serial-input-item').val() || '');
+                    rims.push($(this).find('.rim-input-item').val() || '');
+                });
+
+                items.push({
+                    ledge_category: ledgeCategory,
+                    description: desc,
+                    unit: unit,
+                    book_qty: bookQty,
+                    qty: qty,
+                    calculated_discrepancy: calculatedDiscrepancy,
+                    serial_number: serialNumber,
+                    explanation: explanation,
+                    explanation_custom: explanationCustom,
+                    serials: serials,
+                    rims: rims
+                });
+            });
+
+            const state = {
+                ledge_category: $('#ledgeSelect').val(),
+                arrival_date: $('#arrivalDate').val(),
+                supplier_status: $('#supplierStatusSelect').val(),
+                multiQty: $('#multiQty').val(),
+                supplier_name: $('#supplierSelect').val(),
+                supplier_phone: $('#supplierPhoneInput').val(),
+                supplier_email: $('#supplierEmailInput').val(),
+                supplier_address: $('#supplierAddressInput').val(),
+                delivery_person: $('#deliveryPersonInput').val(),
+                delivery_phone: $('#deliveryPersonPhoneInput').val(),
+                driver_name: $('#driverNameInput').val(),
+                driver_phone: $('#driverPhoneInput').val(),
+                items: items
+            };
+
+            localStorage.setItem('inventory_discrepancy_draft', JSON.stringify(state));
+        }
+
+        // Populate a dynamic item row
+        function populateRow($row, item) {
+            if (!item) return;
+
+            if (item.ledge_category) {
+                $row.find('.row-ledge-select').val(item.ledge_category).trigger('change.select2').trigger('change');
+            }
+
+            if (item.description) {
+                const $descSelect = $row.find('.row-item-select');
+                if ($descSelect.find(`option[value="${item.description}"]`).length === 0) {
+                    $descSelect.append(new Option(item.description, item.description, true, true));
+                }
+                $descSelect.val(item.description).trigger('change.select2').trigger('change');
+            }
+
+            if (item.unit) {
+                const $unitSelect = $row.find('.row-unit-select');
+                if ($unitSelect.find(`option[value="${item.unit}"]`).length === 0) {
+                    $unitSelect.append(new Option(item.unit, item.unit, true, true));
+                }
+                $unitSelect.val(item.unit).trigger('change.select2').trigger('change');
+            }
+
+            if (item.book_qty) {
+                $row.find('.row-book-qty').val(item.book_qty).trigger('input');
+            }
+
+            if (item.qty) {
+                $row.find('.row-received-qty').val(item.qty).trigger('input');
+            }
+
+            if (item.explanation) {
+                $row.find('.row-explanation').val(item.explanation).trigger('change.select2').trigger('change');
+            }
+
+            if (item.explanation_custom) {
+                $row.find('.row-explanation-custom').val(item.explanation_custom);
+            }
+
+            if (item.serial_number) {
+                $row.find('.row-serial-number').val(item.serial_number);
+                $row.find('.row-received-qty').trigger('input');
+
+                // Restore individual serial/rim input boxes if populated
+                if (item.serials && item.serials.length > 0) {
+                    $row.find('.serial-inputs-container .serial-input-wrapper').each(function(idx) {
+                        $(this).find('.serial-input-item').val(item.serials[idx] || '');
+                        $(this).find('.rim-input-item').val(item.rims[idx] || '');
+                    });
+                }
+            }
+        }
+
+        // Restore whole form state
+        function restoreFormState(state) {
+            if (!state) return;
+            window.isRestoringDraft = true;
+
+            if (state.ledge_category) {
+                $('#ledgeSelect').val(state.ledge_category).trigger('change');
+            }
+            if (state.arrival_date) {
+                $('#arrivalDate').val(state.arrival_date);
+            }
+            if (state.supplier_status) {
+                $('#supplierStatusSelect').val(state.supplier_status).trigger('change');
+            }
+            if (state.multiQty) {
+                $('#multiQty').val(state.multiQty);
+            }
+            if (state.supplier_name) {
+                const cleanName = state.supplier_name.replace(/\s\[.*\]$/, '');
+                if ($('#supplierSelect option[value="' + cleanName + '"]').length === 0) {
+                    $('#supplierSelect').append(new Option(cleanName, cleanName, true, true));
+                }
+                $('#supplierSelect').val(cleanName).trigger('change');
+            }
+            if (state.supplier_phone) $('#supplierPhoneInput').val(state.supplier_phone);
+            if (state.supplier_email) $('#supplierEmailInput').val(state.supplier_email);
+            if (state.supplier_address) $('#supplierAddressInput').val(state.supplier_address);
+            if (state.delivery_person) $('#deliveryPersonInput').val(state.delivery_person);
+            if (state.delivery_phone) $('#deliveryPersonPhoneInput').val(state.delivery_phone);
+            if (state.driver_name) $('#driverNameInput').val(state.driver_name);
+            if (state.driver_phone) $('#driverPhoneInput').val(state.driver_phone);
+
+            if (state.supplier_name || state.supplier_phone || state.supplier_email || state.supplier_address || state.delivery_person || state.delivery_phone || state.driver_name || state.driver_phone) {
+                $('#supplierSectionContent').show();
+                $('#supplierToggleArrow').addClass('rotate-180');
+                updateSupplierSummary();
+            }
+
+            if (state.items && state.items.length > 0) {
+                renderItemRows(state.items.length);
+                container.children('.item-entry-row').each(function(index) {
+                    populateRow($(this), state.items[index]);
+                });
+            }
+
+            window.isRestoringDraft = false;
+        }
+
+        // Attach listener to form elements to save draft automatically
+        $(document).on('change input select2:select select2:unselect', '#discrepancyForm input, #discrepancyForm select, #discrepancyForm textarea', function() {
+            saveFormState();
         });
+
+        // Check if normal draft exists and restore it
+        const rawDraft = localStorage.getItem('inventory_discrepancy_draft');
+        if (rawDraft) {
+            try {
+                const draftState = JSON.parse(rawDraft);
+                restoreFormState(draftState);
+            } catch(e) {
+                console.error("Error loading discrepancy draft:", e);
+            }
+        }
     });
 </script>
 @endpush

@@ -11,6 +11,7 @@ use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ArchiveController;
+use App\Http\Controllers\ServiceSraController;
 use LdapRecord\Container;
 
 // Self-healing auto-migration schema update (locked via file existence to prevent concurrent query and disk write overhead on every request/cache clear)
@@ -695,6 +696,20 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
     Route::get('/stock-check', [\App\Http\Controllers\StockCheckController::class, 'index'])->name('stockcheck.index');
     Route::get('/stock-check/batch', [\App\Http\Controllers\StockCheckController::class, 'batchView'])->name('stockcheck.batch');
+
+    // ── Service SRA Routes ────────────────────────────────────────────────────
+    Route::get('/service-sra/create', [ServiceSraController::class, 'create'])->name('service-sra.create');
+    Route::post('/service-sra', [ServiceSraController::class, 'store'])->name('service-sra.store');
+    Route::get('/service-sra', [ServiceSraController::class, 'index'])->name('service-sra.index');
+    Route::get('/service-sra/{id}/receipt', [ServiceSraController::class, 'receipt'])->name('service-sra.receipt');
+    Route::get('/api/service-sra/supplier-info', [ServiceSraController::class, 'supplierInfo'])->name('service-sra.supplier-info');
+    Route::get('/api/service-sra/{id}', [ServiceSraController::class, 'showApi'])->name('api.service-sra.show');
+    // Admin (Head of Admin) approval
+    Route::get('/admin/service-sra', [ServiceSraController::class, 'adminIndex'])->name('admin.service-sra.index');
+    Route::post('/admin/service-sra/{id}/process', [ServiceSraController::class, 'adminProcess'])->name('admin.service-sra.process');
+    // Head of Stores final approval
+    Route::get('/stores/service-sra', [ServiceSraController::class, 'storesIndex'])->name('stores.service-sra.index');
+    Route::post('/stores/service-sra/{id}/process', [ServiceSraController::class, 'storesProcess'])->name('stores.service-sra.process');
     Route::get('/notifications', function() {
         return view('notifications');
     })->name('notifications.index');

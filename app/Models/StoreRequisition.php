@@ -26,6 +26,37 @@ class StoreRequisition extends Model
         return 'REQ-' . str_pad($this->id, 5, '0', STR_PAD_LEFT);
     }
 
+    public function getRequiresStoresDeptHeadApprovalAttribute(): bool
+    {
+        $storesApprovalCategories = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
+        if (is_string($storesApprovalCategories)) {
+            $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
+        }
+        if (!is_array($storesApprovalCategories)) {
+            $storesApprovalCategories = [];
+        }
+        foreach ($this->items as $item) {
+            if (in_array($item->category, $storesApprovalCategories)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function getIsReadyForDgApprovalAttribute(): bool
+    {
+        if (!$this->requires_dg_approval) {
+            return false;
+        }
+        if (($this->dg_status ?? 'pending') !== 'pending') {
+            return false;
+        }
+        if (($this->origin_admin_status ?? 'pending') !== 'approved') {
+            return false;
+        }
+        return true;
+    }
+
     protected $fillable = [
         'requester_name',
         'department',
@@ -114,7 +145,7 @@ class StoreRequisition extends Model
             if ($this->requires_dg_approval && ($this->dg_status ?? 'pending') === 'pending') {
                 return ['label' => 'Awaiting DG Approval', 'color' => '#8b5cf6', 'bg' => 'rgba(139,92,246,0.1)'];
             }
-            return ['label' => 'Awaiting Admin Review', 'color' => '#ef4444', 'bg' => 'rgba(239,68,68,0.1)'];
+            return ['label' => 'Awaiting Head of Stores Review', 'color' => '#ef4444', 'bg' => 'rgba(239,68,68,0.1)'];
         }
 
         return match($this->status) {
@@ -160,22 +191,22 @@ class StoreRequisition extends Model
     public function getTrackingPipelineAttribute(): array
     {
         $steps = [];
+
+        // 1. Department HOD Review
         $hodStatus = $this->origin_admin_status;
         $finalStatus = $this->status;
-
-        // Step 1: HOD Review
         if ($hodStatus === 'declined' || ($hodStatus === 'pending' && $finalStatus === 'declined')) {
             $steps['hod'] = ['label' => 'HOD Declined', 'status' => 'declined', 'icon' => 'x', 'user' => $this->origin_approved_by ?? 'Department Head'];
         } elseif ($hodStatus === 'approved') {
             $steps['hod'] = ['label' => 'HOD Approved', 'status' => 'completed', 'icon' => 'check', 'user' => $this->origin_approved_by];
         } else {
             $hodName = 'Department Head';
-            $key = strtolower(trim($this->department));
+            $key = strtolower(trim($this->department ?? ''));
             if (self::$deptHeadsCache === null) {
                 self::$deptHeadsCache = \App\Models\User::where('role', 'Department Head')
                     ->where('is_active', true)
                     ->get()
-                    ->keyBy(fn($u) => strtolower(trim($u->department)));
+                    ->keyBy(fn($u) => strtolower(trim($u->department ?? '')));
             }
             $hod = self::$deptHeadsCache->get($key);
             if ($hod) {
@@ -184,7 +215,7 @@ class StoreRequisition extends Model
             $steps['hod'] = ['label' => 'Awaiting HOD Review', 'status' => 'active', 'icon' => 'clock', 'user' => $hodName];
         }
 
-        // Step 2: Stores HOD Review
+        // 2. Stores HOD Review (if required)
         $storesApprovalCategories = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
         if (is_string($storesApprovalCategories)) {
             $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
@@ -214,7 +245,7 @@ class StoreRequisition extends Model
             }
         }
 
-        // Step 3: DG Approval
+        // 3. DG Approval (if required)
         if (!$this->requires_dg_approval) {
             $steps['dg'] = ['label' => 'DG Bypassed', 'status' => 'bypassed', 'icon' => 'minus', 'user' => 'N/A'];
         } else {
@@ -232,7 +263,7 @@ class StoreRequisition extends Model
             }
         }
 
-        // Step 4: Head of Stores Final Review
+        // 4. Head of Stores Final Review
         if ($hodStatus === 'declined' || $this->main_admin_status === 'declined' || ($this->requires_dg_approval && $this->dg_status === 'declined') || $finalStatus === 'declined') {
             $steps['head_of_stores'] = ['label' => 'No Review (Declined)', 'status' => 'bypassed', 'icon' => 'minus', 'user' => 'N/A'];
         } elseif (in_array($finalStatus, ['approved', 'partially_approved'])) {
@@ -246,4 +277,3 @@ class StoreRequisition extends Model
         return $steps;
     }
 }
-

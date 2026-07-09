@@ -359,6 +359,10 @@
 </div>
 
 <style>
+    .main-wrapper > *:not(header) {
+        max-width: 2000px !important;
+    }
+
     /* Precision Metrics Styles */
     .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 3.5rem; }
 

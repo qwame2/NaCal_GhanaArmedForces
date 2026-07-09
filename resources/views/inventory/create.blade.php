@@ -848,6 +848,7 @@ jQuery(document).ready(function($) {
             data: payload,
             success: function(response) {
                 if (response.success) {
+                    localStorage.removeItem(getLocalStorageKey());
                     if (response.is_pending) {
                         if (typeof window.playNotificationSound === 'function') {
                             window.playNotificationSound('sent');
@@ -1508,6 +1509,177 @@ jQuery(document).ready(function($) {
         }
     });
 
+    // Helper to determine active localStorage key
+    function getLocalStorageKey() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const rollbackId = urlParams.get('rollback');
+        const continueBatchId = urlParams.get('continue_batch');
+        if (rollbackId) {
+            return `inventory_create_draft_rollback_${rollbackId}`;
+        } else if (continueBatchId) {
+            return `inventory_create_draft_continue_${continueBatchId}`;
+        }
+        return 'inventory_create_draft';
+    }
+
+    // Save Form State to LocalStorage
+    window.isRestoringDraft = false;
+    function saveFormState() {
+        if (window.isRestoringDraft) return;
+
+        const items = [];
+        $('.item-entry-row').each(function() {
+            const desc = $(this).find('.item-select-dynamic').val() || '';
+            const unit = $(this).find('.row-unit').val() || '';
+            const ledgeCategory = $(this).find('.row-ledge-category').val() || '';
+            const qty = $(this).find('.row-qty').val() || '';
+            const stockBalance = $(this).find('.row-stock-balance').val() || '';
+            const remarks = $(this).find('.row-remarks').val() || '';
+            const serialNumber = $(this).find('.row-serial-number').val() || '';
+
+            // Also capture typed values in inputs directly in case not yet joined
+            const serials = [];
+            const rims = [];
+            $(this).find('.serial-input-wrapper').each(function() {
+                serials.push($(this).find('.serial-input-item').val() || '');
+                rims.push($(this).find('.rim-input-item').val() || '');
+            });
+
+            items.push({
+                description: desc,
+                unit: unit,
+                ledge_category: ledgeCategory,
+                qty: qty,
+                stock_balance: stockBalance,
+                remarks: remarks,
+                serial_number: serialNumber,
+                serials: serials,
+                rims: rims
+            });
+        });
+
+        const state = {
+            ledge_category: $('#ledgeSelect').val(),
+            multiQty: $('#multiQty').val(),
+            supplier_name: $('#supplierNameSelect').val(),
+            supplier_phone: $('#supplierPhoneInput').val(),
+            supplier_email: $('#supplierEmailInput').val(),
+            supplier_address: $('#supplierAddressInput').val(),
+            delivery_person: $('#deliveryPersonInput').val(),
+            delivery_phone: $('#deliveryPersonPhoneInput').val(),
+            driver_name: $('#driverNameInput').val(),
+            driver_phone: $('#driverPhoneInput').val(),
+            is_donor: $('#isDonorCheckbox').is(':checked'),
+            supplier_status: $('#supplierStatusSelect').val(),
+            arrival_date: $('#arrivalDate').val(),
+            items: items
+        };
+
+        localStorage.setItem(getLocalStorageKey(), JSON.stringify(state));
+    }
+
+    // Populate a dynamic item row
+    function populateRow($row, item) {
+        if (!item) return;
+
+        if (item.ledge_category) {
+            $row.find('.row-ledge-category').val(item.ledge_category).trigger('change.select2').trigger('change');
+        }
+
+        if (item.description) {
+            const $descSelect = $row.find('.item-select-dynamic');
+            if ($descSelect.find(`option[value="${item.description}"]`).length === 0) {
+                $descSelect.append(new Option(item.description, item.description, true, true));
+            }
+            $descSelect.val(item.description).trigger('change.select2').trigger('change');
+        }
+
+        if (item.unit) {
+            const $unitSelect = $row.find('.row-unit');
+            if ($unitSelect.find(`option[value="${item.unit}"]`).length === 0) {
+                $unitSelect.append(new Option(item.unit, item.unit, true, true));
+            }
+            $unitSelect.val(item.unit).trigger('change.select2').trigger('change');
+        }
+
+        if (item.qty) {
+            $row.find('.row-qty').val(item.qty).trigger('input');
+        }
+
+        if (item.stock_balance) {
+            $row.find('.row-stock-balance').val(item.stock_balance).trigger('input');
+        }
+
+        if (item.remarks) {
+            $row.find('.row-remarks').val(item.remarks);
+        }
+
+        if (item.serial_number) {
+            $row.find('.row-serial-number').val(item.serial_number);
+            updateSerialInputs($row);
+            
+            // Restore individual serial/rim input boxes if populated
+            if (item.serials && item.serials.length > 0) {
+                $row.find('.serial-inputs-container .serial-input-wrapper').each(function(idx) {
+                    $(this).find('.serial-input-item').val(item.serials[idx] || '');
+                    $(this).find('.rim-input-item').val(item.rims[idx] || '');
+                });
+            }
+        }
+    }
+
+    // Restore whole form state
+    function restoreFormState(state) {
+        if (!state) return;
+        window.isRestoringDraft = true;
+
+        if (state.ledge_category) {
+            $('#ledgeSelect').val(state.ledge_category).trigger('change.select2').trigger('change');
+        }
+        if (state.multiQty) {
+            $('#multiQty').val(state.multiQty);
+        }
+        if (state.supplier_name) {
+            const cleanName = state.supplier_name.replace(/\s\[.*\]$/, '');
+            if ($('#supplierNameSelect option[value="' + cleanName + '"]').length === 0) {
+                $('#supplierNameSelect').append(new Option(cleanName, cleanName, true, true));
+            }
+            $('#supplierNameSelect').val(cleanName).trigger('change.select2').trigger('change');
+        }
+        if (state.supplier_phone) $('#supplierPhoneInput').val(state.supplier_phone);
+        if (state.supplier_email) $('#supplierEmailInput').val(state.supplier_email);
+        if (state.supplier_address) $('#supplierAddressInput').val(state.supplier_address);
+        if (state.delivery_person) $('#deliveryPersonInput').val(state.delivery_person);
+        if (state.delivery_phone) $('#deliveryPersonPhoneInput').val(state.delivery_phone);
+        if (state.driver_name) $('#driverNameInput').val(state.driver_name);
+        if (state.driver_phone) $('#driverPhoneInput').val(state.driver_phone);
+        
+        if (state.is_donor) {
+            $('#isDonorCheckbox').prop('checked', true).trigger('change');
+        } else {
+            $('#isDonorCheckbox').prop('checked', false).trigger('change');
+        }
+
+        if (state.supplier_status) {
+            $('#supplierStatusSelect').val(state.supplier_status).trigger('change.select2').trigger('change');
+        }
+        if (state.arrival_date) $('#arrivalDate').val(state.arrival_date);
+
+        if (state.items && state.items.length > 0) {
+            renderItemRows(state.items.length);
+            $('#itemsContainer .item-entry-row').each(function(index) {
+                populateRow($(this), state.items[index]);
+            });
+        }
+
+        window.isRestoringDraft = false;
+    }
+
+    // Attach listener to form elements to save draft automatically
+    $(document).on('change input select2:select select2:unselect', '#newEntryForm input, #newEntryForm select, #newEntryForm textarea', function() {
+        saveFormState();
+    });
+
     // Remove Row Logic
     $(document).on('click', '.remove-row-btn', function() {
         $(this).closest('.item-entry-row').fadeOut(300, function() {
@@ -1522,6 +1694,7 @@ jQuery(document).ready(function($) {
             if (typeof updateSubmitButtonState === 'function') {
                 updateSubmitButtonState();
             }
+            saveFormState();
         });
     });
 
@@ -1536,54 +1709,65 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 const batch = response.batch;
                 if (batch) {
-                    // Set Date
-                    const now = new Date();
-                    const year = now.getFullYear();
-                    const month = String(now.getMonth() + 1).padStart(2, '0');
-                    const day = String(now.getDate()).padStart(2, '0');
-                    const hours = String(now.getHours()).padStart(2, '0');
-                    const minutes = String(now.getMinutes()).padStart(2, '0');
-                    const seconds = String(now.getSeconds()).padStart(2, '0');
-                    const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-                    $('#entryDate').val(formattedDate);
-                    $('#arrivalDate').val(batch.arrival_date || new Date().toISOString().split('T')[0]);
+                    // Check if saved draft exists for this continueBatchId
+                    const rawDraft = localStorage.getItem(`inventory_create_draft_continue_${continueBatchId}`);
+                    let draftState = null;
+                    if (rawDraft) {
+                        try { draftState = JSON.parse(rawDraft); } catch(e) {}
+                    }
 
-                    // Set Ledge
-                    ledgeSelect.val(batch.ledge_category).trigger('change');
+                    if (draftState) {
+                        restoreFormState(draftState);
+                    } else {
+                        // Set Date
+                        const now = new Date();
+                        const year = now.getFullYear();
+                        const month = String(now.getMonth() + 1).padStart(2, '0');
+                        const day = String(now.getDate()).padStart(2, '0');
+                        const hours = String(now.getHours()).padStart(2, '0');
+                        const minutes = String(now.getMinutes()).padStart(2, '0');
+                        const seconds = String(now.getSeconds()).padStart(2, '0');
+                        const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                        $('#entryDate').val(formattedDate);
+                        $('#arrivalDate').val(batch.arrival_date || new Date().toISOString().split('T')[0]);
 
-                    const isDonor = batch.acquisition_type === 'Donor';
-                    const rawSupplier = isDonor ? batch.donor_name : batch.supplier_name;
-                    const cleanSupplier = rawSupplier ? rawSupplier.replace(/\s\[.*\]$/, '') : '';
+                        // Set Ledge
+                        ledgeSelect.val(batch.ledge_category).trigger('change');
 
-                    setTimeout(() => {
-                        $('#isDonorCheckbox').prop('checked', isDonor).trigger('change');
-                        $('#supplierNameSelect').val(cleanSupplier).trigger('change');
-                        if (batch.delivery_person) {
-                            $('#deliveryPersonInput').val(batch.delivery_person);
-                        }
-                        if (batch.delivery_phone) {
-                            $('#deliveryPersonPhoneInput').val(batch.delivery_phone);
-                        }
-                        if (!isDonor) {
-                            $('#supplierStatusSelect').val(batch.supplier_status || 'Full Delivery').trigger('change');
-                        }
+                        const isDonor = batch.acquisition_type === 'Donor';
+                        const rawSupplier = isDonor ? batch.donor_name : batch.supplier_name;
+                        const cleanSupplier = rawSupplier ? rawSupplier.replace(/\s\[.*\]$/, '') : '';
 
-                        // Render Rows for items
-                        if (batch.items && batch.items.length > 0) {
-                            $('#multiQty').val(batch.items.length);
-                            renderItemRows(batch.items.length);
+                        setTimeout(() => {
+                            $('#isDonorCheckbox').prop('checked', isDonor).trigger('change');
+                            $('#supplierNameSelect').val(cleanSupplier).trigger('change');
+                            if (batch.delivery_person) {
+                                $('#deliveryPersonInput').val(batch.delivery_person);
+                            }
+                            if (batch.delivery_phone) {
+                                $('#deliveryPersonPhoneInput').val(batch.delivery_phone);
+                            }
+                            if (!isDonor) {
+                                $('#supplierStatusSelect').val(batch.supplier_status || 'Full Delivery').trigger('change');
+                            }
 
-                            // Fill row data
-                            $('.item-entry-row').each(function(index) {
-                                const item = batch.items[index];
-                                const $row = $(this);
-                                const itemCat = item.ledge_category || batch.ledge_category;
-                                $row.find('.row-ledge-category').val(itemCat).trigger('change.select2');
-                                $row.find('.item-select-dynamic').val(item.description).trigger('change');
-                                $row.find('.row-qty').focus();
-                            });
-                        }
-                    }, 500);
+                            // Render Rows for items
+                            if (batch.items && batch.items.length > 0) {
+                                $('#multiQty').val(batch.items.length);
+                                renderItemRows(batch.items.length);
+
+                                // Fill row data
+                                $('.item-entry-row').each(function(index) {
+                                    const item = batch.items[index];
+                                    const $row = $(this);
+                                    const itemCat = item.ledge_category || batch.ledge_category;
+                                    $row.find('.row-ledge-category').val(itemCat).trigger('change.select2');
+                                    $row.find('.item-select-dynamic').val(item.description).trigger('change');
+                                    $row.find('.row-qty').focus();
+                                });
+                            }
+                        }, 500);
+                    }
 
                     // Clean URL
                     const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
@@ -1637,88 +1821,102 @@ jQuery(document).ready(function($) {
                     controlsArea.insertAdjacentHTML('afterbegin', bannerHtml);
                 }
 
-                // Set timestamp
-                const now = new Date();
-                const formattedDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-                $('#entryDate').val(formattedDate);
-
-                if (payload.arrival_date) {
-                    $('#arrivalDate').val(payload.arrival_date);
+                // Check if a saved draft exists for this rollback
+                const rawDraft = localStorage.getItem(`inventory_create_draft_rollback_${rollbackId}`);
+                let draftState = null;
+                if (rawDraft) {
+                    try { draftState = JSON.parse(rawDraft); } catch(e) {}
                 }
 
-                if (payload.ledge_category) {
-                    ledgeSelect.val(payload.ledge_category).trigger('change');
+                if (draftState) {
+                    restoreFormState(draftState);
+                    setTimeout(() => {
+                        _applyRollbackHighlights(flaggedFields, flaggedItems);
+                    }, 500);
+                } else {
+                    // Set timestamp
+                    const now = new Date();
+                    const formattedDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+                    $('#entryDate').val(formattedDate);
+
+                    if (payload.arrival_date) {
+                        $('#arrivalDate').val(payload.arrival_date);
+                    }
+
+                    if (payload.ledge_category) {
+                        ledgeSelect.val(payload.ledge_category).trigger('change');
+                    }
+
+                    setTimeout(() => {
+                        const isDonor    = payload.acquisition_type === 'Donor';
+                        const supplierVal = isDonor ? (payload.donor_name || '') : (payload.supplier_name || '');
+                        const cleanVal   = supplierVal.replace(/\s\[.*\]$/, '');
+
+                        $('#isDonorCheckbox').prop('checked', isDonor).trigger('change');
+
+                        if (cleanVal && $('#supplierNameSelect option[value="' + cleanVal + '"]').length === 0) {
+                            $('#supplierNameSelect').append(new Option(cleanVal, cleanVal, true, true));
+                        }
+                        $('#supplierNameSelect').val(cleanVal).trigger('change');
+                        if (payload.delivery_person) {
+                            $('#deliveryPersonInput').val(payload.delivery_person);
+                        }
+                        if (payload.delivery_phone) {
+                            $('#deliveryPersonPhoneInput').val(payload.delivery_phone);
+                        }
+
+                        if (!isDonor && payload.supplier_status) {
+                            $('#supplierStatusSelect').val(payload.supplier_status).trigger('change');
+                        }
+
+                        if (renderItems.length > 0) {
+                            $('#multiQty').val(renderItems.length);
+                            renderItemRows(renderItems.length);
+
+                            setTimeout(() => {
+                                $('.item-entry-row').each(function(idx) {
+                                    const itm  = renderItems[idx];
+                                    const $row = $(this);
+                                    if (!itm) return;
+
+                                    const itemCat = itm.ledge_category || payload.ledge_category;
+                                    $row.find('.row-ledge-category').val(itemCat).trigger('change.select2');
+
+                                    const descSel = $row.find('.item-select-dynamic');
+                                    if (descSel.find('option[value="' + itm.description + '"]').length === 0) {
+                                        descSel.append(new Option(itm.description, itm.description, true, true));
+                                    }
+                                    descSel.val(itm.description).trigger('change');
+                                    $row.find('.row-qty').val(itm.qty || '');
+                                    if (itm.unit) {
+                                        const uSel = $row.find('.row-unit');
+                                        if (uSel.find('option[value="' + itm.unit + '"]').length === 0) {
+                                            uSel.append(new Option(itm.unit, itm.unit, true, true));
+                                        }
+                                        uSel.val(itm.unit).trigger('change');
+                                    }
+                                    if (itm.location) {
+                                        const lSel = $row.find('.row-location');
+                                        if (lSel.find('option[value="' + itm.location + '"]').length === 0) {
+                                            lSel.append(new Option(itm.location, itm.location, true, true));
+                                        }
+                                        lSel.val(itm.location).trigger('change');
+                                    }
+                                    $row.find('.row-stock-balance').val(itm.stock_balance || '');
+                                    $row.find('.row-variance').val(itm.variance || 0);
+                                    $row.find('.row-remarks').val(itm.remarks || '');
+                                    $row.find('.row-serial-number').val(itm.serial_number || '');
+                                    updateSerialInputs($row);
+                                });
+
+                                _applyRollbackHighlights(flaggedFields, flaggedItems);
+                            }, 300);
+                        } else {
+                            setTimeout(() => _applyRollbackHighlights(flaggedFields, flaggedItems), 300);
+                        }
+
+                    }, 500);
                 }
-
-                setTimeout(() => {
-                    const isDonor    = payload.acquisition_type === 'Donor';
-                    const supplierVal = isDonor ? (payload.donor_name || '') : (payload.supplier_name || '');
-                    const cleanVal   = supplierVal.replace(/\s\[.*\]$/, '');
-
-                    $('#isDonorCheckbox').prop('checked', isDonor).trigger('change');
-
-                    if (cleanVal && $('#supplierNameSelect option[value="' + cleanVal + '"]').length === 0) {
-                        $('#supplierNameSelect').append(new Option(cleanVal, cleanVal, true, true));
-                    }
-                    $('#supplierNameSelect').val(cleanVal).trigger('change');
-                    if (payload.delivery_person) {
-                        $('#deliveryPersonInput').val(payload.delivery_person);
-                    }
-                    if (payload.delivery_phone) {
-                        $('#deliveryPersonPhoneInput').val(payload.delivery_phone);
-                    }
-
-                    if (!isDonor && payload.supplier_status) {
-                        $('#supplierStatusSelect').val(payload.supplier_status).trigger('change');
-                    }
-
-                    if (renderItems.length > 0) {
-                        $('#multiQty').val(renderItems.length);
-                        renderItemRows(renderItems.length);
-
-                        setTimeout(() => {
-                            $('.item-entry-row').each(function(idx) {
-                                const itm  = renderItems[idx];
-                                const $row = $(this);
-                                if (!itm) return;
-
-                                const itemCat = itm.ledge_category || payload.ledge_category;
-                                $row.find('.row-ledge-category').val(itemCat).trigger('change.select2');
-
-                                const descSel = $row.find('.item-select-dynamic');
-                                if (descSel.find('option[value="' + itm.description + '"]').length === 0) {
-                                    descSel.append(new Option(itm.description, itm.description, true, true));
-                                }
-                                descSel.val(itm.description).trigger('change');
-                                $row.find('.row-qty').val(itm.qty || '');
-                                if (itm.unit) {
-                                    const uSel = $row.find('.row-unit');
-                                    if (uSel.find('option[value="' + itm.unit + '"]').length === 0) {
-                                        uSel.append(new Option(itm.unit, itm.unit, true, true));
-                                    }
-                                    uSel.val(itm.unit).trigger('change');
-                                }
-                                if (itm.location) {
-                                    const lSel = $row.find('.row-location');
-                                    if (lSel.find('option[value="' + itm.location + '"]').length === 0) {
-                                        lSel.append(new Option(itm.location, itm.location, true, true));
-                                    }
-                                    lSel.val(itm.location).trigger('change');
-                                }
-                                $row.find('.row-stock-balance').val(itm.stock_balance || '');
-                                $row.find('.row-variance').val(itm.variance || 0);
-                                $row.find('.row-remarks').val(itm.remarks || '');
-                                $row.find('.row-serial-number').val(itm.serial_number || '');
-                                updateSerialInputs($row);
-                            });
-
-                            _applyRollbackHighlights(flaggedFields, flaggedItems);
-                        }, 300);
-                    } else {
-                        setTimeout(() => _applyRollbackHighlights(flaggedFields, flaggedItems), 300);
-                    }
-
-                }, 500);
 
                 window.history.replaceState({}, '', window.location.protocol + '//' + window.location.host + window.location.pathname);
             })
@@ -1808,6 +2006,18 @@ jQuery(document).ready(function($) {
         });
     }
 
+    // Restore normal draft if no query parameters exist
+    if (!rollbackId && !continueBatchId) {
+        const rawDraft = localStorage.getItem('inventory_create_draft');
+        if (rawDraft) {
+            try {
+                const draftState = JSON.parse(rawDraft);
+                restoreFormState(draftState);
+            } catch(e) {
+                console.error("Error loading normal draft:", e);
+            }
+        }
+    }
 });
 </script>
 @endsection

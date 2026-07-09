@@ -289,6 +289,9 @@
 </div>
 
 <style>
+    .main-wrapper > *:not(header) {
+        max-width: 2000px !important;
+    }
 /* ─── Root ─────────────────────────────── */
 .command-center { display: flex; flex-direction: column; gap: 2rem; }
 

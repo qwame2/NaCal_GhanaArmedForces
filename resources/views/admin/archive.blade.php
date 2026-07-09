@@ -499,6 +499,10 @@
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
         background: var(--primary);
     }
+
+    .main-wrapper > *:not(header) {
+        max-width: 2000px !important;
+    }
 </style>
 
 <script>

@@ -657,12 +657,6 @@
         color: white;
     }
 
-    .mini-step.bypassed .mini-dot {
-        background: #f1f5f9;
-        border-color: var(--border-color);
-        color: #94a3b8;
-    }
-
     .mini-line {
         flex: 1;
         height: 2px;
@@ -693,10 +687,6 @@
 
     .mini-step.declined .mini-label {
         color: var(--danger-color);
-    }
-
-    .mini-step.bypassed .mini-label {
-        color: #94a3b8;
     }
 
     /* Inline Items styling */
@@ -1485,7 +1475,41 @@
         <div class="modal-body" id="modalBody">
             <div style="text-align:center;padding:2rem;color:var(--text-muted);">Loading...</div>
         </div>
-        <div id="modalFooter" style="padding:1.25rem 2rem;border-top:1px solid var(--border-color);display:flex;justify-content:flex-end;gap:.75rem;flex-shrink:0;"></div>
+    </div>
+</div>
+
+{{-- SRA Review Modal (Admin & Stores unified/adapted) --}}
+<div class="modal-overlay" id="sraOversightModal" onclick="if(event.target===this)closeSraOversightModal()">
+    <div class="modal-box" style="background: var(--bg-card); border-radius: 24px; padding: 2.5rem; max-width: 680px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.2); margin: 30px auto; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+            <div>
+                <div style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--primary); letter-spacing: 0.06em; margin-bottom: 4px;" id="sra-modal-stage-title">Service SRA Review</div>
+                <h2 id="sra-modal-number" style="font-size: 1.4rem; font-weight: 900; margin: 0; color: var(--text-main);">SRA-000000</h2>
+            </div>
+            <button onclick="closeSraOversightModal()" style="background: var(--bg-main); border: 1px solid var(--border-color); width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="x" style="width: 18px;"></i>
+            </button>
+        </div>
+
+        <div id="sra-modal-details" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; background: var(--bg-main); border-radius: 14px; padding: 1.25rem;"></div>
+
+        <div id="sra-modal-details-text" style="margin-bottom: 1.5rem;"></div>
+
+        <div id="sra-modal-decision-form" style="border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                <i data-lucide="message-square" style="width: 14px; color: var(--primary);"></i>
+                Notes / Remarks (optional)
+            </label>
+            <textarea id="sra-modal-notes" rows="3" style="width: 100%; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; resize: vertical; box-sizing: border-box;" placeholder="Add notes..."></textarea>
+            <div style="display: flex; gap: 1rem; margin-top: 1.25rem; justify-content: flex-end; flex-wrap: wrap;">
+                <button onclick="processOversightSra('declined')" id="sraBtnDecline" style="padding: 0.85rem 2rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: #ef4444; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="x-circle" style="width: 16px;"></i> Decline
+                </button>
+                <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(16,185,129,0.4);">
+                    <i data-lucide="check-circle" style="width: 16px;"></i> Approve
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 @endpush
@@ -2955,6 +2979,122 @@
     }
 
 
+
+    let currentSraId = null;
+    let currentSraStage = null;
+
+    window.openSraOversightModal = async function(id, stage) {
+        currentSraId = id;
+        currentSraStage = stage;
+
+        document.getElementById('sra-modal-notes').value = '';
+        document.getElementById('sraOversightModal').classList.add('open');
+        document.getElementById('sra-modal-stage-title').textContent = stage === 'stores' ? 'Final Stores Review' : 'Admin SRA Review';
+        document.getElementById('sra-modal-number').textContent = 'Loading...';
+        document.getElementById('sra-modal-details').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:1.5rem;color:var(--text-muted);">Fetching details...</div>';
+        document.getElementById('sra-modal-details-text').innerHTML = '';
+
+        try {
+            const res = await fetch(`{{ url('/api/service-sra') }}/${id}`);
+            const json = await res.json();
+            if (!json.success) {
+                Swal.fire('Error', 'Failed to fetch details.', 'error');
+                closeSraOversightModal();
+                return;
+            }
+
+            const sra = json.data;
+            document.getElementById('sra-modal-number').textContent = sra.sra_number;
+
+            const deliveryLabel = sra.delivery_type === 'full' ? 'Full Delivery' : 'Part Delivery';
+            const deliveryColor = sra.delivery_type === 'full' ? '#10b981' : '#f59e0b';
+            const deliveryBg = sra.delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)';
+
+            document.getElementById('sra-modal-details').innerHTML = `
+                <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Submitted By</div><div style="font-weight:700;color:var(--text-main);">${sra.submitter ? sra.submitter.name : '—'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${sra.dept || ''}</div></div>
+                <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Supplier</div><div style="font-weight:700;color:var(--text-main);">${sra.supplier_name}</div>${sra.supplier_address ? `<div style="font-size:0.75rem;color:var(--text-muted);">${sra.supplier_address}</div>` : ''}</div>
+                <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Vehicle</div><div style="font-weight:600;color:var(--text-main);">${sra.vehicle_number || '—'}</div></div>
+                <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Date</div><div style="font-weight:700;color:var(--text-main);">${new Date(sra.date_of_delivery).toLocaleDateString()}</div></div>
+                <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Delivery Type</div><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:0.7rem;font-weight:800;background:${deliveryBg};color:${deliveryColor};">${deliveryLabel}</span></div>
+                ${sra.ae_number ? `<div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">A&E No.</div><div style="font-weight:600;">${sra.ae_number}</div></div>` : ''}
+                ${sra.lpo_number ? `<div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">LPO No.</div><div style="font-weight:600;">${sra.lpo_number}</div></div>` : ''}
+            `;
+
+            document.getElementById('sra-modal-details-text').innerHTML = `
+                <div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">Details of Order / Service</div>
+                <div style="background:var(--bg-main);border-radius:12px;padding:1rem 1.25rem;font-size:0.88rem;font-weight:500;color:var(--text-main);white-space:pre-wrap;line-height:1.7;border:1px solid var(--border-color);">${sra.details}</div>
+                ${sra.previous_sra_nos ? `<div style="margin-top:0.75rem;font-size:0.72rem;font-weight:800;color:#f59e0b;">Previous SRA Nos: ${sra.previous_sra_nos}</div>` : ''}
+            `;
+
+            if (window.lucide) lucide.createIcons();
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Error', 'Network error. Please try again.', 'error');
+            closeSraOversightModal();
+        }
+    };
+
+    window.closeSraOversightModal = function() {
+        document.getElementById('sraOversightModal').classList.remove('open');
+        currentSraId = null;
+        currentSraStage = null;
+    };
+
+    window.processOversightSra = function(action) {
+        if (!currentSraId || !currentSraStage) return;
+        const notes = document.getElementById('sra-modal-notes').value.trim();
+        const label = action === 'approved' ? 'Approve' : 'Decline';
+
+        Swal.fire({
+            title: `${label} SRA?`,
+            text: currentSraStage === 'admin' && action === 'approved' ? 'It will proceed to stores for final approval.' : 'This will record your decision immediately.',
+            icon: action === 'approved' ? 'question' : 'warning',
+            showCancelButton: true,
+            confirmButtonText: label,
+            confirmButtonColor: action === 'approved' ? '#10b981' : '#ef4444',
+            cancelButtonColor: '#64748b',
+        }).then(async result => {
+            if (!result.isConfirmed) return;
+
+            const endpoint = currentSraStage === 'stores' 
+                ? `{{ url('/stores/service-sra') }}/${currentSraId}/process`
+                : `{{ url('/admin/service-sra') }}/${currentSraId}/process`;
+
+            const $btn = document.getElementById(action === 'approved' ? 'sraBtnApprove' : 'sraBtnDecline');
+            const origHtml = $btn.innerHTML;
+            $btn.innerHTML = '<i data-lucide="loader" style="width:16px;"></i> Processing...';
+            $btn.disabled = true;
+            if (window.lucide) lucide.createIcons();
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ action, notes }),
+                });
+                const json = await res.json();
+                if (json.success) {
+                    closeSraOversightModal();
+                    Swal.fire('Success', json.message, 'success').then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', json.message, 'error');
+                    $btn.innerHTML = origHtml;
+                    $btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Network error. Please try again.', 'error');
+                $btn.innerHTML = origHtml;
+                $btn.disabled = false;
+            }
+        });
+    };
 
     document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('stores_dept_head_approval_categories') || document.getElementById('dg_approval_categories')) {

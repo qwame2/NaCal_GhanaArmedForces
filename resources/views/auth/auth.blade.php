@@ -571,10 +571,16 @@
 
                                 <div class="input-modern-group">
                                     <label>Staff ID <span style="color: #ef4444;">*</span></label>
-                                    <div class="input-wrapper">
-                                        <div class="icon-box"><i data-lucide="hash"></i></div>
-                                        <input type="text" name="service_number" placeholder="e.g. SN-8942" required>
+                                    <input type="hidden" name="service_number" id="adminStaffIdHidden">
+                                    <div class="staff-id-split-wrapper">
+                                        <select id="adminStaffIdPrefix" class="staff-id-prefix-select" onchange="syncStaffId('admin')">
+                                            <option value="JD">JD</option>
+                                            <option value="SD">SD</option>
+                                        </select>
+                                        <span class="staff-id-divider"></span>
+                                        <input type="text" id="adminStaffIdSuffix" class="staff-id-suffix-input" placeholder="e.g. 8942" pattern="[0-9A-Za-z\-]+" required oninput="syncStaffId('admin')">
                                     </div>
+                                    <span class="staff-id-preview" id="adminStaffIdPreview">Preview: <strong>JD-</strong></span>
                                 </div>
                             </div>
 
@@ -757,10 +763,16 @@
 
                                 <div class="input-modern-group">
                                     <label>Staff ID <span style="color: #ef4444;">*</span></label>
-                                    <div class="input-wrapper">
-                                        <div class="icon-box"><i data-lucide="hash"></i></div>
-                                        <input type="text" name="service_number" placeholder="e.g. SN-8942" required>
+                                    <input type="hidden" name="service_number" id="userStaffIdHidden">
+                                    <div class="staff-id-split-wrapper">
+                                        <select id="userStaffIdPrefix" class="staff-id-prefix-select" onchange="syncStaffId('user')">
+                                            <option value="JD">JD</option>
+                                            <option value="SD">SD</option>
+                                        </select>
+                                        <span class="staff-id-divider"></span>
+                                        <input type="text" id="userStaffIdSuffix" class="staff-id-suffix-input" placeholder="e.g. 8942" pattern="[0-9A-Za-z\-]+" required oninput="syncStaffId('user')">
                                     </div>
+                                    <span class="staff-id-preview" id="userStaffIdPreview">Preview: <strong>JD-</strong></span>
                                 </div>
 
                                 {{-- Department Head display --}}
@@ -833,6 +845,83 @@
         </div>
 
 <style>
+    /* ── Staff ID Split Input ── */
+    .staff-id-split-wrapper {
+        display: flex;
+        align-items: center;
+        background: var(--bg-main, #f8fafc);
+        border: 1.5px solid var(--border-color, #e2e8f0);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        height: 56px;
+    }
+    .staff-id-split-wrapper:focus-within {
+        border-color: var(--primary, #6366f1);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+    .staff-id-prefix-select {
+        appearance: none;
+        -webkit-appearance: none;
+        border: none;
+        background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(99,102,241,0.06));
+        color: var(--primary, #6366f1);
+        font-weight: 900;
+        font-size: 0.95rem;
+        padding: 0 18px;
+        height: 100%;
+        cursor: pointer;
+        outline: none;
+        letter-spacing: 0.06em;
+        min-width: 72px;
+        text-align: center;
+        transition: background 0.2s;
+    }
+    .staff-id-prefix-select:hover {
+        background: linear-gradient(135deg, rgba(99,102,241,0.18), rgba(99,102,241,0.1));
+    }
+    .staff-id-divider {
+        width: 1.5px;
+        height: 60%;
+        background: var(--border-color, #e2e8f0);
+        flex-shrink: 0;
+    }
+    .staff-id-suffix-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        outline: none;
+        padding: 0 1rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-main, #0f172a);
+        height: 100%;
+        font-family: 'SF Mono', 'Monaco', monospace;
+        letter-spacing: 0.04em;
+    }
+    .staff-id-suffix-input::placeholder {
+        color: #94a3b8;
+        font-weight: 500;
+        font-family: inherit;
+    }
+    .staff-id-preview {
+        display: block;
+        margin-top: 6px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--text-muted, #64748b);
+        letter-spacing: 0.04em;
+    }
+    .staff-id-preview strong {
+        color: var(--primary, #6366f1);
+        font-family: 'SF Mono', 'Monaco', monospace;
+        font-size: 0.75rem;
+    }
+    /* Taller variant in register mode */
+    .auth-vault.mode-register .staff-id-split-wrapper {
+        height: 60px;
+    }
+
     /* Requisitioner Toggle Switch Styles */
     .switch-container input:checked + .switch-slider {
         background-color: var(--primary) !important;
@@ -1223,6 +1312,51 @@
                 forgotLink.style.display = 'none';
             });
     }
+
+    /* ── Staff ID Sync ── */
+    function syncStaffId(formType) {
+        const prefix  = document.getElementById(formType === 'admin' ? 'adminStaffIdPrefix' : 'userStaffIdPrefix').value;
+        const suffix  = (document.getElementById(formType === 'admin' ? 'adminStaffIdSuffix' : 'userStaffIdSuffix').value || '').trim();
+        const hidden  = document.getElementById(formType === 'admin' ? 'adminStaffIdHidden' : 'userStaffIdHidden');
+        const preview = document.getElementById(formType === 'admin' ? 'adminStaffIdPreview' : 'userStaffIdPreview');
+        const value   = suffix ? `${prefix}-${suffix}` : '';
+        if (hidden)  hidden.value = value;
+        if (preview) preview.innerHTML = `Preview: <strong>${prefix}-${suffix || ''}</strong>`;
+    }
+
+    // Ensure hidden service_number is always set before submit for both forms
+    document.addEventListener('DOMContentLoaded', function () {
+        // Init previews
+        syncStaffId('admin');
+        syncStaffId('user');
+
+        const adminForm = document.getElementById('adminRegisterForm');
+        if (adminForm) {
+            adminForm.addEventListener('submit', function (e) {
+                syncStaffId('admin');
+                const hidden = document.getElementById('adminStaffIdHidden');
+                if (!hidden || !hidden.value.trim()) {
+                    e.preventDefault();
+                    alert('Please enter your Staff ID number.');
+                    document.getElementById('adminStaffIdSuffix').focus();
+                }
+            });
+        }
+
+        const userForm = document.getElementById('userSelfRegisterForm');
+        if (userForm) {
+            userForm.addEventListener('submit', function (e) {
+                syncStaffId('user');
+                const hidden = document.getElementById('userStaffIdHidden');
+                if (!hidden || !hidden.value.trim()) {
+                    e.preventDefault();
+                    alert('Please enter your Staff ID number.');
+                    document.getElementById('userStaffIdSuffix').focus();
+                }
+            });
+        }
+    });
+
 
     function updateViewportHeight() {
         const slider = document.getElementById('formsSlider');

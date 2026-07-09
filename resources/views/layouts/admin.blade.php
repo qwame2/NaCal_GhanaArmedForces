@@ -7,6 +7,7 @@
     <link rel="manifest" href="{{ str_replace(['http:', 'https:'], '', asset('manifest.json')) }}">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NACOC IMS">
     <link rel="apple-touch-icon" href="{{ str_replace(['http:', 'https:'], '', asset('img/cropped_circle_image.png')) }}">
@@ -813,6 +814,7 @@
                     </a>
                 </li>
                 @endif
+
                 <li>
                     <a href="{{ route('admin.messages') }}" class="nav-link {{ request()->routeIs('admin.messages') ? 'active' : '' }}" title="Staff Messages">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -1439,7 +1441,7 @@
     });
     tooltipObserver.observe(document.body, { childList: true, subtree: true });
     // Toast Notification System
-    window.showToast = function(title, message, type = 'success', duration = 5000) {
+    window.showToast = function(title, message, type = 'success', duration = 10000) {
         const container = document.getElementById('toast-container');
         if (!container) return;
 

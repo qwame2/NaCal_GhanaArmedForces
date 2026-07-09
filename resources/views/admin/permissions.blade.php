@@ -458,6 +458,10 @@
 @endif
 
 <style>
+    .main-wrapper > *:not(header) {
+        max-width: 2000px !important;
+    }
+
     /* ── Delegation Card Styles (copied from settings) ── */
     .cfg-card {
         background: white;

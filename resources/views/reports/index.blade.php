@@ -422,14 +422,14 @@
             <table class="formal-table unified-table rpt-unified-table" style="width: 100%; min-width: 900px;">
                 <thead>
                     <tr>
-                        <th style="width: 110px;">Date</th>
-                        <th style="width: 125px; text-align:center;">Type</th>
-                        <th>Item / Category</th>
-                        <th style="width: 220px;">Supplier / Department</th>
-                        <th style="text-align:right; width: 80px;">Qty</th>
-                        <th style="text-align:right; width: 100px;">Prev. Stock</th>
-                        <th style="text-align:right; width: 100px;">Stock Bal.</th>
-                        <th style="text-align:right; width: 80px;">Variance</th>
+                        <th style="width: 10%; padding-left: 600px;">Date</th>
+                        <th style="width: 10%; text-align:center;">Type</th>
+                        <th style="width: 10%;">Item / Category</th>
+                        <th style="width: 10%;">Supplier / Department</th>
+                        <th style="text-align:right; width: 10%;">Qty</th>
+                        <th style="text-align:right; width: 10%;">Prev. Stock</th>
+                        <th style="text-align:right; width: 10%;">Stock Bal.</th>
+                        <th style="text-align:right; width: 10%; padding-right: 600px;">Variance</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -553,6 +553,10 @@
 </div>
 
 <style>
+    .main-wrapper > *:not(header) {
+        max-width: 2000px !important;
+    }
+
     /* ══════════════════════════════════════════════
        HERO HEADER
     ══════════════════════════════════════════════ */

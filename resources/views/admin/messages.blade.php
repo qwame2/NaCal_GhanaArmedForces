@@ -14,8 +14,8 @@
             </div>
         </div>
 
-        <div style="flex: 1; overflow-y: auto; padding: 1.25rem;">
-            <div style="font-size: 0.75rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 0.15em; padding: 0 1rem 1rem 1rem; display: flex; align-items: center; gap: 8px;">
+        <div id="operationalUnitsContainer" style="flex: 1; overflow-y: auto; padding: 1.25rem;">
+            <div id="operationalUnitsHeader" style="font-size: 0.75rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 0.15em; padding: 0 1rem 1rem 1rem; display: flex; align-items: center; gap: 8px;">
                 <i data-lucide="users" style="width: 14px;"></i>
                 Operational Units
             </div>
@@ -124,6 +124,9 @@
 </div>
 
 <style>
+    .main-wrapper > *:not(header) {
+        max-width: 2000px !important;
+    }
     /* Strategic Oversight Floating Popover */
     #oversightSidePanel {
         position: fixed;
@@ -483,6 +486,15 @@
     let onlineStatuses = {};
     let previousMessageCount = null;
 
+    function bubbleUserToTop(userId) {
+        const container = document.getElementById('operationalUnitsContainer');
+        const header = document.getElementById('operationalUnitsHeader');
+        const userItem = document.getElementById(`user-${userId}`);
+        if (container && header && userItem) {
+            header.after(userItem);
+        }
+    }
+
     function formatSerialNumbersDisplay(serialStr, isProposed = true) {
         if (!serialStr) return '';
         const sns = serialStr.split(',').map(s => s.trim()).filter(Boolean);
@@ -634,6 +646,7 @@
                             window.playNotificationSound('receive');
                         }
                     }
+                    bubbleUserToTop(activeUserId);
                 }
                 previousMessageCount = data.length;
 
@@ -825,6 +838,7 @@
                         if (userId == activeUserId) {
                             activeCount = count;
                         }
+                        bubbleUserToTop(userId);
                     } else {
                         badge.style.display = 'none';
                     }
@@ -903,6 +917,7 @@
                         window.playNotificationSound('sent');
                     }
                     fetchMessages();
+                    bubbleUserToTop(activeUserId);
                 } else {
                     alert('Transmission failed: ' + (data.message || 'Unknown protocol violation'));
                 }

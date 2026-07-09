@@ -206,8 +206,8 @@ class DGController extends Controller
         if ($req->dg_status !== 'pending') {
             return response()->json(['success' => false, 'message' => 'Requisition has already been processed by DG.'], 400);
         }
-        if ($req->main_admin_status !== 'approved') {
-            return response()->json(['success' => false, 'message' => 'Requisition must be approved by Stores Dept Head first.'], 400);
+        if (($req->origin_admin_status ?? 'pending') !== 'approved') {
+            return response()->json(['success' => false, 'message' => 'Requisition must be approved by Department Head first.'], 400);
         }
 
         if ($request->status === 'approved') {

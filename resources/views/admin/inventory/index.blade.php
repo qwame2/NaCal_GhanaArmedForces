@@ -4,6 +4,10 @@
 
 @section('content')
 <style>
+    .main-wrapper > *:not(header) {
+        max-width: 2000px !important;
+    }
+
     /* Responsive Layout Overrides */
     @media (max-width: 1200px) {
         .filter-pill { flex-direction: column !important; height: auto !important; padding: 1.5rem !important; border-radius: 24px !important; margin: 0 1rem 2rem 1rem !important; gap: 1rem !important; }

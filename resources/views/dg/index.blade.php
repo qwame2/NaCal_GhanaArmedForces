@@ -580,6 +580,16 @@
         <button id="tab-btn-staff-reqs" class="dg-tab-btn" onclick="switchDGTab('dg-staff-reqs-tab', this)">
             <i data-lucide="file-text" style="width: 16px;"></i>
             Staff Requisitions
+            @php
+                $dgPendingCount = \App\Models\StoreRequisition::get()->filter(function($r) {
+                    return $r->is_ready_for_dg_approval;
+                })->count();
+            @endphp
+            @if($dgPendingCount > 0)
+                <span id="dg-staff-reqs-badge" style="background: #ef4444; color: white; border-radius: 999px; padding: 2px 6px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; line-height: 1; margin-left: 4px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);">
+                    {{ $dgPendingCount }}
+                </span>
+            @endif
         </button>
         <button id="tab-btn-user-presence" class="dg-tab-btn" onclick="switchDGTab('dg-user-presence-tab', this)">
             <i data-lucide="users" style="width: 16px;"></i>
@@ -836,11 +846,8 @@
                     <thead>
                         <tr>
                             <th>Requisition ID</th>
-                            <th>Requester</th>
                             <th>Department</th>
-                            <th>Purpose</th>
                             <th>Items</th>
-                            <th>Total Qty</th>
                             <th>Priority</th>
                             <th>Usage</th>
                             <th>Status</th>
@@ -852,41 +859,10 @@
                         @forelse($requisitions as $req)
                             <tr class="dg-row">
                                 <td style="font-weight: 900; font-family: monospace; color: var(--dg-primary); position: relative;">
-                                    <div style="display: flex; align-items: center; gap: 6px;">
-                                        <span>{{ $req->unique_id }}</span>
-                                        <button onclick="toggleRequisitionItems(this)" style="background: rgba(99, 102, 241, 0.1); border: 1.5px solid rgba(99, 102, 241, 0.2); cursor: pointer; padding: 4px; color: var(--dg-primary); display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; transition: all 0.2s; outline: none;" class="req-items-toggle-btn" onmouseover="this.style.background='rgba(99, 102, 241, 0.2)'; this.style.borderColor='rgba(99, 102, 241, 0.3)';" onmouseout="this.style.background='rgba(99, 102, 241, 0.1)'; this.style.borderColor='rgba(99, 102, 241, 0.2)';" type="button">
-                                            <i data-lucide="chevron-down" style="width: 12px; height: 12px; stroke-width: 3.5;"></i>
-                                        </button>
-                                    </div>
-                                    <div class="req-items-container" style="position: absolute; top: calc(100% - 4px); left: 12px; z-index: 999; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); width: 280px; display: none; flex-direction: column; gap: 6px; line-height: 1.3; text-align: left; font-family: sans-serif;">
-                                         <div style="font-size: 0.65rem; font-weight: 800; color: var(--dg-primary); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-bottom: 4px;">
-                                             Requested Items
-                                         </div>
-                                         <div style="display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto;" class="custom-scrollbar">
-                                             @foreach($req->items as $item)
-                                                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-color); padding-bottom: 4px; font-size: 0.75rem;">
-                                                     <div style="font-weight: 700; color: var(--text-main); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $item->description }}">
-                                                         {{ $item->description }}
-                                                     </div>
-                                                     <div style="font-weight: 800; color: var(--dg-primary); margin-left: 8px; flex-shrink: 0;">
-                                                         {{ $item->quantity_requested }} {{ $item->unit }}
-                                                     </div>
-                                                 </div>
-                                             @endforeach
-                                         </div>
-                                    </div>
-                                </td>
-                                <td style="font-weight: 800;">
-                                    {{ $req->requester_name }}
-                                    @if($req->rank_or_title)
-                                        <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">{{ $req->rank_or_title }}</div>
-                                    @endif
+                                    {{ $req->unique_id }}
                                 </td>
                                 <td style="font-weight: 700; color: var(--text-muted);">
                                     {{ $req->department }}
-                                </td>
-                                <td style="max-width: 250px; line-height: 1.4; color: var(--text-main); font-weight: 500;">
-                                    {{ $req->purpose }}
                                 </td>
                                 <td>
                                     <div style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 280px; align-items: center;">
@@ -899,9 +875,6 @@
                                         <span style="font-size: .7rem; font-weight: 700; color: var(--dg-primary); background: rgba(99, 102, 241, 0.1); padding: 2px 8px; border-radius: 6px; white-space: nowrap;">+{{ $req->items->count() - 3 }} more</span>
                                         @endif
                                     </div>
-                                </td>
-                                <td style="font-weight: 800; text-align: center; color: var(--text-main);">
-                                    {{ number_format($req->items->sum('quantity_requested'), 0) }}
                                 </td>
                                 <td>
                                     @php $p = $req->priority_badge; @endphp
@@ -925,42 +898,50 @@
                                     {{ $req->created_at->format('d/m/Y H:i') }}
                                 </td>
                                 <td>
-                                    @if($req->requires_dg_approval && ($req->dg_status ?? 'pending') === 'pending' && $req->main_admin_status === 'approved')
-                                        <div style="display: flex; gap: 6px; align-items: center;">
-                                            <button onclick="approveRequisition({{ $req->id }}, this)" class="dg-action-btn approve" style="padding: 6px 12px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; font-size: 0.72rem; font-weight: 800; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; display: inline-flex; align-items: center; gap: 4px;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
-                                                <i data-lucide="check-circle" style="width: 13px; height: 13px;"></i> Approve
-                                            </button>
-                                            <button onclick="openDeclineModal({{ $req->id }}, this)" class="dg-action-btn decline" style="padding: 6px 12px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 8px; font-size: 0.72rem; font-weight: 800; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; display: inline-flex; align-items: center; gap: 4px;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
-                                                <i data-lucide="x-circle" style="width: 13px; height: 13px;"></i> Decline
-                                            </button>
-                                        </div>
-                                    @elseif($req->requires_dg_approval)
-                                        @if(($req->dg_status ?? 'pending') === 'approved')
-                                            <span class="dg-badge success" style="font-size: 0.65rem;">
-                                                <i data-lucide="check" style="width: 10px; height: 10px;"></i> DG Approved
-                                            </span>
-                                        @elseif(($req->dg_status ?? 'pending') === 'declined')
-                                            <div style="display: flex; flex-direction: column; gap: 3px;">
-                                                <span class="dg-badge danger" style="font-size: 0.65rem;">
-                                                    <i data-lucide="x" style="width: 10px; height: 10px;"></i> DG Declined
-                                                </span>
-                                                @if($req->dg_decline_reason)
-                                                    <div style="font-size: 0.65rem; color: var(--text-muted); font-style: italic; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $req->dg_decline_reason }}">
-                                                        Reason: {{ $req->dg_decline_reason }}
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        @else
-                                            <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">-</span>
-                                        @endif
-                                    @else
-                                        <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">-</span>
-                                    @endif
-                                </td>
+                                     <div style="display: flex; gap: 6px; align-items: center; justify-content: flex-start; flex-wrap: wrap;">
+                                         <!-- View Details Button -->
+                                         <button onclick="openRequisitionDetailsModal({!! htmlspecialchars(json_encode([
+                                             'id' => $req->id,
+                                             'unique_id' => $req->unique_id,
+                                             'requester_name' => $req->requester_name,
+                                             'staff_id' => $req->requester ? $req->requester->service_number : ($req->collector_staff_id ?: 'N/A'),
+                                             'department' => $req->department,
+                                             'purpose' => $req->purpose,
+                                             'date_time' => $req->created_at->format('d/m/Y H:i'),
+                                             'is_ready' => $req->is_ready_for_dg_approval,
+                                             'requires_dg' => $req->requires_dg_approval,
+                                             'dg_status' => $req->dg_status ?? 'pending',
+                                             'dg_decline_reason' => $req->dg_decline_reason,
+                                             'items' => $req->items->map(fn($i) => [
+                                                 'description' => $i->description,
+                                                 'quantity' => number_format($i->quantity_requested, 0),
+                                                 'unit' => $i->unit
+                                             ])->toArray()
+                                         ]), ENT_QUOTES, 'UTF-8') !!}, this)" class="dg-action-btn view-details" style="padding: 6px 12px; background: rgba(99, 102, 241, 0.1); border: 1.5px solid rgba(99, 102, 241, 0.25); color: var(--dg-primary); border-radius: 8px; font-size: 0.72rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: transform 0.15s;" onmouseover="this.style.background='rgba(99,102,241,0.2)'" onmouseout="this.style.background='rgba(99,102,241,0.1)'" type="button">
+                                             <i data-lucide="eye" style="width: 13px; height: 13px;"></i> View Details
+                                         </button>
+
+                                         @if($req->requires_dg_approval)
+                                             @if(($req->dg_status ?? 'pending') === 'approved')
+                                                 <span class="dg-badge success" style="font-size: 0.65rem;">
+                                                     <i data-lucide="check" style="width: 10px; height: 10px;"></i> Approved
+                                                 </span>
+                                             @elseif(($req->dg_status ?? 'pending') === 'declined')
+                                                 <span class="dg-badge danger" style="font-size: 0.65rem;">
+                                                     <i data-lucide="x" style="width: 10px; height: 10px;"></i> Declined
+                                                 </span>
+                                             @elseif($req->is_ready_for_dg_approval)
+                                                 <span class="dg-badge warning" style="font-size: 0.65rem; background: rgba(245, 158, 11, 0.08); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3);">
+                                                     <i data-lucide="clock" style="width: 10px; height: 10px;"></i> Pending
+                                                 </span>
+                                             @endif
+                                         @endif
+                                     </div>
+                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+                                <td colspan="8" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
                                     <i data-lucide="file-text" style="width: 40px; height: 40px; margin-bottom: 1rem; opacity: 0.25;"></i>
                                     <p style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">No staff requisitions registered.</p>
                                 </td>
@@ -1247,6 +1228,131 @@
 
 </div>
 
+{{-- Requisition Details Popover Modal --}}
+<div id="dg-details-modal" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 99998; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
+    <div style="background: linear-gradient(145deg, #ffffff, #fafbfc); border-radius: 28px; padding: 0; width: 820px; max-width: 94%; max-height: 90vh; box-shadow: 0 60px 140px -40px rgba(15, 23, 42, 0.7), 0 0 0 1px rgba(99, 102, 241, 0.08); display: flex; flex-direction: column; transform: scale(0.92) translateY(10px); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease; overflow: hidden;" id="dg-details-modal-content">
+        
+        <!-- Header with Gradient Accent -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 28px 36px 22px 36px; border-bottom: 1px solid #eef2f6; position: relative; background: linear-gradient(180deg, rgba(99, 102, 241, 0.02) 0%, transparent 100%);">
+            <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #6366f1, #818cf8, #a78bfa, #818cf8, #6366f1); background-size: 200% 100%; animation: shimmer 3s ease-in-out infinite;"></div>
+            
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #6366f1, #818cf8); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);">
+                    <i data-lucide="file-text" style="width: 24px; height: 24px; stroke-width: 2px;"></i>
+                </div>
+                <div>
+                    <h3 style="font-weight: 800; font-size: 1.3rem; color: #0f172a; margin: 0; letter-spacing: -0.02em;" id="details-modal-title">Requisition Details</h3>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                        <span style="font-size: 0.7rem; color: #94a3b8; font-weight: 500;" id="details-modal-id">#REQ-00024</span>
+                        <span style="width: 4px; height: 4px; background: #94a3b8; border-radius: 50%; display: inline-block;"></span>
+                        <span style="font-size: 0.65rem; font-weight: 600; background: rgba(234, 179, 8, 0.12); color: #ca8a04; padding: 2px 14px; border-radius: 20px; border: 1px solid rgba(234, 179, 8, 0.15);">Pending</span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="closeRequisitionDetailsModal()" style="background: rgba(241, 245, 249, 0.8); border: 1px solid #e2e8f0; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.borderColor='rgba(239, 68, 68, 0.3)'; this.style.color='#ef4444'; this.style.transform='rotate(90deg)'" onmouseout="this.style.background='rgba(241, 245, 249, 0.8)'; this.style.borderColor='#e2e8f0'; this.style.color='#64748b'; this.style.transform='rotate(0deg)'">
+                <i data-lucide="x" style="width: 20px; height: 20px; stroke-width: 2px;"></i>
+            </button>
+        </div>
+
+        <!-- Body - All Information with Enhanced Cards -->
+        <div style="padding: 28px 36px 24px 36px; overflow-y: auto; flex: 1;">
+            
+            <!-- Requester Row - Modern Card Design -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; padding: 20px 24px; background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: 16px; border: 1px solid #e2e8f0;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;">
+                        <i data-lucide="user" style="width: 12px; height: 12px;"></i>
+                        Requester
+                    </div>
+                    <div style="font-weight: 700; color: #0f172a; font-size: 1rem;" id="details-modal-requester">John Mensah</div>
+                </div>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;">
+                        <i data-lucide="badge" style="width: 12px; height: 12px;"></i>
+                        Staff ID
+                    </div>
+                    <div style="font-weight: 600; color: #0f172a; font-size: 0.95rem; font-family: 'SF Mono', 'Monaco', monospace; background: rgba(99, 102, 241, 0.06); padding: 2px 12px; border-radius: 6px; display: inline-block;" id="details-modal-staff-id">646545</div>
+                </div>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;">
+                        <i data-lucide="building" style="width: 12px; height: 12px;"></i>
+                        Department
+                    </div>
+                    <div style="font-weight: 600; color: #0f172a; font-size: 0.95rem;" id="details-modal-department">Intelligence Department</div>
+                </div>
+            </div>
+
+            <!-- Purpose Row - Enhanced -->
+            <div style="margin-bottom: 24px; padding: 18px 24px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.03), rgba(99, 102, 241, 0.01)); border-radius: 16px; border: 1px solid #e2e8f0; border-left: 4px solid #6366f1;">
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
+                    <i data-lucide="target" style="width: 14px; height: 14px; color: #6366f1;"></i>
+                    Purpose
+                </div>
+                <div style="font-weight: 500; color: #0f172a; font-size: 0.95rem; line-height: 1.6;" id="details-modal-purpose">nataraj</div>
+            </div>
+
+            <!-- Date & Items Row - Enhanced -->
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px;">
+                <div style="padding: 16px 20px; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
+                        <i data-lucide="clock" style="width: 14px; height: 14px;"></i>
+                        Submitted
+                    </div>
+                    <div style="font-weight: 600; color: #0f172a; font-size: 0.95rem;" id="details-modal-date-time">09/07/2026 17:31</div>
+                </div>
+                <div style="padding: 16px 20px; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em;">
+                            <i data-lucide="package" style="width: 14px; height: 14px;"></i>
+                            Requested Items
+                        </div>
+                        <span style="background: #6366f1; color: white; font-size: 0.55rem; font-weight: 700; padding: 1px 12px; border-radius: 20px;" id="details-modal-item-count">1</span>
+                    </div>
+                    <div id="details-modal-items" style="display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; padding-right: 4px;" class="custom-scrollbar">
+                        <!-- Items populated via JS -->
+                        <div style="background: white; border-radius: 10px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; transition: all 0.2s;" onmouseover="this.style.borderColor='#6366f1'; this.style.background='#fafbfc'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='white'">
+                            <div style="display: flex; flex-direction: column; gap: 1px;">
+                                <span style="font-weight: 600; color: #0f172a; font-size: 0.9rem;">PEN</span>
+                                <span style="font-size: 0.6rem; color: #94a3b8; font-weight: 500;">Unit: PIECE(S)</span>
+                            </div>
+                            <span style="font-weight: 700; color: #6366f1; font-size: 0.95rem; background: rgba(99, 102, 241, 0.08); padding: 2px 14px; border-radius: 8px;">×5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer - Enhanced Buttons -->
+        <div style="padding: 18px 36px 26px 36px; border-top: 1px solid #eef2f6; background: linear-gradient(0deg, rgba(255,255,255,0.8) 0%, transparent 100%);">
+            <div id="details-modal-actions" style="display: flex; gap: 12px; justify-content: flex-end; align-items: center;">
+                <!-- Actions populated via JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes shimmer {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #e2e8f0;
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #cbd5e1;
+    }
+</style>
+
 {{-- Decline Requisition Modal --}}
 <div id="dg-decline-modal" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); z-index: 99999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;">
     <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 2rem; width: 440px; max-width: 90%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; gap: 1.25rem; transform: scale(0.95); transition: transform 0.3s ease;" id="dg-decline-modal-content">
@@ -1305,6 +1411,10 @@
     }
 
     function toggleRequisitionItems(btn) {
+        toggleActionRequisitionItems(btn);
+    }
+
+    function toggleActionRequisitionItems(btn) {
         const container = btn.closest('td').querySelector('.req-items-container');
         if (container) {
             const isHidden = window.getComputedStyle(container).display === 'none';
@@ -1312,17 +1422,13 @@
             document.querySelectorAll('.req-items-container').forEach(c => {
                 if (c !== container) {
                     c.style.display = 'none';
-                    const parentBtn = c.closest('td').querySelector('.req-items-toggle-btn');
-                    if (parentBtn) parentBtn.style.transform = 'rotate(0deg)';
                 }
             });
 
             if (isHidden) {
                 container.style.display = 'flex';
-                btn.style.transform = 'rotate(180deg)';
             } else {
                 container.style.display = 'none';
-                btn.style.transform = 'rotate(0deg)';
             }
         }
     }
@@ -1446,6 +1552,8 @@
                     }
                 });
 
+                updateStaffRequisitionsTabBadge(doc);
+
                 // Re-initialize lucide icons on dynamically loaded contents
                 if (typeof lucide !== 'undefined') {
                     lucide.createIcons();
@@ -1484,6 +1592,8 @@
                                     oldPanel.innerHTML = newPanel.innerHTML;
                                 }
                             });
+                            
+                            updateStaffRequisitionsTabBadge(doc);
                             
                             if (typeof lucide !== 'undefined') {
                                 lucide.createIcons();
@@ -1524,7 +1634,7 @@
                     if (parentBtn) parentBtn.style.transform = 'rotate(0deg)';
                 });
             }
-            if (!e.target.closest('.req-items-toggle-btn') && !e.target.closest('.req-items-container')) {
+            if (!e.target.closest('.req-items-toggle-btn') && !e.target.closest('.view-details') && !e.target.closest('.req-items-container')) {
                 document.querySelectorAll('.req-items-container').forEach(c => {
                     c.style.display = 'none';
                     const parentBtn = c.closest('td').querySelector('.req-items-toggle-btn');
@@ -1539,6 +1649,16 @@
                 closeDeclineModal();
             }
         });
+
+        // Close details modal when clicking outside content area
+        const detailsModal = document.getElementById('dg-details-modal');
+        if (detailsModal) {
+            detailsModal.addEventListener('click', (e) => {
+                if (e.target === detailsModal) {
+                    closeRequisitionDetailsModal();
+                }
+            });
+        }
 
         // Setup filter input listeners
         const form = document.getElementById('dg-filter-form');
@@ -1587,14 +1707,16 @@
 
     let currentDeclineId = null;
 
-    function openDeclineModal(id, btn) {
+    function openDeclineModal(id, btn, uniqueId = '', requesterName = '', itemsSummary = '') {
+        document.querySelectorAll('.req-items-container').forEach(c => c.style.display = 'none');
         currentDeclineId = id;
         const modal = document.getElementById('dg-decline-modal');
         const content = document.getElementById('dg-decline-modal-content');
         const idLabel = document.getElementById('decline-modal-req-id');
         const textInput = document.getElementById('decline-reason-input');
 
-        if (idLabel) idLabel.textContent = `#${id}`;
+        const displayName = uniqueId ? `${uniqueId} (${itemsSummary || 'Requisition'})` : `#${id}`;
+        if (idLabel) idLabel.textContent = displayName;
         if (textInput) textInput.value = '';
 
         if (modal && content) {
@@ -1683,10 +1805,11 @@
         }
     }
 
-    async function approveRequisition(id, btn) {
+    async function approveRequisition(id, btn, uniqueId = '', requesterName = '', itemsSummary = '') {
+        const displayName = uniqueId ? `${uniqueId} (${itemsSummary || 'Requisition'})` : `requisition #${id}`;
         const confirmResult = await Swal.fire({
             title: 'Approve Requisition?',
-            text: `Are you sure you want to approve store requisition #${id}?`,
+            text: `Are you sure you want to approve store requisition ${displayName}?`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#10b981',
@@ -1948,6 +2071,157 @@
                 hint.innerHTML = 'Currently bypassing intermediate Director General step due to settings configuration.';
             }
         });
+    }
+
+    function openRequisitionDetailsModal(req) {
+        const modal = document.getElementById('dg-details-modal');
+        const content = document.getElementById('dg-details-modal-content');
+        
+        // Fill Text elements
+        document.getElementById('details-modal-title').textContent = `Requisition Details`;
+        document.getElementById('details-modal-id').textContent = req.unique_id;
+        document.getElementById('details-modal-requester').textContent = req.requester_name || 'N/A';
+        document.getElementById('details-modal-staff-id').textContent = req.staff_id || 'N/A';
+        document.getElementById('details-modal-department').textContent = req.department || 'N/A';
+        document.getElementById('details-modal-date-time').textContent = req.date_time || 'N/A';
+        document.getElementById('details-modal-purpose').textContent = req.purpose || 'No purpose specified.';
+        
+        // Fill item count
+        const itemCountEl = document.getElementById('details-modal-item-count');
+        if (itemCountEl) {
+            itemCountEl.textContent = req.items ? req.items.length : 0;
+        }
+
+        // Fill status badge dynamically
+        const statusEl = document.getElementById('details-modal-status');
+        if (statusEl) {
+            statusEl.textContent = req.dg_status.charAt(0).toUpperCase() + req.dg_status.slice(1);
+            if (req.dg_status === 'approved') {
+                statusEl.style.background = 'rgba(16, 185, 129, 0.12)';
+                statusEl.style.color = '#10b981';
+                statusEl.style.borderColor = 'rgba(16, 185, 129, 0.15)';
+            } else if (req.dg_status === 'declined') {
+                statusEl.style.background = 'rgba(239, 68, 68, 0.12)';
+                statusEl.style.color = '#ef4444';
+                statusEl.style.borderColor = 'rgba(239, 68, 68, 0.15)';
+            } else {
+                statusEl.style.background = 'rgba(234, 179, 8, 0.12)';
+                statusEl.style.color = '#ca8a04';
+                statusEl.style.borderColor = 'rgba(234, 179, 8, 0.15)';
+            }
+        }
+
+        // Fill items list
+        const itemsContainer = document.getElementById('details-modal-items');
+        itemsContainer.innerHTML = '';
+        const itemsList = [];
+        if (req.items && req.items.length > 0) {
+            req.items.forEach(item => {
+                itemsList.push(item.description);
+                const itemRow = document.createElement('div');
+                itemRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;';
+                itemRow.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 1px;">
+                        <span style="font-weight: 600; color: #0f172a; font-size: 0.9rem;">${item.description}</span>
+                        <span style="font-size: 0.6rem; color: #94a3b8; font-weight: 500;">Unit: ${item.unit}</span>
+                    </div>
+                    <span style="font-weight: 700; color: #6366f1; font-size: 0.95rem; background: rgba(99, 102, 241, 0.08); padding: 2px 14px; border-radius: 8px;">×${item.quantity}</span>
+                `;
+                itemsContainer.appendChild(itemRow);
+            });
+        } else {
+            itemsContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.8rem; text-align: center; margin: 10px 0;">No items in this requisition.</p>';
+        }
+        
+        const itemsSummary = itemsList.join(', ');
+
+        // Fill Actions
+        const actionsContainer = document.getElementById('details-modal-actions');
+        const footerContainer = actionsContainer.parentElement;
+        actionsContainer.innerHTML = '';
+        
+        let buttonsHtml = '';
+
+        if (req.is_ready) {
+            // Render Approve & Decline buttons (Close button is removed as requested)
+            buttonsHtml = `
+                <button onclick="declineRequisitionFromModal(${req.id}, this, '${req.unique_id}', '${req.requester_name.replace(/'/g, "\\'")}', '${itemsSummary.replace(/'/g, "\\'")}')" style="padding: 10px 30px; background: linear-gradient(135deg, #ef4444, #dc2626); border: none; border-radius: 12px; color: white; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 16px rgba(239, 68, 68, 0.25);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 24px rgba(239, 68, 68, 0.35)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(239, 68, 68, 0.25)'">
+                    <i data-lucide="thumbs-down" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i> Decline
+                </button>
+                <button onclick="approveRequisitionFromModal(${req.id}, this, '${req.unique_id}', '${req.requester_name.replace(/'/g, "\\'")}', '${itemsSummary.replace(/'/g, "\\'")}')" style="padding: 10px 36px; background: linear-gradient(135deg, #6366f1, #4f46e5); border: none; border-radius: 12px; color: white; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 30px rgba(99, 102, 241, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(99, 102, 241, 0.3)'">
+                    <i data-lucide="check-circle" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i> Approve
+                </button>
+            `;
+        } else if (req.requires_dg) {
+            if (req.dg_status === 'approved') {
+                buttonsHtml = `
+                    <span class="dg-badge success" style="font-size: 0.82rem; display: inline-flex; justify-content: center; padding: 8px 16px; border-radius: 10px;">
+                        <i data-lucide="check" style="width: 14px; height: 14px; margin-right: 6px;"></i> Approved
+                    </span>
+                `;
+            } else if (req.dg_status === 'declined') {
+                buttonsHtml = `
+                    <span class="dg-badge danger" style="font-size: 0.82rem; display: inline-flex; justify-content: center; padding: 8px 16px; border-radius: 10px;">
+                        <i data-lucide="x" style="width: 14px; height: 14px; margin-right: 6px;"></i> Declined
+                    </span>
+                `;
+            }
+        }
+        
+        if (buttonsHtml) {
+            actionsContainer.innerHTML = buttonsHtml;
+            if (footerContainer) footerContainer.style.display = 'block';
+        } else {
+            actionsContainer.innerHTML = '';
+            if (footerContainer) footerContainer.style.display = 'none';
+        }
+        
+        // Show Modal
+        if (modal && content) {
+            modal.style.opacity = '1';
+            modal.style.pointerEvents = 'auto';
+            content.style.transform = 'scale(1)';
+        }
+        
+        if (window.lucide) {
+            window.lucide.createIcons({
+                node: modal
+            });
+        }
+    }
+
+    function closeRequisitionDetailsModal() {
+        const modal = document.getElementById('dg-details-modal');
+        const content = document.getElementById('dg-details-modal-content');
+        if (modal && content) {
+            modal.style.opacity = '0';
+            modal.style.pointerEvents = 'none';
+            content.style.transform = 'scale(0.95)';
+        }
+    }
+
+    function approveRequisitionFromModal(id, btn, uniqueId, requesterName, itemsSummary) {
+        closeRequisitionDetailsModal();
+        approveRequisition(id, btn, uniqueId, requesterName, itemsSummary);
+    }
+
+    function declineRequisitionFromModal(id, btn, uniqueId, requesterName, itemsSummary) {
+        closeRequisitionDetailsModal();
+        openDeclineModal(id, btn, uniqueId, requesterName, itemsSummary);
+    }
+
+    function updateStaffRequisitionsTabBadge(doc) {
+        const oldBadge = document.getElementById('dg-staff-reqs-badge');
+        const newBadge = doc.getElementById('dg-staff-reqs-badge');
+        const btn = document.getElementById('tab-btn-staff-reqs');
+        if (btn) {
+            if (oldBadge) {
+                oldBadge.remove();
+            }
+            if (newBadge) {
+                btn.appendChild(newBadge.cloneNode(true));
+            }
+        }
     }
 </script>
 @endsection

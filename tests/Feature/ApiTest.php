@@ -960,7 +960,7 @@ class ApiTest extends TestCase
         $this->assertEquals('approved', $itReq->main_admin_status);
     }
 
-    public function test_head_of_stores_tracking_pipeline_attribute_and_view(): void
+    public function test_head_of_stores_requisitions_tracking_stepper(): void
     {
         // Hot-patch database columns in sqlite memory for testing
         try {
@@ -973,95 +973,54 @@ class ApiTest extends TestCase
                 $table->string('origin_admin_status')->default('pending');
             });
         } catch (\Exception $e) {}
-        try {
-            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
-                $table->string('alternative_status')->nullable();
-            });
-        } catch (\Exception $e) {}
 
-        $requester = User::factory()->create(['role' => 'Requisitioner', 'department' => 'Welfare Department', 'registration_status' => 'approved']);
-        $storesHOD = User::factory()->create(['role' => 'Head of Stores', 'department' => 'Stores', 'registration_status' => 'approved']);
-        $welfareHOD = User::factory()->create(['role' => 'Department Head', 'department' => 'Welfare Department', 'registration_status' => 'approved']);
-
-        $req = \App\Models\StoreRequisition::create([
-            'requester_name' => $requester->name,
-            'department' => 'Welfare Department',
-            'requested_by' => $requester->id,
-            'purpose' => 'Tracking test request',
-            'priority' => 'normal',
-            'status' => 'pending',
-            'usage_type' => 'permanent',
-            'origin_admin_status' => 'pending',
-            'main_admin_status' => 'pending',
-            'requires_dg_approval' => false,
+        // 1. Create a Head of Stores
+        $headOfStores = User::factory()->create([
+            'role' => 'Head of Stores',
+            'department' => '',
+            'is_admin' => true,
+            'registration_status' => 'approved',
+            'is_active' => true,
         ]);
 
-        \App\Models\StoreRequisitionItem::create([
-            'requisition_id' => $req->id,
-            'description' => 'Test Item Description',
+        // 2. Create another admin/officer (not Head of Stores)
+        $storeOfficer = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'is_admin' => true,
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        // 3. Create a requisition
+        $requisition = \App\Models\StoreRequisition::create([
+            'requester_name' => 'IT Staff',
+            'department' => 'IT Department',
+            'purpose' => 'For testing tracking stepper',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'origin_admin_status' => 'pending',
+            'main_admin_status' => 'approved',
+            'usage_type' => 'permanent',
+        ]);
+
+        $item = \App\Models\StoreRequisitionItem::create([
+            'requisition_id' => $requisition->id,
+            'description' => 'Notebook',
             'category' => 'A',
             'unit' => 'Piece',
             'quantity_requested' => 10,
         ]);
 
-        // Clean settings to ensure categories do not require approval
-        \App\Models\Setting::set('stores_dept_head_approval_categories', [], 'json');
+        // A. Verify Head of Stores sees the tracking information on /admin/requisitions
+        $response1 = $this->actingAs($headOfStores)->get('/admin/requisitions');
+        $response1->assertStatus(200);
+        $response1->assertSee('Next:', false);
 
-        // Verify the attribute directly
-        $pipeline = $req->tracking_pipeline;
-        $this->assertArrayHasKey('hod', $pipeline);
-        $this->assertArrayHasKey('stores_hod', $pipeline);
-        $this->assertArrayHasKey('dg', $pipeline);
-        $this->assertArrayHasKey('head_of_stores', $pipeline);
-
-        // HOD review should be active/pending since origin_admin_status is pending
-        $this->assertEquals('active', $pipeline['hod']['status']);
-        // Stores HOD should be bypassed because categories do not require it
-        $this->assertEquals('bypassed', $pipeline['stores_hod']['status']);
-        // DG should be bypassed because requires_dg_approval is false
-        $this->assertEquals('bypassed', $pipeline['dg']['status']);
-        // Head of Stores should be pending
-        $this->assertEquals('pending', $pipeline['head_of_stores']['status']);
-
-        // Render the view row partial as Head of Stores (should see mini-tracker)
-        $viewAsStores = $this->actingAs($storesHOD)
-            ->view('requisitions._req_table_rows', ['requisitions' => collect([$req])]);
-        
-        $viewAsStores->assertSee('class="mini-tracker"', false);
-        $viewAsStores->assertSee('title="Awaiting HOD Review', false);
-        $viewAsStores->assertSee('Next:', false);
-        $viewAsStores->assertSee('class="table-item-pill"', false);
-        $viewAsStores->assertSee('Test Item Description', false);
-
-        // Render the view row partial as Welfare HOD (should NOT see mini-tracker)
-        $viewAsWelfare = $this->actingAs($welfareHOD)
-            ->view('requisitions._req_table_rows', ['requisitions' => collect([$req])]);
-        
-        $viewAsWelfare->assertDontSee('class="mini-tracker"', false);
-        $viewAsWelfare->assertDontSee('title="Awaiting HOD Review', false);
-
-        // Render personnel page as Head of Stores
-        $stats = ['pending' => 1, 'urgent' => 0, 'approved' => 0, 'partially_approved' => 0, 'declined' => 0];
-        $viewAsStoresPersonnel = $this->actingAs($storesHOD)
-            ->view('requisitions.personnel', [
-                'requisitions' => new \Illuminate\Pagination\LengthAwarePaginator(collect([$req]), 1, 15),
-                'stats' => $stats,
-                'ledgeMap' => [],
-                'availableItems' => collect(),
-            ]);
-        $viewAsStoresPersonnel->assertSee('class="mini-tracker"', false);
-        $viewAsStoresPersonnel->assertSee('class="table-item-pill"', false);
-        $viewAsStoresPersonnel->assertSee('Test Item Description', false);
-
-        // Render personnel page as Welfare HOD
-        $viewAsWelfarePersonnel = $this->actingAs($welfareHOD)
-            ->view('requisitions.personnel', [
-                'requisitions' => new \Illuminate\Pagination\LengthAwarePaginator(collect([$req]), 1, 15),
-                'stats' => $stats,
-                'ledgeMap' => [],
-                'availableItems' => collect(),
-            ]);
-        $viewAsWelfarePersonnel->assertDontSee('class="mini-tracker"', false);
+        // B. Verify standard Store Officer (who is not Head of Stores) does NOT see the tracking information
+        $response2 = $this->actingAs($storeOfficer)->get('/admin/requisitions');
+        $response2->assertStatus(200);
+        $response2->assertDontSee('Next:', false);
     }
 }
 

@@ -289,7 +289,7 @@
             text-transform: uppercase;
             font-size: 0.7rem;
             letter-spacing: 0.06em;
-            padding: 0.85rem 1rem;
+            padding: 1rem;
             text-align: left;
             border-bottom: 1.5px solid var(--border-color);
         }
@@ -654,15 +654,15 @@
                 Itemized Breakdown
             </div>
 
-            <table class="voucher-table">
+             <table class="voucher-table">
                 <thead>
-                    <tr>
-                        <th style="width: 7%; text-align: center;">S/N</th>
-                        <th style="width: 15%;">Category</th>
-                        <th style="width: 48%;">Item Details</th>
-                        <th style="width: 15%; text-align: right;">Qty Requested</th>
-                        <th style="width: 15%; text-align: right;">Qty Released</th>
-                    </tr>
+                     <tr>
+                        <th style="width: 6%; text-align: center;">S/N</th>
+                        <th style="width: 23.5%;">Category</th>
+                        <th style="width: 23.5%;">Item Details</th>
+                        <th style="width: 23.5%;">Qty Requested</th>
+                        <th style="width: 23.5%;">Qty Released</th>
+                     </tr>
                 </thead>
                 <tbody>
                     @foreach($items as $index => $item)
@@ -709,11 +709,11 @@
                                     </div>
                                 @endif
                             </td>
-                            <td style="text-align: right; font-weight: 700;">
+                            <td style="font-weight: 700;">
                                 <div class="qty-val">{{ number_format($requested, 2) }}</div>
                                 <div style="font-size: 0.7rem; color: var(--text-muted);">{{ $item['unit'] ?? 'units' }}</div>
                             </td>
-                            <td style="text-align: right;">
+                            <td>
                                 <div class="qty-val" style="color: var(--success); font-weight: 900; font-size: 0.9rem;">
                                     {{ number_format($totalApproved, 2) }}
                                 </div>
@@ -728,12 +728,11 @@
             <!-- Legal Verification Statement -->
             <div class="legal-declaration">
                 <strong>INVENTORY RELEASE STATEMENT & CERTIFICATION:</strong><br>
-                I hereby certify that the store items detailed in this voucher have been verified, approved, and released from the central logistics inventory database. The receiving department representative has inspected and verified the stock items as listed and confirmed physical receipt. These actions have been fully transacted and logged under formal procedures of the Logistics and Stores Division.
+                I hereby certify that the store items detailed in this receipt have been verified, approved, and released from the central stores of NACOC. The receiving department representative has inspected and verified the stock items as listed and confirmed physical receipt. These actions have been fully transacted and logged under formal procedures of the Stores Division.
             </div>
 
-            <!-- System Footer Note -->
             <div style="text-align: center; font-size: 0.68rem; color: var(--text-muted); margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1rem; font-style: italic; font-weight: 600; letter-spacing: 0.02em;">
-                this Voucher was generated through using the NACOC STORES INVENTORY MANAGEMENT SYSTEM (NSIMS)
+                This voucher was generated through using the NACOC STORES INVENTORY MANAGEMENT SYSTEM (NSIMS). Head Of Stores.
             </div>
         </div>
     </div>

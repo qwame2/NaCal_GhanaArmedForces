@@ -264,6 +264,9 @@
 
 <!-- Bottom Sheet CSS -->
 <style>
+    .main-wrapper > *:not(header) {
+        max-width: 2000px !important;
+    }
     .bottom-sheet-overlay {
         position: fixed;
         inset: 0;

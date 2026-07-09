@@ -9,6 +9,7 @@
     <link rel="manifest" href="{{ str_replace(['http:', 'https:'], '', asset('manifest.json')) }}">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NACOC IMS">
     <link rel="apple-touch-icon" href="{{ str_replace(['http:', 'https:'], '', asset('img/cropped_circle_image.png')) }}">
@@ -343,6 +344,40 @@
                     <span>Notifications</span>
                 </a>
             </li>
+
+            @php
+                /* Service SRA: determine the correct link based on role.
+                 * Head of Stores = Main Admin OR role 'Head of Stores' OR is_admin flag.
+                 * Regular Store Officers (department=Stores but role=Officer etc.) are SUBMITTERS.
+                 * Department Head / Main Admin who is NOT a Stores admin = Admin approver.
+                 */
+                $sraUser      = auth()->user();
+                $sraIsStoresHead = $sraUser->is_admin
+                    || $sraUser->role === 'Main Admin'
+                    || $sraUser->role === 'Head of Stores'
+                    || $sraUser->role === 'Dept. Head (Stores)';
+                $sraIsAdminApprover = !$sraIsStoresHead
+                    && in_array($sraUser->role, ['Department Head', 'Dept Head HR', 'Head of Welfare']);
+
+                if ($sraIsStoresHead) {
+                    $sraRoute       = 'stores.service-sra.index';
+                    $sraRouteActive = request()->routeIs(['stores.service-sra.index']);
+                } elseif ($sraIsAdminApprover) {
+                    $sraRoute       = 'admin.service-sra.index';
+                    $sraRouteActive = request()->routeIs('admin.service-sra.index');
+                } else {
+                    $sraRoute       = 'service-sra.index';
+                    $sraRouteActive = request()->routeIs(['service-sra.index', 'service-sra.create']);
+                }
+            @endphp
+            @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head', 'Head of Stores', 'Auditor', 'Director General', 'Requisitioner']))
+            <li class="nav-item">
+                <a href="{{ route($sraRoute) }}" class="nav-link {{ $sraRouteActive ? 'active' : '' }}" data-tooltip="Service SRA (Stores Received Advice)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/><line x1="8" y1="9" x2="10" y2="9"/></svg>
+                    <span>Service SRA</span>
+                </a>
+            </li>
+            @endif
         </ul>
 
         <div class="sidebar-footer" style="margin-top: auto;">
@@ -1028,7 +1063,7 @@
         });
 
         // Toast Notification System Logic
-        function showToast(title, message, type = 'success', duration = 5000) {
+        function showToast(title, message, type = 'success', duration = 10000) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;

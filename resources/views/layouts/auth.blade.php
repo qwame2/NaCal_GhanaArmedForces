@@ -26,6 +26,7 @@
     <link rel="manifest" href="{{ str_replace(['http:', 'https:'], '', asset('manifest.json')) }}">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NACOC IMS">
     <link rel="apple-touch-icon" href="{{ str_replace(['http:', 'https:'], '', asset('img/cropped_circle_image.png')) }}">

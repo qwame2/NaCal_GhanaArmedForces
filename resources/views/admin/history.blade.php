@@ -410,6 +410,9 @@
 </div>
 
 <style>
+    .main-wrapper > *:not(header) {
+        max-width: 2000px !important;
+    }
     /* Premium Glassmorphic Pagination */
     .custom-pagination nav { display: flex; justify-content: center; }
     .custom-pagination ul.pagination { display: flex; gap: 0.5rem; list-style: none; padding: 0; margin: 0; align-items: center; }

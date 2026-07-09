@@ -736,10 +736,6 @@ class StoreRequisitionController extends Controller
         if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) abort(403);
 
         $query = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])
-            ->where(function($q) {
-                $q->where('status', '!=', 'pending')
-                  ->orWhere('main_admin_status', 'approved');
-            })
             ->orderByRaw("CASE WHEN status = 'pending' THEN 1 WHEN status = 'partially_approved' THEN 2 WHEN status = 'approved' THEN 3 WHEN status = 'declined' THEN 4 ELSE 5 END")
             ->orderByRaw("CASE WHEN priority = 'urgent' THEN 1 WHEN priority = 'normal' THEN 2 WHEN priority = 'low' THEN 3 ELSE 4 END")
             ->orderBy('created_at', 'desc');
@@ -767,15 +763,62 @@ class StoreRequisitionController extends Controller
         }
 
         $requisitions = $query->paginate(5)->withQueryString();
+
+        // ── Service SRA adminIndex integration ─────────────────────────────────
+        $sras = collect();
+        $sraPending = 0;
+        $sraApproved = 0;
+        $sraDeclined = 0;
+
+        if (!$request->filled('priority')) {
+            $sraQuery = \App\Models\ServiceSra::with('submitter')
+                ->orderBy('created_at', 'desc');
+
+            if ($request->filled('department')) {
+                $sraQuery->where('dept', 'LIKE', '%' . $request->department . '%');
+            }
+            if ($request->filled('date_from')) {
+                $sraQuery->whereDate('created_at', '>=', $request->date_from);
+            }
+            if ($request->filled('date_to')) {
+                $sraQuery->whereDate('created_at', '<=', $request->date_to);
+            }
+
+            // Status filter
+            $statusVal = $request->input('status', 'pending');
+            if ($statusVal === 'pending') {
+                $sraQuery->where('status', 'admin_approved')
+                         ->where('stores_status', 'pending');
+            } elseif ($statusVal === 'approved') {
+                $sraQuery->where('status', 'approved');
+            } elseif ($statusVal === 'declined') {
+                $sraQuery->where('status', 'declined');
+            }
+
+            $sras = $sraQuery->get();
+
+            // Count pending SRA for stats
+            $sraPending = \App\Models\ServiceSra::where('status', 'admin_approved')
+                ->where('stores_status', 'pending')
+                ->count();
+            $sraApproved = \App\Models\ServiceSra::where('status', 'approved')->count();
+            $sraDeclined = \App\Models\ServiceSra::where('status', 'declined')->count();
+        }
+
+        if ($sras->count() > 0) {
+            $merged = $sras->concat($requisitions->getCollection());
+            $requisitions->setCollection($merged);
+        }
+
         $ledgeMap = Setting::getCategories();
 
         $stats = \Illuminate\Support\Facades\Cache::remember('admin_requisitions_stats', 300, function() {
             $statsData = StoreRequisition::selectRaw("
-                SUM(CASE WHEN status = 'pending' AND main_admin_status = 'approved' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
                 SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
                 SUM(CASE WHEN status = 'partially_approved' THEN 1 ELSE 0 END) as partially_approved,
                 SUM(CASE WHEN status = 'declined' THEN 1 ELSE 0 END) as declined,
-                SUM(CASE WHEN status = 'pending' AND main_admin_status = 'approved' AND priority = 'urgent' THEN 1 ELSE 0 END) as urgent
+                SUM(CASE WHEN status = 'pending' AND priority = 'urgent' THEN 1 ELSE 0 END) as urgent
             ")->first();
 
             return [
@@ -786,6 +829,10 @@ class StoreRequisitionController extends Controller
                 'urgent'             => (int) ($statsData->urgent ?? 0),
             ];
         });
+
+        $stats['pending'] += $sraPending;
+        $stats['approved'] += $sraApproved;
+        $stats['declined'] += $sraDeclined;
 
         $chartData = \Illuminate\Support\Facades\Cache::remember('admin_requisitions_chart_data', 300, function() use ($ledgeMap) {
             // 1. Requisitions count by Department
@@ -864,6 +911,13 @@ class StoreRequisitionController extends Controller
         $uniqueDepts = $chartData['uniqueDepts'];
         $itemLabels = $chartData['itemLabels'];
         $itemSeries = $chartData['itemSeries'];
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('admin._requisitions_table', compact('requisitions', 'ledgeMap'))->render(),
+                'stats' => $stats
+            ]);
+        }
 
         return view('admin.requisitions', compact(
             'requisitions', 
@@ -1557,6 +1611,61 @@ class StoreRequisitionController extends Controller
 
         $requisitions = $query->paginate(15)->withQueryString();
 
+        // ── Service SRA Oversight integration ─────────────────────────────────
+        $sras = collect();
+        $sraPending = 0;
+        $sraApproved = 0;
+        $sraDeclined = 0;
+
+        if (($isStoresHead || auth()->user()->is_admin) && !$request->filled('priority')) {
+            $sraQuery = \App\Models\ServiceSra::with('submitter')
+                ->orderBy('created_at', 'desc');
+
+            if ($request->filled('department')) {
+                $sraQuery->where('dept', 'LIKE', '%' . $request->department . '%');
+            }
+            if ($request->filled('date_from')) {
+                $sraQuery->whereDate('created_at', '>=', $request->date_from);
+            }
+            if ($request->filled('date_to')) {
+                $sraQuery->whereDate('created_at', '<=', $request->date_to);
+            }
+
+            // Route-based filtering for SRA
+            $statusVal = $request->input('status', 'pending');
+            if ($statusVal === 'pending') {
+                if (auth()->user()->role === 'Main Admin' || auth()->user()->is_admin) {
+                    $sraQuery->whereIn('status', ['pending', 'admin_approved']);
+                } else {
+                    $sraQuery->where('status', 'admin_approved');
+                }
+            } elseif ($statusVal === 'approved') {
+                $sraQuery->where('status', 'approved');
+            } elseif ($statusVal === 'declined') {
+                $sraQuery->where('status', 'declined');
+            } elseif ($statusVal === 'history') {
+                $sraQuery->whereIn('status', ['approved', 'declined']);
+            }
+
+            $sras = $sraQuery->get();
+
+            // Scoped SRA stats counts
+            $sraPendingQuery = \App\Models\ServiceSra::query();
+            if (auth()->user()->role === 'Main Admin' || auth()->user()->is_admin) {
+                $sraPendingQuery->whereIn('status', ['pending', 'admin_approved']);
+            } else {
+                $sraPendingQuery->where('status', 'admin_approved');
+            }
+            $sraPending = $sraPendingQuery->count();
+            $sraApproved = \App\Models\ServiceSra::where('status', 'approved')->count();
+            $sraDeclined = \App\Models\ServiceSra::where('status', 'declined')->count();
+        }
+
+        if ($sras->count() > 0) {
+            $merged = $sras->concat($requisitions->getCollection());
+            $requisitions->setCollection($merged);
+        }
+
         $ledgeMap = Setting::getCategories();
 
         // Calculate scoped stats
@@ -1599,6 +1708,10 @@ class StoreRequisitionController extends Controller
                 'declined' => (int) ($statsData->declined ?? 0),
             ];
         }
+
+        $stats['pending'] += $sraPending;
+        $stats['approved'] += $sraApproved;
+        $stats['declined'] += $sraDeclined;
 
         $hasOverdueReturn = false;
         if (auth()->user()->role === 'Department Head' && !$isStoresHead) {

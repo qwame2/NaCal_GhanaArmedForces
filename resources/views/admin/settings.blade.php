@@ -4,6 +4,9 @@
 
 @section('content')
 <style>
+    .main-wrapper > *:not(header) {
+        max-width: 2000px !important;
+    }
     /* ── Page Layout ── */
     .settings-shell {
         display: block;
