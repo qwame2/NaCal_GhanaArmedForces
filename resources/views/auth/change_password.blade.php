@@ -444,7 +444,7 @@
                     </div>
                     <div class="hero-user-info">
                         <span class="hero-user-name">{{ auth()->user()->name }}</span>
-                        <span class="hero-user-role">{{ auth()->user()->role === 'Main Admin' ? 'Head of Admin' : auth()->user()->role }} · {{ auth()->user()->department ?? 'No Sector' }}</span>
+                        <span class="hero-user-role">{{ auth()->user()->role === 'Main Admin' ? 'Head of Admin(Authorizer)' : auth()->user()->role }} · {{ auth()->user()->department ?? 'No Sector' }}</span>
                     </div>
                     <div class="hero-lock-chip">
                         <i data-lucide="lock"></i>
@@ -641,7 +641,7 @@
                         </div>
                         <div class="field-input" style="background: #f8fafc; border-color: #e2e8f0; opacity: 0.85;">
                             <div class="field-icon"><i data-lucide="shield-check" style="color: #94a3b8; width: 14px;"></i></div>
-                            <input type="text" value="{{ $user->role === 'Main Admin' ? 'Head of Admin' : $user->role }}" style="color: #64748b; cursor: not-allowed;" readonly tabindex="-1">
+                            <input type="text" value="{{ $user->role === 'Main Admin' ? 'Head of Admin(Authorizer)' : $user->role }}" style="color: #64748b; cursor: not-allowed;" readonly tabindex="-1">
                         </div>
                     </div>
                 </div>

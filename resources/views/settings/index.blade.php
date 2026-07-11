@@ -137,7 +137,7 @@
                     </div>
                 </div>
 
-                @if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
+                @if((auth()->user()->is_admin && auth()->user()->role === 'Head of Stores') || auth()->user()->role === 'Auditor' || auth()->user()->role === 'Director General' || auth()->user()->isMainAdminOrSub() || auth()->user()->isDelegatedApprover())
                 <div style="margin-top: 3rem; border-top: 1px solid var(--border-color); padding-top: 2.5rem; margin-bottom: 2.5rem;">
                     <h3 style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px; letter-spacing: -0.02em;">
                         <i data-lucide="signature" style="color: var(--primary); width: 22px;"></i>
@@ -900,10 +900,55 @@
         }
     }
 
+    function processSignatureBackground(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imgData.data;
+                    
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i];
+                        const g = data[i + 1];
+                        const b = data[i + 2];
+                        
+                        // If pixel is very bright/white (R, G, B > 190), make it transparent
+                        if (r > 190 && g > 190 && b > 190) {
+                            data[i + 3] = 0; // Alpha
+                        }
+                    }
+                    
+                    ctx.putImageData(imgData, 0, 0);
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            const newFileName = file.name.replace(/\.[^/.]+$/, "") + "_transparent.png";
+                            const processedFile = new File([blob], newFileName, { type: 'image/png' });
+                            resolve(processedFile);
+                        } else {
+                            resolve(file);
+                        }
+                    }, 'image/png');
+                };
+                img.onerror = () => resolve(file);
+                img.src = event.target.result;
+            };
+            reader.onerror = () => resolve(file);
+            reader.readAsDataURL(file);
+        });
+    }
+
     async function uploadSignatureFile(input) {
         if (!input.files || !input.files[0]) return;
         
-        const file = input.files[0];
+        let file = input.files[0];
         
         // Client-side size check (max 5MB)
         const maxSizeMB = 5; 
@@ -913,12 +958,21 @@
             return;
         }
 
-        const formData = new FormData();
-        formData.append('signature', file);
-        
         const btn = input.previousElementSibling;
         const orgHtml = btn.innerHTML;
         btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin" style="width: 16px;"></i> Processing background...`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        try {
+            file = await processSignatureBackground(file);
+        } catch (err) {
+            console.error('Signature transparency conversion failed, uploading original', err);
+        }
+
+        const formData = new FormData();
+        formData.append('signature', file);
+        
         btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin" style="width: 16px;"></i> Uploading...`;
         if (typeof lucide !== 'undefined') lucide.createIcons();
 

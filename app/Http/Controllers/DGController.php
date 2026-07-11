@@ -21,7 +21,7 @@ class DGController extends Controller
         }
 
         // Summary statistics
-        $totalLogsCount = SystemLog::count();
+        $totalItemsCount = InventoryItem::count();
         $totalVariance = InventoryItem::sum('variance');
         $activeLoansCount = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->where('issuances.issuance_type', 'Temporary')
@@ -29,34 +29,6 @@ class DGController extends Controller
             ->count();
         $pendingRequisitionsCount = StoreRequisition::where('status', 'pending')->count();
         $totalActiveUsers = User::where('registration_status', 'approved')->where('is_active', true)->count();
-
-        // 1. System Audit Trail (System Logs)
-        $logsQuery = SystemLog::with('user')->orderBy('created_at', 'desc');
-        if ($request->filled('log_severity')) {
-            $logsQuery->where('severity', $request->log_severity);
-        }
-        if ($request->filled('log_event')) {
-            $logsQuery->where('event_type', $request->log_event);
-        }
-        if ($request->filled('date_from')) {
-            $logsQuery->whereDate('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $logsQuery->whereDate('created_at', '<=', $request->date_to);
-        }
-        if ($request->filled('search_query')) {
-            $search = $request->search_query;
-            $logsQuery->where(function ($q) use ($search) {
-                $q->where('description', 'LIKE', "%{$search}%")
-                  ->orWhere('action', 'LIKE', "%{$search}%")
-                  ->orWhere('event_type', 'LIKE', "%{$search}%")
-                  ->orWhereHas('user', function ($uq) use ($search) {
-                      $uq->where('name', 'LIKE', "%{$search}%")
-                         ->orWhere('username', 'LIKE', "%{$search}%");
-                  });
-            });
-        }
-        $systemLogs = $logsQuery->paginate(10, ['*'], 'logs_page')->withQueryString();
 
         // 2. Stock Oversight & Registry (Inventory Items)
         $itemsQuery = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
@@ -121,12 +93,11 @@ class DGController extends Controller
         $ledgeMap = Setting::getCategories();
 
         return view('dg.index', compact(
-            'totalLogsCount',
+            'totalItemsCount',
             'totalVariance',
             'activeLoansCount',
             'pendingRequisitionsCount',
             'totalActiveUsers',
-            'systemLogs',
             'inventoryItems',
             'requisitions',
             'users',
@@ -140,8 +111,7 @@ class DGController extends Controller
             abort(403, 'Access Restricted: Director General clearance required.');
         }
 
-        // Fetch logs and records with filters for the executive printable report
-        $logsQuery = SystemLog::with('user')->orderBy('created_at', 'desc');
+        // Fetch records with filters for the executive printable report
         $receivedQuery = InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
             ->where('inventory_batches.supplier_status', '!=', 'System Draft')
             ->where('inventory_batches.approval_status', '=', 'approved')
@@ -159,18 +129,15 @@ class DGController extends Controller
 
         if ($request->filled('date_from')) {
             $from = $request->date_from;
-            $logsQuery->whereDate('created_at', '>=', $from);
             $receivedQuery->whereDate('inventory_batches.entry_date', '>=', $from);
             $reqsQuery->whereDate('created_at', '>=', $from);
         }
         if ($request->filled('date_to')) {
             $to = $request->date_to;
-            $logsQuery->whereDate('created_at', '<=', $to);
             $receivedQuery->whereDate('inventory_batches.entry_date', '<=', $to);
             $reqsQuery->whereDate('created_at', '<=', $to);
         }
 
-        $systemLogs = $logsQuery->limit(200)->get();
         $receivedItems = $receivedQuery->limit(200)->get();
         $requisitions = $reqsQuery->limit(200)->get();
         $users = $usersQuery->limit(200)->get();
@@ -179,7 +146,6 @@ class DGController extends Controller
         $dg = auth()->user();
 
         return view('dg.print', compact(
-            'systemLogs',
             'receivedItems',
             'requisitions',
             'users',

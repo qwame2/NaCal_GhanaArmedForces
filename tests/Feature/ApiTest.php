@@ -497,21 +497,11 @@ class ApiTest extends TestCase
 
         $req1 = \App\Models\StoreRequisition::where('purpose', 'Immediate store use')->first();
         $this->assertNotNull($req1);
-        $this->assertEquals('pending', $req1->origin_admin_status);
-        $this->assertEquals('approved', $req1->main_admin_status);
-
-        // Head of Stores approves Case 1 HOD part
-        $responseProcessHead1 = $this->actingAs($headOfStores)->post(route('main-admin.requisitions.process', $req1->id), [
-            'status' => 'approved',
-        ]);
-        $responseProcessHead1->assertStatus(200);
-
-        $req1->refresh();
         $this->assertEquals('approved', $req1->origin_admin_status);
         $this->assertEquals('approved', $req1->main_admin_status);
 
         // Case 2: Store Officer submits requisition for category 'S' (requires Stores Head approval)
-        // It starts as origin_admin_status = 'pending', main_admin_status = 'pending'
+        // It starts as origin_admin_status = 'approved', main_admin_status = 'pending'
         $response2 = $this->actingAs($storeOfficer)->postJson('/requisitions', [
             'requester_name' => $storeOfficer->name,
             'department' => 'Stores',
@@ -533,7 +523,7 @@ class ApiTest extends TestCase
 
         $req2 = \App\Models\StoreRequisition::where('purpose', 'Special store use')->first();
         $this->assertNotNull($req2);
-        $this->assertEquals('pending', $req2->origin_admin_status);
+        $this->assertEquals('approved', $req2->origin_admin_status);
         $this->assertEquals('pending', $req2->main_admin_status);
 
         // A. Verify Main Admin does NOT see Case 2 requisition in pending reviews
@@ -541,7 +531,7 @@ class ApiTest extends TestCase
         $responseMainAdmin->assertStatus(200);
         $responseMainAdmin->assertDontSee("Special store use");
 
-        // B. Verify Head of Stores DOES see Case 2 requisition in pending reviews (since it is pending origin_admin_status)
+        // B. Verify Head of Stores DOES see Case 2 requisition in pending reviews (since it is pending main_admin_status)
         $responseHeadOfStores = $this->actingAs($headOfStores)->get(route('main-admin.requisitions'));
         $responseHeadOfStores->assertStatus(200);
         $responseHeadOfStores->assertSee("Special store use");
@@ -552,17 +542,7 @@ class ApiTest extends TestCase
         ]);
         $responseProcessMain->assertStatus(400);
 
-        // D. Head of Stores approves the first-tier HOD part for Case 2
-        $responseProcessHead2First = $this->actingAs($headOfStores)->post(route('main-admin.requisitions.process', $req2->id), [
-            'status' => 'approved',
-        ]);
-        $responseProcessHead2First->assertStatus(200);
-
-        $req2->refresh();
-        $this->assertEquals('approved', $req2->origin_admin_status);
-        $this->assertEquals('pending', $req2->main_admin_status); // Still pending second-tier
-
-        // E. Head of Stores approves the second-tier Stores Head part for Case 2
+        // D. Head of Stores approves the Stores Head part for Case 2
         $responseProcessHead2Second = $this->actingAs($headOfStores)->post(route('main-admin.requisitions.process', $req2->id), [
             'status' => 'approved',
         ]);
@@ -641,21 +621,6 @@ class ApiTest extends TestCase
 
         $req = \App\Models\StoreRequisition::where('purpose', 'For stores use')->first();
         $this->assertNotNull($req);
-        $this->assertEquals('pending', $req->origin_admin_status);
-        $this->assertEquals('approved', $req->main_admin_status);
-
-        // Verify Stores Department Head sees the pending request
-        $responseView = $this->actingAs($storesDeptHead)->get(route('main-admin.requisitions'));
-        $responseView->assertStatus(200);
-        $responseView->assertSee("For stores use");
-
-        // Verify Stores Department Head can approve it
-        $responseApprove = $this->actingAs($storesDeptHead)->post(route('main-admin.requisitions.process', $req->id), [
-            'status' => 'approved',
-        ]);
-        $responseApprove->assertStatus(200);
-
-        $req->refresh();
         $this->assertEquals('approved', $req->origin_admin_status);
         $this->assertEquals('approved', $req->main_admin_status);
     }

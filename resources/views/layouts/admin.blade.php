@@ -682,19 +682,11 @@
     @php
         $isActingStoresHead = false;
         if (auth()->check()) {
-            $isStoresHead = (auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
+            $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
             if (!$isStoresHead) {
                 $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
                 if ($isBackup) {
-                    $primaryOnline = \App\Models\User::where(function($q) {
-                            $q->where('role', 'Main Admin')
-                              ->orWhere('role', 'Dept. Head (Stores)')
-                              ->orWhereIn('department', ['Stores', 'Store']);
-                        })
-                        ->where('is_online', true)
-                        ->where('is_active', true)
-                        ->exists();
-                    if (!$primaryOnline) {
+                    if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
                         $isStoresHead = true;
                     }
                 }
@@ -868,7 +860,9 @@
                         @if(auth()->user()->isDelegatedApprover())
                             <span class="u-role">Delegated Approver</span>
                         @elseif(auth()->user()->role === 'Main Admin')
-                            <span class="u-role">Head of Admin</span>
+                            <span class="u-role">Head of Admin (Authorizer)</span>
+                        @elseif(auth()->user()->isSubMainAdmin())
+                            <span class="u-role">{{ auth()->user()->getRoleDisplayLabel() }}</span>
                         @else
                             <span class="u-role">{{ auth()->user()->role }}</span>
                         @endif
@@ -1691,51 +1685,6 @@
                     }, 10000); // 10s timeout to allow throttled background tabs to reply
                 }
             }
-
-            const offlineUrl = "{{ route('api.user.offline') }}";
-            const csrfToken = "{{ csrf_token() }}";
-            let isInternalNavigation = false;
-
-            // Intercept link clicks to detect same-origin navigation
-            document.addEventListener('click', (e) => {
-                const link = e.target.closest('a');
-                if (link && link.href) {
-                    try {
-                        const url = new URL(link.href);
-                        if (url.origin === window.location.origin) {
-                            isInternalNavigation = true;
-                        }
-                    } catch (err) {}
-                }
-            });
-
-            // Intercept form submissions
-            document.addEventListener('submit', () => {
-                isInternalNavigation = true;
-            });
-
-            // Intercept reload keys (F5, Ctrl+R, Cmd+R)
-            window.addEventListener('keydown', (e) => {
-                if (
-                    e.key === 'F5' || 
-                    (e.ctrlKey && e.key === 'r') || 
-                    (e.metaKey && e.key === 'r')
-                ) {
-                    isInternalNavigation = true;
-                }
-            });
-
-            const handleExit = () => {
-                if (isInternalNavigation) return;
-                if (navigator.sendBeacon) {
-                    const formData = new FormData();
-                    formData.append('_token', csrfToken);
-                    navigator.sendBeacon(offlineUrl, formData);
-                }
-            };
-
-            window.addEventListener('pagehide', handleExit);
-            window.addEventListener('beforeunload', handleExit);
         })();
 
         // Polling for Sidebar Badges Update

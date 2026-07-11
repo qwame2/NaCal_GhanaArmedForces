@@ -332,9 +332,11 @@
                 <div style="text-align: right;">
                     <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 800; margin-bottom: 0.25rem;">Total System Sum</div>
                     <div style="font-size: 2rem; font-weight: 900; color: var(--text-main); line-height: 1;">
-                        <span style="color: var(--primary);">{{ number_format((float)($searchQtySum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Total</span>
+                        <span style="color: var(--primary);">{{ number_format((float)($searchQtySum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Total Qty</span>
                         <span style="color: rgba(0,0,0,0.1); margin: 0 0.5rem;">|</span>
-                        <span>{{ number_format((float)($searchSum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Stock</span>
+                        <span style="color: #f59e0b;">{{ number_format((float)($searchIssuedQtySum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Qty Issued</span>
+                        <span style="color: rgba(0,0,0,0.1); margin: 0 0.5rem;">|</span>
+                        <span>{{ number_format((float)($searchSum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Stock Bal.</span>
                     </div>
                 </div>
             </div>

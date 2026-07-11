@@ -212,45 +212,8 @@
         </div>
     </div>
 
-    {{-- I. SYSTEM AUDIT TRAIL LOGS --}}
-    <div class="section-title">I. System Audit Trail (Event Logs)</div>
-    <table class="audit-print-table">
-        <thead>
-            <tr>
-                <th style="width: 110px;">Timestamp</th>
-                <th style="width: 110px;">User / Role</th>
-                <th style="width: 80px;">Category</th>
-                <th style="width: 130px;">Action Event</th>
-                <th>Description</th>
-                <th style="width: 60px;">Severity</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($systemLogs as $log)
-                <tr>
-                    <td style="font-family: monospace;">{{ $log->created_at->format('d/m/Y H:i:s') }}</td>
-                    <td>
-                        <strong>{{ $log->user ? $log->user->name : 'System Automated' }}</strong><br>
-                        <span style="font-size: 8px; color: #4f46e5; font-weight: 800;">{{ $log->user ? $log->user->role : 'Automated' }}</span><br>
-                        <span style="font-size: 8px; color: #64748b;">{{ $log->user ? '@' . $log->user->username : '' }}</span>
-                    </td>
-                    <td>{{ $log->event_type }}</td>
-                    <td style="font-family: monospace; font-weight: 700; color: #334155;">{{ $log->action }}</td>
-                    <td>{{ $log->description }}</td>
-                    <td style="font-weight: 800; font-size: 8.5px; text-transform: uppercase;">{{ $log->severity }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="6" style="text-align: center; color: #64748b; font-style: italic;">No audit trail events logged.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    <div class="page-break"></div>
-
-    {{-- II. STOCK BALANCE REGISTRY --}}
-    <div class="section-title">II. Item Stock Balances</div>
+    {{-- I. STOCK BALANCE REGISTRY --}}
+    <div class="section-title">I. Item Stock Balances</div>
     <table class="audit-print-table">
         <thead>
             <tr>
@@ -319,8 +282,8 @@
 
     <div class="page-break"></div>
 
-    {{-- III. STAFF REQUISITIONS --}}
-    <div class="section-title">III. Staff Requisitions</div>
+    {{-- II. STAFF REQUISITIONS --}}
+    <div class="section-title">II. Staff Requisitions</div>
     <table class="audit-print-table">
         <thead>
             <tr>
@@ -357,8 +320,8 @@
         </tbody>
     </table>
 
-    {{-- IV. USER PRESENCE OVERVIEW --}}
-    <div class="section-title">IV. System Active User Accounts Overview</div>
+    {{-- III. USER PRESENCE OVERVIEW --}}
+    <div class="section-title">III. System Active User Accounts Overview</div>
     <table class="audit-print-table">
         <thead>
             <tr>

@@ -87,19 +87,11 @@
     @php
         $isActingStoresHead = false;
         if (auth()->check()) {
-            $isStoresHead = (auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
+            $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
             if (!$isStoresHead) {
                 $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
                 if ($isBackup) {
-                    $primaryOnline = \App\Models\User::where(function($q) {
-                            $q->where('role', 'Main Admin')
-                              ->orWhere('role', 'Dept. Head (Stores)')
-                              ->orWhereIn('department', ['Stores', 'Store']);
-                        })
-                        ->where('is_online', true)
-                        ->where('is_active', true)
-                        ->exists();
-                    if (!$primaryOnline) {
+                    if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
                         $isStoresHead = true;
                     }
                 }
@@ -172,7 +164,7 @@
                         <span>Analytical Reports</span>
                     </a>
                 </li>
-            @elseif(in_array(auth()->user()->role, ['Main Admin', 'Department Head', 'Head of Stores']))
+            @elseif(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Head of Stores']))
                 <li class="nav-item">
                     <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" data-tooltip="Review Requests">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -209,7 +201,7 @@
                     </a>
                 </li>
                 @endif
-                @if((auth()->user()->role === 'Main Admin' || (strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0)) && !$isActingStoresHead)
+                @if((auth()->user()->isMainAdminOrSub() || (strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0)) && !$isActingStoresHead)
                 <li class="nav-item">
                     <a href="{{ route('receiveditems') }}" class="nav-link {{ request()->routeIs('receiveditems') ? 'active' : '' }}" data-tooltip="Received Items Log">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="M12 7H7.5"/><path d="m10 5-2.5 2 2.5 2"/></svg>
@@ -317,12 +309,27 @@
                         </span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.permissions') }}" class="nav-link {{ request()->routeIs('admin.permissions') ? 'active' : '' }}" data-tooltip="Permissions & Roles">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span>Permissions</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.password.requests') }}" class="nav-link {{ request()->routeIs('admin.password.requests') ? 'active' : '' }}" data-tooltip="Password Reset Requests">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span>Password Resets</span>
+                        <span id="sidebar-badge-delegated-password-reqs" style="background: #4f46e5; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingPasswordRequests) || $pendingPasswordRequests <= 0) ? 'display: none;' : '' }}">
+                            {{ $pendingPasswordRequests ?? 0 }}
+                        </span>
+                    </a>
+                </li>
             </ul>
         @endif
 
         <div class="nav-section-title">Operations</div>
         <ul class="nav-menu">
-            @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head', 'Auditor', 'Director General']))
+            @if(!in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Auditor', 'Director General']))
                 <li class="nav-item">
                     <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" data-tooltip="Analytical Reports">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/><path d="M12 13v5"/><path d="M16 13v5"/><path d="M8 13v5"/></svg>
@@ -353,7 +360,7 @@
                  */
                 $sraUser      = auth()->user();
                 $sraIsStoresHead = $sraUser->is_admin
-                    || $sraUser->role === 'Main Admin'
+                    || $sraUser->isMainAdminOrSub()
                     || $sraUser->role === 'Head of Stores'
                     || $sraUser->role === 'Dept. Head (Stores)';
                 $sraIsAdminApprover = !$sraIsStoresHead
@@ -370,7 +377,7 @@
                     $sraRouteActive = request()->routeIs(['service-sra.index', 'service-sra.create']);
                 }
             @endphp
-            @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head', 'Head of Stores', 'Auditor', 'Director General', 'Requisitioner']))
+            @if(!in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Head of Stores', 'Auditor', 'Director General', 'Requisitioner']))
             <li class="nav-item">
                 <a href="{{ route($sraRoute) }}" class="nav-link {{ $sraRouteActive ? 'active' : '' }}" data-tooltip="Service SRA (Stores Received Advice)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/><line x1="8" y1="9" x2="10" y2="9"/></svg>
@@ -443,7 +450,7 @@
                     $isOtherDeptHeadPage = false;
                     if (auth()->check()) {
                         $user = auth()->user();
-                        $isStoresHead = ($user->role === 'Main Admin' || $user->role === 'Head of Stores' || strcasecmp($user->department, 'Stores') === 0 || strcasecmp($user->department, 'Store') === 0);
+                        $isStoresHead = ($user->isMainAdminOrSub() || $user->role === 'Head of Stores' || strcasecmp($user->department, 'Stores') === 0 || strcasecmp($user->department, 'Store') === 0);
                         if (!$isStoresHead && request()->routeIs(['main-admin.requisitions', 'main-admin.track-requests'])) {
                             $isOtherDeptHeadPage = true;
                         }
@@ -1355,50 +1362,6 @@
                 }
             }
 
-            const offlineUrl = "{{ route('api.user.offline') }}";
-            const csrfToken = "{{ csrf_token() }}";
-            let isInternalNavigation = false;
-
-            // Intercept link clicks to detect same-origin navigation
-            document.addEventListener('click', (e) => {
-                const link = e.target.closest('a');
-                if (link && link.href) {
-                    try {
-                        const url = new URL(link.href);
-                        if (url.origin === window.location.origin) {
-                            isInternalNavigation = true;
-                        }
-                    } catch (err) {}
-                }
-            });
-
-            // Intercept form submissions
-            document.addEventListener('submit', () => {
-                isInternalNavigation = true;
-            });
-
-            // Intercept reload keys (F5, Ctrl+R, Cmd+R)
-            window.addEventListener('keydown', (e) => {
-                if (
-                    e.key === 'F5' || 
-                    (e.ctrlKey && e.key === 'r') || 
-                    (e.metaKey && e.key === 'r')
-                ) {
-                    isInternalNavigation = true;
-                }
-            });
-
-            const handleExit = () => {
-                if (isInternalNavigation) return;
-                if (navigator.sendBeacon) {
-                    const formData = new FormData();
-                    formData.append('_token', csrfToken);
-                    navigator.sendBeacon(offlineUrl, formData);
-                }
-            };
-
-            window.addEventListener('pagehide', handleExit);
-            window.addEventListener('beforeunload', handleExit);
 
             @if(auth()->check() && !auth()->user()->is_admin)
             // ── Personnel Sidebar Badge: Approved Requisitions Awaiting Collection ──

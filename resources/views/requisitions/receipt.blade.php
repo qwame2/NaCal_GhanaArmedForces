@@ -379,19 +379,19 @@
         }
 
         .signature-space {
-            height: 65px;
+            height: 110px;
             display: flex;
             align-items: flex-end;
             justify-content: center;
-            margin-bottom: -28px;
+            margin-bottom: -64px;
             position: relative;
             z-index: 5;
             pointer-events: none;
         }
 
         .signature-img {
-            max-height: 80px;
-            max-width: 180px;
+            max-height: 120px;
+            max-width: 250px;
             object-fit: contain;
             transform: rotate(-1.5deg);
             mix-blend-mode: multiply;
@@ -725,14 +725,95 @@
                 </tbody>
             </table>
 
-            <!-- Legal Verification Statement -->
-            <div class="legal-declaration">
-                <strong>INVENTORY RELEASE STATEMENT & CERTIFICATION:</strong><br>
-                I hereby certify that the store items detailed in this receipt have been verified, approved, and released from the central stores of NACOC. The receiving department representative has inspected and verified the stock items as listed and confirmed physical receipt. These actions have been fully transacted and logged under formal procedures of the Stores Division.
-            </div>
+            @php
+                $approvals = [];
+                
+                // 1. Department HOD
+                if ($req->origin_approved_by && stripos($req->origin_approved_by, 'bypassed') === false) {
+                    $user = \App\Models\User::where('name', $req->origin_approved_by)->first();
+                    $approvals[] = [
+                        'title' => 'Department HOD',
+                        'name' => $req->origin_approved_by,
+                        'sub' => ($req->department ?: 'Originating') . ' Dept Head',
+                        'signature' => $user && $user->signature ? Storage::url($user->signature) : null,
+                        'date' => $req->created_at->format('d M Y')
+                    ];
+                }
+                
+                // 2. Stores HOD / Head of Admin
+                if ($req->stores_approved_by && stripos($req->stores_approved_by, 'bypassed') === false) {
+                    $user = \App\Models\User::where('name', $req->stores_approved_by)->first();
+                    $approvals[] = [
+                        'title' => 'Head of Admin',
+                        'name' => $req->stores_approved_by,
+                        'sub' => 'Stores Dept Head / Authorizer',
+                        'signature' => $user && $user->signature ? Storage::url($user->signature) : null,
+                        'date' => $req->created_at->format('d M Y')
+                    ];
+                }
+                
+                // 3. Director General
+                if ($req->dg_approved_by && stripos($req->dg_approved_by, 'bypassed') === false) {
+                    $user = \App\Models\User::where('name', $req->dg_approved_by)->first();
+                    $approvals[] = [
+                        'title' => 'Director General',
+                        'name' => $req->dg_approved_by,
+                        'sub' => 'DG / Final Authorizer',
+                        'signature' => $user && $user->signature ? Storage::url($user->signature) : null,
+                        'date' => $req->dg_approved_at ? \Carbon\Carbon::parse($req->dg_approved_at)->format('d M Y') : $req->created_at->format('d M Y')
+                    ];
+                }
+                
+                // 4. Head of Stores (Processor)
+                if ($req->processor?->name && stripos($req->processor->name, 'bypassed') === false) {
+                    $approvals[] = [
+                        'title' => 'Head of Stores',
+                        'name' => $req->processor->name,
+                        'sub' => 'Stores Controller',
+                        'signature' => $req->processor->signature ? Storage::url($req->processor->signature) : null,
+                        'date' => $req->processed_at ? \Carbon\Carbon::parse($req->processed_at)->format('d M Y') : $req->created_at->format('d M Y')
+                    ];
+                }
+            @endphp
 
-            <div style="text-align: center; font-size: 0.68rem; color: var(--text-muted); margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1rem; font-style: italic; font-weight: 600; letter-spacing: 0.02em;">
-                This voucher was generated through using the NACOC STORES INVENTORY MANAGEMENT SYSTEM (NSIMS). Head Of Stores.
+            @if(count($approvals) > 0)
+                <div class="table-section-title" style="margin-top: 4.5rem;">
+                    Requisition Approvals &amp; Authorizations
+                </div>
+                <div class="signatures-section" style="grid-template-columns: repeat({{ count($approvals) }}, 1fr); margin-top: 3.5rem; margin-bottom: 2rem;">
+                    @foreach($approvals as $appr)
+                        <div class="signature-block">
+                            <div class="signature-space">
+                                @if($appr['signature'])
+                                    <img src="{{ $appr['signature'] }}" class="signature-img" alt="{{ $appr['title'] }} Signature">
+                                @else
+                                    <div style="height: 65px; border-bottom: 1px dashed var(--border-color); width: 140px; margin: 0 auto; opacity: 0.45;"></div>
+                                @endif
+                            </div>
+                            <div class="signature-line">
+                                <strong>{{ $appr['name'] }}</strong>
+                            </div>
+                            <div class="signature-title">
+                                {{ $appr['title'] }}
+                            </div>
+                            <div class="signature-sub">
+                                {{ $appr['sub'] }}
+                            </div>
+                            <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">
+                                Date: {{ $appr['date'] }}
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
+            <!-- Legal Verification Statement -->
+            <div class="legal-declaration" style="margin-top: 3rem;">
+                <strong>INVENTORY RELEASE STATEMENT & CERTIFICATION:</strong><br>
+                I certify that the items on this receipt are verified, approved, and released from NACOC central stores. The receiving representative has inspected and confirmed physical receipt. All transactions are logged per Stores Division procedures.
+            </div>
+            <div style="text-align: center; font-size: 0.68rem; color: var(--text-muted); margin-top: 4rem; border-top: 1px solid var(--border-color); padding-top: 1rem; font-style: italic; font-weight: 600; letter-spacing: 0.02em;">
+                This voucher was generated through using the NACOC STORES INVENTORY MANAGEMENT SYSTEM (NSIMS).
             </div>
         </div>
     </div>

@@ -98,8 +98,8 @@ class SettingsController extends Controller
 
     public function updateSignature(Request $request)
     {
-        if (!(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized. Only Head of Stores can perform this action.'], 403);
+        if (!in_array(auth()->user()->role, ['Head of Stores', 'Auditor', 'Director General', 'Main Admin', 'Sub Main Admin']) && !auth()->user()->isDelegatedApprover()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized. Only Head of Stores, Auditors and Delegated Store Officers can perform this action.'], 403);
         }
 
         $request->validate([
@@ -112,8 +112,53 @@ class SettingsController extends Controller
             if ($user->signature) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($user->signature);
             }
-            $path = $request->file('signature')->store('signatures', 'public');
+
+            $tempPath = $request->file('signature')->getRealPath();
+
+            try {
+                $client = new \GuzzleHttp\Client();
+                $res = $client->post('https://api.remove.bg/v1.0/removebg', [
+                    'multipart' => [
+                        [
+                            'name'     => 'image_file',
+                            'contents' => fopen($tempPath, 'r')
+                        ],
+                        [
+                            'name'     => 'size',
+                            'contents' => 'auto'
+                        ]
+                    ],
+                    'headers' => [
+                        'X-Api-Key' => 'KZY2LfD7ZMZAmqLdDpeweVUd'
+                    ],
+                    'verify' => false // Disable SSL verification to prevent 'cURL error 60: SSL certificate problem' in local environment
+                ]);
+
+                $body = $res->getBody()->getContents();
+                $filename = 'signatures/' . uniqid() . '.png';
+                \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $body);
+                $path = $filename;
+            } catch (\Exception $e) {
+                // Fallback to storing original file if API fails (e.g., rate limits or API key limitations)
+                $path = $request->file('signature')->store('signatures', 'public');
+            }
+
             $user->update(['signature' => $path]);
+
+            // Log signature upload activity
+            $logAction = auth()->user()->isDelegatedApprover() ? 'DELEGATED_UPLOAD_SIGNATURE' : 'UPLOAD_SIGNATURE';
+            $logDesc = auth()->user()->isDelegatedApprover()
+                ? "Delegated Store Officer uploaded a new digital signature."
+                : "User updated their digital signature.";
+
+            \App\Models\SystemLog::create([
+                'user_id' => auth()->id(),
+                'event_type' => 'SECURITY',
+                'action' => $logAction,
+                'description' => $logDesc,
+                'severity' => 'info',
+                'ip_address' => $request->ip()
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -125,16 +170,31 @@ class SettingsController extends Controller
         return response()->json(['success' => false, 'message' => 'Upload failed.']);
     }
 
-    public function removeSignature()
+    public function removeSignature(Request $request)
     {
-        if (!(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized. Only Head of Stores can perform this action.'], 403);
+        if (!in_array(auth()->user()->role, ['Head of Stores', 'Auditor', 'Director General', 'Main Admin', 'Sub Main Admin']) && !auth()->user()->isDelegatedApprover()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized. Only Head of Stores, Auditors and Delegated Store Officers can perform this action.'], 403);
         }
 
         $user = auth()->user();
         if ($user->signature) {
             \Illuminate\Support\Facades\Storage::disk('public')->delete($user->signature);
             $user->update(['signature' => null]);
+
+            // Log signature removal activity
+            $logAction = auth()->user()->isDelegatedApprover() ? 'DELEGATED_REMOVE_SIGNATURE' : 'REMOVE_SIGNATURE';
+            $logDesc = auth()->user()->isDelegatedApprover()
+                ? "Delegated Store Officer removed their digital signature."
+                : "User removed their digital signature.";
+
+            \App\Models\SystemLog::create([
+                'user_id' => auth()->id(),
+                'event_type' => 'SECURITY',
+                'action' => $logAction,
+                'description' => $logDesc,
+                'severity' => 'warning',
+                'ip_address' => $request->ip()
+            ]);
         }
         return response()->json([
             'success' => true,

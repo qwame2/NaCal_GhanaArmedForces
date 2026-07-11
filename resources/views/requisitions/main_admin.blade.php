@@ -1,12 +1,12 @@
 @extends('layouts.dashboard')
 @section('content')
 @php
-    $isStoresHead = (auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
+    $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
     if (!$isStoresHead) {
         $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
         if ($isBackup) {
             $primaryOnline = \App\Models\User::where(function($q) {
-                    $q->where('role', 'Main Admin')
+                    $q->whereIn('role', ['Main Admin', 'Sub Main Admin'])
                       ->orWhere('role', 'Dept. Head (Stores)')
                       ->orWhereIn('department', ['Stores', 'Store']);
                 })
@@ -963,7 +963,7 @@
     {{-- Header --}}
     <div style="margin-bottom:2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
         <div>
-            <div style="font-size:.7rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->role) }} · Department Head Hub</div>
+            <div style="font-size:.7rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Department Head Hub</div>
             <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Oversight & Approvals</h1>
             <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">{{ $isStoresHead ? 'Second-tier review of requisitions approved by originating department heads.' : 'First-tier review and approval of store requisitions from your department (' . (auth()->user()->department ?? 'N/A') . ').' }}</p>
             @php
@@ -1145,7 +1145,7 @@
                                     <div class="flow-node-icon" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                         <i data-lucide="package" style="width: 15px; height: 15px;"></i>
                                     </div>
-                                    <span class="flow-node-label" style="font-size: 0.65rem; font-weight: 855; white-space: nowrap;">Head of Admin</span>
+                                    <span class="flow-node-label" style="font-size: 0.65rem; font-weight: 855; white-space: nowrap;">Head of Admin(Authorizer)</span>
                                     <span class="flow-node-badge" style="font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;"></span>
                                 </div>
 
@@ -1377,12 +1377,23 @@
             const f = getFilters();
             updateClearBtn(f);
 
-            const params = new URLSearchParams(f);
+            const params = new URLSearchParams();
+            for (const [key, val] of Object.entries(f)) {
+                if (val !== null && val !== undefined && val.toString().trim() !== '') {
+                    if (key === 'page' && parseInt(val) === 1) {
+                        continue;
+                    }
+                    params.append(key, val);
+                }
+            }
+            const queryString = params.toString();
+            const url = ROUTE + (queryString ? '?' + queryString : '');
+
             // Update browser URL without reload
-            history.replaceState(null, '', ROUTE + '?' + params.toString());
+            history.replaceState(null, '', url);
 
             showLoading(true);
-            fetch(ROUTE + '?' + params.toString(), {
+            fetch(url, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': CSRF,
@@ -1446,6 +1457,31 @@
 
         // --- Init ---
         document.addEventListener('DOMContentLoaded', function() {
+            // Clean up empty parameters from the address bar on load
+            const urlObj = new URL(window.location.href);
+            let hasEmpty = false;
+            const cleanParams = new URLSearchParams();
+            for (const [key, val] of urlObj.searchParams.entries()) {
+                if (val.trim() === '') {
+                    hasEmpty = true;
+                } else {
+                    cleanParams.append(key, val);
+                }
+            }
+            if (hasEmpty) {
+                const cleanQuery = cleanParams.toString();
+                const cleanUrl = urlObj.pathname + (cleanQuery ? '?' + cleanQuery : '');
+                window.history.replaceState(null, '', cleanUrl);
+            }
+
+            const form = document.getElementById('filter-form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    fetchTable(1);
+                });
+            }
+
             // Show clear button if filters already active on load
             updateClearBtn(getFilters());
             wireFilters();
@@ -1475,6 +1511,7 @@
         <div class="modal-body" id="modalBody">
             <div style="text-align:center;padding:2rem;color:var(--text-muted);">Loading...</div>
         </div>
+        <div id="modalFooter" style="padding:1.25rem 2rem;border-top:1px solid var(--border-color);display:flex;justify-content:flex-end;gap:.75rem;flex-shrink:0;"></div>
     </div>
 </div>
 
@@ -2964,7 +3001,7 @@
             const isStoresCard = hint.closest('.workflow-card-modern').querySelector('h3').textContent.includes('Stores');
             if (isStoresCard) {
                 if (activeCountStores > 0) {
-                    hint.innerHTML = `Routing through <strong>Head of Admin</strong> for <strong style="color: #4f46e5;">${activeCountStores}</strong> selected category${activeCountStores == 1 ? '' : 'ies'}.`;
+                    hint.innerHTML = `Routing through <strong>Head of Admin(Authorizer)</strong> for <strong style="color: #4f46e5;">${activeCountStores}</strong> selected category${activeCountStores == 1 ? '' : 'ies'}.`;
                 } else {
                     hint.innerHTML = 'Currently bypassing intermediate Stores Head step due to settings configuration.';
                 }

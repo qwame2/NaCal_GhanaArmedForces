@@ -2176,10 +2176,11 @@
 
             if (data.success) {
                 closeNewReqPanel();
+                const itemNames = nrCartItems.map(i => i.description).join(', ');
                 Swal.fire({
                     icon:'success',
                     title:'Requisition Submitted!',
-                    html:`Your store requisition <b>#${data.id}</b> has been submitted successfully and the relevant approvers have been notified.`,
+                    html:`Your store requisition for <b>${itemNames}</b> has been submitted successfully and the relevant approvers have been notified.`,
                     confirmButtonColor:'#4f46e5'
                 }).then(() => location.reload());
             } else {

@@ -130,7 +130,12 @@
                             @if($user->role === 'Main Admin')
                                 <div class="clearance-pill dept-head">
                                     <div class="dot"></div>
-                                    Head of Admin {{ $user->rank ? '(' . $user->rank . ')' : '' }}
+                                    Head of Admin(Authorizer) {{ $user->rank ? '(' . $user->rank . ')' : '' }}
+                                </div>
+                            @elseif($user->role === 'Sub Main Admin')
+                                <div class="clearance-pill dept-head">
+                                    <div class="dot"></div>
+                                    Delegators(Authorizer) {{ $user->rank ? '(' . $user->rank . ')' : '' }}
                                 </div>
                             @elseif($user->is_admin)
                                 <div class="clearance-pill admin">
@@ -300,7 +305,12 @@
                                 @if($pUser->role === 'Main Admin')
                                     <div class="clearance-pill dept-head">
                                         <div class="dot"></div>
-                                        Head of Admin (Stores) {{ $pUser->rank ? '(' . $pUser->rank . ')' : '' }}
+                                        Head of Admin(Authorizer) {{ $pUser->rank ? '(' . $pUser->rank . ')' : '' }}
+                                    </div>
+                                @elseif($pUser->role === 'Sub Main Admin')
+                                    <div class="clearance-pill dept-head">
+                                        <div class="dot"></div>
+                                        Delegators(Authorizer) {{ $pUser->rank ? '(' . $pUser->rank . ')' : '' }}
                                     </div>
                                 @elseif($pUser->role === 'Department Head')
                                     <div class="clearance-pill dept-head">
@@ -335,6 +345,7 @@
                                     <!-- Approve Button -->
                                     <form action="{{ route('admin.users.approve_registration', $pUser->id) }}" method="POST" style="display: inline;">
                                         @csrf
+                                        <input type="hidden" name="role" value="{{ $pUser->role }}">
                                         <button type="submit" class="btn-purge" title="Approve Registration" style="border: 1px solid #d1fae5; color: #10b981; background: #ecfdf5; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#10b981'; this.style.color='white'" onmouseout="this.style.background='#ecfdf5'; this.style.color='#10b981'">
                                             <i data-lucide="check" style="width: 16px; height: 16px;"></i>
                                         </button>
@@ -1153,7 +1164,7 @@
                             {{ $log->action }}
                         </td>
                         <td style="padding: 14px 16px; font-size: 0.85rem; color: #64748b; line-height: 1.5;">
-                            {{ $log->description }}
+                            {{ $log->friendly_description }}
                         </td>
                     </tr>
                     @empty
@@ -1253,7 +1264,7 @@
                             <div class="card-content">
                                 <span class="card-label">Access Level</span>
                                 <span class="role-badge-pill ${user.role.toLowerCase() === 'admin' ? 'admin' : 'staff'}">
-                                    ${user.role === 'Main Admin' ? 'HEAD OF ADMIN' : ((user.role === 'Department Head' && user.department === 'Human Resource Management Department') ? 'DEPT HEAD HR' : ((user.role === 'Department Head' && user.department === 'Welfare Department') ? 'HEAD OF WELFARE' : user.role.toUpperCase()))}
+                                    ${user.role === 'Main Admin' ? 'HEAD OF ADMIN(AUTHORIZER)' : ((user.role === 'Department Head' && user.department === 'Human Resource Management Department') ? 'DEPT HEAD HR' : ((user.role === 'Department Head' && user.department === 'Welfare Department') ? 'HEAD OF WELFARE' : user.role.toUpperCase()))}
                                 </span>
                             </div>
                         </div>

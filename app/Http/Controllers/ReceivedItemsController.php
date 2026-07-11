@@ -245,6 +245,7 @@ class ReceivedItemsController extends Controller
         $isSearching = false;
         $searchSum = 0;
         $searchQtySum = 0;
+        $searchIssuedQtySum = 0;
 
         // Search by Product or Batch ID
         if ($request->has('search') && $request->search) {
@@ -259,6 +260,13 @@ class ReceivedItemsController extends Controller
             $sumQuery = clone $query;
             $searchSum = $sumQuery->sum('inventory_items.stock_balance');
             $searchQtySum = $sumQuery->sum('inventory_items.qty');
+
+            // Sum all quantities issued through approved/partially_approved requisitions
+            $searchIssuedQtySum = \App\Models\StoreRequisitionItem::join('store_requisitions', 'store_requisition_items.requisition_id', '=', 'store_requisitions.id')
+                ->whereIn('store_requisitions.status', ['approved', 'partially_approved'])
+                ->where('store_requisition_items.description', 'LIKE', '%' . $searchTerm . '%')
+                ->selectRaw('SUM(COALESCE(store_requisition_items.alternative_quantity_approved, store_requisition_items.quantity_approved, 0)) as total_issued')
+                ->value('total_issued') ?? 0;
         }
 
         $mockedItems = collect();
@@ -392,6 +400,7 @@ class ReceivedItemsController extends Controller
             'isSearching',
             'searchSum',
             'searchQtySum',
+            'searchIssuedQtySum',
             'itemAggregates',
             'allSuppliers',
             'allDonors',

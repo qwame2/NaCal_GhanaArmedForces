@@ -146,18 +146,74 @@
     .filter-card-audit {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
-        border-radius: 18px;
-        padding: 1.25rem;
+        border-radius: 20px;
+        padding: 1.5rem;
         margin-bottom: 2rem;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 1rem;
         box-shadow: var(--shadow-premium);
+    }
+
+    .filter-controls-grid {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        width: 100%;
+    }
+
+    .filter-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-group .filter-icon {
+        position: absolute;
+        left: 14px;
+        width: 18px;
+        height: 18px;
+        color: var(--text-muted);
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    .search-group .filter-control-audit {
+        padding-left: 2.75rem !important;
+    }
+
+    .date-group {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-main);
+        padding: 0 12px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .date-group .date-label {
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .date-group .filter-control-audit {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        min-width: auto !important;
+        height: 100% !important;
+        font-size: 0.85rem !important;
     }
 
     .filter-control-audit {
         padding: 0.65rem 1rem;
-        border: 1.5px solid var(--border-color);
+        border: 1px solid var(--border-color);
         border-radius: 12px;
         background: var(--bg-main);
         color: var(--text-main);
@@ -165,13 +221,38 @@
         font-weight: 600;
         outline: none;
         transition: all 0.2s;
-        min-width: 160px;
+        height: 42px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .filter-control-audit:focus {
         border-color: var(--audit-primary);
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-        background: white;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        background: var(--bg-card);
+    }
+
+    .filter-btn-clear {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 42px;
+        padding: 0 1.25rem;
+        background: rgba(239, 68, 68, 0.06);
+        color: #ef4444;
+        border: 1.5px solid rgba(239, 68, 68, 0.2);
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 800;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .filter-btn-clear:hover {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: #ef4444;
+        transform: translateY(-1px);
     }
 
     .badge-event {
@@ -246,6 +327,59 @@
         box-shadow: none;
         opacity: 0.6;
     }
+
+    /* ── Select2 overrides for Audit User ── */
+    #audit-user-select + .select2-container {
+        min-width: 220px !important;
+    }
+    .select2-container--default .select2-selection--single {
+        background: var(--bg-main) !important;
+        border: 1px solid var(--border-color) !important;
+        height: 42px !important;
+        border-radius: 12px !important;
+        display: flex !important;
+        align-items: center !important;
+        transition: border-color 0.2s, box-shadow 0.2s !important;
+    }
+    .select2-container--default.select2-container--focus .select2-selection--single,
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: var(--audit-primary) !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+        background: var(--bg-card) !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--text-main) !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        padding-left: 14px !important;
+        padding-right: 24px !important;
+        line-height: 42px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__placeholder {
+        color: var(--text-muted) !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px !important;
+        right: 10px !important;
+    }
+    .select2-dropdown {
+        border: 1px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+        background: var(--bg-card) !important;
+        padding: 4px !important;
+    }
+    .select2-results__option {
+        padding: 8px 12px !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        border-radius: 8px !important;
+        color: var(--text-main) !important;
+    }
+    .select2-results__option--highlighted[aria-selected] {
+        background-color: var(--audit-primary) !important;
+        color: white !important;
+    }
 </style>
 
 <div style="padding: 2rem;">
@@ -268,7 +402,14 @@
                 <i data-lucide="clipboard-check" style="width: 18px;"></i>
                 Perform Stock Check
             </a>
-            <a id="print-ledger-btn" href="{{ route('auditor.print') }}?date_from={{ request('date_from') }}&date_to={{ request('date_to') }}&search_query={{ request('search_query') }}&log_severity={{ request('log_severity') }}&log_event={{ request('log_event') }}" target="_blank" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: var(--audit-primary); border-radius: 12px; border: 1.5px solid var(--audit-primary); background: rgba(99,102,241,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(99,102,241,0.05)'">
+            <a id="print-ledger-btn" href="{{ route('auditor.print', array_filter([
+                'date_from' => request('date_from'),
+                'date_to' => request('date_to'),
+                'search_query' => request('search_query'),
+                'log_severity' => request('log_severity'),
+                'log_event' => request('log_event'),
+                'user_id' => request('user_id')
+            ], fn($val) => !is_null($val) && $val !== '')) }}" target="_blank" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: var(--audit-primary); border-radius: 12px; border: 1.5px solid var(--audit-primary); background: rgba(99,102,241,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(99,102,241,0.05)'">
                 <i data-lucide="printer" style="width: 18px;"></i>
                 Print Audit Ledger
             </a>
@@ -311,38 +452,72 @@
 
     {{-- Filter Bar --}}
     <form action="{{ route('auditor.dashboard') }}" method="GET" class="filter-card-audit">
-        <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">
+        <div style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 6px;">
+            <i data-lucide="sliders-horizontal" style="width: 14px; color: var(--audit-primary);"></i>
             Search & Filter Controls
         </div>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-            <input type="text" name="search_query" class="filter-control-audit" placeholder="Search..." value="{{ request('search_query') }}" style="width: 500px;">
+        <div class="filter-controls-grid">
+            {{-- Search Query --}}
+            <div class="filter-group search-group" style="flex: 2; min-width: 300px;">
+                <i data-lucide="search" class="filter-icon"></i>
+                <input type="text" name="search_query" class="filter-control-audit" placeholder="Search logs by description, action, or event..." value="{{ request('search_query') }}">
+            </div>
 
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">From:</span>
+            {{-- Audit User (Select2) --}}
+            <div class="filter-group select-group" style="flex: 1.5; min-width: 240px;">
+                <select name="user_id" id="audit-user-select" class="filter-control-audit" style="width: 100%;">
+                    <option value="">-- Audit User --</option>
+                    @foreach($auditUsers as $u)
+                        @php
+                            $roleLabel = $u->role;
+                            if ($u->role === 'Main Admin') $roleLabel = 'Head of Admin(Authorizer)';
+                            elseif ($u->role === 'Officer') $roleLabel = 'Store Officer';
+                            elseif ($u->role === 'Department Head') $roleLabel = 'Department Head';
+                        @endphp
+                        <option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>
+                            {{ $u->name }} ({{ $roleLabel }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Severity --}}
+            <div class="filter-group select-group" style="flex: 1; min-width: 150px;">
+                <select name="log_severity" class="filter-control-audit" style="width: 100%;">
+                    <option value="">-- Severity --</option>
+                    <option value="info" {{ request('log_severity') === 'info' ? 'selected' : '' }}>Info</option>
+                    <option value="warning" {{ request('log_severity') === 'warning' ? 'selected' : '' }}>Warning</option>
+                    <option value="danger" {{ request('log_severity') === 'danger' ? 'selected' : '' }}>Danger</option>
+                    <option value="critical" {{ request('log_severity') === 'critical' ? 'selected' : '' }}>Critical</option>
+                </select>
+            </div>
+
+            {{-- Event Type --}}
+            <div class="filter-group select-group" style="flex: 1; min-width: 150px;">
+                <select name="log_event" class="filter-control-audit" style="width: 100%;">
+                    <option value="">-- Event --</option>
+                    <option value="SECURITY" {{ request('log_event') === 'SECURITY' ? 'selected' : '' }}>Security</option>
+                    <option value="AUTH" {{ request('log_event') === 'AUTH' ? 'selected' : '' }}>Auth</option>
+                    <option value="INVENTORY" {{ request('log_event') === 'INVENTORY' ? 'selected' : '' }}>Inventory</option>
+                    <option value="REQUISITION" {{ request('log_event') === 'REQUISITION' ? 'selected' : '' }}>Requisition</option>
+                </select>
+            </div>
+
+            {{-- Date From --}}
+            <div class="filter-group date-group" style="flex: 1.2; min-width: 190px;">
+                <span class="date-label">From</span>
                 <input type="date" name="date_from" class="filter-control-audit" title="From Date" value="{{ request('date_from') }}">
             </div>
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">To:</span>
+
+            {{-- Date To --}}
+            <div class="filter-group date-group" style="flex: 1.2; min-width: 190px;">
+                <span class="date-label">To</span>
                 <input type="date" name="date_to" class="filter-control-audit" title="To Date" value="{{ request('date_to') }}">
             </div>
 
-            <select name="log_severity" class="filter-control-audit">
-                <option value="">-- Severity --</option>
-                <option value="info" {{ request('log_severity') === 'info' ? 'selected' : '' }}>Info</option>
-                <option value="warning" {{ request('log_severity') === 'warning' ? 'selected' : '' }}>Warning</option>
-                <option value="danger" {{ request('log_severity') === 'danger' ? 'selected' : '' }}>Danger</option>
-                <option value="critical" {{ request('log_severity') === 'critical' ? 'selected' : '' }}>Critical</option>
-            </select>
-
-            <select name="log_event" class="filter-control-audit">
-                <option value="">-- Event --</option>
-                <option value="SECURITY" {{ request('log_event') === 'SECURITY' ? 'selected' : '' }}>Security</option>
-                <option value="AUTH" {{ request('log_event') === 'AUTH' ? 'selected' : '' }}>Auth</option>
-                <option value="INVENTORY" {{ request('log_event') === 'INVENTORY' ? 'selected' : '' }}>Inventory</option>
-                <option value="REQUISITION" {{ request('log_event') === 'REQUISITION' ? 'selected' : '' }}>Requisition</option>
-            </select>
-
-            <a href="{{ route('auditor.dashboard') }}" id="clear-filters-btn" class="filter-control-audit" style="display: {{ request()->anyFilled(['search_query', 'date_from', 'date_to', 'log_severity', 'log_event']) ? 'inline-flex' : 'none' }}; background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1.5px solid #ef4444; text-decoration: none; text-align: center; font-weight: 800; min-width: 100px; align-items: center; justify-content: center;">
+            {{-- Clear Filters Button --}}
+            <a href="{{ route('auditor.dashboard') }}" id="clear-filters-btn" class="filter-btn-clear" style="display: {{ request()->anyFilled(['search_query', 'date_from', 'date_to', 'log_severity', 'log_event', 'user_id']) ? 'inline-flex' : 'none' }};">
+                <i data-lucide="x" style="width: 16px;"></i>
                 Clear
             </a>
         </div>
@@ -365,6 +540,10 @@
         <button class="audit-tab-btn" onclick="switchAuditTab('returned-items-tab', this)">
             <i data-lucide="undo-2" style="width: 16px;"></i>
             Returned Items Log
+        </button>
+        <button class="audit-tab-btn" onclick="switchAuditTab('requisitions-tab', this)">
+            <i data-lucide="file-text" style="width: 16px;"></i>
+            Requisitions Log
         </button>
     </div>
 
@@ -399,7 +578,7 @@
                                             if ($log->user->is_admin) {
                                                 $roleDisplay = 'Head of Stores';
                                             } elseif ($log->user->role === 'Main Admin') {
-                                                $roleDisplay = 'Dept Head(Stores)';
+                                                $roleDisplay = 'Head of Admin(Authorizer)';
                                             } elseif ($log->user->role === 'Department Head') {
                                                 if ($log->user->department === 'Human Resource Management Department') {
                                                     $roleDisplay = 'Dept Head(HR)';
@@ -431,7 +610,7 @@
                                     {{ $log->action }}
                                 </td>
                                 <td style="max-width: 320px; line-height: 1.4; color: var(--text-main); font-weight: 500;">
-                                    {{ $log->description }}
+                                    {{ $log->friendly_description }}
                                 </td>
                                 <td>
                                     @php
@@ -533,7 +712,23 @@
                                     {{ $item->acquisition_type }}
                                 </td>
                                 <td style="font-weight: 700; color: var(--text-muted);">
-                                    {{ $item->supplier_name ?: ($item->donor_name ?: 'System') }}
+                                                                    <div style="display: flex; align-items: center; justify-content: flex-start; gap: 8px;">
+                                        <span>{{ $item->supplier_name ?: ($item->donor_name ?: 'System') }}</span>
+                                        @if($item->supplier_name || $item->donor_name)
+                                            <button type="button" class="btn-toggle-supplier-details" 
+                                                    data-id="{{ $item->id }}"
+                                                    data-name="{{ $item->supplier_name ?: $item->donor_name }}"
+                                                    data-acquisition="{{ $item->acquisition_type }}"
+                                                    data-delivery-person="{{ $item->delivery_person ?: '-' }}"
+                                                    data-delivery-phone="{{ $item->delivery_phone ?: '-' }}"
+                                                    style="border: none; background: rgba(99, 102, 241, 0.08); cursor: pointer; color: var(--audit-primary); width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                                                    onmouseover="this.style.background='rgba(99, 102, 241, 0.18)';"
+                                                    onmouseout="this.style.background='rgba(99, 102, 241, 0.08)';"
+                                                    onclick="toggleSupplierPopover(this, event)">
+                                                <i data-lucide="chevron-down" style="width: 14px; height: 14px; transition: transform 0.2s;"></i>
+                                            </button>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -584,6 +779,7 @@
                             <th>Beneficiary</th>
                             <th>Issuance Type</th>
                             <th>Authority</th>
+                            <th style="text-align: center;">Receipt</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -631,21 +827,46 @@
                                     </span>
                                 </td>
                                 <td style="font-weight: 700; color: var(--text-muted); font-size: 0.8rem; line-height: 1.4;">
-                                    @if($item->origin_approved_by || $item->stores_approved_by)
+                                    @if($item->origin_approved_by || $item->stores_approved_by || $item->dg_approved_by || $item->final_approved_by || $item->store_officer_name)
                                         @if($item->origin_approved_by)
                                             <div>{{ $item->origin_approved_by }} <span style="font-size: 0.68rem; color: var(--audit-primary); font-weight: 800;">(Dept Head)</span></div>
                                         @endif
                                         @if($item->stores_approved_by)
-                                            <div style="margin-top: 2px;">{{ $item->stores_approved_by }} <span style="font-size: 0.68rem; color: #f59e0b; font-weight: 800;">(Stores Dept Head)</span></div>
+                                            <div style="margin-top: 2px;">{{ $item->stores_approved_by }} <span style="font-size: 0.68rem; color: #f59e0b; font-weight: 800;">(Head of Admin(Authorizer))</span></div>
+                                        @endif
+                                        @if($item->dg_approved_by)
+                                            <div style="margin-top: 2px;">{{ $item->dg_approved_by }} <span style="font-size: 0.68rem; color: #8b5cf6; font-weight: 800;">(Director General)</span></div>
+                                        @endif
+                                        @if($item->final_approved_by)
+                                            <div style="margin-top: 2px;">{{ $item->final_approved_by }} <span style="font-size: 0.68rem; color: #10b981; font-weight: 800;">(Head of Stores)</span></div>
+                                        @endif
+                                        @if($item->store_officer_name)
+                                            <div style="margin-top: 2px;">{{ $item->store_officer_name }} <span style="font-size: 0.68rem; color: #6366f1; font-weight: 800;">(Store Officer)</span></div>
                                         @endif
                                     @else
                                         {{ $item->authority ?: 'N/A' }}
                                     @endif
                                 </td>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    @if($item->requisition_id)
+                                        <a href="{{ route('requisitions.receipt.print', $item->requisition_id) }}" 
+                                           target="_blank" 
+                                           class="btn-view-receipt" 
+                                           style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
+                                           onmouseover="this.style.background='var(--audit-primary)'; this.style.color='white';"
+                                           onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='var(--audit-primary)';"
+                                           title="Print Requisition Receipt">
+                                            <i data-lucide="receipt" style="width: 13px; height: 13px;"></i>
+                                            <span>Receipt</span>
+                                        </a>
+                                    @else
+                                        <span style="font-size: 0.72rem; color: var(--text-muted); font-style: italic;">N/A</span>
+                                    @endif
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+                                <td colspan="8" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
                                     <i data-lucide="upload" style="width: 40px; height: 40px; margin-bottom: 1rem; opacity: 0.25;"></i>
                                     <p style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">No issued items logged.</p>
                                 </td>
@@ -748,9 +969,245 @@
         </div>
     </div>
 
-</div>
+    {{-- PANEL 5: REQUISITIONS LOG --}}
+    <div id="requisitions-tab" class="audit-tab-panel">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium);">
+            <div style="overflow-x: auto;">
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>Requisition ID</th>
+                            <th>Date Requested</th>
+                            <th>Requester Name</th>
+                            <th>Department</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th style="text-align: center;">Receipt</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($requisitions as $req)
+                            <tr class="log-row">
+                                <td style="font-weight: 900; font-family: monospace; color: var(--audit-primary);">
+                                    {{ $req->unique_id ?: ('REQ-'.str_pad($req->id,5,'0',STR_PAD_LEFT)) }}
+                                </td>
+                                <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
+                                    {{ $req->created_at->format('d/m/Y H:i') }}
+                                </td>
+                                <td style="font-weight: 800; color: var(--text-main);">
+                                    {{ $req->requester_name }}
+                                </td>
+                                <td style="font-weight: 700; color: var(--text-muted);">
+                                    {{ $req->department }}
+                                </td>
+                                <td style="max-width: 250px; line-height: 1.4; color: var(--text-main); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $req->purpose }}">
+                                    {{ $req->purpose }}
+                                </td>
+                                <td>
+                                    @php $s = $req->status_badge; @endphp
+                                    <span class="log-badge" style="background: {{ $s['bg'] }}; color: {{ $s['color'] }}; border: 1px solid {{ $s['color'] }}30; font-size: 0.65rem;">
+                                        {{ $s['label'] }}
+                                    </span>
+                                </td>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <a href="{{ route('requisitions.receipt.print', $req->id) }}" 
+                                       target="_blank" 
+                                       class="btn-view-receipt" 
+                                       style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
+                                       onmouseover="this.style.background='var(--audit-primary)'; this.style.color='white';"
+                                       onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='var(--audit-primary)';"
+                                       title="Print Requisition Receipt">
+                                        <i data-lucide="receipt" style="width: 13px; height: 13px;"></i>
+                                        <span>Receipt</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+                                    <i data-lucide="file-text" style="width: 40px; height: 40px; margin-bottom: 1rem; opacity: 0.25;"></i>
+                                    <p style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">No store requisitions logged.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if($requisitions->hasPages())
+                <div class="audit-pagination-container">
+                    <div class="audit-pagination-info">
+                        Showing <span>{{ $requisitions->firstItem() ?? 0 }}</span> to <span>{{ $requisitions->lastItem() ?? 0 }}</span> of <span>{{ $requisitions->total() }}</span> records
+                    </div>
+                    <div class="audit-pagination-buttons">
+                        @if ($requisitions->onFirstPage())
+                            <span class="audit-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
+                        @else
+                            <a href="{{ $requisitions->appends(request()->query())->previousPageUrl() }}" class="audit-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
+                        @endif
 
+                        @if ($requisitions->hasMorePages())
+                            <a href="{{ $requisitions->appends(request()->query())->nextPageUrl() }}" class="audit-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
+                        @else
+                            <span class="audit-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+
+</div>
 <script>
+    function toggleSupplierPopover(btn, event) {
+        event.stopPropagation();
+        
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const acq = btn.getAttribute('data-acquisition');
+        const delPerson = btn.getAttribute('data-delivery-person');
+        const delPhone = btn.getAttribute('data-delivery-phone');
+        const icon = btn.querySelector('svg') || btn.querySelector('i');
+        
+        // Remove existing popover if open
+        const existingPopover = document.getElementById('active-supplier-popover');
+        if (existingPopover) {
+            const existingId = existingPopover.getAttribute('data-trigger-id');
+            existingPopover.remove();
+            
+            // Reset all icons transform
+            document.querySelectorAll('.btn-toggle-supplier-details svg, .btn-toggle-supplier-details i').forEach(el => {
+                el.style.transform = 'rotate(0deg)';
+            });
+            
+            if (existingId === id) {
+                return; // just close
+            }
+        }
+        
+        // Rotate arrow icon
+        if (icon) icon.style.transform = 'rotate(180deg)';
+        
+        // Create popover element
+        const popover = document.createElement('div');
+        popover.id = 'active-supplier-popover';
+        popover.setAttribute('data-trigger-id', id);
+        
+        // Styling popover
+        popover.style.position = 'fixed';
+        popover.style.backgroundColor = 'var(--bg-card)';
+        popover.style.border = '1px solid var(--border-color)';
+        popover.style.borderRadius = '16px';
+        popover.style.padding = '1.25rem';
+        popover.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.1)';
+        popover.style.zIndex = '10000';
+        popover.style.maxHeight = 'min(420px, 80vh)';
+        popover.style.overflowY = 'auto';
+        
+        // Position popover next to the button responsively
+        const rect = btn.getBoundingClientRect();
+        const width = Math.min(320, window.innerWidth - 24);
+        popover.style.width = width + 'px';
+        
+        // Calculate horizontal position
+        let left = rect.left - (width / 2) + (rect.width / 2);
+        left = Math.max(12, Math.min(window.innerWidth - width - 12, left));
+        popover.style.left = left + 'px';
+        
+        // Calculate vertical position
+        const popoverHeight = 380; // Estimated max height
+        let top = rect.bottom + 8;
+        if (top + popoverHeight > window.innerHeight && rect.top - popoverHeight - 8 > 0) {
+            top = rect.top - popoverHeight - 8;
+        }
+        popover.style.top = top + 'px';
+        
+        // Initial loader inside popover
+        popover.innerHTML = `
+            <div style="font-size: 0.85rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
+                    <span style="font-weight: 900; color: var(--text-main);">Entity Details</span>
+                    <span style="background: rgba(99, 102, 241, 0.1); color: var(--audit-primary); font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+                        ${acq}
+                    </span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;" id="popover-registry-details">
+                    <div style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0;">
+                        <span class="animate-spin" style="display: inline-block;">⚙</span>
+                        <span>Querying logs & registry...</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(popover);
+        
+        // Fetch registry and delivery timeline details
+        fetch("{{ route('auditor.supplier_info') }}?name=" + encodeURIComponent(name))
+            .then(res => res.json())
+            .then(data => {
+                const s = data.supplier || {};
+                const detailsContainer = document.getElementById('popover-registry-details');
+                if (detailsContainer) {
+                    detailsContainer.innerHTML = `
+                        <div>
+                            <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Name</span>
+                            <span style="font-weight: 750; color: var(--text-main);">${name}</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Registry Phone</span>
+                            <span style="font-weight: 700; color: var(--text-main);">${s.phone || '-'}</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Email Address</span>
+                            <span style="font-weight: 700; color: var(--text-main);">${s.email || '-'}</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Physical Address</span>
+                            <span style="font-weight: 700; color: var(--text-main);">${s.address || '-'}</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Contact Person</span>
+                            <span style="font-weight: 750; color: var(--text-main);">${s.contact_person || '-'}</span>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 2px;">Phone: ${s.contact_phone || '-'}</span>
+                        </div>
+                        <div style="border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: 4px;">
+                            <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Delivery Representative</span>
+                            <span style="font-weight: 750; color: var(--text-main);">${delPerson}</span>
+                            <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 2px;">Phone: ${delPhone}</span>
+                        </div>
+                        <div style="display: flex; gap: 12px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
+                            <div style="flex: 1;">
+                                <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">First Delivery</span>
+                                <span style="font-weight: 800; color: #10b981; font-size: 0.75rem;">${data.first_delivery || '-'}</span>
+                            </div>
+                            <div style="flex: 1;">
+                                <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Last Delivery</span>
+                                <span style="font-weight: 800; color: var(--audit-primary); font-size: 0.75rem;">${data.last_delivery || '-'}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .catch(err => {
+                const detailsContainer = document.getElementById('popover-registry-details');
+                if (detailsContainer) {
+                    detailsContainer.innerHTML = '<span style="color: #ef4444;">Error loading details</span>';
+                }
+            });
+    }
+
+    // Dismiss popover on clicking outside
+    document.addEventListener('click', function(e) {
+        const activePopover = document.getElementById('active-supplier-popover');
+        if (activePopover && !activePopover.contains(e.target)) {
+            activePopover.remove();
+            // Reset rotated arrows
+            document.querySelectorAll('.btn-toggle-supplier-details svg, .btn-toggle-supplier-details i').forEach(el => {
+                el.style.transform = 'rotate(0deg)';
+            });
+        }
+    });
+
     function switchAuditTab(panelId, btn) {
         // Toggle Buttons
         document.querySelectorAll('.audit-tab-btn').forEach(b => b.classList.remove('active'));
@@ -765,6 +1222,23 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Clean up empty parameters from the address bar on load
+        const urlObj = new URL(window.location.href);
+        let hasEmpty = false;
+        const cleanParams = new URLSearchParams();
+        for (const [key, val] of urlObj.searchParams.entries()) {
+            if (val.trim() === '') {
+                hasEmpty = true;
+            } else {
+                cleanParams.append(key, val);
+            }
+        }
+        if (hasEmpty) {
+            const cleanQuery = cleanParams.toString();
+            const cleanUrl = urlObj.pathname + (cleanQuery ? '?' + cleanQuery : '');
+            window.history.replaceState(null, '', cleanUrl);
+        }
+
         // Restore tab
         const savedTab = localStorage.getItem('active_auditor_tab');
         if (savedTab) {
@@ -812,7 +1286,7 @@
                     }
 
                     // Swap panels
-                    const panels = ['audit-trail-tab', 'received-items-tab', 'issued-items-tab', 'returned-items-tab'];
+                    const panels = ['audit-trail-tab', 'received-items-tab', 'issued-items-tab', 'returned-items-tab', 'requisitions-tab'];
                     panels.forEach(id => {
                         const newPanel = doc.getElementById(id);
                         const currentPanel = document.getElementById(id);
@@ -843,13 +1317,29 @@
 
             function triggerFilterSubmit() {
                 const formData = new FormData(form);
-                const params = new URLSearchParams(formData);
-                const url = form.getAttribute('action') + '?' + params.toString();
+                const params = new URLSearchParams();
+                for (const [key, val] of formData.entries()) {
+                    if (val !== null && val !== undefined && val.trim() !== '') {
+                        params.append(key, val);
+                    }
+                }
+                const queryString = params.toString();
+                const url = form.getAttribute('action') + (queryString ? '?' + queryString : '');
                 performAuditAjaxFilter(url);
             }
 
+            // Initialize Select2 on the audit user select
+            if (window.jQuery && jQuery().select2) {
+                $('#audit-user-select').select2({
+                    placeholder: '-- Audit User --',
+                    allowClear: true
+                }).on('change', triggerFilterSubmit);
+            }
+
             selects.forEach(select => {
-                select.addEventListener('change', triggerFilterSubmit);
+                if (select.id !== 'audit-user-select') {
+                    select.addEventListener('change', triggerFilterSubmit);
+                }
             });
 
             dates.forEach(date => {
@@ -864,6 +1354,11 @@
                 });
             }
 
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                triggerFilterSubmit();
+            });
+
             // Intercept clear button click
             const clearBtn = document.getElementById('clear-filters-btn');
             if (clearBtn) {
@@ -873,6 +1368,9 @@
                     selects.forEach(s => s.value = '');
                     dates.forEach(d => d.value = '');
                     if (searchInput) searchInput.value = '';
+                    if (window.jQuery && jQuery().select2) {
+                        $('#audit-user-select').val(null).trigger('change.select2');
+                    }
                     performAuditAjaxFilter(clearBtn.getAttribute('href'));
                 });
             }

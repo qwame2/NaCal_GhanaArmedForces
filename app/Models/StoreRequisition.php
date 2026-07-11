@@ -195,7 +195,9 @@ class StoreRequisition extends Model
         // 1. Department HOD Review
         $hodStatus = $this->origin_admin_status;
         $finalStatus = $this->status;
-        if ($hodStatus === 'declined' || ($hodStatus === 'pending' && $finalStatus === 'declined')) {
+        if (in_array(strtolower(trim($this->department ?? '')), ['stores', 'store'])) {
+            $steps['hod'] = ['label' => 'HOD Bypassed (Stores Department)', 'status' => 'bypassed', 'icon' => 'minus', 'user' => 'N/A'];
+        } elseif ($hodStatus === 'declined' || ($hodStatus === 'pending' && $finalStatus === 'declined')) {
             $steps['hod'] = ['label' => 'HOD Declined', 'status' => 'declined', 'icon' => 'x', 'user' => $this->origin_approved_by ?? 'Department Head'];
         } elseif ($hodStatus === 'approved') {
             $steps['hod'] = ['label' => 'HOD Approved', 'status' => 'completed', 'icon' => 'check', 'user' => $this->origin_approved_by];

@@ -168,7 +168,7 @@
                                             <i data-lucide="user-cog" style="width: 10px; height: 10px;"></i> Delegated
                                         </span>
                                     @endif
-                                    {{ $log->description }}
+                                    {{ $log->friendly_description }}
                                 </p>
                             </td>
                             <td style="padding: 1.25rem 2rem;">

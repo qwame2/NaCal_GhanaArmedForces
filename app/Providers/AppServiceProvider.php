@@ -359,7 +359,7 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('unreadMessagesCount', $unreadMessagesCount);
                 
                 // Fetch Pending Password Requests Count (for Admin)
-                if ((auth()->user()->is_admin || auth()->user()->isDelegatedApprover()) && auth()->user()->role !== 'Main Admin') {
+                if ((auth()->user()->is_admin || auth()->user()->isDelegatedApprover()) && !auth()->user()->isMainAdminOrSub()) {
                     $pendingPasswordRequests = \App\Models\PasswordResetRequest::where('status', 'pending')->count();
                     $view->with('pendingPasswordRequests', $pendingPasswordRequests);
                     // Heads only see pending requisitions that have been approved by Main Admin
@@ -370,20 +370,12 @@ class AppServiceProvider extends ServiceProvider
                     $view->with('pendingPasswordRequests', 0);
                     $view->with('pendingRequisitionsCount', 0);
                     
-                    // Main Admin count of pending requisitions awaiting review
-                    $isStoresHead = (auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
+                    // Main Admin / Sub Main Admin count of pending requisitions awaiting review
+                    $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
                     if (!$isStoresHead) {
                         $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
                         if ($isBackup) {
-                            $primaryOnline = \App\Models\User::where(function($q) {
-                                    $q->where('role', 'Main Admin')
-                                      ->orWhere('role', 'Dept. Head (Stores)')
-                                      ->orWhereIn('department', ['Stores', 'Store']);
-                                })
-                                ->where('is_online', true)
-                                ->where('is_active', true)
-                                ->exists();
-                            if (!$primaryOnline) {
+                            if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
                                 $isStoresHead = true;
                             }
                         }
@@ -392,7 +384,7 @@ class AppServiceProvider extends ServiceProvider
                         || \App\Models\User::where('role', 'Department Head')->whereIn('department', ['Stores', 'Store'])->where('is_active', true)->exists();
                     $isStoresHOD = (auth()->user()->role === 'Head of Stores')
                         || (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Stores', 'Store']))
-                        || (auth()->user()->role === 'Main Admin' && !$hasActiveStoresHead);
+                        || (auth()->user()->isMainAdminOrSub() && !$hasActiveStoresHead);
 
                     $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
 

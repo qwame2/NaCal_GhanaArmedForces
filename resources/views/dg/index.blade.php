@@ -485,11 +485,11 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
         <div class="dg-card">
             <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(99,102,241,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="shield-alert" style="color: var(--dg-primary); width: 16px;"></i></div>
-                System Audit Logs
+                <div style="width: 32px; height: 32px; background: rgba(99,102,241,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="layers" style="color: var(--dg-primary); width: 16px;"></i></div>
+                Total Store Items
             </div>
-            <div class="stat-number">{{ number_format($totalLogsCount) }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Audit events captured in database</div>
+            <div class="stat-number">{{ number_format($totalItemsCount) }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Total unique items in stores inventory</div>
         </div>
 
         <div class="dg-card">
@@ -543,14 +543,6 @@
             <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">To:</span>
             <input type="date" id="dg-date-to" name="date_to" class="filter-control-dg" title="To Date" value="{{ request('date_to') }}">
 
-            <select id="dg-log-severity" name="log_severity" class="filter-control-dg">
-                <option value="">-- Severity (Logs) --</option>
-                <option value="info" {{ request('log_severity') === 'info' ? 'selected' : '' }}>Info</option>
-                <option value="warning" {{ request('log_severity') === 'warning' ? 'selected' : '' }}>Warning</option>
-                <option value="danger" {{ request('log_severity') === 'danger' ? 'selected' : '' }}>Danger</option>
-                <option value="critical" {{ request('log_severity') === 'critical' ? 'selected' : '' }}>Critical</option>
-            </select>
-
             <select id="dg-req-status" name="req_status" class="filter-control-dg">
                 <option value="">-- Status (Reqs) --</option>
                 <option value="pending" {{ request('req_status') === 'pending' ? 'selected' : '' }}>Pending</option>
@@ -559,7 +551,7 @@
                 <option value="declined" {{ request('req_status') === 'declined' ? 'selected' : '' }}>Declined</option>
             </select>
 
-            @if(request()->anyFilled(['search_query', 'date_from', 'date_to', 'log_severity', 'req_status']))
+            @if(request()->anyFilled(['search_query', 'date_from', 'date_to', 'req_status']))
                 <a id="btn-dg-clear" href="{{ route('dg.dashboard') }}" class="filter-control-dg" style="background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1.5px solid #ef4444; text-decoration: none; text-align: center; font-weight: 800; min-width: 100px; display: inline-flex; align-items: center; justify-content: center;">
                     Clear
                 </a>
@@ -569,11 +561,7 @@
 
     {{-- Tabs Menu --}}
     <div class="dg-tabs-container">
-        <button id="tab-btn-audit-trail" class="dg-tab-btn active" onclick="switchDGTab('dg-audit-trail-tab', this)">
-            <i data-lucide="shield-alert" style="width: 16px;"></i>
-            System Audit Trail
-        </button>
-        <button id="tab-btn-stock-oversight" class="dg-tab-btn" onclick="switchDGTab('dg-stock-oversight-tab', this)">
+        <button id="tab-btn-stock-oversight" class="dg-tab-btn active" onclick="switchDGTab('dg-stock-oversight-tab', this)">
             <i data-lucide="archive" style="width: 16px;"></i>
             Item Stock Balances
         </button>
@@ -604,100 +592,8 @@
     {{-- Tab Panels --}}
 
     {{-- PANEL 1: SYSTEM AUDIT TRAIL --}}
-    <div id="dg-audit-trail-tab" class="dg-tab-panel active">
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium);">
-            <div style="overflow-x: auto;">
-                <table class="dg-table">
-                    <thead>
-                        <tr>
-                            <th>Timestamp</th>
-                            <th>User</th>
-                            <th>Category</th>
-                            <th>Action</th>
-                            <th>Description</th>
-                            <th>Severity</th>
-                            <th>IP Address</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($systemLogs as $log)
-                            <tr class="dg-row">
-                                <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem; white-space: nowrap;">
-                                    {{ $log->created_at->format('d/m/Y H:i:s') }}
-                                </td>
-                                <td style="font-weight: 800;">
-                                    {{ $log->user ? $log->user->name : 'System Automated' }}
-                                    <div style="font-size: 0.75rem; color: var(--dg-primary); font-weight: 800; margin-top: 2px;">
-                                        {{ $log->user ? $log->user->role : 'Automated' }}
-                                    </div>
-                                    <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600; margin-top: 1px;">
-                                        {{ $log->user ? '@' . $log->user->username : '' }}
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge-event">{{ $log->event_type }}</span>
-                                </td>
-                                <td style="font-weight: 700; font-family: monospace; color: var(--dg-primary);">
-                                    {{ $log->action }}
-                                </td>
-                                <td style="max-width: 320px; line-height: 1.4; color: var(--text-main); font-weight: 500;">
-                                    {{ $log->description }}
-                                </td>
-                                <td>
-                                    @php
-                                        $sevClass = 'info';
-                                        if (in_array(strtolower($log->severity), ['danger', 'critical'])) {
-                                            $sevClass = 'danger';
-                                        } elseif (strtolower($log->severity) === 'warning') {
-                                            $sevClass = 'warning';
-                                        } elseif (strtolower($log->severity) === 'success') {
-                                            $sevClass = 'success';
-                                        }
-                                    @endphp
-                                    <span class="dg-badge {{ $sevClass }}">
-                                        {{ $log->severity }}
-                                    </span>
-                                </td>
-                                <td style="font-family: monospace; color: var(--text-muted); font-size: 0.78rem;">
-                                    {{ $log->ip_address ?: '-' }}
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
-                                    <i data-lucide="search" style="width: 40px; height: 40px; margin-bottom: 1rem; opacity: 0.25;"></i>
-                                    <p style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">No system log events archived.</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            @if($systemLogs->hasPages())
-                <div class="dg-pagination-container">
-                    <div class="dg-pagination-info">
-                        Showing <span>{{ $systemLogs->firstItem() ?? 0 }}</span> to <span>{{ $systemLogs->lastItem() ?? 0 }}</span> of <span>{{ $systemLogs->total() }}</span> events
-                    </div>
-                    <div class="dg-pagination-buttons">
-                        @if ($systemLogs->onFirstPage())
-                            <span class="dg-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
-                        @else
-                            <a href="{{ $systemLogs->appends(request()->query())->previousPageUrl() }}" class="dg-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
-                        @endif
-
-                        @if ($systemLogs->hasMorePages())
-                            <a href="{{ $systemLogs->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
-                        @else
-                            <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
-                        @endif
-                    </div>
-                </div>
-            @endif
-        </div>
-    </div>
-
     {{-- PANEL 2: STOCK BALANCE REGISTRY --}}
-    <div id="dg-stock-oversight-tab" class="dg-tab-panel">
+    <div id="dg-stock-oversight-tab" class="dg-tab-panel active">
         <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; box-shadow: var(--shadow-premium); position: relative;">
             <div style="position: relative;">
                 <table class="dg-table" style="border-radius: 20px;">
@@ -1190,7 +1086,7 @@
                                         <div class="flow-node-icon" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                             <i data-lucide="package" style="width: 15px; height: 15px;"></i>
                                         </div>
-                                        <span class="flow-node-label" style="font-size: 0.65rem; font-weight: 855; white-space: nowrap;">Head of Admin</span>
+                                        <span class="flow-node-label" style="font-size: 0.65rem; font-weight: 855; white-space: nowrap;">Head of Admin(Authorizer)</span>
                                         <span class="flow-node-badge" style="font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;"></span>
                                     </div>
 
@@ -1445,13 +1341,8 @@
         // Store active tab in localStorage
         localStorage.setItem('active_dg_tab', panelId);
 
-        // Dynamically show/hide Severity and Status dropdowns
-        const severitySelect = document.getElementById('dg-log-severity');
+        // Dynamically show/hide Status dropdown
         const statusSelect = document.getElementById('dg-req-status');
-        
-        if (severitySelect) {
-            severitySelect.style.display = (panelId === 'dg-audit-trail-tab') ? 'inline-block' : 'none';
-        }
         
         if (statusSelect) {
             statusSelect.style.display = (panelId === 'dg-staff-reqs-tab') ? 'inline-block' : 'none';
@@ -1498,7 +1389,7 @@
 
         // Show/hide Clear button dynamically
         let anyFilled = false;
-        const inputsToCheck = ['search_query', 'date_from', 'date_to', 'log_severity', 'req_status'];
+        const inputsToCheck = ['search_query', 'date_from', 'date_to', 'req_status'];
         inputsToCheck.forEach(name => {
             if (params.get(name)) anyFilled = true;
         });
@@ -1543,7 +1434,7 @@
                 });
 
                 // 2. Update all tab panels
-                const tabPanels = ['dg-audit-trail-tab', 'dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab', 'dg-workflow-config-tab'];
+                const tabPanels = ['dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab', 'dg-workflow-config-tab'];
                 tabPanels.forEach(panelId => {
                     const oldPanel = document.getElementById(panelId);
                     const newPanel = doc.getElementById(panelId);
@@ -1584,7 +1475,7 @@
                             const doc = parser.parseFromString(html, 'text/html');
                             
                             // Only update tab panels and pagination
-                            const tabPanels = ['dg-audit-trail-tab', 'dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab', 'dg-workflow-config-tab'];
+                            const tabPanels = ['dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab', 'dg-workflow-config-tab'];
                             tabPanels.forEach(panelId => {
                                 const oldPanel = document.getElementById(panelId);
                                 const newPanel = doc.getElementById(panelId);
@@ -1614,12 +1505,12 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         // Restore tab
-        const savedTab = localStorage.getItem('active_dg_tab') || 'dg-audit-trail-tab';
+        const savedTab = localStorage.getItem('active_dg_tab') || 'dg-stock-oversight-tab';
         const btn = Array.from(document.querySelectorAll('.dg-tab-btn')).find(b => b.getAttribute('onclick').includes(savedTab));
         if (btn) {
             btn.click();
         } else {
-            const defaultBtn = document.getElementById('tab-btn-audit-trail');
+            const defaultBtn = document.getElementById('tab-btn-stock-oversight');
             if (defaultBtn) defaultBtn.click();
         }
 

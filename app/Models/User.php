@@ -207,6 +207,52 @@ class User extends Authenticatable implements LdapAuthenticatable
         return $delegatedId && (int)$delegatedId === (int)$this->id;
     }
 
+    /**
+     * Returns true if this user is a Sub Main Admin (HR or Welfare backup approver).
+     */
+    public function isSubMainAdmin(): bool
+    {
+        return $this->role === 'Sub Main Admin';
+    }
+
+    /**
+     * Returns true if this user is either the true Main Admin or a Sub Main Admin.
+     */
+    public function isMainAdminOrSub(): bool
+    {
+        return in_array($this->role, ['Main Admin', 'Sub Main Admin']);
+    }
+
+    /**
+     * Returns the display number (1 or 2) for a Sub Main Admin based on last_login_at order.
+     * The Sub Main Admin who logged in earliest is #1, the next is #2.
+     * Returns null for non-Sub Main Admins.
+     */
+    public function getSubMainAdminNumber(): ?int
+    {
+        if (!$this->isSubMainAdmin()) return null;
+        $ids = self::where('role', 'Sub Main Admin')
+            ->orderBy('last_login_at', 'asc')
+            ->orderBy('id', 'asc')
+            ->pluck('id')
+            ->values();
+        $idx = $ids->search($this->id);
+        return $idx !== false ? $idx + 1 : null;
+    }
+
+    /**
+     * Returns the display label for this user's role.
+     * Sub Main Admins get "Sub Main Admin 1" or "Sub Main Admin 2".
+     */
+    public function getRoleDisplayLabel(): string
+    {
+        if ($this->isSubMainAdmin()) {
+            $num = $this->getSubMainAdminNumber();
+            return 'Sub Main Admin' . ($num ? " {$num}" : '');
+        }
+        return $this->role ?? '';
+    }
+
     public static function getApproversQuery()
     {
         $delegatedId = \App\Models\Setting::get('delegated_approver_id');
@@ -216,6 +262,32 @@ class User extends Authenticatable implements LdapAuthenticatable
                 $q->orWhere('id', $delegatedId);
             }
         });
+    }
+
+    public static function isPrimaryStoresHeadOnline(): bool
+    {
+        // Dynamic clean up of stale admin statuses using the sessions table
+        try {
+            $activeSessionUserIds = \Illuminate\Support\Facades\DB::table('sessions')
+                ->where('last_activity', '>=', now()->subSeconds(60)->timestamp)
+                ->whereNotNull('user_id')
+                ->pluck('user_id')
+                ->toArray();
+
+            self::where('is_admin', true)
+                ->where('is_online', true)
+                ->whereNotIn('id', $activeSessionUserIds)
+                ->update(['is_online' => false]);
+        } catch (\Exception $e) {}
+
+        return self::where(function($q) {
+                $q->whereIn('role', ['Main Admin', 'Sub Main Admin'])
+                  ->orWhere('role', 'Dept. Head (Stores)')
+                  ->orWhereIn('department', ['Stores', 'Store']);
+            })
+            ->where('is_online', true)
+            ->where('is_active', true)
+            ->exists();
     }
 
     public function getSecurityStatus(): array

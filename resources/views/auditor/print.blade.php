@@ -236,7 +236,7 @@
                                 if ($log->user->is_admin) {
                                     $roleDisplay = 'Head of Stores';
                                 } elseif ($log->user->role === 'Main Admin') {
-                                    $roleDisplay = 'Dept Head(Stores)';
+                                    $roleDisplay = 'Head of Admin(Authorizer)';
                                 } elseif ($log->user->role === 'Department Head') {
                                     if ($log->user->department === 'Human Resource Management Department') {
                                         $roleDisplay = 'Dept Head(HR)';
@@ -261,7 +261,7 @@
                     </td>
                     <td>{{ $log->event_type }}</td>
                     <td style="font-family: monospace; font-weight: 700; color: #334155;">{{ $log->action }}</td>
-                    <td>{{ $log->description }}</td>
+                    <td>{{ $log->friendly_description }}</td>
                     <td style="font-weight: 800; font-size: 8.5px; text-transform: uppercase;">{{ $log->severity }}</td>
                 </tr>
             @empty
@@ -346,12 +346,21 @@
                     <td><strong>{{ $item->beneficiary }}</strong></td>
                     <td>{{ $item->issuance_type }}</td>
                     <td style="color: #64748b; font-size: 8.5px; line-height: 1.3; vertical-align: middle;">
-                        @if($item->origin_approved_by || $item->stores_approved_by)
+                        @if($item->origin_approved_by || $item->stores_approved_by || $item->dg_approved_by || $item->final_approved_by || $item->store_officer_name)
                             @if($item->origin_approved_by)
                                 <div>{{ $item->origin_approved_by }} <span style="font-size: 7.5px; font-weight: 800;">(Dept Head)</span></div>
                             @endif
                             @if($item->stores_approved_by)
-                                <div style="margin-top: 1.5px;">{{ $item->stores_approved_by }} <span style="font-size: 7.5px; font-weight: 800;">(Stores Dept Head)</span></div>
+                                <div style="margin-top: 1.5px;">{{ $item->stores_approved_by }} <span style="font-size: 7.5px; font-weight: 800;">(Head of Admin(Authorizer))</span></div>
+                            @endif
+                            @if($item->dg_approved_by)
+                                <div style="margin-top: 1.5px;">{{ $item->dg_approved_by }} <span style="font-size: 7.5px; font-weight: 800;">(Director General)</span></div>
+                            @endif
+                            @if($item->final_approved_by)
+                                <div style="margin-top: 1.5px;">{{ $item->final_approved_by }} <span style="font-size: 7.5px; font-weight: 800;">(Head of Stores)</span></div>
+                            @endif
+                            @if($item->store_officer_name)
+                                <div style="margin-top: 1.5px;">{{ $item->store_officer_name }} <span style="font-size: 7.5px; font-weight: 800;">(Store Officer)</span></div>
                             @endif
                         @else
                             {{ $item->authority ?: 'N/A' }}

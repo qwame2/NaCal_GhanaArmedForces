@@ -168,7 +168,7 @@
                             #ef4444
                         @endif; padding: 0.85rem 1.25rem; border-radius: 0 12px 12px 0; font-size: 0.88rem; color: #475569; font-weight: 600;">
                         <span style="font-weight: 800; color: var(--text-main); font-size: 0.75rem; text-transform: uppercase; display: block; margin-bottom: 2px; letter-spacing: 0.05em;">Activity Detail</span>
-                        {{ $record->description }}
+                        {{ $record->friendly_description }}
                     </div>
                 </div>
             @endforeach

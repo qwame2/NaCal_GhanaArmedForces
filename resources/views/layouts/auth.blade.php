@@ -131,6 +131,64 @@
     </div>
     @endif
 
+    {{-- ═══════════════════════════════════════════════════════════════
+         ACCOUNT APPROVED NOTIFICATION OVERLAY
+         Shows when: (a) the server detects approval on page load, or
+         (b) JS polling detects approval while user waits on the page
+    ═══════════════════════════════════════════════════════════════ --}}
+    @php $pendingApprovalUsername = $pendingApprovalUsername ?? null; $showApprovedNotification = $showApprovedNotification ?? false; @endphp
+
+    {{-- This container is always in the DOM; JS or PHP reveals it --}}
+    <div id="accountApprovedOverlay" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); z-index: 9999; display: none; align-items: center; justify-content: center; text-align: center; animation: lockOverlayIn 0.4s ease;">
+        <div style="background: white; padding: 3rem 2.5rem 2.5rem; border-radius: 36px; box-shadow: 0 40px 100px rgba(0,0,0,0.25), 0 0 0 1px rgba(34,197,94,0.15); width: 92%; max-width: 460px; position: relative; overflow: hidden;">
+            {{-- Decorative top bar --}}
+            <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);"></div>
+
+            {{-- Icon --}}
+            <div style="width: 88px; height: 88px; background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.06)); border: 2px solid rgba(34,197,94,0.2); border-radius: 28px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; animation: approvedPulse 2.5s infinite;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+            </div>
+
+            {{-- Title --}}
+            <h2 style="color: #0f172a; font-size: 1.75rem; font-weight: 950; letter-spacing: -0.03em; margin: 0 0 1rem; line-height: 1.2;">
+                Account Approved
+            </h2>
+
+            {{-- Message --}}
+            <p style="color: #475569; font-size: 0.93rem; font-weight: 600; line-height: 1.7; margin: 0 0 0.5rem;">
+                Your account has been <strong style="color: #16a34a;">approved</strong> by the Head of Stores.
+            </p>
+            <p style="color: #64748b; font-size: 0.83rem; font-weight: 500; line-height: 1.6; margin: 0 0 2rem;">
+                You can now log in with your registered credentials. Welcome aboard!
+            </p>
+
+            {{-- CTA Button --}}
+            <button id="approvedLoginBtn" onclick="dismissApprovedOverlay()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border: none; padding: 0.85rem 2.5rem; border-radius: 16px; font-size: 0.9rem; font-weight: 800; cursor: pointer; letter-spacing: 0.04em; box-shadow: 0 10px 30px rgba(34,197,94,0.3); transition: all 0.2s ease; width: 100%;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                Go Ahead & Login
+            </button>
+
+            {{-- Small note --}}
+            <p style="margin-top: 1rem; font-size: 0.7rem; font-weight: 600; color: #94a3b8;">
+                Use your registered username &amp; password to sign in.
+            </p>
+        </div>
+    </div>
+
+    <style>
+        @@keyframes approvedPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.3); }
+            50%       { box-shadow: 0 0 0 14px rgba(34, 197, 94, 0); }
+        }
+        #approvedLoginBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 40px rgba(34, 197, 94, 0.4) !important;
+        }
+    </style>
+
     <div class="auth-background">
         <div class="auth-blob" style="top: -200px; right: -200px;"></div>
         <div class="auth-blob" style="bottom: -200px; left: -200px; background: #6366f1;"></div>
@@ -141,6 +199,24 @@
     </div>
 
     <script>
+        /* ── Account Approved Overlay ── */
+        function showApprovedOverlay() {
+            const overlay = document.getElementById('accountApprovedOverlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+            }
+        }
+
+        function dismissApprovedOverlay() {
+            const overlay = document.getElementById('accountApprovedOverlay');
+            if (overlay) {
+                overlay.style.animation = 'none';
+                overlay.style.opacity = '0';
+                overlay.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => { overlay.style.display = 'none'; overlay.style.opacity = '1'; }, 320);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof lucide !== 'undefined') lucide.createIcons();
             
@@ -167,6 +243,27 @@
                 });
                 input.addEventListener('blur', checkStatus);
             });
+
+            @if(!empty($showApprovedNotification) && $showApprovedNotification)
+            // PHP already detected this page load is post-approval — show immediately
+            showApprovedOverlay();
+            @endif
+
+            @if(!empty($pendingApprovalUsername) && !($showApprovedNotification ?? false))
+            // User is still pending — start polling every 8 seconds
+            const pendingUsername = "{{ $pendingApprovalUsername }}";
+            let approvalPollInterval = setInterval(() => {
+                fetch(`/api/check-approval-status?username=${encodeURIComponent(pendingUsername)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.approved) {
+                            clearInterval(approvalPollInterval);
+                            showApprovedOverlay();
+                        }
+                    })
+                    .catch(() => {});
+            }, 8000);
+            @endif
         });
 
         @if($finalRejectedReset)

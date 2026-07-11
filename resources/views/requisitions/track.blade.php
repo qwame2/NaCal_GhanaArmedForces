@@ -1,12 +1,12 @@
 @extends('layouts.dashboard')
 @section('content')
 @php
-    $isStoresHead = (auth()->user()->role === 'Main Admin' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
+    $isStoresHead = (auth()->user()->isMainAdminOrSub() || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
     if (!$isStoresHead) {
         $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
         if ($isBackup) {
             $primaryOnline = \App\Models\User::where(function($q) {
-                    $q->where('role', 'Main Admin')
+                    $q->whereIn('role', ['Main Admin', 'Sub Main Admin'])
                       ->orWhere('role', 'Dept. Head (Stores)')
                       ->orWhereIn('department', ['Stores', 'Store']);
                 })

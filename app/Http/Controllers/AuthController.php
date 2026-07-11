@@ -34,6 +34,22 @@ class AuthController extends Controller
             }
         }
 
+        // Handle pending approval notification
+        $pendingApprovalUsername = session('pending_approval_username');
+        $showApprovedNotification = false;
+        if ($pendingApprovalUsername) {
+            $pendingUser = \App\Models\User::where('username', $pendingApprovalUsername)->first();
+            if ($pendingUser && $pendingUser->registration_status === 'approved' && $pendingUser->is_active) {
+                // Account just approved — show notification then clear session
+                $showApprovedNotification = true;
+                session()->forget('pending_approval_username');
+            } elseif (!$pendingUser) {
+                // User no longer exists (deleted/rejected permanently)
+                session()->forget('pending_approval_username');
+                $pendingApprovalUsername = null;
+            }
+        }
+
         if (Auth::check()) {
             $user = Auth::user();
             
@@ -54,8 +70,9 @@ class AuthController extends Controller
                 return redirect()->route('dashboard');
             }
         }
-        return view('auth.auth', compact('departmentHeads'));
+        return view('auth.auth', compact('departmentHeads', 'pendingApprovalUsername', 'showApprovedNotification'));
     }
+
 
     public function register(Request $request)
     {
@@ -434,7 +451,7 @@ class AuthController extends Controller
                 return redirect()->route('password.change')->with('info', 'Security Synchronization required. Please change your default Active Directory password.');
             }
 
-            if (($user->role === 'Main Admin' || !$user->is_admin) && $user->must_change_password && !$user->is_temp_account) {
+            if (($user->isMainAdminOrSub() || !$user->is_admin) && $user->must_change_password && !$user->is_temp_account) {
                 return redirect()->route('password.change')->with('info', 'Security Synchronization required. Please update your temporary access key.');
             }
 
@@ -484,7 +501,7 @@ class AuthController extends Controller
             ]);
 
             // Route user based on their specific role
-            if (in_array($user->role, ['Main Admin', 'Department Head'])) {
+            if ($user->isMainAdminOrSub() || $user->role === 'Department Head') {
                 return redirect()->route('main-admin.requisitions');
             } elseif ($user->role === 'Auditor') {
                 return redirect()->route('auditor.dashboard');
@@ -548,12 +565,7 @@ class AuthController extends Controller
      */
     public function markOffline(Request $request)
     {
-        if (Auth::check()) {
-            $user = Auth::user();
-            $user->update(['is_online' => false]);
-            return response()->json(['status' => 'success']);
-        }
-        return response()->json(['status' => 'unauthenticated'], 401);
+        return response()->json(['status' => 'success']);
     }
 
     public function showChangePassword()
@@ -846,6 +858,24 @@ class AuthController extends Controller
         return response()->json(['eligible' => false]);
     }
 
+    public function checkApprovalStatus(Request $request)
+    {
+        $username = $request->query('username');
+        if (!$username) {
+            return response()->json(['status' => 'unknown']);
+        }
+
+        $user = User::where('username', $username)->first();
+        if (!$user) {
+            return response()->json(['status' => 'not_found']);
+        }
+
+        return response()->json([
+            'status'   => $user->registration_status,
+            'approved' => $user->registration_status === 'approved' && $user->is_active,
+        ]);
+    }
+
     public function getDepartmentHead(Request $request)
     {
         $department = $request->query('department');
@@ -967,6 +997,9 @@ class AuthController extends Controller
             $successMsg = $isRequisitioner
                 ? 'Your registration request has been submitted successfully. Please wait for your Departmental Head\'s approval.'
                 : 'Your registration request has been submitted successfully. Please wait for Admin approval.';
+
+            // Persist username so the login page can poll for approval status
+            session(['pending_approval_username' => $user->username]);
 
             return redirect()->route('login')
                 ->with('success', $successMsg);

@@ -175,7 +175,9 @@
                                 <span>@ {{ $user->username }}</span>
                                 <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
                                     @if($user->role === 'Main Admin')
-                                        Head of Admin
+                                        Head of Admin(Authorizer)
+                                    @elseif($user->role === 'Sub Main Admin')
+                                        Delegators(Authorizer)
                                     @else
                                         {{ $user->role }}
                                     @endif
@@ -1410,7 +1412,8 @@
                 const avatarSrc = u.avatar || defaultAvatar;
 
                 const roleLabelMap = {
-                    'Main Admin': 'Head of Admin',
+                    'Main Admin': 'Head of Admin(Authorizer)',
+                    'Sub Main Admin': 'Delegators(Authorizer)',
                     'Officer':    'Store Officer',
                     'Dept Head HR': 'Dept Head HR',
                     'Head of Welfare': 'Head of Welfare',

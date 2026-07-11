@@ -215,6 +215,7 @@ Route::post('/reset-password', [AuthController::class, 'resetWithOtp'])->name('p
 Route::post('/api/user/offline', [AuthController::class, 'markOffline'])->name('api.user.offline');
 Route::get('/api/check-reset-status', [AuthController::class, 'checkResetStatus'])->name('api.check-reset-status');
 Route::get('/api/check-forgot-eligibility', [AuthController::class, 'checkForgotEligibility'])->name('api.check-forgot-eligibility');
+Route::get('/api/check-approval-status', [AuthController::class, 'checkApprovalStatus'])->name('api.check-approval-status');
 Route::get('/api/get-department-head', [AuthController::class, 'getDepartmentHead'])->name('api.get-department-head');
 
 
@@ -232,8 +233,8 @@ Route::get('/account-deactivated', function() { return view('auth.deactivated');
 Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     
     Route::get('/dashboard', function () {
-        // Redirect Main Admin to their designated page
-        if (auth()->user()->role === 'Main Admin') {
+        // Redirect Main Admin or Sub Main Admin to their designated page
+        if (in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin'])) {
             return redirect()->route('main-admin.requisitions');
         }
 
@@ -664,6 +665,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     // Auditor Routes
     Route::get('/auditor', [\App\Http\Controllers\AuditorController::class, 'index'])->name('auditor.dashboard');
     Route::get('/auditor/print', [\App\Http\Controllers\AuditorController::class, 'printReport'])->name('auditor.print');
+    Route::get('/auditor/supplier-info', [\App\Http\Controllers\AuditorController::class, 'getSupplierInfo'])->name('auditor.supplier_info');
 
     // Director General Routes
     Route::get('/dg', [\App\Http\Controllers\DGController::class, 'index'])->name('dg.dashboard');
@@ -722,7 +724,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/api/online-statuses', [\App\Http\Controllers\MessageController::class, 'getOnlineStatuses'])->name('api.online-statuses');
     Route::get('/api/user/permissions', function() {
         $user = auth()->user();
-        $is_admin = (bool)$user->is_admin || $user->role === 'Main Admin';
+        $is_admin = (bool)$user->is_admin || $user->isMainAdminOrSub();
         return response()->json([
             'can_generate_reports' => $is_admin || $user->role === 'Auditor' || (bool)$user->can_generate_reports,
             'can_add_inventory' => $is_admin || (bool)$user->can_add_inventory,

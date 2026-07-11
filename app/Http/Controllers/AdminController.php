@@ -88,11 +88,21 @@ class AdminController extends Controller
         }
 
         $request->validate([
-            'role' => 'required|string|in:Officer,Main Admin,Department Head,Auditor,Requisitioner,Director General',
+            'role' => 'required|string|in:Officer,Main Admin,Sub Main Admin,Department Head,Auditor,Requisitioner,Director General',
         ]);
 
         $user = User::findOrFail($id);
         $role = $request->role;
+
+        if ($role === 'Sub Main Admin') {
+            $activeCount = User::where('role', 'Sub Main Admin')
+                ->where('is_active', true)
+                ->where('registration_status', 'approved')
+                ->count();
+            if ($activeCount >= 2) {
+                return back()->with('error', 'Strategic Security Alert: The system only permits a maximum of 2 active Delegators (Authorizers) at any time.');
+            }
+        }
 
         $user->role = $role;
         $user->registration_status = 'approved';
@@ -105,6 +115,15 @@ class AdminController extends Controller
             }
             $user->is_admin = true;
             $user->is_temp_account = false;
+            $user->can_make_requisition = false;
+            $user->can_approve_requisition = false;
+        } elseif ($role === 'Sub Main Admin') {
+            $user->is_admin = true;
+            $user->is_temp_account = false;
+            $user->can_add_inventory = true;
+            $user->can_operate_logistics = true;
+            $user->can_generate_reports = true;
+            $user->can_verify_stock = true;
             $user->can_make_requisition = false;
             $user->can_approve_requisition = false;
         } elseif ($role === 'Auditor') {
@@ -205,6 +224,21 @@ class AdminController extends Controller
 
     public function passwordRequests()
     {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        if (auth()->user()->isDelegatedApprover()) {
+            \App\Models\SystemLog::create([
+                'user_id' => auth()->id(),
+                'event_type' => 'SECURITY',
+                'action' => 'DELEGATED_VIEW_PASSWORD_REQUESTS',
+                'description' => "Delegated Store Officer viewed password reset requests.",
+                'severity' => 'info',
+                'ip_address' => request()->ip()
+            ]);
+        }
+
         $requests = \App\Models\PasswordResetRequest::with('user')->orderBy('created_at', 'desc')->paginate(15);
 
         // Count how many total requests each username has ever submitted
@@ -217,6 +251,10 @@ class AdminController extends Controller
 
     public function approvePasswordRequest(Request $request, $id)
     {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
+            abort(403, 'Unauthorized access.');
+        }
+
         $resetReq = \App\Models\PasswordResetRequest::findOrFail($id);
         
         // Generate a random 6-digit OTP
@@ -231,11 +269,16 @@ class AdminController extends Controller
             'expires_at' => now()->addMinutes($expiryMinutes),
         ]);
 
+        $logAction = auth()->user()->isDelegatedApprover() ? 'DELEGATED_AUTHORIZATION' : 'AUTHORIZATION';
+        $logDesc = auth()->user()->isDelegatedApprover()
+            ? "Delegated Store Officer approved password reset for @{$resetReq->username}."
+            : "Administrator approved password reset for @{$resetReq->username}.";
+
         \App\Models\SystemLog::create([
             'user_id' => auth()->id(),
             'event_type' => 'SECURITY',
-            'action' => 'AUTHORIZATION',
-            'description' => "Administrator approved password reset for @{$resetReq->username}.",
+            'action' => $logAction,
+            'description' => $logDesc,
             'severity' => 'warning',
             'ip_address' => $request->ip()
         ]);
@@ -245,14 +288,23 @@ class AdminController extends Controller
 
     public function rejectPasswordRequest(Request $request, $id)
     {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
+            abort(403, 'Unauthorized access.');
+        }
+
         $resetReq = \App\Models\PasswordResetRequest::findOrFail($id);
         $resetReq->update(['status' => 'rejected']);
+
+        $logAction = auth()->user()->isDelegatedApprover() ? 'DELEGATED_AUTHORIZATION' : 'AUTHORIZATION';
+        $logDesc = auth()->user()->isDelegatedApprover()
+            ? "Delegated Store Officer rejected password reset request for @{$resetReq->username}."
+            : "Administrator rejected password reset request for @{$resetReq->username}.";
 
         \App\Models\SystemLog::create([
             'user_id' => auth()->id(),
             'event_type' => 'SECURITY',
-            'action' => 'AUTHORIZATION',
-            'description' => "Administrator rejected password reset request for @{$resetReq->username}.",
+            'action' => $logAction,
+            'description' => $logDesc,
             'severity' => 'info',
             'ip_address' => $request->ip()
         ]);
@@ -278,6 +330,16 @@ class AdminController extends Controller
         if ($request->role === 'Head of Stores' && !$user->is_admin) {
             if (User::where('is_admin', true)->where('is_active', true)->exists()) {
                 return back()->with('error', 'Strategic Oversight Alert: Only one active Administrative account is permitted. Promotion denied.');
+            }
+        }
+
+        if ($request->role === 'Sub Main Admin' && $user->role !== 'Sub Main Admin') {
+            $activeCount = User::where('role', 'Sub Main Admin')
+                ->where('is_active', true)
+                ->where('registration_status', 'approved')
+                ->count();
+            if ($activeCount >= 2) {
+                return back()->with('error', 'Strategic Security Alert: The system only permits a maximum of 2 active Delegators (Authorizers) at any time.');
             }
         }
 
@@ -356,6 +418,16 @@ class AdminController extends Controller
             return back()->with('error', "You cannot deactivate your own account here.");
         }
 
+        if (!$user->is_active && $user->role === 'Sub Main Admin') {
+            $activeCount = User::where('role', 'Sub Main Admin')
+                ->where('is_active', true)
+                ->where('registration_status', 'approved')
+                ->count();
+            if ($activeCount >= 2) {
+                return back()->with('error', 'Strategic Security Alert: The system only permits a maximum of 2 active Delegators (Authorizers) at any time.');
+            }
+        }
+
         $user->is_active = !$user->is_active;
         if (!$user->is_active) {
             $user->is_online = false;
@@ -386,8 +458,19 @@ class AdminController extends Controller
 
     public function permissions()
     {
-        if (!auth()->user()->is_admin) {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) {
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+        }
+
+        if (auth()->user()->isDelegatedApprover()) {
+            \App\Models\SystemLog::create([
+                'user_id' => auth()->id(),
+                'event_type' => 'SECURITY',
+                'action' => 'DELEGATED_VIEW_PERMISSIONS',
+                'description' => "Delegated Store Officer viewed the permissions page.",
+                'severity' => 'info',
+                'ip_address' => request()->ip()
+            ]);
         }
 
         $storeOfficers = User::where('role', 'Officer')
@@ -400,7 +483,7 @@ class AdminController extends Controller
             ->orderBy('name')
             ->get();
 
-        $deptHeads = User::whereIn('role', ['Main Admin', 'Department Head', 'Dept Head HR', 'Head of Welfare'])
+        $deptHeads = User::whereIn('role', ['Main Admin', 'Sub Main Admin', 'Department Head', 'Dept Head HR', 'Head of Welfare'])
             ->where('registration_status', 'approved')
             ->orderBy('name')
             ->get();
