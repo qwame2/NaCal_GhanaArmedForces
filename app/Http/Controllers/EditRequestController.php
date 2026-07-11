@@ -509,9 +509,11 @@ class EditRequestController extends Controller
                             'entry_date' => $data['entry_date'] ?? now(),
                             'arrival_date' => $data['arrival_date'],
                             'recorded_by' => $editReq->user_id,
-                            'approval_status' => 'approved',
+                            'approval_status' => 'pending_auditor_admin',
                             'approved_by' => auth()->id(),
                             'approved_at' => now(),
+                            'stores_approved_by' => auth()->id(),
+                            'stores_approved_at' => now(),
                         ]);
 
                         foreach ($catItems as $item) {
@@ -520,6 +522,9 @@ class EditRequestController extends Controller
                             unset($itemData['ledge_category']);
                             $batch->items()->create($itemData);
                         }
+
+                        // Notify Auditor and Main Admin for review
+                        InventoryBatch::sendSraReviewNotifications($batch);
                     }
 
                     \App\Models\SystemLog::create([
@@ -631,11 +636,15 @@ class EditRequestController extends Controller
         
         if ($request->status === 'approved' && isset($batch) && $batch) {
             $printUrl = route('receiveditems.sra', ['id' => $batch->id]);
-            $desc = $requestType === 'remainder_submission' 
-                ? "The remainder items for Batch #{$batch->id} have been authorized and added to stock. You can now download the updated SRA voucher."
-                : "Your inventory entry has been authorized. You can now download the official voucher.";
+            if ($requestType === 'remainder_submission') {
+                $desc = "The remainder items for Batch #{$batch->id} have been authorized and added to stock. You can now download the updated SRA voucher.";
+                $btnText = "Download / Print SRA";
+            } else {
+                $desc = "Your inventory entry request has been approved by the Head of Stores. It has now been routed to the Auditor and Head of Admin for final verification. Once approved, the SRA receipt will become live and show their signatures.";
+                $btnText = "View SRA (Draft)";
+            }
             $finalMsg .= "{$desc}<br><br>";
-            $finalMsg .= "<a href='{$printUrl}' target='_blank' style='display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);'>Download / Print SRA</a>";
+            $finalMsg .= "<a href='{$printUrl}' target='_blank' style='display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);'>{$btnText}</a>";
         } else if ($request->status === 'approved') {
             $finalMsg .= "Authorization was granted, but the associated record could not be identified for printing. Please contact the Administrator.";
         } else {

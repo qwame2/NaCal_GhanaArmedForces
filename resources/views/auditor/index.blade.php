@@ -380,6 +380,42 @@
         background-color: var(--audit-primary) !important;
         color: white !important;
     }
+    @keyframes blink-danger-pulse {
+        0% {
+            opacity: 1;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+        70% {
+            opacity: 0.8;
+            box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+        }
+        100% {
+            opacity: 1;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        }
+    }
+    .blinking-danger-badge {
+        background: #ef4444 !important;
+        color: white !important;
+        animation: blink-danger-pulse 1.5s infinite;
+        font-weight: 900;
+        display: inline-block;
+    }
+    @keyframes blink-text-red {
+        0%, 100% { color: #ef4444; }
+        50% { color: rgba(239, 68, 68, 0.4); }
+    }
+    .audit-tab-btn.pending-sras-active {
+        animation: blink-text-red 1.5s infinite;
+        font-weight: 900 !important;
+        border: 1.5px dashed rgba(239, 68, 68, 0.3) !important;
+        background: rgba(239, 68, 68, 0.02) !important;
+    }
+    .audit-tab-btn.pending-sras-active.active {
+        background: var(--bg-card) !important;
+        border-color: #ef4444 !important;
+        box-shadow: 0 10px 25px rgba(239, 68, 68, 0.06), 0 0 0 1px rgba(239, 68, 68, 0.15) !important;
+    }
 </style>
 
 <div style="padding: 2rem;">
@@ -544,6 +580,13 @@
         <button class="audit-tab-btn" onclick="switchAuditTab('requisitions-tab', this)">
             <i data-lucide="file-text" style="width: 16px;"></i>
             Requisitions Log
+        </button>
+        <button class="audit-tab-btn @if($pendingSras->count() + $pendingServiceSras->count() > 0) pending-sras-active @endif" onclick="switchAuditTab('pending-sra-tab', this)" style="position: relative;">
+            <i data-lucide="file-check" style="width: 16px;"></i>
+            Pending SRA Approvals
+            @if($pendingSras->count() + $pendingServiceSras->count() > 0)
+                <span class="badge blinking-danger-badge" style="position: absolute; top: -8px; right: -8px; padding: 2.5px 6.5px; border-radius: 99px; font-size: 0.65rem; font-weight: 900; z-index: 10;">{{ $pendingSras->count() + $pendingServiceSras->count() }}</span>
+            @endif
         </button>
     </div>
 
@@ -1056,6 +1099,178 @@
         </div>
     </div>
 
+    {{-- PANEL 6: PENDING SRA APPROVALS --}}
+    <div id="pending-sra-tab" class="audit-tab-panel">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium);">
+            <div style="overflow-x: auto;">
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>SRA ID</th>
+                            <th>Entry Date</th>
+                            <th>Ledge Category</th>
+                            <th>Supplier Name</th>
+                            <th>Acquisition Type</th>
+                            <th>Stores Approver</th>
+                            <th style="text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($pendingSras as $batch)
+                            @php
+                                $cleanSupplier = trim(preg_replace('/\[.*?\]/', '', ($batch->acquisition_type === 'Donor' ? ($batch->donor_name ?: $batch->supplier_name) : $batch->supplier_name) ?? 'N/A'));
+                            @endphp
+                            <tr class="log-row">
+                                <td style="font-weight: 900; font-family: monospace; color: var(--audit-primary);">
+                                    SRA-{{ str_pad($batch->id, 6, '0', STR_PAD_LEFT) }}
+                                </td>
+                                <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
+                                    {{ \Carbon\Carbon::parse($batch->entry_date)->format('d/m/Y') }}
+                                </td>
+                                <td style="font-weight: 800; color: var(--text-main);">
+                                    {{ $ledgeMap[$batch->ledge_category] ?? $batch->ledge_category }}
+                                </td>
+                                <td style="font-weight: 700; color: var(--text-muted);">
+                                    {{ $cleanSupplier }}
+                                </td>
+                                <td>
+                                    <span class="log-badge info" style="font-size: 0.65rem;">
+                                        {{ $batch->acquisition_type }}
+                                    </span>
+                                </td>
+                                <td style="font-weight: 800; color: var(--text-main);">
+                                    {{ $batch->storesApprover->name ?? 'N/A' }}
+                                </td>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <a href="{{ route('receiveditems.sra', $batch->id) }}" 
+                                       target="_blank" 
+                                       class="btn-view-receipt" 
+                                       style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
+                                       onmouseover="this.style.background='var(--audit-primary)'; this.style.color='white';"
+                                       onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='var(--audit-primary)';"
+                                       title="Review SRA Receipt">
+                                        <i data-lucide="file-signature" style="width: 13px; height: 13px;"></i>
+                                        <span>Review & Approve</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+                                    <i data-lucide="file-check" style="width: 40px; height: 40px; margin-bottom: 1rem; opacity: 0.25;"></i>
+                                    <p style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">No SRA receipts pending verification.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {{-- PANEL 6b: SERVICE SRA APPROVALS (inside pending-sra-tab) --}}
+    <div style="margin-top: 2rem;" id="service-sra-pending-section">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+            <div style="width: 4px; height: 24px; background: #8b5cf6; border-radius: 2px;"></div>
+            <h3 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin: 0;">Pending Service SRA Approvals</h3>
+            @if($pendingServiceSras->count() > 0)
+                <span style="background: rgba(139,92,246,0.15); color: #8b5cf6; font-size: 0.65rem; font-weight: 900; padding: 3px 8px; border-radius: 99px;">{{ $pendingServiceSras->count() }} pending</span>
+            @endif
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium);">
+            <div style="overflow-x: auto;">
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>SRA No.</th>
+                            <th>Date Submitted</th>
+                            <th>Supplier</th>
+                            <th>Details</th>
+                            <th>Submitted By</th>
+                            <th>Admin Approved By</th>
+                            <th style="text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($pendingServiceSras as $sra)
+                            <tr class="log-row">
+                                <td style="font-weight: 900; font-family: monospace; color: #8b5cf6;">
+                                    {{ $sra->sra_number }}
+                                </td>
+                                <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
+                                    {{ $sra->created_at->format('d/m/Y') }}
+                                </td>
+                                <td style="font-weight: 800; color: var(--text-main);">
+                                    {{ $sra->supplier_name }}
+                                </td>
+                                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); font-size: 0.8rem;" title="{{ $sra->details }}">
+                                    {{ Str::limit($sra->details, 50) }}
+                                </td>
+                                <td style="font-weight: 800;">
+                                    {{ $sra->submitter->name ?? 'N/A' }}
+                                    <div style="font-size: 0.72rem; color: var(--text-muted);">{{ $sra->dept }}</div>
+                                </td>
+                                <td style="font-weight: 700; color: var(--text-muted); font-size: 0.82rem;">
+                                    {{ $sra->admin_approved_by ?? 'N/A' }}
+                                    @if($sra->admin_approved_at)
+                                        <div style="font-size: 0.7rem;">{{ $sra->admin_approved_at->format('d/m/Y') }}</div>
+                                    @endif
+                                </td>
+                                <td style="text-align: center; vertical-align: middle;">
+                                    <button onclick="openServiceSraAuditModal(this)"
+                                        data-id="{{ $sra->id }}"
+                                        data-sra-number="{{ $sra->sra_number }}"
+                                        data-supplier="{{ $sra->supplier_name }}"
+                                        data-details="{{ Str::limit($sra->details, 80) }}"
+                                        style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(139,92,246,0.08); color: #8b5cf6; font-size: 0.72rem; font-weight: 800; border: 1px solid rgba(139,92,246,0.2); cursor: pointer; transition: all 0.2s;"
+                                        onmouseover="this.style.background='#8b5cf6'; this.style.color='white';"
+                                        onmouseout="this.style.background='rgba(139,92,246,0.08)'; this.style.color='#8b5cf6';"
+                                        title="Review & Approve Service SRA">
+                                        <i data-lucide="file-signature" style="width: 13px; height: 13px;"></i>
+                                        <span>Review & Approve</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2.5rem 1.5rem; color: var(--text-muted);">
+                                    <i data-lucide="file-check" style="width: 32px; height: 32px; margin-bottom: 0.75rem; opacity: 0.25;"></i>
+                                    <p style="font-weight: 800; font-size: 0.9rem; color: var(--text-main);">No Service SRA receipts pending auditor verification.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{{-- Service SRA Audit Approval Modal --}}
+<div id="service-sra-audit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:20px; padding:2.5rem; max-width:750px; width:90%; box-shadow:0 25px 60px rgba(0,0,0,0.25); position:relative;">
+        <button onclick="closeServiceSraAuditModal()" style="position:absolute; top:1.25rem; right:1.25rem; background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:1.5rem;">&times;</button>
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:1.75rem;">
+            <div style="width:48px; height:48px; background:rgba(139,92,246,0.1); border-radius:14px; display:flex; align-items:center; justify-content:center;">
+                <i data-lucide="file-signature" style="width:24px; height:24px; color:#8b5cf6;"></i>
+            </div>
+            <div>
+                <div style="font-size:0.75rem; font-weight:800; color:#8b5cf6; text-transform:uppercase; letter-spacing:0.1em; margin-bottom: 2px;">Auditor Review</div>
+                <h3 style="margin:0; font-size:1.35rem; font-weight:900; color:var(--text-main);">Service SRA Verification</h3>
+            </div>
+        </div>
+        <div id="ssra-modal-info" style="background:rgba(139,92,246,0.04); border:1px solid rgba(139,92,246,0.12); border-radius:14px; padding:1.5rem; margin-bottom:1.5rem; font-size:0.9rem; color:var(--text-muted); line-height:1.7; border-left: 4px solid #8b5cf6;"></div>
+        <div style="margin-bottom:1.75rem;">
+            <label style="display:block; font-size:0.78rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Auditor Notes (Optional)</label>
+            <textarea id="ssra-audit-notes" rows="4" placeholder="Add any verification notes or comments..." style="width:100%; padding:1rem; border:1.5px solid var(--border-color); border-radius:12px; background:var(--bg-main); color:var(--text-main); font-family:inherit; font-size:0.9rem; resize:vertical; outline:none; box-sizing:border-box; line-height: 1.5;"></textarea>
+        </div>
+        <div>
+            <button id="ssra-approve-btn" onclick="submitServiceSraAudit('approved')" style="width:100%; padding:0.95rem; background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:12px; font-weight:900; font-size:0.95rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <i data-lucide="check-circle" style="width:18px; height:18px;"></i> Approve & Forward to Head of Stores
+            </button>
+        </div>
+    </div>
 </div>
 <script>
     function toggleSupplierPopover(btn, event) {
@@ -1286,7 +1501,7 @@
                     }
 
                     // Swap panels
-                    const panels = ['audit-trail-tab', 'received-items-tab', 'issued-items-tab', 'returned-items-tab', 'requisitions-tab'];
+                    const panels = ['audit-trail-tab', 'received-items-tab', 'issued-items-tab', 'returned-items-tab', 'requisitions-tab', 'pending-sra-tab'];
                     panels.forEach(id => {
                         const newPanel = doc.getElementById(id);
                         const currentPanel = document.getElementById(id);
@@ -1384,6 +1599,98 @@
                 }
             });
         }
+    });
+
+    // ── Service SRA Audit Modal ────────────────────────────────────────────────
+    let currentServiceSraId = null;
+
+    function openServiceSraAuditModal(btn) {
+        const id = btn.getAttribute('data-id');
+        const sraNumber = btn.getAttribute('data-sra-number');
+        const supplier = btn.getAttribute('data-supplier');
+        const details = btn.getAttribute('data-details');
+
+        currentServiceSraId = id;
+        document.getElementById('ssra-modal-info').innerHTML =
+            `<strong style="color:var(--text-main);">${sraNumber}</strong> &mdash; ${supplier}<br>
+            <span style="font-size:0.78rem;">${details}</span>`;
+        document.getElementById('ssra-audit-notes').value = '';
+        const modal = document.getElementById('service-sra-audit-modal');
+        modal.style.display = 'flex';
+        if (window.lucide) window.lucide.createIcons({ node: modal });
+    }
+
+    function closeServiceSraAuditModal() {
+        document.getElementById('service-sra-audit-modal').style.display = 'none';
+        currentServiceSraId = null;
+    }
+
+    async function submitServiceSraAudit(action) {
+        if (!currentServiceSraId) return;
+
+        const notes  = document.getElementById('ssra-audit-notes').value.trim();
+        const approveBtn = document.getElementById('ssra-approve-btn');
+
+        approveBtn.disabled = true;
+        approveBtn.style.opacity = '0.6';
+
+        try {
+            const res = await fetch(`/auditor/service-sra/${currentServiceSraId}/process`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ action, notes }),
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                closeServiceSraAuditModal();
+                // Remove the row from the table
+                const rows = document.querySelectorAll('#service-sra-pending-section tbody tr');
+                rows.forEach(row => {
+                    if (row.querySelector(`button[onclick*="${currentServiceSraId}"]`)) {
+                        row.remove();
+                    }
+                });
+
+                // Display success SweetAlert
+                if (window.Swal) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Approved!',
+                        text: 'Service SRA receipt verified and forwarded to Head of Stores.',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        background: 'var(--bg-card)',
+                        color: 'var(--text-main)'
+                    });
+                } else {
+                    alert('Service SRA receipt verified and forwarded to Head of Stores.');
+                }
+
+                // Reload page after short delay so counts update
+                setTimeout(() => window.location.reload(), 2000);
+            } else {
+                alert('Error: ' + (data.message || 'Could not process request.'));
+            }
+        } catch (err) {
+            console.error(err);
+            alert('A network error occurred. Please try again.');
+        } finally {
+            if (approveBtn) {
+                approveBtn.disabled = false;
+                approveBtn.style.opacity = '1';
+            }
+        }
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('service-sra-audit-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeServiceSraAuditModal();
     });
 </script>
 @endsection

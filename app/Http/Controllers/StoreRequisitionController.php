@@ -1619,11 +1619,21 @@ class StoreRequisitionController extends Controller
 
         $requisitions = $query->paginate(15)->withQueryString();
 
-        // ── Service SRA Oversight integration ─────────────────────────────────
+        // ── Service & Inventory SRA Oversight integration ────────────────────────
         $sras = collect();
         $sraPending = 0;
         $sraApproved = 0;
         $sraDeclined = 0;
+
+        // Fetch pending standard SRA batches (InventoryBatch) for Main Admin review
+        $pendingInventorySras = collect();
+        if (auth()->user()->isMainAdminOrSub() || auth()->user()->is_admin) {
+            $pendingInventorySras = \App\Models\InventoryBatch::with(['items', 'recorder'])
+                ->where('approval_status', 'pending_auditor_admin')
+                ->where('admin_status', 'pending')
+                ->get();
+            $sraPending += $pendingInventorySras->count();
+        }
 
         if (($isStoresHead || auth()->user()->is_admin) && !$request->filled('priority')) {
             $sraQuery = \App\Models\ServiceSra::with('submitter')
@@ -1664,13 +1674,15 @@ class StoreRequisitionController extends Controller
             } else {
                 $sraPendingQuery->where('status', 'admin_approved');
             }
-            $sraPending = $sraPendingQuery->count();
+            $sraPending += $sraPendingQuery->count();
             $sraApproved = \App\Models\ServiceSra::where('status', 'approved')->count();
             $sraDeclined = \App\Models\ServiceSra::where('status', 'declined')->count();
         }
 
-        if ($sras->count() > 0) {
-            $merged = $sras->concat($requisitions->getCollection());
+        $mergedSras = $sras->concat($pendingInventorySras);
+
+        if ($mergedSras->count() > 0) {
+            $merged = $mergedSras->concat($requisitions->getCollection());
             $requisitions->setCollection($merged);
         }
 

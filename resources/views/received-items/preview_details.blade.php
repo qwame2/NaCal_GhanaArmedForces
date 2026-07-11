@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Entry Oversight')
+@section('title', 'SRA Receipt Review & Oversight')
 
 @section('content')
 @php

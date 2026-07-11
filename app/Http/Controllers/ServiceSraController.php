@@ -230,7 +230,7 @@ class ServiceSraController extends Controller
         $sra->admin_notes       = $request->notes;
 
         if ($request->action === 'approved') {
-            $sra->status = 'admin_approved';
+            $sra->status = 'auditor_pending'; // goes to Auditor next
         } else {
             $sra->status = 'declined';
         }
@@ -330,6 +330,82 @@ class ServiceSraController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'SRA has been ' . ($request->action === 'approved' ? 'fully approved. The Store Officer can now download the receipt.' : 'declined.'),
+        ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // AUDITOR: Review queue
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function auditorIndex()
+    {
+        $user = auth()->user();
+        if ($user->role !== 'Auditor') {
+            abort(403);
+        }
+
+        $pending = ServiceSra::with('submitter')
+            ->where('status', 'auditor_pending')
+            ->where('auditor_status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $history = ServiceSra::with('submitter')
+            ->whereIn('auditor_status', ['approved', 'declined'])
+            ->orderBy('updated_at', 'desc')
+            ->limit(50)
+            ->get();
+
+        return view('service-sra.auditor', compact('pending', 'history'));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // AUDITOR: Process (approve/decline)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function auditorProcess(Request $request, $id)
+    {
+        $user = auth()->user();
+        if ($user->role !== 'Auditor') {
+            abort(403);
+        }
+
+        $request->validate([
+            'action' => 'required|in:approved,declined',
+            'notes'  => 'nullable|string|max:1000',
+        ]);
+
+        $sra = ServiceSra::findOrFail($id);
+
+        if ($sra->status !== 'auditor_pending' || $sra->auditor_status !== 'pending') {
+            return response()->json(['success' => false, 'message' => 'This SRA has already been processed by the Auditor.'], 422);
+        }
+
+        $sra->auditor_status      = $request->action;
+        $sra->auditor_approved_by = $user->name;
+        $sra->auditor_approved_at = now();
+        $sra->auditor_notes       = $request->notes;
+
+        if ($request->action === 'approved') {
+            $sra->status = 'admin_approved'; // now goes to Head of Stores
+        } else {
+            $sra->status = 'declined';
+        }
+
+        $sra->save();
+
+        SystemLog::create([
+            'user_id'     => $user->id,
+            'event_type'  => 'SERVICE_SRA',
+            'action'      => 'Service SRA Auditor ' . ucfirst($request->action),
+            'description' => "Auditor {$user->name} " . ($request->action === 'approved' ? 'approved' : 'declined') . " SRA {$sra->sra_number} for Stores review.",
+            'severity'    => 'info',
+            'ip_address'  => $request->ip(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Service SRA has been ' . ($request->action === 'approved' ? 'auditor-approved and forwarded to Head of Stores.' : 'declined.'),
         ]);
     }
 

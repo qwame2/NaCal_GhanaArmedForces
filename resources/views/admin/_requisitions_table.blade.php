@@ -19,8 +19,12 @@
                 $sraStatus = $req->status;
                 $badgeColor = '#6366f1';
                 $badgeBg = 'rgba(99,102,241,0.1)';
-                $badgeLabel = 'Awaiting Admin Review';
-                if ($sraStatus === 'admin_approved') {
+                $badgeLabel = 'Awaiting Head of Admin Review';
+                if ($sraStatus === 'auditor_pending') {
+                    $badgeColor = '#8b5cf6';
+                    $badgeBg = 'rgba(139,92,246,0.1)';
+                    $badgeLabel = 'Awaiting Auditor Review';
+                } elseif ($sraStatus === 'admin_approved') {
                     $badgeColor = '#f59e0b';
                     $badgeBg = 'rgba(245,158,11,0.1)';
                     $badgeLabel = 'Awaiting Stores Review';

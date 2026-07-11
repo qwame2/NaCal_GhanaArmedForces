@@ -162,7 +162,8 @@
                 <i data-lucide="activity" class="filter-icon" style="width: 14px; height: 14px;"></i>
                 <select name="status" onchange="updateSraFilters()" class="filter-control">
                     <option value="">All Statuses</option>
-                    <option value="pending" {{ request('status')==='pending'?'selected':'' }}>Awaiting Admin Review</option>
+                    <option value="pending" {{ request('status')==='pending'?'selected':'' }}>Awaiting Head of Admin Review</option>
+                    <option value="auditor_pending" {{ request('status')==='auditor_pending'?'selected':'' }}>Awaiting Auditor Review</option>
                     <option value="admin_approved" {{ request('status')==='admin_approved'?'selected':'' }}>Awaiting Stores Review</option>
                     <option value="approved" {{ request('status')==='approved'?'selected':'' }}>Fully Approved</option>
                     <option value="declined" {{ request('status')==='declined'?'selected':'' }}>Declined</option>

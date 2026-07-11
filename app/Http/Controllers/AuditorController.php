@@ -7,6 +7,7 @@ use App\Models\InventoryItem;
 use App\Models\IssuedItem;
 use App\Models\ReturnedItem;
 use App\Models\InventoryBatch;
+use App\Models\ServiceSra;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -172,6 +173,18 @@ class AuditorController extends Controller
         $ledgeMap = Setting::getCategories();
         $auditUsers = \App\Models\User::where('role', '!=', 'Auditor')->orderBy('name')->get();
 
+        $pendingSras = InventoryBatch::with('storesApprover')
+            ->where('approval_status', 'pending_auditor_admin')
+            ->where('auditor_status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $pendingServiceSras = ServiceSra::with('submitter')
+            ->where('status', 'auditor_pending')
+            ->where('auditor_status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('auditor.index', compact(
             'totalLogsCount',
             'totalVariance',
@@ -182,7 +195,9 @@ class AuditorController extends Controller
             'returnedItems',
             'requisitions',
             'ledgeMap',
-            'auditUsers'
+            'auditUsers',
+            'pendingSras',
+            'pendingServiceSras'
         ));
     }
 

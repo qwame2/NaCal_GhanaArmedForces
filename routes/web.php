@@ -712,6 +712,9 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     // Head of Stores final approval
     Route::get('/stores/service-sra', [ServiceSraController::class, 'storesIndex'])->name('stores.service-sra.index');
     Route::post('/stores/service-sra/{id}/process', [ServiceSraController::class, 'storesProcess'])->name('stores.service-sra.process');
+    // Auditor verification
+    Route::get('/auditor/service-sra', [ServiceSraController::class, 'auditorIndex'])->name('auditor.service-sra.index');
+    Route::post('/auditor/service-sra/{id}/process', [ServiceSraController::class, 'auditorProcess'])->name('auditor.service-sra.process');
     Route::get('/notifications', function() {
         return view('notifications');
     })->name('notifications.index');
@@ -1429,6 +1432,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/api/sra-preview/{id}', [\App\Http\Controllers\ReceivedItemsController::class, 'previewApi'])->name('api.sra.preview');
     Route::post('/sra-creation/{id}/process', [\App\Http\Controllers\EditRequestController::class, 'processSraCreation'])->name('sra-creation.process');
     Route::post('/sra-creation/{id}/rollback', [\App\Http\Controllers\EditRequestController::class, 'rollbackSraEntry'])->name('sra-creation.rollback');
+    Route::post('/received-items/{id}/process-sra-review', [\App\Http\Controllers\ReceivedItemsController::class, 'processSraReview'])->name('receiveditems.process-sra-review');
     Route::get('/api/sra-rollback/{id}', function ($id) {
         $editReq = \App\Models\EditRequest::findOrFail($id);
         // Only the owner or an admin can access this

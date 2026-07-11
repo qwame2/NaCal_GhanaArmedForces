@@ -104,8 +104,8 @@
 
         .signatures {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
             margin-top: 50px;
         }
         .sig-block {
@@ -114,7 +114,10 @@
         .sig-line {
             border-bottom: 1px solid #000;
             margin-bottom: 8px;
-            height: 50px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .sig-label {
             font-weight: bold;
@@ -127,7 +130,7 @@
 
         @media print {
             body { padding: 0; }
-            .print-btn { display: none; }
+            .print-btn, .review-banner, .swal2-container { display: none !important; }
             .container { border-width: 3px; }
         }
 
@@ -157,6 +160,123 @@
     </style>
 </head>
 <body>
+@if(auth()->check() && (auth()->user()->role === 'Auditor' || auth()->user()->role === 'Main Admin') && $batch->approval_status === 'pending_auditor_admin')
+    @php
+        $role = auth()->user()->role;
+        $hasApproved = ($role === 'Auditor' && $batch->auditor_status === 'approved') || ($role === 'Main Admin' && $batch->admin_status === 'approved');
+        $hasDeclined = ($role === 'Auditor' && $batch->auditor_status === 'declined') || ($role === 'Main Admin' && $batch->admin_status === 'declined');
+    @endphp
+    
+    <div class="review-banner" style="position: sticky; top: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); color: #fff; padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; z-index: 10000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); border-bottom: 2px solid #334155; font-family: system-ui, -apple-system, sans-serif; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="width: 42px; height: 42px; background: rgba(99, 102, 241, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(99, 102, 241, 0.4);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            </div>
+            <div style="text-align: left;">
+                <div style="font-weight: 800; font-size: 0.95rem; letter-spacing: -0.01em;">Donation SRA Review Board</div>
+                <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 500; margin-top: 2px;">
+                    @if($hasApproved)
+                        <span style="color: #10b981; font-weight: bold;">✓ You have approved this Donation.</span> Waiting for the other review authority.
+                    @elseif($hasDeclined)
+                        <span style="color: #ef4444; font-weight: bold;">✗ You have declined this Donation.</span>
+                    @else
+                        This certificate requires your verification and approval to become active stock.
+                    @endif
+                </div>
+            </div>
+        </div>
+        
+        @if(!$hasApproved && !$hasDeclined)
+            <div style="display: flex; gap: 12px;">
+                <button onclick="processSraReviewAction('approve')" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 750; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); transition: all 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Accept & Approve
+                </button>
+            </div>
+        @endif
+    </div>
+
+    <!-- Include SweetAlert2 for beautiful alerts if not loaded -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function processSraReviewAction(action) {
+            const batchId = "{{ $batch->id }}";
+            const actionText = action === 'approve' ? 'approve' : 'decline';
+            const actionColor = action === 'approve' ? '#10b981' : '#ef4444';
+            const confirmBtnText = action === 'approve' ? 'Yes, Approve' : 'Yes, Decline';
+            
+            Swal.fire({
+                title: action === 'approve' ? 'Approve SRA Receipt?' : 'Decline SRA Receipt?',
+                text: action === 'approve' 
+                    ? 'Confirming this receipt will log your digital signature and move the items to live stock.' 
+                    : 'Decline this receipt if there are discrepancies or issues. A reason is required.',
+                icon: 'warning',
+                input: action === 'decline' ? 'textarea' : null,
+                inputPlaceholder: action === 'decline' ? 'Enter decline reason...' : null,
+                inputValidator: action === 'decline' ? (value) => {
+                    if (!value) {
+                        return 'You must enter a reason to decline!';
+                    }
+                } : null,
+                showCancelButton: true,
+                confirmButtonColor: actionColor,
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: confirmBtnText
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Processing SRA...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    fetch(`/received-items/${batchId}/process-sra-review`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: action,
+                            reason: action === 'decline' ? result.value : null
+                        })
+                    })
+                    .then(async res => {
+                        const isJson = res.headers.get('content-type')?.includes('application/json');
+                        const data = isJson ? await res.json() : null;
+                        
+                        if (!res.ok) {
+                            const errorMsg = data?.message || 'Server returned an error status';
+                            throw new Error(errorMsg);
+                        }
+                        return data;
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'SRA Processed!',
+                                text: data.message,
+                                confirmButtonColor: '#4f46e5'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire('Action Failed', data.message || 'Error processing review', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('Error', err.message || 'A network error occurred. Please check system logs.', 'error');
+                    });
+                }
+            });
+        }
+    </script>
+@endif
+
     @if($batch->id !== 'DRAFT')
     <button class="print-btn" onclick="window.print()">PRINT CERTIFICATE</button>
     @endif
@@ -234,18 +354,49 @@
             The valuation is based on institutional utility and recorded for inventory transparency and audit compliance only.
         </div>
 
+        @php
+            $storesUser = $batch->storesApprover ?? $batch->approver ?? $batch->recorder;
+            $storesDate = $batch->stores_approved_at ?: $batch->approved_at ?: $batch->created_at;
+            
+            $adminUser = $batch->adminApprover;
+            $adminApproved = $batch->admin_status === 'approved' && $adminUser;
+            
+            $auditorUser = $batch->auditorApprover;
+            $auditorApproved = $batch->auditor_status === 'approved' && $auditorUser;
+        @endphp
         <div class="signatures">
             <div class="sig-block">
-                <div class="sig-line"></div>
+                <div class="sig-line" style="height: auto; min-height: 40px; text-align: center;">
+                    @if($adminApproved && $adminUser->signature)
+                        <img src="{{ asset('storage/' . $adminUser->signature) }}" style="max-height: 50px; object-fit: contain; vertical-align: middle; margin-bottom: -10px; transform: translateY(-5px);">
+                    @endif
+                </div>
                 <div class="sig-label">OFFICER-IN-CHARGE</div>
                 <div class="sig-sub">(Acceptance Authority)</div>
-                <div style="margin-top: 10px; font-weight: bold;">{{ $admin->name ?? '________________' }}</div>
+                <div style="margin-top: 10px; font-weight: bold;">{{ $adminApproved ? $adminUser->name : '________________' }}</div>
+                <div style="font-size: 11px; margin-top: 4px;">Date: {{ $adminApproved && $batch->admin_approved_at ? \Carbon\Carbon::parse($batch->admin_approved_at)->format('d/m/y') : '________________' }}</div>
             </div>
             <div class="sig-block">
-                <div class="sig-line"></div>
+                <div class="sig-line" style="height: auto; min-height: 40px; text-align: center;">
+                    @if($storesUser && $storesUser->signature)
+                        <img src="{{ asset('storage/' . $storesUser->signature) }}" style="max-height: 50px; object-fit: contain; vertical-align: middle; margin-bottom: -10px; transform: translateY(-5px);">
+                    @endif
+                </div>
                 <div class="sig-label">STOREKEEPER / VERIFIER</div>
                 <div class="sig-sub">(Inventory Registry)</div>
-                <div style="margin-top: 10px; font-weight: bold;">{{ $batch->recorder->name ?? (auth()->user()->name ?? '________________') }}</div>
+                <div style="margin-top: 10px; font-weight: bold;">{{ $storesUser->name ?? '________________' }}</div>
+                <div style="font-size: 11px; margin-top: 4px;">Date: {{ $storesDate ? \Carbon\Carbon::parse($storesDate)->format('d/m/y') : '________________' }}</div>
+            </div>
+            <div class="sig-block">
+                <div class="sig-line" style="height: auto; min-height: 40px; text-align: center;">
+                    @if($auditorApproved && $auditorUser->signature)
+                        <img src="{{ asset('storage/' . $auditorUser->signature) }}" style="max-height: 50px; object-fit: contain; vertical-align: middle; margin-bottom: -10px; transform: translateY(-5px);">
+                    @endif
+                </div>
+                <div class="sig-label">INTERNAL AUDIT</div>
+                <div class="sig-sub">(Audit Verification)</div>
+                <div style="margin-top: 10px; font-weight: bold;">{{ $auditorApproved ? $auditorUser->name : '________________' }}</div>
+                <div style="font-size: 11px; margin-top: 4px;">Date: {{ $auditorApproved && $batch->auditor_approved_at ? \Carbon\Carbon::parse($batch->auditor_approved_at)->format('d/m/y') : '________________' }}</div>
             </div>
         </div>
 

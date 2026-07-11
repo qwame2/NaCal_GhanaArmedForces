@@ -1,11 +1,92 @@
 @forelse($requisitions as $req)
-    @if($req instanceof \App\Models\ServiceSra)
+    @if($req instanceof \App\Models\InventoryBatch)
+        @php
+            $sraStatus = $req->approval_status;
+            $badgeColor = '#ef4444';
+            $badgeBg = 'rgba(239,68,68,0.1)';
+            $badgeLabel = 'Awaiting Head of Admin Review';
+            if ($req->auditor_status === 'approved') {
+                $badgeColor = '#6366f1';
+                $badgeBg = 'rgba(99,102,241,0.1)';
+                $badgeLabel = 'Auditor Approved (Pending Head of Admin)';
+            }
+            
+            $usageLabel = 'Inventory SRA';
+            $usageBg = 'rgba(16, 185, 129, 0.08)';
+            $usageColor = '#10b981';
+            
+            $reviewUrl = route('receiveditems.sra', ['id' => $req->id]);
+        @endphp
+        <tr class="oversight-row" style="background: rgba(16, 185, 129, 0.015);">
+            <td data-label="Ref">
+                <span class="history-ref" style="font-size:0.75rem; color:#10b981; font-weight:800;">
+                    SRA-{{ str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
+                </span>
+            </td>
+            <td data-label="Requester & Dept">
+                <div style="font-weight:800;color:var(--text-main);font-size:0.85rem;">
+                    {{ $req->recorder->name ?? 'Store Officer' }}
+                </div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">
+                    Stores
+                </div>
+            </td>
+            <td data-label="Items Requested">
+                <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                    <span class="table-item-pill" title="{{ $req->supplier_name }}" style="background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.15);">
+                        <i data-lucide="truck" style="width:12px;height:12px;display:inline-block;margin-right:3px;vertical-align:middle;color:#10b981;"></i>
+                        {{ Str::limit($req->supplier_name ?: ($req->donor_name ?: 'Supplier'), 25) }}
+                    </span>
+                </div>
+            </td>
+            <td data-label="Purpose">
+                <div style="font-size:0.8rem;color:var(--text-muted);font-weight:600;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    @php
+                        $itemsList = $req->items->pluck('description')->join(', ');
+                    @endphp
+                    {{ Str::limit($itemsList, 40) }}
+                </div>
+            </td>
+            <td data-label="Priority">
+                <span class="status-pill" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size:0.65rem;">
+                    SRA
+                </span>
+            </td>
+            <td data-label="Status">
+                <span class="status-pill" style="background:{{ $badgeBg }};color:{{ $badgeColor }};font-size:0.65rem;">
+                    ● {{ $badgeLabel }}
+                </span>
+            </td>
+            <td data-label="Usage">
+                <span class="status-pill" style="background:{{ $usageBg }};color:{{ $usageColor }};font-size:0.65rem;">
+                    {{ $usageLabel }}
+                </span>
+            </td>
+            <td data-label="Submitted">
+                <div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;white-space:nowrap;">
+                    {{ $req->created_at->format('d/m/Y') }}
+                </div>
+                <div style="font-size:0.7rem;color:var(--text-muted);">
+                    {{ $req->created_at->format('H:i') }}
+                </div>
+            </td>
+            <td data-label="Actions">
+                <a href="{{ $reviewUrl }}" target="_blank" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+                    <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
+                </a>
+            </td>
+        </tr>
+    @elseif($req instanceof \App\Models\ServiceSra)
         @php
             $sraStatus = $req->status;
             $badgeColor = '#6366f1';
             $badgeBg = 'rgba(99,102,241,0.1)';
-            $badgeLabel = 'Awaiting Admin Review';
-            if ($sraStatus === 'admin_approved') {
+            $badgeLabel = 'Awaiting Head of Admin Review';
+            if ($sraStatus === 'auditor_pending') {
+                $badgeColor = '#8b5cf6';
+                $badgeBg = 'rgba(139,92,246,0.1)';
+                $badgeLabel = 'Awaiting Auditor Review';
+            } elseif ($sraStatus === 'admin_approved') {
                 $badgeColor = '#f59e0b';
                 $badgeBg = 'rgba(245,158,11,0.1)';
                 $badgeLabel = 'Awaiting Stores Review';

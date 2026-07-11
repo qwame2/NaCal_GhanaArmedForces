@@ -848,4 +848,145 @@ class ReceivedItemsController extends Controller
             ]
         ]);
     }
+
+    public function processSraReview(Request $request, $id)
+    {
+        $request->validate([
+            'action' => 'required|in:approve,decline',
+            'reason' => 'nullable|string'
+        ]);
+
+        $user = auth()->user();
+        if ($user->role !== 'Auditor' && $user->role !== 'Main Admin') {
+            return response()->json(['success' => false, 'message' => 'Clearance Restricted: Action requires Auditor or Head of Admin role.'], 403);
+        }
+
+        $batch = InventoryBatch::findOrFail($id);
+
+        if ($batch->approval_status !== 'pending_auditor_admin') {
+            return response()->json(['success' => false, 'message' => 'SRA receipt is not currently pending Auditor/Admin review.'], 400);
+        }
+
+        $action = $request->action;
+        $reason = $request->reason;
+        
+        DB::beginTransaction();
+        try {
+            if ($action === 'approve') {
+                if ($user->role === 'Auditor') {
+                    $batch->auditor_status = 'approved';
+                    $batch->auditor_approved_by = $user->id;
+                    $batch->auditor_approved_at = now();
+                } elseif ($user->role === 'Main Admin') {
+                    $batch->admin_status = 'approved';
+                    $batch->admin_approved_by = $user->id;
+                    $batch->admin_approved_at = now();
+                }
+
+                // If both approved, set the batch approval_status to approved (live stock)
+                if ($batch->auditor_status === 'approved' && $batch->admin_status === 'approved') {
+                    $batch->approval_status = 'approved';
+                    $batch->approved_at = now(); // Set overall approved_at
+
+                    // Log fully approved
+                    \App\Models\SystemLog::create([
+                        'user_id' => $user->id,
+                        'event_type' => 'INVENTORY',
+                        'action' => 'SRA_FULLY_APPROVED',
+                        'description' => "SRA Receipt #" . str_pad($batch->id, 6, '0', STR_PAD_LEFT) . " has been fully approved by Auditor and Head of Admin.",
+                        'severity' => 'info',
+                        'metadata' => ['batch_id' => $batch->id],
+                        'ip_address' => request()->ip()
+                    ]);
+
+                    // Send confirmation message to Store Officer & Head of Stores
+                    $confirmMsg = "<div class='personnel-view sra-approved-msg' style='padding: 15px; border: 1px solid #10b981; border-radius: 12px; background: rgba(16, 185, 129, 0.05);'>";
+                    $confirmMsg .= "  <b style='color: #10b981;'>🔔 SRA RECEIPT FULLY APPROVED</b><br><br>";
+                    $confirmMsg .= "  SRA Receipt <b>#" . str_pad($batch->id, 6, '0', STR_PAD_LEFT) . "</b> has been fully verified and approved by the Auditor and the Head of Admin. The items have been moved to live stock and are ready for disbursement.<br><br>";
+                    $confirmMsg .= "  <a href='" . route('receiveditems.sra', ['id' => $batch->id]) . "' target='_blank' style='display: inline-block; background: #10b981; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);'>Print / Download SRA</a>";
+                    $confirmMsg .= "</div>";
+
+                    $receivers = array_unique([$batch->recorded_by, $batch->approved_by, $batch->stores_approved_by]);
+                    foreach ($receivers as $receiverId) {
+                        if ($receiverId) {
+                            \App\Models\Message::create([
+                                'sender_id' => $user->id,
+                                'receiver_id' => $receiverId,
+                                'message' => $confirmMsg,
+                                'is_automated' => true,
+                                'read_at' => null,
+                            ]);
+                        }
+                    }
+                } else {
+                    // Log single role approval
+                    \App\Models\SystemLog::create([
+                        'user_id' => $user->id,
+                        'event_type' => 'INVENTORY',
+                        'action' => 'SRA_ROLE_APPROVED',
+                        'description' => "SRA Receipt #" . str_pad($batch->id, 6, '0', STR_PAD_LEFT) . " approved by {$user->role} ({$user->name}).",
+                        'severity' => 'info',
+                        'metadata' => ['batch_id' => $batch->id],
+                        'ip_address' => request()->ip()
+                    ]);
+                }
+            } elseif ($action === 'decline') {
+                if ($user->role === 'Auditor') {
+                    $batch->auditor_status = 'declined';
+                } elseif ($user->role === 'Main Admin') {
+                    $batch->admin_status = 'declined';
+                }
+                
+                $batch->approval_status = 'declined'; // Rejection of the entry
+
+                \App\Models\SystemLog::create([
+                    'user_id' => $user->id,
+                    'event_type' => 'INVENTORY',
+                    'action' => 'SRA_DECLINED',
+                    'description' => "SRA Receipt #" . str_pad($batch->id, 6, '0', STR_PAD_LEFT) . " was declined by {$user->role} ({$user->name}). Reason: {$reason}",
+                    'severity' => 'warning',
+                    'metadata' => ['batch_id' => $batch->id, 'reason' => $reason],
+                    'ip_address' => request()->ip()
+                ]);
+
+                // Send decline message back to Store Officer & Head of Stores
+                $declineMsg = "<div class='personnel-view sra-declined-msg' style='padding: 15px; border: 1px solid #ef4444; border-radius: 12px; background: rgba(239, 68, 68, 0.05);'>";
+                $declineMsg .= "  <b style='color: #ef4444;'>❌ SRA RECEIPT DECLINED</b><br><br>";
+                $declineMsg .= "  SRA Receipt <b>#" . str_pad($batch->id, 6, '0', STR_PAD_LEFT) . "</b> has been declined by the {$user->role} ({$user->name}) during verification review.<br><br>";
+                if ($reason) {
+                    $declineMsg .= "  <div style='padding: 10px 14px; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; font-size: 0.85rem; color: #7f1d1d; margin-bottom: 12px;'>";
+                    $declineMsg .= "    <b>Decline Reason:</b> " . nl2br(e($reason)) . "";
+                    $declineMsg .= "  </div>";
+                }
+                $declineMsg .= "  Please review the entry details and coordinate with the administrative command.";
+                $declineMsg .= "</div>";
+
+                $receivers = array_unique([$batch->recorded_by, $batch->approved_by, $batch->stores_approved_by]);
+                foreach ($receivers as $receiverId) {
+                    if ($receiverId) {
+                        \App\Models\Message::create([
+                            'sender_id' => $user->id,
+                            'receiver_id' => $receiverId,
+                            'message' => $declineMsg,
+                            'is_automated' => true,
+                            'read_at' => null,
+                        ]);
+                    }
+                }
+            }
+
+            $batch->save();
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => $action === 'approve' 
+                    ? 'SRA receipt verification action logged successfully.' 
+                    : 'SRA receipt has been declined.'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Database exception: ' . $e->getMessage()], 500);
+        }
+    }
 }

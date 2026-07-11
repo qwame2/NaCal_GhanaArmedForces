@@ -383,7 +383,7 @@
             display: flex;
             align-items: flex-end;
             justify-content: center;
-            margin-bottom: -64px;
+            margin-bottom: -45px;
             position: relative;
             z-index: 5;
             pointer-events: none;
@@ -777,10 +777,10 @@
             @endphp
 
             @if(count($approvals) > 0)
-                <div class="table-section-title" style="margin-top: 4.5rem;">
+                <div class="table-section-title" style="margin-top: 2rem;">
                     Requisition Approvals &amp; Authorizations
                 </div>
-                <div class="signatures-section" style="grid-template-columns: repeat({{ count($approvals) }}, 1fr); margin-top: 3.5rem; margin-bottom: 2rem;">
+                <div class="signatures-section" style="grid-template-columns: repeat({{ count($approvals) }}, 1fr); margin-top: 1.5rem; margin-bottom: 2rem;">
                     @foreach($approvals as $appr)
                         <div class="signature-block">
                             <div class="signature-space">
@@ -812,7 +812,7 @@
                 <strong>INVENTORY RELEASE STATEMENT & CERTIFICATION:</strong><br>
                 I certify that the items on this receipt are verified, approved, and released from NACOC central stores. The receiving representative has inspected and confirmed physical receipt. All transactions are logged per Stores Division procedures.
             </div>
-            <div style="text-align: center; font-size: 0.68rem; color: var(--text-muted); margin-top: 4rem; border-top: 1px solid var(--border-color); padding-top: 1rem; font-style: italic; font-weight: 600; letter-spacing: 0.02em;">
+            <div style="text-align: center; font-size: 0.68rem; color: var(--text-muted); margin-top: 3rem; border-top: 1px solid var(--border-color); padding-top: 1rem; font-style: italic; font-weight: 600; letter-spacing: 0.02em;">
                 This voucher was generated through using the NACOC STORES INVENTORY MANAGEMENT SYSTEM (NSIMS).
             </div>
         </div>

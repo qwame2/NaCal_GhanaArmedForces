@@ -349,10 +349,15 @@ class InventoryController extends Controller
                     'driver_phone' => $validated['driver_phone'] ?? null,
                     'entry_date' => $validated['entry_date'],
                     'arrival_date' => $validated['arrival_date'],
-                    'approval_status' => 'approved',
+                    'approval_status' => 'pending_auditor_admin',
                     'approved_by' => auth()->id(),
                     'approved_at' => now(),
+                    'stores_approved_by' => auth()->id(),
+                    'stores_approved_at' => now(),
                 ]);
+
+                // Send SRA review notifications to Auditors and Head of Admin
+                InventoryBatch::sendSraReviewNotifications($batch);
 
                 foreach ($catItems as $item) {
                     $itemData = $item;
@@ -366,7 +371,7 @@ class InventoryController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Discrepancy inventory records saved successfully!',
+                'message' => 'Discrepancy inventory records saved successfully and routed to Auditor and Head of Admin for final review.',
                 'batch_id' => $batch->id
             ]);
 
@@ -520,10 +525,15 @@ class InventoryController extends Controller
                     'driver_phone' => $validated['driver_phone'] ?? null,
                     'entry_date' => $validated['entry_date'],
                     'arrival_date' => $validated['arrival_date'],
-                    'approval_status' => 'approved',
+                    'approval_status' => 'pending_auditor_admin',
                     'approved_by' => auth()->id(),
                     'approved_at' => now(),
+                    'stores_approved_by' => auth()->id(),
+                    'stores_approved_at' => now(),
                 ]);
+
+                // Send SRA review notifications to Auditors and Head of Admin
+                InventoryBatch::sendSraReviewNotifications($batch);
 
                 // Create the Items
                 foreach ($catItems as $item) {
@@ -594,7 +604,7 @@ class InventoryController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Inventory records saved successfully!',
+                'message' => 'Inventory records saved successfully and routed to Auditor and Head of Admin for final review.',
                 'batch_id' => $batch->id
             ]);
 

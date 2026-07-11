@@ -30,6 +30,10 @@ class ServiceSra extends Model
         'admin_approved_by',
         'admin_approved_at',
         'admin_notes',
+        'auditor_status',
+        'auditor_approved_by',
+        'auditor_approved_at',
+        'auditor_notes',
         'stores_status',
         'stores_approved_by',
         'stores_approved_at',
@@ -38,9 +42,10 @@ class ServiceSra extends Model
     ];
 
     protected $casts = [
-        'date_of_delivery'  => 'date',
-        'admin_approved_at' => 'datetime',
-        'stores_approved_at'=> 'datetime',
+        'date_of_delivery'   => 'date',
+        'admin_approved_at'  => 'datetime',
+        'auditor_approved_at'=> 'datetime',
+        'stores_approved_at' => 'datetime',
     ];
 
     // ─── Relationships ────────────────────────────────────────────────────────
@@ -60,10 +65,11 @@ class ServiceSra extends Model
     public function getStatusBadgeAttribute(): array
     {
         return match ($this->status) {
-            'approved'       => ['label' => 'Fully Approved',        'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.1)'],
-            'admin_approved' => ['label' => 'Awaiting Stores Review','color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'],
-            'declined'       => ['label' => 'Declined',              'color' => '#ef4444', 'bg' => 'rgba(239,68,68,0.1)'],
-            default          => ['label' => 'Awaiting Admin Review',  'color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'],
+            'approved'        => ['label' => 'Fully Approved',              'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.1)'],
+            'admin_approved'  => ['label' => 'Awaiting Stores Review',     'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'],
+            'auditor_pending' => ['label' => 'Awaiting Auditor Review',    'color' => '#8b5cf6', 'bg' => 'rgba(139,92,246,0.1)'],
+            'declined'        => ['label' => 'Declined',                   'color' => '#ef4444', 'bg' => 'rgba(239,68,68,0.1)'],
+            default           => ['label' => 'Awaiting Head of Admin Review','color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'],
         };
     }
 
@@ -77,11 +83,22 @@ class ServiceSra extends Model
         } elseif ($this->admin_status === 'declined') {
             $steps['admin'] = ['label' => 'Admin Declined', 'status' => 'declined',  'icon' => 'x',     'user' => $this->admin_approved_by];
         } else {
-            $steps['admin'] = ['label' => 'Awaiting Admin Review', 'status' => 'active', 'icon' => 'clock', 'user' => 'Head of Admin'];
+            $steps['admin'] = ['label' => 'Awaiting Head of Admin Review', 'status' => 'active', 'icon' => 'clock', 'user' => 'Head of Admin'];
         }
 
-        // Step 2 – Head of Stores
+        // Step 2 – Auditor
         if ($this->admin_status !== 'approved') {
+            $steps['auditor'] = ['label' => 'Pending Auditor Review', 'status' => 'pending', 'icon' => 'circle', 'user' => 'Auditor'];
+        } elseif ($this->auditor_status === 'approved') {
+            $steps['auditor'] = ['label' => 'Auditor Approved',  'status' => 'completed', 'icon' => 'check', 'user' => $this->auditor_approved_by];
+        } elseif ($this->auditor_status === 'declined') {
+            $steps['auditor'] = ['label' => 'Auditor Declined',  'status' => 'declined',  'icon' => 'x',     'user' => $this->auditor_approved_by];
+        } else {
+            $steps['auditor'] = ['label' => 'Awaiting Auditor Review', 'status' => 'active', 'icon' => 'clock', 'user' => 'Auditor'];
+        }
+
+        // Step 3 – Head of Stores
+        if ($this->auditor_status !== 'approved') {
             $steps['stores'] = ['label' => 'Pending Stores Review', 'status' => 'pending', 'icon' => 'circle', 'user' => 'Head of Stores'];
         } elseif ($this->stores_status === 'approved') {
             $steps['stores'] = ['label' => 'Stores Approved',  'status' => 'completed', 'icon' => 'check', 'user' => $this->stores_approved_by];

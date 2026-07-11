@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="NACOC IMS">
     <link rel="apple-touch-icon" href="{{ str_replace(['http:', 'https:'], '', asset('img/cropped_circle_image.png')) }}">
     <link rel="icon" type="image/png" href="{{ str_replace(['http:', 'https:'], '', asset('img/cropped_circle_image.png')) }}">
-    <title>NSIMs-Head of Stores</title>
+    <title>@yield('title', 'NSIMs-Head of Stores')</title>
     <link href="{{ asset('css/css2.css') }}" rel="stylesheet">
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
@@ -1788,6 +1788,59 @@
 
 
     </script>
+
+    @if(auth()->check() && auth()->user()->registration_status === 'approved' && (in_array(auth()->user()->role, ['Head of Stores', 'Auditor', 'Director General', 'Main Admin', 'Sub Main Admin']) || auth()->user()->isDelegatedApprover()) && !auth()->user()->signature)
+        <!-- Signature Requirement Warning Popover -->
+        <div id="signature-warning-overlay" class="modal-overlay" style="display: none; z-index: 10000000 !important;">
+            <div class="glass-card animate-pop-in" style="max-width: 500px; width: 90%; border-radius: 28px; padding: 2.5rem; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); text-align: center; position: relative;">
+                <div style="width: 80px; height: 80px; background: rgba(79, 70, 229, 0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i data-lucide="signature" style="width: 42px; height: 42px; color: var(--primary);"></i>
+                </div>
+                <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--text-heading); margin-bottom: 0.75rem; letter-spacing: -0.02em;">Digital Signature Required</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; font-weight: 600;">
+                    Hello <strong>{{ auth()->user()->name }}</strong>, as an approved authority (<span style="color: var(--primary);">{{ auth()->user()->role }}</span>), you must upload your digital signature to authorize inventory release receipts and SRA vouchers.
+                </p>
+                <div style="background: var(--bg-main); border-radius: 16px; padding: 1rem; border: 1px solid var(--border-color); text-align: left; margin-bottom: 2rem;">
+                    <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 6px;">How to upload:</span>
+                    <ol style="font-size: 0.8rem; color: var(--text-body); margin: 0; padding-left: 1.2rem; line-height: 1.5; font-weight: 600;">
+                        <li>Navigate to your personal <strong style="color: var(--primary);">User Settings</strong> page.</li>
+                        <li>Find the <strong style="color: var(--primary);">Official Digital Signature</strong> section.</li>
+                        <li>Upload a clear photo of your signature (background is automatically removed).</li>
+                    </ol>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button onclick="dismissSignatureWarning()" class="modern-action-btn secondary" style="flex: 1; padding: 0.85rem; font-size: 0.85rem; border-radius: 14px; cursor: pointer; font-weight: 800;">
+                        Configure Later
+                    </button>
+                    <a href="{{ route('settings.index') }}" class="save-btn" style="flex: 2; justify-content: center; padding: 0.85rem; font-size: 0.85rem; border-radius: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        <i data-lucide="settings" style="width: 16px;"></i>
+                        Upload Signature Now
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (!sessionStorage.getItem('signature_warning_dismissed') && window.location.pathname !== '/settings') {
+                    const overlay = document.getElementById('signature-warning-overlay');
+                    if (overlay) {
+                        overlay.style.display = 'flex';
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    }
+                }
+            });
+
+            function dismissSignatureWarning() {
+                const overlay = document.getElementById('signature-warning-overlay');
+                if (overlay) {
+                    overlay.style.display = 'none';
+                    sessionStorage.setItem('signature_warning_dismissed', 'true');
+                }
+            }
+        </script>
+    @endif
+
     @stack('modals')
     @stack('scripts')
     <!-- PWA Service Worker Registration -->
