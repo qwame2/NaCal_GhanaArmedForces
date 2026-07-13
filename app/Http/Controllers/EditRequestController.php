@@ -15,7 +15,7 @@ class EditRequestController extends Controller
         if (auth()->user()->role === 'Main Admin') {
             return response()->json(['success' => false, 'message' => 'Unauthorized: Department Head (Stores) is only allowed to view received items and cannot make changes.'], 403);
         }
-        if (auth()->user()->role === 'Department Head') {
+        if (auth()->user()->isDepartmentHead()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 

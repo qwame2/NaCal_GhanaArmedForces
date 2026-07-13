@@ -224,6 +224,14 @@ class User extends Authenticatable implements LdapAuthenticatable
     }
 
     /**
+     * Returns true if this user is a department head.
+     */
+    public function isDepartmentHead(): bool
+    {
+        return in_array($this->role, ['Department Head', 'Dept Head HR', 'Head of Welfare']);
+    }
+
+    /**
      * Returns the display number (1 or 2) for a Sub Main Admin based on last_login_at order.
      * The Sub Main Admin who logged in earliest is #1, the next is #2.
      * Returns null for non-Sub Main Admins.

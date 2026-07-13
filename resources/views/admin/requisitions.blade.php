@@ -1196,6 +1196,46 @@
                 ${sra.previous_sra_nos ? `<div style="margin-top:0.75rem;font-size:0.72rem;font-weight:800;color:#f59e0b;">Previous SRA Nos: ${sra.previous_sra_nos}</div>` : ''}
             `;
 
+            const isSraProcessed = sra.status === 'approved' || sra.status === 'declined';
+            const sraDecisionForm = document.getElementById('sra-modal-decision-form');
+            if (isSraProcessed) {
+                let noteVal = sra.stores_notes || sra.admin_notes || sra.auditor_notes || '';
+                sraDecisionForm.innerHTML = `
+                    ${noteVal ? `
+                    <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.75rem 1rem; margin-bottom: 1.25rem;">
+                        <div style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Oversight Notes / Remarks</div>
+                        <div style="font-size:0.9rem; font-weight:700; color:var(--text-main); font-style: italic;">"${noteVal}"</div>
+                    </div>` : ''}
+                    <div style="display: flex; gap: 1rem; margin-top: 1.25rem;">
+                        ${sra.status === 'approved' ? `
+                            <button style="flex:1; padding: 0.85rem 2rem; border: none; background: #10b981; color: white; border-radius: 12px; cursor: default; pointer-events: none; font-weight: 950; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" disabled>
+                                <i data-lucide="check-circle" style="width: 16px;"></i> Approved
+                            </button>
+                        ` : `
+                            <button style="flex:1; padding: 0.85rem 2rem; border: none; background: #ef4444; color: white; border-radius: 12px; cursor: default; pointer-events: none; font-weight: 950; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" disabled>
+                                <i data-lucide="x-circle" style="width: 16px;"></i> Declined
+                            </button>
+                        `}
+                    </div>
+                `;
+            } else {
+                sraDecisionForm.innerHTML = `
+                    <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                        <i data-lucide="message-square" style="width: 14px; color: var(--primary);"></i>
+                        Notes / Remarks (optional)
+                    </label>
+                    <textarea id="sra-modal-notes" rows="3" style="width: 100%; border: 1.5px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; resize: vertical; box-sizing: border-box;" placeholder="Add notes..."></textarea>
+                    <div style="display: flex; gap: 1rem; margin-top: 1.25rem; justify-content: flex-end; flex-wrap: wrap;">
+                        <button onclick="processOversightSra('declined')" id="sraBtnDecline" style="padding: 0.85rem 2rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: #ef4444; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="x-circle" style="width: 16px;"></i> Decline
+                        </button>
+                        <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(16,185,129,0.4);">
+                            <i data-lucide="check-circle" style="width: 16px;"></i> Approve
+                        </button>
+                    </div>
+                `;
+            }
+
             if (window.lucide) lucide.createIcons();
         } catch (e) {
             console.error(e);
@@ -1612,6 +1652,27 @@
             }
         }
 
+        let readOnlyBtnHtml = '';
+        if (!isPending) {
+            if (data.status === 'approved' || data.status === 'partially_approved' || data.alternative_status === 'agreed') {
+                readOnlyBtnHtml = `
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+                    <button style="flex:1; background: #10b981; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 950; cursor: default; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" disabled>
+                        <i data-lucide="check-circle" style="width: 18px;"></i>
+                        Approved
+                    </button>
+                </div>`;
+            } else {
+                readOnlyBtnHtml = `
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+                    <button style="flex:1; background: #ef4444; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 950; cursor: default; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" disabled>
+                        <i data-lucide="x-circle" style="width: 18px;"></i>
+                        Declined
+                    </button>
+                </div>`;
+            }
+        }
+
         document.getElementById('modalBody').innerHTML = `
     <!-- profile grid and metadata -->
     ${profileGridHtml}
@@ -1719,6 +1780,7 @@
         </div>
     </div>
 
+    ${readOnlyBtnHtml}
     ${collectorInfoHtml}
     `}`;
 

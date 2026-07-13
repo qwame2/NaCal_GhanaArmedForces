@@ -684,7 +684,7 @@
         if (auth()->check()) {
             $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
             if (!$isStoresHead) {
-                $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+                $isBackup = (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
                 if ($isBackup) {
                     if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
                         $isStoresHead = true;

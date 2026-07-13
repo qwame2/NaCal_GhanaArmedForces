@@ -643,7 +643,7 @@ class StoreRequisitionController extends Controller
         $req = StoreRequisition::findOrFail($id);
 
         $isRequester = ($req->requested_by === auth()->id());
-        $isDeptHead = (auth()->user()->role === 'Department Head' && strcasecmp($req->department, auth()->user()->department) === 0);
+        $isDeptHead = (auth()->user()->isDepartmentHead() && strcasecmp($req->department, auth()->user()->department) === 0);
 
         if (!$isRequester && !$isDeptHead) {
             return response()->json(['success' => false, 'message' => 'You are not authorized to follow up on this requisition.'], 403);
@@ -953,7 +953,7 @@ class StoreRequisitionController extends Controller
 
         $isStoresHead = ($user->isMainAdminOrSub() || $user->role === 'Head of Stores' || strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0);
         if (!$isStoresHead) {
-            $isBackup = ($user->role === 'Department Head' && in_array($user->department, ['Human Resource Management Department', 'Welfare Department']));
+            $isBackup = ($user->isDepartmentHead() && in_array($user->department, ['Human Resource Management Department', 'Welfare Department']));
             if ($isBackup) {
                 if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
                     $isStoresHead = true;
@@ -964,7 +964,7 @@ class StoreRequisitionController extends Controller
         $canView = $user->is_admin || 
                    $user->isDelegatedApprover() || 
                    $isStoresHead ||
-                   ($user->role === 'Department Head' && strcasecmp($user->department, $req->department) === 0) ||
+                   ($user->isDepartmentHead() && strcasecmp($user->department, $req->department) === 0) ||
                    ($req->requested_by === $user->id);
 
         if (!$canView) {
@@ -1457,11 +1457,11 @@ class StoreRequisitionController extends Controller
     public function mainAdminIndex(Request $request)
     {
         self::checkOverdueTemporaryItems();
-        if (!in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Head of Stores'])) abort(403);
+        if (!auth()->user()->isMainAdminOrSub() && !auth()->user()->isDepartmentHead() && auth()->user()->role !== 'Head of Stores') abort(403);
 
         $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
         if (!$isStoresHead) {
-            $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+            $isBackup = (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
             if ($isBackup) {
                 if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
                     $isStoresHead = true;
@@ -1479,9 +1479,9 @@ class StoreRequisitionController extends Controller
         }
 
         $hasActiveStoresHead = \App\Models\User::where('role', 'Head of Stores')->where('is_active', true)->exists()
-            || \App\Models\User::where('role', 'Department Head')->whereIn('department', ['Stores', 'Store'])->where('is_active', true)->exists();
+            || \App\Models\User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare'])->whereIn('department', ['Stores', 'Store'])->where('is_active', true)->exists();
         $isStoresHOD = (auth()->user()->role === 'Head of Stores')
-            || (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Stores', 'Store']))
+            || (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Stores', 'Store']))
             || (auth()->user()->isMainAdminOrSub() && !$hasActiveStoresHead);
 
         $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
@@ -1732,9 +1732,8 @@ class StoreRequisitionController extends Controller
         $stats['pending'] += $sraPending;
         $stats['approved'] += $sraApproved;
         $stats['declined'] += $sraDeclined;
-
         $hasOverdueReturn = false;
-        if (auth()->user()->role === 'Department Head' && !$isStoresHead) {
+        if (auth()->user()->isDepartmentHead() && !$isStoresHead) {
             $hasOverdueReturn = \App\Http\Controllers\TempRequisitionerController::hasOverdueReturn(auth()->user()->department);
         }
 
@@ -1762,12 +1761,12 @@ class StoreRequisitionController extends Controller
      */
     public function mainAdminProcess(Request $request, $id)
     {
-        if (!in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Head of Stores'])) {
+        if (!auth()->user()->isMainAdminOrSub() && !auth()->user()->isDepartmentHead() && auth()->user()->role !== 'Head of Stores') {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
         // Permission gate: admin may revoke a dept head's ability to approve requisitions
-        if (auth()->user()->role === 'Department Head' && isset(auth()->user()->can_approve_requisition) && !auth()->user()->can_approve_requisition) {
+        if (auth()->user()->isDepartmentHead() && isset(auth()->user()->can_approve_requisition) && !auth()->user()->can_approve_requisition) {
             return response()->json(['success' => false, 'message' => 'You do not have permission to approve or decline requisition requests. Please contact your administrator.'], 403);
         }
 
@@ -1781,7 +1780,7 @@ class StoreRequisitionController extends Controller
 
         $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
         if (!$isStoresHead) {
-            $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+            $isBackup = (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
             if ($isBackup) {
                 if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
                     $isStoresHead = true;
@@ -1790,14 +1789,14 @@ class StoreRequisitionController extends Controller
         }
 
         $hasActiveStoresHead = \App\Models\User::where('role', 'Head of Stores')->where('is_active', true)->exists()
-            || \App\Models\User::where('role', 'Department Head')->whereIn('department', ['Stores', 'Store'])->where('is_active', true)->exists();
+            || \App\Models\User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare'])->whereIn('department', ['Stores', 'Store'])->where('is_active', true)->exists();
         $isStoresHOD = (auth()->user()->role === 'Head of Stores')
-            || (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Stores', 'Store']))
+            || (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Stores', 'Store']))
             || (auth()->user()->isMainAdminOrSub() && !$hasActiveStoresHead);
 
         // Check if the stores head is acting as the originating HOD for a Stores department request
         $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
-            || (auth()->user()->role === 'Department Head' && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending');
+            || (auth()->user()->isDepartmentHead() && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending');
 
         if (!$isStoresHead || $isActingAsOriginHOD) {
             // Originating department head check
@@ -1814,7 +1813,7 @@ class StoreRequisitionController extends Controller
             // Stores department head check
             $isAuthorizedStoresHOD = $isStoresHOD
                 || auth()->user()->isMainAdminOrSub()
-                || (auth()->user()->role === 'Department Head' && $isStoresHead);
+                || (auth()->user()->isDepartmentHead() && $isStoresHead);
             if (!$isAuthorizedStoresHOD) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized Stores HOD action.'], 400);
             }
@@ -1828,7 +1827,7 @@ class StoreRequisitionController extends Controller
 
         if ($request->status === 'approved') {
             $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
-                || (auth()->user()->role === 'Department Head' && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending');
+                || (auth()->user()->isDepartmentHead() && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending');
 
             $requiresStoresDeptHeadApproval = false;
             if (!$isStoresHead || $isActingAsOriginHOD) {
@@ -2447,7 +2446,7 @@ class StoreRequisitionController extends Controller
         $user = auth()->user();
         $isStoresHead = ($user->isMainAdminOrSub() || $user->role === 'Head of Stores' || strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0);
         if (!$isStoresHead) {
-            $isBackup = ($user->role === 'Department Head' && in_array($user->department, ['Human Resource Management Department', 'Welfare Department']));
+            $isBackup = ($user->isDepartmentHead() && in_array($user->department, ['Human Resource Management Department', 'Welfare Department']));
             if ($isBackup) {
                 if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
                     $isStoresHead = true;
@@ -2552,13 +2551,13 @@ class StoreRequisitionController extends Controller
      */
     public function trackRequests(Request $request)
     {
-        if (!in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Head of Stores'])) {
+        if (!auth()->user()->isMainAdminOrSub() && !auth()->user()->isDepartmentHead() && auth()->user()->role !== 'Head of Stores') {
             abort(403);
         }
 
         $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
         if (!$isStoresHead) {
-            $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+            $isBackup = (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
             if ($isBackup) {
                 if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
                     $isStoresHead = true;

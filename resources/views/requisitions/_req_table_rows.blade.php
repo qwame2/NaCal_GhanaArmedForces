@@ -71,9 +71,15 @@
                 </div>
             </td>
             <td data-label="Actions">
-                <a href="{{ $reviewUrl }}" target="_blank" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
-                    <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
-                </a>
+                @if($req->approval_status === 'approved' || $req->approval_status === 'declined')
+                    <a href="{{ $reviewUrl }}" target="_blank" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+                        <i data-lucide="check" style="width:13px;height:13px;"></i> Processed
+                    </a>
+                @else
+                    <a href="{{ $reviewUrl }}" target="_blank" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+                        <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
+                    </a>
+                @endif
             </td>
         </tr>
     @elseif($req instanceof \App\Models\ServiceSra)
@@ -162,9 +168,15 @@
                 </div>
             </td>
             <td data-label="Actions">
-                <button type="button" onclick="openSraOversightModal({{ $req->id }}, '{{ $sraStatus === 'admin_approved' ? 'stores' : 'admin' }}')" style="background: rgba(99,102,241,0.08); color: #4f46e5; border: 1.5px solid rgba(99,102,241,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#4f46e5'; this.style.color='white'; this.style.borderColor='#4f46e5';" onmouseout="this.style.background='rgba(99,102,241,0.08)'; this.style.color='#4f46e5'; this.style.borderColor='rgba(99,102,241,0.2)';">
-                    <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
-                </button>
+                @if($req->status === 'approved' || $req->status === 'declined')
+                    <button type="button" onclick="openSraOversightModal({{ $req->id }}, '{{ $sraStatus === 'admin_approved' ? 'stores' : 'admin' }}')" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+                        <i data-lucide="check" style="width:13px;height:13px;"></i> Processed
+                    </button>
+                @else
+                    <button type="button" onclick="openSraOversightModal({{ $req->id }}, '{{ $sraStatus === 'admin_approved' ? 'stores' : 'admin' }}')" style="background: rgba(99,102,241,0.08); color: #4f46e5; border: 1.5px solid rgba(99,102,241,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#4f46e5'; this.style.color='white'; this.style.borderColor='#4f46e5';" onmouseout="this.style.background='rgba(99,102,241,0.08)'; this.style.color='#4f46e5'; this.style.borderColor='rgba(99,102,241,0.2)';">
+                        <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
+                    </button>
+                @endif
             </td>
         </tr>
     @else
@@ -241,9 +253,29 @@
             </div>
         </td>
         <td data-label="Actions">
-            <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(99,102,241,0.08); color: #4f46e5; border: 1.5px solid rgba(99,102,241,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#4f46e5'; this.style.color='white'; this.style.borderColor='#4f46e5';" onmouseout="this.style.background='rgba(99,102,241,0.08)'; this.style.color='#4f46e5'; this.style.borderColor='rgba(99,102,241,0.2);'">
-                <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
-            </button>
+            @php
+                $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
+                if (!$isStoresHead) {
+                    $isBackup = (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+                    if ($isBackup) {
+                        if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
+                            $isStoresHead = true;
+                        }
+                    }
+                }
+                $isReqProcessed = $isStoresHead 
+                    ? ($req->main_admin_status === 'approved' || $req->main_admin_status === 'declined' || $req->status === 'approved' || $req->status === 'partially_approved' || $req->status === 'declined')
+                    : ($req->origin_admin_status === 'approved' || $req->origin_admin_status === 'declined' || $req->status === 'approved' || $req->status === 'partially_approved' || $req->status === 'declined');
+            @endphp
+            @if($isReqProcessed)
+                <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+                    <i data-lucide="check" style="width:13px;height:13px;"></i> Processed
+                </button>
+            @else
+                <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(99,102,241,0.08); color: #4f46e5; border: 1.5px solid rgba(99,102,241,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#4f46e5'; this.style.color='white'; this.style.borderColor='#4f46e5';" onmouseout="this.style.background='rgba(99,102,241,0.08)'; this.style.color='#4f46e5'; this.style.borderColor='rgba(99,102,241,0.2);'">
+                    <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
+                </button>
+            @endif
         </td>
     </tr>
     @endif

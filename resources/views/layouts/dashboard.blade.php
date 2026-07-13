@@ -89,7 +89,7 @@
         if (auth()->check()) {
             $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
             if (!$isStoresHead) {
-                $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+                $isBackup = (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
                 if ($isBackup) {
                     if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
                         $isStoresHead = true;
@@ -189,18 +189,12 @@
                         <span>Track Staff Requests</span>
                     </a>
                 </li>
-                @php
-                    $isOtherHOD = in_array(auth()->user()->role, ['Department Head', 'Dept Head HR', 'Head of Welfare'])
-                        && (strcasecmp(auth()->user()->department ?? '', 'Stores') !== 0 && strcasecmp(auth()->user()->department ?? '', 'Store') !== 0);
-                @endphp
-                @if($isOtherHOD)
                 <li class="nav-item">
                     <a href="{{ route('requisitions.index') }}" class="nav-link {{ request()->routeIs(['requisitions.index', 'requisitions.checkout']) ? 'active' : '' }}" data-tooltip="Make Request">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                         <span>Make Request</span>
                     </a>
                 </li>
-                @endif
                 @if((auth()->user()->isMainAdminOrSub() || (strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0)) && !$isActingStoresHead)
                 <li class="nav-item">
                     <a href="{{ route('receiveditems') }}" class="nav-link {{ request()->routeIs('receiveditems') ? 'active' : '' }}" data-tooltip="Received Items Log">
@@ -257,6 +251,20 @@
                 </li>
                 @endif
 
+                @if(auth()->user()->role === 'Requisitioner')
+                <li class="nav-item">
+                    <a href="{{ route('requisitions.index') }}" class="nav-link {{ request()->routeIs(['requisitions.index', 'requisitions.checkout']) ? 'active' : '' }}" data-tooltip="Make Request">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                        <span>Make Request</span>
+                        @php $approvedReqCount = $approvedRequisitionsCount ?? 0; @endphp
+                        <span id="sidebar-badge-approved-reqs"
+                              style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $approvedReqCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
+                              title="{{ $approvedReqCount }} requisition(s) approved — tap to confirm collection">
+                            {{ $approvedReqCount }}
+                        </span>
+                    </a>
+                </li>
+                @else
                 <li class="nav-item">
                     <a href="{{ route('personnel.requisitions') }}" class="nav-link {{ request()->routeIs('personnel.requisitions') ? 'active' : '' }}" data-tooltip="Store Requisitions">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -269,6 +277,7 @@
                         </span>
                     </a>
                 </li>
+                @endif
                 @php
                 /* Service SRA: determine the correct link based on role.
                  * Head of Stores = Main Admin OR role 'Head of Stores' OR is_admin flag.

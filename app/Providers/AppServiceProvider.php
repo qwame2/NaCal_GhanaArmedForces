@@ -373,7 +373,7 @@ class AppServiceProvider extends ServiceProvider
                     // Main Admin / Sub Main Admin count of pending requisitions awaiting review
                     $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
                     if (!$isStoresHead) {
-                        $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+                        $isBackup = (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
                         if ($isBackup) {
                             if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
                                 $isStoresHead = true;
@@ -381,9 +381,9 @@ class AppServiceProvider extends ServiceProvider
                         }
                     }
                     $hasActiveStoresHead = \App\Models\User::where('role', 'Head of Stores')->where('is_active', true)->exists()
-                        || \App\Models\User::where('role', 'Department Head')->whereIn('department', ['Stores', 'Store'])->where('is_active', true)->exists();
+                        || \App\Models\User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare'])->whereIn('department', ['Stores', 'Store'])->where('is_active', true)->exists();
                     $isStoresHOD = (auth()->user()->role === 'Head of Stores')
-                        || (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Stores', 'Store']))
+                        || (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Stores', 'Store']))
                         || (auth()->user()->isMainAdminOrSub() && !$hasActiveStoresHead);
 
                     $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);

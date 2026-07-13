@@ -3,7 +3,7 @@
 @php
     $isStoresHead = (auth()->user()->isMainAdminOrSub() || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
     if (!$isStoresHead) {
-        $isBackup = (auth()->user()->role === 'Department Head' && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
+        $isBackup = (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
         if ($isBackup) {
             $primaryOnline = \App\Models\User::where(function($q) {
                     $q->whereIn('role', ['Main Admin', 'Sub Main Admin'])

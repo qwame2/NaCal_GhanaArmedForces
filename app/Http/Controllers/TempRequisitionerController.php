@@ -116,7 +116,7 @@ class TempRequisitionerController extends Controller
     {
         $head = auth()->user();
 
-        if (!in_array($head->role, ['Department Head', 'Main Admin'])) {
+        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
@@ -147,7 +147,7 @@ class TempRequisitionerController extends Controller
     {
         $head = auth()->user();
 
-        if (!in_array($head->role, ['Department Head', 'Main Admin'])) {
+        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
@@ -189,7 +189,7 @@ class TempRequisitionerController extends Controller
     {
         $head = auth()->user();
 
-        if (!in_array($head->role, ['Department Head', 'Main Admin'])) {
+        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
@@ -218,7 +218,7 @@ class TempRequisitionerController extends Controller
     {
         $head = auth()->user();
 
-        if (!in_array($head->role, ['Department Head', 'Main Admin'])) {
+        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
@@ -261,7 +261,7 @@ class TempRequisitionerController extends Controller
     {
         $head = auth()->user();
 
-        if (!in_array($head->role, ['Department Head', 'Main Admin'])) {
+        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 

@@ -501,7 +501,7 @@ class AuthController extends Controller
             ]);
 
             // Route user based on their specific role
-            if ($user->isMainAdminOrSub() || $user->role === 'Department Head') {
+            if ($user->isMainAdminOrSub() || $user->isDepartmentHead()) {
                 return redirect()->route('main-admin.requisitions');
             } elseif ($user->role === 'Auditor') {
                 return redirect()->route('auditor.dashboard');
@@ -851,7 +851,7 @@ class AuthController extends Controller
         }
 
         $user = User::where('username', $username)->first();
-        if ($user && in_array($user->role, ['Department Head', 'Head of Stores', 'Main Admin'])) {
+        if ($user && ($user->isDepartmentHead() || in_array($user->role, ['Head of Stores', 'Main Admin', 'Sub Main Admin']))) {
             return response()->json(['eligible' => true]);
         }
 
@@ -883,7 +883,7 @@ class AuthController extends Controller
             return response()->json(['registered' => false]);
         }
 
-        $deptHead = User::whereIn('role', ['Department Head', 'Main Admin'])
+        $deptHead = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Main Admin', 'Sub Main Admin'])
             ->where('department', $department)
             ->where('is_active', true)
             ->where('registration_status', 'approved')
