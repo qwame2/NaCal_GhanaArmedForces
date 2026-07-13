@@ -1394,4 +1394,121 @@ class AdminController extends Controller
         
         return view('admin.suppliers', compact('suppliersRegistry'));
     }
+
+    public function generateDelegationOtp(\Illuminate\Http\Request $request)
+    {
+        if (!auth()->user()->is_admin || auth()->user()->role !== 'Head of Stores') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized. Only the Head of Stores can generate delegation OTP.'], 403);
+        }
+
+        $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $revocationTime = $request->input('revocation_time');
+
+        \App\Models\Setting::set('delegation_otp_code', $otp, 'string', 'security', 'Active delegation OTP code');
+
+        if (!empty($revocationTime)) {
+            try {
+                $expiresAt = \Carbon\Carbon::parse($revocationTime);
+                \App\Models\Setting::set('delegation_otp_expires_at', $expiresAt->toDateTimeString(), 'string', 'security', 'Expiration timestamp for delegation OTP');
+                $expiryText = $expiresAt->format('d/m/y H:i');
+            } catch (\Exception $e) {
+                return response()->json(['success' => false, 'message' => 'Invalid date/time format provided.'], 400);
+            }
+        } else {
+            \App\Models\Setting::set('delegation_otp_expires_at', '', 'string', 'security', 'Expiration timestamp for delegation OTP');
+            $expiryText = 'Active (Never Expires)';
+        }
+
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'GENERATE_DELEGATION_OTP',
+            'description' => "Head of Stores generated a new authority delegation OTP: {$otp}" . (!empty($revocationTime) ? " (auto-revocation scheduled at {$revocationTime})" : "") . ".",
+            'severity' => 'warning',
+            'ip_address' => $request->ip()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'otp' => $otp,
+            'expiry_text' => $expiryText
+        ]);
+    }
+
+    public function revokeDelegationOtp(\Illuminate\Http\Request $request)
+    {
+        if (!auth()->user()->is_admin || auth()->user()->role !== 'Head of Stores') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        \App\Models\Setting::set('delegation_otp_code', '', 'string', 'security', 'Active delegation OTP code');
+        \App\Models\Setting::set('delegation_otp_expires_at', '', 'string', 'security', 'Expiration timestamp for delegation OTP');
+
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'REVOKE_DELEGATION_OTP',
+            'description' => "Head of Stores revoked delegation OTP manually.",
+            'severity' => 'info',
+            'ip_address' => $request->ip()
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function claimDelegationOtp(\Illuminate\Http\Request $request)
+    {
+        if (auth()->user()->role !== 'Officer') {
+            return response()->json(['success' => false, 'message' => 'Only Store Officers can claim delegation access.'], 403);
+        }
+
+        $request->validate([
+            'otp' => 'required|string|size:6'
+        ]);
+
+        $otpCode = \App\Models\Setting::get('delegation_otp_code');
+        $expiresAtStr = \App\Models\Setting::get('delegation_otp_expires_at');
+
+        if (!$otpCode) {
+            return response()->json(['success' => false, 'message' => 'No active delegation OTP found or the code has already been used/revoked.'], 422);
+        }
+
+        if (!empty($expiresAtStr)) {
+            $expiresAt = \Carbon\Carbon::parse($expiresAtStr);
+            if (now()->gt($expiresAt)) {
+                // Auto-revoke code
+                \App\Models\Setting::set('delegation_otp_code', '', 'string', 'security', 'Active delegation OTP code');
+                \App\Models\Setting::set('delegation_otp_expires_at', '', 'string', 'security', 'Expiration timestamp for delegation OTP');
+                return response()->json(['success' => false, 'message' => 'Delegation OTP has expired. Please request a new one.'], 422);
+            }
+        }
+
+        if ($request->otp !== $otpCode) {
+            return response()->json(['success' => false, 'message' => 'Invalid OTP code. Please try again.'], 422);
+        }
+
+        $oldDelegatedId = \App\Models\Setting::get('delegated_approver_id');
+
+        // Set delegated approver to current user
+        \App\Models\Setting::set('delegated_approver_id', auth()->id(), 'integer', 'general', 'ID of the delegated Store Officer for approval authority');
+
+        // Clear OTP so it can't be claimed again by another officer
+        \App\Models\Setting::set('delegation_otp_code', '', 'string', 'security', 'Active delegation OTP code');
+        \App\Models\Setting::set('delegation_otp_expires_at', '', 'string', 'security', 'Expiration timestamp for delegation OTP');
+
+        // Log the delegation change
+        \App\Models\SystemLog::create([
+            'user_id' => auth()->id(),
+            'event_type' => 'SECURITY',
+            'action' => 'CLAIM_DELEGATED_AUTHORITY_OTP',
+            'description' => "Store Officer " . auth()->user()->name . " (@" . auth()->user()->username . ") claimed delegation authority via OTP.",
+            'severity' => 'warning',
+            'ip_address' => $request->ip()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Delegated access successfully claimed!'
+        ]);
+    }
 }

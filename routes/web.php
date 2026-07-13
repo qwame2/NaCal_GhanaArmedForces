@@ -688,6 +688,11 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/settings/update', [SettingsController::class, 'update'])->name('settings.update');
     Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
 
+    // Delegation OTP Routes
+    Route::post('/admin/delegation/generate-otp', [AdminController::class, 'generateDelegationOtp'])->name('admin.delegation.generate-otp');
+    Route::post('/admin/delegation/revoke-otp', [AdminController::class, 'revokeDelegationOtp'])->name('admin.delegation.revoke-otp');
+    Route::post('/officer/delegation/claim', [AdminController::class, 'claimDelegationOtp'])->name('officer.delegation.claim');
+
     Route::post('/settings/avatar', [SettingsController::class, 'updateAvatar'])->name('settings.avatar');
     Route::post('/settings/signature', [SettingsController::class, 'updateSignature'])->name('settings.signature');
     Route::post('/settings/signature/remove', [SettingsController::class, 'removeSignature'])->name('settings.signature.remove');

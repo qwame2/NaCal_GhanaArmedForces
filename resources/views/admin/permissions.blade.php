@@ -401,10 +401,60 @@
 
 {{-- ── Panel: Authority Delegation ── --}}
 @if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
-<div id="panel-delegation" class="pager-panel">
     @php
         $delegatedId = \App\Models\Setting::get('delegated_approver_id');
+        $currentOtp = \App\Models\Setting::get('delegation_otp_code');
+        $currentOtpExpires = \App\Models\Setting::get('delegation_otp_expires_at');
+        $hasActiveOtp = !empty($currentOtp) && (!$currentOtpExpires || now()->lt(\Carbon\Carbon::parse($currentOtpExpires)));
     @endphp
+
+    <!-- OTP Generation Card -->
+    <div class="cfg-card" style="margin-bottom: 2rem; border-left: 4px solid var(--primary); background: white; border-radius: 28px; border: 1px solid #f1f5f9; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); overflow: hidden;">
+        <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1.75rem 2rem; border-bottom: 1px solid #f8fafc; background: linear-gradient(to right, #fafbff, white); flex-wrap: wrap; gap: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 300px;">
+                <div class="cfg-icon-box" style="background: linear-gradient(135deg, var(--primary), #3b82f6); width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+                    <i data-lucide="key-round" style="width: 22px; height: 22px;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.1rem; font-weight: 950; color: #0f172a; margin: 0;">Generate Delegation OTP</h3>
+                    <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 600; margin: 2px 0 0;">Generate a short code for any Store Officer to instantly activate delegated authority. Once used, the code is consumed and cannot be reused.</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap;">
+                <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
+                    <label for="delegation-revocation-time" style="font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Auto-Revocation Time (Optional)</label>
+                    <input type="datetime-local" id="delegation-revocation-time" style="padding: 0.6rem 1rem; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 0.85rem; font-weight: 700; color: #1e293b; outline: none; background: white; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#cbd5e1'">
+                </div>
+                <button type="button" class="btn-cfg-save" onclick="generateDelegationOtp()" style="display: inline-flex; align-items: center; gap: 10px; padding: 0.85rem 2rem; font-size: 0.9rem; font-weight: 900; color: white; background: linear-gradient(135deg, var(--primary), #3b82f6); border: none; border-radius: 16px; cursor: pointer; box-shadow: 0 4px 18px rgba(79, 70, 229, 0.25); transition: all 0.3s ease;">
+                    <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
+                    Generate OTP
+                </button>
+            </div>
+        </div>
+        <div class="cfg-card-body" id="otp-display-container" style="display: {{ $hasActiveOtp ? 'block' : 'none' }}; padding: 2rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; background: #f8fafc; border-radius: 20px; padding: 1.5rem 2rem; border: 1px solid #f1f5f9;">
+                <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                    <span style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Active OTP Code:</span>
+                    <span id="active-otp-code" style="font-family: monospace; font-size: 2rem; font-weight: 900; color: var(--primary); letter-spacing: 4px; background: white; padding: 0.5rem 1.5rem; border-radius: 12px; border: 1.5px dashed var(--primary); display: inline-block;">{{ $currentOtp }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #475569;" id="otp-expiry-text">
+                        Status: <span id="otp-expiry-time" style="color: #10b981; font-weight: 800;">
+                            @if($currentOtpExpires)
+                                Revocation Scheduled: <span style="color: #ef4444;">{{ \Carbon\Carbon::parse($currentOtpExpires)->format('d/m/y H:i') }}</span>
+                            @else
+                                Active (Never Expires)
+                            @endif
+                        </span>
+                    </span>
+                    <button type="button" class="otp-preset-btn" onclick="revokeDelegationOtp()" style="padding: 0.6rem 1.2rem; background: #ef4444; border: 1.5px solid #ef4444; color: white; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.15); border-radius: 10px; font-size: 0.85rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease;">
+                        Revoke OTP
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="permissions-matrix-wrapper">
         <div class="matrix-table">
             <div class="m-header">
@@ -1080,6 +1130,73 @@
             row.classList.remove('syncing-row');
             checkbox.checked = !isChecked;
             alert('A network error occurred.');
+        });
+    }
+
+    function generateDelegationOtp() {
+        const revocationInput = document.getElementById('delegation-revocation-time');
+        const revocationTime = revocationInput ? revocationInput.value : '';
+
+        fetch('{{ route("admin.delegation.generate-otp", [], false) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ revocation_time: revocationTime })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('otp-display-container').style.display = 'block';
+                document.getElementById('active-otp-code').textContent = data.otp;
+                
+                // Update expiry display text dynamically
+                const expiryEl = document.getElementById('otp-expiry-time');
+                if (expiryEl) {
+                    if (data.expiry_text === 'Active (Never Expires)') {
+                        expiryEl.innerHTML = 'Active (Never Expires)';
+                        expiryEl.style.color = '#10b981';
+                    } else {
+                        expiryEl.innerHTML = 'Revocation Scheduled: <span style="color: #ef4444;">' + data.expiry_text + '</span>';
+                    }
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'OTP Generated',
+                    text: 'The delegation OTP code is ' + data.otp + '. Give this code to any Store Officer to claim delegation. The code can only be used once.',
+                    confirmButtonColor: '#4f46e5'
+                });
+            } else {
+                Swal.fire({ icon: 'error', title: 'Error', text: data.message, confirmButtonColor: '#4f46e5' });
+            }
+        })
+        .catch(() => {
+            Swal.fire({ icon: 'error', title: 'System Error', text: 'Failed to generate delegation OTP.', confirmButtonColor: '#4f46e5' });
+        });
+    }
+
+    function revokeDelegationOtp() {
+        fetch('{{ route("admin.delegation.revoke-otp", [], false) }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('otp-display-container').style.display = 'none';
+                Swal.fire({
+                    icon: 'success',
+                    title: 'OTP Revoked',
+                    text: 'Delegation OTP has been revoked successfully.',
+                    confirmButtonColor: '#4f46e5'
+                });
+            }
         });
     }
 
