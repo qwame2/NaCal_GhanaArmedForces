@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- PWA Manifest & Meta Tags -->
-    <link rel="manifest" href="{{ str_replace(['http:', 'https:'], '', asset('manifest.json')) }}">
+    <link rel="manifest" href="{{ str_replace('https:', 'http:', asset('manifest.json')) }}">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NACOC IMS">
-    <link rel="apple-touch-icon" href="{{ str_replace(['http:', 'https:'], '', asset('img/cropped_circle_image.png')) }}">
-    <link rel="icon" type="image/png" href="{{ str_replace(['http:', 'https:'], '', asset('img/cropped_circle_image.png')) }}">
+    <link rel="apple-touch-icon" href="{{ str_replace('https:', 'http:', asset('img/cropped_circle_image.png')) }}">
+    <link rel="icon" type="image/png" href="{{ str_replace('https:', 'http:', asset('img/cropped_circle_image.png')) }}">
     <title>@yield('title', 'NSIMs-Head of Stores')</title>
     <link href="{{ asset('css/css2.css') }}" rel="stylesheet">
     <script src="{{ asset('js/lucide.min.js') }}"></script>
@@ -1847,7 +1846,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register("{{ str_replace(['http:', 'https:'], '', asset('sw.js')) }}")
+                navigator.serviceWorker.register("{{ str_replace('https:', 'http:', asset('sw.js')) }}")
                     .then(reg => console.log('Service Worker registered successfully:', reg.scope))
                     .catch(err => console.log('Service Worker registration failed:', err));
             });
