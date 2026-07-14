@@ -820,9 +820,6 @@
 
     <!-- Quick Action Bar -->
     <div class="action-bar">
-        <button onclick="window.history.back()" class="btn btn-secondary">
-            Go Back
-        </button>
         <button onclick="window.print()" class="btn btn-primary">
             Print Official Voucher
         </button>

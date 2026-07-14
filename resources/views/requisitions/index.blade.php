@@ -4,6 +4,10 @@
     @php
         $isOtherHOD = in_array(auth()->user()->role, ['Department Head', 'Dept Head HR', 'Head of Welfare'])
             && (strcasecmp(auth()->user()->department ?? '', 'Stores') !== 0 && strcasecmp(auth()->user()->department ?? '', 'Store') !== 0);
+        $dgCategories = \App\Models\Setting::get('dg_approval_categories', []);
+        if (!is_array($dgCategories)) {
+            $dgCategories = [];
+        }
     @endphp
     <style>
         /* Hide standard top nav to maintain storefront custom header */
@@ -1440,6 +1444,88 @@
         .swal-field-wrapper:focus-within .swal-field-icon {
             color: var(--store-orange);
         }
+
+        /* Sticky Cart Bar */
+        .sticky-cart-bar {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(150%);
+            width: calc(100% - 4rem);
+            max-width: 600px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+            border-radius: 20px;
+            padding: 1rem 1.5rem;
+            z-index: 999;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sticky-cart-bar.active {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .sticky-cart-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .sticky-cart-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .sticky-cart-info strong {
+            color: var(--store-orange);
+            font-weight: 800;
+            font-size: 1.15rem;
+        }
+
+        .cart-icon-pulse {
+            color: var(--store-orange);
+            width: 20px;
+            height: 20px;
+            animation: pulse-icon 2s infinite;
+        }
+
+        .sticky-cart-btn {
+            background: linear-gradient(135deg, var(--store-orange) 0%, var(--store-orange-hover) 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.88rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+            transition: all 0.25s ease;
+        }
+
+        .sticky-cart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.45);
+        }
+
+        @keyframes pulse-icon {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -1458,8 +1544,8 @@
                     <img src="{{ asset('img/download-1.webp') }}" alt="Logo" style="width: 56px; height: 56px; object-fit: contain; border-radius: 12px;">
                 </div>
                 <div>
-                    <div class="brand-name">CENTRAL STORE</div>
-                    <div class="brand-subtitle">{{ \App\Models\Setting::get('organization_name', 'NACOC') }}</div>
+                    <div class="brand-name">{{ \App\Models\Setting::get('organization_name', 'NACOC') }}</div>
+                    <div class="brand-subtitle">Central Store</div>
                 </div>
             </a>
 
@@ -1483,11 +1569,6 @@
                     <i data-lucide="clock" style="width: 18px;"></i>
                 </a>
 
-                <button class="cart-toggle-btn" id="cart-nav-btn">
-                    <i data-lucide="shopping-cart" style="width: 16px;"></i>
-                    <span>My Request</span>
-                    <span class="cart-badge" id="cart-header-count">0</span>
-                </button>
 
                 <!-- User Profile Info -->
                 <div class="user-widget" onclick="openProfileCompletionModal()" style="cursor: pointer; transition: 0.2s;" onmouseover="this.style.borderColor='var(--store-orange)';" onmouseout="this.style.borderColor='var(--border-color)';" title="My Profile Details">
@@ -1514,14 +1595,14 @@
     <section class="store-hero">
         <div class="hero-banner">
             <div class="hero-content">
-                <div class="hero-badge">
-                    <i data-lucide="sparkles" style="width: 13px;"></i> Digital Storefront Active
-                </div>
+                
                 <h2 class="hero-title">Request Store Supplies & Inventory Instantly</h2>
                 <p class="hero-desc">Welcome to the NACOC modern central store catalog. Browse category inventories, add required items to your checkout cart, and submit digital requisitions directly to the stores department.</p>
                 <div class="hero-actions-container">
-                    <button class="hero-btn" onclick="document.getElementById('shop-grid-start').scrollIntoView({behavior:'smooth'})">
-                        <i data-lucide="shopping-bag" style="width: 16px;"></i> Start Requesting
+                    <button class="hero-btn" id="cart-nav-btn" style="position: relative; display: inline-flex; align-items: center; gap: 8px;">
+                        <i data-lucide="shopping-cart" style="width: 16px;"></i>
+                        <span>My Request</span>
+                        <span class="cart-badge" id="cart-header-count" style="border: none; position: static;">0</span>
                     </button>
                     <a href="{{ route('requisitions.history') }}" class="hero-btn hero-btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
                         <i data-lucide="clock" style="width: 16px;"></i> Truck Items
@@ -1640,7 +1721,14 @@
                             </div>
 
                             <div class="product-body">
-                                <span class="product-cat-tag">{{ $catName }}</span>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 0.5rem;">
+                                    <span class="product-cat-tag" style="margin-bottom: 0;">{{ $catName }}</span>
+                                    @if(in_array($item->ledge_category, $dgCategories))
+                                        <span style="font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #8b5cf6; background: rgba(139, 92, 246, 0.08); padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(139, 92, 246, 0.18);" title="This item requires Director General's approval prior to collection.">
+                                            <i data-lucide="shield-alert" style="width: 11px; height: 11px; color: #8b5cf6;"></i> Needs DG's Approval
+                                        </span>
+                                    @endif
+                                </div>
                                 <h4 class="product-title" title="{{ $item->description }}">{{ $item->description }}</h4>
 
                                 <div class="product-meta-row">
@@ -1694,6 +1782,20 @@
 
     <!-- Autocomplete dropdown container (legacy support) -->
     <div id="itemAutocomplete" style="display:none;position:fixed;background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.12);z-index:9999;max-height:220px;overflow-y:auto;min-width:260px;"></div>
+
+    <!-- Sticky Cart Nav Container -->
+    <div id="sticky-cart-bar" class="sticky-cart-bar">
+        <div class="sticky-cart-container">
+            <div class="sticky-cart-info">
+                <i data-lucide="shopping-bag" class="cart-icon-pulse"></i>
+                <span>You have selected <strong id="sticky-cart-count">0</strong> items</span>
+            </div>
+            <button id="sticky-cart-btn" class="sticky-cart-btn">
+                <span>View My Request</span>
+                <i data-lucide="arrow-right" style="width: 16px;"></i>
+            </button>
+        </div>
+    </div>
 
     <script>
         // E-COMMERCE CORE STATE & LOGIC
@@ -1811,7 +1913,18 @@
 
         function updateCartUI() {
             const cartCountBadge = document.getElementById('cart-header-count');
-            cartCountBadge.textContent = cart.length;
+            if (cartCountBadge) cartCountBadge.textContent = cart.length;
+
+            const stickyCount = document.getElementById('sticky-cart-count');
+            const stickyBar = document.getElementById('sticky-cart-bar');
+            if (stickyCount && stickyBar) {
+                stickyCount.textContent = cart.length;
+                if (cart.length > 0) {
+                    stickyBar.classList.add('active');
+                } else {
+                    stickyBar.classList.remove('active');
+                }
+            }
         }
 
         // Event Listeners on Mount
@@ -1840,8 +1953,7 @@
 
 
             // Cart Redirect to checkout page
-            const cartNavBtn = document.getElementById('cart-nav-btn');
-            cartNavBtn.addEventListener('click', (e) => {
+            const handleCartCheckout = (e) => {
                 e.preventDefault();
                 const user = {
                     name: '{{ addslashes(auth()->user()->name) }}',
@@ -1867,7 +1979,16 @@
                     return;
                 }
                 window.location.href = "{{ route('requisitions.checkout') }}";
-            });
+            };
+
+            const cartNavBtn = document.getElementById('cart-nav-btn');
+            if (cartNavBtn) {
+                cartNavBtn.addEventListener('click', handleCartCheckout);
+            }
+            const stickyCartBtn = document.getElementById('sticky-cart-btn');
+            if (stickyCartBtn) {
+                stickyCartBtn.addEventListener('click', handleCartCheckout);
+            }
 
             @if(session('show_profile_modal') || empty(auth()->user()->name) || auth()->user()->name === auth()->user()->username || empty(auth()->user()->phone) || empty(auth()->user()->role) || empty(auth()->user()->service_number))
                 setTimeout(() => {

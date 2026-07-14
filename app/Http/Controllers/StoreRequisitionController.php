@@ -1483,7 +1483,7 @@ class StoreRequisitionController extends Controller
         $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
         $isStoresHOD = (auth()->user()->role === 'Head of Stores')
             || (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Stores', 'Store']))
-            || (auth()->user()->isMainAdminOrSub() && !$hasActiveStoresHead)
+            || auth()->user()->isMainAdminOrSub()
             || $isBackupActive;
 
         if ($request->filled('status')) {
@@ -1493,11 +1493,22 @@ class StoreRequisitionController extends Controller
                           ->where(function($q) use ($isStoresHOD, $isBackupActive) {
                               $q->whereRaw('1 = 0');
                               if ($isStoresHOD) {
+                                  // Requisitions pending Stores HOD approval
                                   $q->orWhere(function($q2) {
                                       $q2->where('origin_admin_status', 'approved')
                                          ->where('main_admin_status', 'pending');
                                   });
                               }
+                              // Requisitions where Stores HOD approved (or bypassed) and any required DG approval is approved, awaiting final stores checkout
+                              // (Visible to all Stores staff since they perform final checkout/issuance)
+                              $q->orWhere(function($q2) {
+                                  $q2->where('origin_admin_status', 'approved')
+                                     ->where('main_admin_status', 'approved')
+                                     ->where(function($q3) {
+                                         $q3->where('requires_dg_approval', false)
+                                            ->orWhere('dg_status', 'approved');
+                                     });
+                              });
                               if ($isStoresHOD && !$isBackupActive) {
                                   $q->orWhere(function($q2) {
                                       $q2->where('origin_admin_status', 'pending')
@@ -1527,49 +1538,49 @@ class StoreRequisitionController extends Controller
                 if ($isStoresHead) {
                     if ($isBackupActive) {
                         $query->where(function($q) {
-                            $q->where('main_admin_status', 'approved')
+                            $q->whereIn('status', ['approved', 'partially_approved'])
                               ->orWhere(function($q2) {
                                   $q2->where('department', auth()->user()->department)
-                                     ->where('origin_admin_status', 'approved');
+                                     ->whereIn('status', ['approved', 'partially_approved']);
                               });
                         });
                     } else {
-                        $query->where('main_admin_status', 'approved');
+                        $query->whereIn('status', ['approved', 'partially_approved']);
                     }
                 } else {
-                    $query->where('origin_admin_status', 'approved');
+                    $query->whereIn('status', ['approved', 'partially_approved']);
                 }
             } elseif ($request->status === 'declined') {
                 if ($isStoresHead) {
                     if ($isBackupActive) {
                         $query->where(function($q) {
-                            $q->where('main_admin_status', 'declined')
+                            $q->where('status', 'declined')
                               ->orWhere(function($q2) {
                                   $q2->where('department', auth()->user()->department)
-                                     ->where('origin_admin_status', 'declined');
+                                     ->where('status', 'declined');
                               });
                         });
                     } else {
-                        $query->where('main_admin_status', 'declined');
+                        $query->where('status', 'declined');
                     }
                 } else {
-                    $query->where('origin_admin_status', 'declined');
+                    $query->where('status', 'declined');
                 }
             } elseif ($request->status === 'history') {
                 if ($isStoresHead) {
                     if ($isBackupActive) {
                         $query->where(function($q) {
-                            $q->whereIn('main_admin_status', ['approved', 'declined'])
+                            $q->whereIn('status', ['approved', 'partially_approved', 'declined'])
                               ->orWhere(function($q2) {
                                   $q2->where('department', auth()->user()->department)
-                                     ->whereIn('origin_admin_status', ['approved', 'declined']);
+                                     ->whereIn('status', ['approved', 'partially_approved', 'declined']);
                               });
                         });
                     } else {
-                        $query->whereIn('main_admin_status', ['approved', 'declined']);
+                        $query->whereIn('status', ['approved', 'partially_approved', 'declined']);
                     }
                 } else {
-                    $query->whereIn('origin_admin_status', ['approved', 'declined']);
+                    $query->whereIn('status', ['approved', 'partially_approved', 'declined']);
                 }
             }
         } else {
@@ -1578,11 +1589,22 @@ class StoreRequisitionController extends Controller
                       ->where(function($q) use ($isStoresHOD, $isBackupActive) {
                           $q->whereRaw('1 = 0');
                           if ($isStoresHOD) {
+                              // Requisitions pending Stores HOD approval
                               $q->orWhere(function($q2) {
                                   $q2->where('origin_admin_status', 'approved')
                                      ->where('main_admin_status', 'pending');
                               });
                           }
+                          // Requisitions where Stores HOD approved (or bypassed) and any required DG approval is approved, awaiting final stores checkout
+                          // (Visible to all Stores staff since they perform final checkout/issuance)
+                          $q->orWhere(function($q2) {
+                              $q2->where('origin_admin_status', 'approved')
+                                 ->where('main_admin_status', 'approved')
+                                 ->where(function($q3) {
+                                     $q3->where('requires_dg_approval', false)
+                                        ->orWhere('dg_status', 'approved');
+                                 });
+                          });
                           if ($isStoresHOD && !$isBackupActive) {
                               $q->orWhere(function($q2) {
                                   $q2->where('origin_admin_status', 'pending')
@@ -1700,18 +1722,21 @@ class StoreRequisitionController extends Controller
                 $statsData = StoreRequisition::selectRaw("
                     SUM(CASE WHEN status = 'pending' AND (
                         (origin_admin_status = 'approved' AND main_admin_status = 'pending')
+                        OR (origin_admin_status = 'approved' AND main_admin_status = 'approved' AND (requires_dg_approval = 0 OR dg_status = 'approved'))
                         OR (department = ? AND (origin_admin_status = 'pending' OR alternative_status = 'proposed'))
                     ) THEN 1 ELSE 0 END) as pending,
-                    SUM(CASE WHEN main_admin_status = 'approved' OR (department = ? AND origin_admin_status = 'approved') THEN 1 ELSE 0 END) as approved,
-                    SUM(CASE WHEN main_admin_status = 'declined' OR (department = ? AND origin_admin_status = 'declined') THEN 1 ELSE 0 END) as declined
+                    SUM(CASE WHEN status IN ('approved', 'partially_approved') OR (department = ? AND status IN ('approved', 'partially_approved')) THEN 1 ELSE 0 END) as approved,
+                    SUM(CASE WHEN status = 'declined' OR (department = ? AND status = 'declined') THEN 1 ELSE 0 END) as declined
                 ", [auth()->user()->department, auth()->user()->department, auth()->user()->department])->first();
             } else {
                 $statsData = StoreRequisition::selectRaw("
                     SUM(CASE WHEN store_requisitions.status = 'pending' AND (
-                        (store_requisitions.origin_admin_status = 'approved' AND store_requisitions.main_admin_status = 'pending') " . ($isStoresHOD ? "OR (store_requisitions.origin_admin_status = 'pending' AND store_requisitions.department IN ('Stores', 'Store'))" : "") . "
+                        (store_requisitions.origin_admin_status = 'approved' AND store_requisitions.main_admin_status = 'pending' AND " . ($isStoresHOD ? "1 = 1" : "1 = 0") . ")
+                        OR (store_requisitions.origin_admin_status = 'approved' AND store_requisitions.main_admin_status = 'approved' AND (store_requisitions.requires_dg_approval = 0 OR store_requisitions.dg_status = 'approved'))
+                        " . ($isStoresHOD ? "OR (store_requisitions.origin_admin_status = 'pending' AND store_requisitions.department IN ('Stores', 'Store'))" : "") . "
                     ) THEN 1 ELSE 0 END) as pending,
-                    SUM(CASE WHEN store_requisitions.main_admin_status = 'approved' THEN 1 ELSE 0 END) as approved,
-                    SUM(CASE WHEN store_requisitions.main_admin_status = 'declined' THEN 1 ELSE 0 END) as declined
+                    SUM(CASE WHEN store_requisitions.status IN ('approved', 'partially_approved') THEN 1 ELSE 0 END) as approved,
+                    SUM(CASE WHEN store_requisitions.status = 'declined' THEN 1 ELSE 0 END) as declined
                 ")->first();
             }
 
@@ -1724,8 +1749,8 @@ class StoreRequisitionController extends Controller
             $statsData = StoreRequisition::where('department', auth()->user()->department)
                 ->selectRaw("
                     SUM(CASE WHEN (status = 'pending' AND origin_admin_status = 'pending') OR (status = 'pending' AND alternative_status = 'proposed') THEN 1 ELSE 0 END) as pending,
-                    SUM(CASE WHEN origin_admin_status = 'approved' THEN 1 ELSE 0 END) as approved,
-                    SUM(CASE WHEN origin_admin_status = 'declined' THEN 1 ELSE 0 END) as declined
+                    SUM(CASE WHEN status IN ('approved', 'partially_approved') THEN 1 ELSE 0 END) as approved,
+                    SUM(CASE WHEN status = 'declined' THEN 1 ELSE 0 END) as declined
                 ")->first();
 
             $stats = [
@@ -1799,7 +1824,7 @@ class StoreRequisitionController extends Controller
         $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
         $isStoresHOD = (auth()->user()->role === 'Head of Stores')
             || (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Stores', 'Store']))
-            || (auth()->user()->isMainAdminOrSub() && !$hasActiveStoresHead)
+            || auth()->user()->isMainAdminOrSub()
             || $isBackupActive;
 
         // Check if the stores head is acting as the originating HOD for a Stores department request

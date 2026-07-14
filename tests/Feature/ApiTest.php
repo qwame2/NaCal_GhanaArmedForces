@@ -526,27 +526,21 @@ class ApiTest extends TestCase
         $this->assertEquals('approved', $req2->origin_admin_status);
         $this->assertEquals('pending', $req2->main_admin_status);
 
-        // A. Verify Main Admin does NOT see Case 2 requisition in pending reviews
+        // A. Verify Main Admin DOES see Case 2 requisition in pending reviews (since they are Head of Admin)
         $responseMainAdmin = $this->actingAs($mainAdmin)->get(route('main-admin.requisitions'));
         $responseMainAdmin->assertStatus(200);
-        $responseMainAdmin->assertDontSee("Special store use");
+        $responseMainAdmin->assertSee("Special store use");
 
         // B. Verify Head of Stores DOES see Case 2 requisition in pending reviews (since it is pending main_admin_status)
         $responseHeadOfStores = $this->actingAs($headOfStores)->get(route('main-admin.requisitions'));
         $responseHeadOfStores->assertStatus(200);
         $responseHeadOfStores->assertSee("Special store use");
 
-        // C. Try to process/approve as Main Admin (should be unauthorized/forbidden because they are not the HOD fallback)
+        // C. Main Admin processes/approves as Main Admin (should be successful because they are the Head of Admin)
         $responseProcessMain = $this->actingAs($mainAdmin)->post(route('main-admin.requisitions.process', $req2->id), [
             'status' => 'approved',
         ]);
-        $responseProcessMain->assertStatus(400);
-
-        // D. Head of Stores approves the Stores Head part for Case 2
-        $responseProcessHead2Second = $this->actingAs($headOfStores)->post(route('main-admin.requisitions.process', $req2->id), [
-            'status' => 'approved',
-        ]);
-        $responseProcessHead2Second->assertStatus(200);
+        $responseProcessMain->assertStatus(200);
 
         $req2->refresh();
         $this->assertEquals('approved', $req2->origin_admin_status);

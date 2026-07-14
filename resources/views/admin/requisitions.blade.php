@@ -1798,7 +1798,7 @@
             </button>
             <button id="submitDecisionBtn" disabled
                 style="background:#94a3b8;color:white;border:none;padding:.75rem 2.25rem;border-radius:12px;font-weight:800;cursor:not-allowed;display:flex;align-items:center;gap:8px;font-size:.88rem;" title="Cannot commit decision: requisition is still awaiting prior approvals.">
-                <i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision
+                <i data-lucide="send" style="width:16px;"></i> Approve for final Collection
             </button>`;
             } else {
                 document.getElementById('modalFooter').innerHTML = `
@@ -1807,7 +1807,7 @@
             </button>
             <button onclick="submitDecision()" id="submitDecisionBtn"
                 style="background:#4f46e5;color:white;border:none;padding:.75rem 2.25rem;border-radius:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.88rem;box-shadow:0 8px 20px rgba(79, 70, 229, 0.25);transition:0.2s;" onmouseover="this.style.background='#4338ca'" onmouseout="this.style.background='#4f46e5'">
-                <i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision
+                <i data-lucide="send" style="width:16px;"></i> Approve for final Collection
             </button>`;
             }
             updateStatusBar();
@@ -2073,14 +2073,14 @@
                 submitBtn.style.opacity = '0.55';
                 submitBtn.style.cursor = 'not-allowed';
                 submitBtn.title = 'Cannot commit decision: requisition is still awaiting prior approvals.';
-                submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision`;
+                submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Approve for final Collection`;
             } else if (currentReqData && currentReqData.alternative_status === 'proposed') {
                 submitBtn.disabled = true;
                 submitBtn.style.opacity = '0.5';
                 submitBtn.style.cursor = 'not-allowed';
                 submitBtn.innerHTML = `<i data-lucide="clock" style="width:16px;"></i> Awaiting Response from ${currentReqData.department}`;
             } else {
-                submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision`;
+                submitBtn.innerHTML = `<i data-lucide="send" style="width:16px;"></i> Approve for final Collection`;
             }
         }
 
@@ -2256,7 +2256,7 @@
         } else {
             showToast('Error', data.message || 'Failed to process decision.', 'error');
             btn.disabled = false;
-            btn.innerHTML = '<i data-lucide="send" style="width:16px;"></i> Commit Requisition Decision';
+            btn.innerHTML = '<i data-lucide="send" style="width:16px;"></i> Approve for final Collection';
             lucide.createIcons();
         }
     }

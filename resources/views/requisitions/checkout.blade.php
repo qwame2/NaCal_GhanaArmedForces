@@ -595,8 +595,8 @@
                     <img src="{{ asset('img/download-1.webp') }}" alt="Logo" style="width: 56px; height: 56px; object-fit: contain; border-radius: 12px;">
                 </div>
                 <div>
-                    <div class="brand-name">CENTRAL STORE</div>
-                    <div class="brand-subtitle">{{ \App\Models\Setting::get('organization_name', 'NACOC') }}</div>
+                    <div class="brand-name">{{ \App\Models\Setting::get('organization_name', 'NACOC') }}</div>
+                    <div class="brand-subtitle">Central Store</div>
                 </div>
             </a>
 
@@ -639,7 +639,7 @@
         <section class="checkout-card">
             <h3 class="checkout-title">
                 <span><i data-lucide="shopping-bag" style="width: 24px; vertical-align: middle; margin-right: 4px;"></i></span>
-                Items in Requisition Bag (<span id="cart-items-count">0</span>)
+                Items in List (<span id="cart-items-count">0</span>)
             </h3>
 
             <div class="cart-item-list" id="cart-items-container">

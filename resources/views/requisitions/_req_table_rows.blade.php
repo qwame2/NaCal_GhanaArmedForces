@@ -263,9 +263,24 @@
                         }
                     }
                 }
-                $isReqProcessed = $isStoresHead 
-                    ? ($req->main_admin_status === 'approved' || $req->main_admin_status === 'declined' || $req->status === 'approved' || $req->status === 'partially_approved' || $req->status === 'declined')
-                    : ($req->origin_admin_status === 'approved' || $req->origin_admin_status === 'declined' || $req->status === 'approved' || $req->status === 'partially_approved' || $req->status === 'declined');
+                $isReqProcessed = false;
+                if ($isStoresHead) {
+                    if ($req->status !== 'pending') {
+                        $isReqProcessed = true;
+                    } else {
+                        if ($req->main_admin_status === 'pending') {
+                            $isReqProcessed = false;
+                        } else {
+                            if ($req->requires_dg_approval && $req->dg_status !== 'approved') {
+                                $isReqProcessed = true;
+                            } else {
+                                $isReqProcessed = false;
+                            }
+                        }
+                    }
+                } else {
+                    $isReqProcessed = ($req->origin_admin_status === 'approved' || $req->origin_admin_status === 'declined' || $req->status === 'approved' || $req->status === 'partially_approved' || $req->status === 'declined');
+                }
             @endphp
             @if($isReqProcessed)
                 <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">

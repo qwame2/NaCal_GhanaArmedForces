@@ -795,6 +795,12 @@
         }
     }
 
+    @media(max-width: 1024px) {
+        .workflow-info-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+
     /* ── Stores Dept Head Workflow Redesign ── */
     .workflow-card-modern {
         background: white;
@@ -1089,7 +1095,7 @@
                     </div>
 
                     <!-- Workflow Explainer Graphic and Logic Info Card -->
-                    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
+                    <div style="display: grid; grid-template-columns: 1fr 480px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
 
                         <!-- Sleek Gradient Alert Card -->
                         <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.03) 0%, rgba(99, 102, 241, 0.01) 100%);
@@ -1569,6 +1575,7 @@
 
         const res = await fetch(`{{ url('/admin/requisitions') }}/${id}/show`);
         const data = await res.json();
+        window.currentReqData = data;
 
         // Apply priority border accents
         const modalBox = document.querySelector('.modal-box');
@@ -1786,9 +1793,18 @@
         </div>`;
 
         // Check if processed already
-        let isProcessed = isStoresHead 
-            ? (data.main_admin_status !== 'pending' || data.origin_admin_status === 'pending') 
-            : (data.origin_admin_status !== 'pending' && data.alternative_status !== 'proposed');
+        let isProcessed = false;
+        if (isStoresHead) {
+            if (data.status !== 'pending') {
+                isProcessed = true;
+            } else if (data.origin_admin_status === 'pending') {
+                isProcessed = true;
+            } else if (data.main_admin_status === 'approved' && data.requires_dg_approval && data.dg_status !== 'approved') {
+                isProcessed = true;
+            }
+        } else {
+            isProcessed = (data.origin_admin_status !== 'pending' && data.alternative_status !== 'proposed');
+        }
         let decisionHtml = '';
 
         if (isStoresHead && data.origin_admin_status === 'pending') {
@@ -1801,6 +1817,21 @@
                     <div>
                         <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Pending HOD Approval</h4>
                         <p style="margin:2px 0 0; font-size:0.75rem; color:var(--text-muted); font-weight:600;">This requisition must be approved by the originating department head first.</p>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        if (isStoresHead && data.main_admin_status === 'approved' && data.requires_dg_approval && data.dg_status !== 'approved') {
+            decisionHtml = `
+            <div style="background: rgba(139, 92, 246, 0.05); border: 1.5px dashed rgba(139, 92, 246, 0.25); border-radius: 16px; padding: 1.25rem; margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width:34px; height:34px; background:rgba(139, 92, 246, 0.1); color:#8b5cf6; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="clock" style="width:16px; height:16px; color:#8b5cf6;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Pending DG Approval</h4>
+                        <p style="margin:2px 0 0; font-size:0.75rem; color:var(--text-muted); font-weight:600;">This requisition must be approved by the Director General (DG) before final checkout.</p>
                     </div>
                 </div>
             </div>`;
@@ -2118,7 +2149,10 @@
                 });
 
                 try {
-                    const res = await fetch(`{{ url('/main-admin/requisitions') }}/${currentReqId}/process`, {
+                    const url = (window.currentReqData && window.currentReqData.main_admin_status === 'approved')
+                        ? `{{ url('/admin/requisitions') }}/${currentReqId}/process`
+                        : `{{ url('/main-admin/requisitions') }}/${currentReqId}/process`;
+                    const res = await fetch(url, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

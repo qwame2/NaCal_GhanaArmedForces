@@ -669,7 +669,12 @@
     .otp-preset-btn.active {
         background: #4f46e5;
         color: white;
-        border-color: #4f46e5;
+    }
+
+    @media(max-width: 1024px) {
+        .workflow-info-grid {
+            grid-template-columns: 1fr !important;
+        }
     }
 
     /* ── Stores Dept Head Workflow Redesign ── */
@@ -1051,7 +1056,7 @@
                         </div>
 
                         <!-- Workflow Explainer Graphic and Logic Info Card -->
-                        <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
+                        <div style="display: grid; grid-template-columns: 1fr 480px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
 
                             <!-- Sleek Gradient Alert Card -->
                             <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.03) 0%, rgba(99, 102, 241, 0.01) 100%);
@@ -1204,7 +1209,7 @@
                         </div>
 
                         <!-- Workflow Explainer Graphic and Logic Info Card -->
-                        <div style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
+                        <div style="display: grid; grid-template-columns: 1fr 480px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
 
                             <!-- Sleek Gradient Alert Card -->
                             <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(99, 102, 241, 0.01) 100%);

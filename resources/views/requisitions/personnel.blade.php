@@ -692,7 +692,7 @@
                             </span>
                             @elseif(auth()->user()->can_operate_logistics)
                             <button onclick="confirmCollection({{ $req->id }}, this)"
-                                style="background:rgba(16,185,129,.1);color:#10b981;border:none;padding:.5rem 1rem;border-radius:10px;font-weight:800;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;" onmouseover="this.style.background='#10b981';this.style.color='white'" onmouseout="this.style.background='rgba(16,185,129,.1)';this.style.color='#10b981'">
+                                style="background:rgba(239, 68, 68, 0.1);color:#ef4444;border:none;padding:.5rem 1rem;border-radius:10px;font-weight:800;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;" onmouseover="this.style.background='#ef4444';this.style.color='white'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)';this.style.color='#ef4444'">
                                 <i data-lucide="package-check" style="width:14px;"></i> Confirm Collection
                             </button>
                             @else
@@ -1334,12 +1334,13 @@
         
         if (nameVal && contactVal && locationVal && staffIdVal) {
             confirmBtn.disabled = false;
-            confirmBtn.style.background = '#10b981';
-            confirmBtn.style.color = 'white';
+            confirmBtn.style.background = 'rgba(239, 68, 68, 0.1)';
+            confirmBtn.style.color = '#ef4444';
+            confirmBtn.style.border = '1px solid rgba(239, 68, 68, 0.2)';
             confirmBtn.style.cursor = 'pointer';
-            confirmBtn.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.25)';
-            confirmBtn.onmouseover = function() { this.style.background = '#059669'; };
-            confirmBtn.onmouseout = function() { this.style.background = '#10b981'; };
+            confirmBtn.style.boxShadow = '0 8px 20px rgba(239, 68, 68, 0.15)';
+            confirmBtn.onmouseover = function() { this.style.background = '#ef4444'; this.style.color = 'white'; };
+            confirmBtn.onmouseout = function() { this.style.background = 'rgba(239, 68, 68, 0.1)'; this.style.color = '#ef4444'; };
         } else {
             confirmBtn.disabled = true;
             confirmBtn.style.background = '#cbd5e1';

@@ -188,9 +188,24 @@
                             }
                         }
                     }
-                    $isReqProcessed = $isStoresHead 
-                        ? ($req->main_admin_status === 'approved' || $req->main_admin_status === 'declined' || $req->status === 'approved' || $req->status === 'partially_approved' || $req->status === 'declined')
-                        : ($req->origin_admin_status === 'approved' || $req->origin_admin_status === 'declined' || $req->status === 'approved' || $req->status === 'partially_approved' || $req->status === 'declined');
+                $isReqProcessed = false;
+                if ($isStoresHead) {
+                    if ($req->status !== 'pending') {
+                        $isReqProcessed = true;
+                    } else {
+                        if ($req->main_admin_status === 'pending') {
+                            $isReqProcessed = false;
+                        } else {
+                            if ($req->requires_dg_approval && $req->dg_status !== 'approved') {
+                                $isReqProcessed = true;
+                            } else {
+                                $isReqProcessed = false;
+                            }
+                        }
+                    }
+                } else {
+                    $isReqProcessed = ($req->origin_admin_status === 'approved' || $req->origin_admin_status === 'declined' || $req->status === 'approved' || $req->status === 'partially_approved' || $req->status === 'declined');
+                }
                 @endphp
                 @if($isReqProcessed)
                     <button onclick="openRequisitionModal({{ $req->id }})"
