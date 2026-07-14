@@ -1480,21 +1480,24 @@ class StoreRequisitionController extends Controller
 
         $hasActiveStoresHead = \App\Models\User::where('role', 'Head of Stores')->where('is_active', true)->exists()
             || \App\Models\User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare'])->whereIn('department', ['Stores', 'Store'])->where('is_active', true)->exists();
+        $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
         $isStoresHOD = (auth()->user()->role === 'Head of Stores')
             || (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Stores', 'Store']))
-            || (auth()->user()->isMainAdminOrSub() && !$hasActiveStoresHead);
-
-        $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
+            || (auth()->user()->isMainAdminOrSub() && !$hasActiveStoresHead)
+            || $isBackupActive;
 
         if ($request->filled('status')) {
             if ($request->status === 'pending') {
                 if ($isStoresHead) {
                     $query->where('status', 'pending')
                           ->where(function($q) use ($isStoresHOD, $isBackupActive) {
-                              $q->where(function($q2) {
-                                  $q2->where('origin_admin_status', 'approved')
-                                     ->where('main_admin_status', 'pending');
-                              });
+                              $q->whereRaw('1 = 0');
+                              if ($isStoresHOD) {
+                                  $q->orWhere(function($q2) {
+                                      $q2->where('origin_admin_status', 'approved')
+                                         ->where('main_admin_status', 'pending');
+                                  });
+                              }
                               if ($isStoresHOD && !$isBackupActive) {
                                   $q->orWhere(function($q2) {
                                       $q2->where('origin_admin_status', 'pending')
@@ -1573,10 +1576,13 @@ class StoreRequisitionController extends Controller
             if ($isStoresHead) {
                 $query->where('status', 'pending')
                       ->where(function($q) use ($isStoresHOD, $isBackupActive) {
-                          $q->where(function($q2) {
-                              $q2->where('origin_admin_status', 'approved')
-                                 ->where('main_admin_status', 'pending');
-                          });
+                          $q->whereRaw('1 = 0');
+                          if ($isStoresHOD) {
+                              $q->orWhere(function($q2) {
+                                  $q2->where('origin_admin_status', 'approved')
+                                     ->where('main_admin_status', 'pending');
+                              });
+                          }
                           if ($isStoresHOD && !$isBackupActive) {
                               $q->orWhere(function($q2) {
                                   $q2->where('origin_admin_status', 'pending')
@@ -1790,9 +1796,11 @@ class StoreRequisitionController extends Controller
 
         $hasActiveStoresHead = \App\Models\User::where('role', 'Head of Stores')->where('is_active', true)->exists()
             || \App\Models\User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare'])->whereIn('department', ['Stores', 'Store'])->where('is_active', true)->exists();
+        $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
         $isStoresHOD = (auth()->user()->role === 'Head of Stores')
             || (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Stores', 'Store']))
-            || (auth()->user()->isMainAdminOrSub() && !$hasActiveStoresHead);
+            || (auth()->user()->isMainAdminOrSub() && !$hasActiveStoresHead)
+            || $isBackupActive;
 
         // Check if the stores head is acting as the originating HOD for a Stores department request
         $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
@@ -1812,7 +1820,6 @@ class StoreRequisitionController extends Controller
         } else {
             // Stores department head check
             $isAuthorizedStoresHOD = $isStoresHOD
-                || auth()->user()->isMainAdminOrSub()
                 || (auth()->user()->isDepartmentHead() && $isStoresHead);
             if (!$isAuthorizedStoresHOD) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized Stores HOD action.'], 400);

@@ -18,7 +18,9 @@ return new class extends Migration
         });
 
         // Expand the status enum to include 'auditor_pending'
-        DB::statement("ALTER TABLE service_sras MODIFY COLUMN status ENUM('pending','auditor_pending','admin_approved','approved','declined') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE service_sras MODIFY COLUMN status ENUM('pending','auditor_pending','admin_approved','approved','declined') DEFAULT 'pending'");
+        }
     }
 
     public function down(): void
@@ -27,6 +29,8 @@ return new class extends Migration
             $table->dropColumn(['auditor_status', 'auditor_approved_by', 'auditor_approved_at', 'auditor_notes']);
         });
 
-        DB::statement("ALTER TABLE service_sras MODIFY COLUMN status ENUM('pending','admin_approved','approved','declined') DEFAULT 'pending'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE service_sras MODIFY COLUMN status ENUM('pending','admin_approved','approved','declined') DEFAULT 'pending'");
+        }
     }
 };

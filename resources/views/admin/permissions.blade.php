@@ -49,16 +49,16 @@
         Registration Requests
         <span class="tab-badge" id="reg-badge" style="display: {{ $pendingUsers->count() > 0 ? 'inline-block' : 'none' }}">{{ $pendingUsers->count() }}</span>
     </button>
-    <button class="pager-tab" id="tab-role-history" onclick="switchTab('role-history')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-        Role &amp; Privilege History
-    </button>
     @if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
     <button class="pager-tab" id="tab-delegation" onclick="switchTab('delegation')">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         Authority Delegation
     </button>
     @endif
+    <button class="pager-tab" id="tab-role-history" onclick="switchTab('role-history')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        Role &amp; Privilege History
+    </button>
 </div>
 
 {{-- ── Panel: Store Officers ── --}}
@@ -78,6 +78,14 @@
             <div class="m-body" id="storeOfficersBody">
                 @include('admin.partials.store_officers')
             </div>
+        </div>
+        
+        <!-- Pagination Controls -->
+        <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; background: white; border-radius: 0 0 28px 28px;">
+            <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+                Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
+            </div>
+            <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;"></div>
         </div>
     </div>
 </div>
@@ -146,6 +154,14 @@
                 </div>
                 @endforeach
             </div>
+        </div>
+        
+        <!-- Pagination Controls -->
+        <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; background: white; border-radius: 0 0 28px 28px;">
+            <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+                Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
+            </div>
+            <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;"></div>
         </div>
     </div>
 </div>
@@ -233,6 +249,14 @@
                 @endforelse
             </div>
         </div>
+        
+        <!-- Pagination Controls -->
+        <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; background: white; border-radius: 0 0 28px 28px;">
+            <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+                Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
+            </div>
+            <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;"></div>
+        </div>
     </div>
 </div>
 
@@ -283,13 +307,148 @@
                 @endforelse
             </div>
         </div>
+        
+        <!-- Pagination Controls -->
+        <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; background: white; border-radius: 0 0 28px 28px;">
+            <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+                Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
+            </div>
+            <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;"></div>
+        </div>
     </div>
 </div>
 
 {{-- ── Panel: Registration Requests ── --}}
 <div id="panel-registrations" class="pager-panel">
     @include('admin.partials.pending_registrations')
+    
+    <!-- Pagination Controls -->
+    <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; background: white; border-radius: 28px; box-shadow: 0 4px 24px rgba(0,0,0,0.04);">
+        <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+            Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
+        </div>
+        <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;"></div>
+    </div>
 </div>
+
+{{-- ── Panel: Authority Delegation ── --}}
+@if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
+<div id="panel-delegation" class="pager-panel">
+    @php
+        $delegatedId = \App\Models\Setting::get('delegated_approver_id');
+        $currentOtp = \App\Models\Setting::get('delegation_otp_code');
+        $currentOtpExpires = \App\Models\Setting::get('delegation_otp_expires_at');
+        $hasActiveOtp = !empty($currentOtp) && (!$currentOtpExpires || now()->lt(\Carbon\Carbon::parse($currentOtpExpires)));
+    @endphp
+
+    <!-- OTP Generation Card -->
+    <div class="cfg-card" style="margin-bottom: 2rem; border-left: 4px solid var(--primary); background: white; border-radius: 28px; border: 1px solid #f1f5f9; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); overflow: hidden;">
+        <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1.75rem 2rem; border-bottom: 1px solid #f8fafc; background: linear-gradient(to right, #fafbff, white); flex-wrap: wrap; gap: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 300px;">
+                <div class="cfg-icon-box" style="background: linear-gradient(135deg, var(--primary), #3b82f6); width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+                    <i data-lucide="key-round" style="width: 22px; height: 22px;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.1rem; font-weight: 950; color: #0f172a; margin: 0;">Generate Delegation OTP</h3>
+                    <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 600; margin: 2px 0 0;">Generate a short code for any Store Officer to instantly activate delegated authority. Once used, the code is consumed and cannot be reused.</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap;">
+                <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
+                    <label for="delegation-revocation-time" style="font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Auto-Revocation Time (Optional)</label>
+                    <input type="datetime-local" id="delegation-revocation-time" style="padding: 0.6rem 1rem; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 0.85rem; font-weight: 700; color: #1e293b; outline: none; background: white; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#cbd5e1'">
+                </div>
+                <button type="button" class="btn-cfg-save" onclick="generateDelegationOtp()" style="display: inline-flex; align-items: center; gap: 10px; padding: 0.85rem 2rem; font-size: 0.9rem; font-weight: 900; color: white; background: linear-gradient(135deg, var(--primary), #3b82f6); border: none; border-radius: 16px; cursor: pointer; box-shadow: 0 4px 18px rgba(79, 70, 229, 0.25); transition: all 0.3s ease;">
+                    <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
+                    Generate OTP
+                </button>
+            </div>
+        </div>
+        <div class="cfg-card-body" id="otp-display-container" style="display: {{ $hasActiveOtp ? 'block' : 'none' }}; padding: 2rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; background: #f8fafc; border-radius: 20px; padding: 1.5rem 2rem; border: 1px solid #f1f5f9;">
+                <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                    <span style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Active OTP Code:</span>
+                    <span id="active-otp-code" style="font-family: monospace; font-size: 2rem; font-weight: 900; color: var(--primary); letter-spacing: 4px; background: white; padding: 0.5rem 1.5rem; border-radius: 12px; border: 1.5px dashed var(--primary); display: inline-block;">{{ $currentOtp }}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #475569;" id="otp-expiry-text">
+                        Status: <span id="otp-expiry-time" style="color: #10b981; font-weight: 800;">
+                            @if($currentOtpExpires)
+                                Revocation Scheduled: <span style="color: #ef4444;">{{ \Carbon\Carbon::parse($currentOtpExpires)->format('d/m/y H:i') }}</span>
+                            @else
+                                Active 
+                            @endif
+                        </span>
+                    </span>
+                    <button type="button" class="otp-preset-btn" onclick="revokeDelegationOtp()" style="padding: 0.6rem 1.2rem; background: #ef4444; border: 1.5px solid #ef4444; color: white; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.15); border-radius: 10px; font-size: 0.85rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease;">
+                        Revoke OTP
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="permissions-matrix-wrapper">
+        <div class="matrix-table">
+            <div class="m-header">
+                <div class="col-id">Store Officer</div>
+                <div class="col-ctrl">Delegate Approval Authority</div>
+                <div class="col-stat">Delegation Status</div>
+            </div>
+
+            <div class="m-body" id="delegationMatrixBody">
+                @forelse($storeOfficers->where('is_active', true) as $user)
+                <div class="m-row" data-user-id="{{ $user->id }}">
+                    <div class="col-id">
+                        <div class="m-avatar">
+                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
+                            <span class="m-pulse online"></span>
+                        </div>
+                        <div class="m-identity">
+                            <h4 class="m-name">{{ $user->name }}</h4>
+                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
+                                <span>@ {{ $user->username }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-ctrl">
+                        <div class="toggle-group-wrap">
+                            <label class="normal-toggle" title="Toggle Approval Delegation">
+                                <input type="checkbox" class="delegation-toggle-switch" onchange="toggleDelegationState(this)" {{ $delegatedId == $user->id ? 'checked' : '' }}>
+                                <div class="toggle-slider"></div>
+                            </label>
+                            <div class="toggle-text">
+                                <span class="t-main">{{ $delegatedId == $user->id ? 'Active' : 'Inactive' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-stat">
+                        <div class="badge-status {{ $delegatedId == $user->id ? 'authorized' : 'revoked' }}">
+                            <i data-lucide="{{ $delegatedId == $user->id ? 'shield-check' : 'shield-alert' }}"></i>
+                            {{ $delegatedId == $user->id ? 'DELEGATED' : 'STANDBY' }}
+                        </div>
+                    </div>
+                </div>
+                @empty
+                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
+                    No active store officers available for delegation.
+                </div>
+                @endforelse
+            </div>
+        </div>
+        
+        <!-- Pagination Controls -->
+        <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; background: white; border-radius: 0 0 28px 28px;">
+            <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+                Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
+            </div>
+            <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;"></div>
+        </div>
+    </div>
+</div>
+@endif
 
 {{-- ── Panel: Role & Privilege History ── --}}
 <div id="panel-role-history" class="pager-panel">
@@ -300,7 +459,7 @@
         </h3>
         
         @php
-            $embeddedRoleHistory = \App\Models\UserRoleHistory::with(['user', 'changer'])->orderBy('created_at', 'desc')->take(100)->get();
+            $embeddedRoleHistory = \App\Models\UserRoleHistory::with(['user', 'changer'])->orderBy('created_at', 'desc')->take(250)->get();
         @endphp
 
         @if($embeddedRoleHistory->isEmpty())
@@ -374,7 +533,7 @@
                                                             <span style="font-weight: 800; color: {{ $newVal ? '#10b981' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
                                                         @else
                                                             <span style="font-weight: 800;">
-                                                                <span style="color: {{ $oldVal ? '#10b981' : '#dc2626' }}; text-decoration: line-through; opacity: 0.6;">{{ $oldVal ? 'Allowed' : 'Blocked' }}</span>
+                                                                <span style="color: {{ $oldVal ? '#10b981' : '#dc2626' }}; text-decoration: text-decoration; opacity: 0.6;">{{ $oldVal ? 'Allowed' : 'Blocked' }}</span>
                                                                 <span style="color: #64748b; margin: 0 1px;">&rarr;</span>
                                                                 <span style="color: {{ $newVal ? '#10b981' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
                                                             </span>
@@ -395,119 +554,19 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Pagination Controls -->
+            <div class="table-pagination" style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 1.25rem; border-top: 1px solid #edf2f7; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;">
+                <div class="pag-info" style="font-size: 0.85rem; color: #64748b; font-weight: 600;">
+                    Showing <span class="pag-start">1</span> to <span class="pag-end">10</span> of <span class="pag-total">0</span> entries
+                </div>
+                <div class="pag-buttons" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <!-- Buttons will be dynamically inserted here -->
+                </div>
+            </div>
         @endif
     </div>
 </div>
-
-{{-- ── Panel: Authority Delegation ── --}}
-@if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
-    @php
-        $delegatedId = \App\Models\Setting::get('delegated_approver_id');
-        $currentOtp = \App\Models\Setting::get('delegation_otp_code');
-        $currentOtpExpires = \App\Models\Setting::get('delegation_otp_expires_at');
-        $hasActiveOtp = !empty($currentOtp) && (!$currentOtpExpires || now()->lt(\Carbon\Carbon::parse($currentOtpExpires)));
-    @endphp
-
-    <!-- OTP Generation Card -->
-    <div class="cfg-card" style="margin-bottom: 2rem; border-left: 4px solid var(--primary); background: white; border-radius: 28px; border: 1px solid #f1f5f9; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); overflow: hidden;">
-        <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1.75rem 2rem; border-bottom: 1px solid #f8fafc; background: linear-gradient(to right, #fafbff, white); flex-wrap: wrap; gap: 1.5rem;">
-            <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 300px;">
-                <div class="cfg-icon-box" style="background: linear-gradient(135deg, var(--primary), #3b82f6); width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
-                    <i data-lucide="key-round" style="width: 22px; height: 22px;"></i>
-                </div>
-                <div>
-                    <h3 style="font-size: 1.1rem; font-weight: 950; color: #0f172a; margin: 0;">Generate Delegation OTP</h3>
-                    <p style="font-size: 0.78rem; color: #94a3b8; font-weight: 600; margin: 2px 0 0;">Generate a short code for any Store Officer to instantly activate delegated authority. Once used, the code is consumed and cannot be reused.</p>
-                </div>
-            </div>
-            <div style="display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap;">
-                <div style="display: flex; flex-direction: column; gap: 6px; text-align: left;">
-                    <label for="delegation-revocation-time" style="font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Auto-Revocation Time (Optional)</label>
-                    <input type="datetime-local" id="delegation-revocation-time" style="padding: 0.6rem 1rem; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 0.85rem; font-weight: 700; color: #1e293b; outline: none; background: white; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#cbd5e1'">
-                </div>
-                <button type="button" class="btn-cfg-save" onclick="generateDelegationOtp()" style="display: inline-flex; align-items: center; gap: 10px; padding: 0.85rem 2rem; font-size: 0.9rem; font-weight: 900; color: white; background: linear-gradient(135deg, var(--primary), #3b82f6); border: none; border-radius: 16px; cursor: pointer; box-shadow: 0 4px 18px rgba(79, 70, 229, 0.25); transition: all 0.3s ease;">
-                    <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
-                    Generate OTP
-                </button>
-            </div>
-        </div>
-        <div class="cfg-card-body" id="otp-display-container" style="display: {{ $hasActiveOtp ? 'block' : 'none' }}; padding: 2rem;">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; background: #f8fafc; border-radius: 20px; padding: 1.5rem 2rem; border: 1px solid #f1f5f9;">
-                <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-                    <span style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Active OTP Code:</span>
-                    <span id="active-otp-code" style="font-family: monospace; font-size: 2rem; font-weight: 900; color: var(--primary); letter-spacing: 4px; background: white; padding: 0.5rem 1.5rem; border-radius: 12px; border: 1.5px dashed var(--primary); display: inline-block;">{{ $currentOtp }}</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-                    <span style="font-size: 0.85rem; font-weight: 700; color: #475569;" id="otp-expiry-text">
-                        Status: <span id="otp-expiry-time" style="color: #10b981; font-weight: 800;">
-                            @if($currentOtpExpires)
-                                Revocation Scheduled: <span style="color: #ef4444;">{{ \Carbon\Carbon::parse($currentOtpExpires)->format('d/m/y H:i') }}</span>
-                            @else
-                                Active (Never Expires)
-                            @endif
-                        </span>
-                    </span>
-                    <button type="button" class="otp-preset-btn" onclick="revokeDelegationOtp()" style="padding: 0.6rem 1.2rem; background: #ef4444; border: 1.5px solid #ef4444; color: white; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.15); border-radius: 10px; font-size: 0.85rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease;">
-                        Revoke OTP
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="permissions-matrix-wrapper">
-        <div class="matrix-table">
-            <div class="m-header">
-                <div class="col-id">Store Officer</div>
-                <div class="col-ctrl">Delegate Approval Authority</div>
-                <div class="col-stat">Delegation Status</div>
-            </div>
-
-            <div class="m-body" id="delegationMatrixBody">
-                @forelse($storeOfficers->where('is_active', true) as $user)
-                <div class="m-row" data-user-id="{{ $user->id }}">
-                    <div class="col-id">
-                        <div class="m-avatar">
-                            <img src="{{ $user->avatar ? asset('storage/' . $user->avatar) : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2364748b'><circle cx='12' cy='8' r='4'/><path d='M12 14c-4.42 0-8 3.58-8 8h16c0-4.42-3.58-8-8-8z'/></svg>" }}" alt="">
-                            <span class="m-pulse online"></span>
-                        </div>
-                        <div class="m-identity">
-                            <h4 class="m-name">{{ $user->name }}</h4>
-                            <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
-                                <span>@ {{ $user->username }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-ctrl">
-                        <div class="toggle-group-wrap">
-                            <label class="normal-toggle" title="Toggle Approval Delegation">
-                                <input type="checkbox" class="delegation-toggle-switch" onchange="toggleDelegationState(this)" {{ $delegatedId == $user->id ? 'checked' : '' }}>
-                                <div class="toggle-slider"></div>
-                            </label>
-                            <div class="toggle-text">
-                                <span class="t-main">{{ $delegatedId == $user->id ? 'Active' : 'Inactive' }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-stat">
-                        <div class="badge-status {{ $delegatedId == $user->id ? 'authorized' : 'revoked' }}">
-                            <i data-lucide="{{ $delegatedId == $user->id ? 'shield-check' : 'shield-alert' }}"></i>
-                            {{ $delegatedId == $user->id ? 'DELEGATED' : 'STANDBY' }}
-                        </div>
-                    </div>
-                </div>
-                @empty
-                <div style="padding: 3rem; text-align: center; color: #94a3b8; font-weight: 600; background: white;">
-                    No active store officers available for delegation.
-                </div>
-                @endforelse
-            </div>
-        </div>
-    </div>
-</div>
-@endif
 
 <style>
     .main-wrapper > *:not(header) {
@@ -1388,7 +1447,15 @@
                     const newIds = Array.from(temp.querySelectorAll('.reg-card')).map(card => card.id).join(',');
                     
                     if (currentIds !== newIds) {
+                        const pagControls = panel.querySelector('.table-pagination');
                         panel.innerHTML = data.html;
+                        if (pagControls) {
+                            panel.appendChild(pagControls);
+                        }
+                        if (window.tablePaginators) {
+                            const p = window.tablePaginators.find(x => x.panelId === 'panel-registrations');
+                            if (p) p.refresh();
+                        }
                         if (window.lucide) {
                             lucide.createIcons();
                         }
@@ -1605,6 +1672,11 @@
             } else if (hasRows && emptyEl) {
                 emptyEl.remove();
             }
+
+            if (window.tablePaginators) {
+                const p = window.tablePaginators.find(x => x.panelId === 'panel-store-officers');
+                if (p) p.refresh();
+            }
         })
         .catch(() => {});
     }
@@ -1614,6 +1686,143 @@
     setInterval(pollStoreOfficers, 10000);
 
     document.addEventListener('DOMContentLoaded', () => {
+        // General Pagination Helper for all Tabs
+        window.tablePaginators = [];
+        function initializeTablePagination(panelId, rowSelector, rowsPerPage) {
+            const panel = document.getElementById(panelId);
+            if (!panel) return;
+
+            const controlsWrapper = panel.querySelector('.table-pagination');
+            if (!controlsWrapper) return;
+
+            const startSpan = controlsWrapper.querySelector('.pag-start');
+            const endSpan = controlsWrapper.querySelector('.pag-end');
+            const totalSpan = controlsWrapper.querySelector('.pag-total');
+            const buttonsContainer = controlsWrapper.querySelector('.pag-buttons');
+
+            let currentPage = 1;
+
+            function refreshPagination() {
+                let rows = Array.from(panel.querySelectorAll(rowSelector));
+                if (panelId === 'panel-role-history') {
+                    rows = Array.from(panel.querySelectorAll('tbody tr'));
+                }
+
+                const totalRows = rows.length;
+                const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+                if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+
+                const start = (currentPage - 1) * rowsPerPage;
+                const end = Math.min(start + rowsPerPage, totalRows);
+
+                rows.forEach((row, idx) => {
+                    row.style.display = (idx >= start && idx < end) ? '' : 'none';
+                });
+
+                if (startSpan) startSpan.textContent = totalRows === 0 ? 0 : start + 1;
+                if (endSpan) endSpan.textContent = end;
+                if (totalSpan) totalSpan.textContent = totalRows;
+
+                if (buttonsContainer) {
+                    buttonsContainer.innerHTML = '';
+                    controlsWrapper.style.display = 'flex';
+                    if (totalPages <= 1) {
+                        buttonsContainer.style.display = 'none';
+                        return;
+                    }
+                    buttonsContainer.style.display = 'flex';
+
+                    // Prev Button
+                    const prevBtn = document.createElement('button');
+                    prevBtn.type = 'button';
+                    prevBtn.style.padding = '0.5rem 1rem';
+                    prevBtn.style.fontSize = '0.8rem';
+                    prevBtn.style.fontWeight = '700';
+                    prevBtn.style.borderRadius = '10px';
+                    prevBtn.style.background = currentPage === 1 ? '#f1f5f9' : 'white';
+                    prevBtn.style.color = currentPage === 1 ? '#94a3b8' : '#475569';
+                    prevBtn.style.border = '1.5px solid #cbd5e1';
+                    prevBtn.style.cursor = currentPage === 1 ? 'not-allowed' : 'pointer';
+                    prevBtn.style.transition = 'all 0.2s';
+                    prevBtn.disabled = currentPage === 1;
+                    prevBtn.innerHTML = '&larr; Prev';
+                    prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; refreshPagination(); } };
+                    buttonsContainer.appendChild(prevBtn);
+
+                    // Numbers
+                    let startPage = Math.max(1, currentPage - 2);
+                    let endPage = Math.min(totalPages, startPage + 4);
+                    if (endPage - startPage < 4) {
+                        startPage = Math.max(1, endPage - 4);
+                    }
+
+                    for (let i = startPage; i <= endPage; i++) {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.style.width = '36px';
+                        btn.style.height = '36px';
+                        btn.style.display = 'inline-flex';
+                        btn.style.alignItems = 'center';
+                        btn.style.justifyContent = 'center';
+                        btn.style.borderRadius = '10px';
+                        btn.style.fontSize = '0.85rem';
+                        btn.style.fontWeight = '800';
+                        btn.style.cursor = 'pointer';
+                        btn.style.transition = 'all 0.2s';
+                        
+                        if (i === currentPage) {
+                            btn.style.background = 'var(--primary)';
+                            btn.style.color = 'white';
+                            btn.style.border = '1.5px solid var(--primary)';
+                        } else {
+                            btn.style.background = 'white';
+                            btn.style.color = '#475569';
+                            btn.style.border = '1.5px solid #cbd5e1';
+                        }
+
+                        btn.onclick = () => { currentPage = i; refreshPagination(); };
+                        btn.textContent = i;
+                        buttonsContainer.appendChild(btn);
+                    }
+
+                    // Next Button
+                    const nextBtn = document.createElement('button');
+                    nextBtn.type = 'button';
+                    nextBtn.style.padding = '0.5rem 1rem';
+                    nextBtn.style.fontSize = '0.8rem';
+                    nextBtn.style.fontWeight = '700';
+                    nextBtn.style.borderRadius = '10px';
+                    nextBtn.style.background = currentPage === totalPages ? '#f1f5f9' : 'white';
+                    nextBtn.style.color = currentPage === totalPages ? '#94a3b8' : '#475569';
+                    nextBtn.style.border = '1.5px solid #cbd5e1';
+                    nextBtn.style.cursor = currentPage === totalPages ? 'not-allowed' : 'pointer';
+                    nextBtn.style.transition = 'all 0.2s';
+                    nextBtn.disabled = currentPage === totalPages;
+                    nextBtn.innerHTML = 'Next &rarr;';
+                    nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; refreshPagination(); } };
+                    buttonsContainer.appendChild(nextBtn);
+                }
+            }
+
+            window.tablePaginators.push({
+                panelId: panelId,
+                refresh: refreshPagination
+            });
+
+            refreshPagination();
+        }
+
+        // Initialize pagination on all panels
+        initializeTablePagination('panel-store-officers', '.m-row', 10);
+        initializeTablePagination('panel-departments', '.m-row', 10);
+        initializeTablePagination('panel-dept-heads', '.m-row', 10);
+        initializeTablePagination('panel-director-generals', '.m-row', 10);
+        initializeTablePagination('panel-registrations', '.reg-card', 10);
+        initializeTablePagination('panel-delegation', '.m-row', 10);
+        initializeTablePagination('panel-role-history', 'tr', 10);
+
+
         if (window.lucide) lucide.createIcons();
 
         // Auto-open tab from server session (after approve/decline redirect)

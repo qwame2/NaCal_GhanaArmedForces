@@ -565,6 +565,9 @@ class AuthController extends Controller
      */
     public function markOffline(Request $request)
     {
+        if (Auth::check()) {
+            Auth::user()->update(['is_online' => false]);
+        }
         return response()->json(['status' => 'success']);
     }
 

@@ -76,10 +76,10 @@
                         <select name="role" required class="reg-select">
                             <option value="">-- Assign Role --</option>
                             <option value="Main Admin">Head of Admin(Authorizer)</option>
-                            <option value="Sub Main Admin">Delegators(Authorizer)</option>
+                            <option value="Sub Main Admin">Delegator(Authorizer)</option>
                             <option value="Officer">Store Officer</option>
-                            <option value="Department Head">Departmental Heads</option>
-                            <option value="Auditor">Auditors</option>
+                            <option value="Department Head">Departmental Head</option>
+                            <option value="Auditor">Auditor</option>
                             <option value="Director General">Director General</option>
                         </select>
                         <div class="reg-select-icon">
