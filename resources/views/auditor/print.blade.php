@@ -233,10 +233,12 @@
                         @php
                             $roleDisplay = 'System Automated';
                             if ($log->user) {
-                                if ($log->user->is_admin) {
-                                    $roleDisplay = 'Head of Stores';
-                                } elseif ($log->user->role === 'Main Admin') {
+                                if ($log->user->role === 'Main Admin') {
                                     $roleDisplay = 'Head of Admin(Authorizer)';
+                                } elseif ($log->user->role === 'Head of Stores') {
+                                    $roleDisplay = 'Head of Stores';
+                                } elseif ($log->user->is_admin) {
+                                    $roleDisplay = 'Head of Stores';
                                 } elseif ($log->user->role === 'Department Head') {
                                     if ($log->user->department === 'Human Resource Management Department') {
                                         $roleDisplay = 'Dept Head(HR)';

@@ -118,7 +118,9 @@ class StrictAuditLogging
                         }
                     }
 
-                    $description = str_replace(['Main Admin', 'Head of Admin'], 'Head of Admin(Authorizer)', $description);
+                    $description = str_replace('Head of Admin(Authorizer)', 'PLACEHOLDER_HOA_AUTH', $description);
+                    $description = str_replace(['Main Admin', 'Head of Admin'], 'PLACEHOLDER_HOA_AUTH', $description);
+                    $description = str_replace('PLACEHOLDER_HOA_AUTH', 'Head of Admin(Authorizer)', $description);
 
                     \App\Models\SystemLog::create([
                         'user_id' => auth()->id(),

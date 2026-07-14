@@ -32,8 +32,10 @@ class SystemLog extends Model
     public function getFriendlyDescriptionAttribute()
     {
         $desc = $this->description;
-        $desc = str_replace(['Main Admin', 'Head of Admin'], 'Head of Admin(Authorizer)', $desc);
-        $desc = str_replace('Head of Admin(Authorizer)(Authorizer)', 'Head of Admin(Authorizer)', $desc);
+        $desc = str_replace('Head of Admin(Authorizer)', 'PLACEHOLDER_HOA_AUTH', $desc);
+        $desc = str_replace(['Main Admin', 'Head of Admin'], 'PLACEHOLDER_HOA_AUTH', $desc);
+        $desc = str_replace('PLACEHOLDER_HOA_AUTH', 'Head of Admin(Authorizer)', $desc);
+        $desc = preg_replace('/(?:\(Authorizer\))+/', '(Authorizer)', $desc);
         $desc = str_replace('submitted an update to', 'updated', $desc);
         $desc = str_replace('removed an entry from', 'deleted an item from', $desc);
         $desc = str_replace('modified records in', 'modified', $desc);
