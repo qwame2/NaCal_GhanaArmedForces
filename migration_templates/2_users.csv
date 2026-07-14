@@ -1,4 +1,0 @@
-name,username,role,department,phone,email,service_number,rank,is_admin,is_active,can_add_inventory,can_operate_logistics,can_generate_reports,password,Column1
-Adom Boateng,adom.b,Officer,Store,2.33244E+11,adom@nacal.gov.gh,NA-2022-012,SNCO,0,1,1,1,0,TempPass123!,
-Commander Albert Kwesi,albert.k,Department Head,Enforcement,2.33207E+11,albert.k@nacal.gov.gh,NA-2015-003,Officer,0,1,0,1,1,AuthSec99#,
-Justice Osei,justice.o,Main Admin,Stores,2.33262E+11,justice@nacal.gov.gh,NA-2018-044,SNCO,1,1,1,1,1,AdminRoot1!,
