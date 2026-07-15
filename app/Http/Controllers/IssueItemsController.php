@@ -73,7 +73,8 @@ class IssueItemsController extends Controller
                 'issuances.created_at',
                 'store_requisitions.collector_name',
                 'confirming_officers.name as confirming_officer_name'
-            );
+            )
+            ->selectRaw('issued_items.quantity + COALESCE((SELECT SUM(returned_qty) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id), 0) as original_quantity');
 
         if ($request->filled('search')) {
             $search = trim($request->search);
@@ -249,6 +250,7 @@ class IssueItemsController extends Controller
                 'store_requisitions.collector_name',
                 'confirming_officers.name as confirming_officer_name'
             )
+            ->selectRaw('issued_items.quantity + COALESCE((SELECT SUM(returned_qty) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id), 0) as original_quantity')
             ->orderBy('issuances.created_at', 'desc')
             ->get();
 

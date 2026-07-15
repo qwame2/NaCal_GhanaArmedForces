@@ -467,12 +467,10 @@
                 <div style="font-size: .7rem; font-weight: 800; color: var(--dg-primary); text-transform: uppercase; letter-spacing: .12em;">
                     Director General Command Center
                 </div>
-                <span style="background: rgba(99, 102, 241, 0.15); color: var(--dg-primary); font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; padding: 2px 8px; border-radius: 9999px; border: 1px solid rgba(99, 102, 241, 0.25);">
-                    DG ONLY
-                </span>
+                
             </div>
             <h1 style="font-size: 1.75rem; font-weight: 900; color: var(--text-main); letter-spacing: -.03em; margin: 0;">
-                Director General Oversight Terminal
+                Director General Command Center
             </h1>
 
         </div>
@@ -510,11 +508,11 @@
 
         <div class="dg-card">
             <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(245,158,11,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="clock" style="color: #f59e0b; width: 16px;"></i></div>
-                Active Loans (Temp)
+                <div style="width: 32px; height: 32px; background: rgba(139,92,246,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="shopping-bag" style="color: #8b5cf6; width: 16px;"></i></div>
+                Total Items Issued
             </div>
-            <div class="stat-number">{{ number_format($activeLoansCount) }}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Unreturned temporary checkouts</div>
+            <div class="stat-number">{{ number_format($totalItemsIssued) }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Total number of items disbursed</div>
         </div>
 
         <div class="dg-card">
@@ -529,7 +527,7 @@
         <div class="dg-card">
             <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
                 <div style="width: 32px; height: 32px; background: rgba(59,130,246,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="users" style="color: #3b82f6; width: 16px;"></i></div>
-                Approved Personnel
+                Approved Officers
             </div>
             <div class="stat-number">{{ number_format($totalActiveUsers) }}</div>
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Active accounts in the system</div>
@@ -570,7 +568,7 @@
     <div class="dg-tabs-container">
         <button id="tab-btn-stock-oversight" class="dg-tab-btn active" onclick="switchDGTab('dg-stock-oversight-tab', this)">
             <i data-lucide="archive" style="width: 16px;"></i>
-            Item Stock Balances
+            Items Received
         </button>
         <button id="tab-btn-staff-reqs" class="dg-tab-btn" onclick="switchDGTab('dg-staff-reqs-tab', this)">
             <i data-lucide="file-text" style="width: 16px;"></i>
@@ -588,7 +586,11 @@
         </button>
         <button id="tab-btn-user-presence" class="dg-tab-btn" onclick="switchDGTab('dg-user-presence-tab', this)">
             <i data-lucide="users" style="width: 16px;"></i>
-            User Presence Overview
+            Approved Officers Overview
+        </button>
+        <button id="tab-btn-issued-returned" class="dg-tab-btn" onclick="switchDGTab('dg-issued-returned-tab', this)">
+            <i data-lucide="clipboard-list" style="width: 16px;"></i>
+            Issued &amp; Returned Items
         </button>
         <button id="tab-btn-workflow-config" class="dg-tab-btn" onclick="switchDGTab('dg-workflow-config-tab', this)">
             <i data-lucide="user-cog" style="width: 16px;"></i>
@@ -946,6 +948,163 @@
 
                         @if ($users->hasMorePages())
                             <a href="{{ $users->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
+                        @else
+                            <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- PANEL 4b: ISSUED & RETURNED ITEMS REGISTRY --}}
+    <div id="dg-issued-returned-tab" class="dg-tab-panel">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium); margin-bottom: 2rem;">
+            <div style="padding: 1.5rem 1.75rem; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.01);">
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 850; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="arrow-up-right" style="width: 18px; color: #ef4444;"></i>
+                    Issued Items Registry
+                </h3>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="dg-table">
+                    <thead>
+                        <tr>
+                            <th>Date Issued</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Issuance Type</th>
+                            <th>Beneficiary</th>
+                            <th>Authorized By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($issuedItems as $item)
+                            <tr class="dg-row">
+                                <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
+                                    {{ $item->issuance_date ? \Carbon\Carbon::parse($item->issuance_date)->format('d/m/Y') : '-' }}
+                                </td>
+                                <td style="font-weight: 800; color: var(--text-main);">
+                                    {{ $item->description }}
+                                </td>
+                                <td>
+                                    <span class="badge-event">{{ $ledgeMap[$item->ledge_category] ?? $item->ledge_category }}</span>
+                                </td>
+                                <td style="font-weight: 800;">
+                                    {{ number_format($item->original_quantity) }} <span style="font-size: 0.7rem; color: var(--text-muted);">{{ $item->unit }}</span>
+                                </td>
+                                <td>
+                                    <span class="dg-badge {{ $item->issuance_type === 'Temporary' ? 'warning' : 'success' }}">
+                                        {{ $item->issuance_type }}
+                                    </span>
+                                </td>
+                                <td style="font-weight: 700; color: var(--text-main);">
+                                    {{ $item->beneficiary }}
+                                </td>
+                                <td style="font-weight: 600; color: var(--text-muted);">
+                                    {{ $item->authority }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+                                    <i data-lucide="arrow-up-right" style="width: 40px; height: 40px; margin-bottom: 1rem; opacity: 0.25;"></i>
+                                    <p style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">No issued items registered.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if($issuedItems->hasPages())
+                <div class="dg-pagination-container">
+                    <div class="dg-pagination-info">
+                        Showing <span>{{ $issuedItems->firstItem() ?? 0 }}</span> to <span>{{ $issuedItems->lastItem() ?? 0 }}</span> of <span>{{ $issuedItems->total() }}</span> records
+                    </div>
+                    <div class="dg-pagination-buttons">
+                        @if ($issuedItems->onFirstPage())
+                            <span class="dg-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
+                        @else
+                            <a href="{{ $issuedItems->appends(request()->query())->previousPageUrl() }}" class="dg-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
+                        @endif
+
+                        @if ($issuedItems->hasMorePages())
+                            <a href="{{ $issuedItems->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
+                        @else
+                            <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium);">
+            <div style="padding: 1.5rem 1.75rem; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.01);">
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 850; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="arrow-down-left" style="width: 18px; color: #10b981;"></i>
+                    Returned Items Registry
+                </h3>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="dg-table">
+                    <thead>
+                        <tr>
+                            <th>Date Returned</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Returned Qty</th>
+                            <th>Returned By</th>
+                            <th>Remarks / Condition</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($returnedItems as $item)
+                            <tr class="dg-row">
+                                <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
+                                    {{ $item->return_date ? \Carbon\Carbon::parse($item->return_date)->format('d/m/Y') : '-' }}
+                                </td>
+                                <td style="font-weight: 800; color: var(--text-main);">
+                                    {{ $item->description }}
+                                </td>
+                                <td>
+                                    <span class="badge-event">{{ $ledgeMap[$item->ledge_category] ?? $item->ledge_category }}</span>
+                                </td>
+                                <td style="font-weight: 800; color: #10b981;">
+                                    {{ number_format($item->returned_qty) }}
+                                </td>
+                                <td style="font-weight: 700; color: var(--text-main);">
+                                    {{ $item->beneficiary }}
+                                </td>
+                                <td style="font-size: 0.8rem; color: var(--text-muted); font-style: italic;">
+                                    {{ $item->remarks ?: 'No remarks' }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+                                    <i data-lucide="arrow-down-left" style="width: 40px; height: 40px; margin-bottom: 1rem; opacity: 0.25;"></i>
+                                    <p style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">No returned items registered.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if($returnedItems->hasPages())
+                <div class="dg-pagination-container">
+                    <div class="dg-pagination-info">
+                        Showing <span>{{ $returnedItems->firstItem() ?? 0 }}</span> to <span>{{ $returnedItems->lastItem() ?? 0 }}</span> of <span>{{ $returnedItems->total() }}</span> records
+                    </div>
+                    <div class="dg-pagination-buttons">
+                        @if ($returnedItems->onFirstPage())
+                            <span class="dg-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</span>
+                        @else
+                            <a href="{{ $returnedItems->appends(request()->query())->previousPageUrl() }}" class="dg-page-btn"><i data-lucide="chevron-left" style="width: 14px; height: 14px;"></i> Previous</a>
+                        @endif
+
+                        @if ($returnedItems->hasMorePages())
+                            <a href="{{ $returnedItems->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
                         @else
                             <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
                         @endif
@@ -1441,7 +1600,7 @@
                 });
 
                 // 2. Update all tab panels
-                const tabPanels = ['dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab', 'dg-workflow-config-tab'];
+                const tabPanels = ['dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab', 'dg-issued-returned-tab', 'dg-workflow-config-tab'];
                 tabPanels.forEach(panelId => {
                     const oldPanel = document.getElementById(panelId);
                     const newPanel = doc.getElementById(panelId);
@@ -1482,7 +1641,7 @@
                             const doc = parser.parseFromString(html, 'text/html');
                             
                             // Only update tab panels and pagination
-                            const tabPanels = ['dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab', 'dg-workflow-config-tab'];
+                            const tabPanels = ['dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab', 'dg-issued-returned-tab', 'dg-workflow-config-tab'];
                             tabPanels.forEach(panelId => {
                                 const oldPanel = document.getElementById(panelId);
                                 const newPanel = doc.getElementById(panelId);

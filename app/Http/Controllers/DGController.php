@@ -20,13 +20,15 @@ class DGController extends Controller
             abort(403, 'Access Restricted: Director General clearance required.');
         }
 
+        // Run self-healing to convert collected requisitions to issuances
+        try {
+            \App\Http\Controllers\ReturnController::selfHealRequisitions();
+        } catch (\Exception $e) {}
+
         // Summary statistics
         $totalItemsCount = InventoryItem::count();
         $totalVariance = InventoryItem::sum('variance');
-        $activeLoansCount = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
-            ->where('issuances.issuance_type', 'Temporary')
-            ->where('issued_items.quantity', '>', 0)
-            ->count();
+        $totalItemsIssued = IssuedItem::count();
         $pendingRequisitionsCount = StoreRequisition::where('status', 'pending')->count();
         $totalActiveUsers = User::where('registration_status', 'approved')->where('is_active', true)->count();
 
@@ -90,17 +92,96 @@ class DGController extends Controller
         }
         $users = $usersQuery->paginate(10, ['*'], 'users_page')->withQueryString();
 
+        // 4b. Issued Items
+        $issuedItemsQuery = IssuedItem::join('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
+            ->leftJoin('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
+            ->leftJoin('users as confirming_officers', 'store_requisitions.collected_by', '=', 'confirming_officers.id')
+            ->select(
+                'issued_items.*', 
+                'issuances.issuance_date', 
+                'issuances.beneficiary', 
+                'issuances.authority', 
+                'issuances.issuance_type', 
+                'issuances.created_at',
+                'store_requisitions.collector_name',
+                'confirming_officers.name as confirming_officer_name'
+            )
+            ->selectRaw('issued_items.quantity + COALESCE((SELECT SUM(returned_qty) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id), 0) as original_quantity')
+            ->orderBy('issuances.issuance_date', 'desc')
+            ->orderBy('issuances.created_at', 'desc');
+
+        if ($request->filled('search_query')) {
+            $search = trim($request->search_query);
+            $issuedItemsQuery->where(function($q) use ($search) {
+                $q->where('issued_items.description', 'LIKE', "%{$search}%")
+                  ->orWhere('issuances.beneficiary', 'LIKE', "%{$search}%")
+                  ->orWhere('issuances.authority', 'LIKE', "%{$search}%")
+                  ->orWhere('store_requisitions.collector_name', 'LIKE', "%{$search}%")
+                  ->orWhere('confirming_officers.name', 'LIKE', "%{$search}%");
+            });
+        }
+        if ($request->filled('date_from')) {
+            $issuedItemsQuery->whereDate('issuances.issuance_date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $issuedItemsQuery->whereDate('issuances.issuance_date', '<=', $request->date_to);
+        }
+        $issuedItems = $issuedItemsQuery->paginate(10, ['*'], 'issued_page')->withQueryString();
+
+        // 4c. Returned Items
+        $returnedItemsQuery = ReturnedItem::join('issued_items', 'returned_items.issued_item_id', '=', 'issued_items.id')
+            ->join('issued_items as ii', 'returned_items.issued_item_id', '=', 'ii.id')
+            ->join('issuances', 'ii.issuance_id', '=', 'issuances.id')
+            ->leftJoin('store_requisitions', 'issuances.requisition_id', '=', 'store_requisitions.id')
+            ->leftJoin('users as confirming_officers', 'store_requisitions.collected_by', '=', 'confirming_officers.id')
+            ->select(
+                'returned_items.id', 
+                'returned_items.returned_qty',
+                'returned_items.return_date',
+                'returned_items.remarks',
+                'returned_items.created_at',
+                'issued_items.description', 
+                'issued_items.ledge_category',
+                'issued_items.quantity as current_balance',
+                'issuances.beneficiary',
+                'issuances.authority',
+                'issuances.issuance_date',
+                'store_requisitions.collector_name',
+                'confirming_officers.name as confirming_officer_name'
+            )
+            ->orderBy('returned_items.created_at', 'desc');
+
+        if ($request->filled('search_query')) {
+            $search = trim($request->search_query);
+            $returnedItemsQuery->where(function($q) use ($search) {
+                $q->where('issued_items.description', 'LIKE', "%{$search}%")
+                  ->orWhere('issuances.beneficiary', 'LIKE', "%{$search}%")
+                  ->orWhere('returned_items.remarks', 'LIKE', "%{$search}%")
+                  ->orWhere('store_requisitions.collector_name', 'LIKE', "%{$search}%")
+                  ->orWhere('confirming_officers.name', 'LIKE', "%{$search}%");
+            });
+        }
+        if ($request->filled('date_from')) {
+            $returnedItemsQuery->whereDate('returned_items.return_date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $returnedItemsQuery->whereDate('returned_items.return_date', '<=', $request->date_to);
+        }
+        $returnedItems = $returnedItemsQuery->paginate(10, ['*'], 'returned_page')->withQueryString();
+
         $ledgeMap = Setting::getCategories();
 
         return view('dg.index', compact(
             'totalItemsCount',
             'totalVariance',
-            'activeLoansCount',
+            'totalItemsIssued',
             'pendingRequisitionsCount',
             'totalActiveUsers',
             'inventoryItems',
             'requisitions',
             'users',
+            'issuedItems',
+            'returnedItems',
             'ledgeMap'
         ));
     }

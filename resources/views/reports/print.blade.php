@@ -586,7 +586,7 @@
                 'serial_number' => null,
                 'ref'           => $i->beneficiary ?? '—',
                 'ref_label'     => 'Beneficiary / Dept.',
-                'quantity'      => $i->quantity ?? 0,
+                'quantity'      => $i->original_quantity ?? $i->quantity ?? 0,
                 'stock_bal'     => '—',
                 'variance'      => '—',
                 'status'        => $i->issuance_type ?? 'Permanent',

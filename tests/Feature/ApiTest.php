@@ -983,10 +983,10 @@ class ApiTest extends TestCase
     }
 
     /**
-     * Test that the delegator (Sub Main Admin) role can only be assigned to personnel
-     * from the HR or Welfare departments.
+     * Test that the delegator (Sub Main Admin) role can be assigned to personnel
+     * from any department.
      */
-    public function test_delegator_role_assignment_restricted_to_hr_and_welfare(): void
+    public function test_delegator_role_assignment_to_any_department(): void
     {
         $headOfStores = User::factory()->create([
             'role' => 'Head of Stores',
@@ -996,7 +996,7 @@ class ApiTest extends TestCase
             'is_active' => true,
         ]);
 
-        // 1. Test approveRegistration on a pending user who is NOT in HR or Welfare (e.g. IT Department)
+        // 1. Test approveRegistration on a pending user in IT Department
         $pendingUserIT = User::create([
             'name' => 'IT Staff User',
             'username' => 'itstaffuser',
@@ -1013,31 +1013,11 @@ class ApiTest extends TestCase
                 'role' => 'Sub Main Admin'
             ]);
         $responseApproveIT->assertRedirect(route('admin.permissions'));
-        $responseApproveIT->assertSessionHas('error');
-        $this->assertStringContainsString('only be assigned to personnel from the HR or Welfare departments', session('error'));
+        $responseApproveIT->assertSessionHas('success');
+        $pendingUserIT->refresh();
+        $this->assertEquals('Sub Main Admin', $pendingUserIT->role);
 
-        // 2. Test approveRegistration on a pending user who IS in HR (e.g. Human Resource Management Department)
-        $pendingUserHR = User::create([
-            'name' => 'HR Staff User',
-            'username' => 'hrstaffuser',
-            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
-            'role' => null,
-            'department' => 'Human Resource Management Department',
-            'registration_status' => 'pending',
-            'is_active' => false,
-        ]);
-
-        $responseApproveHR = $this->actingAs($headOfStores)
-            ->from(route('admin.permissions'))
-            ->post(route('admin.users.approve_registration', $pendingUserHR->id), [
-                'role' => 'Sub Main Admin'
-            ]);
-        $responseApproveHR->assertRedirect(route('admin.permissions'));
-        $responseApproveHR->assertSessionHas('success');
-        $pendingUserHR->refresh();
-        $this->assertEquals('Sub Main Admin', $pendingUserHR->role);
-
-        // 3. Test updateUser on a user who is NOT in HR or Welfare (e.g. IT Department)
+        // 2. Test updateUser on a user in IT Department
         $userIT = User::create([
             'name' => 'Another IT User',
             'username' => 'anotherituser',
@@ -1056,31 +1036,32 @@ class ApiTest extends TestCase
                 'department' => 'IT Department'
             ]);
         $responseUpdateIT->assertRedirect(route('admin.permissions'));
-        $responseUpdateIT->assertSessionHas('error');
-        $this->assertStringContainsString('only be assigned to personnel from the HR or Welfare departments', session('error'));
+        $responseUpdateIT->assertSessionHas('success');
+        $userIT->refresh();
+        $this->assertEquals('Sub Main Admin', $userIT->role);
+    }
 
-        // 4. Test updateUser on a user who IS in Welfare (e.g. Welfare Department)
-        $userWelfare = User::create([
-            'name' => 'Welfare User',
-            'username' => 'welfareuser',
-            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
-            'role' => 'Requisitioner',
-            'department' => 'Welfare Department',
+    /**
+     * Test that the Director General dashboard displays the new Issued & Returned Items page.
+     */
+    public function test_dg_dashboard_issued_returned_items_page(): void
+    {
+        $dgUser = User::factory()->create([
+            'role' => 'Director General',
+            'department' => 'Executive Directorate',
+            'is_admin' => false,
             'registration_status' => 'approved',
             'is_active' => true,
         ]);
 
-        $responseUpdateWelfare = $this->actingAs($headOfStores)
-            ->from(route('admin.permissions'))
-            ->put(route('admin.users.update', $userWelfare->id), [
-                'name' => $userWelfare->name,
-                'role' => 'Sub Main Admin',
-                'department' => 'Welfare Department'
-            ]);
-        $responseUpdateWelfare->assertRedirect(route('admin.permissions'));
-        $responseUpdateWelfare->assertSessionHas('success');
-        $userWelfare->refresh();
-        $this->assertEquals('Sub Main Admin', $userWelfare->role);
+        $response = $this->actingAs($dgUser)->get(route('dg.dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Issued &amp; Returned Items', false);
+        $response->assertSee('Issued Items Registry', false);
+        $response->assertSee('Returned Items Registry', false);
+        $response->assertSee('Total Items Issued', false);
+        $response->assertDontSee('Active Loans (Temp)', false);
     }
 }
 

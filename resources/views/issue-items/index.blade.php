@@ -203,7 +203,7 @@
                                 </div>
                             </td>
                             <td data-label="Qty Disbursed" style="padding: 1.25rem 1.5rem; font-weight: 800; font-size: 1.1rem; color: var(--text-main); white-space: nowrap;">
-                                {{ number_format($item->quantity) }}
+                                {{ number_format($item->original_quantity) }}
                                 <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">{{ $item->unit ?: 'Package Types' }}</span>
                             </td>
                             <td data-label="Status" style="padding: 1.25rem 1.5rem; text-align: right;">

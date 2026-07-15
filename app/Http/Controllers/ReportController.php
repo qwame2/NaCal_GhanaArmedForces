@@ -93,7 +93,7 @@ class ReportController extends Controller
         $totalReceivedQty = $receivedQuery->sum('inventory_items.qty');
 
         $totalIssuedBatches = (clone $issuedQuery)->distinct('issuances.id')->count('issuances.id');
-        $totalIssuedQty = $issuedQuery->sum('issued_items.quantity');
+        $totalIssuedQty = (float) $issuedQuery->sum('issued_items.quantity') + (float) \App\Models\ReturnedItem::whereIn('issued_item_id', (clone $issuedQuery)->pluck('issued_items.id'))->sum('returned_qty');
 
         // Distributions for donut charts
         $receivedDistribution = (clone $receivedQuery)
@@ -104,7 +104,8 @@ class ReportController extends Controller
             ->get();
 
         $issuedDistribution = (clone $issuedQuery)
-            ->select('issued_items.description', \DB::raw('SUM(issued_items.quantity) as total_qty'))
+            ->select('issued_items.description')
+            ->selectRaw('SUM(issued_items.quantity + COALESCE((SELECT SUM(returned_qty) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id), 0)) as total_qty')
             ->groupBy('issued_items.description')
             ->orderBy('total_qty', 'desc')
             ->limit(10)
@@ -156,6 +157,7 @@ class ReportController extends Controller
                 'issued_items.ledge_category',
                 \DB::raw("'Issued' as transaction_type")
             )
+            ->selectRaw('issued_items.quantity + COALESCE((SELECT SUM(returned_qty) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id), 0) as original_quantity')
             ->orderBy('issuances.issuance_date', 'desc')
             ->limit(200)
             ->get();
@@ -271,7 +273,7 @@ class ReportController extends Controller
         $totalReceivedBatches = (clone $receivedQuery)->distinct('inventory_batches.id')->count('inventory_batches.id');
         $totalReceivedQty     = $receivedQuery->sum('inventory_items.qty');
         $totalIssuedBatches   = (clone $issuedQuery)->distinct('issuances.id')->count('issuances.id');
-        $totalIssuedQty       = $issuedQuery->sum('issued_items.quantity');
+        $totalIssuedQty       = (float) $issuedQuery->sum('issued_items.quantity') + (float) \App\Models\ReturnedItem::whereIn('issued_item_id', (clone $issuedQuery)->pluck('issued_items.id'))->sum('returned_qty');
 
         $receivedDistribution = (clone $receivedQuery)
             ->select('inventory_items.description', \DB::raw('SUM(inventory_items.qty) as total_qty'))
@@ -281,7 +283,8 @@ class ReportController extends Controller
             ->get();
 
         $issuedDistribution = (clone $issuedQuery)
-            ->select('issued_items.description', \DB::raw('SUM(issued_items.quantity) as total_qty'))
+            ->select('issued_items.description')
+            ->selectRaw('SUM(issued_items.quantity + COALESCE((SELECT SUM(returned_qty) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id), 0)) as total_qty')
             ->groupBy('issued_items.description')
             ->orderBy('total_qty', 'desc')
             ->limit(10)
@@ -332,6 +335,7 @@ class ReportController extends Controller
                 'issued_items.ledge_category',
                 \DB::raw("'Issued' as transaction_type")
             )
+            ->selectRaw('issued_items.quantity + COALESCE((SELECT SUM(returned_qty) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id), 0) as original_quantity')
             ->orderBy('issuances.issuance_date', 'desc')
             ->limit(200)
             ->get();
@@ -440,7 +444,7 @@ class ReportController extends Controller
                 'description'   => $i->description,
                 'serial_number' => null,
                 'ref'           => $i->beneficiary ?? '—',
-                'quantity'      => $i->quantity ?? 0,
+                'quantity'      => $i->original_quantity ?? $i->quantity ?? 0,
                 'stock_bal'     => 0,
                 'previous_stock'=> '—',
                 'variance'      => '—',
@@ -545,7 +549,7 @@ class ReportController extends Controller
         }
 
         $totalReceivedQty   = $receivedQuery->sum('inventory_items.qty');
-        $totalIssuedQty     = $issuedQuery->sum('issued_items.quantity');
+        $totalIssuedQty     = (float) $issuedQuery->sum('issued_items.quantity') + (float) \App\Models\ReturnedItem::whereIn('issued_item_id', (clone $issuedQuery)->pluck('issued_items.id'))->sum('returned_qty');
         $totalReceivedBatches = (clone $receivedQuery)->distinct('inventory_batches.id')->count('inventory_batches.id');
         $totalIssuedBatches   = (clone $issuedQuery)->distinct('issuances.id')->count('issuances.id');
 
@@ -556,7 +560,8 @@ class ReportController extends Controller
             ->get();
 
         $issuedDistribution = (clone $issuedQuery)
-            ->select('issued_items.description', \DB::raw('SUM(issued_items.quantity) as total_qty'))
+            ->select('issued_items.description')
+            ->selectRaw('SUM(issued_items.quantity + COALESCE((SELECT SUM(returned_qty) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id), 0)) as total_qty')
             ->groupBy('issued_items.description')
             ->orderBy('total_qty', 'desc')
             ->get();
@@ -596,6 +601,7 @@ class ReportController extends Controller
                 $hasSivNo ? 'issuances.siv_no' : \DB::raw('NULL as siv_no'),
                 'issued_items.ledge_category'
             )
+            ->selectRaw('issued_items.quantity + COALESCE((SELECT SUM(returned_qty) FROM returned_items WHERE returned_items.issued_item_id = issued_items.id), 0) as original_quantity')
             ->orderBy('issuances.issuance_date', 'desc')
             ->limit(500)
             ->get();
