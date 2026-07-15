@@ -948,10 +948,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="live-status">
-                    <div class="pulse-dot"></div>
-                    <span>SYSTEM ONLINE</span>
-                </div>
+
             </div>
         </header>
 
