@@ -981,5 +981,106 @@ class ApiTest extends TestCase
         $response2->assertStatus(200);
         $response2->assertDontSee('Next:', false);
     }
+
+    /**
+     * Test that the delegator (Sub Main Admin) role can only be assigned to personnel
+     * from the HR or Welfare departments.
+     */
+    public function test_delegator_role_assignment_restricted_to_hr_and_welfare(): void
+    {
+        $headOfStores = User::factory()->create([
+            'role' => 'Head of Stores',
+            'department' => '',
+            'is_admin' => true,
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        // 1. Test approveRegistration on a pending user who is NOT in HR or Welfare (e.g. IT Department)
+        $pendingUserIT = User::create([
+            'name' => 'IT Staff User',
+            'username' => 'itstaffuser',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'role' => null,
+            'department' => 'IT Department',
+            'registration_status' => 'pending',
+            'is_active' => false,
+        ]);
+
+        $responseApproveIT = $this->actingAs($headOfStores)
+            ->from(route('admin.permissions'))
+            ->post(route('admin.users.approve_registration', $pendingUserIT->id), [
+                'role' => 'Sub Main Admin'
+            ]);
+        $responseApproveIT->assertRedirect(route('admin.permissions'));
+        $responseApproveIT->assertSessionHas('error');
+        $this->assertStringContainsString('only be assigned to personnel from the HR or Welfare departments', session('error'));
+
+        // 2. Test approveRegistration on a pending user who IS in HR (e.g. Human Resource Management Department)
+        $pendingUserHR = User::create([
+            'name' => 'HR Staff User',
+            'username' => 'hrstaffuser',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'role' => null,
+            'department' => 'Human Resource Management Department',
+            'registration_status' => 'pending',
+            'is_active' => false,
+        ]);
+
+        $responseApproveHR = $this->actingAs($headOfStores)
+            ->from(route('admin.permissions'))
+            ->post(route('admin.users.approve_registration', $pendingUserHR->id), [
+                'role' => 'Sub Main Admin'
+            ]);
+        $responseApproveHR->assertRedirect(route('admin.permissions'));
+        $responseApproveHR->assertSessionHas('success');
+        $pendingUserHR->refresh();
+        $this->assertEquals('Sub Main Admin', $pendingUserHR->role);
+
+        // 3. Test updateUser on a user who is NOT in HR or Welfare (e.g. IT Department)
+        $userIT = User::create([
+            'name' => 'Another IT User',
+            'username' => 'anotherituser',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'role' => 'Requisitioner',
+            'department' => 'IT Department',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $responseUpdateIT = $this->actingAs($headOfStores)
+            ->from(route('admin.permissions'))
+            ->put(route('admin.users.update', $userIT->id), [
+                'name' => $userIT->name,
+                'role' => 'Sub Main Admin',
+                'department' => 'IT Department'
+            ]);
+        $responseUpdateIT->assertRedirect(route('admin.permissions'));
+        $responseUpdateIT->assertSessionHas('error');
+        $this->assertStringContainsString('only be assigned to personnel from the HR or Welfare departments', session('error'));
+
+        // 4. Test updateUser on a user who IS in Welfare (e.g. Welfare Department)
+        $userWelfare = User::create([
+            'name' => 'Welfare User',
+            'username' => 'welfareuser',
+            'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+            'role' => 'Requisitioner',
+            'department' => 'Welfare Department',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $responseUpdateWelfare = $this->actingAs($headOfStores)
+            ->from(route('admin.permissions'))
+            ->put(route('admin.users.update', $userWelfare->id), [
+                'name' => $userWelfare->name,
+                'role' => 'Sub Main Admin',
+                'department' => 'Welfare Department'
+            ]);
+        $responseUpdateWelfare->assertRedirect(route('admin.permissions'));
+        $responseUpdateWelfare->assertSessionHas('success');
+        $userWelfare->refresh();
+        $this->assertEquals('Sub Main Admin', $userWelfare->role);
+    }
 }
 

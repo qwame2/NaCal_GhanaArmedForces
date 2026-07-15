@@ -601,7 +601,7 @@
             </a>
 
             <a href="{{ route('requisitions.index') }}" class="back-to-shop-btn">
-                <i data-lucide="arrow-left" style="width: 16px;"></i> Return to Shop
+                <i data-lucide="arrow-left" style="width: 16px;"></i> Return to Stores
             </a>
         </div>
     </header>

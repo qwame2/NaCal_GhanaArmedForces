@@ -95,6 +95,9 @@ class AdminController extends Controller
         $role = $request->role;
 
         if ($role === 'Sub Main Admin') {
+            if (!in_array(trim($user->department), ['Human Resource Management Department', 'Welfare Department'])) {
+                return back()->with('error', 'Strategic Security Alert: The Delegator (Authorizer) role can only be assigned to personnel from the HR or Welfare departments.');
+            }
             $activeCount = User::where('role', 'Sub Main Admin')
                 ->where('is_active', true)
                 ->where('registration_status', 'approved')
@@ -333,13 +336,19 @@ class AdminController extends Controller
             }
         }
 
-        if ($request->role === 'Sub Main Admin' && $user->role !== 'Sub Main Admin') {
-            $activeCount = User::where('role', 'Sub Main Admin')
-                ->where('is_active', true)
-                ->where('registration_status', 'approved')
-                ->count();
-            if ($activeCount >= 2) {
-                return back()->with('error', 'Strategic Security Alert: The system only permits a maximum of 2 active Delegators (Authorizers) at any time.');
+        if ($request->role === 'Sub Main Admin') {
+            $deptToCheck = trim($request->department ?? $user->department ?? '');
+            if (!in_array($deptToCheck, ['Human Resource Management Department', 'Welfare Department'])) {
+                return back()->with('error', 'Strategic Security Alert: The Delegator (Authorizer) role can only be assigned to personnel from the HR or Welfare departments.');
+            }
+            if ($user->role !== 'Sub Main Admin') {
+                $activeCount = User::where('role', 'Sub Main Admin')
+                    ->where('is_active', true)
+                    ->where('registration_status', 'approved')
+                    ->count();
+                if ($activeCount >= 2) {
+                    return back()->with('error', 'Strategic Security Alert: The system only permits a maximum of 2 active Delegators (Authorizers) at any time.');
+                }
             }
         }
 
