@@ -1545,7 +1545,7 @@
                 </div>
                 <div>
                     <div class="brand-name">{{ \App\Models\Setting::get('organization_name', 'NACOC') }}</div>
-                    <div class="brand-subtitle">Central Store</div>
+                    
                 </div>
             </a>
 
@@ -1596,7 +1596,7 @@
         <div class="hero-banner">
             <div class="hero-content">
                 
-                <h2 class="hero-title">Request Store Supplies & Inventory Instantly</h2>
+                <h2 class="hero-title">Request Store Supplies</h2>
                 <p class="hero-desc">Welcome to the NACOC modern central store catalog. Browse category inventories, add required items to your checkout cart, and submit digital requisitions directly to the stores department.</p>
                 <div class="hero-actions-container">
                     <button class="hero-btn" id="cart-nav-btn" style="position: relative; display: inline-flex; align-items: center; gap: 8px;">

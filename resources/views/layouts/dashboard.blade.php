@@ -124,7 +124,7 @@
                     onmouseout="this.style.transform='rotateY(-15deg) rotateX(5deg) translateZ(10px)'">
             </div>
             <div>
-                <h1 style="font-size: 1.25rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1.2; max-width: 150px;">{{ \App\Models\Setting::get('organization_name', 'NACOC') }}</h1>
+                <h1 style="font-size: 1.25rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1.2; max-width: 150px;">NSIMs</h1>
                 <div class="sidebar-branding-subtitle" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; opacity: 0.8;">Stores Inventory Management System(NSIMs)</div>
             </div>
         </div>
