@@ -1932,7 +1932,8 @@ button:active {
     }
     
     .sidebar-branding-subtitle {
-        display: none !important;
+        display: block !important;
+        font-size: 0.55rem !important;
     }
     
     .nav-link {

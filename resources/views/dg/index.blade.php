@@ -470,7 +470,7 @@
                 
             </div>
             <h1 style="font-size: 1.75rem; font-weight: 900; color: var(--text-main); letter-spacing: -.03em; margin: 0;">
-                Director General Command Center
+                Director General's Oversight
             </h1>
 
         </div>
