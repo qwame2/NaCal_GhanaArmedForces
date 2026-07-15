@@ -2007,7 +2007,7 @@
                             <i data-lucide="package" style="width:16px;"></i>
                         </div>
                         <div>
-                            <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Central Store Decision</h4>
+                            <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Stores Decision</h4>
                         </div>
                     </div>
                     <span class="pill" style="background:${storeStatusBg}; color:${storeStatusColor}; font-weight:800; font-size:0.7rem; padding:4px 10px;">${storeStatusLabel}</span>

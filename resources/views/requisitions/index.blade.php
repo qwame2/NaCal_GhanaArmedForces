@@ -1544,8 +1544,8 @@
                     <img src="{{ asset('img/download-1.webp') }}" alt="Logo" style="width: 56px; height: 56px; object-fit: contain; border-radius: 12px;">
                 </div>
                 <div>
-                    <div class="brand-name">{{ \App\Models\Setting::get('organization_name', 'NACOC') }}</div>
-                    
+                    <div class="brand-name">NACOC</div>
+                    <div class="brand-subtitle">Stores Inventory Management System(NSIMs)</div>
                 </div>
             </a>
 
@@ -1597,7 +1597,7 @@
             <div class="hero-content">
                 
                 <h2 class="hero-title">Request Store Supplies</h2>
-                <p class="hero-desc">Welcome to the NSIMs! When all your stores requisition are made easy.</p>
+                <p class="hero-desc">Welcome to the NSIMs! Where all your stores requisition are made easier.</p>
                 <div class="hero-actions-container">
                     <button class="hero-btn" id="cart-nav-btn" style="position: relative; display: inline-flex; align-items: center; gap: 8px;">
                         <i data-lucide="shopping-cart" style="width: 16px;"></i>

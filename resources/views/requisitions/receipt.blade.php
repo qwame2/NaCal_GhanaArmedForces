@@ -810,7 +810,7 @@
             <!-- Legal Verification Statement -->
             <div class="legal-declaration" style="margin-top: 3rem;">
                 <strong>INVENTORY RELEASE STATEMENT & CERTIFICATION:</strong><br>
-                I certify that the items on this receipt are verified, approved, and released from NACOC central stores. The receiving representative has inspected and confirmed physical receipt. All transactions are logged per Stores Division procedures.
+                I certify that the items on this receipt are verified, approved, and released from NACOC Stores Department. The receiving representative has inspected and confirmed physical receipt. All transactions are logged per Stores Division procedures.
             </div>
             <div style="text-align: center; font-size: 0.68rem; color: var(--text-muted); margin-top: 3rem; border-top: 1px solid var(--border-color); padding-top: 1rem; font-style: italic; font-weight: 600; letter-spacing: 0.02em;">
                 This voucher was generated through using the NACOC STORES INVENTORY MANAGEMENT SYSTEM (NSIMS).

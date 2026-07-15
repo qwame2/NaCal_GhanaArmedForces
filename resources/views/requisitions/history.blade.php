@@ -724,8 +724,8 @@
                     <img src="{{ asset('img/download-1.webp') }}" alt="Logo" style="width: 56px; height: 56px; object-fit: contain; border-radius: 12px;">
                 </div>
                 <div>
-                    <div class="brand-name">{{ \App\Models\Setting::get('organization_name', 'NACOC') }}</div>
-                    <div class="brand-subtitle">Central Store</div>
+                    <div class="brand-name">NACOC</div>
+                    <div class="brand-subtitle">Stores Inventory Management System(NSIMs)</div>
                 </div>
             </a>
 
@@ -777,7 +777,7 @@
                     <i data-lucide="clock" style="width: 13px;"></i> Requisition Logs & Tracking
                 </div>
                 <h2 class="hero-title">Track Requisition Pipelines in Real Time</h2>
-                <p class="hero-desc">Monitor approval states, check central store notes, and view physical pick-up metadata for all store supply requests originating from your profile account.</p>
+                <p class="hero-desc">Monitor approval states, check store notes, and view physical pick-up metadata for all store supply requests originating from your profile account.</p>
                 <div class="hero-actions-container">
                     <a href="{{ route('requisitions.index') }}" class="hero-btn">
                         <i data-lucide="shopping-bag" style="width: 16px;"></i> Request New Supplies
@@ -973,7 +973,7 @@
                 container.innerHTML = `
                     <div style="padding: 3rem 1.5rem; text-align: center; color: var(--danger-color);">
                         <i data-lucide="alert-triangle" style="width: 32px; height: 32px; margin: 0 auto 0.75rem auto;"></i>
-                        <p>Failed to retrieve central store requisition histories. Check connection.</p>
+                        <p>Failed to retrieve store requisition histories. Check connection.</p>
                     </div>
                 `;
                 lucide.createIcons();

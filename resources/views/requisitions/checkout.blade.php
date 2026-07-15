@@ -595,8 +595,8 @@
                     <img src="{{ asset('img/download-1.webp') }}" alt="Logo" style="width: 56px; height: 56px; object-fit: contain; border-radius: 12px;">
                 </div>
                 <div>
-                    <div class="brand-name">{{ \App\Models\Setting::get('organization_name', 'NACOC') }}</div>
-                    <div class="brand-subtitle">Central Store</div>
+                    <div class="brand-name">NACOC</div>
+                    <div class="brand-subtitle">Stores Inventory Management System(NSIMs)</div>
                 </div>
             </a>
 
