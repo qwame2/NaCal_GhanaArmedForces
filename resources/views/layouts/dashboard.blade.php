@@ -166,9 +166,13 @@
                 </li>
             @elseif(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Head of Stores']))
                 <li class="nav-item">
-                    <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" data-tooltip="Review Requests">
+                    <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" data-tooltip="{{ in_array(auth()->user()->role, ['Sub Main Admin', 'Head of Stores', 'Main Admin']) ? 'Review & Approve Requests' : 'Review Requests' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                        <span>Review Requests</span>
+                        @if(in_array(auth()->user()->role, ['Sub Main Admin', 'Head of Stores', 'Main Admin']))
+                            <span>Review & Approve Requests</span>
+                        @else
+                            <span>Review Requests</span>
+                        @endif
                         @php $mainReqsCount = $mainRequisitionsCount ?? 0; @endphp
                         <span id="sidebar-badge-main-reqs"
                               style="background: #10b981; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $mainReqsCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"

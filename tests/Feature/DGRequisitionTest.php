@@ -422,7 +422,61 @@ class DGRequisitionTest extends TestCase
                  ->assertJson(['success' => true]);
 
         $requisition->refresh();
+        // Delegator is a Sub Main Admin acting as HOD for their department:
+        // approval must cover BOTH origin_admin_status AND main_admin_status (dual-role)
         $this->assertEquals('approved', $requisition->origin_admin_status);
+        $this->assertEquals('approved', $requisition->main_admin_status,
+            'Sub Main Admin (Delegator) should simultaneously approve both HOD and Authorizer steps.');
+    }
+
+    /**
+     * Test that a Delegator (Sub Main Admin) dual-role approval notifies Head of Stores directly.
+     */
+    public function test_delegator_dual_role_approval_notifies_head_of_stores(): void
+    {
+        $delegator = User::factory()->create([
+            'role'                => 'Sub Main Admin',
+            'department'          => 'Logistics',
+            'registration_status' => 'approved',
+            'is_active'           => true,
+        ]);
+
+        // Head of Stores that should receive the notification
+        $headOfStores = User::factory()->create([
+            'is_admin'            => true,
+            'role'                => 'Head of Stores',
+            'registration_status' => 'approved',
+            'is_active'           => true,
+        ]);
+
+        $requisition = StoreRequisition::create([
+            'requester_name'      => 'Logistics Staff',
+            'department'          => 'Logistics',
+            'purpose'             => 'Procurement of fuel',
+            'priority'            => 'urgent',
+            'status'              => 'pending',
+            'usage_type'          => 'permanent',
+            'origin_admin_status' => 'pending',
+            'requires_dg_approval'=> false,
+        ]);
+
+        $response = $this->actingAs($delegator)->postJson("/main-admin/requisitions/{$requisition->id}/process", [
+            'status' => 'approved',
+        ]);
+
+        $response->assertStatus(200)
+                 ->assertJson(['success' => true]);
+
+        $requisition->refresh();
+        // Both steps should be approved in a single action
+        $this->assertEquals('approved', $requisition->origin_admin_status);
+        $this->assertEquals('approved', $requisition->main_admin_status);
+        $this->assertEquals($delegator->name, $requisition->origin_approved_by);
+        $this->assertEquals($delegator->name, $requisition->stores_approved_by);
+
+        // Head of Stores should have received an automated notification
+        $this->assertGreaterThan(0, Message::where('receiver_id', $headOfStores->id)->count(),
+            'Head of Stores should be notified after delegator dual-role approval.');
     }
 
     /**
@@ -459,5 +513,73 @@ class DGRequisitionTest extends TestCase
         $this->assertEquals('declined', $requisition->origin_admin_status);
         $this->assertEquals('declined', $requisition->status);
         $this->assertEquals('Not needed', $requisition->decline_reason);
+    }
+
+    /**
+     * Test that when a Sub Main Admin submits their own department's requisition,
+     * both origin_admin_status and main_admin_status are auto-approved at creation (dual-role bypass).
+     */
+    public function test_sub_main_admin_self_submission_skips_authorizer_review(): void
+    {
+        $delegator = User::factory()->create([
+            'name'                => 'Auth Officer',
+            'username'            => 'authofficer',
+            'phone'               => '0241234567',
+            'role'                => 'Sub Main Admin',
+            'department'          => 'Finance',
+            'service_number'      => 'FIN001',
+            'registration_status' => 'approved',
+            'is_active'           => true,
+        ]);
+
+        // Head of Stores to receive notification
+        User::factory()->create([
+            'is_admin'            => true,
+            'role'                => 'Head of Stores',
+            'registration_status' => 'approved',
+            'is_active'           => true,
+        ]);
+
+        $this->createStock('Paper Ream', 'A', 100);
+
+        $response = $this->actingAs($delegator)->postJson('/requisitions', [
+            'requester_name' => 'Auth Officer',
+            'department'     => 'Finance',
+            'rank_or_title'  => 'Captain',
+            'purpose'        => 'Office supplies for quarter',
+            'priority'       => 'normal',
+            'usage_type'     => 'permanent',
+            'items'          => [
+                [
+                    'description'        => 'Paper Ream',
+                    'category'           => 'A',
+                    'unit'               => 'Piece',
+                    'quantity_requested' => 5,
+                    'remarks'            => '',
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(200)->assertJson(['success' => true]);
+
+        $requisition = StoreRequisition::latest()->first();
+        $this->assertNotNull($requisition);
+
+        // Both HOD and Authorizer steps should be auto-approved at submission
+        $this->assertEquals('approved', $requisition->origin_admin_status,
+            'origin_admin_status should be auto-approved when Sub Main Admin submits own dept request.');
+        $this->assertEquals('approved', $requisition->main_admin_status,
+            'main_admin_status should be auto-approved (Authorizer review skipped) when Sub Main Admin submits own dept request.');
+
+        // DG approval must be bypassed — straight to Head of Stores
+        $this->assertFalse((bool) $requisition->requires_dg_approval,
+            'DG approval should be bypassed for Sub Main Admin self-submissions.');
+        $this->assertNull($requisition->dg_status,
+            'dg_status should be null (DG bypassed) for Sub Main Admin self-submissions.');
+
+        // Status badge must be exactly "Awaiting Head of Stores Review"
+        $badge = $requisition->status_badge;
+        $this->assertEquals('Awaiting Head of Stores Review', $badge['label'],
+            'Status should be Awaiting Head of Stores Review immediately after Sub Main Admin self-submission.');
     }
 }

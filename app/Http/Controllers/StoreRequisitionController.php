@@ -107,10 +107,10 @@ class StoreRequisitionController extends Controller
             ], 403);
         }
 
-        $isOtherHOD = in_array($user->role, ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+        $isOtherHOD = in_array($user->role, ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Sub Main Admin'])
             && (strcasecmp($user->department ?? '', 'Stores') !== 0 && strcasecmp($user->department ?? '', 'Store') !== 0);
 
-        // Permission gate: admin may revoke the ability to submit requests (exempt other HODs)
+        // Permission gate: admin may revoke the ability to submit requests (exempt HODs and Delegators/Authorizers)
         if (!$isOtherHOD && isset($user->can_make_requisition) && !$user->can_make_requisition) {
             return response()->json([
                 'success' => false,
@@ -204,8 +204,20 @@ class StoreRequisitionController extends Controller
         $isHODOfThisDept = $isOtherHOD && (strcasecmp($user->department ?? '', $request->department) === 0);
         $isStoresDept = (strcasecmp($request->department, 'Stores') === 0 || strcasecmp($request->department, 'Store') === 0);
 
+        // Sub Main Admin submitting for their own dept acts as both HOD and Authorizer simultaneously
+        $isSubMainAdminOwnDept = ($user->role === 'Sub Main Admin'
+            && strcasecmp($user->department ?? '', $request->department) === 0
+            && !$isStoresDept);
+
         $originAdminStatus = ($isHODOfThisDept || $isStoresDept) ? 'approved' : 'pending';
-        $originApprovedBy = $isHODOfThisDept ? $user->name : ($isStoresDept ? 'Bypassed (Stores)' : null);
+        $originApprovedBy  = $isSubMainAdminOwnDept
+            ? $user->name . ' (Delegator/Authorizer)'
+            : ($isHODOfThisDept ? $user->name : ($isStoresDept ? 'Bypassed (Stores)' : null));
+
+        // main_admin_status: auto-approve if Sub Main Admin submits own-dept request (dual-role bypass)
+        // or if Stores dept with no category restriction
+        $mainAdminStatus = ($isSubMainAdminOwnDept
+            || ($isStoresDept && !$requiresStoresDeptHeadApproval)) ? 'approved' : 'pending';
 
         $requisition = StoreRequisition::create([
             'requester_name' => $request->requester_name,
@@ -218,9 +230,11 @@ class StoreRequisitionController extends Controller
             'usage_type'     => $request->usage_type,
             'origin_admin_status' => $originAdminStatus,
             'origin_approved_by'  => $originApprovedBy,
-            'main_admin_status'   => ($isStoresDept && !$requiresStoresDeptHeadApproval) ? 'approved' : 'pending',
-            'requires_dg_approval' => $requiresDgApproval,
-            'dg_status' => $requiresDgApproval ? 'pending' : null,
+            'main_admin_status'   => $mainAdminStatus,
+            'stores_approved_by'  => $isSubMainAdminOwnDept ? $user->name . ' (Delegator/Authorizer)' : null,
+            // Sub Main Admin self-submissions bypass ALL intermediate steps including DG — straight to Head of Stores
+            'requires_dg_approval' => $isSubMainAdminOwnDept ? false : $requiresDgApproval,
+            'dg_status'            => $isSubMainAdminOwnDept ? null : ($requiresDgApproval ? 'pending' : null),
         ]);
 
         foreach ($request->items as $item) {
@@ -268,6 +282,17 @@ class StoreRequisitionController extends Controller
                 $deptHeads = User::where('role', 'Head of Stores')->where('is_active', true)->get();
                 if ($deptHeads->isEmpty()) {
                     $deptHeads = User::where('role', 'Main Admin')->where('is_active', true)->get();
+                }
+            }
+        } elseif (isset($isSubMainAdminOwnDept) && $isSubMainAdminOwnDept) {
+            // Sub Main Admin submitted for own dept — both HOD and Authorizer steps are bypassed.
+            // Notify DG (if required) or Head of Stores directly.
+            if ($requiresDgApproval) {
+                $deptHeads = User::where('role', 'Director General')->where('is_active', true)->get();
+            } else {
+                $deptHeads = User::getApproversQuery()->where('is_active', true)->get();
+                if ($deptHeads->isEmpty()) {
+                    $deptHeads = User::where('role', 'Head of Stores')->where('is_active', true)->get();
                 }
             }
         } else {
@@ -1878,9 +1903,21 @@ class StoreRequisitionController extends Controller
             }
 
             if (!$isStoresHead || $isActingAsOriginHOD) {
+                // Determine if the approver is a Sub Main Admin acting in a dual HOD+Authorizer capacity
+                $isSubMainAdminActingAsHOD = (auth()->user()->role === 'Sub Main Admin'
+                    && $req->department === auth()->user()->department
+                    && $req->origin_admin_status === 'pending');
+
                 $req->origin_admin_status = 'approved';
-                $req->origin_approved_by = auth()->user()->name;
-                if ($requiresStoresDeptHeadApproval) {
+                $req->origin_approved_by  = auth()->user()->name;
+
+                if ($isSubMainAdminActingAsHOD) {
+                    // Delegator/Authorizer covers both HOD approval AND Authorizer approval in one step.
+                    $req->main_admin_status  = 'approved';
+                    $req->stores_approved_by = auth()->user()->name;
+                    $actionName = 'DELEGATOR_DUAL_APPROVE';
+                    $logDesc = "Delegator/Authorizer " . auth()->user()->name . " approved store requisition #{$req->id} from department: {$req->department}. Dual-role approval (HOD + Authorizer) applied — escalated directly to Head of Stores" . ($req->requires_dg_approval ? ' via DG.' : '.');
+                } elseif ($requiresStoresDeptHeadApproval) {
                     $actionName = 'DEPT_HEAD_APPROVE';
                     $logDesc = "Department Head " . auth()->user()->name . " approved store requisition #{$req->id} from department: {$req->department}. Escalated to Department Head (Stores).";
                 } else {
@@ -1913,7 +1950,43 @@ class StoreRequisitionController extends Controller
 
             // Notifications
             if (!$isStoresHead || $isActingAsOriginHOD) {
-                if ($requiresStoresDeptHeadApproval) {
+                // Sub Main Admin dual-role: act as both HOD and Authorizer in one step
+                if (isset($isSubMainAdminActingAsHOD) && $isSubMainAdminActingAsHOD) {
+                    // Notify DG or Head of Stores directly (same as full bypass)
+                    if ($req->requires_dg_approval) {
+                        $dgs = User::where('role', 'Director General')->where('is_active', true)->get();
+                        foreach ($dgs as $dg) {
+                            $priorityLabel = strtoupper($req->priority);
+                            $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #8b5cf6;border-radius:12px;background:rgba(139,92,246,0.05);'>";
+                            $msg .= "<b style='color:#8b5cf6;'>📋 NEW REQUISITION AWAITING DG APPROVAL — {$priorityLabel} PRIORITY</b><br><br>";
+                            $msg .= "Delegator/Authorizer <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b> (dual-role HOD + Authorizer approval).<br><br>";
+                            $msg .= "This requisition requires your command clearance.<br><br>";
+                            $msg .= "<b>Department:</b> {$req->department}<br>";
+                            $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
+                            $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br><br>";
+                            $msg .= "<a href='" . route('dg.dashboard') . "?open_id={$req->id}' style='display:inline-block;background:#8b5cf6;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition</a>";
+                            $msg .= "</div>";
+                            Message::create(['sender_id' => auth()->id(), 'receiver_id' => $dg->id, 'message' => $msg, 'is_automated' => true]);
+                        }
+                    } else {
+                        $admins = User::getApproversQuery()->where('is_active', true)->get();
+                        foreach ($admins as $admin) {
+                            $priorityLabel = strtoupper($req->priority);
+                            $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
+                            $msg .= "<b style='color:#10b981;'>📋 DELEGATOR DUAL-APPROVED REQUISITION — {$priorityLabel} PRIORITY</b><br><br>";
+                            $msg .= "Delegator/Authorizer <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b> (acting as both Dept Head and Authorizer).<br><br>";
+                            $msg .= "<b>Department:</b> {$req->department}<br>";
+                            $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
+                            $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br>";
+                            if ($request->filled('admin_notes')) {
+                                $msg .= "<b>Notes:</b> " . e($request->admin_notes) . "<br><br>";
+                            }
+                            $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Perform Final Head Review</a>";
+                            $msg .= "</div>";
+                            Message::create(['sender_id' => auth()->id(), 'receiver_id' => $admin->id, 'message' => $msg, 'is_automated' => true]);
+                        }
+                    }
+                } elseif ($requiresStoresDeptHeadApproval) {
                     // Notify Department Head (Stores)
                     $storesHeads = User::whereIn('role', ['Main Admin', 'Sub Main Admin', 'Department Head'])
                         ->where(fn($q) => $q->where('department', 'Stores')->orWhere('department', 'Store'))
