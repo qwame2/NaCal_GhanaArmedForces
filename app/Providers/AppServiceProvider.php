@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     {
         if (app()->environment() !== 'testing') {
             try {
-            \Illuminate\Support\Facades\Cache::remember('schema_healed_v12', 86400, function () {
+            \Illuminate\Support\Facades\Cache::remember('schema_healed_v13', 86400, function () {
                 // Ensure can_make_requisition column exists for requisitioner permission gating
                 if (\Illuminate\Support\Facades\Schema::hasTable('users')) {
                     if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'can_make_requisition')) {
@@ -257,9 +257,12 @@ class AppServiceProvider extends ServiceProvider
                     // Ignore backfill errors on migration
                 }
 
-                // Ensure all existing Auditor accounts have is_temp_account set to true
+                // Ensure all existing Auditor accounts have is_temp_account set to true and can_approve_requisition set to true
                 try {
-                    \App\Models\User::where('role', 'Auditor')->where('is_temp_account', false)->update(['is_temp_account' => true]);
+                    \App\Models\User::where('role', 'Auditor')->update([
+                        'is_temp_account' => true,
+                        'can_approve_requisition' => true
+                    ]);
                 } catch (\Exception $ex) {
                     // Ignore
                 }
@@ -269,6 +272,12 @@ class AppServiceProvider extends ServiceProvider
                     \App\Models\User::where('role', 'Officer')->where(function($q) {
                         $q->whereNull('department')->orWhere('department', '!=', 'Stores');
                     })->update(['department' => 'Stores']);
+                } catch (\Exception $ex) {
+                    // Ignore
+                }
+                // Ensure Non Departmental is updated to Audit Department
+                try {
+                    \App\Models\User::where('department', 'Non Departmental')->update(['department' => 'Audit Department']);
                 } catch (\Exception $ex) {
                     // Ignore
                 }

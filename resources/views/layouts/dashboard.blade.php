@@ -125,7 +125,7 @@
             </div>
             <div>
                 <h1 style="font-size: 1.25rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1.2; max-width: 150px;">NACOC</h1>
-                <div class="sidebar-branding-subtitle" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; opacity: 0.8;">Stores Inventory Management System(NSIMs)</div>
+                <div class="sidebar-branding-subtitle" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; opacity: 0.8;">Stores Inventory Management System<span style="color:#10b981;">(NSIMs)</span></div>
             </div>
         </div>
 
@@ -151,6 +151,31 @@
                         <span>Analytical Reports</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('requisitions.index') }}" class="nav-link {{ request()->routeIs(['requisitions.index', 'requisitions.checkout']) ? 'active' : '' }}" data-tooltip="Make Request">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                        <span>Make Request</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('requisitions.history') }}" class="nav-link {{ request()->routeIs('requisitions.history') ? 'active' : '' }}" data-tooltip="Requisition History">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+                        <span>Requisition History</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" data-tooltip="Review Requests">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <span>Review Requests</span>
+                        @php $mainReqsCount = $mainRequisitionsCount ?? 0; @endphp
+                        <span id="sidebar-badge-main-reqs"
+                              style="background: #10b981; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $mainReqsCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
+                              title="{{ $mainReqsCount }} requisition(s) awaiting your review">
+                            {{ $mainReqsCount }}
+                        </span>
+                    </a>
+                </li>
+
             @elseif(auth()->user()->role === 'Director General')
                 <li class="nav-item">
                     <a href="{{ route('dg.dashboard') }}" class="nav-link {{ request()->routeIs('dg.dashboard') ? 'active' : '' }}" data-tooltip="Command Center">
@@ -187,12 +212,7 @@
                         <span>Requisition History</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="{{ route('main-admin.track-requests') }}" class="nav-link {{ request()->routeIs('main-admin.track-requests') ? 'active' : '' }}" data-tooltip="Track Staff Requests">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="10" x="2" y="6" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="7.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-                        <span>Track Staff Requests</span>
-                    </a>
-                </li>
+
                 <li class="nav-item">
                     <a href="{{ route('requisitions.index') }}" class="nav-link {{ request()->routeIs(['requisitions.index', 'requisitions.checkout']) ? 'active' : '' }}" data-tooltip="Make Request">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>

@@ -10,6 +10,23 @@ class ApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'main_admin_status')) {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('main_admin_status')->default('pending');
+            });
+        }
+
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('store_requisitions', 'origin_admin_status')) {
+            \Illuminate\Support\Facades\Schema::table('store_requisitions', function (\Illuminate\Database\Schema\Blueprint $table) {
+                $table->string('origin_admin_status')->default('pending');
+            });
+        }
+    }
+
     /**
      * Test check-reset-status API endpoint (public).
      */
@@ -1062,6 +1079,170 @@ class ApiTest extends TestCase
         $response->assertSee('Returned Items Registry', false);
         $response->assertSee('Total Items Issued', false);
         $response->assertDontSee('Active Loans (Temp)', false);
+    }
+
+    /**
+     * Test Auditor can access and manage department staff requisitions and provisioning.
+     */
+    public function test_auditor_can_manage_temp_requisitioners_and_make_requisition(): void
+    {
+        // Create an Auditor user
+        $auditor = User::factory()->create([
+            'role' => 'Auditor',
+            'department' => 'Internal Audit',
+            'is_active' => true,
+            'registration_status' => 'approved',
+        ]);
+
+        // Create a requisitioner in their department
+        $requisitioner = User::factory()->create([
+            'role' => 'Requisitioner',
+            'department' => 'Internal Audit',
+            'registration_status' => 'pending_hod',
+            'is_active' => false,
+            'sponsored_by' => $auditor->id,
+        ]);
+
+        // Create another approved requisitioner in their department
+        $staff = User::factory()->create([
+            'role' => 'Requisitioner',
+            'department' => 'Internal Audit',
+            'registration_status' => 'approved',
+            'is_active' => true,
+            'can_make_requisition' => true,
+            'sponsored_by' => $auditor->id,
+        ]);
+
+        // 1. Auditor can view pending registrations
+        $response = $this->actingAs($auditor)->get(route('dept-head.pending-registrations'));
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success' => true
+                 ]);
+
+        // 2. Auditor can view department staff accounts
+        $response = $this->actingAs($auditor)->get(route('dept-head.temp-requisitioners.index'));
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success' => true
+                 ]);
+
+        // 3. Auditor can toggle staff requisition access
+        $response = $this->actingAs($auditor)->post(route('dept-head.staff.toggle-request-access', $staff->id));
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success' => true
+                 ]);
+        $staff->refresh();
+        $this->assertFalse($staff->can_make_requisition);
+
+        // 4. Auditor can approve pending registrations
+        $response = $this->actingAs($auditor)->post(route('dept-head.registration.approve', $requisitioner->id));
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success' => true
+                 ]);
+        $requisitioner->refresh();
+        $this->assertEquals('approved', $requisitioner->registration_status);
+        $this->assertTrue($requisitioner->is_active);
+    }
+
+    public function test_requisitioner_can_self_register_under_auditor_hod(): void
+    {
+        $auditor = User::factory()->create([
+            'name' => 'Auditor HOD Name',
+            'role' => 'Auditor',
+            'department' => 'Internal Audit',
+            'is_active' => true,
+            'registration_status' => 'approved',
+        ]);
+
+        // Fetch department head details
+        $response = $this->get('/api/get-department-head?department=' . urlencode('Audit Department'));
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'registered' => true,
+                     'name' => 'Auditor HOD Name',
+                     'id' => $auditor->id,
+                 ]);
+
+        // Submit self registration request
+        $response = $this->post(route('self-register'), [
+            'name' => 'New Requisitioner',
+            'username' => 'new_req_username',
+            'phone' => '+233240000000',
+            'service_number' => 'JD-1234',
+            'department' => 'Audit Department',
+            'is_requisitioner' => '1',
+            'password' => 'SecurePassword123',
+            'password_confirmation' => 'SecurePassword123',
+        ]);
+
+        $response->assertRedirect(route('login'));
+        $this->assertDatabaseHas('users', [
+            'username' => 'new_req_username',
+            'sponsored_by' => $auditor->id,
+            'registration_status' => 'pending_hod',
+        ]);
+
+        $newUser = User::where('username', 'new_req_username')->first();
+
+        // Fetch pending registrations as the auditor
+        $response = $this->actingAs($auditor)->get(route('dept-head.pending-registrations'));
+        $response->assertStatus(200)
+                 ->assertJsonFragment([
+                     'username' => 'new_req_username'
+                 ]);
+
+        // Fetch active temp-requisitioners list as the auditor before approval - should not contain the user
+        $response = $this->actingAs($auditor)->get(route('dept-head.temp-requisitioners.index'));
+        $response->assertStatus(200);
+        $this->assertFalse(collect($response->json('accounts'))->contains('username', 'new_req_username'));
+
+        // Clean up or complete the registration flow to ensure approve works
+        $response = $this->actingAs($auditor)->post(route('dept-head.registration.approve', $newUser->id));
+        $response->assertStatus(200);
+        $newUser->refresh();
+        $this->assertEquals('approved', $newUser->registration_status);
+
+        // Fetch active temp-requisitioners list as the auditor after approval - should contain the user
+        $response = $this->actingAs($auditor)->get(route('dept-head.temp-requisitioners.index'));
+        $response->assertStatus(200);
+        $this->assertTrue(collect($response->json('accounts'))->contains('username', 'new_req_username'));
+
+        // Create a requisition requested by the new requisitioner
+        $requisition = \App\Models\StoreRequisition::create([
+            'requested_by' => $newUser->id,
+            'requester_name' => $newUser->name,
+            'department' => $newUser->department,
+            'purpose' => 'For office auditing tasks',
+            'priority' => 'normal',
+            'usage_type' => 'temporary',
+            'status' => 'pending',
+            'origin_admin_status' => 'pending',
+            'main_admin_status' => 'pending',
+        ]);
+
+        // Fetch requisition details (show view) as the Auditor HOD
+        $response = $this->actingAs($auditor)->get("/admin/requisitions/{$requisition->id}/show");
+        $response->assertStatus(200)
+                 ->assertJsonFragment([
+                     'requester_name' => $newUser->name
+                 ]);
+
+        // Process (approve) the requisition request as the auditor HOD
+        $response = $this->actingAs($auditor)->post(route('main-admin.requisitions.process', $requisition->id), [
+            'status' => 'approved',
+            'admin_notes' => 'Auditor HOD approved',
+        ]);
+        $response->assertStatus(200);
+
+        $requisition->refresh();
+        $this->assertEquals('approved', $requisition->origin_admin_status);
+
+        // Fetch track requests as the auditor HOD
+        $response = $this->actingAs($auditor)->get(route('main-admin.track-requests'));
+        $response->assertStatus(200);
     }
 }
 

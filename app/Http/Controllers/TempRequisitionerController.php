@@ -116,11 +116,15 @@ class TempRequisitionerController extends Controller
     {
         $head = auth()->user();
 
-        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare'])) {
+        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare', 'Auditor'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
-        $accounts = User::where('department', $head->department)
+        $accounts = User::where(function($q) use ($head) {
+                $q->where('department', $head->department)
+                  ->orWhere('sponsored_by', $head->id);
+            })
+            ->where('registration_status', 'approved')
             ->where('id', '!=', $head->id)
             ->orderBy('name', 'asc')
             ->get()
@@ -147,12 +151,15 @@ class TempRequisitionerController extends Controller
     {
         $head = auth()->user();
 
-        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare'])) {
+        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare', 'Auditor'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
         $staff = User::where('id', $id)
-            ->where('department', $head->department)
+            ->where(function($q) use ($head) {
+                $q->where('department', $head->department)
+                  ->orWhere('sponsored_by', $head->id);
+            })
             ->where('id', '!=', $head->id)
             ->first();
 
@@ -189,11 +196,14 @@ class TempRequisitionerController extends Controller
     {
         $head = auth()->user();
 
-        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare'])) {
+        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare', 'Auditor'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
-        $pending = User::where('department', $head->department)
+        $pending = User::where(function($q) use ($head) {
+                $q->where('department', $head->department)
+                  ->orWhere('sponsored_by', $head->id);
+            })
             ->where('registration_status', 'pending_hod')
             ->where('role', 'Requisitioner')
             ->orderBy('created_at', 'desc')
@@ -218,12 +228,15 @@ class TempRequisitionerController extends Controller
     {
         $head = auth()->user();
 
-        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare'])) {
+        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare', 'Auditor'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
         $staff = User::where('id', $id)
-            ->where('department', $head->department)
+            ->where(function($q) use ($head) {
+                $q->where('department', $head->department)
+                  ->orWhere('sponsored_by', $head->id);
+            })
             ->where('registration_status', 'pending_hod')
             ->where('role', 'Requisitioner')
             ->first();
@@ -261,12 +274,15 @@ class TempRequisitionerController extends Controller
     {
         $head = auth()->user();
 
-        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare'])) {
+        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare', 'Auditor'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
         $staff = User::where('id', $id)
-            ->where('department', $head->department)
+            ->where(function($q) use ($head) {
+                $q->where('department', $head->department)
+                  ->orWhere('sponsored_by', $head->id);
+            })
             ->where('registration_status', 'pending_hod')
             ->where('role', 'Requisitioner')
             ->first();

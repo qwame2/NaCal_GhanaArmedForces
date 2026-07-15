@@ -41,6 +41,7 @@ class AdminController extends Controller
         $perPage = $request->input('per_page', 10);
         $users = User::where('role', '!=', 'Head of Stores')
             ->where('registration_status', 'approved')
+            ->orderBy('updated_at', 'desc')
             ->paginate($perPage);
 
         $totalUsers = User::where('role', '!=', 'Head of Stores')
@@ -131,7 +132,7 @@ class AdminController extends Controller
             $user->is_admin = false;
             $user->is_temp_account = true;
             $user->can_make_requisition = false;
-            $user->can_approve_requisition = false;
+            $user->can_approve_requisition = true;
             $user->can_generate_reports = true;
         } elseif ($role === 'Officer') {
             $user->department = 'Stores';
@@ -150,11 +151,18 @@ class AdminController extends Controller
             $user->can_approve_requisition = false;
             
             // Find active/approved Department Head for Requisitioner's department
-            $deptHead = User::where('role', 'Department Head')
-                ->where('department', $user->department)
-                ->where('is_active', true)
-                ->where('registration_status', 'approved')
-                ->first();
+            if ($user->department === 'Audit Department') {
+                $deptHead = User::where('role', 'Auditor')
+                    ->where('is_active', true)
+                    ->where('registration_status', 'approved')
+                    ->first();
+            } else {
+                $deptHead = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Main Admin', 'Sub Main Admin', 'Auditor'])
+                    ->where('department', $user->department)
+                    ->where('is_active', true)
+                    ->where('registration_status', 'approved')
+                    ->first();
+            }
             if ($deptHead) {
                 $user->sponsored_by = $deptHead->id;
             } else {

@@ -107,7 +107,7 @@ class StoreRequisitionController extends Controller
             ], 403);
         }
 
-        $isOtherHOD = in_array($user->role, ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Sub Main Admin'])
+        $isOtherHOD = in_array($user->role, ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Sub Main Admin', 'Auditor'])
             && (strcasecmp($user->department ?? '', 'Stores') !== 0 && strcasecmp($user->department ?? '', 'Store') !== 0);
 
         // Permission gate: admin may revoke the ability to submit requests (exempt HODs and Delegators/Authorizers)
@@ -357,9 +357,18 @@ class StoreRequisitionController extends Controller
     {
         $query = StoreRequisition::with(['items', 'requester', 'collector']);
 
-        // Requisitioners see only their own. Personnel see all.
-        if (auth()->user()->role === 'Requisitioner') {
-            $query->where('requested_by', auth()->id());
+        // Requisitioners, Department Heads, and Auditors see only their own. Personnel/Logistics/Admins see all.
+        $user = auth()->user();
+        $isStaffOrAdmin = $user->is_admin 
+            || $user->role === 'Main Admin' 
+            || $user->role === 'Sub Main Admin' 
+            || $user->role === 'Head of Stores' 
+            || $user->role === 'Store Officer' 
+            || $user->role === 'Officer' 
+            || (strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0);
+
+        if (!$isStaffOrAdmin) {
+            $query->where('requested_by', $user->id);
         }
 
         // Apply search query
@@ -989,7 +998,7 @@ class StoreRequisitionController extends Controller
         $canView = $user->is_admin || 
                    $user->isDelegatedApprover() || 
                    $isStoresHead ||
-                   ($user->isDepartmentHead() && strcasecmp($user->department, $req->department) === 0) ||
+                   ($user->isDepartmentHead() && (strcasecmp($user->department, $req->department) === 0 || strcasecmp($req->department, 'Audit Department') === 0 || ($req->requester && $req->requester->sponsored_by === $user->id))) ||
                    ($req->requested_by === $user->id);
 
         if (!$canView) {
@@ -1500,7 +1509,13 @@ class StoreRequisitionController extends Controller
 
         // Apply department scoping for originating heads
         if (!$isStoresHead) {
-            $query->where('department', auth()->user()->department);
+            $query->where(function($q) {
+                $q->where('department', auth()->user()->department)
+                  ->orWhereIn('department', ['Audit Department', 'Non Departmental'])
+                  ->orWhereHas('requester', function($sq) {
+                      $sq->where('sponsored_by', auth()->id());
+                  });
+            });
         }
 
         $hasActiveStoresHead = \App\Models\User::where('role', 'Head of Stores')->where('is_active', true)->exists()
@@ -1518,10 +1533,14 @@ class StoreRequisitionController extends Controller
                           ->where(function($q) use ($isStoresHOD, $isBackupActive) {
                               $q->whereRaw('1 = 0');
                               if ($isStoresHOD) {
-                                  // Requisitions pending Stores HOD approval
+                                  // Requisitions pending Stores HOD approval (after DG approval if required)
                                   $q->orWhere(function($q2) {
                                       $q2->where('origin_admin_status', 'approved')
-                                         ->where('main_admin_status', 'pending');
+                                         ->where('main_admin_status', 'pending')
+                                         ->where(function($q3) {
+                                             $q3->where('requires_dg_approval', false)
+                                                ->orWhere('dg_status', 'approved');
+                                         });
                                   });
                               }
                               // Requisitions where Stores HOD approved (or bypassed) and any required DG approval is approved, awaiting final stores checkout
@@ -1551,13 +1570,7 @@ class StoreRequisitionController extends Controller
                               }
                           });
                 } else {
-                    $query->where(function($q) {
-                        $q->where(function($qp) {
-                            $qp->where('status', 'pending')->where('origin_admin_status', 'pending');
-                        })->orWhere(function($qp) {
-                            $qp->where('status', 'pending')->where('alternative_status', 'proposed');
-                        });
-                    });
+                    $query->where('status', 'pending');
                 }
             } elseif ($request->status === 'approved') {
                 if ($isStoresHead) {
@@ -1573,7 +1586,10 @@ class StoreRequisitionController extends Controller
                         $query->whereIn('status', ['approved', 'partially_approved']);
                     }
                 } else {
-                    $query->whereIn('status', ['approved', 'partially_approved']);
+                    $query->where(function($q) {
+                        $q->where('origin_admin_status', 'approved')
+                          ->orWhereIn('status', ['approved', 'partially_approved']);
+                    });
                 }
             } elseif ($request->status === 'declined') {
                 if ($isStoresHead) {
@@ -1589,7 +1605,10 @@ class StoreRequisitionController extends Controller
                         $query->where('status', 'declined');
                     }
                 } else {
-                    $query->where('status', 'declined');
+                    $query->where(function($q) {
+                        $q->where('origin_admin_status', 'declined')
+                          ->orWhere('status', 'declined');
+                    });
                 }
             } elseif ($request->status === 'history') {
                 if ($isStoresHead) {
@@ -1605,7 +1624,7 @@ class StoreRequisitionController extends Controller
                         $query->whereIn('status', ['approved', 'partially_approved', 'declined']);
                     }
                 } else {
-                    $query->whereIn('status', ['approved', 'partially_approved', 'declined']);
+                    // Oversight History (All) for HODs/Auditors should show all statuses (do not restrict query by status)
                 }
             }
         } else {
@@ -1614,10 +1633,14 @@ class StoreRequisitionController extends Controller
                       ->where(function($q) use ($isStoresHOD, $isBackupActive) {
                           $q->whereRaw('1 = 0');
                           if ($isStoresHOD) {
-                              // Requisitions pending Stores HOD approval
+                              // Requisitions pending Stores HOD approval (after DG approval if required)
                               $q->orWhere(function($q2) {
                                   $q2->where('origin_admin_status', 'approved')
-                                     ->where('main_admin_status', 'pending');
+                                     ->where('main_admin_status', 'pending')
+                                     ->where(function($q3) {
+                                         $q3->where('requires_dg_approval', false)
+                                            ->orWhere('dg_status', 'approved');
+                                     });
                               });
                           }
                           // Requisitions where Stores HOD approved (or bypassed) and any required DG approval is approved, awaiting final stores checkout
@@ -1647,13 +1670,7 @@ class StoreRequisitionController extends Controller
                           }
                       });
             } else {
-                $query->where(function($q) {
-                    $q->where(function($qp) {
-                        $qp->where('status', 'pending')->where('origin_admin_status', 'pending');
-                    })->orWhere(function($qp) {
-                        $qp->where('status', 'pending')->where('alternative_status', 'proposed');
-                    });
-                });
+                $query->where('status', 'pending');
             }
         }
 
@@ -1771,7 +1788,13 @@ class StoreRequisitionController extends Controller
                 'declined' => (int) ($statsData->declined ?? 0),
             ];
         } else {
-            $statsData = StoreRequisition::where('department', auth()->user()->department)
+            $statsData = StoreRequisition::where(function($q) {
+                    $q->where('department', auth()->user()->department)
+                      ->orWhereIn('department', ['Audit Department', 'Non Departmental'])
+                      ->orWhereHas('requester', function($sq) {
+                          $sq->where('sponsored_by', auth()->id());
+                      });
+                })
                 ->selectRaw("
                     SUM(CASE WHEN (status = 'pending' AND origin_admin_status = 'pending') OR (status = 'pending' AND alternative_status = 'proposed') THEN 1 ELSE 0 END) as pending,
                     SUM(CASE WHEN status IN ('approved', 'partially_approved') THEN 1 ELSE 0 END) as approved,
@@ -1854,7 +1877,7 @@ class StoreRequisitionController extends Controller
 
         // Check if the stores head is acting as the originating HOD for a Stores department request
         $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
-            || (auth()->user()->isDepartmentHead() && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending')
+            || (auth()->user()->isDepartmentHead() && ($req->department === auth()->user()->department || $req->department === 'Audit Department' || ($req->requester && $req->requester->sponsored_by === auth()->id())) && $req->origin_admin_status === 'pending')
             || (auth()->user()->role === 'Sub Main Admin' && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending');
 
         if (!$isStoresHead || $isActingAsOriginHOD) {
@@ -1862,7 +1885,7 @@ class StoreRequisitionController extends Controller
             if (!$isActingAsOriginHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0)) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized Stores Department HOD action.'], 403);
             }
-            if (!$isActingAsOriginHOD && $req->department !== auth()->user()->department) {
+            if (!$isActingAsOriginHOD && $req->department !== auth()->user()->department && $req->department !== 'Audit Department' && !($req->requester && $req->requester->sponsored_by === auth()->id())) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized department access.'], 403);
             }
             if ($req->status !== 'pending' || $req->origin_admin_status !== 'pending') {
@@ -1877,6 +1900,9 @@ class StoreRequisitionController extends Controller
             }
             if ($req->origin_admin_status !== 'approved') {
                 return response()->json(['success' => false, 'message' => 'This requisition must be approved by the originating department head first.'], 400);
+            }
+            if ($req->requires_dg_approval && $req->dg_status !== 'approved') {
+                return response()->json(['success' => false, 'message' => 'This requisition must be approved by the Director General first.'], 400);
             }
             if ($req->status !== 'pending' || $req->main_admin_status !== 'pending') {
                 return response()->json(['success' => false, 'message' => 'Requisition has already been processed.'], 400);
@@ -1950,41 +1976,26 @@ class StoreRequisitionController extends Controller
 
             // Notifications
             if (!$isStoresHead || $isActingAsOriginHOD) {
-                // Sub Main Admin dual-role: act as both HOD and Authorizer in one step
-                if (isset($isSubMainAdminActingAsHOD) && $isSubMainAdminActingAsHOD) {
-                    // Notify DG or Head of Stores directly (same as full bypass)
-                    if ($req->requires_dg_approval) {
-                        $dgs = User::where('role', 'Director General')->where('is_active', true)->get();
-                        foreach ($dgs as $dg) {
-                            $priorityLabel = strtoupper($req->priority);
-                            $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #8b5cf6;border-radius:12px;background:rgba(139,92,246,0.05);'>";
-                            $msg .= "<b style='color:#8b5cf6;'>📋 NEW REQUISITION AWAITING DG APPROVAL — {$priorityLabel} PRIORITY</b><br><br>";
-                            $msg .= "Delegator/Authorizer <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b> (dual-role HOD + Authorizer approval).<br><br>";
-                            $msg .= "This requisition requires your command clearance.<br><br>";
-                            $msg .= "<b>Department:</b> {$req->department}<br>";
-                            $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
-                            $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br><br>";
-                            $msg .= "<a href='" . route('dg.dashboard') . "?open_id={$req->id}' style='display:inline-block;background:#8b5cf6;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition</a>";
-                            $msg .= "</div>";
-                            Message::create(['sender_id' => auth()->id(), 'receiver_id' => $dg->id, 'message' => $msg, 'is_automated' => true]);
-                        }
-                    } else {
-                        $admins = User::getApproversQuery()->where('is_active', true)->get();
-                        foreach ($admins as $admin) {
-                            $priorityLabel = strtoupper($req->priority);
-                            $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
-                            $msg .= "<b style='color:#10b981;'>📋 DELEGATOR DUAL-APPROVED REQUISITION — {$priorityLabel} PRIORITY</b><br><br>";
-                            $msg .= "Delegator/Authorizer <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b> (acting as both Dept Head and Authorizer).<br><br>";
-                            $msg .= "<b>Department:</b> {$req->department}<br>";
-                            $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
-                            $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br>";
-                            if ($request->filled('admin_notes')) {
-                                $msg .= "<b>Notes:</b> " . e($request->admin_notes) . "<br><br>";
-                            }
-                            $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Perform Final Head Review</a>";
-                            $msg .= "</div>";
-                            Message::create(['sender_id' => auth()->id(), 'receiver_id' => $admin->id, 'message' => $msg, 'is_automated' => true]);
-                        }
+                if ($req->requires_dg_approval) {
+                    $dgs = User::where('role', 'Director General')->where('is_active', true)->get();
+                    foreach ($dgs as $dg) {
+                        $priorityLabel = strtoupper($req->priority);
+                        $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #8b5cf6;border-radius:12px;background:rgba(139,92,246,0.05);'>";
+                        $msg .= "<b style='color:#8b5cf6;'>📋 NEW REQUISITION AWAITING DG APPROVAL — {$priorityLabel} PRIORITY</b><br><br>";
+                        $msg .= "Department Head <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
+                        $msg .= "This requisition requires your command clearance.<br><br>";
+                        $msg .= "<b>Department:</b> {$req->department}<br>";
+                        $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
+                        $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br><br>";
+                        $msg .= "<a href='" . route('dg.dashboard') . "?open_id={$req->id}' style='display:inline-block;background:#8b5cf6;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition</a>";
+                        $msg .= "</div>";
+
+                        Message::create([
+                            'sender_id'    => auth()->id(),
+                            'receiver_id'  => $dg->id,
+                            'message'      => $msg,
+                            'is_automated' => true,
+                        ]);
                     }
                 } elseif ($requiresStoresDeptHeadApproval) {
                     // Notify Department Head (Stores)
@@ -2014,52 +2025,29 @@ class StoreRequisitionController extends Controller
                         ]);
                     }
                 } else {
-                    // Notify DG or Head of Stores (Admin) directly since Stores Dept Head approval is bypassed!
-                    if ($req->requires_dg_approval) {
-                        $dgs = User::where('role', 'Director General')->where('is_active', true)->get();
-                        foreach ($dgs as $dg) {
-                            $priorityLabel = strtoupper($req->priority);
-                            $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #8b5cf6;border-radius:12px;background:rgba(139,92,246,0.05);'>";
-                            $msg .= "<b style='color:#8b5cf6;'>📋 NEW REQUISITION AWAITING DG APPROVAL — {$priorityLabel} PRIORITY</b><br><br>";
-                            $msg .= "Department Head <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b> (Stores Dept Head approval bypassed).<br><br>";
-                            $msg .= "This requisition requires your command clearance.<br><br>";
-                            $msg .= "<b>Department:</b> {$req->department}<br>";
-                            $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
-                            $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br><br>";
-                            $msg .= "<a href='" . route('dg.dashboard') . "?open_id={$req->id}' style='display:inline-block;background:#8b5cf6;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition</a>";
-                            $msg .= "</div>";
-
-                            Message::create([
-                                'sender_id'    => auth()->id(),
-                                'receiver_id'  => $dg->id,
-                                'message'      => $msg,
-                                'is_automated' => true,
-                            ]);
+                    // Notify Head of Stores (Admin) directly since Stores Dept Head approval is bypassed!
+                    $admins = User::getApproversQuery()->where('is_active', true)->get();
+                    foreach ($admins as $admin) {
+                        $priorityLabel = strtoupper($req->priority);
+                        $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
+                        $msg .= "<b style='color:#10b981;'>📋 REQUISITION BYPASSED DEPT. HEAD (STORES) — {$priorityLabel} PRIORITY</b><br><br>";
+                        $msg .= "Department Head <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
+                        $msg .= "This requisition does not require Stores Department Head approval and has been escalated directly to you.<br><br>";
+                        $msg .= "<b>Department:</b> {$req->department}<br>";
+                        $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
+                        $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br>";
+                        if ($request->filled('admin_notes')) {
+                            $msg .= "<b>Dept Head Notes:</b> " . e($request->admin_notes) . "<br><br>";
                         }
-                    } else {
-                        $admins = User::getApproversQuery()->where('is_active', true)->get();
-                        foreach ($admins as $admin) {
-                            $priorityLabel = strtoupper($req->priority);
-                            $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
-                            $msg .= "<b style='color:#10b981;'>📋 REQUISITION BYPASSED DEPT. HEAD (STORES) — {$priorityLabel} PRIORITY</b><br><br>";
-                            $msg .= "Department Head <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
-                            $msg .= "This requisition does not require Stores Department Head approval and has been escalated directly to you.<br><br>";
-                            $msg .= "<b>Department:</b> {$req->department}<br>";
-                            $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
-                            $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br>";
-                            if ($request->filled('admin_notes')) {
-                                $msg .= "<b>Dept Head Notes:</b> " . e($request->admin_notes) . "<br><br>";
-                            }
-                            $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Perform Final Head Review</a>";
-                            $msg .= "</div>";
+                        $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Perform Final Head Review</a>";
+                        $msg .= "</div>";
 
-                            Message::create([
-                                'sender_id'    => auth()->id(),
-                                'receiver_id'  => $admin->id,
-                                'message'      => $msg,
-                                'is_automated' => true,
-                            ]);
-                        }
+                        Message::create([
+                            'sender_id'    => auth()->id(),
+                            'receiver_id'  => $admin->id,
+                            'message'      => $msg,
+                            'is_automated' => true,
+                        ]);
                     }
                 }
             } else {
@@ -2677,7 +2665,13 @@ class StoreRequisitionController extends Controller
 
         // Apply department scoping for HODs
         if (!$isStoresHead) {
-            $query->where('department', auth()->user()->department);
+            $query->where(function($q) {
+                $q->where('department', auth()->user()->department)
+                  ->orWhereIn('department', ['Audit Department', 'Non Departmental'])
+                  ->orWhereHas('requester', function($sq) {
+                      $sq->where('sponsored_by', auth()->id());
+                  });
+            });
         }
 
         // Apply custom status tracking filters
@@ -2735,7 +2729,13 @@ class StoreRequisitionController extends Controller
         // Calculate statistics for the tracking page
         $statsQuery = StoreRequisition::query();
         if (!$isStoresHead) {
-            $statsQuery->where('department', auth()->user()->department);
+            $statsQuery->where(function($q) {
+                $q->where('department', auth()->user()->department)
+                  ->orWhereIn('department', ['Audit Department', 'Non Departmental'])
+                  ->orWhereHas('requester', function($sq) {
+                      $sq->where('sponsored_by', auth()->id());
+                  });
+            });
         }
 
         $statsData = (clone $statsQuery)->selectRaw("

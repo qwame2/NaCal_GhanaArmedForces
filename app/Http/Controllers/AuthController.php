@@ -886,11 +886,18 @@ class AuthController extends Controller
             return response()->json(['registered' => false]);
         }
 
-        $deptHead = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Main Admin', 'Sub Main Admin'])
-            ->where('department', $department)
-            ->where('is_active', true)
-            ->where('registration_status', 'approved')
-            ->first();
+        if ($department === 'Audit Department') {
+            $deptHead = User::where('role', 'Auditor')
+                ->where('is_active', true)
+                ->where('registration_status', 'approved')
+                ->first();
+        } else {
+            $deptHead = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Main Admin', 'Sub Main Admin', 'Auditor'])
+                ->where('department', $department)
+                ->where('is_active', true)
+                ->where('registration_status', 'approved')
+                ->first();
+        }
 
         if ($deptHead) {
             return response()->json([
@@ -955,11 +962,18 @@ class AuthController extends Controller
         $deptHeadId = null;
 
         if ($isRequisitioner) {
-            $deptHead = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Main Admin', 'Sub Main Admin'])
-                ->where('department', $request->department)
-                ->where('is_active', true)
-                ->where('registration_status', 'approved')
-                ->first();
+            if ($request->department === 'Audit Department') {
+                $deptHead = User::where('role', 'Auditor')
+                    ->where('is_active', true)
+                    ->where('registration_status', 'approved')
+                    ->first();
+            } else {
+                $deptHead = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Main Admin', 'Sub Main Admin', 'Auditor'])
+                    ->where('department', $request->department)
+                    ->where('is_active', true)
+                    ->where('registration_status', 'approved')
+                    ->first();
+            }
 
             if (!$deptHead) {
                 return back()->with('error', 'Strategic Alert: No registered Department Head found for this department. Registration is locked.')->withInput();
@@ -968,13 +982,12 @@ class AuthController extends Controller
         }
 
         try {
-            $user = new User([
+            $userData = [
                 'name' => $request->name,
                 'username' => $request->username,
                 'password' => $request->password,
                 'role' => $isRequisitioner ? 'Requisitioner' : null,
                 'department' => $request->department,
-                'rank' => null,
                 'phone' => $request->phone,
                 'service_number' => $request->service_number,
                 'sponsored_by' => $deptHeadId,
@@ -983,7 +996,13 @@ class AuthController extends Controller
                 'is_active' => false,
                 'registration_status' => $isRequisitioner ? 'pending_hod' : 'pending',
                 'must_change_password' => false,
-            ]);
+            ];
+
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'rank')) {
+                $userData['rank'] = null;
+            }
+
+            $user = new User($userData);
 
             $user->save();
 

@@ -588,6 +588,7 @@
                 <span class="badge blinking-danger-badge" style="position: absolute; top: -8px; right: -8px; padding: 2.5px 6.5px; border-radius: 99px; font-size: 0.65rem; font-weight: 900; z-index: 10;">{{ $pendingSras->count() + $pendingServiceSras->count() }}</span>
             @endif
         </button>
+
     </div>
 
     {{-- Tab Panels --}}
@@ -1053,18 +1054,27 @@
                                     <span class="log-badge" style="background: {{ $s['bg'] }}; color: {{ $s['color'] }}; border: 1px solid {{ $s['color'] }}30; font-size: 0.65rem;">
                                         {{ $s['label'] }}
                                     </span>
+                                    @if($req->status === 'pending')
+                                        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;font-weight:600;">
+                                            Next: <span style="color:var(--text-main);font-weight:800;">{{ $req->approver_name }}</span>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td style="text-align: center; vertical-align: middle;">
-                                    <a href="{{ route('requisitions.receipt.print', $req->id) }}" 
-                                       target="_blank" 
-                                       class="btn-view-receipt" 
-                                       style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
-                                       onmouseover="this.style.background='var(--audit-primary)'; this.style.color='white';"
-                                       onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='var(--audit-primary)';"
-                                       title="Print Requisition Receipt">
-                                        <i data-lucide="receipt" style="width: 13px; height: 13px;"></i>
-                                        <span>Receipt</span>
-                                    </a>
+                                    @if($req->collected_at)
+                                        <a href="{{ route('requisitions.receipt.print', $req->id) }}" 
+                                           target="_blank" 
+                                           class="btn-view-receipt" 
+                                           style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
+                                           onmouseover="this.style.background='var(--audit-primary)'; this.style.color='white';"
+                                           onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='var(--audit-primary)';"
+                                           title="Print Requisition Receipt">
+                                            <i data-lucide="receipt" style="width: 13px; height: 13px;"></i>
+                                            <span>Receipt</span>
+                                        </a>
+                                    @else
+                                        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 800;">Awaiting Collection</span>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
@@ -1161,83 +1171,6 @@
                                 <td colspan="7" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
                                     <i data-lucide="file-check" style="width: 40px; height: 40px; margin-bottom: 1rem; opacity: 0.25;"></i>
                                     <p style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">No SRA receipts pending verification.</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    {{-- PANEL 6b: SERVICE SRA APPROVALS (inside pending-sra-tab) --}}
-    <div style="margin-top: 2rem;" id="service-sra-pending-section">
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
-            <div style="width: 4px; height: 24px; background: #8b5cf6; border-radius: 2px;"></div>
-            <h3 style="font-size: 0.95rem; font-weight: 900; color: var(--text-main); margin: 0;">Pending Service SRA Approvals</h3>
-            @if($pendingServiceSras->count() > 0)
-                <span style="background: rgba(139,92,246,0.15); color: #8b5cf6; font-size: 0.65rem; font-weight: 900; padding: 3px 8px; border-radius: 99px;">{{ $pendingServiceSras->count() }} pending</span>
-            @endif
-        </div>
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium);">
-            <div style="overflow-x: auto;">
-                <table class="audit-table">
-                    <thead>
-                        <tr>
-                            <th>SRA No.</th>
-                            <th>Date Submitted</th>
-                            <th>Supplier</th>
-                            <th>Details</th>
-                            <th>Submitted By</th>
-                            <th>Admin Approved By</th>
-                            <th style="text-align: center;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($pendingServiceSras as $sra)
-                            <tr class="log-row">
-                                <td style="font-weight: 900; font-family: monospace; color: #8b5cf6;">
-                                    {{ $sra->sra_number }}
-                                </td>
-                                <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
-                                    {{ $sra->created_at->format('d/m/Y') }}
-                                </td>
-                                <td style="font-weight: 800; color: var(--text-main);">
-                                    {{ $sra->supplier_name }}
-                                </td>
-                                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); font-size: 0.8rem;" title="{{ $sra->details }}">
-                                    {{ Str::limit($sra->details, 50) }}
-                                </td>
-                                <td style="font-weight: 800;">
-                                    {{ $sra->submitter->name ?? 'N/A' }}
-                                    <div style="font-size: 0.72rem; color: var(--text-muted);">{{ $sra->dept }}</div>
-                                </td>
-                                <td style="font-weight: 700; color: var(--text-muted); font-size: 0.82rem;">
-                                    {{ $sra->admin_approved_by ?? 'N/A' }}
-                                    @if($sra->admin_approved_at)
-                                        <div style="font-size: 0.7rem;">{{ $sra->admin_approved_at->format('d/m/Y') }}</div>
-                                    @endif
-                                </td>
-                                <td style="text-align: center; vertical-align: middle;">
-                                    <button onclick="openServiceSraAuditModal(this)"
-                                        data-id="{{ $sra->id }}"
-                                        data-sra-number="{{ $sra->sra_number }}"
-                                        data-supplier="{{ $sra->supplier_name }}"
-                                        data-details="{{ Str::limit($sra->details, 80) }}"
-                                        style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(139,92,246,0.08); color: #8b5cf6; font-size: 0.72rem; font-weight: 800; border: 1px solid rgba(139,92,246,0.2); cursor: pointer; transition: all 0.2s;"
-                                        onmouseover="this.style.background='#8b5cf6'; this.style.color='white';"
-                                        onmouseout="this.style.background='rgba(139,92,246,0.08)'; this.style.color='#8b5cf6';"
-                                        title="Review & Approve Service SRA">
-                                        <i data-lucide="file-signature" style="width: 13px; height: 13px;"></i>
-                                        <span>Review & Approve</span>
-                                    </button>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" style="text-align: center; padding: 2.5rem 1.5rem; color: var(--text-muted);">
-                                    <i data-lucide="file-check" style="width: 32px; height: 32px; margin-bottom: 0.75rem; opacity: 0.25;"></i>
-                                    <p style="font-weight: 800; font-size: 0.9rem; color: var(--text-main);">No Service SRA receipts pending auditor verification.</p>
                                 </td>
                             </tr>
                         @endforelse
@@ -1601,6 +1534,24 @@
                 }
             });
         }
+
+        // Load staff provisioning lists
+        if (typeof loadTempAccounts === 'function') {
+            loadTempAccounts(true);
+        }
+        if (typeof loadPendingRegistrations === 'function') {
+            loadPendingRegistrations(true);
+        }
+
+        // Auto-refresh every 10 seconds for real-time responsiveness
+        setInterval(() => {
+            if (typeof loadTempAccounts === 'function') {
+                loadTempAccounts(true);
+            }
+            if (typeof loadPendingRegistrations === 'function') {
+                loadPendingRegistrations(true);
+            }
+        }, 10000);
     });
 
     // ── Service SRA Audit Modal ────────────────────────────────────────────────
@@ -1687,6 +1638,286 @@
                 approveBtn.disabled = false;
                 approveBtn.style.opacity = '1';
             }
+        }
+    }
+
+    // ── Staff Provisioning (AJAX wrappers) ──────────────────────────────────────
+    async function loadTempAccounts(isSilent = false) {
+        const container = document.getElementById('tempAccountsList');
+        if (!container) return;
+
+        if (!isSilent) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                    <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;"></i><br>Loading department staff directory...
+                </div>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        try {
+            const res = await fetch('{{ route("dept-head.temp-requisitioners.index") }}');
+            const data = await res.json();
+
+            if (!data.success || !data.accounts || data.accounts.length === 0) {
+                const emptyHtml = `
+                    <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
+                        <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
+                        <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No department staff found</div>
+                        <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any registered staff in your department will appear here.</div>
+                    </div>`;
+                if (container.innerHTML !== emptyHtml) {
+                    container.innerHTML = emptyHtml;
+                }
+                window._lastStaffDataString = '';
+                return;
+            }
+
+            const currentDataString = JSON.stringify(data.accounts);
+            if (isSilent && window._lastStaffDataString === currentDataString) {
+                return;
+            }
+            window._lastStaffDataString = currentDataString;
+
+            let rows = data.accounts.map(acc => {
+                const isAccessActive = acc.can_make_requisition;
+                const badgeStyle = isAccessActive 
+                    ? 'background:rgba(16,185,129,.1);color:#10b981;' 
+                    : 'background:rgba(239,68,68,.1);color:#ef4444;';
+                const badgeText = isAccessActive ? 'Active Access' : 'Access Suspended';
+                
+                const btnStyle = isAccessActive
+                    ? 'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;'
+                    : 'background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;';
+                const btnText = isAccessActive ? 'Suspend Access' : 'Grant Access';
+                const btnIcon = isAccessActive ? 'user-minus' : 'user-check';
+
+                return `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:.75rem;">
+                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(99,102,241,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#6366f1;">
+                            ${(acc.name || acc.username).charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${acc.name || '@' + acc.username}</div>
+                            <div style="font-size:.7rem;color:var(--text-muted);">${acc.role} · @${acc.username}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(16,185,129,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#10b981' : '#64748b'};">
+                            ${acc.is_online ? '● ONLINE' : '○ OFFLINE'}
+                        </span>
+                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;${badgeStyle}">
+                            ${badgeText}
+                        </span>
+                        <button onclick="toggleStaffAccess(${acc.id}, '${acc.username}', ${isAccessActive})" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;${btnStyle}">
+                            <i data-lucide="${btnIcon}" style="width:13px;height:13px;"></i> ${btnText}
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `<div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">${rows}</div>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        } catch (e) {
+            if (!isSilent) {
+                container.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load staff list.</div>`;
+            }
+        }
+    }
+
+    async function toggleStaffAccess(id, username, isCurrentlyActive) {
+        const actionWord = isCurrentlyActive ? 'Suspend' : 'Grant';
+        const actionColor = isCurrentlyActive ? '#ef4444' : '#10b981';
+        
+        const confirm = await Swal.fire({
+            title: `${actionWord} Requisition Access?`,
+            text: `Are you sure you want to ${actionWord.toLowerCase()} requisition privileges for @${username}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: actionColor,
+            cancelButtonColor: '#64748b',
+            confirmButtonText: `Yes, ${actionWord}`,
+            cancelButtonText: 'Cancel'
+        });
+        if (!confirm.isConfirmed) return;
+
+        try {
+            const res = await fetch(`/dept-head/staff/${id}/toggle-request-access`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire({ 
+                    title: 'Updated!', 
+                    text: data.message, 
+                    icon: 'success', 
+                    timer: 2000, 
+                    showConfirmButton: false 
+                });
+                loadTempAccounts();
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        } catch (e) {
+            Swal.fire('Error', 'Network error while updating access privileges.', 'error');
+        }
+    }
+
+    async function loadPendingRegistrations(isSilent = false) {
+        const container = document.getElementById('pendingRegistrationsList');
+        if (!container) return;
+
+        if (!isSilent) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                    <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;"></i><br>Loading pending registrations...
+                </div>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        try {
+            const res = await fetch('{{ route("dept-head.pending-registrations") }}');
+            const data = await res.json();
+
+            if (!data.success || !data.pending || data.pending.length === 0) {
+                const emptyHtml = `
+                    <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
+                        <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
+                        <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No pending registrations</div>
+                        <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any pending staff registrations in your department will appear here.</div>
+                    </div>`;
+                if (container.innerHTML !== emptyHtml) {
+                    container.innerHTML = emptyHtml;
+                }
+                window._lastPendingRegsString = '';
+                return;
+            }
+
+            const currentDataString = JSON.stringify(data.pending);
+            if (isSilent && window._lastPendingRegsString === currentDataString) {
+                return;
+            }
+            window._lastPendingRegsString = currentDataString;
+
+            let rows = data.pending.map(reg => {
+                return `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:.75rem;">
+                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(99,102,241,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#6366f1;">
+                            ${(reg.name || reg.username).charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${reg.name}</div>
+                            <div style="font-size:.7rem;color:var(--text-muted);">Requisitioner · @${reg.username} · Phone: ${reg.phone} · Staff ID: ${reg.service_number}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(245,158,11,.1);color:#d97706;">
+                            PENDING HOD APPROVAL
+                        </span>
+                        <button onclick="approveRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;">
+                            <i data-lucide="user-check" style="width:13px;height:13px;"></i> Approve
+                        </button>
+                        <button onclick="rejectRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;">
+                            <i data-lucide="user-x" style="width:13px;height:13px;"></i> Decline
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `<div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">${rows}</div>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        } catch (e) {
+            if (!isSilent) {
+                container.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load pending registrations list.</div>`;
+            }
+        }
+    }
+
+    async function approveRegistration(id, username) {
+        const confirm = await Swal.fire({
+            title: 'Approve Registration?',
+            text: `Are you sure you want to approve requisitioner privileges for @${username}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Approve',
+            cancelButtonText: 'Cancel'
+        });
+        if (!confirm.isConfirmed) return;
+
+        try {
+            const res = await fetch(`/dept-head/registration/${id}/approve`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire({ 
+                    title: 'Approved!', 
+                    text: data.message, 
+                    icon: 'success', 
+                    timer: 2000, 
+                    showConfirmButton: false 
+                });
+                loadPendingRegistrations();
+                if (typeof loadTempAccounts === 'function') {
+                    loadTempAccounts();
+                }
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        } catch (e) {
+            Swal.fire('Error', 'Network error while approving registration.', 'error');
+        }
+    }
+
+    async function rejectRegistration(id, username) {
+        const confirm = await Swal.fire({
+            title: 'Decline Registration?',
+            text: `Are you sure you want to decline and remove @${username}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, Decline',
+            cancelButtonText: 'Cancel'
+        });
+        if (!confirm.isConfirmed) return;
+
+        try {
+            const res = await fetch(`/dept-head/registration/${id}/reject`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire({ 
+                    title: 'Declined!', 
+                    text: data.message, 
+                    icon: 'success', 
+                    timer: 2000, 
+                    showConfirmButton: false 
+                });
+                loadPendingRegistrations();
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        } catch (e) {
+            Swal.fire('Error', 'Network error while declining registration.', 'error');
         }
     }
 

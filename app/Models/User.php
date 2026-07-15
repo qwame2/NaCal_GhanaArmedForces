@@ -228,7 +228,7 @@ class User extends Authenticatable implements LdapAuthenticatable
      */
     public function isDepartmentHead(): bool
     {
-        return in_array($this->role, ['Department Head', 'Dept Head HR', 'Head of Welfare']);
+        return in_array($this->role, ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Auditor']);
     }
 
     /**

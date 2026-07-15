@@ -274,26 +274,70 @@ class DGController extends Controller
                 'ip_address' => $request->ip(),
             ]);
 
-            // Notify Head of Stores (Admin)
-            $admins = User::getApproversQuery()->where('is_active', true)->get();
-            foreach ($admins as $admin) {
-                $priorityLabel = strtoupper($req->priority);
-                $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
-                $msg .= "<b style='color:#10b981;'>✅ DG APPROVED REQUISITION — {$priorityLabel} PRIORITY</b><br><br>";
-                $msg .= "Director General <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
-                $msg .= "This requisition has been cleared for final processing and stock checkout.<br><br>";
-                $msg .= "<b>Department:</b> {$req->department}<br>";
-                $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
-                $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br><br>";
-                $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Perform Final Head Review</a>";
-                $msg .= "</div>";
+            // Determine if Stores HOD/Authorizer approval is required
+            $requiresStoresDeptHeadApproval = false;
+            $storesApprovalCategories = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
+            if (is_string($storesApprovalCategories)) {
+                $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
+            }
+            foreach ($req->items as $item) {
+                if (in_array($item->category, $storesApprovalCategories)) {
+                    $requiresStoresDeptHeadApproval = true;
+                    break;
+                }
+            }
 
-                Message::create([
-                    'sender_id' => auth()->id(),
-                    'receiver_id' => $admin->id,
-                    'message' => $msg,
-                    'is_automated' => true,
-                ]);
+            if ($requiresStoresDeptHeadApproval) {
+                // Notify Department Head (Stores) / Authorizer
+                $storesHeads = User::whereIn('role', ['Main Admin', 'Sub Main Admin', 'Department Head'])
+                    ->where(fn($q) => $q->where('department', 'Stores')->orWhere('department', 'Store'))
+                    ->where('is_active', true)
+                    ->get();
+                foreach ($storesHeads as $storesHead) {
+                    $priorityLabel = strtoupper($req->priority);
+                    $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
+                    $msg .= "<b style='color:#10b981;'>📋 DG APPROVED REQUISITION — {$priorityLabel} PRIORITY</b><br><br>";
+                    $msg .= "Director General <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
+                    $msg .= "This requisition requires Authorizer Review.<br><br>";
+                    $msg .= "<b>Department:</b> {$req->department}<br>";
+                    $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
+                    $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br><br>";
+                    $msg .= "<a href='" . route('main-admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review Requisition</a>";
+                    $msg .= "</div>";
+
+                    Message::create([
+                        'sender_id' => auth()->id(),
+                        'receiver_id' => $storesHead->id,
+                        'message' => $msg,
+                        'is_automated' => true,
+                    ]);
+                }
+            } else {
+                // Auto-approve Authorizer step if it's not required
+                $req->main_admin_status = 'approved';
+                $req->save();
+
+                // Notify Head of Stores (Admin)
+                $admins = User::getApproversQuery()->where('is_active', true)->get();
+                foreach ($admins as $admin) {
+                    $priorityLabel = strtoupper($req->priority);
+                    $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #10b981;border-radius:12px;background:rgba(16,185,129,0.05);'>";
+                    $msg .= "<b style='color:#10b981;'>✅ DG APPROVED REQUISITION — {$priorityLabel} PRIORITY</b><br><br>";
+                    $msg .= "Director General <b>" . auth()->user()->name . "</b> has approved store requisition Ref: #<b>{$req->id}</b>.<br><br>";
+                    $msg .= "This requisition has been cleared for final processing and stock checkout.<br><br>";
+                    $msg .= "<b>Department:</b> {$req->department}<br>";
+                    $msg .= "<b>Requested by:</b> {$req->requester_name}<br>";
+                    $msg .= "<b>Purpose:</b> " . e($req->purpose) . "<br><br>";
+                    $msg .= "<a href='" . route('admin.requisitions') . "?open_id={$req->id}' style='display:inline-block;background:#10b981;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Perform Final Head Review</a>";
+                    $msg .= "</div>";
+
+                    Message::create([
+                        'sender_id' => auth()->id(),
+                        'receiver_id' => $admin->id,
+                        'message' => $msg,
+                        'is_automated' => true,
+                    ]);
+                }
             }
 
             // Notify HOD

@@ -447,7 +447,7 @@
                     <img src="{{ asset('img/NACOC1.png') }}" style="width: 32px;" alt="Logo">
                 </div>
                 <h2 style="color: var(--text-main); font-size: 1.6rem; font-weight: 950; letter-spacing: -0.04em; margin-bottom: 0.15rem;">NACOC</h2>
-                <p style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Stores Inventory Management System(NSIMs)</p>
+                <p style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Stores Inventory Management System<span style="color:#10b981;">(NSIMs)</span></p>
 
                 <!-- Target Interface Selector (Hidden for security) -->
                 <div class="interface-selector" style="display: none !important; margin-top: 1.5rem; width: 100%; max-width: 300px; margin-inline: auto;">
@@ -754,8 +754,8 @@
                                                 <option value="Material Development Department">Material Development Department</option>
                                                 <option value="Client Service Department">Client Service Department</option>
                                             </optgroup>
-                                            <optgroup label="NON DEPARTMENTAL">
-                                                <option value="Non Departmental">Non Departmental</option>
+                                            <optgroup label="AUDIT DEPARTMENT">
+                                                <option value="Audit Department">Audit Department</option>
                                             </optgroup>
                                         </select>
                                     </div>
@@ -1711,6 +1711,9 @@
             $('#selfDeptSelect').on('select2:close', function() {
                 $(this).closest('.input-wrapper').removeClass('select2-focused');
             });
+
+            // Initial check on load (in case of cached inputs or redirect back withInput)
+            checkDepartmentHead();
         }
 
         // Sponsor Select2 configuration removed since Sponsor is now a text input

@@ -185,6 +185,24 @@ class AuditorController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+         $pendingStaffRegistrationsCount = \App\Models\User::where(function($q) {
+                $q->where('department', auth()->user()->department)
+                  ->orWhere('sponsored_by', auth()->id());
+            })
+            ->where('registration_status', 'pending_hod')
+            ->where('role', 'Requisitioner')
+            ->count();
+
+        $departmentRequisitions = \App\Models\StoreRequisition::where(function($q) {
+                $q->where('department', auth()->user()->department)
+                  ->orWhereHas('requester', function($sq) {
+                      $sq->where('sponsored_by', auth()->id());
+                  });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(15, ['*'], 'dept_reqs_page')
+            ->withQueryString();
+
         return view('auditor.index', compact(
             'totalLogsCount',
             'totalVariance',
@@ -194,10 +212,12 @@ class AuditorController extends Controller
             'issuedItems',
             'returnedItems',
             'requisitions',
+            'departmentRequisitions',
             'ledgeMap',
             'auditUsers',
             'pendingSras',
-            'pendingServiceSras'
+            'pendingServiceSras',
+            'pendingStaffRegistrationsCount'
         ));
     }
 

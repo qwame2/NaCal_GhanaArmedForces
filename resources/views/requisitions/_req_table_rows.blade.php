@@ -231,12 +231,10 @@
             <span class="status-pill" style="background:{{ $sb['bg'] }};color:{{ $sb['color'] }};font-size:0.65rem;">
                 ● {{ $sb['label'] }}
             </span>
-            @if(auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0)
-                @if($req->status === 'pending')
-                    <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;font-weight:600;">
-                        Next: <span style="color:var(--text-main);font-weight:800;">{{ $req->approver_name }}</span>
-                    </div>
-                @endif
+            @if($req->status === 'pending')
+                <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;font-weight:600;">
+                    Next: <span style="color:var(--text-main);font-weight:800;">{{ $req->approver_name }}</span>
+                </div>
             @endif
         </td>
         <td data-label="Usage">

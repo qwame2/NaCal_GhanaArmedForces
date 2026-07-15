@@ -2,7 +2,7 @@
 
 @section('content')
     @php
-        $isOtherHOD = in_array(auth()->user()->role, ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+        $isOtherHOD = in_array(auth()->user()->role, ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Auditor'])
             && (strcasecmp(auth()->user()->department ?? '', 'Stores') !== 0 && strcasecmp(auth()->user()->department ?? '', 'Store') !== 0);
         $dgCategories = \App\Models\Setting::get('dg_approval_categories', []);
         if (!is_array($dgCategories)) {
@@ -1545,7 +1545,7 @@
                 </div>
                 <div>
                     <div class="brand-name">NACOC</div>
-                    <div class="brand-subtitle">Stores Inventory Management System(NSIMs)</div>
+                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:#10b981;">(NSIMs)</span></div>
                 </div>
             </a>
 
@@ -1605,7 +1605,7 @@
                         <span class="cart-badge" id="cart-header-count" style="border: none; position: static;">0</span>
                     </button>
                     <a href="{{ route('requisitions.history') }}" class="hero-btn hero-btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-                        <i data-lucide="clock" style="width: 16px;"></i> Truck Items
+                        <i data-lucide="clock" style="width: 16px;"></i> Track Items
                     </a>
                 </div>
             </div>

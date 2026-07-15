@@ -2,7 +2,7 @@
 
 @section('content')
     @php
-        $isOtherHOD = in_array(auth()->user()->role, ['Department Head', 'Dept Head HR', 'Head of Welfare'])
+        $isOtherHOD = in_array(auth()->user()->role, ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Auditor'])
             && (strcasecmp(auth()->user()->department ?? '', 'Stores') !== 0 && strcasecmp(auth()->user()->department ?? '', 'Store') !== 0);
     @endphp
     <style>
@@ -596,7 +596,7 @@
                 </div>
                 <div>
                     <div class="brand-name">NACOC</div>
-                    <div class="brand-subtitle">Stores Inventory Management System(NSIMs)</div>
+                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:#10b981;">(NSIMs)</span></div>
                 </div>
             </a>
 
