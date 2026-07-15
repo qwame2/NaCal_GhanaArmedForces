@@ -955,7 +955,7 @@ class AuthController extends Controller
         $deptHeadId = null;
 
         if ($isRequisitioner) {
-            $deptHead = User::whereIn('role', ['Department Head', 'Main Admin'])
+            $deptHead = User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare', 'Main Admin', 'Sub Main Admin'])
                 ->where('department', $request->department)
                 ->where('is_active', true)
                 ->where('registration_status', 'approved')
