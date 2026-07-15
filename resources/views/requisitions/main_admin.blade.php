@@ -1793,8 +1793,9 @@
         </div>`;
 
         // Check if processed already
+        const isActingAsHOD = isBackupActive && (data.department === "{{ auth()->user()->department }}");
         let isProcessed = false;
-        if (isStoresHead) {
+        if (isStoresHead && !isActingAsHOD) {
             if (data.status !== 'pending') {
                 isProcessed = true;
             } else if (data.origin_admin_status === 'pending') {
@@ -1807,7 +1808,7 @@
         }
         let decisionHtml = '';
 
-        if (isStoresHead && data.origin_admin_status === 'pending') {
+        if (isStoresHead && !isActingAsHOD && data.origin_admin_status === 'pending') {
             decisionHtml = `
             <div style="background: rgba(99, 102, 241, 0.05); border: 1.5px dashed rgba(99, 102, 241, 0.25); border-radius: 16px; padding: 1.25rem; margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
                 <div style="display: flex; align-items: center; gap: 8px;">
@@ -1913,7 +1914,7 @@
             }
         } else {
             // Render decision log status
-            const statusVal = isStoresHead ? data.main_admin_status : data.origin_admin_status;
+            const statusVal = (isStoresHead && !isActingAsHOD) ? data.main_admin_status : data.origin_admin_status;
             let decisionLabel = statusVal === 'approved' ? 'APPROVED & ESCALATED' : 'DECLINED';
             let decisionColor = statusVal === 'approved' ? '#10b981' : '#ef4444';
             
@@ -2123,10 +2124,12 @@
             return;
         }
 
+        const isActingAsHOD = isBackupActive && (window.currentReqData && window.currentReqData.department === "{{ auth()->user()->department }}");
+
         Swal.fire({
             title: decision === 'approved' ? 'Approve?' : 'Decline Requisition?',
             text: decision === 'approved' ?
-                (isStoresHead ?
+                (isStoresHead && !isActingAsHOD ?
                 'This will verify the request and route it immediately to the Head of Stores for final volume allocations.' :
                 'This will verify the request and route it immediately to the Department Head (Stores) for review.') :
                 'This will de-activate the requisition and return it as declined to the requesting department.',

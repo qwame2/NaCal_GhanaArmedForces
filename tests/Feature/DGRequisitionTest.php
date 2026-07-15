@@ -391,4 +391,73 @@ class DGRequisitionTest extends TestCase
         $this->assertEquals('declined', $requisition->status); // Requisition overall status is declined
         $this->assertEquals('Invalid justification', $requisition->dg_decline_reason);
     }
+
+    /**
+     * Test that a Delegator (Sub Main Admin) can approve their own department's pending requisition.
+     */
+    public function test_delegator_can_approve_own_department_requisition(): void
+    {
+        $delegator = User::factory()->create([
+            'role' => 'Sub Main Admin',
+            'department' => 'HR',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $requisition = StoreRequisition::create([
+            'requester_name' => 'HR Staff',
+            'department' => 'HR',
+            'purpose' => 'Need stationaries',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'usage_type' => 'permanent',
+            'origin_admin_status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($delegator)->postJson("/main-admin/requisitions/{$requisition->id}/process", [
+            'status' => 'approved',
+        ]);
+
+        $response->assertStatus(200)
+                 ->assertJson(['success' => true]);
+
+        $requisition->refresh();
+        $this->assertEquals('approved', $requisition->origin_admin_status);
+    }
+
+    /**
+     * Test that a Delegator (Sub Main Admin) can decline their own department's pending requisition.
+     */
+    public function test_delegator_can_decline_own_department_requisition(): void
+    {
+        $delegator = User::factory()->create([
+            'role' => 'Sub Main Admin',
+            'department' => 'HR',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $requisition = StoreRequisition::create([
+            'requester_name' => 'HR Staff',
+            'department' => 'HR',
+            'purpose' => 'Need stationaries',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'usage_type' => 'permanent',
+            'origin_admin_status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($delegator)->postJson("/main-admin/requisitions/{$requisition->id}/process", [
+            'status' => 'declined',
+            'decline_reason' => 'Not needed',
+        ]);
+
+        $response->assertStatus(200)
+                 ->assertJson(['success' => true]);
+
+        $requisition->refresh();
+        $this->assertEquals('declined', $requisition->origin_admin_status);
+        $this->assertEquals('declined', $requisition->status);
+        $this->assertEquals('Not needed', $requisition->decline_reason);
+    }
 }

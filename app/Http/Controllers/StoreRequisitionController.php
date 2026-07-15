@@ -1829,7 +1829,8 @@ class StoreRequisitionController extends Controller
 
         // Check if the stores head is acting as the originating HOD for a Stores department request
         $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
-            || (auth()->user()->isDepartmentHead() && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending');
+            || (auth()->user()->isDepartmentHead() && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending')
+            || (auth()->user()->role === 'Sub Main Admin' && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending');
 
         if (!$isStoresHead || $isActingAsOriginHOD) {
             // Originating department head check
@@ -1859,7 +1860,8 @@ class StoreRequisitionController extends Controller
 
         if ($request->status === 'approved') {
             $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
-                || (auth()->user()->isDepartmentHead() && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending');
+                || (auth()->user()->isDepartmentHead() && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending')
+                || (auth()->user()->role === 'Sub Main Admin' && $req->department === auth()->user()->department && $req->origin_admin_status === 'pending');
 
             $requiresStoresDeptHeadApproval = false;
             if (!$isStoresHead || $isActingAsOriginHOD) {
@@ -2037,7 +2039,7 @@ class StoreRequisitionController extends Controller
             }
         } else {
             // Requisition Declined
-            if (!$isStoresHead) {
+            if (!$isStoresHead || $isActingAsOriginHOD) {
                 $req->origin_admin_status = 'declined';
                 $actionName = 'DEPT_HEAD_DECLINE';
                 $logDesc = "Department Head " . auth()->user()->name . " declined store requisition #{$req->id} from department: {$req->department}.";
