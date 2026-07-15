@@ -713,13 +713,7 @@
                     @endif
                 </div>
 
-                <div>
-                    <label class="form-label">Priority Level *</label>
-                    <select id="priority" class="form-input">
-                        <option value="normal" selected>Normal Processing</option>
-                        <option value="urgent">Urgent Processing</option>
-                    </select>
-                </div>
+                <input type="hidden" id="priority" value="normal">
 
                 <div>
                     <label class="form-label">Usage Type *</label>
