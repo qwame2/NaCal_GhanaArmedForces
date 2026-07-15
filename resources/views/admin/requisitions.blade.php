@@ -1055,22 +1055,14 @@
                 </select>
             </div>
 
-            <div class="filter-field-wrapper" style="min-width: 160px; flex: 1;">
-                <i data-lucide="alert-circle" class="filter-icon" style="width: 14px; height: 14px;"></i>
-                <select name="priority" onchange="updateFilters()" class="filter-control">
-                    <option value="">All Priorities</option>
-                    <option value="urgent" {{ request('priority')==='urgent'?'selected':'' }}>Urgent</option>
-                    <option value="normal" {{ request('priority')==='normal'?'selected':'' }}>Normal</option>
-                    <option value="low" {{ request('priority')==='low'?'selected':'' }}>Low</option>
-                </select>
-            </div>
+
 
             <div class="filter-field-wrapper" style="flex: 1.2; min-width: 220px;">
                 <i data-lucide="building" class="filter-icon" style="width: 15px; height: 15px;"></i>
                 <input type="text" name="department" id="dept_input" value="{{ request('department') }}" placeholder="Filter by department..." class="filter-control" autocomplete="off">
             </div>
 
-            @if(request()->anyFilled(['status','priority','department','search_id']))
+            @if(request()->anyFilled(['status','department','search_id']))
             <a href="{{ route('admin.requisitions') }}" class="filter-clear-btn">
                 <i data-lucide="x-circle" style="width:16px; height:16px;"></i>
                 <span>Clear Filters</span>

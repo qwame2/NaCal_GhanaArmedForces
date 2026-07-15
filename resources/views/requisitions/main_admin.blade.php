@@ -1269,16 +1269,7 @@
                     <option value="history"  {{ request('status')==='history'  ?'selected':'' }}>Oversight History (All)</option>
                 </select>
             </div>
-            {{-- Priority --}}
-            <div class="filter-field-wrapper" style="min-width:150px;flex:1;">
-                <i data-lucide="alert-circle" class="filter-icon" style="width:14px;height:14px;"></i>
-                <select name="priority" class="filter-control" id="filter-priority">
-                    <option value="">All Priorities</option>
-                    <option value="urgent" {{ request('priority')==='urgent'?'selected':'' }}>Urgent</option>
-                    <option value="normal" {{ request('priority')==='normal'?'selected':'' }}>Normal</option>
-                    <option value="low"    {{ request('priority')==='low'   ?'selected':'' }}>Low</option>
-                </select>
-            </div>
+
             {{-- Department --}}
             <div class="filter-field-wrapper" style="min-width:200px;flex:1.5;">
                 <i data-lucide="building" class="filter-icon" style="width:14px;height:14px;"></i>
@@ -1358,7 +1349,6 @@
         function getFilters() {
             return {
                 status:      document.getElementById('filter-status')?.value || '',
-                priority:    document.getElementById('filter-priority')?.value || '',
                 department:  document.getElementById('filter-department')?.value || '',
                 date_from:   document.getElementById('filter-date-from')?.value || '',
                 date_to:     document.getElementById('filter-date-to')?.value || '',
@@ -1367,7 +1357,7 @@
         }
 
         function hasActiveFilters(f) {
-            return f.priority || f.department || f.date_from || f.date_to ||
+            return f.department || f.date_from || f.date_to ||
                    (f.status && f.status !== 'pending');
         }
 
@@ -1439,7 +1429,7 @@
         // --- Wire filters ---
         function wireFilters() {
             // Instant on select/date change
-            ['filter-status', 'filter-priority', 'filter-date-from', 'filter-date-to'].forEach(function(id) {
+            ['filter-status', 'filter-date-from', 'filter-date-to'].forEach(function(id) {
                 const el = document.getElementById(id);
                 if (el) el.addEventListener('change', function() { fetchTable(1); });
             });
@@ -1456,7 +1446,6 @@
             if (clearBtn) {
                 clearBtn.addEventListener('click', function() {
                     document.getElementById('filter-status').value    = 'pending';
-                    document.getElementById('filter-priority').value  = '';
                     document.getElementById('filter-department').value = '';
                     document.getElementById('filter-date-from').value = '';
                     document.getElementById('filter-date-to').value   = '';
