@@ -1597,7 +1597,7 @@
             <div class="hero-content">
                 
                 <h2 class="hero-title">Request Store Supplies</h2>
-                <p class="hero-desc">Welcome to the NSIMs! Where all your stores requisition are made easier.</p>
+                <p class="hero-desc">Welcome to the NSIMs! Here, all your store requisitions are made easier.</p>
                 <div class="hero-actions-container">
                     <button class="hero-btn" id="cart-nav-btn" style="position: relative; display: inline-flex; align-items: center; gap: 8px;">
                         <i data-lucide="shopping-cart" style="width: 16px;"></i>
