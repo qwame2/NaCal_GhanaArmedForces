@@ -706,6 +706,8 @@
                         </span>
                         @elseif(($req->origin_admin_status ?? 'pending') === 'pending')
                         <span style="font-size:.75rem;color:var(--text-muted);font-style:italic;font-weight:700;">Awaiting Dept Head Approval</span>
+                        @elseif($req->requires_dg_approval && ($req->dg_status ?? 'pending') === 'pending')
+                        <span style="font-size:.75rem;color:var(--text-muted);font-style:italic;font-weight:700;">Awaiting DG Approval</span>
                         @elseif(($req->main_admin_status ?? 'pending') === 'pending')
                         <span style="font-size:.75rem;color:var(--text-muted);font-style:italic;font-weight:700;">Awaiting Authorizer Review</span>
                         @else

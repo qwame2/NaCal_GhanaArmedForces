@@ -4,11 +4,11 @@
             $sraStatus = $req->approval_status;
             $badgeColor = '#ef4444';
             $badgeBg = 'rgba(239,68,68,0.1)';
-            $badgeLabel = 'Awaiting Head of Admin Review';
+            $badgeLabel = 'Awaiting Authorizer Review';
             if ($req->auditor_status === 'approved') {
                 $badgeColor = '#6366f1';
                 $badgeBg = 'rgba(99,102,241,0.1)';
-                $badgeLabel = 'Auditor Approved (Pending Head of Admin)';
+                $badgeLabel = 'Auditor Approved (Pending Authorizer)';
             }
             
             $usageLabel = 'Inventory SRA';
@@ -47,11 +47,7 @@
                     {{ Str::limit($itemsList, 40) }}
                 </div>
             </td>
-            <td data-label="Priority">
-                <span class="status-pill" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size:0.65rem;">
-                    SRA
-                </span>
-            </td>
+
             <td data-label="Status">
                 <span class="status-pill" style="background:{{ $badgeBg }};color:{{ $badgeColor }};font-size:0.65rem;">
                     ● {{ $badgeLabel }}
@@ -87,7 +83,7 @@
             $sraStatus = $req->status;
             $badgeColor = '#6366f1';
             $badgeBg = 'rgba(99,102,241,0.1)';
-            $badgeLabel = 'Awaiting Head of Admin Review';
+            $badgeLabel = 'Awaiting Authorizer Review';
             if ($sraStatus === 'auditor_pending') {
                 $badgeColor = '#8b5cf6';
                 $badgeBg = 'rgba(139,92,246,0.1)';
@@ -144,11 +140,7 @@
                     {{ $req->details }}
                 </div>
             </td>
-            <td data-label="Priority">
-                <span class="status-pill" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; font-size:0.65rem;">
-                    SRA
-                </span>
-            </td>
+
             <td data-label="Status">
                 <span class="status-pill" style="background:{{ $badgeBg }};color:{{ $badgeColor }};font-size:0.65rem;">
                     ● {{ $badgeLabel }}
@@ -222,11 +214,7 @@
                 {{ $purposeText }}
             </div>
         </td>
-        <td data-label="Priority">
-            <span class="status-pill" style="background:{{ $pb['bg'] }};color:{{ $pb['color'] }};font-size:0.65rem;">
-                {{ $pb['label'] }}
-            </span>
-        </td>
+
         <td data-label="Status">
             <span class="status-pill" style="background:{{ $sb['bg'] }};color:{{ $sb['color'] }};font-size:0.65rem;">
                 ● {{ $sb['label'] }}
@@ -263,19 +251,7 @@
                 }
                 $isReqProcessed = false;
                 if ($isStoresHead) {
-                    if ($req->status !== 'pending') {
-                        $isReqProcessed = true;
-                    } else {
-                        if ($req->main_admin_status === 'pending') {
-                            $isReqProcessed = false;
-                        } else {
-                            if ($req->requires_dg_approval && $req->dg_status !== 'approved') {
-                                $isReqProcessed = true;
-                            } else {
-                                $isReqProcessed = false;
-                            }
-                        }
-                    }
+                    $isReqProcessed = ($req->status !== 'pending');
                 } else {
                     $isReqProcessed = ($req->origin_admin_status === 'approved' || $req->origin_admin_status === 'declined' || $req->status === 'approved' || $req->status === 'partially_approved' || $req->status === 'declined');
                 }

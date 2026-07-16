@@ -35,8 +35,9 @@ class StoreRequisition extends Model
         if (!is_array($storesApprovalCategories)) {
             $storesApprovalCategories = [];
         }
+        $storesApprovalCategories = array_map('strtoupper', array_map('trim', $storesApprovalCategories));
         foreach ($this->items as $item) {
-            if (in_array($item->category, $storesApprovalCategories)) {
+            if (in_array(strtoupper(trim($item->category)), $storesApprovalCategories)) {
                 return true;
             }
         }
@@ -142,7 +143,7 @@ class StoreRequisition extends Model
             if ($this->requires_dg_approval && ($this->dg_status ?? 'pending') === 'pending') {
                 return ['label' => 'Awaiting DG Approval', 'color' => '#8b5cf6', 'bg' => 'rgba(139,92,246,0.1)'];
             }
-            if (($this->main_admin_status ?? 'pending') === 'pending' && $this->requiresAuthorizerApproval()) {
+            if (($this->main_admin_status ?? 'pending') === 'pending') {
                 return ['label' => 'Awaiting Authorizer Review', 'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'];
             }
             return ['label' => 'Awaiting Head of Stores Review', 'color' => '#ef4444', 'bg' => 'rgba(239,68,68,0.1)'];
@@ -176,8 +177,9 @@ class StoreRequisition extends Model
         if (is_string($storesApprovalCategories)) {
             $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
         }
+        $storesApprovalCategories = array_map('strtoupper', array_map('trim', $storesApprovalCategories));
         foreach ($this->items as $item) {
-            if (in_array($item->category, $storesApprovalCategories)) {
+            if (in_array(strtoupper(trim($item->category)), $storesApprovalCategories)) {
                 return true;
             }
         }
@@ -202,7 +204,7 @@ class StoreRequisition extends Model
         if ($this->requires_dg_approval && ($this->dg_status ?? 'pending') === 'pending') {
             return 'Director General';
         }
-        if (($this->main_admin_status ?? 'pending') === 'pending' && $this->requiresAuthorizerApproval()) {
+        if (($this->main_admin_status ?? 'pending') === 'pending') {
             return 'Authorizer';
         }
         return 'Head of Stores';
@@ -257,8 +259,8 @@ class StoreRequisition extends Model
         }
 
         // 3. Head of Admin or Delegators (Authorizers) (main_admin_status) (if required)
-        $requiresAuth = $this->requiresAuthorizerApproval();
-        if (!$requiresAuth) {
+        $requiresAuth = $this->requiresAuthorizerApproval() || ($this->main_admin_status ?? 'pending') === 'pending';
+        if (($this->main_admin_status ?? 'pending') === 'approved' && !$this->requiresAuthorizerApproval()) {
             $steps['stores_hod'] = ['label' => 'Authorizer Bypassed', 'status' => 'bypassed', 'icon' => 'minus', 'user' => 'N/A'];
         } else {
             $storesStatus = $this->main_admin_status;

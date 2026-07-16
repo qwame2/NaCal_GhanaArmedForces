@@ -46,7 +46,7 @@
         } elseif ($hodStatus === 'approved') {
             $step3Status = 'active';
             $step3Icon = 'clock';
-            $step3Label = 'Awaiting Stores';
+            $step3Label = ($storesStatus === 'pending') ? 'Awaiting Authorizer' : 'Awaiting Stores';
         } else {
             $step3Status = 'pending';
             $step3Icon = 'circle';

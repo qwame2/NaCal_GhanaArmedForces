@@ -5,7 +5,6 @@
             <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;width:20%;">Requester & Dept</th>
             <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;width:20%;">Items Requested</th>
             <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;width:15%;">Purpose</th>
-            <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;width:8%;">Priority</th>
             <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;width:12%;">Status</th>
             <th style="padding:1rem 1.5rem;text-align:center;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;width:8%;">Usage</th>
             <th style="padding:1rem 1.5rem;text-align:left;font-size:.7rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;width:10%;">Submitted</th>
@@ -19,7 +18,7 @@
                 $sraStatus = $req->status;
                 $badgeColor = '#6366f1';
                 $badgeBg = 'rgba(99,102,241,0.1)';
-                $badgeLabel = 'Awaiting Head of Admin Review';
+                $badgeLabel = 'Awaiting Authorizer Review';
                 if ($sraStatus === 'auditor_pending') {
                     $badgeColor = '#8b5cf6';
                     $badgeBg = 'rgba(139,92,246,0.1)';
@@ -65,11 +64,7 @@
                         {{ $req->details }}
                     </div>
                 </td>
-                <td style="padding:1rem 1.5rem; text-align:center;">
-                    <span class="pill" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; font-size: 0.68rem; padding: 4px 10px; border-radius: 99px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                        SRA
-                    </span>
-                </td>
+
                 <td style="padding:1rem 1.5rem; text-align:left;">
                     <span class="pill" style="background:{{ $badgeBg }}; color:{{ $badgeColor }}; font-size: 0.68rem; padding: 4px 10px; border-radius: 99px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
                         ● {{ $badgeLabel }}
@@ -131,11 +126,7 @@
                     {{ $req->purpose }}
                 </div>
             </td>
-            <td style="padding:1rem 1.5rem; text-align:center;">
-                <span class="pill" style="background:{{ $pb['bg'] }}; color:{{ $pb['color'] }}; font-size: 0.68rem; padding: 4px 10px; border-radius: 99px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                    {{ $pb['label'] }}
-                </span>
-            </td>
+
             <td style="padding:1rem 1.5rem; text-align:left;">
                 <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
                     <span class="pill" style="background:{{ $sb['bg'] }}; color:{{ $sb['color'] }}; font-size: 0.68rem; padding: 4px 10px; border-radius: 99px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
@@ -145,17 +136,17 @@
                         @php
                             $pipeline = $req->tracking_pipeline;
                             $step1 = $pipeline['hod'] ?? null;
-                            $step2 = $pipeline['stores_hod'] ?? null;
-                            $step3 = $pipeline['dg'] ?? null;
+                            $step2 = $pipeline['dg'] ?? null;
+                            $step3 = $pipeline['stores_hod'] ?? null;
                             $step4 = $pipeline['head_of_stores'] ?? null;
                             $nextReviewer = 'N/A';
                             if ($req->status === 'pending') {
                                 if ($step1 && $step1['status'] === 'active') {
                                     $nextReviewer = $step1['user'] ?: 'Department Head';
                                 } elseif ($step2 && $step2['status'] === 'active') {
-                                    $nextReviewer = 'Authorizer';
-                                } elseif ($step3 && $step3['status'] === 'active') {
                                     $nextReviewer = 'Director General';
+                                } elseif ($step3 && $step3['status'] === 'active') {
+                                    $nextReviewer = 'Authorizer';
                                 } elseif ($step4 && $step4['status'] === 'active') {
                                     $nextReviewer = 'Head of Stores';
                                 }
@@ -190,19 +181,7 @@
                     }
                 $isReqProcessed = false;
                 if ($isStoresHead) {
-                    if ($req->status !== 'pending') {
-                        $isReqProcessed = true;
-                    } else {
-                        if ($req->main_admin_status === 'pending') {
-                            $isReqProcessed = false;
-                        } else {
-                            if ($req->requires_dg_approval && $req->dg_status !== 'approved') {
-                                $isReqProcessed = true;
-                            } else {
-                                $isReqProcessed = false;
-                            }
-                        }
-                    }
+                    $isReqProcessed = ($req->status !== 'pending');
                 } else {
                     $isReqProcessed = ($req->origin_admin_status === 'approved' || $req->origin_admin_status === 'declined' || $req->status === 'approved' || $req->status === 'partially_approved' || $req->status === 'declined');
                 }

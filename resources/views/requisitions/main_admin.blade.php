@@ -1310,7 +1310,6 @@
                         <th>Requester &amp; Dept</th>
                         <th>Items Requested</th>
                         <th>Purpose</th>
-                        <th>Priority</th>
                         <th>Status</th>
                         <th>Usage</th>
                         <th>Submitted</th>

@@ -181,8 +181,9 @@ class StoreRequisitionController extends Controller
             if (!is_array($storesApprovalCategories)) {
                 $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
             }
+            $storesApprovalCategories = array_map('strtoupper', array_map('trim', $storesApprovalCategories));
             foreach ($request->items as $item) {
-                if (!empty($item['category']) && in_array($item['category'], $storesApprovalCategories)) {
+                if (!empty($item['category']) && in_array(strtoupper(trim($item['category'])), $storesApprovalCategories)) {
                     $requiresStoresDeptHeadApproval = true;
                     break;
                 }
@@ -194,8 +195,9 @@ class StoreRequisitionController extends Controller
         if (!is_array($dgApprovalCategories)) {
             $dgApprovalCategories = json_decode($dgApprovalCategories, true) ?? [];
         }
+        $dgApprovalCategories = array_map('strtoupper', array_map('trim', $dgApprovalCategories));
         foreach ($request->items as $item) {
-            if (!empty($item['category']) && in_array($item['category'], $dgApprovalCategories)) {
+            if (!empty($item['category']) && in_array(strtoupper(trim($item['category'])), $dgApprovalCategories)) {
                 $requiresDgApproval = true;
                 break;
             }
@@ -216,8 +218,10 @@ class StoreRequisitionController extends Controller
 
         // main_admin_status: auto-approve if Sub Main Admin submits own-dept request (dual-role bypass)
         // or if Stores dept with no category restriction
+        // or if originating HOD is bypassed/auto-approved and stores HOD approval is not required
         $mainAdminStatus = ($isSubMainAdminOwnDept
-            || ($isStoresDept && !$requiresStoresDeptHeadApproval)) ? 'approved' : 'pending';
+            || ($isStoresDept && !$requiresStoresDeptHeadApproval)
+            || ($originAdminStatus === 'approved' && !$requiresStoresDeptHeadApproval)) ? 'approved' : 'pending';
 
         $requisition = StoreRequisition::create([
             'requester_name' => $request->requester_name,
@@ -1920,8 +1924,9 @@ class StoreRequisitionController extends Controller
                 if (!is_array($storesApprovalCategories)) {
                     $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
                 }
+                $storesApprovalCategories = array_map('strtoupper', array_map('trim', $storesApprovalCategories));
                 foreach ($req->items as $item) {
-                    if (in_array($item->category, $storesApprovalCategories)) {
+                    if (!empty($item->category) && in_array(strtoupper(trim($item->category)), $storesApprovalCategories)) {
                         $requiresStoresDeptHeadApproval = true;
                         break;
                     }
@@ -2221,9 +2226,10 @@ class StoreRequisitionController extends Controller
             if (!is_array($storesApprovalCategories)) {
                 $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
             }
+            $storesApprovalCategories = array_map('strtoupper', array_map('trim', $storesApprovalCategories));
             $requiresStoresDeptHeadApproval = false;
             foreach ($req->items as $item) {
-                if (in_array($item->category, $storesApprovalCategories)) {
+                if (!empty($item->category) && in_array(strtoupper(trim($item->category)), $storesApprovalCategories)) {
                     $requiresStoresDeptHeadApproval = true;
                     break;
                 }
@@ -2680,7 +2686,7 @@ class StoreRequisitionController extends Controller
             if ($ts === 'awaiting_hod') {
                 $query->where('origin_admin_status', 'pending')->where('status', 'pending');
             } elseif ($ts === 'awaiting_stores') {
-                $query->where('origin_admin_status', 'approved')->where('main_admin_status', 'pending')->where('status', 'pending');
+                $query->where('origin_admin_status', 'approved')->where('status', 'pending');
             } elseif ($ts === 'ready_collection') {
                 $query->whereIn('status', ['approved', 'partially_approved'])->whereNull('collected_at');
             } elseif ($ts === 'collected') {
@@ -2740,7 +2746,7 @@ class StoreRequisitionController extends Controller
 
         $statsData = (clone $statsQuery)->selectRaw("
             SUM(CASE WHEN origin_admin_status = 'pending' AND status = 'pending' THEN 1 ELSE 0 END) as awaiting_hod,
-            SUM(CASE WHEN origin_admin_status = 'approved' AND main_admin_status = 'pending' AND status = 'pending' THEN 1 ELSE 0 END) as awaiting_stores,
+            SUM(CASE WHEN origin_admin_status = 'approved' AND status = 'pending' THEN 1 ELSE 0 END) as awaiting_stores,
             SUM(CASE WHEN (status = 'approved' OR status = 'partially_approved') AND collected_at IS NULL THEN 1 ELSE 0 END) as ready_collection,
             SUM(CASE WHEN collected_at IS NOT NULL THEN 1 ELSE 0 END) as collected,
             SUM(CASE WHEN status = 'declined' OR origin_admin_status = 'declined' OR main_admin_status = 'declined' THEN 1 ELSE 0 END) as declined

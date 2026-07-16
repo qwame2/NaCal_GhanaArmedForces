@@ -69,22 +69,22 @@ class ServiceSra extends Model
             'admin_approved'  => ['label' => 'Awaiting Stores Review',     'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.1)'],
             'auditor_pending' => ['label' => 'Awaiting Auditor Review',    'color' => '#8b5cf6', 'bg' => 'rgba(139,92,246,0.1)'],
             'declined'        => ['label' => 'Declined',                   'color' => '#ef4444', 'bg' => 'rgba(239,68,68,0.1)'],
-            default           => ['label' => 'Awaiting Head of Admin Review','color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'],
+            default           => ['label' => 'Awaiting Authorizer Review','color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.1)'],
         };
-    }
-
-    public function getApprovalPipelineAttribute(): array
-    {
-        $steps = [];
-
-        // Step 1 – Head of Admin
-        if ($this->admin_status === 'approved') {
-            $steps['admin'] = ['label' => 'Admin Approved', 'status' => 'completed', 'icon' => 'check', 'user' => $this->admin_approved_by];
-        } elseif ($this->admin_status === 'declined') {
-            $steps['admin'] = ['label' => 'Admin Declined', 'status' => 'declined',  'icon' => 'x',     'user' => $this->admin_approved_by];
-        } else {
-            $steps['admin'] = ['label' => 'Awaiting Head of Admin Review', 'status' => 'active', 'icon' => 'clock', 'user' => 'Head of Admin'];
-        }
+     }
+ 
+     public function getApprovalPipelineAttribute(): array
+     {
+         $steps = [];
+ 
+         // Step 1 – Head of Admin
+         if ($this->admin_status === 'approved') {
+             $steps['admin'] = ['label' => 'Authorizer Approved', 'status' => 'completed', 'icon' => 'check', 'user' => $this->admin_approved_by];
+         } elseif ($this->admin_status === 'declined') {
+             $steps['admin'] = ['label' => 'Authorizer Declined', 'status' => 'declined',  'icon' => 'x',     'user' => $this->admin_approved_by];
+         } else {
+             $steps['admin'] = ['label' => 'Awaiting Authorizer Review', 'status' => 'active', 'icon' => 'clock', 'user' => 'Authorizer'];
+         }
 
         // Step 2 – Auditor
         if ($this->admin_status !== 'approved') {
