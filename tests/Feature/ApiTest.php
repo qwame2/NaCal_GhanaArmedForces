@@ -1182,26 +1182,22 @@ class ApiTest extends TestCase
         $this->assertDatabaseHas('users', [
             'username' => 'new_req_username',
             'sponsored_by' => $auditor->id,
-            'registration_status' => 'pending_hod',
+            'registration_status' => 'pending',
         ]);
 
         $newUser = User::where('username', 'new_req_username')->first();
-
-        // Fetch pending registrations as the auditor
-        $response = $this->actingAs($auditor)->get(route('dept-head.pending-registrations'));
-        $response->assertStatus(200)
-                 ->assertJsonFragment([
-                     'username' => 'new_req_username'
-                 ]);
 
         // Fetch active temp-requisitioners list as the auditor before approval - should not contain the user
         $response = $this->actingAs($auditor)->get(route('dept-head.temp-requisitioners.index'));
         $response->assertStatus(200);
         $this->assertFalse(collect($response->json('accounts'))->contains('username', 'new_req_username'));
 
-        // Clean up or complete the registration flow to ensure approve works
-        $response = $this->actingAs($auditor)->post(route('dept-head.registration.approve', $newUser->id));
-        $response->assertStatus(200);
+        // Clean up or complete the registration flow as Admin to ensure approve works
+        $admin = User::where('is_admin', true)->first() ?? User::factory()->create(['is_admin' => true, 'registration_status' => 'approved', 'is_active' => true]);
+        $response = $this->actingAs($admin)->post(route('admin.users.approve_registration', $newUser->id), [
+            'role' => 'Requisitioner'
+        ]);
+        $response->assertRedirect(route('admin.permissions'));
         $newUser->refresh();
         $this->assertEquals('approved', $newUser->registration_status);
 

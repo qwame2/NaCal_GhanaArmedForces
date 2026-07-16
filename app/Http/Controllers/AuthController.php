@@ -994,7 +994,7 @@ class AuthController extends Controller
                 'is_admin' => false,
                 'is_temp_account' => false,
                 'is_active' => false,
-                'registration_status' => $isRequisitioner ? 'pending_hod' : 'pending',
+                'registration_status' => 'pending',
                 'must_change_password' => false,
             ];
 
@@ -1016,9 +1016,7 @@ class AuthController extends Controller
                 'ip_address' => $request->ip()
             ]);
 
-            $successMsg = $isRequisitioner
-                ? 'Your registration request has been submitted successfully. Please wait for your Departmental Head\'s approval.'
-                : 'Your registration request has been submitted successfully. Please wait for Admin approval.';
+            $successMsg = 'Your registration request has been submitted successfully. Please wait for Admin approval.';
 
             // Persist username so the login page can poll for approval status
             session(['pending_approval_username' => $user->username]);
