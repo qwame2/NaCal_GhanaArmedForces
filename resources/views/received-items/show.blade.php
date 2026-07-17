@@ -79,6 +79,8 @@
 
                 $deliveryPerson = $batch->delivery_person ?? '';
                 $deliveryPhone = $batch->delivery_phone ?? '';
+                $driverName = $batch->driver_name ?? '';
+                $driverPhone = $batch->driver_phone ?? '';
                 if (empty($deliveryPerson)) {
                     $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
                     foreach ($suppliersRegistry as $k => $v) {
@@ -86,6 +88,12 @@
                             $provider = $k;
                             $deliveryPerson = $v['contact_person'] ?? $v['delivery_person'] ?? '';
                             $deliveryPhone = $v['contact_phone'] ?? $v['delivery_phone'] ?? '';
+                            if (empty($driverName)) {
+                                $driverName = $v['delivery_person'] ?? '';
+                            }
+                            if (empty($driverPhone)) {
+                                $driverPhone = $v['delivery_phone'] ?? '';
+                            }
                             break;
                         }
                     }
@@ -115,6 +123,14 @@
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Contact Person Number</span>
                     <span style="color: var(--text-main); font-weight: 700;">{{ $deliveryPhone ?: 'N/A' }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Delivery Person Name</span>
+                    <span style="color: var(--text-main); font-weight: 700;">{{ $driverName ?: 'N/A' }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Delivery Person Number</span>
+                    <span style="color: var(--text-main); font-weight: 700;">{{ $driverPhone ?: 'N/A' }}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Supply Status</span>

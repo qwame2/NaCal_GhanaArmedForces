@@ -129,14 +129,14 @@
                                                  <i data-lucide="truck" style="width: 14px; color: var(--primary);"></i>
                                                  Delivery Person Name <span style="color: #ef4444; margin-left: 2px;">*</span>
                                              </label>
-                                             <input type="text" id="driverNameInput" class="form-control" placeholder="Enter driver's name" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                             <input type="text" id="driverNameInput" class="form-control" placeholder="Enter delivery's name" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
                                          </div>
                                          <div>
                                              <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
                                                  <i data-lucide="phone" style="width: 14px; color: var(--primary);"></i>
                                                  Delivery Person Number <span style="color: #ef4444; margin-left: 2px;">*</span>
                                              </label>
-                                             <input type="text" id="driverPhoneInput" maxlength="10" class="form-control" placeholder="Enter driver's phone" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
+                                             <input type="text" id="driverPhoneInput" maxlength="10" class="form-control" placeholder="Enter delivery's number" style="width: 100%; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease;">
                                          </div>
                                      </div>
                                  </div>

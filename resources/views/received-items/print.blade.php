@@ -347,6 +347,8 @@
 
                 $deliveryPerson = $batch->delivery_person ?? '';
                 $deliveryPhone = $batch->delivery_phone ?? '';
+                $driverName = $batch->driver_name ?? '';
+                $driverPhone = $batch->driver_phone ?? '';
                 if (empty($deliveryPerson)) {
                     $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
                     foreach ($suppliersRegistry as $k => $v) {
@@ -354,6 +356,12 @@
                             $entityDisplay = $k;
                             $deliveryPerson = $v['contact_person'] ?? $v['delivery_person'] ?? '';
                             $deliveryPhone = $v['contact_phone'] ?? $v['delivery_phone'] ?? '';
+                            if (empty($driverName)) {
+                                $driverName = $v['delivery_person'] ?? '';
+                            }
+                            if (empty($driverPhone)) {
+                                $driverPhone = $v['delivery_phone'] ?? '';
+                            }
                             break;
                         }
                     }
@@ -379,6 +387,14 @@
             <div class="info-line">
                 <span class="info-label">Contact Person Number</span>
                 <span class="info-value">{{ $deliveryPhone ?: 'N/A' }}</span>
+            </div>
+            <div class="info-line">
+                <span class="info-label">Delivery Person Name</span>
+                <span class="info-value">{{ $driverName ?: 'N/A' }}</span>
+            </div>
+            <div class="info-line">
+                <span class="info-label">Delivery Person Number</span>
+                <span class="info-value">{{ $driverPhone ?: 'N/A' }}</span>
             </div>
             <div class="info-line">
                 <span class="info-label">Transaction Type</span>

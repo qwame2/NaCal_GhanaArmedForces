@@ -28,6 +28,8 @@
 
     $deliveryPerson = $batch['delivery_person'] ?? '';
     $deliveryPhone = $batch['delivery_phone'] ?? '';
+    $driverName = $batch['driver_name'] ?? '';
+    $driverPhone = $batch['driver_phone'] ?? '';
 @endphp
 
 <div class="preview-container" style="width: 99%; max-width: 100%; margin: 0 auto; padding: 1rem 2rem 3rem; animation: fadeIn 0.5s ease-out;">
@@ -512,6 +514,24 @@
                                     <div style="font-size: 0.6rem; font-weight: 800; color: #06b6d4; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 3px;">{{ $isDonor ? 'Donor Name' : 'Company Name' }}</div>
                                     <div style="font-size: 1.15rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">${cleanProviderName}</div>
                                 </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 1.5rem;">
+                                    <div>
+                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Contact Person</div>
+                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">{{ $deliveryPerson ?: 'N/A' }}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Contact Person Number</div>
+                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">{{ $deliveryPhone ?: 'N/A' }}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person Name</div>
+                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">{{ $driverName ?: 'N/A' }}</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person Number</div>
+                                        <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">{{ $driverPhone ?: 'N/A' }}</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -547,6 +567,14 @@
                                                 <div>
                                                     <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Contact Person Number</div>
                                                     <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">${s.contact_phone || s.delivery_phone || 'N/A'}</div>
+                                                </div>
+                                                <div>
+                                                    <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person Name</div>
+                                                    <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">{{ $driverName ?: 'N/A' }}</div>
+                                                </div>
+                                                <div>
+                                                    <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Delivery Person Number</div>
+                                                    <div style="font-size: 0.88rem; font-weight: 700; color: #1e293b;">{{ $driverPhone ?: 'N/A' }}</div>
                                                 </div>
                                                 <div>
                                                     <div style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Company Phone</div>
