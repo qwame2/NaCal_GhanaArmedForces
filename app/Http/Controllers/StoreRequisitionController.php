@@ -175,20 +175,7 @@ class StoreRequisitionController extends Controller
 
         $isStoresDept = (strcasecmp($request->department, 'Stores') === 0 || strcasecmp($request->department, 'Store') === 0);
 
-        $requiresStoresDeptHeadApproval = false;
-        if ($isStoresDept) {
-            $storesApprovalCategories = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
-            if (!is_array($storesApprovalCategories)) {
-                $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
-            }
-            $storesApprovalCategories = array_map('strtoupper', array_map('trim', $storesApprovalCategories));
-            foreach ($request->items as $item) {
-                if (!empty($item['category']) && in_array(strtoupper(trim($item['category'])), $storesApprovalCategories)) {
-                    $requiresStoresDeptHeadApproval = true;
-                    break;
-                }
-            }
-        }
+        $requiresStoresDeptHeadApproval = true;
 
         $requiresDgApproval = false;
         $dgApprovalCategories = \App\Models\Setting::get('dg_approval_categories', []);
@@ -1767,7 +1754,7 @@ class StoreRequisitionController extends Controller
             if ($isBackupActive) {
                 $statsData = StoreRequisition::selectRaw("
                     SUM(CASE WHEN status = 'pending' AND (
-                        (origin_admin_status = 'approved' AND main_admin_status = 'pending')
+                        (origin_admin_status = 'approved' AND main_admin_status = 'pending' AND (requires_dg_approval = 0 OR dg_status = 'approved'))
                         OR (origin_admin_status = 'approved' AND main_admin_status = 'approved' AND (requires_dg_approval = 0 OR dg_status = 'approved'))
                         OR (department = ? AND (origin_admin_status = 'pending' OR alternative_status = 'proposed'))
                     ) THEN 1 ELSE 0 END) as pending,
@@ -1777,7 +1764,7 @@ class StoreRequisitionController extends Controller
             } else {
                 $statsData = StoreRequisition::selectRaw("
                     SUM(CASE WHEN store_requisitions.status = 'pending' AND (
-                        (store_requisitions.origin_admin_status = 'approved' AND store_requisitions.main_admin_status = 'pending' AND " . ($isStoresHOD ? "1 = 1" : "1 = 0") . ")
+                        (store_requisitions.origin_admin_status = 'approved' AND store_requisitions.main_admin_status = 'pending' AND " . ($isStoresHOD ? "1 = 1" : "1 = 0") . " AND (store_requisitions.requires_dg_approval = 0 OR store_requisitions.dg_status = 'approved'))
                         OR (store_requisitions.origin_admin_status = 'approved' AND store_requisitions.main_admin_status = 'approved' AND (store_requisitions.requires_dg_approval = 0 OR store_requisitions.dg_status = 'approved'))
                         " . ($isStoresHOD ? "OR (store_requisitions.origin_admin_status = 'pending' AND store_requisitions.department IN ('Stores', 'Store'))" : "") . "
                     ) THEN 1 ELSE 0 END) as pending,
@@ -1920,17 +1907,7 @@ class StoreRequisitionController extends Controller
 
             $requiresStoresDeptHeadApproval = false;
             if (!$isStoresHead || $isActingAsOriginHOD) {
-                $storesApprovalCategories = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
-                if (!is_array($storesApprovalCategories)) {
-                    $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
-                }
-                $storesApprovalCategories = array_map('strtoupper', array_map('trim', $storesApprovalCategories));
-                foreach ($req->items as $item) {
-                    if (!empty($item->category) && in_array(strtoupper(trim($item->category)), $storesApprovalCategories)) {
-                        $requiresStoresDeptHeadApproval = true;
-                        break;
-                    }
-                }
+                $requiresStoresDeptHeadApproval = true;
             }
 
             if (!$isStoresHead || $isActingAsOriginHOD) {
@@ -2002,7 +1979,7 @@ class StoreRequisitionController extends Controller
                             'is_automated' => true,
                         ]);
                     }
-                } elseif ($requiresStoresDeptHeadApproval) {
+                } elseif ($requiresStoresDeptHeadApproval && $req->main_admin_status !== 'approved') {
                     // Notify Department Head (Stores)
                     $storesHeads = User::whereIn('role', ['Main Admin', 'Sub Main Admin', 'Department Head'])
                         ->where(fn($q) => $q->where('department', 'Stores')->orWhere('department', 'Store'))
@@ -2222,18 +2199,7 @@ class StoreRequisitionController extends Controller
             }
         } else {
             // Determine if the requisition requires Stores Department Head approval
-            $storesApprovalCategories = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
-            if (!is_array($storesApprovalCategories)) {
-                $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
-            }
-            $storesApprovalCategories = array_map('strtoupper', array_map('trim', $storesApprovalCategories));
-            $requiresStoresDeptHeadApproval = false;
-            foreach ($req->items as $item) {
-                if (!empty($item->category) && in_array(strtoupper(trim($item->category)), $storesApprovalCategories)) {
-                    $requiresStoresDeptHeadApproval = true;
-                    break;
-                }
-            }
+            $requiresStoresDeptHeadApproval = true;
 
             $req->alternative_status = 'declined';
             $req->status = 'declined';

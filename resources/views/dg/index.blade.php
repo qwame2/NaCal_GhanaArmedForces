@@ -804,27 +804,49 @@
                                 </td>
                                 <td>
                                      <div style="display: flex; gap: 6px; align-items: center; justify-content: flex-start; flex-wrap: wrap;">
-                                         <!-- View Details Button -->
-                                         <button onclick="openRequisitionDetailsModal({!! htmlspecialchars(json_encode([
-                                             'id' => $req->id,
-                                             'unique_id' => $req->unique_id,
-                                             'requester_name' => $req->requester_name,
-                                             'staff_id' => $req->requester ? $req->requester->service_number : ($req->collector_staff_id ?: 'N/A'),
-                                             'department' => $req->department,
-                                             'purpose' => $req->purpose,
-                                             'date_time' => $req->created_at->format('d/m/Y H:i'),
-                                             'is_ready' => $req->is_ready_for_dg_approval,
-                                             'requires_dg' => $req->requires_dg_approval,
-                                             'dg_status' => $req->dg_status ?? 'pending',
-                                             'dg_decline_reason' => $req->dg_decline_reason,
-                                             'items' => $req->items->map(fn($i) => [
-                                                 'description' => $i->description,
-                                                 'quantity' => number_format($i->quantity_requested, 0),
-                                                 'unit' => $i->unit
-                                             ])->toArray()
-                                         ]), ENT_QUOTES, 'UTF-8') !!}, this)" class="dg-action-btn view-details" style="padding: 6px 12px; background: rgba(99, 102, 241, 0.1); border: 1.5px solid rgba(99, 102, 241, 0.25); color: var(--dg-primary); border-radius: 8px; font-size: 0.72rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: transform 0.15s;" onmouseover="this.style.background='rgba(99,102,241,0.2)'" onmouseout="this.style.background='rgba(99,102,241,0.1)'" type="button">
-                                             <i data-lucide="eye" style="width: 13px; height: 13px;"></i> View Details
-                                         </button>
+                                          @if(($req->dg_status ?? 'pending') !== 'pending')
+                                              <button onclick="openRequisitionDetailsModal({!! htmlspecialchars(json_encode([
+                                                  'id' => $req->id,
+                                                  'unique_id' => $req->unique_id,
+                                                  'requester_name' => $req->requester_name,
+                                                  'staff_id' => $req->requester ? $req->requester->service_number : ($req->collector_staff_id ?: 'N/A'),
+                                                  'department' => $req->department,
+                                                  'purpose' => $req->purpose,
+                                                  'date_time' => $req->created_at->format('d/m/Y H:i'),
+                                                  'is_ready' => $req->is_ready_for_dg_approval,
+                                                  'requires_dg' => $req->requires_dg_approval,
+                                                  'dg_status' => $req->dg_status ?? 'pending',
+                                                  'dg_decline_reason' => $req->dg_decline_reason,
+                                                  'items' => $req->items->map(fn($i) => [
+                                                      'description' => $i->description,
+                                                      'quantity' => number_format($i->quantity_requested, 0),
+                                                      'unit' => $i->unit
+                                                  ])->toArray()
+                                              ]), ENT_QUOTES, 'UTF-8') !!}, this)" class="dg-action-btn view-details" style="padding: 6px 12px; background: rgba(16, 185, 129, 0.08); border: 1.5px solid rgba(16, 185, 129, 0.2); color: #10b981; border-radius: 8px; font-size: 0.72rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: transform 0.15s;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)'" type="button">
+                                                  <i data-lucide="check" style="width: 13px; height: 13px;"></i> Processed
+                                              </button>
+                                          @else
+                                              <button onclick="openRequisitionDetailsModal({!! htmlspecialchars(json_encode([
+                                                  'id' => $req->id,
+                                                  'unique_id' => $req->unique_id,
+                                                  'requester_name' => $req->requester_name,
+                                                  'staff_id' => $req->requester ? $req->requester->service_number : ($req->collector_staff_id ?: 'N/A'),
+                                                  'department' => $req->department,
+                                                  'purpose' => $req->purpose,
+                                                  'date_time' => $req->created_at->format('d/m/Y H:i'),
+                                                  'is_ready' => $req->is_ready_for_dg_approval,
+                                                  'requires_dg' => $req->requires_dg_approval,
+                                                  'dg_status' => $req->dg_status ?? 'pending',
+                                                  'dg_decline_reason' => $req->dg_decline_reason,
+                                                  'items' => $req->items->map(fn($i) => [
+                                                      'description' => $i->description,
+                                                      'quantity' => number_format($i->quantity_requested, 0),
+                                                      'unit' => $i->unit
+                                                  ])->toArray()
+                                              ]), ENT_QUOTES, 'UTF-8') !!}, this)" class="dg-action-btn view-details" style="padding: 6px 12px; background: rgba(99, 102, 241, 0.1); border: 1.5px solid rgba(99, 102, 241, 0.25); color: var(--dg-primary); border-radius: 8px; font-size: 0.72rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: transform 0.15s;" onmouseover="this.style.background='rgba(99,102,241,0.2)'" onmouseout="this.style.background='rgba(99,102,241,0.1)'" type="button">
+                                                  <i data-lucide="eye" style="width: 13px; height: 13px;"></i> View Details
+                                              </button>
+                                          @endif
 
                                          @if($req->requires_dg_approval)
                                              @if(($req->dg_status ?? 'pending') === 'approved')
@@ -1760,6 +1782,9 @@
         if (document.getElementById('dg_approval_categories')) {
             updateWorkflowFlowchart();
         }
+
+        // Silent auto-refresh Staff Requisitions tab every 15 seconds
+        setInterval(silentRefreshStaffRequisitions, 15000);
     });
 
     let currentDeclineId = null;
@@ -1980,7 +2005,7 @@
     function updateWorkflowFlowchart() {
         const selectStores = document.getElementById('stores_dept_head_approval_categories');
         if (!selectStores) return;
-        const activeCountStores = Array.from(selectStores.options).filter(opt => opt.selected).length;
+        const activeCountStores = 1; // Head of Admin is always required
 
         const selectDG = document.getElementById('dg_approval_categories');
         const activeCountDG = selectDG ? Array.from(selectDG.selectedOptions).length : 0;
@@ -2267,6 +2292,77 @@
     function declineRequisitionFromModal(id, btn, uniqueId, requesterName, itemsSummary) {
         closeRequisitionDetailsModal();
         openDeclineModal(id, btn, uniqueId, requesterName, itemsSummary);
+    }
+
+    function silentRefreshStaffRequisitions() {
+        if (document.visibilityState !== 'visible') {
+            return;
+        }
+
+        // 1. Check if details modal or decline modal is open
+        const detailsModal = document.getElementById('dg-details-modal');
+        const declineModal = document.getElementById('dg-decline-modal');
+        const isDetailsOpen = detailsModal && (window.getComputedStyle(detailsModal).opacity === '1');
+        const isDeclineOpen = declineModal && (window.getComputedStyle(declineModal).opacity === '1');
+
+        if (isDetailsOpen || isDeclineOpen) {
+            return; // Don't refresh if user is interacting with modal
+        }
+
+        // 2. Check if user is active in an input field (search query, dates, etc.)
+        if (document.activeElement && ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+            return; // Don't refresh if user is currently typing/selecting
+        }
+
+        // 3. Get current filters
+        const form = document.getElementById('dg-filter-form');
+        let fetchUrl = "{{ route('dg.dashboard') }}";
+        if (form) {
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData);
+            for (const [key, value] of [...params.entries()]) {
+                if (!value) params.delete(key);
+            }
+            const queryString = params.toString();
+            if (queryString) fetchUrl += '?' + queryString;
+        }
+
+        // 4. Fetch silently
+        fetch(fetchUrl)
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Update stats cards numbers
+                const statNumbers = document.querySelectorAll('.stat-number');
+                const newStatNumbers = doc.querySelectorAll('.stat-number');
+                statNumbers.forEach((stat, idx) => {
+                    if (newStatNumbers[idx]) {
+                        stat.innerHTML = newStatNumbers[idx].innerHTML;
+                    }
+                });
+
+                // Update Staff Requisitions panel
+                const oldPanel = document.getElementById('dg-staff-reqs-tab');
+                const newPanel = doc.getElementById('dg-staff-reqs-tab');
+                if (oldPanel && newPanel) {
+                    const scrollTop = oldPanel.scrollTop;
+                    oldPanel.innerHTML = newPanel.innerHTML;
+                    oldPanel.scrollTop = scrollTop;
+                }
+
+                // Update tab badge
+                updateStaffRequisitionsTabBadge(doc);
+
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+                bindDGPaginationLinks();
+            })
+            .catch(err => {
+                // Ignore silent refresh errors
+            });
     }
 
     function updateStaffRequisitionsTabBadge(doc) {

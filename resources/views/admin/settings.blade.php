@@ -990,7 +990,7 @@
 
             @if(auth()->user()->role === 'Main Admin' && !in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']))
             {{-- Stores Department Head Approval Workflow --}}
-            <div class="workflow-card-modern">
+            <div class="workflow-card-modern" style="display: none;">
                 @php
                 $selectedCats = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
                 if (!is_array($selectedCats)) {
@@ -2221,7 +2221,7 @@
 
     function updateWorkflowFlowchart() {
         const selectStores = document.getElementById('stores_dept_head_approval_categories');
-        const activeCountStores = selectStores ? Array.from(selectStores.selectedOptions).length : 0;
+        const activeCountStores = 1; // Head of Admin is always required
 
         const selectDG = document.getElementById('dg_approval_categories');
         const activeCountDG = selectDG ? Array.from(selectDG.selectedOptions).length : 0;

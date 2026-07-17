@@ -145,7 +145,7 @@
 
         /* Luminous Light Sidebar with Depth */
         .sidebar {
-            width: 280px;
+            width: 320px;
             background: var(--sidebar-bg);
             display: flex;
             flex-direction: column;
@@ -330,7 +330,7 @@
 
         /* Main Viewport */
         .main-wrapper {
-            margin-left: 280px;
+            margin-left: 320px;
             padding: 0 2.5rem 4rem 2.5rem;
             min-width: 0;
             position: relative;

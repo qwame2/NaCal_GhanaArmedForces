@@ -969,7 +969,13 @@
     {{-- Header --}}
     <div style="margin-bottom:2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
         <div>
-            <div style="font-size:.7rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Department Head Hub</div>
+            @if(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin']))
+                <div style="font-size:.7rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Head of Administration</div>
+            @elseif(auth()->user()->role === 'Auditor')
+                <div style="font-size:.7rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Department Head</div>
+            @else
+                <div style="font-size:.7rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Department Head Hub</div>
+            @endif
             <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Oversight & Approvals</h1>
             @php
                 $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
@@ -1023,7 +1029,7 @@
         }
     @endphp
     {{-- Stores Department Head Approval Workflow --}}
-    <div class="workflow-card-modern">
+    <div class="workflow-card-modern" style="display: none;">
         <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 1.25rem;">
                 <div class="cfg-icon-box" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); box-shadow: 0 8px 20px rgba(79,70,229,0.15); width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white;">
@@ -1877,6 +1883,7 @@
                     </div>
                 </div>`;
             } else {
+                const isAwaitingDg = !isActingAsHOD && data.requires_dg_approval && (data.dg_status !== 'approved');
                 // Render standard decision actions
                 decisionHtml = `
                 <div class="decision-area animate-slide-up">
@@ -1884,17 +1891,24 @@
                         <i data-lucide="message-square" style="width: 14px; color: var(--primary);"></i>
                         Oversight Decision Form
                     </div>
-                    <textarea id="decisionNotes" class="decision-text-area" placeholder="Enter notes or comments regarding this decision (Optional notes for Head, required reason if declining)..."></textarea>
+                    <textarea id="decisionNotes" class="decision-text-area" placeholder="Enter notes or comments regarding this decision (Optional notes for Head, required reason if declining)..." ${isAwaitingDg ? 'disabled' : ''}></textarea>
 
                     <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
                         <button onclick="processDecision('declined')" style="flex:1; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.25); padding: 0.75rem; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';">
                             <i data-lucide="x-circle" style="width: 18px;"></i>
                             Decline Request
                         </button>
+                        ${isAwaitingDg ? `
+                        <button disabled style="flex:1.5; background: #cbd5e1; color: #94a3b8; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" title="Cannot approve: this requisition is awaiting Director General (DG) approval.">
+                            <i data-lucide="lock" style="width: 18px;"></i>
+                            Approve (Awaiting DG Approval)
+                        </button>
+                        ` : `
                         <button onclick="processDecision('approved')" style="flex:1.5; background: #10b981; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);" onmouseover="this.style.background='#059669';" onmouseout="this.style.background='#10b981';">
                             <i data-lucide="check-circle" style="width: 18px;"></i>
                             Approve
                         </button>
+                        `}
                     </div>
                 </div>`;
             }
@@ -2901,7 +2915,7 @@
     function updateWorkflowFlowchart() {
         const selectStores = document.getElementById('stores_dept_head_approval_categories');
         if (!selectStores) return;
-        const activeCountStores = Array.from(selectStores.selectedOptions).length;
+        const activeCountStores = 1; // Head of Admin is always required
 
         const selectDG = document.getElementById('dg_approval_categories');
         const activeCountDG = selectDG ? Array.from(selectDG.selectedOptions).length : 0;

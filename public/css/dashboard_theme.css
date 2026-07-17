@@ -12,7 +12,7 @@
     --text-main: #0f172a;
     --text-muted: #64748b;
     --border-color: #f1f5f9;
-    --sidebar-width: 280px;
+    --sidebar-width: 320px;
     --sidebar-mini-width: 88px;
     --header-height: 80px;
     --radius-xl: 1.5rem;
@@ -806,12 +806,12 @@ button:active {
 
     .sidebar {
         transform: translateX(-100%);
-        width: 280px;
+        width: 320px;
     }
 
     .sidebar.active {
         transform: translateX(0);
-        --sidebar-width: 280px;
+        --sidebar-width: 320px;
     }
 
     .main-wrapper {

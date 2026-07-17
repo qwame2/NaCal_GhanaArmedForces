@@ -250,10 +250,20 @@
                     }
                 }
                 $isReqProcessed = false;
-                if ($isStoresHead) {
+                if (in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin'])) {
+                    // Authorizers (Main Admin / Sub Main Admin)
+                    $isActingAsHOD = (strcasecmp($req->department ?? '', auth()->user()->department ?? '') === 0 && $req->origin_admin_status === 'pending');
+                    if ($isActingAsHOD) {
+                        $isReqProcessed = ($req->origin_admin_status !== 'pending');
+                    } else {
+                        $isReqProcessed = ($req->main_admin_status !== 'pending' || $req->status !== 'pending');
+                    }
+                } elseif (auth()->user()->role === 'Head of Stores' || $isStoresHead) {
+                    // Head of Stores / Logistics backup
                     $isReqProcessed = ($req->status !== 'pending');
                 } else {
-                    $isReqProcessed = ($req->origin_admin_status === 'approved' || $req->origin_admin_status === 'declined' || $req->status === 'approved' || $req->status === 'partially_approved' || $req->status === 'declined');
+                    // Normal HOD / Auditor
+                    $isReqProcessed = ($req->origin_admin_status !== 'pending' || $req->status !== 'pending');
                 }
             @endphp
             @if($isReqProcessed)

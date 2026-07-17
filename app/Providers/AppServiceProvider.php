@@ -402,7 +402,11 @@ class AppServiceProvider extends ServiceProvider
                             ->where(function($q) use ($isStoresHOD, $isBackupActive) {
                                 $q->where(function($q2) {
                                     $q2->where('origin_admin_status', 'approved')
-                                       ->where('main_admin_status', 'pending');
+                                       ->where('main_admin_status', 'pending')
+                                       ->where(function($q3) {
+                                           $q3->where('requires_dg_approval', false)
+                                              ->orWhere('dg_status', 'approved');
+                                       });
                                 });
                                 if ($isStoresHOD && !$isBackupActive) {
                                     $q->orWhere(function($q2) {

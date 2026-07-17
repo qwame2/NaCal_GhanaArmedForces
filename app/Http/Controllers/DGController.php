@@ -275,17 +275,7 @@ class DGController extends Controller
             ]);
 
             // Determine if Stores HOD/Authorizer approval is required
-            $requiresStoresDeptHeadApproval = false;
-            $storesApprovalCategories = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
-            if (is_string($storesApprovalCategories)) {
-                $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
-            }
-            foreach ($req->items as $item) {
-                if (in_array($item->category, $storesApprovalCategories)) {
-                    $requiresStoresDeptHeadApproval = true;
-                    break;
-                }
-            }
+            $requiresStoresDeptHeadApproval = true;
 
             if ($requiresStoresDeptHeadApproval) {
                 // Notify Department Head (Stores) / Authorizer

@@ -515,7 +515,7 @@ class ApiTest extends TestCase
         $req1 = \App\Models\StoreRequisition::where('purpose', 'Immediate store use')->first();
         $this->assertNotNull($req1);
         $this->assertEquals('approved', $req1->origin_admin_status);
-        $this->assertEquals('approved', $req1->main_admin_status);
+        $this->assertEquals('pending', $req1->main_admin_status);
 
         // Case 2: Store Officer submits requisition for category 'S' (requires Stores Head approval)
         // It starts as origin_admin_status = 'approved', main_admin_status = 'pending'
@@ -633,7 +633,7 @@ class ApiTest extends TestCase
         $req = \App\Models\StoreRequisition::where('purpose', 'For stores use')->first();
         $this->assertNotNull($req);
         $this->assertEquals('approved', $req->origin_admin_status);
-        $this->assertEquals('approved', $req->main_admin_status);
+        $this->assertEquals('pending', $req->main_admin_status);
     }
 
     public function test_department_toggling_requisition_blocking(): void

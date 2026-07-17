@@ -28,20 +28,7 @@ class StoreRequisition extends Model
 
     public function getRequiresStoresDeptHeadApprovalAttribute(): bool
     {
-        $storesApprovalCategories = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
-        if (is_string($storesApprovalCategories)) {
-            $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
-        }
-        if (!is_array($storesApprovalCategories)) {
-            $storesApprovalCategories = [];
-        }
-        $storesApprovalCategories = array_map('strtoupper', array_map('trim', $storesApprovalCategories));
-        foreach ($this->items as $item) {
-            if (in_array(strtoupper(trim($item->category)), $storesApprovalCategories)) {
-                return true;
-            }
-        }
-        return false;
+        return true;
     }
 
     public function getIsReadyForDgApprovalAttribute(): bool
@@ -173,17 +160,7 @@ class StoreRequisition extends Model
 
     public function requiresAuthorizerApproval(): bool
     {
-        $storesApprovalCategories = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
-        if (is_string($storesApprovalCategories)) {
-            $storesApprovalCategories = json_decode($storesApprovalCategories, true) ?? [];
-        }
-        $storesApprovalCategories = array_map('strtoupper', array_map('trim', $storesApprovalCategories));
-        foreach ($this->items as $item) {
-            if (in_array(strtoupper(trim($item->category)), $storesApprovalCategories)) {
-                return true;
-            }
-        }
-        return false;
+        return true;
     }
 
     protected static $deptHeadsCache = null;

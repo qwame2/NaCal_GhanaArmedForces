@@ -1317,6 +1317,11 @@
         document.getElementById('modalSubtitle').textContent = `Requisition Ref: ${data.unique_id || ('REQ-' + String(data.id).padStart(5, '0'))}`;
 
         const isPending = data.status === 'pending';
+        const isAwaitingPriorApproval = isPending && (
+            data.status_badge.label.includes('Awaiting Dept Head') ||
+            data.status_badge.label.includes('Awaiting Authorizer') ||
+            data.status_badge.label.includes('Awaiting DG')
+        );
 
 
 
@@ -1439,8 +1444,9 @@
                             <input type="checkbox" class="switch-input approve-toggle" id="chk-${i}"
                                 data-index="${i}"
                                 checked
+                                ${isAwaitingPriorApproval ? 'disabled' : ''}
                                 onchange="toggleItemApproval(${i})">
-                            <label for="chk-${i}" class="switch-label" title="Toggle item approval"></label>
+                            <label for="chk-${i}" class="switch-label" title="Toggle item approval" style="${isAwaitingPriorApproval ? 'cursor: not-allowed; opacity: 0.5;' : ''}"></label>
                         </div>
                         <div>
                             <div style="font-size:.95rem;font-weight:800;color:var(--text-main);" id="item-desc-text-${i}">${descTextHtml}</div>
@@ -1462,7 +1468,7 @@
                     <div class="item-card-spinner-box">
                         <span style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.02em;">Approved Allocation</span>
                         <div class="qty-spinner">
-                            <button type="button" class="qty-btn" onclick="adjustQty(${i}, -1)">−</button>
+                            <button type="button" class="qty-btn" onclick="adjustQty(${i}, -1)" ${isAwaitingPriorApproval ? 'disabled' : ''}>−</button>
                             <input type="number" class="approved-qty-input"
                                 id="qty-${i}"
                                 data-item-id="${item.id}"
@@ -1471,8 +1477,9 @@
                                 data-index="${i}"
                                 value="${defaultOriginalApproved}"
                                 min="0" max="${parseFloat(item.quantity_requested)}" step="0.01"
+                                ${isAwaitingPriorApproval ? 'disabled' : ''}
                                 oninput="onQtyChange(${i})">
-                            <button type="button" class="qty-btn" onclick="adjustQty(${i}, 1)">+</button>
+                            <button type="button" class="qty-btn" onclick="adjustQty(${i}, 1)" ${isAwaitingPriorApproval ? 'disabled' : ''}>+</button>
                         </div>
                     </div>
 
@@ -1484,6 +1491,7 @@
                                 data-index="${i}"
                                 placeholder="Remarks for decline or reduction..."
                                 rows="2"
+                                ${isAwaitingPriorApproval ? 'disabled' : ''}
                                 style="display:${isAltAgreed ? 'block' : 'none'}; margin-bottom: 6px;">${item.remarks||''}</textarea>
 
                             <span id="reason-ok-${i}" style="font-size:.78rem;color:#10b981;font-weight:700;display:${isAltAgreed ? 'none' : 'inline-flex'};align-items:center;gap:4px;">
@@ -1775,12 +1783,6 @@
     ${readOnlyBtnHtml}
     ${collectorInfoHtml}
     `}`;
-
-        const isAwaitingPriorApproval = data.status_badge && (
-            data.status_badge.label.includes('Awaiting Dept Head') ||
-            data.status_badge.label.includes('Awaiting Authorizer') ||
-            data.status_badge.label.includes('Awaiting DG')
-        );
 
         if (isPending) {
             if (isAwaitingPriorApproval) {
