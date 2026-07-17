@@ -16,7 +16,7 @@
                 @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head', 'Auditor']))
                     <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · {{ auth()->user()->role === 'Auditor' ? 'Department Head' : 'Department Head Hub' }}</span>
                 @else
-                    <span style="background: rgba(99, 102, 241, 0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Batch Details</span>
+                    <span style="background: rgba(22, 163, 74, 0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Batch Details</span>
                 @endif
                 <span style="color: var(--text-muted); font-size: 0.85rem;">#BATCH-{{ $batch->id }}</span>
             </div>
@@ -36,7 +36,7 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
         <div class="glass-card" style="padding: 1.5rem;">
             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-                <div style="width: 44px; height: 44px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 44px; height: 44px; background: rgba(22, 163, 74, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                     <i data-lucide="info" style="width: 20px;"></i>
                 </div>
                 <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0;">General Information</h3>
@@ -119,7 +119,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Supply Status</span>
                     @if($isBatchIssuedOut)
-                        <span style="color: #f59e0b; font-weight: 800; font-size: 0.9rem; text-transform: uppercase;">Issued Out</span>
+                        <span style="color: #10b981; font-weight: 800; font-size: 0.9rem; text-transform: uppercase;">Issued Out</span>
                     @else
                         <span style="color: var(--primary); font-weight: 800; font-size: 0.9rem;">{{ $batch->supplier_status ?: 'Full Delivery' }}</span>
                     @endif
@@ -167,12 +167,12 @@
                                 @endphp
                                 @if($count > 0)
                                     <div class="serial-numbers-wrapper" style="margin-top: 4px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;">
-                                        <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(99, 102, 241, 0.08); color: #6366f1; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
+                                        <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(22, 163, 74, 0.08); color: #16a34a; font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
                                             S/N: {{ implode(', ', array_slice($snList, 0, 3)) }}@if($count > 3)<span class="dots">...</span><span class="more-sns" style="display: none;">, {{ implode(', ', array_slice($snList, 3)) }}</span>@endif
                                         </div>
                                         @if($count > 3)
-                                            <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: #6366f1; outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
+                                            <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: #16a34a; outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(22, 163, 74, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
                                             </button>
                                         @endif

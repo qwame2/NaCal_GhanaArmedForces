@@ -14,7 +14,7 @@
             --print-primary: #0f172a;
             --print-secondary: #475569;
             --print-border: #e2e8f0;
-            --print-accent: #4f46e5;
+            --print-accent: #16a34a;
             --print-bg-subtle: #f8fafc;
         }
 
@@ -275,7 +275,7 @@
             font-weight: 800;
             font-size: 12px;
             border-radius: 50px;
-            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+            box-shadow: 0 8px 20px rgba(22, 163, 74, 0.4);
             text-transform: uppercase;
             letter-spacing: 1px;
             transition: all 0.25s ease;
@@ -284,8 +284,8 @@
 
         .print-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 25px rgba(79, 70, 229, 0.5);
-            background: #4338ca;
+            box-shadow: 0 12px 25px rgba(22, 163, 74, 0.5);
+            background: #15803d;
         }
     </style>
 </head>
@@ -387,7 +387,7 @@
             <div class="info-line">
                 <span class="info-label">Supply Status</span>
                 @if($isBatchIssuedOut)
-                    <span class="info-value" style="color: #f59e0b; text-transform: uppercase;">Issued Out</span>
+                    <span class="info-value" style="color: #10b981; text-transform: uppercase;">Issued Out</span>
                 @else
                     <span class="info-value">{{ $batch->supplier_status ?: 'Full Delivery' }}</span>
                 @endif
@@ -501,7 +501,7 @@
             @endif
 
             @if($itemHistory->count() > 0)
-            <div style="margin-top: 10px; padding: 10px 14px; background: #fffbeb; border: 1px dashed #d97706; border-radius: 6px;">
+            <div style="margin-top: 10px; padding: 10px 14px; background: #ecfdf5; border: 1px dashed #047857; border-radius: 6px;">
                 <div style="font-size: 10px; font-weight: 800; color: #b45309; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">
                     Forensic Revision Log
                 </div>

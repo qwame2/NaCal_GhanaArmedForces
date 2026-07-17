@@ -21,7 +21,7 @@
     }
     .item-entry-row:hover {
         border-color: var(--primary-light);
-        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.05);
+        box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.05);
     }
     .remove-row-btn:hover {
         background: rgba(239, 68, 68, 0.2) !important;
@@ -121,7 +121,7 @@
                                 Supplier / Source Name (Search or Type)
                             </label>
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                <span id="supplierSummaryBadge" style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700; display: none;"></span>
+                                <span id="supplierSummaryBadge" style="font-size: 0.75rem; background: rgba(22, 163, 74, 0.1); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 700; display: none;"></span>
                                 <i data-lucide="chevron-down" id="supplierToggleArrow" style="width: 18px; height: 18px; color: var(--text-muted); transition: transform 0.3s ease;"></i>
                             </div>
                         </div>
@@ -204,7 +204,7 @@
                         <i data-lucide="package" style="color: #ef4444; width: 22px; height: 22px;"></i>
                         Discrepant Items List
                     </h3>
-                    <button type="button" id="addRowBtn" class="glass-card" style="padding: 0.6rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--primary); background: rgba(99, 102, 241, 0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(99, 102, 241, 0.1)'" onmouseout="this.style.background='rgba(99, 102, 241, 0.05)'">
+                    <button type="button" id="addRowBtn" class="glass-card" style="padding: 0.6rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--primary); background: rgba(22, 163, 74, 0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(22, 163, 74, 0.1)'" onmouseout="this.style.background='rgba(22, 163, 74, 0.05)'">
                         <i data-lucide="plus-circle" style="width: 16px;"></i> Add Item Row
                     </button>
                 </div>

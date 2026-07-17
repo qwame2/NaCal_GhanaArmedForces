@@ -212,7 +212,7 @@ class User extends Authenticatable implements LdapAuthenticatable
      */
     public function isSubMainAdmin(): bool
     {
-        return $this->role === 'Sub Main Admin';
+        return strcasecmp($this->role ?? '', 'Sub Main Admin') === 0;
     }
 
     /**
@@ -220,7 +220,7 @@ class User extends Authenticatable implements LdapAuthenticatable
      */
     public function isMainAdminOrSub(): bool
     {
-        return in_array($this->role, ['Main Admin', 'Sub Main Admin']);
+        return in_array(strtolower($this->role ?? ''), ['main admin', 'sub main admin']);
     }
 
     /**

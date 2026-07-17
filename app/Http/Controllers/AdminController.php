@@ -25,7 +25,7 @@ class AdminController extends Controller
 
     public function index(Request $request)
     {
-        if (auth()->user()->role === 'Main Admin') {
+        if (strcasecmp(auth()->user()->role ?? '', 'Main Admin') === 0) {
             return redirect()->route('main-admin.requisitions');
         }
 
@@ -1376,6 +1376,10 @@ class AdminController extends Controller
 
     public function suppliers()
     {
+        if (auth()->user()->isMainAdminOrSub()) {
+            return redirect()->route('admin.admin_suppliers');
+        }
+
         if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover() && strcasecmp(auth()->user()->department ?? '', 'Stores') !== 0 && strcasecmp(auth()->user()->department ?? '', 'Store') !== 0) {
             abort(403);
         }
@@ -1401,6 +1405,36 @@ class AdminController extends Controller
         }
         
         return view('admin.suppliers', compact('suppliersRegistry'));
+    }
+
+    public function adminSuppliers()
+    {
+        if (!auth()->user()->isMainAdminOrSub()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);
+        
+        // Populate stats for each supplier
+        foreach ($suppliersRegistry as $name => &$details) {
+            $cleanName = trim(preg_replace('/\[.*?\]/', '', $name));
+            $batches = \App\Models\InventoryBatch::where(function($q) use ($name, $cleanName) {
+                    $q->where('supplier_name', $name)->orWhere('supplier_name', $cleanName);
+                })
+                ->where('supplier_status', '!=', 'System Draft')
+                ->whereNotNull('arrival_date')
+                ->orderBy('arrival_date', 'asc')
+                ->get();
+
+            $details['total_deliveries'] = $batches->count();
+            $details['first_delivery'] = $batches->first() ? \Carbon\Carbon::parse($batches->first()->arrival_date)->format('Y-m-d') : null;
+            $details['last_delivery'] = $batches->last() ? \Carbon\Carbon::parse($batches->last()->arrival_date)->format('Y-m-d') : null;
+            $details['all_deliveries'] = $batches->pluck('arrival_date')->map(function($d) {
+                return \Carbon\Carbon::parse($d)->format('Y-m-d');
+            })->toArray();
+        }
+        
+        return view('admin.admin_suppliers', compact('suppliersRegistry'));
     }
 
     public function generateDelegationOtp(\Illuminate\Http\Request $request)

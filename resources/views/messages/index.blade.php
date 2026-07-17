@@ -29,7 +29,7 @@
                     @if($admin->avatar)
                         <img src="{{ Storage::url($admin->avatar) }}" style="width: 48px; height: 48px; border-radius: 14px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                     @else
-                        <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);">{{ substr($admin->name, 0, 1) }}</div>
+                        <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);">{{ substr($admin->name, 0, 1) }}</div>
                     @endif
                     <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $admin->is_online ? '#10b981' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
                 </div>
@@ -127,7 +127,7 @@
                     </button>
                     <div style="flex: 1; position: relative;">
                         <textarea id="msgContent" placeholder="Transmit secure data..." rows="1" style="width: 100%; padding: 1.1rem 5rem 1.1rem 1.75rem; border-radius: 20px; border: 2px solid var(--border-color); background: var(--bg-main); font-family: inherit; font-size: 1rem; font-weight: 600; outline: none; resize: none; transition: 0.3s; color: var(--text-main);" onfocus="this.style.borderColor='var(--primary)'; this.style.background='var(--bg-card)'; this.style.boxShadow='0 10px 30px var(--primary-glow)'"></textarea>
-                        <button type="submit" id="sendBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--primary); color: white; border: none; width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3); transition: 0.3s;" onmouseover="this.style.transform='translateY(-50%) scale(1.05)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">
+                        <button type="submit" id="sendBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--primary); color: white; border: none; width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 16px rgba(22, 163, 74, 0.3); transition: 0.3s;" onmouseover="this.style.transform='translateY(-50%) scale(1.05)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">
                             <i data-lucide="send" style="width: 20px;"></i>
                         </button>
                     </div>
@@ -211,7 +211,7 @@
         background: var(--primary);
         color: white;
         border-bottom-right-radius: 6px;
-        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.2);
     }
 
     .recipient .comms-bubble {
@@ -287,7 +287,7 @@
         if (avatar) {
             avatarDiv.innerHTML = `<img src="${avatar}" style="width: 52px; height: 52px; border-radius: 16px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">`;
         } else {
-            avatarDiv.innerHTML = `<div style="width: 52px; height: 52px; border-radius: 16px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);">${name.charAt(0)}</div>`;
+            avatarDiv.innerHTML = `<div style="width: 52px; height: 52px; border-radius: 16px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);">${name.charAt(0)}</div>`;
         }
 
         document.querySelectorAll('.network-item').forEach(el => {

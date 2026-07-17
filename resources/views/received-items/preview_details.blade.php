@@ -34,7 +34,7 @@
     
     <!-- Back Navigation -->
     <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;">
-        <a href="{{ route('admin.messages') }}" style="display: inline-flex; align-items: center; gap: 8px; color: #4f46e5; background: #fff; border: 1.5px solid var(--border-color); padding: 10px 20px; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 800; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='#fff'; this.style.borderColor='var(--border-color)';">
+        <a href="{{ route('admin.messages') }}" style="display: inline-flex; align-items: center; gap: 8px; color: #16a34a; background: #fff; border: 1.5px solid var(--border-color); padding: 10px 20px; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 800; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='#fff'; this.style.borderColor='var(--border-color)';">
             <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back to Oversight Board
         </a>
     </div>
@@ -43,11 +43,11 @@
         <!-- ==================== ISSUE ENTRY DETAILS ==================== -->
         <div style="background: white; padding: 3.5rem 3rem 2.5rem 3rem; border-radius: 24px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: relative; box-shadow: var(--shadow-luxe); margin-bottom: 2rem;">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);">
+                <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #10b981 0%, #047857 100%); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">
                     <i data-lucide="package-minus" style="width: 32px; height: 32px;"></i>
                 </div>
                 <div>
-                    <div style="font-size: 0.75rem; font-weight: 800; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Disbursement Authorization</div>
+                    <div style="font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Disbursement Authorization</div>
                     <h2 style="margin: 0; font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -0.03em;">Issuance Details</h2>
                     <p style="margin: 6px 0 0; font-size: 0.95rem; color: #64748b; font-weight: 500;">Initiated by <b>{{ $recordedByName }}</b> on {{ $createdAt }}</p>
                 </div>
@@ -69,32 +69,32 @@
                 <div style="width: 1px; height: 40px; background: #e2e8f0; align-self: center;"></div>
                 <div>
                     <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Issuance Type</label>
-                    <span style="font-size: 0.85rem; font-weight: 900; color: #f59e0b; background: rgba(245, 158, 11, 0.1); padding: 4px 12px; border-radius: 8px; border: 1px dashed rgba(245, 158, 11, 0.3);">{{ $batch['issuance_type'] ?? 'N/A' }}</span>
+                    <span style="font-size: 0.85rem; font-weight: 900; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 4px 12px; border-radius: 8px; border: 1px dashed rgba(16, 185, 129, 0.3);">{{ $batch['issuance_type'] ?? 'N/A' }}</span>
                 </div>
             </div>
         </div>
 
         <div style="background: white; padding: 2.5rem 0; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: var(--shadow-luxe); overflow: hidden; margin-bottom: 2rem;">
             <h3 style="font-size: 1rem; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 3rem 1.5rem; display: flex; align-items: center; gap: 8px;">
-                <i data-lucide="list-checks" style="width: 20px; color: #4f46e5;"></i> Items to Disburse ({{ count($items) }})
+                <i data-lucide="list-checks" style="width: 20px; color: #16a34a;"></i> Items to Disburse ({{ count($items) }})
             </h3>
             <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.03); margin: 0 3rem;">
                 @foreach($items as $idx => $item)
                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.5rem; border-bottom: 1px dashed #e2e8f0; background: {{ $idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}; transition: all 0.3s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='{{ $idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}'">
                     <div style="display: flex; align-items: center; gap: 1.25rem;">
-                        <div style="width: 48px; height: 48px; background: rgba(99, 102, 241, 0.1); color: #4f46e5; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; border: 1px solid rgba(99, 102, 241, 0.2);">
+                        <div style="width: 48px; height: 48px; background: rgba(22, 163, 74, 0.1); color: #16a34a; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.1rem; border: 1px solid rgba(22, 163, 74, 0.2);">
                             {{ $idx + 1 }}
                         </div>
                         <div>
                             <div style="font-weight: 900; font-size: 1.1rem; color: #0f172a; margin-bottom: 4px;">{{ $item['description'] ?? '' }}</div>
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 0.7rem; font-weight: 800; color: #4f46e5; background: rgba(79, 70, 229, 0.1); padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em;">CATEGORY {{ $item['category'] ?? '-' }}</span>
+                                <span style="font-size: 0.7rem; font-weight: 800; color: #16a34a; background: rgba(22, 163, 74, 0.1); padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em;">CATEGORY {{ $item['category'] ?? '-' }}</span>
                             </div>
                         </div>
                     </div>
                     <div style="text-align: right; background: white; border: 1px solid #e2e8f0; padding: 0.75rem 1.5rem; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
                         <span style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Quantity to Issue</span>
-                        <div style="font-size: 1.5rem; font-weight: 900; color: #f59e0b; display: flex; align-items: baseline; gap: 4px; justify-content: flex-end;">
+                        <div style="font-size: 1.5rem; font-weight: 900; color: #10b981; display: flex; align-items: baseline; gap: 4px; justify-content: flex-end;">
                             {{ number_format($item['qty'] ?? 0) }}
                             <span style="font-size: 0.85rem; color: #64748b; font-weight: 700;">{{ $item['unit'] ?? 'Package Types' }}</span>
                         </div>
@@ -174,7 +174,7 @@
             <div style="padding: 1.5rem 2rem; background: #f8fafc; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <h3 style="margin: 0; font-size: 1.1rem; font-weight: 900; color: #0f172a;">Items in This Entry ({{ count($items) }})</h3>
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <button class="sra-rollback-btn-right" onclick="window.rollbackEntry({{ $reqId }})" style="background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);">
+                    <button class="sra-rollback-btn-right" onclick="window.rollbackEntry({{ $reqId }})" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);">
                         <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Rollback Group
                     </button>
                     <span style="background: #e0f2fe; color: #0369a1; font-size: 0.75rem; font-weight: 800; padding: 6px 16px; border-radius: 99px;">{{ count($items) }} ITEMS</span>
@@ -237,8 +237,8 @@
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">
                                 {{ $item['unit'] ?? 'Package Types' }}
                                 @if(!empty($item['location']))
-                                    <div style="font-size: 0.7rem; font-weight: 600; color: #4f46e5; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-                                        <i data-lucide="map-pin" style="width: 10px; height: 10px; color: #4f46e5;"></i>
+                                    <div style="font-size: 0.7rem; font-weight: 600; color: #16a34a; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                                        <i data-lucide="map-pin" style="width: 10px; height: 10px; color: #16a34a;"></i>
                                         {{ $item['location'] }}
                                     </div>
                                 @endif
@@ -247,14 +247,14 @@
                                 {{ number_format($item['qty'] ?? 0) }}
                             </td>
                             @if($isDiscrepancy)
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #4f46e5; text-align: right;">
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #16a34a; text-align: right;">
                                     {{ number_format($item['book_qty'] ?? 0) }}
                                 </td>
                                 <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: {{ $varianceColor }}; text-align: right;">
                                     {{ $displayVariance }}
                                 </td>
                             @else
-                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; text-align: right; color: {{ $isStockChanged ? '#10b981' : '#4f46e5' }}; {!! $isStockChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 2px solid #10b981;' : '' !!}">
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; text-align: right; color: {{ $isStockChanged ? '#10b981' : '#16a34a' }}; {!! $isStockChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 2px solid #10b981;' : '' !!}">
                                     {{ number_format($item['stock_balance'] ?? 0) }}
                                 </td>
                             @endif
@@ -272,7 +272,7 @@
                             <td colspan="3" style="padding: 1rem 1.5rem; font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
                                 Total Items in This Entry
                             </td>
-                            <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #4f46e5;">
+                            <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #16a34a;">
                                 {{ number_format(collect($items)->sum('qty')) }}
                             </td>
                             @if($isDiscrepancy)
@@ -368,8 +368,8 @@
         @endif
 
         <!-- Warning Review Banner -->
-        <div style="margin-top: 2rem; padding: 1.5rem; background: #fffbeb; border-radius: 16px; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-            <div style="width: 32px; height: 32px; background: #f59e0b; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+        <div style="margin-top: 2rem; padding: 1.5rem; background: #ecfdf5; border-radius: 16px; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+            <div style="width: 32px; height: 32px; background: #10b981; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="info" style="width: 18px;"></i>
             </div>
             <div style="flex: 1;">
@@ -415,8 +415,8 @@
                 btn.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.25)';
             } else {
                 btn.innerHTML = `<i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Rollback Group`;
-                btn.style.background = '#f59e0b';
-                btn.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.25)';
+                btn.style.background = '#10b981';
+                btn.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.25)';
             }
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
@@ -427,9 +427,9 @@
         const sns = serialStr.split(',').map(s => s.trim()).filter(Boolean);
         if (sns.length === 0) return '';
 
-        const badgeBg = isProposed ? 'rgba(99, 102, 241, 0.05)' : 'rgba(239, 68, 68, 0.05)';
-        const badgeColor = isProposed ? '#4f46e5' : '#ef4444';
-        const borderColor = isProposed ? 'rgba(99, 102, 241, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+        const badgeBg = isProposed ? 'rgba(22, 163, 74, 0.05)' : 'rgba(239, 68, 68, 0.05)';
+        const badgeColor = isProposed ? '#16a34a' : '#ef4444';
+        const borderColor = isProposed ? 'rgba(22, 163, 74, 0.15)' : 'rgba(239, 68, 68, 0.15)';
 
         function makeChipHtml(sn) {
             const match = sn.match(/^(.*?)\s*\(Rim:\s*(\d+)\)$/i);
@@ -652,7 +652,7 @@
         Swal.fire({
             html: `
                 <div style="text-align: left;">
-                    <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                    <div style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
                         <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.07); border-radius: 50%;"></div>
                         <div style="display: flex; align-items: center; gap: 14px; position: relative;">
                             <div style="width: 46px; height: 46px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
@@ -687,7 +687,7 @@
                         <label style="font-size: 0.78rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 6px;">General Note (Optional)</label>
                         <textarea id="rb-general-note" placeholder="Overall feedback or instructions for the user..." rows="3"
                             style="width: 100%; font-size: 0.88rem; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; font-family: inherit; color: #1e293b; background: #f8fafc; outline: none; resize: vertical; box-sizing: border-box;"
-                            onfocus="this.style.borderColor='#f59e0b'; this.style.boxShadow='0 0 0 4px rgba(245,158,11,0.1)'; this.style.background='white'"
+                            onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 4px rgba(16,185,129,0.1)'; this.style.background='white'"
                             onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'; this.style.background='#f8fafc'"></textarea>
                     </div>
                 </div>
@@ -695,7 +695,7 @@
             showCancelButton: true,
             confirmButtonText: '&#8630;&nbsp; Send Back for Correction',
             cancelButtonText: 'Cancel',
-            confirmButtonColor: '#f59e0b',
+            confirmButtonColor: '#10b981',
             cancelButtonColor: '#94a3b8',
             width: 600,
             customClass: {
@@ -796,7 +796,7 @@
                         icon: 'success',
                         title: 'Rolled Back!',
                         text: 'Entry sent back to user for correction.',
-                        confirmButtonColor: '#4f46e5'
+                        confirmButtonColor: '#16a34a'
                     }).then(() => {
                         window.location.href = '{{ route("admin.messages") }}';
                     });
@@ -913,7 +913,7 @@
                         icon: 'success',
                         title: 'Changes Saved!',
                         text: 'The inventory batch edits have been successfully merged.',
-                        confirmButtonColor: '#4f46e5'
+                        confirmButtonColor: '#16a34a'
                     }).then(() => {
                         window.location.href = '{{ route("admin.messages") }}';
                     });
@@ -965,7 +965,7 @@
                     icon: 'success',
                     title: 'Action Logged!',
                     text: status === 'approved' ? 'Stock entry successfully approved.' : 'Stock entry submission rejected.',
-                    confirmButtonColor: '#4f46e5'
+                    confirmButtonColor: '#16a34a'
                 }).then(() => {
                     window.location.href = '{{ route("admin.messages") }}';
                 });

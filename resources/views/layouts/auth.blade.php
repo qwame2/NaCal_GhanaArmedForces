@@ -83,7 +83,7 @@
             position: absolute;
             width: 600px;
             height: 600px;
-            background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, #4ade80 100%);
             filter: blur(80px);
             opacity: 0.15;
             border-radius: 50%;
@@ -191,7 +191,7 @@
 
     <div class="auth-background">
         <div class="auth-blob" style="top: -200px; right: -200px;"></div>
-        <div class="auth-blob" style="bottom: -200px; left: -200px; background: #6366f1;"></div>
+        <div class="auth-blob" style="bottom: -200px; left: -200px; background: #16a34a;"></div>
     </div>
 
     <div class="auth-page-wrapper">

@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Suppliers Details')
+@section('title', 'Suppliers Registry')
 
 @section('content')
 <style>
@@ -80,42 +80,29 @@
     .cfg-card-body {
         padding: 2.5rem;
     }
+
+    /* Form Input Controls styling */
+    .cfg-form-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
     .cfg-text-input {
         width: 100%;
-        height: 44px;
-        padding: 0 1rem;
+        padding: 0.75rem 1rem;
         font-size: 0.85rem;
-        border: 2px solid #edf2f7;
+        font-weight: 700;
+        border: 1.5px solid #edf2f7;
         border-radius: 12px;
-        background: white;
-        outline: none;
-        box-sizing: border-box;
-        transition: 0.2s;
-        font-weight: 600;
+        background: #f8fafc;
         color: #1e293b;
+        outline: none;
+        transition: all 0.3s ease;
     }
     .cfg-text-input:focus {
-        border-color: var(--primary);
-    }
-    .btn-cfg-add {
-        padding: 0 1.25rem;
-        height: 44px;
-        border-radius: 14px;
-        border: none;
-        color: white;
-        font-weight: 800;
-        font-size: 0.85rem;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: all 0.2s;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-    }
-    .btn-cfg-add:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
+        border-color: #16a34a;
+        background: white;
+        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.08);
     }
 
     /* Supplier Pagination Premium Styling */
@@ -159,6 +146,28 @@
         color: #94a3b8;
         width: 24px;
         text-align: center;
+    }
+
+    /* Custom Add / Edit buttons */
+    .btn-cfg-add {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.85rem;
+        font-weight: 800;
+        border-radius: 14px;
+        border: none;
+        color: white;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s;
+    }
+    .btn-cfg-add:hover {
+        transform: translateY(-1.5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        filter: brightness(1.05);
     }
 </style>
 
@@ -209,7 +218,7 @@
                                      <th style="padding: 1rem 1.25rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.72rem;">Company Contacts</th>
                                      <th style="padding: 1rem 1.25rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.72rem;">Address / Notes</th>
                                      @if(!$isHeadOfStores)
-                                     <th style="padding: 1rem 1.25rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.72rem; text-align: right; width: 100px;">Actions</th>
+                                     <th style="padding: 1rem 1.25rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.72rem; text-align: right;">Actions</th>
                                      @endif
                                  </tr>
                             </thead>
@@ -219,7 +228,7 @@
                     
                     <div id="noSuppliersRegistered" style="display: none; padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0;">
                         <i data-lucide="inbox" style="width: 32px; height: 32px; color: #cbd5e1; margin-bottom: 0.75rem;"></i>
-                        <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">{{ $isHeadOfStores ? 'No suppliers registered yet.' : 'No suppliers added yet. Add suppliers on the right.' }}</p>
+                        <p style="color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin: 0;">No suppliers registered yet.</p>
                     </div>
 
                     <div id="noSuppliersFound" style="display: none; padding: 2rem; text-align: center; background: #f8fafc; border-radius: 16px; border: 1.5px dashed #e2e8f0; margin-top: 1rem;">
@@ -230,19 +239,19 @@
                     <div id="suppliersPagination" style="margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;"></div>
                 </div>
 
+                {{-- Add / Edit Form Panel (Hidden for Head of Stores) --}}
                 @if(!$isHeadOfStores)
-                {{-- Add/Edit Form --}}
-                <div style="background: #fafbff; border-radius: 20px; border: 1.5px solid #edf2f7; padding: 1.5rem;">
-                    <h5 style="font-weight: 900; font-size: 0.95rem; color: #0f172a; margin: 0 0 0.25rem 0;" id="supplierFormTitle">Add Supplier</h5>
-                    <p style="font-size: 0.75rem; color: #64748b; margin: 0 0 1.25rem 0;">Add a new supplier or update contact details.</p>
+                <div style="background: #fafbff; border: 1.5px solid #edf2f7; border-radius: 20px; padding: 2rem;">
+                    <h4 id="supplierFormTitle" style="font-size: 0.95rem; font-weight: 900; color: #0f172a; margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 8px;">
+                        Add Supplier
+                    </h4>
                     <form action="{{ route('admin.settings.supplier.store') }}" method="POST" id="supplierForm">
                         @csrf
-                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="cfg-form-stack">
                             <div>
-                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Supplier Name(s) (Company)</label>
-                                <input type="text" name="name" id="supplierNameInput" class="cfg-text-input" placeholder="e.g. Acme Corp, Apex Ltd (comma-separated for multiple)" required>
+                                <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Supplier/Donor Name *</label>
+                                <input type="text" name="name" id="supplierNameInput" required class="cfg-text-input" placeholder="e.g. Acme Supplies Ltd">
                             </div>
-
                             <div>
                                 <label style="font-size: 0.75rem; font-weight: 800; color: #475569; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">Contact Person Name</label>
                                 <input type="text" name="contact_person" id="supplierContactPersonInput" class="cfg-text-input" placeholder="e.g. John Doe">
@@ -344,7 +353,6 @@
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             const dayNames = ["S", "M", "T", "W", "T", "F", "S"];
             
-            // Days in month
             const firstDayIndex = new Date(year, month, 1).getDay();
             const lastDay = new Date(year, month + 1, 0).getDate();
             
@@ -362,12 +370,10 @@
                 <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 0.72rem;">
             `;
             
-            // Empty cells before first day
             for (let i = 0; i < firstDayIndex; i++) {
                 html += `<div></div>`;
             }
             
-            // Days of month
             for (let day = 1; day <= lastDay; day++) {
                 const currentDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 
@@ -375,15 +381,12 @@
                 let cellTitle = '';
                 
                 if (currentDateStr === lastDateStr && highlightLast) {
-                    // Last delivery is red
                     cellStyle += ' background: #ef4444; color: white; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);';
                     cellTitle = 'Last Delivery';
                 } else if (currentDateStr === firstDateStr && highlightFirst) {
-                    // First delivery is highlighted with a color (indigo)
                     cellStyle += ' background: #16a34a; color: white; box-shadow: 0 2px 4px rgba(22, 163, 74, 0.3);';
                     cellTitle = 'First Delivery';
                 } else if (allDatesArr.includes(currentDateStr)) {
-                    // Other delivery
                     cellStyle += ' background: #dbeafe; color: #1e40af;';
                     cellTitle = 'Delivery Date';
                 } else {
@@ -469,7 +472,6 @@
             </div>`;
         }
 
-        // Format dates for display
         const formatDate = (dateStr) => {
             if (!dateStr) return 'N/A';
             const parts = dateStr.split('-');
@@ -503,7 +505,7 @@
                 </button>
                  <div class="calendar-popover" style="display: none; position: fixed; z-index: 9999; background: white; border: 1.5px solid #edf2f7; border-radius: 16px; padding: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); width: 216px;">
                      ${miniCalendarHtml}
-                 </div>
+                  </div>
             </div>
             ` : ''}
         </div>`;
@@ -572,7 +574,6 @@
         
         if (totalPages <= 1) return;
 
-        // Previous Button
         const prevBtn = document.createElement('button');
         prevBtn.type = 'button';
         prevBtn.innerHTML = '<i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>';
@@ -581,7 +582,7 @@
         prevBtn.onclick = () => goToSupplierPage(currentPage - 1);
         pagDiv.appendChild(prevBtn);
 
-        const range = 2; // Number of pages to show on either side of current page
+        const range = 2;
         let pages = [];
 
         for (let i = 1; i <= totalPages; i++) {
@@ -592,7 +593,6 @@
             }
         }
 
-        // Remove consecutive ellipses
         pages = pages.filter((item, pos, self) => {
             return pos === 0 || !(item === '...' && self[pos - 1] === '...');
         });
@@ -607,16 +607,15 @@
             } else {
                 btn.textContent = p;
                 if (p === currentPage) {
-                    btn.className = 'supplier-pag-btn active';
+                     btn.className = 'supplier-pag-btn active';
                 } else {
-                    btn.className = 'supplier-pag-btn';
-                    btn.onclick = () => goToSupplierPage(p);
+                     btn.className = 'supplier-pag-btn';
+                     btn.onclick = () => goToSupplierPage(p);
                 }
             }
             pagDiv.appendChild(btn);
         });
 
-        // Next Button
         const nextBtn = document.createElement('button');
         nextBtn.type = 'button';
         nextBtn.innerHTML = '<i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>';
@@ -670,20 +669,17 @@
             if (noResults) noResults.style.display = 'none';
         }
         
-        // Render slice
         for (let i = startIndex; i < endIndex; i++) {
             const supplier = filteredSuppliers[i];
             const cardHtml = renderSupplierCard(supplier, i);
             container.insertAdjacentHTML('beforeend', cardHtml);
         }
         
-        // Update pagination info
         const infoSpan = document.getElementById('supplierPaginationInfo');
         if (infoSpan) {
             infoSpan.textContent = `Showing ${startIndex + 1} - ${endIndex} of ${filteredSuppliers.length} suppliers`;
         }
         
-        // Render pagination buttons
         const totalPages = Math.ceil(filteredSuppliers.length / suppliersPerPage);
         renderSupplierPagination(totalPages, page);
         
@@ -763,7 +759,6 @@
         const popover = btn.nextElementSibling;
         const isVisible = popover.style.display === 'block';
         
-        // Close other popovers
         document.querySelectorAll('.calendar-popover').forEach(p => p.style.display = 'none');
         
         if (!isVisible) {
@@ -774,7 +769,6 @@
         }
     }
 
-    // Hide calendar popovers on scroll or window resize to prevent floating mismatch
     window.addEventListener('scroll', () => {
         document.querySelectorAll('.calendar-popover').forEach(p => p.style.display = 'none');
     }, { passive: true });
@@ -786,7 +780,6 @@
     document.addEventListener('click', function(e) {
         const activePopover = document.querySelector('.calendar-popover[style*="display: block"]');
         if (activePopover) {
-            // Since it's position: fixed, we check if the click target is the button itself or the popover content
             const clickedInsidePopover = activePopover.contains(e.target);
             const clickedButton = e.target.closest('button') && e.target.closest('button').onclick && e.target.closest('button').onclick.toString().includes('toggleCalendarPopover');
             if (!clickedInsidePopover && !clickedButton) {

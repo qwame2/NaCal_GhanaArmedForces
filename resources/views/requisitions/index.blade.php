@@ -37,16 +37,16 @@
             --font-sans: 'Outfit', sans-serif;
 
             /* Modern E-commerce Jumia-Inspired Color Palette */
-            --store-orange: #f97316;
-            --store-orange-hover: #ea580c;
-            --store-orange-light: rgba(249, 115, 22, 0.08);
+            --store-orange: #22c55e;
+            --store-orange-hover: #15803d;
+            --store-orange-light: rgba(34, 197, 94, 0.08);
 
-            --store-indigo: #6366f1;
-            --store-indigo-hover: #4f46e5;
-            --store-indigo-light: rgba(99, 102, 241, 0.08);
+            --store-indigo: #16a34a;
+            --store-indigo-hover: #16a34a;
+            --store-indigo-light: rgba(22, 163, 74, 0.08);
 
             --success-color: #10b981;
-            --warning-color: #f59e0b;
+            --warning-color: #10b981;
             --danger-color: #ef4444;
 
             /* Theme overrides */
@@ -112,7 +112,7 @@
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
         }
 
         .brand-name {
@@ -155,7 +155,7 @@
         .store-search-input:focus {
             border-color: var(--store-orange);
             background: var(--bg-card);
-            box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12);
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
         }
 
         .store-search-icon {
@@ -200,7 +200,7 @@
 
         .cart-toggle-btn {
             background: var(--store-orange-light);
-            border: 1px solid rgba(249, 115, 22, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.2);
             color: var(--store-orange);
             padding: 0 1.25rem;
             border-radius: 99px;
@@ -217,7 +217,7 @@
         .cart-toggle-btn:hover {
             background: var(--store-orange);
             color: white;
-            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
             transform: translateY(-1px);
         }
 
@@ -254,7 +254,7 @@
             justify-content: center;
             font-weight: 800;
             font-size: 0.8rem;
-            box-shadow: 0 2px 6px rgba(99, 102, 241, 0.2);
+            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.2);
         }
 
         .user-info-name {
@@ -305,7 +305,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 80% 20%, rgba(249, 115, 22, 0.15) 0%, transparent 50%);
+            background: radial-gradient(circle at 80% 20%, rgba(34, 197, 94, 0.15) 0%, transparent 50%);
             pointer-events: none;
         }
 
@@ -316,8 +316,8 @@
         }
 
         .hero-badge {
-            background: rgba(249, 115, 22, 0.2);
-            border: 1px solid rgba(249, 115, 22, 0.3);
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.3);
             color: var(--store-orange);
             display: inline-flex;
             align-items: center;
@@ -371,7 +371,7 @@
         .hero-btn:hover {
             background: var(--store-orange-hover);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.3);
+            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
         }
 
         .hero-btn-secondary {
@@ -462,7 +462,7 @@
 
         .category-item.active {
             background: var(--store-orange-light);
-            border-color: rgba(249, 115, 22, 0.15);
+            border-color: rgba(34, 197, 94, 0.15);
             color: var(--store-orange);
             font-weight: 700;
         }
@@ -544,7 +544,7 @@
 
         .product-image-container {
             height: 140px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(249, 115, 22, 0.05));
+            background: linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(34, 197, 94, 0.05));
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
@@ -554,7 +554,7 @@
         }
 
         .product-card:hover .product-image-container {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(249, 115, 22, 0.08));
+            background: linear-gradient(135deg, rgba(22, 163, 74, 0.08), rgba(34, 197, 94, 0.08));
         }
 
         .product-icon-box {
@@ -641,7 +641,7 @@
         }
 
         .stock-low {
-            background: rgba(245, 158, 11, 0.1);
+            background: rgba(16, 185, 129, 0.1);
             color: var(--warning-color);
         }
 
@@ -713,7 +713,7 @@
 
         .add-cart-btn:hover {
             background: var(--store-orange-hover);
-            box-shadow: 0 4px 10px rgba(249, 115, 22, 0.25);
+            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.25);
         }
 
         .add-cart-btn.added {
@@ -926,13 +926,13 @@
         .form-input:focus {
             border-color: var(--store-orange);
             background: var(--bg-card);
-            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.08);
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.08);
         }
 
         .checkout-btn {
             width: 100%;
             padding: 0.9rem;
-            background: linear-gradient(135deg, var(--store-orange), #ea580c);
+            background: linear-gradient(135deg, var(--store-orange), #15803d);
             color: white;
             border: none;
             border-radius: 12px;
@@ -943,14 +943,14 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 6px 16px rgba(249, 115, 22, 0.2);
+            box-shadow: 0 6px 16px rgba(34, 197, 94, 0.2);
             transition: all 0.25s ease;
             margin-top: 1.5rem;
         }
 
         .checkout-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.35);
+            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.35);
         }
 
         .checkout-btn:disabled {
@@ -1141,7 +1141,7 @@
             background: var(--bg-card);
             border-color: var(--store-orange);
             color: var(--store-orange);
-            box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
         }
 
         .tracker-step.declined .tracker-dot {
@@ -1188,8 +1188,8 @@
         .history-notes-box {
             margin-top: 1rem;
             font-size: 0.78rem;
-            background: rgba(245, 158, 11, 0.05);
-            border: 1px dashed rgba(245, 158, 11, 0.3);
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px dashed rgba(16, 185, 129, 0.3);
             border-radius: 12px;
             padding: 10px 14px;
             color: #b45309;
@@ -1206,11 +1206,11 @@
             }
             30% {
                 border-color: var(--store-orange);
-                box-shadow: 0 0 0 6px var(--store-orange-light), 0 20px 40px -15px rgba(249, 115, 22, 0.25);
+                box-shadow: 0 0 0 6px var(--store-orange-light), 0 20px 40px -15px rgba(34, 197, 94, 0.25);
             }
             70% {
                 border-color: var(--store-orange);
-                box-shadow: 0 0 0 6px var(--store-orange-light), 0 20px 40px -15px rgba(249, 115, 22, 0.25);
+                box-shadow: 0 0 0 6px var(--store-orange-light), 0 20px 40px -15px rgba(34, 197, 94, 0.25);
             }
             100% {
                 border-color: var(--border-color);
@@ -1343,7 +1343,7 @@
         .action-btn-followup:hover {
             background: var(--warning-color) !important;
             color: white !important;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
             transform: translateY(-1px);
         }
         .action-btn-collect:hover {
@@ -1371,7 +1371,7 @@
             font-weight: 800 !important;
             font-size: 0.85rem !important;
             letter-spacing: 0.02em !important;
-            box-shadow: 0 10px 20px rgba(249, 115, 22, 0.2) !important;
+            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.2) !important;
         }
         .premium-swal-cancel-btn {
             height: 48px !important;
@@ -1433,7 +1433,7 @@
         .swal-field-input:focus {
             border-color: var(--store-orange) !important;
             background: white !important;
-            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.06) !important;
+            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.06) !important;
         }
         .swal-field-input[readonly] {
             opacity: 0.65;
@@ -1512,13 +1512,13 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
             transition: all 0.25s ease;
         }
 
         .sticky-cart-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.45);
+            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.45);
         }
 
         @keyframes pulse-icon {
@@ -1611,7 +1611,7 @@
             </div>
             <!-- Interactive Floating Art (fallback illustration via Lucide graphics) -->
             <div class="hero-art">
-                <i data-lucide="package-open" style="width: 260px; height: 260px; color: rgba(249, 115, 22, 0.15); stroke-width: 1;"></i>
+                <i data-lucide="package-open" style="width: 260px; height: 260px; color: rgba(34, 197, 94, 0.15); stroke-width: 1;"></i>
             </div>
         </div>
     </section>
@@ -1724,8 +1724,8 @@
                                 <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 0.5rem;">
                                     <span class="product-cat-tag" style="margin-bottom: 0;">{{ $catName }}</span>
                                     @if(in_array($item->ledge_category, $dgCategories))
-                                        <span style="font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #8b5cf6; background: rgba(139, 92, 246, 0.08); padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(139, 92, 246, 0.18);" title="This item requires Director General's approval prior to collection.">
-                                            <i data-lucide="shield-alert" style="width: 11px; height: 11px; color: #8b5cf6;"></i> Needs DG's Approval
+                                        <span style="font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #4ade80; background: rgba(139, 92, 246, 0.08); padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(139, 92, 246, 0.18);" title="This item requires Director General's approval prior to collection.">
+                                            <i data-lucide="shield-alert" style="width: 11px; height: 11px; color: #4ade80;"></i> Needs DG's Approval
                                         </span>
                                     @endif
                                 </div>
@@ -2014,7 +2014,7 @@
             Swal.fire({
                 title: `
                     <div style="display: flex; align-items: center; gap: 15px; text-align: left; width: 100%;">
-                        <div style="width: 48px; height: 48px; background: rgba(249, 115, 22, 0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #f97316;">
+                        <div style="width: 48px; height: 48px; background: rgba(34, 197, 94, 0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #22c55e;">
                             <i data-lucide="user-check"></i>
                         </div>
                         <div>
@@ -2032,7 +2032,7 @@
                                 ${user.avatar ? `
                                     <img src="${user.avatar}" id="swal-avatar-preview" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
                                 ` : `
-                                    <div id="swal-avatar-placeholder" style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--store-indigo) 0%, #4338ca 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 950; color: white; border: 4px solid white; box-shadow: 0 10px 20px rgba(99,102,241,0.25);">
+                                    <div id="swal-avatar-placeholder" style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--store-indigo) 0%, #15803d 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 950; color: white; border: 4px solid white; box-shadow: 0 10px 20px rgba(22,163,74,0.25);">
                                         ${user.name.substring(0, 1).toUpperCase()}
                                     </div>
                                 `}
@@ -2110,7 +2110,7 @@
                 showCancelButton: true,
                 confirmButtonText: 'Save Profile Settings',
                 cancelButtonText: 'Close',
-                confirmButtonColor: '#f97316',
+                confirmButtonColor: '#22c55e',
                 cancelButtonColor: '#f1f5f9',
                 customClass: {
                     popup: 'glass-monolith-popup',
@@ -2185,7 +2185,7 @@
                         title: 'Profile Updated',
                         text: 'Your details have been successfully synchronized.',
                         icon: 'success',
-                        confirmButtonColor: '#f97316'
+                        confirmButtonColor: '#22c55e'
                     }).then(() => {
                         location.reload();
                     });
@@ -2213,7 +2213,7 @@
                 const originalHTML = container.innerHTML;
                 container.innerHTML = `
                     <div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
-                        <i data-lucide="loader-2" class="spin" style="width: 24px; color: #f97316;"></i>
+                        <i data-lucide="loader-2" class="spin" style="width: 24px; color: #22c55e;"></i>
                     </div>
                 `;
                 if (typeof lucide !== 'undefined') lucide.createIcons();

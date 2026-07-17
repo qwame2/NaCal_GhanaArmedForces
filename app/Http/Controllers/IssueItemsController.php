@@ -46,17 +46,17 @@ class IssueItemsController extends Controller
         // Total calculations across database for stats cards (optimized to run in fewer queries)
         $statsData = IssuedItem::leftJoin('issuances', 'issued_items.issuance_id', '=', 'issuances.id')
             ->selectRaw("
-                SUM(issued_items.quantity) as total_disbursed,
-                SUM(CASE WHEN issuances.issuance_type = 'Permanent' THEN issued_items.quantity ELSE 0 END) as permanent_allocations,
-                SUM(CASE WHEN issuances.issuance_type = 'Temporary' THEN issued_items.quantity ELSE 0 END) as temporary_loans
+                COUNT(issued_items.id) as total_disbursed,
+                SUM(CASE WHEN issuances.issuance_type = 'Permanent' THEN 1 ELSE 0 END) as permanent_allocations,
+                SUM(CASE WHEN issuances.issuance_type = 'Temporary' THEN 1 ELSE 0 END) as temporary_loans
             ")->first();
 
         $activeDestinations = Issuance::distinct()->count('beneficiary');
 
         $stats = [
-            'total_disbursed' => (float) ($statsData->total_disbursed ?? 0),
-            'permanent_allocations' => (float) ($statsData->permanent_allocations ?? 0),
-            'temporary_loans' => (float) ($statsData->temporary_loans ?? 0),
+            'total_disbursed' => (int) ($statsData->total_disbursed ?? 0),
+            'permanent_allocations' => (int) ($statsData->permanent_allocations ?? 0),
+            'temporary_loans' => (int) ($statsData->temporary_loans ?? 0),
             'active_destinations' => (int) $activeDestinations
         ];
 

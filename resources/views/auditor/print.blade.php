@@ -258,7 +258,7 @@
                             }
                         @endphp
                         <strong>{{ $log->user ? $log->user->name : 'System Automated' }}</strong><br>
-                        <span style="font-size: 8px; color: #4f46e5; font-weight: 800;">{{ $roleDisplay }}</span><br>
+                        <span style="font-size: 8px; color: #16a34a; font-weight: 800;">{{ $roleDisplay }}</span><br>
                         <span style="font-size: 8px; color: #64748b;">{{ $log->user ? '@' . $log->user->username : '' }}</span>
                     </td>
                     <td>{{ $log->event_type }}</td>
@@ -338,7 +338,7 @@
                                 <span style="font-size: 7.5px; color: #16a34a; font-weight: 800; text-transform: uppercase;">[Returned]</span>
                             @else
                                 <span>{{ number_format($item->quantity + $item->total_returned) }} {{ $item->unit }}</span><br>
-                                <span style="font-size: 7.5px; color: #d97706; font-weight: 800; text-transform: uppercase;">[Partial Return]</span><br>
+                                <span style="font-size: 7.5px; color: #047857; font-weight: 800; text-transform: uppercase;">[Partial Return]</span><br>
                                 <span style="font-size: 7px; color: #64748b; font-weight: 600;">({{ number_format($item->quantity) }} outstanding)</span>
                             @endif
                         @else

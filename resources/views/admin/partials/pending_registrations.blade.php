@@ -55,7 +55,7 @@
                 </div>
                 @endif
                 @if($req->service_number)
-                <div class="reg-pill service-number" style="background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa;">
+                <div class="reg-pill service-number" style="background: #f0fdf4; color: #c2410c; border: 1px solid #fed7aa;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
                     Service: {{ $req->service_number }}
                 </div>

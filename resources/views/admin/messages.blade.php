@@ -7,7 +7,7 @@
     <!-- Sidebar: Directory -->
     <div class="glass-card" style="width: 380px; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.04);">
         <div style="padding: 2rem; border-bottom: 1px solid var(--border-color); background: linear-gradient(145deg, var(--bg-card), var(--bg-main));">
-            <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Staff <span style="color: #4f46e5;">Directory</span></h3>
+            <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Staff <span style="color: #16a34a;">Directory</span></h3>
             <div class="search-vault">
                 <i data-lucide="search"></i>
                 <input type="text" id="networkSearch" placeholder="Search users..." oninput="filterNetwork()">
@@ -31,7 +31,7 @@
                     @if($user->avatar)
                     <img src="{{ asset('storage/' . $user->avatar) }}" style="width: 48px; height: 48px; border-radius: 14px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                     @else
-                    <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);">{{ substr($user->name, 0, 1) }}</div>
+                    <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);">{{ substr($user->name, 0, 1) }}</div>
                     @endif
                     <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $user->is_online ? '#10b981' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
                 </div>
@@ -199,12 +199,12 @@
     }
 
     .search-vault:focus-within {
-        border-color: #4f46e5;
-        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.1);
+        border-color: #16a34a;
+        box-shadow: 0 10px 30px rgba(22, 163, 74, 0.1);
     }
 
     .search-vault i {
-        color: #4f46e5;
+        color: #16a34a;
         opacity: 0.6;
         margin-right: 0.75rem;
         width: 18px;
@@ -241,8 +241,8 @@
     }
 
     .msg-input-vault:focus-within {
-        border-color: #4f46e5;
-        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.1);
+        border-color: #16a34a;
+        box-shadow: 0 10px 30px rgba(22, 163, 74, 0.1);
         transform: translateY(-2px);
     }
 
@@ -265,7 +265,7 @@
     }
 
     .send-action-btn {
-        background: #4f46e5;
+        background: #16a34a;
         color: white;
         border: none;
         width: 44px;
@@ -275,14 +275,14 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        box-shadow: 0 8px 16px rgba(79, 70, 229, 0.3);
+        box-shadow: 0 8px 16px rgba(22, 163, 74, 0.3);
         transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         flex-shrink: 0;
     }
 
     .send-action-btn:hover {
         transform: scale(1.08);
-        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.4);
+        box-shadow: 0 10px 20px rgba(22, 163, 74, 0.4);
     }
 
     .network-item:hover {
@@ -358,7 +358,7 @@
         background: var(--primary);
         color: white;
         border-bottom-right-radius: 6px;
-        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.2);
     }
 
     .recipient .comms-bubble {
@@ -500,9 +500,9 @@
         const sns = serialStr.split(',').map(s => s.trim()).filter(Boolean);
         if (sns.length === 0) return '';
 
-        const badgeBg = isProposed ? 'rgba(99, 102, 241, 0.05)' : 'rgba(239, 68, 68, 0.05)';
-        const badgeColor = isProposed ? '#4f46e5' : '#ef4444';
-        const borderColor = isProposed ? 'rgba(99, 102, 241, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+        const badgeBg = isProposed ? 'rgba(22, 163, 74, 0.05)' : 'rgba(239, 68, 68, 0.05)';
+        const badgeColor = isProposed ? '#16a34a' : '#ef4444';
+        const borderColor = isProposed ? 'rgba(22, 163, 74, 0.15)' : 'rgba(239, 68, 68, 0.15)';
 
         function makeChipHtml(sn) {
             const match = sn.match(/^(.*?)\s*\(Rim:\s*(\d+)\)$/i);
@@ -598,7 +598,7 @@
         if (avatar) {
             avatarDiv.innerHTML = `<img src="${avatar}" style="width: 52px; height: 52px; border-radius: 16px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">`;
         } else {
-            avatarDiv.innerHTML = `<div style="width: 52px; height: 52px; border-radius: 16px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);">${name.charAt(0)}</div>`;
+            avatarDiv.innerHTML = `<div style="width: 52px; height: 52px; border-radius: 16px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);">${name.charAt(0)}</div>`;
         }
 
         document.querySelectorAll('.network-item').forEach(el => el.classList.remove('active'));
@@ -983,8 +983,8 @@
 
                         <textarea id="swal-reject-reason" placeholder="e.g., Incorrect quantity specified, missing documentation, requires further verification..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
 
-                        <div style="margin-top: 1rem; padding: 10px 14px; background: rgba(245, 158, 11, 0.07); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px;">
-                            <svg style="width: 16px; height: 16px; color: #d97706; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <div style="margin-top: 1rem; padding: 10px 14px; background: rgba(16, 185, 129, 0.07); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px;">
+                            <svg style="width: 16px; height: 16px; color: #047857; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                             <span style="font-size: 0.78rem; font-weight: 700; color: #92400e;">A reason is mandatory and will be permanently logged in the audit system.</span>
                         </div>
                     </div>
@@ -1074,7 +1074,7 @@
 
                     if (status === 'approved' && data.batch_id) {
                         const printUrl = `{{ url('/received-items') }}/${data.batch_id}/sra`;
-                        html += `<br><a href="${printUrl}" target="_blank" style="display: inline-block; background: #4f46e5; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 800; font-size: 0.75rem; margin-top: 8px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">Download / Print SRA</a>`;
+                        html += `<br><a href="${printUrl}" target="_blank" style="display: inline-block; background: #16a34a; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 800; font-size: 0.75rem; margin-top: 8px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);">Download / Print SRA</a>`;
                     }
 
                     if (actionsDiv) {
@@ -1434,11 +1434,11 @@
                 </button>
 
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);">
+                    <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #10b981 0%, #047857 100%); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">
                         <i data-lucide="refresh-cw" style="width: 32px; height: 32px;"></i>
                     </div>
                     <div>
-                        <div style="font-size: 0.75rem; font-weight: 800; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Item Recovery Oversight</div>
+                        <div style="font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Item Recovery Oversight</div>
                         <h2 style="margin: 0; font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -0.03em;">Return Verification</h2>
                         <p style="margin: 4px 0 0; font-size: 0.95rem; color: #64748b; font-weight: 500;">Submitted by <b>${data.personnel}</b></p>
                     </div>
@@ -1453,7 +1453,7 @@
                     </div>
                     <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Category</span>
-                        <span style="font-size: 1rem; font-weight: 800; color: #4f46e5; background: rgba(79, 70, 229, 0.1); padding: 4px 12px; border-radius: 8px; display: inline-block;">${item.category}</span>
+                        <span style="font-size: 1rem; font-weight: 800; color: #16a34a; background: rgba(22, 163, 74, 0.1); padding: 4px 12px; border-radius: 8px; display: inline-block;">${item.category}</span>
                     </div>
                     <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Beneficiary</span>
@@ -1472,7 +1472,7 @@
                     <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
                         <i data-lucide="message-square" style="width: 14px;"></i> User Remarks
                     </div>
-                    <div style="font-size: 0.95rem; color: #475569; font-weight: 500; font-style: italic; line-height: 1.6; border-left: 3px solid #f59e0b; padding-left: 15px;">
+                    <div style="font-size: 0.95rem; color: #475569; font-weight: 500; font-style: italic; line-height: 1.6; border-left: 3px solid #10b981; padding-left: 15px;">
                         ${item.remarks || '-- No specific notes provided --'}
                     </div>
                 </div>
@@ -1609,9 +1609,9 @@
         if (data.request_type === 'stock_verification') {
             const payload = data.payload;
             const variance = parseFloat(payload.variance);
-            const varColor = variance === 0 ? '#10b981' : (variance > 0 ? '#4f46e5' : '#ef4444');
-            const varBg = variance === 0 ? 'rgba(16, 185, 129, 0.06)' : (variance > 0 ? 'rgba(79, 70, 229, 0.06)' : 'rgba(239, 68, 68, 0.06)');
-            const varBorder = variance === 0 ? 'rgba(16, 185, 129, 0.2)' : (variance > 0 ? 'rgba(79, 70, 229, 0.2)' : 'rgba(239, 68, 68, 0.2)');
+            const varColor = variance === 0 ? '#10b981' : (variance > 0 ? '#16a34a' : '#ef4444');
+            const varBg = variance === 0 ? 'rgba(16, 185, 129, 0.06)' : (variance > 0 ? 'rgba(22, 163, 74, 0.06)' : 'rgba(239, 68, 68, 0.06)');
+            const varBorder = variance === 0 ? 'rgba(16, 185, 129, 0.2)' : (variance > 0 ? 'rgba(22, 163, 74, 0.2)' : 'rgba(239, 68, 68, 0.2)');
             const varSign = variance > 0 ? '+' : '';
 
             bodyHtml = `
@@ -1622,7 +1622,7 @@
                     </div>
                     <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Condition</span>
-                        <span style="font-size: 1rem; font-weight: 800; color: #4f46e5; background: rgba(79, 70, 229, 0.1); padding: 4px 12px; border-radius: 8px; display: inline-block;">${payload.condition}</span>
+                        <span style="font-size: 1rem; font-weight: 800; color: #16a34a; background: rgba(22, 163, 74, 0.1); padding: 4px 12px; border-radius: 8px; display: inline-block;">${payload.condition}</span>
                     </div>
                     <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0;">
                         <span style="display: block; font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">System Stock</span>
@@ -1642,7 +1642,7 @@
                     <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
                         <i data-lucide="message-square" style="width: 14px;"></i> Verifier Remarks
                     </div>
-                    <div style="font-size: 0.95rem; color: #475569; font-weight: 500; font-style: italic; line-height: 1.6; border-left: 3px solid #f59e0b; padding-left: 15px;">
+                    <div style="font-size: 0.95rem; color: #475569; font-weight: 500; font-style: italic; line-height: 1.6; border-left: 3px solid #10b981; padding-left: 15px;">
                         ${payload.remarks || '-- No specific notes provided --'}
                     </div>
                 </div>
@@ -1652,7 +1652,7 @@
             let rowsHtml = '';
             items.forEach(si => {
                 const variance = parseFloat(si.variance);
-                const varStyle = variance === 0 ? 'color:#10b981;' : (variance > 0 ? 'color:#4f46e5;' : 'color:#ef4444;');
+                const varStyle = variance === 0 ? 'color:#10b981;' : (variance > 0 ? 'color:#16a34a;' : 'color:#ef4444;');
                 const varSign = variance > 0 ? '+' : '';
                 rowsHtml += `
                     <tr style="border-bottom: 1px solid #e2e8f0; color: #475569;">
@@ -1660,7 +1660,7 @@
                         <td style="padding: 12px;">${si.current_stock}</td>
                         <td style="padding: 12px; font-weight: 700; color: #0f172a;">${si.physical_count}</td>
                         <td style="padding: 12px; font-weight: 800; ${varStyle}">${varSign}${si.variance}</td>
-                        <td style="padding: 12px;"><span style="font-size: 0.8rem; font-weight: 700; color: #4f46e5; background: rgba(79, 70, 229, 0.08); padding: 4px 10px; border-radius: 6px;">${si.condition}</span></td>
+                        <td style="padding: 12px;"><span style="font-size: 0.8rem; font-weight: 700; color: #16a34a; background: rgba(22, 163, 74, 0.08); padding: 4px 10px; border-radius: 6px;">${si.condition}</span></td>
                         <td style="padding: 12px; font-style: italic; font-size: 0.85rem; max-width: 250px; word-break: break-word;">${si.remarks || '--'}</td>
                     </tr>
                 `;
@@ -1692,7 +1692,7 @@
         const isBatch = data.request_type === 'batch_stock_verification';
         const title = isBatch ? 'Batch Stock Reconciliation' : 'Stock Reconciliation';
         const iconName = isBatch ? 'clipboard-list' : 'check-square';
-        const iconGradient = isBatch ? 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)';
+        const iconGradient = isBatch ? 'linear-gradient(135deg, #16a34a 0%, #1d4ed8 100%)' : 'linear-gradient(135deg, #16a34a 0%, #1d4ed8 100%)';
         const iconShadow = '0 10px 25px rgba(59, 130, 246, 0.3)';
 
         const html = `
@@ -1706,7 +1706,7 @@
                         <i data-lucide="${iconName}" style="width: 32px; height: 32px;"></i>
                     </div>
                     <div>
-                        <div style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Strategic Stock Oversight</div>
+                        <div style="font-size: 0.75rem; font-weight: 800; color: #16a34a; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 4px;">Strategic Stock Oversight</div>
                         <h2 style="margin: 0; font-size: 2rem; font-weight: 900; color: #0f172a; letter-spacing: -0.03em;">${title}</h2>
                         <p style="margin: 4px 0 0; font-size: 0.95rem; color: #64748b; font-weight: 500;">Submitted by <b>${data.personnel}</b></p>
                     </div>
@@ -1757,8 +1757,8 @@
                             <textarea id="swal-decline-reason" placeholder="e.g. Insufficient justification provided, items currently out of stock, request lacks proper authority sign-off..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: border-color 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#ef4444'; this.style.boxShadow='0 0 0 4px rgba(239,68,68,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
                         </div>
 
-                        <div style="margin-top: 1rem; padding: 10px 14px; background: rgba(245, 158, 11, 0.07); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px;">
-                            <svg style="width: 16px; height: 16px; color: #d97706; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <div style="margin-top: 1rem; padding: 10px 14px; background: rgba(16, 185, 129, 0.07); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px;">
+                            <svg style="width: 16px; height: 16px; color: #047857; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                             <span style="font-size: 0.78rem; font-weight: 700; color: #92400e;">A reason is mandatory and will be logged in the system.</span>
                         </div>
                     </div>
@@ -2035,10 +2035,10 @@
                     <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">
                         ${item.unit || 'Package Types'}
                     </td>
-                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #f59e0b; text-align: right; background: rgba(245, 158, 11, 0.02); border-left: 2px solid #f59e0b;">${(parseFloat(item.expected) || 0).toLocaleString()}</td>
+                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #10b981; text-align: right; background: rgba(16, 185, 129, 0.02); border-left: 2px solid #10b981;">${(parseFloat(item.expected) || 0).toLocaleString()}</td>
                     <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0f172a; text-align: right;">${(parseFloat(item.current) || 0).toLocaleString()}</td>
                     <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #10b981; text-align: right; background: rgba(16, 185, 129, 0.05); border-left: 2px solid #10b981;">+${(parseFloat(item.adding) || 0).toLocaleString()}</td>
-                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #4f46e5; text-align: right; background: rgba(79, 70, 229, 0.03); border-left: 2px solid #4f46e5;">${(parseFloat(item.projected) || 0).toLocaleString()}</td>
+                    <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #16a34a; text-align: right; background: rgba(22, 163, 74, 0.03); border-left: 2px solid #16a34a;">${(parseFloat(item.projected) || 0).toLocaleString()}</td>
                 </tr>
                 `;
             });
@@ -2084,7 +2084,7 @@
                 </button>
 
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <div style="width: 56px; height: 56px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                    <div style="width: 56px; height: 56px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
                         <i data-lucide="package-search" style="width: 28px; height: 28px;"></i>
                     </div>
                     <div>
@@ -2106,7 +2106,7 @@
                 <!-- Summary Stats -->
                 <div style="display:flex; gap:1.5rem; margin-bottom:1.5rem;">
                     <div style="flex:1; background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.01); display: flex; align-items: center; gap: 1.25rem;">
-                        <div style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <div style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                             <i data-lucide="layers" style="width: 24px; height: 24px;"></i>
                         </div>
                         <div>
@@ -2115,12 +2115,12 @@
                         </div>
                     </div>
                     <div style="flex:1; background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.01); display: flex; align-items: center; gap: 1.25rem;">
-                        <div style="width: 48px; height: 48px; background: rgba(245, 158, 11, 0.15); color: #d97706; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <div style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.15); color: #047857; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                             <i data-lucide="package" style="width: 24px; height: 24px;"></i>
                         </div>
                         <div>
                             <div style="font-size:0.7rem; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:3px;">Total Expected</div>
-                            <div style="font-size:1.75rem; font-weight:900; color:#d97706; line-height:1;">${totalExpected.toLocaleString()}</div>
+                            <div style="font-size:1.75rem; font-weight:900; color:#047857; line-height:1;">${totalExpected.toLocaleString()}</div>
                         </div>
                     </div>
                     <div style="flex:1; background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.01); display: flex; align-items: center; gap: 1.25rem;">
@@ -2136,7 +2136,7 @@
 
                 <!-- Items Table -->
                 <h3 style="font-size: 1rem; font-weight: 900; color: #334155; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
-                    <i data-lucide="list-checks" style="width: 20px; color: #4f46e5;"></i> Remainder Item Details
+                    <i data-lucide="list-checks" style="width: 20px; color: #16a34a;"></i> Remainder Item Details
                 </h3>
                 <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2rem;">
                     <table style="width: 100%; border-collapse: collapse;">
@@ -2144,10 +2144,10 @@
                             <tr>
                                 <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Item Description</th>
                                 <th style="padding: 1.25rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
-                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.05em;">Total Expected</th>
+                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em;">Total Expected</th>
                                 <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Current Stock</th>
                                 <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em;">+ Adding</th>
-                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.05em;">New Projected</th>
+                                <th style="padding: 1.25rem 1.5rem; text-align: right; font-size: 0.75rem; font-weight: 800; color: #16a34a; text-transform: uppercase; letter-spacing: 0.05em;">New Projected</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2158,7 +2158,7 @@
                                 <td colspan="2" style="padding: 1rem 1.5rem; font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
                                     Total Remainder Quantities
                                 </td>
-                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #f59e0b; background: rgba(245, 158, 11, 0.02); border-left: 2px solid #f59e0b;">
+                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #10b981; background: rgba(16, 185, 129, 0.02); border-left: 2px solid #10b981;">
                                     ${totalExpected.toLocaleString()}
                                 </td>
                                 <td style="padding: 1rem 1.5rem; text-align: right; font-size: 0.85rem; font-weight: 800; color: #0f172a;">
@@ -2167,7 +2167,7 @@
                                 <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #10b981; background: rgba(16, 185, 129, 0.05); border-left: 2px solid #10b981;">
                                     +${totalAdding.toLocaleString()}
                                 </td>
-                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #4f46e5; background: rgba(79, 70, 229, 0.03); border-left: 2px solid #4f46e5;">
+                                <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #16a34a; background: rgba(22, 163, 74, 0.03); border-left: 2px solid #16a34a;">
                                     ${totalProjected.toLocaleString()}
                                 </td>
                             </tr>
@@ -2175,8 +2175,8 @@
                     </table>
                 </div>
 
-                <div style="padding: 1.5rem; background: #fffbeb; border-radius: 16px; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 1.25rem;">
-                    <div style="width: 40px; height: 40px; background: #f59e0b; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <div style="padding: 1.5rem; background: #ecfdf5; border-radius: 16px; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 1.25rem;">
+                    <div style="width: 40px; height: 40px; background: #10b981; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         <i data-lucide="shield-alert" style="width: 20px;"></i>
                     </div>
                     <div style="flex: 1;">
@@ -2280,8 +2280,8 @@
                     <i data-lucide="x" style="width: 18px;"></i>
                 </button>
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <div style="width: 56px; height: 56px; background: rgba(79, 70, 229, 0.05); color: #4f46e5; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
-                        <svg class="animate-spin" style="width:28px;height:28px;color:#6366f1;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.2"></circle><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path></svg>
+                    <div style="width: 56px; height: 56px; background: rgba(22, 163, 74, 0.05); color: #16a34a; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                        <svg class="animate-spin" style="width:28px;height:28px;color:#16a34a;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.2"></circle><path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="currentColor"></path></svg>
                     </div>
                     <div>
                         <h2 style="margin: 0; font-size: 1.5rem; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">${title || 'Loading Details...'}</h2>
@@ -2375,7 +2375,7 @@
                 const html = `
                     <div style="text-align: left; padding: 10px;">
                         <div style="display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;">
-                            <div style="width: 50px; height: 50px; background: rgba(79, 70, 229, 0.1); color: #4f46e5; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <div style="width: 50px; height: 50px; background: rgba(22, 163, 74, 0.1); color: #16a34a; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                 <i data-lucide="building-2" style="width: 24px; height: 24px;"></i>
                             </div>
                             <div>
@@ -2387,7 +2387,7 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                             <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
                                 <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Total Deliveries</div>
-                                <div style="font-size: 1.5rem; font-weight: 900; color: #4f46e5;">${stats.total_deliveries.toLocaleString()}</div>
+                                <div style="font-size: 1.5rem; font-weight: 900; color: #16a34a;">${stats.total_deliveries.toLocaleString()}</div>
                             </div>
                             <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;">
                                 <div style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Total Items Supplied</div>
@@ -2464,7 +2464,7 @@
                     html: html,
                     showConfirmButton: true,
                     confirmButtonText: 'Close',
-                    confirmButtonColor: '#4f46e5',
+                    confirmButtonColor: '#16a34a',
                     width: 500,
                     customClass: {
                         popup: 'rounded-xl shadow-2xl border border-slate-100',
@@ -2613,7 +2613,7 @@
         Swal.fire({
             html: `
                 <div style="text-align: left;">
-                    <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                    <div style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
                         <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.07); border-radius: 50%;"></div>
                         <div style="display: flex; align-items: center; gap: 14px; position: relative;">
                             <div style="width: 46px; height: 46px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
@@ -2648,7 +2648,7 @@
                         <label style="font-size: 0.78rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 6px;">General Note (Optional)</label>
                         <textarea id="rb-general-note" placeholder="Overall feedback or instructions for the user..." rows="3"
                             style="width: 100%; font-size: 0.88rem; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; font-family: inherit; color: #1e293b; background: #f8fafc; outline: none; resize: vertical; box-sizing: border-box;"
-                            onfocus="this.style.borderColor='#f59e0b'; this.style.boxShadow='0 0 0 4px rgba(245,158,11,0.1)'; this.style.background='white'"
+                            onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 4px rgba(16,185,129,0.1)'; this.style.background='white'"
                             onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'; this.style.background='#f8fafc'"></textarea>
                     </div>
                 </div>
@@ -2656,7 +2656,7 @@
             showCancelButton: true,
             confirmButtonText: '&#8630;&nbsp; Send Back for Correction',
             cancelButtonText: 'Cancel',
-            confirmButtonColor: '#f59e0b',
+            confirmButtonColor: '#10b981',
             cancelButtonColor: '#94a3b8',
             width: 600,
             customClass: {
@@ -2758,7 +2758,7 @@
                     // Update the action area in chat bubble
                     const actionsDiv = document.getElementById(`sra-creation-actions-${reqId}`);
                     if (actionsDiv) {
-                        actionsDiv.innerHTML = `<div style="padding: 12px 20px; border-radius: 12px; background: rgba(245,158,11,0.1); color: #d97706; font-weight: 900; border: 1.5px solid #f59e0b; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
+                        actionsDiv.innerHTML = `<div style="padding: 12px 20px; border-radius: 12px; background: rgba(16,185,129,0.1); color: #047857; font-weight: 900; border: 1.5px solid #10b981; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
                             <i data-lucide="rotate-ccw" style="width: 16px;"></i> ROLLED BACK — AWAITING CORRECTION
                         </div>`;
                         if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -2794,8 +2794,8 @@
                 btn.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.25)';
             } else {
                 btn.innerHTML = `<i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i> Rollback Group`;
-                btn.style.background = '#f59e0b';
-                btn.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.25)';
+                btn.style.background = '#10b981';
+                btn.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.25)';
             }
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
@@ -2803,10 +2803,10 @@
 
     $(document).on('mouseenter', '.sra-rollback-btn-right', function() {
         const checkedCount = $('.item-rollback-checkbox:checked').length;
-        this.style.background = checkedCount > 0 ? '#dc2626' : '#d97706';
+        this.style.background = checkedCount > 0 ? '#dc2626' : '#047857';
     }).on('mouseleave', '.sra-rollback-btn-right', function() {
         const checkedCount = $('.item-rollback-checkbox:checked').length;
-        this.style.background = checkedCount > 0 ? '#ef4444' : '#f59e0b';
+        this.style.background = checkedCount > 0 ? '#ef4444' : '#10b981';
     });
 
     // Relocate oversight elements to body to ensure fixed overlay covers viewport without parent transforms clipping it

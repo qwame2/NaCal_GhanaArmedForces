@@ -21,7 +21,7 @@
     </div>
 
     <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 24px;">
-        <div style="padding: 1.5rem 2rem; background: rgba(99, 102, 241, 0.03); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+        <div style="padding: 1.5rem 2rem; background: rgba(22, 163, 74, 0.03); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; gap: 2rem;">
                 <button class="tab-btn active" onclick="setNotifTab('all')" id="tab-btn-all" style="background: transparent; border: none; font-weight: 800; color: var(--primary); font-size: 0.9rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary); cursor: pointer; transition: 0.2s;">All Notifications</button>
                 <button class="tab-btn" onclick="setNotifTab('alert')" id="tab-btn-alert" style="background: transparent; border: none; font-weight: 700; color: var(--text-muted); font-size: 0.9rem; padding-bottom: 0.5rem; cursor: pointer; transition: 0.2s;">Alerts</button>
@@ -36,7 +36,7 @@
             </div>
         </div>
         <!-- Pagination Footer -->
-        <div id="notifications-pagination" style="padding: 1.25rem 2rem; border-top: 1px solid var(--border-color); display: none; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; background: rgba(99, 102, 241, 0.01); border-radius: 0 0 24px 24px;">
+        <div id="notifications-pagination" style="padding: 1.25rem 2rem; border-top: 1px solid var(--border-color); display: none; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; background: rgba(22, 163, 74, 0.01); border-radius: 0 0 24px 24px;">
             <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
                 <span id="notif-page-info">Showing 0 - 0 of 0 notifications</span>
             </div>
@@ -114,13 +114,13 @@
                 
                 let html = '';
                 data.notifications.forEach(notif => {
-                    let typeColor = '#f59e0b';
-                    let typeBg = 'rgba(245, 158, 11, 0.1)';
+                    let typeColor = '#10b981';
+                    let typeBg = 'rgba(16, 185, 129, 0.1)';
                     if (notif.type === 'danger') {
                         typeColor = '#ef4444';
                         typeBg = 'rgba(239, 68, 68, 0.1)';
                     } else if (notif.type === 'info') {
-                        typeColor = '#3b82f6';
+                        typeColor = '#16a34a';
                         typeBg = 'rgba(59, 130, 246, 0.1)';
                     }
                     
@@ -157,7 +157,7 @@
                     }
 
                     html += `
-                        <div class="notification-item" data-category="${category}" style="display: flex; gap: 1rem; padding: 0.85rem 1.5rem; border-bottom: 1px solid var(--border-color); transition: background 0.2s ease; cursor: pointer; align-items: flex-start;" onmouseover="this.style.background='rgba(99, 102, 241, 0.015)'" onmouseout="this.style.background='transparent'">
+                        <div class="notification-item" data-category="${category}" style="display: flex; gap: 1rem; padding: 0.85rem 1.5rem; border-bottom: 1px solid var(--border-color); transition: background 0.2s ease; cursor: pointer; align-items: flex-start;" onmouseover="this.style.background='rgba(22, 163, 74, 0.015)'" onmouseout="this.style.background='transparent'">
                             <i data-lucide="${notif.icon}" style="width: 16px; height: 16px; color: ${typeColor}; margin-top: 0.15rem; flex-shrink: 0;"></i>
                             <div style="flex: 1; display: flex; flex-direction: column; gap: 0.15rem;">
                                 <div style="display: flex; justify-content: space-between; align-items: baseline;">

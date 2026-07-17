@@ -21,14 +21,14 @@
 @endphp
 <style>
     :root {
-        --store-orange: #f97316;
-        --store-orange-hover: #ea580c;
-        --store-orange-light: rgba(249, 115, 22, 0.08);
-        --store-indigo: #6366f1;
-        --store-indigo-hover: #4f46e5;
-        --store-indigo-light: rgba(99, 102, 241, 0.08);
+        --store-orange: #22c55e;
+        --store-orange-hover: #15803d;
+        --store-orange-light: rgba(34, 197, 94, 0.08);
+        --store-indigo: #16a34a;
+        --store-indigo-hover: #16a34a;
+        --store-indigo-light: rgba(22, 163, 74, 0.08);
         --success-color: #10b981;
-        --warning-color: #f59e0b;
+        --warning-color: #10b981;
         --danger-color: #ef4444;
         --info-color: #06b6d4;
         --text-muted: #64748b;
@@ -59,7 +59,7 @@
     .track-stat-card.active-filter {
         border-color: var(--primary);
         background: var(--primary-glow);
-        box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.15);
+        box-shadow: 0 10px 20px -10px rgba(22, 163, 74, 0.15);
     }
 
     .track-grid {
@@ -97,7 +97,7 @@
         background: var(--store-orange);
         border-color: var(--store-orange);
         color: white;
-        box-shadow: 0 0 10px rgba(249,115,22,0.35);
+        box-shadow: 0 0 10px rgba(34,197,94,0.35);
         animation: pulse-orange-dot 2s infinite;
     }
     .stepper-node.declined .stepper-dot {
@@ -149,9 +149,9 @@
     }
 
     @keyframes pulse-orange-dot {
-        0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
-        70% { box-shadow: 0 0 0 8px rgba(249, 115, 22, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+        70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
     }
 
     /* Modal Overlay & Details Drawer styles */
@@ -218,7 +218,7 @@
     }
 
     .modal-box.urgent-priority { border-top: 6px solid #dc2626; }
-    .modal-box.normal-priority { border-top: 6px solid #4f46e5; }
+    .modal-box.normal-priority { border-top: 6px solid #16a34a; }
     .modal-box.low-priority { border-top: 6px solid #64748b; }
 
     .profile-card {
@@ -242,7 +242,7 @@
         justify-content: center;
         font-weight: 800;
         font-size: 1.25rem;
-        border: 1.5px solid rgba(79, 70, 229, 0.15);
+        border: 1.5px solid rgba(22, 163, 74, 0.15);
     }
 
     .stat-pill {
@@ -322,7 +322,7 @@
     <div id="tracking-stats-container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.25rem;margin-bottom:2rem;">
         
         <div class="track-stat-card" data-stage="awaiting_hod">
-            <div style="width:40px;height:40px;background:rgba(99,102,241,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="user-check" style="width:20px;color:#6366f1;"></i></div>
+            <div style="width:40px;height:40px;background:rgba(22,163,74,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="user-check" style="width:20px;color:#16a34a;"></i></div>
             <div>
                 <div id="stat-awaiting-hod" style="font-size:1.5rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['awaiting_hod'] }}</div>
                 <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">Awaiting HOD</div>
@@ -330,7 +330,7 @@
         </div>
 
         <div class="track-stat-card" data-stage="awaiting_stores">
-            <div style="width:40px;height:40px;background:rgba(245,158,11,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="shield-alert" style="width:20px;color:#f59e0b;"></i></div>
+            <div style="width:40px;height:40px;background:rgba(16,185,129,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="shield-alert" style="width:20px;color:#10b981;"></i></div>
             <div>
                 <div id="stat-awaiting-stores" style="font-size:1.5rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['awaiting_stores'] }}</div>
                 <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">Awaiting Stores</div>
@@ -699,8 +699,8 @@
                 }
             } catch(e) {}
             returnDateBannerHtml = `
-            <div style="background:rgba(245, 158, 11, 0.06); border:1px solid rgba(245, 158, 11, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#d97706; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(245, 158, 11, 0.03);">
-                <i data-lucide="calendar-clock" style="width:16px; height:16px; color:#d97706; flex-shrink:0;"></i>
+            <div style="background:rgba(16, 185, 129, 0.06); border:1px solid rgba(16, 185, 129, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#047857; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(16, 185, 129, 0.03);">
+                <i data-lucide="calendar-clock" style="width:16px; height:16px; color:#047857; flex-shrink:0;"></i>
                 <span>Expected Return Date: <strong style="color:#b45309; font-size:0.95rem; font-weight:950; text-decoration: underline;">${formattedDate}</strong></span>
             </div>`;
             purposeText = purposeText.replace(/\[Expected Return Date:\s*[^\]]+\]/i, '').trim();
@@ -772,8 +772,8 @@
                     fulfillBadgeColor = '#ef4444';
                     fulfillLabel = 'Declined';
                 } else if (totalApproved < requested) {
-                    fulfillBadgeBg = 'rgba(245, 158, 11, 0.1)';
-                    fulfillBadgeColor = '#f59e0b';
+                    fulfillBadgeBg = 'rgba(16, 185, 129, 0.1)';
+                    fulfillBadgeColor = '#10b981';
                     fulfillLabel = `${pct}% Reduced`;
                 }
 
@@ -815,7 +815,7 @@
                         <div style="flex:2;">
                             <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:4px;">Fulfillment Progress</div>
                             <div style="background:rgba(0,0,0,0.05); height:6px; border-radius:10px; overflow:hidden; width:100%;">
-                                <div style="height:100%; width: ${pct}%; background:${approved === 0 ? '#ef4444' : (approved < requested ? '#f59e0b' : 'linear-gradient(90deg, #4f46e5 0%, #10b981 100%)')}; border-radius:10px;"></div>
+                                <div style="height:100%; width: ${pct}%; background:${approved === 0 ? '#ef4444' : (approved < requested ? '#10b981' : 'linear-gradient(90deg, #16a34a 0%, #10b981 100%)')}; border-radius:10px;"></div>
                             </div>
                         </div>
                     </div>
@@ -970,7 +970,7 @@
         if (data.collected_at) {
             footerHtml = `
             <a href="{{ request()->getBasePath() }}/requisitions/receipt/${id}" target="_blank"
-                style="background:rgba(99, 102, 241, 0.08); border: 1.5px solid rgba(99, 102, 241, 0.2); color: #4f46e5; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#4f46e5'; this.style.color='white';" onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='#4f46e5';">
+                style="background:rgba(22, 163, 74, 0.08); border: 1.5px solid rgba(22, 163, 74, 0.2); color: #16a34a; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#16a34a'; this.style.color='white';" onmouseout="this.style.background='rgba(22, 163, 74, 0.08)'; this.style.color='#16a34a';">
                 <i data-lucide="printer" style="width: 16px;"></i> Print Voucher Receipt
             </a>` + footerHtml;
         }

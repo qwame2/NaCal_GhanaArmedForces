@@ -14,9 +14,9 @@
     </div>
 
     <!-- Filter Console -->
-    <div class="glass-card" style="padding: 2rem; margin-bottom: 2rem; border-radius: 24px; background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid rgba(79, 70, 229, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
+    <div class="glass-card" style="padding: 2rem; margin-bottom: 2rem; border-radius: 24px; background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid rgba(22, 163, 74, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(79, 70, 229, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="filter" style="width: 18px;"></i>
             </div>
             <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0; letter-spacing: -0.01em;">Search Filters</h3>
@@ -64,7 +64,7 @@
             </div>
 
             <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 3px;">
-                <button type="submit" class="btn-primary" style="padding: 0.95rem 2rem; border-radius: 16px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(79,70,229,0.2);">
+                <button type="submit" class="btn-primary" style="padding: 0.95rem 2rem; border-radius: 16px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(22,163,74,0.2);">
                     Apply Filter
                 </button>
                 @if(request()->hasAny(['user_id', 'date_from', 'date_to']) && (request('user_id') != '' || request('date_from') != '' || request('date_to') != ''))
@@ -76,8 +76,8 @@
 
     <!-- System Activities List -->
     @if($auditLog->isEmpty())
-        <div class="glass-card" style="padding: 4rem 2rem; text-align: center; border-radius: 24px; border: 1px dashed rgba(79, 70, 229, 0.2);">
-            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(79, 70, 229, 0.05); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+        <div class="glass-card" style="padding: 4rem 2rem; text-align: center; border-radius: 24px; border: 1px dashed rgba(22, 163, 74, 0.2);">
+            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(22, 163, 74, 0.05); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
                 <i data-lucide="history" style="width: 32px; height: 32px;"></i>
             </div>
             <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">No Activities Found</h3>
@@ -86,16 +86,16 @@
     @else
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
             @foreach($auditLog as $record)
-                <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(79, 70, 229, 0.08); background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.01); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';" id="log-card-{{ $record->id }}">
+                <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(22, 163, 74, 0.08); background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.01); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='translateY(0)';" id="log-card-{{ $record->id }}">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
                         <div style="display: flex; align-items: center; gap: 1rem;">
                             <div style="width: 42px; height: 42px; border-radius: 12px;
                                 @if(in_array($record->action, ['CREATE_USER', 'CREATE_TEMP_REQUISITIONER', 'APPROVE_USER', 'APPROVE_REQUISITION']))
                                     background: rgba(16, 185, 129, 0.08); color: #10b981;
                                 @elseif(in_array($record->action, ['UPDATE_USER', 'UPDATE_PROFILE', 'TOGGLE_USER_STATUS', 'PERMISSION_CHANGE', 'REGENERATE_OTP']))
-                                    background: rgba(79, 70, 229, 0.08); color: var(--primary);
+                                    background: rgba(22, 163, 74, 0.08); color: var(--primary);
                                 @elseif(in_array($record->action, ['CHANGE_PASSWORD', 'PASSWORD_SYNCED', 'AUTHORIZATION', 'LOGIN']))
-                                    background: rgba(245, 158, 11, 0.08); color: #f59e0b;
+                                    background: rgba(16, 185, 129, 0.08); color: #10b981;
                                 @else
                                     background: rgba(239, 68, 68, 0.08); color: #ef4444;
                                 @endif
@@ -136,7 +136,7 @@
                                 @if($record->severity === 'critical' || $record->severity === 'danger')
                                     background: #fef2f2; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.15);
                                 @elseif($record->severity === 'warning')
-                                    background: #fffbeb; color: #d97706; border: 1px solid rgba(217, 119, 6, 0.15);
+                                    background: #ecfdf5; color: #047857; border: 1px solid rgba(217, 119, 6, 0.15);
                                 @else
                                     background: #f0fdf4; color: #16a34a; border: 1px solid rgba(22, 163, 74, 0.15);
                                 @endif">
@@ -150,7 +150,7 @@
                             {{-- Archive Button --}}
                             <form action="{{ route('admin.archive.log', $record->id) }}" method="POST" style="margin: 0;" onsubmit="archiveLog(event, this, {{ $record->id }})">
                                 @csrf
-                                <button type="submit" title="Archive this activity" style="background: transparent; border: 1.5px solid #e2e8f0; border-radius: 10px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #94a3b8; transition: all 0.25s; padding: 0; flex-shrink: 0;" onmouseover="this.style.background='#fff7ed';this.style.borderColor='#f97316';this.style.color='#f97316';" onmouseout="this.style.background='transparent';this.style.borderColor='#e2e8f0';this.style.color='#94a3b8';">
+                                <button type="submit" title="Archive this activity" style="background: transparent; border: 1.5px solid #e2e8f0; border-radius: 10px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #94a3b8; transition: all 0.25s; padding: 0; flex-shrink: 0;" onmouseover="this.style.background='#f0fdf4';this.style.borderColor='#22c55e';this.style.color='#22c55e';" onmouseout="this.style.background='transparent';this.style.borderColor='#e2e8f0';this.style.color='#94a3b8';">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></svg>
                                 </button>
                             </form>
@@ -163,7 +163,7 @@
                         @elseif(in_array($record->action, ['UPDATE_USER', 'UPDATE_PROFILE', 'TOGGLE_USER_STATUS', 'PERMISSION_CHANGE', 'REGENERATE_OTP']))
                             var(--primary)
                         @elseif(in_array($record->action, ['CHANGE_PASSWORD', 'PASSWORD_SYNCED', 'AUTHORIZATION', 'LOGIN']))
-                            #f59e0b
+                            #10b981
                         @else
                             #ef4444
                         @endif; padding: 0.85rem 1.25rem; border-radius: 0 12px 12px 0; font-size: 0.88rem; color: #475569; font-weight: 600;">
@@ -205,7 +205,7 @@
     .custom-pagination .page-item.active .page-link {
         background: var(--primary); color: white;
         border-color: var(--primary);
-        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.25);
+        box-shadow: 0 10px 25px rgba(22, 163, 74, 0.25);
         transform: scale(1.1);
         z-index: 10;
     }
@@ -214,7 +214,7 @@
         color: var(--primary);
         transform: translateY(-4px);
         background: #f5f3ff;
-        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.1);
+        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.1);
     }
     .custom-pagination .page-item.disabled .page-link {
         opacity: 0.5;

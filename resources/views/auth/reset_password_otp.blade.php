@@ -132,8 +132,8 @@
     .status-step { display: flex; align-items: center; gap: 6px; }
     .step-pip { width: 24px; height: 4px; border-radius: 4px; background: #e2e8f0; }
     .step-pip.done { background: #10b981; }
-    .step-pip.active { background: #6366f1; }
-    .sync-card { background: white; border: 1px solid rgba(99,102,241,0.12); border-radius: 28px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 20px 50px -10px rgba(99,102,241,0.12); }
+    .step-pip.active { background: #16a34a; }
+    .sync-card { background: white; border: 1px solid rgba(22,163,74,0.12); border-radius: 28px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 20px 50px -10px rgba(22,163,74,0.12); }
     .sync-hero { padding: 2.5rem 2.5rem 1.5rem; position: relative; overflow: hidden; }
     .hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 32px 32px; }
     .hero-glow { position: absolute; bottom: -60px; right: -60px; width: 200px; height: 200px; }
@@ -149,20 +149,20 @@
     .field-label label { font-size: 0.7rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; }
     .req-badge { font-size: 0.58rem; font-weight: 800; background: #f1f5f9; color: #64748b; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.05em; }
     .field-input { display: flex; align-items: center; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; transition: all 0.25s ease; overflow: hidden; }
-    .field-input:focus-within { background: white; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+    .field-input:focus-within { background: white; border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
     .field-icon { padding: 0 14px; display: flex; align-items: center; }
     .field-icon i { width: 16px; color: #94a3b8; transition: 0.2s; }
-    .field-input:focus-within .field-icon i { color: #6366f1; }
+    .field-input:focus-within .field-icon i { color: #16a34a; }
     .field-input input { flex: 1; border: none; background: transparent; padding: 14px 4px; font-size: 0.9rem; font-weight: 700; color: #0f172a; outline: none; }
     .eye-btn { padding: 0 14px; background: none; border: none; color: #cbd5e1; cursor: pointer; transition: 0.2s; display: flex; }
-    .eye-btn:hover { color: #6366f1; }
+    .eye-btn:hover { color: #16a34a; }
     .eye-btn i { width: 16px; }
     .divider { height: 1px; background: #f1f5f9; margin: 1.5rem 0; }
     .sync-btn { width: 100%; height: 52px; border: none; border-radius: 14px; color: white; font-weight: 900; font-size: 0.9rem; letter-spacing: 0.03em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
     .sync-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
     .sync-footer { text-align: center; padding: 1.25rem; border-top: 1px solid #f8fafc; }
     .logout-btn { background: none; border: none; display: inline-flex; align-items: center; gap: 6px; color: #94a3b8; font-size: 0.72rem; font-weight: 700; cursor: pointer; text-decoration: none; transition: 0.2s; letter-spacing: 0.03em; }
-    .logout-btn:hover { color: #6366f1; }
+    .logout-btn:hover { color: #16a34a; }
     .logout-btn i { width: 13px; }
 </style>
 

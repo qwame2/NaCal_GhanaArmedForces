@@ -16,16 +16,16 @@
         @if($req instanceof \App\Models\ServiceSra)
             @php
                 $sraStatus = $req->status;
-                $badgeColor = '#6366f1';
-                $badgeBg = 'rgba(99,102,241,0.1)';
+                $badgeColor = '#16a34a';
+                $badgeBg = 'rgba(22,163,74,0.1)';
                 $badgeLabel = 'Awaiting Authorizer Review';
                 if ($sraStatus === 'auditor_pending') {
-                    $badgeColor = '#8b5cf6';
+                    $badgeColor = '#4ade80';
                     $badgeBg = 'rgba(139,92,246,0.1)';
                     $badgeLabel = 'Awaiting Auditor Review';
                 } elseif ($sraStatus === 'admin_approved') {
-                    $badgeColor = '#f59e0b';
-                    $badgeBg = 'rgba(245,158,11,0.1)';
+                    $badgeColor = '#10b981';
+                    $badgeBg = 'rgba(16,185,129,0.1)';
                     $badgeLabel = 'Awaiting Stores Review';
                 } elseif ($sraStatus === 'approved') {
                     $badgeColor = '#10b981';
@@ -38,12 +38,12 @@
                 }
                 
                 $usageLabel = 'Service';
-                $usageBg = 'rgba(79, 70, 229, 0.08)';
-                $usageColor = '#4f46e5';
+                $usageBg = 'rgba(22, 163, 74, 0.08)';
+                $usageColor = '#16a34a';
             @endphp
-            <tr class="req-table-row" data-type="sra" data-id="{{ $req->id }}" data-status="{{ $sraStatus }}" style="background: rgba(99, 102, 241, 0.015);">
+            <tr class="req-table-row" data-type="sra" data-id="{{ $req->id }}" data-status="{{ $sraStatus }}" style="background: rgba(22, 163, 74, 0.015);">
                 <td style="padding:1rem 1.5rem; text-align:center;">
-                    <span style="background: rgba(99, 102, 241, 0.08); color: #4f46e5; font-size: 0.75rem; font-weight: 800; padding: 5px 12px; border-radius: 99px; display: inline-block; white-space: nowrap;">
+                    <span style="background: rgba(22, 163, 74, 0.08); color: #16a34a; font-size: 0.75rem; font-weight: 800; padding: 5px 12px; border-radius: 99px; display: inline-block; white-space: nowrap;">
                         {{ $req->sra_number }}
                     </span>
                 </td>
@@ -53,8 +53,8 @@
                 </td>
                 <td style="padding:1rem 1.5rem;">
                     <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                        <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-main); background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.15); padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
-                            <i data-lucide="wrench" style="width:12px;height:12px;color:#4f46e5;"></i>
+                        <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-main); background: rgba(22,163,74,0.06); border: 1px solid rgba(22,163,74,0.15); padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                            <i data-lucide="wrench" style="width:12px;height:12px;color:#16a34a;"></i>
                             {{ Str::limit($req->supplier_name, 25) }}
                         </span>
                     </div>
@@ -89,9 +89,9 @@
                         </button>
                     @else
                         <button onclick="openSraOversightModal({{ $req->id }}, '{{ $sraStatus === 'admin_approved' ? 'stores' : 'admin' }}')"
-                            style="background: rgba(99, 102, 241, 0.08); color: #4f46e5; border: 1.5px solid rgba(99, 102, 241, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap;"
-                            onmouseover="this.style.background='#4f46e5'; this.style.color='white'; this.style.borderColor='#4f46e5';"
-                            onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='#4f46e5'; this.style.borderColor='rgba(99, 102, 241, 0.2)';">
+                            style="background: rgba(22, 163, 74, 0.08); color: #16a34a; border: 1.5px solid rgba(22, 163, 74, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap;"
+                            onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';"
+                            onmouseout="this.style.background='rgba(22, 163, 74, 0.08)'; this.style.color='#16a34a'; this.style.borderColor='rgba(22, 163, 74, 0.2)';">
                             <i data-lucide="clipboard-check" style="width:14px; height:14px;"></i> REVIEW
                         </button>
                     @endif
@@ -101,7 +101,7 @@
             @php $sb = $req->status_badge; $pb = $req->priority_badge; @endphp
             <tr class="req-table-row" data-type="req" data-id="{{ $req->id }}" data-req-id="{{ $req->id }}" data-status="{{ $req->status }}" data-collected="{{ $req->collected_at ? '1' : '0' }}">
             <td style="padding:1rem 1.5rem; text-align:center;">
-                <span style="background: rgba(234, 88, 12, 0.08); color: #ea580c; font-size: 0.75rem; font-weight: 800; padding: 5px 12px; border-radius: 99px; display: inline-block; white-space: nowrap;">
+                <span style="background: rgba(234, 88, 12, 0.08); color: #15803d; font-size: 0.75rem; font-weight: 800; padding: 5px 12px; border-radius: 99px; display: inline-block; white-space: nowrap;">
                     {{ $req->unique_id ?: ('REQ-'.str_pad($req->id, 5, '0', STR_PAD_LEFT)) }}
                 </span>
             </td>
@@ -113,11 +113,11 @@
                 <div style="display:flex; flex-wrap:wrap; gap:6px;">
                     @foreach($req->items->take(3) as $item)
                     <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-main); background: var(--bg-main); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
-                        {{ Str::limit($item->description, 20) }} <span style="color:#ea580c; font-weight:800;">×{{ number_format($item->quantity_requested, 0) }}</span>
+                        {{ Str::limit($item->description, 20) }} <span style="color:#15803d; font-weight:800;">×{{ number_format($item->quantity_requested, 0) }}</span>
                     </span>
                     @endforeach
                     @if($req->items->count() > 3)
-                    <span style="font-size: 0.72rem; font-weight: 700; color: #4f46e5; background: rgba(99, 102, 241, 0.1); padding: 4px 10px; border-radius: 8px; white-space: nowrap;">+{{ $req->items->count() - 3 }} more</span>
+                    <span style="font-size: 0.72rem; font-weight: 700; color: #16a34a; background: rgba(22, 163, 74, 0.1); padding: 4px 10px; border-radius: 8px; white-space: nowrap;">+{{ $req->items->count() - 3 }} more</span>
                     @endif
                 </div>
             </td>
@@ -195,9 +195,9 @@
                     </button>
                 @else
                     <button onclick="openRequisitionModal({{ $req->id }})"
-                        style="background: rgba(99, 102, 241, 0.08); color: #4f46e5; border: 1.5px solid rgba(99, 102, 241, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap;"
-                        onmouseover="this.style.background='#4f46e5'; this.style.color='white'; this.style.borderColor='#4f46e5';"
-                        onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='#4f46e5'; this.style.borderColor='rgba(99, 102, 241, 0.2)';">
+                        style="background: rgba(22, 163, 74, 0.08); color: #16a34a; border: 1.5px solid rgba(22, 163, 74, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap;"
+                        onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';"
+                        onmouseout="this.style.background='rgba(22, 163, 74, 0.08)'; this.style.color='#16a34a'; this.style.borderColor='rgba(22, 163, 74, 0.2)';">
                         <i data-lucide="clipboard-check" style="width:14px; height:14px;"></i> REVIEW
                     </button>
                 @endif
@@ -241,9 +241,9 @@
         {{-- Page Numbers --}}
         @foreach($requisitions->getUrlRange(max(1, $requisitions->currentPage()-2), min($requisitions->lastPage(), $requisitions->currentPage()+2)) as $page => $url)
             @if($page == $requisitions->currentPage())
-            <span style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 10px;border-radius:10px;background:var(--primary);color:white;font-weight:900;font-size:.82rem;border:1.5px solid var(--primary);box-shadow:0 4px 12px rgba(99,102,241,.3);">{{ $page }}</span>
+            <span style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 10px;border-radius:10px;background:var(--primary);color:white;font-weight:900;font-size:.82rem;border:1.5px solid var(--primary);box-shadow:0 4px 12px rgba(22,163,74,.3);">{{ $page }}</span>
             @else
-            <a href="{{ $url }}" class="ajax-req-page-btn" style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 10px;border-radius:10px;background:var(--bg-card);color:var(--text-main);font-weight:700;font-size:.82rem;border:1.5px solid var(--border-color);text-decoration:none;transition:.15s;" onmouseover="this.style.background='rgba(99,102,241,.08)';this.style.borderColor='rgba(99,102,241,.3)';this.style.color='var(--primary)';" onmouseout="this.style.background='var(--bg-card)';this.style.borderColor='var(--border-color)';this.style.color='var(--text-main)';">{{ $page }}</a>
+            <a href="{{ $url }}" class="ajax-req-page-btn" style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 10px;border-radius:10px;background:var(--bg-card);color:var(--text-main);font-weight:700;font-size:.82rem;border:1.5px solid var(--border-color);text-decoration:none;transition:.15s;" onmouseover="this.style.background='rgba(22,163,74,.08)';this.style.borderColor='rgba(22,163,74,.3)';this.style.color='var(--primary)';" onmouseout="this.style.background='var(--bg-card)';this.style.borderColor='var(--border-color)';this.style.color='var(--text-main)';">{{ $page }}</a>
             @endif
         @endforeach
 

@@ -4,7 +4,7 @@
 
 <style>
     .sra-table-row { border-bottom: 1px solid var(--border-color); transition: background 0.15s; }
-    .sra-table-row:hover { background: rgba(99,102,241,0.03); }
+    .sra-table-row:hover { background: rgba(22,163,74,0.03); }
     .sra-table-row:last-child { border-bottom: none; }
     .sra-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 99px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.5); backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; }
@@ -17,7 +17,7 @@
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: rgba(99,102,241,0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">Admin Review Queue</span>
+                <span style="background: rgba(22,163,74,0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">Admin Review Queue</span>
                 @if($pending->count() > 0)
                     <span style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; animation: reqs-pulse 1.8s infinite;">{{ $pending->count() }}</span>
                 @endif
@@ -40,7 +40,7 @@
                style="padding: 0.5rem 1.25rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: all 0.2s; 
                       background: transparent; 
                       color: var(--text-muted);"
-               onmouseover="this.style.background='rgba(99,102,241,0.05)'"
+               onmouseover="this.style.background='rgba(22,163,74,0.05)'"
                onmouseout="this.style.background='transparent'">
                 <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
                 Stores Queue (Stage 2)
@@ -51,7 +51,7 @@
     {{-- Pending Table --}}
     <div class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0; margin-bottom: 2rem;">
         <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
-            <i data-lucide="clock" style="color: #f59e0b; width: 20px;"></i>
+            <i data-lucide="clock" style="color: #10b981; width: 20px;"></i>
             <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: var(--text-main);">Awaiting Your Review ({{ $pending->count() }})</h3>
         </div>
         @if($pending->isEmpty())
@@ -82,13 +82,13 @@
                             </td>
                             <td style="padding: 1rem 1.5rem; font-weight: 600; color: var(--text-main);">{{ $sra->supplier_name }}</td>
                             <td style="padding: 1rem 1.5rem;">
-                                <span class="sra-badge" style="background: {{ $sra->delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)' }}; color: {{ $sra->delivery_type === 'full' ? '#10b981' : '#f59e0b' }};">
+                                <span class="sra-badge" style="background: {{ $sra->delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.1)' }}; color: {{ $sra->delivery_type === 'full' ? '#10b981' : '#10b981' }};">
                                     {{ ucfirst($sra->delivery_type) }}
                                 </span>
                             </td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">{{ $sra->date_of_delivery->format('d M Y') }}</td>
                             <td style="padding: 1rem 1.5rem; text-align: center;">
-                                <button onclick="event.stopPropagation(); openSraModal({{ $sra->id }})" style="background: rgba(99,102,241,0.08); color: var(--primary); border: 1px solid rgba(99,102,241,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                                <button onclick="event.stopPropagation(); openSraModal({{ $sra->id }})" style="background: rgba(22,163,74,0.08); color: var(--primary); border: 1px solid rgba(22,163,74,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
                                     <i data-lucide="clipboard-check" style="width: 13px;"></i> Review
                                 </button>
                             </td>
@@ -195,7 +195,7 @@ function openSraModal(id) {
         <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Supplier</div><div style="font-weight:700;color:var(--text-main);">${sra.supplier_name}</div>${sra.supplier_address ? `<div style="font-size:0.75rem;color:var(--text-muted);">${sra.supplier_address}</div>` : ''}</div>
         <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Vehicle</div><div style="font-weight:600;color:var(--text-main);">${sra.vehicle_number || '—'}</div></div>
         <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Date</div><div style="font-weight:700;color:var(--text-main);">${sra.date_of_delivery}</div></div>
-        <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Delivery Type</div><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:0.7rem;font-weight:800;background:${sra.delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)'};color:${sra.delivery_type === 'full' ? '#10b981' : '#f59e0b'};">${deliveryLabel}</span></div>
+        <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Delivery Type</div><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:0.7rem;font-weight:800;background:${sra.delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.1)'};color:${sra.delivery_type === 'full' ? '#10b981' : '#10b981'};">${deliveryLabel}</span></div>
         ${sra.ae_number ? `<div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">A&E No.</div><div style="font-weight:600;">${sra.ae_number}</div></div>` : ''}
         ${sra.lpo_number ? `<div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">LPO No.</div><div style="font-weight:600;">${sra.lpo_number}</div></div>` : ''}
     `;
@@ -203,7 +203,7 @@ function openSraModal(id) {
     document.getElementById('modal-sra-details-text').innerHTML = `
         <div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">Details of Order / Service</div>
         <div style="background:var(--bg-main);border-radius:12px;padding:1rem 1.25rem;font-size:0.88rem;font-weight:500;color:var(--text-main);white-space:pre-wrap;line-height:1.7;border:1px solid var(--border-color);">${sra.details}</div>
-        ${sra.previous_sra_nos ? `<div style="margin-top:0.75rem;font-size:0.72rem;font-weight:800;color:#f59e0b;">Previous SRA Nos: ${sra.previous_sra_nos}</div>` : ''}
+        ${sra.previous_sra_nos ? `<div style="margin-top:0.75rem;font-size:0.72rem;font-weight:800;color:#10b981;">Previous SRA Nos: ${sra.previous_sra_nos}</div>` : ''}
     `;
 
     document.getElementById('modal-notes').value = '';

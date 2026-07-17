@@ -8,7 +8,7 @@
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.5rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: rgba(99, 102, 241, 0.1); color: #6366f1; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Logistics Audit</span>
+                <span style="background: rgba(22, 163, 74, 0.1); color: #16a34a; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Logistics Audit</span>
             </div>
             <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main);">Batch Stock <span style="color: var(--primary);">Verification</span></h2>
             <p style="color: var(--text-muted);">Perform physical inventory checks for multiple items simultaneously in a full-screen ledger.</p>
@@ -53,7 +53,7 @@
                             </td>
                             <td style="padding: 1.25rem 1rem; vertical-align: middle;">
                                 @if($onLoanCount > 0)
-                                    <span style="font-size: 0.75rem; font-weight: 800; color: #f59e0b; background: rgba(245, 158, 11, 0.1); padding: 0.25rem 0.6rem; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                                    <span style="font-size: 0.75rem; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 0.25rem 0.6rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2);">
                                         {{ number_format($onLoanCount) }} on loan
                                     </span>
                                 @else
@@ -88,14 +88,14 @@
             <!-- Active Loans details -->
             @if($loans->count() > 0)
             <div id="batchLoansContainer" style="margin-top: 1rem;">
-                <h4 style="font-size: 1.1rem; font-weight: 800; color: #f59e0b; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
+                <h4 style="font-size: 1.1rem; font-weight: 800; color: #10b981; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
                     <i data-lucide="info" style="width: 18px; height: 18px;"></i>
                     Active Temporary Loans for Selected Assets
                 </h4>
                 <div style="overflow-x: auto; max-height: 350px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); margin-bottom: 1.5rem;">
                     <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.82rem;">
                         <thead>
-                            <tr style="background: rgba(245, 158, 11, 0.05); border-bottom: 1.5px solid var(--border-color); height: 40px;">
+                            <tr style="background: rgba(16, 185, 129, 0.05); border-bottom: 1.5px solid var(--border-color); height: 40px;">
                                 <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-weight: 700;">Asset Item</th>
                                 <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-weight: 700;">Borrower / Beneficiary</th>
                                 <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-weight: 700;">Qty Out</th>
@@ -132,12 +132,12 @@
             <!-- Submit / Action buttons -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
                 @if(auth()->user()->role === 'Auditor')
-                <button type="button" onclick="generateBatchVerificationReport()" class="btn-primary" style="width: 100%; padding: 1.1rem; border-radius: 18px; border: none; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important; color: white !important; font-weight: 900 !important; font-size: 1.05rem; cursor: pointer; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <button type="button" onclick="generateBatchVerificationReport()" class="btn-primary" style="width: 100%; padding: 1.1rem; border-radius: 18px; border: none; background: linear-gradient(135deg, #16a34a 0%, #16a34a 100%) !important; color: white !important; font-weight: 900 !important; font-size: 1.05rem; cursor: pointer; box-shadow: 0 10px 20px rgba(22, 163, 74, 0.2); display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <i data-lucide="printer" style="width: 20px; color: white !important;"></i>
                     <span style="color: white !important;">Print Batch PDF</span>
                 </button>
                 @else
-                <button type="submit" class="btn-primary" style="width: 100%; padding: 1.1rem; border-radius: 18px; border: none; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important; color: white !important; font-weight: 900 !important; font-size: 1.05rem; cursor: pointer; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1.1rem; border-radius: 18px; border: none; background: linear-gradient(135deg, #16a34a 0%, #16a34a 100%) !important; color: white !important; font-weight: 900 !important; font-size: 1.05rem; cursor: pointer; box-shadow: 0 10px 20px rgba(22, 163, 74, 0.2); display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <i data-lucide="shield-check" style="width: 20px; color: white !important;"></i>
                     <span style="color: white !important;">
                         @if(auth()->user()->is_admin)
@@ -172,7 +172,7 @@ function calculateBatchRowVariance(inputEl, stock) {
 
     const variance = physical - stock;
     varDisplay.innerText = (variance > 0 ? '+' : '') + variance;
-    varDisplay.style.color = variance === 0 ? '#10b981' : (variance > 0 ? '#8b5cf6' : '#ef4444');
+    varDisplay.style.color = variance === 0 ? '#10b981' : (variance > 0 ? '#4ade80' : '#ef4444');
 }
 
 function submitBatchStockCheck() {

@@ -32,16 +32,16 @@
             --font-display: 'Outfit', sans-serif;
             --font-sans: 'Outfit', sans-serif;
 
-            --store-orange: #f97316;
-            --store-orange-hover: #ea580c;
-            --store-orange-light: rgba(249, 115, 22, 0.08);
+            --store-orange: #22c55e;
+            --store-orange-hover: #15803d;
+            --store-orange-light: rgba(34, 197, 94, 0.08);
 
-            --store-indigo: #6366f1;
-            --store-indigo-hover: #4f46e5;
-            --store-indigo-light: rgba(99, 102, 241, 0.08);
+            --store-indigo: #16a34a;
+            --store-indigo-hover: #16a34a;
+            --store-indigo-light: rgba(22, 163, 74, 0.08);
 
             --success-color: #10b981;
-            --warning-color: #f59e0b;
+            --warning-color: #10b981;
             --danger-color: #ef4444;
 
             --bg-main: #f8fafc;
@@ -101,7 +101,7 @@
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
         }
 
         .brand-name {
@@ -228,7 +228,7 @@
             align-items: center;
             gap: 8px;
             text-decoration: none;
-            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
             transition: all 0.2s;
         }
 
@@ -382,13 +382,13 @@
         .form-input:focus {
             border-color: var(--store-orange);
             background: var(--bg-card);
-            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.08);
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.08);
         }
 
         .submit-btn {
             width: 100%;
             padding: 1rem;
-            background: linear-gradient(135deg, var(--store-orange), #ea580c);
+            background: linear-gradient(135deg, var(--store-orange), #15803d);
             color: white;
             border: none;
             border-radius: 14px;
@@ -399,14 +399,14 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 6px 16px rgba(249, 115, 22, 0.2);
+            box-shadow: 0 6px 16px rgba(34, 197, 94, 0.2);
             transition: all 0.25s ease;
             margin-top: 1.5rem;
         }
 
         .submit-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.35);
+            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.35);
         }
 
         .submit-btn:disabled {
@@ -453,7 +453,7 @@
             border-color: var(--store-orange);
             color: var(--store-orange);
             background: var(--store-orange-light);
-            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.1);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
         }
 
         .usage-pill-label .pill-icon {
@@ -495,7 +495,7 @@
         .select2-container--default.select2-container--focus .select2-selection--single {
             border-color: var(--store-orange) !important;
             background: var(--bg-card) !important;
-            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.08) !important;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.08) !important;
         }
         .select2-container--default .select2-selection--single .select2-selection__arrow {
             height: 44px !important;

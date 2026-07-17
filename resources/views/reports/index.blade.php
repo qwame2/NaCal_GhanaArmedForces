@@ -68,7 +68,7 @@
                         <div class="date-range-arrow">
                             <div class="arrow-line"></div>
                             <div class="arrow-dot">
-                                <i data-lucide="arrow-right" style="width:14px;height:14px;color:#6366f1;"></i>
+                                <i data-lucide="arrow-right" style="width:14px;height:14px;color:#16a34a;"></i>
                             </div>
                             <div class="arrow-line"></div>
                         </div>
@@ -100,7 +100,7 @@
                     </div>
                     <div style="display: flex; gap: 0.75rem; align-items: center;">
                         <button type="button" id="select-issued-items-btn" class="glass-btn-sm" style="display: inline-flex; align-items: center; gap: 6px; padding: 0.4rem 0.8rem; border-radius: 10px; font-weight: 800; font-size: 0.75rem; cursor: pointer; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); transition: 0.2s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
-                            <i data-lucide="package-minus" style="width: 13px; height: 13px; color: #f59e0b;"></i>
+                            <i data-lucide="package-minus" style="width: 13px; height: 13px; color: #10b981;"></i>
                             Select Issued Items
                         </button>
                         @if(!empty($selectedItems))
@@ -146,7 +146,7 @@
     <div class="print-header" style="display: none; margin-bottom: 2rem; border-bottom: 4px solid #1e3a8a; padding-bottom: 20px; text-align: center;">
         <img src="{{ asset('img/NACOC1.png') }}" style="width: 110px; margin-bottom: 12px;">
         <h1 style="font-size: 26pt; font-family: 'Times New Roman', serif; margin: 0; letter-spacing: 1.5px; color: #1e3a8a;">NARCOTICS CONTROL COMMISSION</h1>
-        <h3 style="font-size: 15pt; font-family: 'Arial', sans-serif; font-weight: bold; margin: 8px 0 0; color: #3b82f6; text-transform: uppercase;">Official Inventory Operations Report</h3>
+        <h3 style="font-size: 15pt; font-family: 'Arial', sans-serif; font-weight: bold; margin: 8px 0 0; color: #16a34a; text-transform: uppercase;">Official Inventory Operations Report</h3>
         <p style="font-size: 12pt; font-family: 'Times New Roman', serif; margin: 10px 0 0; color: #64748b; font-weight: bold;">{{ strtoupper($dateLabel) }}</p>
 
         <div style="display: flex; justify-content: center; gap: 40px; margin-top: 15px; font-family: 'Courier New', monospace; font-size: 10pt; color: #333;">
@@ -158,7 +158,7 @@
 
     <div class="print-actions-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
         <h3 class="print-date-label" style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin: 0;">{{ $dateLabel }}</h3>
-        <button onclick="triggerPrintMode()" id="print-report-btn" class="btn-primary {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}" {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? 'disabled' : '' }} style="padding: 0.75rem 1.5rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.25);">
+        <button onclick="triggerPrintMode()" id="print-report-btn" class="btn-primary {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}" {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? 'disabled' : '' }} style="padding: 0.75rem 1.5rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #16a34a 0%, #16a34a 100%); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(22, 163, 74, 0.25);">
             <i data-lucide="printer" style="width: 18px;"></i> Export or Print
         </button>
     </div>
@@ -181,23 +181,23 @@
         </div>
 
         <div class="glass-card stat-card stat-card-issued">
-            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,191,36,0.1)); color: #f59e0b; box-shadow: 0 8px 20px rgba(245,158,11,0.18);">
+            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(251,191,36,0.1)); color: #10b981; box-shadow: 0 8px 20px rgba(16,185,129,0.18);">
                 <i data-lucide="package-minus"></i>
             </div>
             <div style="flex: 1;">
                 <div class="stat-label">Total Issued</div>
-                <div class="stat-value" style="color: #f59e0b;">{{ number_format((float)$totalIssuedQty) }} <span class="stat-unit">Item(s)</span></div>
+                <div class="stat-value" style="color: #10b981;">{{ number_format((float)$totalIssuedQty) }} <span class="stat-unit">Item(s)</span></div>
                 <div class="stat-subtitle">{{ $totalIssuedBatches }} Issued Records</div>
             </div>
         </div>
 
         <div class="glass-card stat-card stat-card-net">
-            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1)); color: #6366f1; box-shadow: 0 8px 20px rgba(99,102,241,0.18);">
+            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(22,163,74,0.15), rgba(139,92,246,0.1)); color: #16a34a; box-shadow: 0 8px 20px rgba(22,163,74,0.18);">
                 <i data-lucide="activity"></i>
             </div>
             <div style="flex: 1;">
                 <div class="stat-label">Stock Balance</div>
-                <div class="stat-value" style="color: #6366f1;">{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }} <span class="stat-unit">Item(s)</span></div>
+                <div class="stat-value" style="color: #16a34a;">{{ number_format(max(0, (float)$totalReceivedQty - (float)$totalIssuedQty)) }} <span class="stat-unit">Item(s)</span></div>
                 <div class="stat-subtitle">Period Surplus (Received − Issued)</div>
             </div>
         </div>
@@ -241,7 +241,7 @@
     <div class="glass-card print-chart-card rpt-chart-card issued-chart-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); margin-bottom: 2.5rem; background: var(--bg-card); {{ (count($selectedItems) !== 1 && $totalIssuedQty > 0 && $issuedDistribution->count() > 0) ? '' : 'display: none;' }}">
         <div class="rpt-section-header" style="margin-bottom: 1.75rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span class="rpt-section-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                <span class="rpt-section-icon" style="background: linear-gradient(135deg, #10b981, #047857);">
                     <i data-lucide="bar-chart-2" style="width:17px;height:17px;"></i>
                 </span>
                 <div>
@@ -253,8 +253,8 @@
         <div style="display: flex; flex-direction: column; gap: 2.5rem;">
             <div id="issued-chart-wrap" style="width: 100%;">
                 <div class="rpt-chart-group">
-                    <div class="rpt-chart-label" style="color: #f59e0b;">
-                        <span class="rpt-chart-dot" style="background:#f59e0b;"></span>
+                    <div class="rpt-chart-label" style="color: #10b981;">
+                        <span class="rpt-chart-dot" style="background:#10b981;"></span>
                         Issuance — Top {{ $issuedDistribution->count() }} Items
                     </div>
                     <div id="issued-bar-chart" style="width: 100%;"></div>
@@ -422,14 +422,14 @@
             <table class="formal-table unified-table rpt-unified-table" style="width: 100%; min-width: 900px;">
                 <thead>
                     <tr>
-                        <th style="width: 10%; padding-left: 600px;">Date</th>
+                        <th style="width: 10%; padding-left: 1.5rem;">Date</th>
                         <th style="width: 10%; text-align:center;">Type</th>
                         <th style="width: 10%;">Item / Category</th>
                         <th style="width: 10%;">Supplier / Department</th>
                         <th style="text-align:right; width: 10%;">Qty</th>
                         <th style="text-align:right; width: 10%;">Prev. Stock</th>
                         <th style="text-align:right; width: 10%;">Stock Bal.</th>
-                        <th style="text-align:right; width: 10%; padding-right: 600px;">Variance</th>
+                        <th style="text-align:right; width: 10%; padding-right: 1.5rem;">Variance</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -451,11 +451,11 @@
                                         Issued
                                     </span>
                                     @if($row['status'] === 'Temporary')
-                                        <span style="font-size: 0.65rem; font-weight: 800; color: #b45309; background: rgba(245,158,11,0.12); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(245,158,11,0.2); text-transform: uppercase;">
+                                        <span style="font-size: 0.65rem; font-weight: 800; color: #b45309; background: rgba(16,185,129,0.12); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(16,185,129,0.2); text-transform: uppercase;">
                                             Temporary
                                         </span>
                                     @else
-                                        <span style="font-size: 0.65rem; font-weight: 800; color: #1e3a8a; background: rgba(99,102,241,0.08); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(99,102,241,0.15); text-transform: uppercase;">
+                                        <span style="font-size: 0.65rem; font-weight: 800; color: #1e3a8a; background: rgba(22,163,74,0.08); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(22,163,74,0.15); text-transform: uppercase;">
                                             Permanent
                                         </span>
                                     @endif
@@ -472,12 +472,12 @@
                                     @endphp
                                     @if($count > 0)
                                         <div class="serial-numbers-wrapper" style="margin-top: 4px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;">
-                                            <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(99, 102, 241, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
+                                            <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(22, 163, 74, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:2px;"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
                                                 S/N: {{ implode(', ', array_slice($snList, 0, 3)) }}@if($count > 3)<span class="dots">...</span><span class="more-sns" style="display: none;">, {{ implode(', ', array_slice($snList, 3)) }}</span>@endif
                                             </div>
                                             @if($count > 3)
-                                                <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: var(--primary); outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
+                                                <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: var(--primary); outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(22, 163, 74, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
                                                 </button>
                                             @endif
@@ -554,20 +554,20 @@
 
 <style>
     .main-wrapper > *:not(header) {
-        max-width: 2000px !important;
+        max-width: 100% !important;
     }
 
     /* ══════════════════════════════════════════════
        HERO HEADER
     ══════════════════════════════════════════════ */
-    .rpt-hero { box-shadow: 0 8px 40px rgba(99,102,241,0.06), 0 2px 8px rgba(0,0,0,0.03); }
+    .rpt-hero { box-shadow: 0 8px 40px rgba(22,163,74,0.06), 0 2px 8px rgba(0,0,0,0.03); }
     .rpt-orb {
         position: absolute; border-radius: 50%; pointer-events: none; z-index: 0;
         animation: rptOrbFloat 8s ease-in-out infinite;
     }
     .rpt-orb-1 {
         width: 320px; height: 320px; top: -140px; right: -60px;
-        background: radial-gradient(circle, rgba(99,102,241,0.13) 0%, transparent 65%);
+        background: radial-gradient(circle, rgba(22,163,74,0.13) 0%, transparent 65%);
         animation-delay: 0s;
     }
     .rpt-orb-2 {
@@ -585,12 +585,12 @@
         50%       { transform: translate(8px, -12px) scale(1.03); }
     }
     .rpt-engine-badge {
-        background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1));
-        color: #6366f1;
+        background: linear-gradient(135deg, rgba(22,163,74,0.15), rgba(139,92,246,0.1));
+        color: #16a34a;
         font-size: 0.68rem; font-weight: 900;
         padding: 0.3rem 0.9rem; border-radius: 99px;
         text-transform: uppercase; letter-spacing: 0.08em;
-        border: 1px solid rgba(99,102,241,0.2);
+        border: 1px solid rgba(22,163,74,0.2);
     }
     .rpt-divider-dot {
         width: 4px; height: 4px; border-radius: 50%;
@@ -602,7 +602,7 @@
         letter-spacing: -0.045em; line-height: 1.1;
     }
     .rpt-hero-accent {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        background: linear-gradient(135deg, #16a34a, #4ade80);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         background-clip: text;
     }
@@ -615,8 +615,8 @@
        STAT CARDS
     ══════════════════════════════════════════════ */
     .stat-card-received { border-top: 3px solid rgba(16,185,129,0.5) !important; }
-    .stat-card-issued   { border-top: 3px solid rgba(245,158,11,0.5) !important; }
-    .stat-card-net      { border-top: 3px solid rgba(99,102,241,0.5) !important; }
+    .stat-card-issued   { border-top: 3px solid rgba(16,185,129,0.5) !important; }
+    .stat-card-net      { border-top: 3px solid rgba(22,163,74,0.5) !important; }
     .stat-card {
         position: relative; overflow: hidden;
         transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s ease;
@@ -639,7 +639,7 @@
         width: 38px; height: 38px; border-radius: 12px;
         display: flex; align-items: center; justify-content: center;
         color: white; flex-shrink: 0;
-        box-shadow: 0 4px 14px rgba(99,102,241,0.3);
+        box-shadow: 0 4px 14px rgba(22,163,74,0.3);
     }
 
     /* ══════════════════════════════════════════════
@@ -678,7 +678,7 @@
         align-items: center;
         justify-content: space-between;
         padding: 1.25rem 1.75rem;
-        background: linear-gradient(135deg, rgba(99,102,241,0.07) 0%, rgba(16,185,129,0.04) 100%);
+        background: linear-gradient(135deg, rgba(22,163,74,0.07) 0%, rgba(16,185,129,0.04) 100%);
         border-bottom: 1px solid var(--border-color);
         flex-wrap: wrap;
         gap: 0.75rem;
@@ -686,9 +686,9 @@
     .unified-ledger-header-left { display: flex; align-items: center; gap: 0.85rem; }
     .unified-ledger-icon {
         width: 42px; height: 42px; border-radius: 13px;
-        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        background: linear-gradient(135deg, #16a34a, #16a34a);
         display: flex; align-items: center; justify-content: center;
-        color: white; box-shadow: 0 6px 16px rgba(99,102,241,0.32); flex-shrink: 0;
+        color: white; box-shadow: 0 6px 16px rgba(22,163,74,0.32); flex-shrink: 0;
     }
     .unified-ledger-title { font-size: 1rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.01em; }
     .unified-ledger-subtitle { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-top: 2px; }
@@ -699,22 +699,22 @@
         border-radius: 99px; letter-spacing: 0.03em;
     }
     .received-meta  { background: rgba(16,185,129,0.1);  color: #059669; border: 1px solid rgba(16,185,129,0.25); }
-    .issued-meta    { background: rgba(245,158,11,0.1);  color: #b45309; border: 1px solid rgba(245,158,11,0.25); }
-    .total-meta     { background: rgba(99,102,241,0.08); color: #4f46e5; border: 1px solid rgba(99,102,241,0.2);  }
+    .issued-meta    { background: rgba(16,185,129,0.1);  color: #b45309; border: 1px solid rgba(16,185,129,0.25); }
+    .total-meta     { background: rgba(22,163,74,0.08); color: #16a34a; border: 1px solid rgba(22,163,74,0.2);  }
 
     /* TABLE */
     .rpt-unified-table thead tr th {
-        background: linear-gradient(180deg, rgba(99,102,241,0.07) 0%, rgba(99,102,241,0.03) 100%) !important;
+        background: linear-gradient(180deg, rgba(22,163,74,0.07) 0%, rgba(22,163,74,0.03) 100%) !important;
         font-size: 0.7rem !important; padding: 13px 14px !important; white-space: nowrap;
-        border-bottom: 2px solid rgba(99,102,241,0.12) !important;
+        border-bottom: 2px solid rgba(22,163,74,0.12) !important;
     }
     .ledger-row td { padding: 11px 14px !important; font-size: 0.87rem !important; vertical-align: middle; }
     /* Zebra striping */
-    .rpt-unified-table tbody tr:nth-child(even) td { background: rgba(99,102,241,0.018) !important; }
+    .rpt-unified-table tbody tr:nth-child(even) td { background: rgba(22,163,74,0.018) !important; }
     .ledger-row-received { border-left: 3px solid #10b981 !important; }
     .ledger-row-received:hover td { background: rgba(16,185,129,0.05) !important; }
-    .ledger-row-issued   { border-left: 3px solid #f59e0b !important; }
-    .ledger-row-issued:hover td   { background: rgba(245,158,11,0.05) !important; }
+    .ledger-row-issued   { border-left: 3px solid #10b981 !important; }
+    .ledger-row-issued:hover td   { background: rgba(16,185,129,0.05) !important; }
 
     .type-badge {
         display: inline-flex; align-items: center; gap: 5px;
@@ -722,24 +722,24 @@
         padding: 4px 11px; border-radius: 99px; white-space: nowrap;
     }
     .received-badge { background: rgba(16,185,129,0.12); color: #059669; border: 1px solid rgba(16,185,129,0.28); }
-    .issued-badge   { background: rgba(245,158,11,0.12);  color: #b45309; border: 1px solid rgba(245,158,11,0.28);  }
+    .issued-badge   { background: rgba(16,185,129,0.12);  color: #b45309; border: 1px solid rgba(16,185,129,0.28);  }
 
     .cat-badge {
         display: inline-block; font-size: 0.67rem; font-weight: 800;
-        background: rgba(99,102,241,0.09); color: #4f46e5;
-        border: 1px solid rgba(99,102,241,0.18); padding: 2px 9px; border-radius: 7px; white-space: nowrap;
+        background: rgba(22,163,74,0.09); color: #16a34a;
+        border: 1px solid rgba(22,163,74,0.18); padding: 2px 9px; border-radius: 7px; white-space: nowrap;
     }
     .ledger-date { font-weight: 700; font-size: 0.79rem !important; white-space: nowrap; color: var(--text-muted); }
     .item-desc  { font-weight: 700 !important; color: var(--text-main) !important; }
     .mono-cell  { font-family: 'Courier New', monospace !important; font-size: 0.8rem !important; color: var(--text-muted); }
     .qty-cell   { font-weight: 900 !important; font-size: 0.9rem !important; }
     .qty-received { color: #10b981 !important; }
-    .qty-issued   { color: #d97706 !important; }
+    .qty-issued   { color: #047857 !important; }
     .bal-cell   { font-weight: 700; font-size: 0.82rem !important; color: var(--text-muted); }
     .variance-cell { font-weight: 700; font-size: 0.82rem !important; }
     .ledger-totals-row td {
-        background: linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(16,185,129,0.04) 100%) !important;
-        border-top: 2px solid rgba(99,102,241,0.12) !important;
+        background: linear-gradient(135deg, rgba(22,163,74,0.06) 0%, rgba(16,185,129,0.04) 100%) !important;
+        border-top: 2px solid rgba(22,163,74,0.12) !important;
         font-size: 0.85rem; color: var(--text-main);
     }
 
@@ -778,16 +778,16 @@
     .date-range-inner {
         border-radius: 20px;
         overflow: hidden;
-        border: 1px solid rgba(99,102,241,0.2);
-        box-shadow: 0 4px 24px rgba(99,102,241,0.08), inset 0 0 0 1px rgba(99,102,241,0.06);
+        border: 1px solid rgba(22,163,74,0.2);
+        box-shadow: 0 4px 24px rgba(22,163,74,0.08), inset 0 0 0 1px rgba(22,163,74,0.06);
     }
     .date-range-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 1rem 1.5rem;
-        background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.08) 100%);
-        border-bottom: 1px solid rgba(99,102,241,0.15);
+        background: linear-gradient(135deg, rgba(22,163,74,0.12) 0%, rgba(139,92,246,0.08) 100%);
+        border-bottom: 1px solid rgba(22,163,74,0.15);
     }
     .date-range-header-left {
         display: flex;
@@ -798,12 +798,12 @@
         width: 38px;
         height: 38px;
         border-radius: 12px;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        background: linear-gradient(135deg, #16a34a, #4ade80);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        box-shadow: 0 4px 12px rgba(99,102,241,0.35);
+        box-shadow: 0 4px 12px rgba(22,163,74,0.35);
         flex-shrink: 0;
     }
     .date-range-title {
@@ -822,9 +822,9 @@
         font-size: 0.62rem;
         font-weight: 900;
         letter-spacing: 0.1em;
-        color: #6366f1;
-        background: rgba(99,102,241,0.1);
-        border: 1px solid rgba(99,102,241,0.25);
+        color: #16a34a;
+        background: rgba(22,163,74,0.1);
+        border: 1px solid rgba(22,163,74,0.25);
         padding: 0.3rem 0.75rem;
         border-radius: 99px;
     }
@@ -881,8 +881,8 @@
         box-sizing: border-box;
     }
     .date-input-field:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 4px rgba(99,102,241,0.12);
+        border-color: #16a34a;
+        box-shadow: 0 0 0 4px rgba(22,163,74,0.12);
         background: var(--bg-card);
     }
     .date-reset-btn {
@@ -918,15 +918,15 @@
     .arrow-line {
         width: 24px;
         height: 2px;
-        background: linear-gradient(90deg, rgba(99,102,241,0.2), rgba(99,102,241,0.5));
+        background: linear-gradient(90deg, rgba(22,163,74,0.2), rgba(22,163,74,0.5));
         border-radius: 2px;
     }
     .arrow-dot {
         width: 28px;
         height: 28px;
         border-radius: 50%;
-        background: rgba(99,102,241,0.1);
-        border: 1.5px solid rgba(99,102,241,0.25);
+        background: rgba(22,163,74,0.1);
+        border: 1.5px solid rgba(22,163,74,0.25);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -967,18 +967,18 @@
         padding: 0.75rem 1.6rem;
         border-radius: 14px;
         border: none;
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        background: linear-gradient(135deg, #16a34a 0%, #16a34a 100%);
         color: white;
         font-weight: 800;
         font-size: 0.9rem;
         cursor: pointer;
-        box-shadow: 0 6px 20px rgba(99,102,241,0.3);
+        box-shadow: 0 6px 20px rgba(22,163,74,0.3);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 44px;
     }
     .filter-apply-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 28px rgba(99,102,241,0.38);
+        box-shadow: 0 10px 28px rgba(22,163,74,0.38);
     }
     .filter-apply-btn:active {
         transform: translateY(0);
@@ -1036,15 +1036,15 @@
     }
 
     .period-btn.active {
-        background: linear-gradient(135deg, #6366f1, #4f46e5);
+        background: linear-gradient(135deg, #16a34a, #16a34a);
         color: white !important;
-        box-shadow: 0 4px 14px rgba(99,102,241,0.3);
+        box-shadow: 0 4px 14px rgba(22,163,74,0.3);
         border: none;
     }
 
     .period-btn:not(.active):hover {
         color: var(--text-main);
-        background: rgba(99, 102, 241, 0.07);
+        background: rgba(22, 163, 74, 0.07);
     }
 
     .stat-card {
@@ -1124,7 +1124,7 @@
 
     .formal-table th {
         padding: 12px 14px;
-        background: rgba(99, 102, 241, 0.06);
+        background: rgba(22, 163, 74, 0.06);
         color: var(--text-main);
         font-weight: 800;
         font-size: 0.72rem;
@@ -1149,7 +1149,7 @@
     }
 
     .formal-table tbody tr:hover td {
-        background: rgba(99, 102, 241, 0.04);
+        background: rgba(22, 163, 74, 0.04);
     }
 
     /* PREMIUM MOBILE OPTIMIZATIONS */
@@ -1351,7 +1351,7 @@
         }
 
         .ledger-row-received td { background: #f0fdf4 !important; }
-        .ledger-row-issued   td { background: #fffbeb !important; }
+        .ledger-row-issued   td { background: #ecfdf5 !important; }
 
         /* Remove coloured left borders that look odd on print */
         .ledger-row-received, .ledger-row-issued { border-left: none !important; }
@@ -1467,8 +1467,8 @@
             Updating report…`;
         Object.assign(pill.style, {
             display: 'none', alignItems: 'center', gap: '7px',
-            fontSize: '0.78rem', fontWeight: '800', color: '#6366f1',
-            background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)',
+            fontSize: '0.78rem', fontWeight: '800', color: '#16a34a',
+            background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.2)',
             borderRadius: '99px', padding: '5px 13px', marginTop: '10px',
             width: 'fit-content', marginLeft: 'auto', marginRight: 'auto'
         });
@@ -1627,7 +1627,7 @@
                         chart: Object.assign({}, barDefaults.chart, { height: 160 }),
                         series: [{ name: 'Quantity', data: [parseFloat(d.totalReceivedQty), parseFloat(d.totalIssuedQty)] }],
                         xaxis: Object.assign({}, barDefaults.xaxis, { categories: ['Received', 'Issued'] }),
-                        colors: ['#10b981', '#f59e0b'],
+                        colors: ['#10b981', '#10b981'],
                         plotOptions: Object.assign({}, barDefaults.plotOptions, {
                             bar: Object.assign({}, barDefaults.plotOptions.bar, { barHeight: '55%' })
                         })
@@ -1646,7 +1646,7 @@
                         recEl.innerHTML = '';
                         const recLabels = d.receivedDistribution.map(r => r.description);
                         const recData   = d.receivedDistribution.map(r => parseFloat(r.total_qty));
-                        const recColors = ['#6366f1','#818cf8','#4f46e5','#7c3aed','#8b5cf6','#a78bfa','#4338ca','#3730a3','#06b6d4','#0ea5e9'];
+                        const recColors = ['#16a34a','#4ade80','#16a34a','#15803d','#4ade80','#a78bfa','#15803d','#3730a3','#06b6d4','#0ea5e9'];
                         const c = new ApexCharts(recEl, Object.assign({}, barDefaults, {
                             chart: Object.assign({}, barDefaults.chart, { height: Math.max(220, recLabels.length * 42) }),
                             series: [{ name: 'Received', data: recData }],
@@ -1667,7 +1667,7 @@
                         issEl.innerHTML = '';
                         const issLabels = d.issuedDistribution.map(r => r.description);
                         const issData   = d.issuedDistribution.map(r => parseFloat(r.total_qty));
-                        const issColors = ['#f59e0b','#fbbf24','#d97706','#b45309','#ef4444','#f87171','#dc2626','#10b981','#06b6d4','#ec4899'];
+                        const issColors = ['#10b981','#fbbf24','#047857','#b45309','#ef4444','#f87171','#dc2626','#10b981','#06b6d4','#ec4899'];
                         const c = new ApexCharts(issEl, Object.assign({}, barDefaults, {
                             chart: Object.assign({}, barDefaults.chart, { height: Math.max(220, issLabels.length * 42) }),
                             series: [{ name: 'Issued', data: issData }],
@@ -1708,8 +1708,8 @@
                         typeHtml = `<span class="type-badge received-badge">${iconSvg('arrow-down-circle')} Received</span>`;
                     } else {
                         const statusBadge = row.status === 'Temporary'
-                            ? `<span style="font-size:0.65rem;font-weight:800;color:#b45309;background:rgba(245,158,11,0.12);padding:1px 6px;border-radius:4px;border:1px solid rgba(245,158,11,0.2);text-transform:uppercase;">Temporary</span>`
-                            : `<span style="font-size:0.65rem;font-weight:800;color:#1e3a8a;background:rgba(99,102,241,0.08);padding:1px 6px;border-radius:4px;border:1px solid rgba(99,102,241,0.15);text-transform:uppercase;">Permanent</span>`;
+                            ? `<span style="font-size:0.65rem;font-weight:800;color:#b45309;background:rgba(16,185,129,0.12);padding:1px 6px;border-radius:4px;border:1px solid rgba(16,185,129,0.2);text-transform:uppercase;">Temporary</span>`
+                            : `<span style="font-size:0.65rem;font-weight:800;color:#1e3a8a;background:rgba(22,163,74,0.08);padding:1px 6px;border-radius:4px;border:1px solid rgba(22,163,74,0.15);text-transform:uppercase;">Permanent</span>`;
                         typeHtml = `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
                             <span class="type-badge issued-badge">${iconSvg('arrow-up-circle')} Issued</span>
                             ${statusBadge}
@@ -1722,12 +1722,12 @@
                         if (sns.length > 0) {
                             serialHtml = `
                                 <div class="serial-numbers-wrapper" style="margin-top: 4px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;">
-                                    <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(99, 102, 241, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
+                                    <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(22, 163, 74, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:2px;"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
                                         S/N: ${sns.slice(0, 3).join(', ')}${sns.length > 3 ? `<span class="dots">...</span><span class="more-sns" style="display: none;">, ${sns.slice(3).join(', ')}</span>` : ''}
                                     </div>
                                     ${sns.length > 3 ? `
-                                        <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: var(--primary); outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(99, 102, 241, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
+                                        <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: var(--primary); outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(22, 163, 74, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
                                         </button>
                                     ` : ''}
@@ -1956,9 +1956,9 @@
     ══════════════════════════════════════════════ */
     .item-filter-panel {
         border-radius: 20px;
-        border: 1px solid rgba(99,102,241,0.18);
+        border: 1px solid rgba(22,163,74,0.18);
         overflow: hidden;
-        box-shadow: 0 4px 24px rgba(99,102,241,0.07);
+        box-shadow: 0 4px 24px rgba(22,163,74,0.07);
     }
     .item-filter-header {
         display: flex;
@@ -1966,7 +1966,7 @@
         justify-content: space-between;
         padding: 1rem 1.5rem;
         background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(6,182,212,0.06) 100%);
-        border-bottom: 1px solid rgba(99,102,241,0.12);
+        border-bottom: 1px solid rgba(22,163,74,0.12);
         gap: 1rem;
         flex-wrap: wrap;
     }
@@ -2187,7 +2187,7 @@
         font-weight: 900 !important;
         text-transform: uppercase !important;
         letter-spacing: 0.1em !important;
-        color: #6366f1 !important;
+        color: #16a34a !important;
         background: transparent !important;
         border-radius: 0 !important;
         cursor: default !important;
@@ -2200,7 +2200,7 @@
         display: inline-block !important;
         width: 3px !important;
         height: 14px !important;
-        background: linear-gradient(180deg, #6366f1, #8b5cf6) !important;
+        background: linear-gradient(180deg, #16a34a, #4ade80) !important;
         border-radius: 2px !important;
         flex-shrink: 0 !important;
     }
@@ -2209,7 +2209,7 @@
         content: '' !important;
         flex: 1 !important;
         height: 1px !important;
-        background: linear-gradient(90deg, rgba(99,102,241,0.2), transparent) !important;
+        background: linear-gradient(90deg, rgba(22,163,74,0.2), transparent) !important;
         margin-left: 4px !important;
     }
 
@@ -2272,10 +2272,10 @@
     .select2-results__options::-webkit-scrollbar { width: 5px; }
     .select2-results__options::-webkit-scrollbar-track { background: transparent; }
     .select2-results__options::-webkit-scrollbar-thumb {
-        background: rgba(99,102,241,0.2); border-radius: 99px;
+        background: rgba(22,163,74,0.2); border-radius: 99px;
     }
     .select2-results__options::-webkit-scrollbar-thumb:hover {
-        background: rgba(99,102,241,0.4);
+        background: rgba(22,163,74,0.4);
     }
 </style>
 @endsection
@@ -2344,7 +2344,7 @@
             const theme = localStorage.getItem('theme') || 'light';
             const isDark = theme === 'dark';
             const textColor = isDark ? '#f8fafc' : '#0f172a';
-            const chartColors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#a855f7', '#ec4899', '#3b82f6', '#14b8a6', '#f43f5e'];
+            const chartColors = ['#16a34a', '#10b981', '#10b981', '#ef4444', '#06b6d4', '#4ade80', '#ec4899', '#16a34a', '#14b8a6', '#f43f5e'];
 
             @if($totalReceivedQty > 0 || $totalIssuedQty > 0)
 
@@ -2406,7 +2406,7 @@
                             chart: Object.assign({}, barDefaults.chart, { height: 160 }),
                             series: [{ name: 'Quantity', data: [{{ (float)$totalReceivedQty }}, {{ (float)$totalIssuedQty }}] }],
                             xaxis: Object.assign({}, barDefaults.xaxis, { categories: ['Received', 'Issued'] }),
-                            colors: ['#10b981', '#f59e0b'],
+                            colors: ['#10b981', '#10b981'],
                             plotOptions: Object.assign({}, barDefaults.plotOptions, {
                                 bar: Object.assign({}, barDefaults.plotOptions.bar, { barHeight: '55%' })
                             })
@@ -2419,7 +2419,7 @@
                             const recLabels = @json($receivedDistribution->pluck('description'));
                             const recData   = @json($receivedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
                             const recBarH   = Math.max(220, recLabels.length * 42);
-                            const recColors = ['#6366f1','#818cf8','#4f46e5','#7c3aed','#8b5cf6','#a78bfa','#4338ca','#3730a3','#06b6d4','#0ea5e9'];
+                            const recColors = ['#16a34a','#4ade80','#16a34a','#15803d','#4ade80','#a78bfa','#15803d','#3730a3','#06b6d4','#0ea5e9'];
                             const recOptions = Object.assign({}, barDefaults, {
                                 chart: Object.assign({}, barDefaults.chart, { height: recBarH }),
                                 series: [{ name: 'Received', data: recData }],
@@ -2435,7 +2435,7 @@
                             const issLabels = @json($issuedDistribution->pluck('description'));
                             const issData   = @json($issuedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
                             const issBarH   = Math.max(220, issLabels.length * 42);
-                            const issColors = ['#f59e0b','#fbbf24','#d97706','#b45309','#ef4444','#f87171','#dc2626','#10b981','#06b6d4','#ec4899'];
+                            const issColors = ['#10b981','#fbbf24','#047857','#b45309','#ef4444','#f87171','#dc2626','#10b981','#06b6d4','#ec4899'];
                             const issOptions = Object.assign({}, barDefaults, {
                                 chart: Object.assign({}, barDefaults.chart, { height: issBarH }),
                                 series: [{ name: 'Issued', data: issData }],

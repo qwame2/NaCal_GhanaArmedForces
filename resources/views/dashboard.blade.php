@@ -4,7 +4,7 @@
 <div class="animate-slide-up">
     <div class="page-header dashboard-header-mobile">
         <!-- Background Accent -->
-        <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(99, 102, 241, 0.05); border-radius: 50%;"></div>
+        <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(22, 163, 74, 0.05); border-radius: 50%;"></div>
 
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
@@ -29,7 +29,7 @@
                 disabled title="Unauthorized: Permission Required"
                 @else
                 class="btn-primary"
-                style="padding: 0.85rem 1.75rem; border-radius: 12px; border: none; background: var(--primary); color: white; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: var(--transition); text-decoration: none; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.3);"
+                style="padding: 0.85rem 1.75rem; border-radius: 12px; border: none; background: var(--primary); color: white; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: var(--transition); text-decoration: none; box-shadow: 0 10px 20px -5px rgba(22, 163, 74, 0.3);"
                 @endif>
                 <i data-lucide="plus" style="width: 20px;"></i>
                 New Entry
@@ -143,8 +143,8 @@
 
     <!-- Stats Grid -->
     <div class="stats-grid">
-        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #6366f1; animation-delay: 0.1s;">
-            <div class="stat-icon" style="background: rgba(99, 102, 241, 0.15); color: #6366f1;">
+        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #16a34a; animation-delay: 0.1s;">
+            <div class="stat-icon" style="background: rgba(22, 163, 74, 0.15); color: #16a34a;">
                 <i data-lucide="layers"></i>
             </div>
             <div class="stat-info">
@@ -171,14 +171,14 @@
             </div>
         </div>
 
-        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #f59e0b; animation-delay: 0.3s;">
-            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #10b981; animation-delay: 0.3s;">
+            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
                 <i data-lucide="activity"></i>
             </div>
             <div class="stat-info">
                 <span class="stat-label">Total Variance</span>
                 <span class="stat-value">{{ $totalVariance > 0 ? '+' : '' }}{{ number_format($totalVariance) }}</span>
-                <div class="stat-trend" style="color: {{ $totalVariance > 0 ? '#10b981' : ($totalVariance < 0 ? '#ef4444' : '#3b82f6') }};">
+                <div class="stat-trend" style="color: {{ $totalVariance > 0 ? '#10b981' : ($totalVariance < 0 ? '#ef4444' : '#16a34a') }};">
                     <i data-lucide="{{ $totalVariance > 0 ? 'trending-up' : ($totalVariance < 0 ? 'trending-down' : 'minus') }}" style="width: 14px;"></i>
                     {{ $totalVariance > 0 ? 'Net Surplus' : ($totalVariance < 0 ? 'Net Shortage' : 'Balanced') }}
                 </div>
@@ -242,7 +242,7 @@
                     @php
                         $isCritical = $l['percentage'] <= 50 || ($l['is_override'] ?? false);
                         $statusLabel = $isCritical ? 'CRITICAL DEPLETION' : 'WATCHLIST';
-                        $statusColor = $isCritical ? '#ef4444' : '#f59e0b';
+                        $statusColor = $isCritical ? '#ef4444' : '#10b981';
                     @endphp
                     <div class="popover-item" style="display: block; padding: 0.75rem 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.03);">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
@@ -303,10 +303,10 @@
 
     @if(auth()->user()->role === 'Officer' && !auth()->user()->isDelegatedApprover())
     <!-- Delegation OTP Entry Card -->
-    <div class="glass-card pop-in float-card" style="border-left: 4px solid var(--primary); margin-bottom: 2rem; padding: 2rem; background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.05) 100%);">
+    <div class="glass-card pop-in float-card" style="border-left: 4px solid var(--primary); margin-bottom: 2rem; padding: 2rem; background: linear-gradient(135deg, var(--bg-card) 0%, rgba(22, 163, 74, 0.05) 100%);">
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
             <div style="display: flex; align-items: center; gap: 1.25rem;">
-                <div style="width: 52px; height: 52px; border-radius: 16px; background: rgba(99, 102, 241, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <div style="width: 52px; height: 52px; border-radius: 16px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                     <i data-lucide="shield-check" style="width: 26px; height: 26px;"></i>
                 </div>
                 <div>
@@ -316,7 +316,7 @@
             </div>
             <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
                 <input type="text" id="delegation-otp-input" placeholder="Enter 6-digit OTP" maxlength="6" style="padding: 0.75rem 1rem; border-radius: 12px; border: 1.5px solid var(--border-color); font-weight: 700; font-size: 0.95rem; text-align: center; letter-spacing: 2px; width: 180px; outline: none; background: var(--bg-card); color: var(--text-main); transition: var(--transition);" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
-                <button type="button" class="btn-primary" onclick="claimDelegationAccess()" style="padding: 0.75rem 1.5rem; font-weight: 800; border-radius: 12px; font-size: 0.9rem; border: none; background: var(--primary); color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); transition: all 0.3s ease;">
+                <button type="button" class="btn-primary" onclick="claimDelegationAccess()" style="padding: 0.75rem 1.5rem; font-weight: 800; border-radius: 12px; font-size: 0.9rem; border: none; background: var(--primary); color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); transition: all 0.3s ease;">
                     Verify & Claim
                 </button>
             </div>
@@ -424,7 +424,7 @@
 
             .activity-row:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 8px 24px rgba(99, 102, 241, 0.08);
+                box-shadow: 0 8px 24px rgba(22, 163, 74, 0.08);
             }
 
             /* Every cell: label on left, value on right */
@@ -519,7 +519,7 @@
                 <td data-label="Entry Date">{{ \Carbon\Carbon::parse($transaction->entry_date)->format('d/m/y H:i') }}</td>
                 <td data-label="Received Date" style="color: var(--primary); font-weight: 700;">{{ $transaction->arrival_date ? \Carbon\Carbon::parse($transaction->arrival_date)->format('d/m/y') : '-' }}</td>
                 <td data-label="Product">{{ $transaction->description }} <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $transaction->unit ?? 'Package Types' }})</span></td>
-                <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">{{ $ledgeMap[$transaction->ledge_category] ?? "Category " . $transaction->ledge_category }}</span></td>
+                <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(22, 163, 74, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">{{ $ledgeMap[$transaction->ledge_category] ?? "Category " . $transaction->ledge_category }}</span></td>
                 @php
                 $rawSup = $transaction->supplier_name;
                 $acqType = $transaction->acquisition_type ?? 'Supplier';
@@ -536,12 +536,12 @@
                 $isIssuedOut = $transaction->hasActiveTemporaryLoan();
                 if ($isIssuedOut) {
                     $supStatusDisplay = 'ISSUED OUT';
-                    $supColor = '#f59e0b';
+                    $supColor = '#10b981';
                 } else {
                     $supStatusDisplay = $transaction->supplier_status ?? 'N/A';
                     if ($acqType === 'Donor') {
                         $supStatusDisplay = 'Donor';
-                        $supColor = '#8b5cf6';
+                        $supColor = '#4ade80';
                     } else {
                         $supColor = '#94a3b8';
                         if (str_contains(strtolower($supStatusDisplay), 'full delivery')) $supColor = '#10b981';
@@ -551,7 +551,7 @@
                 @endphp
                 <td data-label="Supplier / Donor" style="color: var(--text-main);">
                     @if($acqType === 'Donor')
-                        <div style="font-weight: 800; color: #8b5cf6;">{{ $dName }}</div>
+                        <div style="font-weight: 800; color: #4ade80;">{{ $dName }}</div>
                     @else
                         <div>{{ $cleanSupDisplay ?: '-' }}</div>
                     @endif
@@ -637,7 +637,7 @@
         theme: {
             mode: document.documentElement.getAttribute('data-theme') || 'light'
         },
-        colors: ['#6366f1', '#ef4444'],
+        colors: ['#16a34a', '#ef4444'],
         fill: {
             type: 'gradient',
             gradient: {
@@ -823,7 +823,7 @@
             mode: document.documentElement.getAttribute('data-theme') || 'light'
         },
         labels: @json($distLabels),
-        colors: @json($isEmptyDist) ? ['#cbd5e1'] : ['#6366f1', '#10b981', '#f59e0b', '#db2777', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6'],
+        colors: @json($isEmptyDist) ? ['#cbd5e1'] : ['#16a34a', '#10b981', '#10b981', '#db2777', '#4ade80', '#06b6d4', '#ec4899', '#22c55e', '#14b8a6'],
         dataLabels: {
             enabled: false
         },
@@ -947,7 +947,7 @@
                 icon: 'warning',
                 title: 'Invalid OTP',
                 text: 'Please enter a 6-digit OTP code.',
-                confirmButtonColor: '#4f46e5'
+                confirmButtonColor: '#16a34a'
             });
             return;
         }
@@ -968,7 +968,7 @@
                     icon: 'success',
                     title: 'Delegation Claimed',
                     text: data.message,
-                    confirmButtonColor: '#4f46e5'
+                    confirmButtonColor: '#16a34a'
                 }).then(() => {
                     window.location.reload();
                 });
@@ -977,7 +977,7 @@
                     icon: 'error',
                     title: 'Verification Failed',
                     text: data.message,
-                    confirmButtonColor: '#4f46e5'
+                    confirmButtonColor: '#16a34a'
                 });
             }
         })
@@ -986,7 +986,7 @@
                 icon: 'error',
                 title: 'System Error',
                 text: 'An error occurred while validating the delegation OTP.',
-                confirmButtonColor: '#4f46e5'
+                confirmButtonColor: '#16a34a'
             });
         });
     }

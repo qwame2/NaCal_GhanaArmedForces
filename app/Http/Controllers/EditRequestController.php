@@ -12,8 +12,8 @@ class EditRequestController extends Controller
 {
     public function store(Request $request)
     {
-        if (auth()->user()->role === 'Main Admin') {
-            return response()->json(['success' => false, 'message' => 'Unauthorized: Department Head (Stores) is only allowed to view received items and cannot make changes.'], 403);
+        if (in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin'])) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized: Head of Administration is only allowed to view received items and cannot make changes.'], 403);
         }
         if (auth()->user()->isDepartmentHead()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);

@@ -110,7 +110,7 @@
                 @endphp
                 <div class="m-row" data-department="{{ $dept }}">
                     <div class="col-id" style="flex: 0 0 450px;">
-                        <div class="m-avatar" style="background: linear-gradient(135deg, #3b82f6, #6366f1); display: flex; align-items: center; justify-content: center; color: white;">
+                        <div class="m-avatar" style="background: linear-gradient(135deg, #16a34a, #16a34a); display: flex; align-items: center; justify-content: center; color: white;">
                             <i data-lucide="building" style="width: 22px; height: 22px;"></i>
                         </div>
                         <div class="m-identity">
@@ -189,7 +189,7 @@
                             <h4 class="m-name">{{ $user->name }}</h4>
                             <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
                                 <span>@ {{ $user->username }}</span>
-                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
+                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
                                     @if($user->role === 'Main Admin')
                                         Head of Admin(Authorizer)
                                     @elseif($user->role === 'Sub Main Admin')
@@ -281,7 +281,7 @@
                             <h4 class="m-name">{{ $user->name }}</h4>
                             <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
                                 <span>@ {{ $user->username }}</span>
-                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
+                                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
                                     Director General
                                 </span>
                                 @if($user->department)
@@ -345,7 +345,7 @@
     <div class="cfg-card" style="margin-bottom: 2rem; border-left: 4px solid var(--primary); background: white; border-radius: 28px; border: 1px solid #f1f5f9; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04); overflow: hidden;">
         <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1.75rem 2rem; border-bottom: 1px solid #f8fafc; background: linear-gradient(to right, #fafbff, white); flex-wrap: wrap; gap: 1.5rem;">
             <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 300px;">
-                <div class="cfg-icon-box" style="background: linear-gradient(135deg, var(--primary), #3b82f6); width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+                <div class="cfg-icon-box" style="background: linear-gradient(135deg, var(--primary), #16a34a); width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
                     <i data-lucide="key-round" style="width: 22px; height: 22px;"></i>
                 </div>
                 <div>
@@ -358,7 +358,7 @@
                     <label for="delegation-revocation-time" style="font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Auto-Revocation Time (Optional)</label>
                     <input type="datetime-local" id="delegation-revocation-time" style="padding: 0.6rem 1rem; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 0.85rem; font-weight: 700; color: #1e293b; outline: none; background: white; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#cbd5e1'">
                 </div>
-                <button type="button" class="btn-cfg-save" onclick="generateDelegationOtp()" style="display: inline-flex; align-items: center; gap: 10px; padding: 0.85rem 2rem; font-size: 0.9rem; font-weight: 900; color: white; background: linear-gradient(135deg, var(--primary), #3b82f6); border: none; border-radius: 16px; cursor: pointer; box-shadow: 0 4px 18px rgba(79, 70, 229, 0.25); transition: all 0.3s ease;">
+                <button type="button" class="btn-cfg-save" onclick="generateDelegationOtp()" style="display: inline-flex; align-items: center; gap: 10px; padding: 0.85rem 2rem; font-size: 0.9rem; font-weight: 900; color: white; background: linear-gradient(135deg, var(--primary), #16a34a); border: none; border-radius: 16px; cursor: pointer; box-shadow: 0 4px 18px rgba(22, 163, 74, 0.25); transition: all 0.3s ease;">
                     <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
                     Generate OTP
                 </button>
@@ -498,7 +498,7 @@
                                         @elseif($historyRecord->action === 'role_changed')
                                             background: #fdf2f8; color: #db2777;
                                         @elseif($historyRecord->action === 'status_changed')
-                                            background: #fffbeb; color: #d97706;
+                                            background: #ecfdf5; color: #047857;
                                         @else
                                             background: #eff6ff; color: #2563eb;
                                         @endif">
@@ -633,7 +633,7 @@
     }
     .cfg-text-input:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1);
     }
     .btn-cfg-save {
         display: inline-flex;
@@ -643,16 +643,16 @@
         font-size: 0.9rem;
         font-weight: 900;
         color: white;
-        background: linear-gradient(135deg, var(--primary), #3b82f6);
+        background: linear-gradient(135deg, var(--primary), #16a34a);
         border: none;
         border-radius: 16px;
         cursor: pointer;
-        box-shadow: 0 4px 18px rgba(79, 70, 229, 0.25);
+        box-shadow: 0 4px 18px rgba(22, 163, 74, 0.25);
         transition: all 0.3s ease;
     }
     .btn-cfg-save:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 24px rgba(79, 70, 229, 0.35);
+        box-shadow: 0 10px 24px rgba(22, 163, 74, 0.35);
     }
     .otp-preset-btn {
         padding: 0.6rem 1.2rem;
@@ -701,11 +701,11 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
     }
     .search-vault:focus-within {
-        border-color: #4f46e5;
-        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.1);
+        border-color: #16a34a;
+        box-shadow: 0 10px 30px rgba(22, 163, 74, 0.1);
         transform: translateY(-2px);
     }
-    .search-vault i { color: #4f46e5; opacity: 0.6; margin-right: 1rem; width: 20px; }
+    .search-vault i { color: #16a34a; opacity: 0.6; margin-right: 1rem; width: 20px; }
     .search-vault input { border: none; outline: none; padding: 0.75rem 0; font-size: 0.95rem; font-weight: 600; color: #0f172a; width: 100%; background: transparent; }
     .search-vault input::placeholder { color: #94a3b8; font-weight: 500; }
     .search-kicker { font-size: 0.7rem; font-weight: 800; color: #64748b; background: #f1f5f9; padding: 4px 8px; border-radius: 8px; white-space: nowrap; border: 1px solid #e2e8f0; }
@@ -739,8 +739,8 @@
         position: relative;
     }
     .pager-tab svg { opacity: 0.7; flex-shrink: 0; }
-    .pager-tab:hover { background: #f8fafc; color: #4f46e5; }
-    .pager-tab.active { background: #4f46e5; color: white; box-shadow: 0 4px 14px rgba(79,70,229,0.25); }
+    .pager-tab:hover { background: #f8fafc; color: #16a34a; }
+    .pager-tab.active { background: #16a34a; color: white; box-shadow: 0 4px 14px rgba(22,163,74,0.25); }
     .pager-tab.active svg { opacity: 1; }
     .tab-badge {
         background: #ef4444;
@@ -824,8 +824,8 @@
         animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .reg-card:hover {
-        border-color: rgba(79,70,229,0.2);
-        box-shadow: 0 8px 28px rgba(79,70,229,0.08);
+        border-color: rgba(22,163,74,0.2);
+        box-shadow: 0 8px 28px rgba(22,163,74,0.08);
         transform: translateY(-2px);
     }
 
@@ -840,7 +840,7 @@
         width: 52px;
         height: 52px;
         border-radius: 18px;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        background: linear-gradient(135deg, #16a34a, #4ade80);
         color: white;
         display: flex;
         align-items: center;
@@ -848,11 +848,11 @@
         font-size: 1.3rem;
         font-weight: 900;
         flex-shrink: 0;
-        box-shadow: 0 6px 16px rgba(99,102,241,0.25);
+        box-shadow: 0 6px 16px rgba(22,163,74,0.25);
     }
 
     .reg-name { font-size: 0.97rem; font-weight: 850; color: #0f172a; letter-spacing: -0.01em; }
-    .reg-username { font-size: 0.75rem; color: #4f46e5; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+    .reg-username { font-size: 0.75rem; color: #16a34a; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
     .reg-time { font-size: 0.72rem; color: #94a3b8; font-weight: 600; margin-top: 4px; }
 
     .reg-details {
@@ -873,7 +873,7 @@
         font-weight: 700;
         white-space: nowrap;
     }
-    .reg-pill.role { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+    .reg-pill.role { background: #eef2ff; color: #15803d; border: 1px solid #c7d2fe; }
     .reg-pill.dept { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
     .reg-pill.rank { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
 
@@ -903,9 +903,9 @@
         transition: all 0.25s ease;
     }
     .reg-select:hover, .reg-select:focus {
-        border-color: #6366f1;
+        border-color: #16a34a;
         background-color: white;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.1);
         transform: translateY(-1px);
     }
     .reg-select-icon {
@@ -921,7 +921,7 @@
     }
     .reg-select:focus + .reg-select-icon,
     .reg-select:hover + .reg-select-icon {
-        color: #6366f1;
+        color: #16a34a;
     }
 
     .reg-btn {
@@ -1177,7 +1177,7 @@
                 if (typeof showToast === 'function') {
                     showToast(msg, 'success');
                 } else {
-                    Swal.fire({ icon: 'success', title: 'Success', text: msg, confirmButtonColor: '#4f46e5' });
+                    Swal.fire({ icon: 'success', title: 'Success', text: msg, confirmButtonColor: '#16a34a' });
                 }
             } else {
                 checkbox.checked = !isChecked;
@@ -1226,14 +1226,14 @@
                     icon: 'success',
                     title: 'OTP Generated',
                     text: 'The delegation OTP code is ' + data.otp + '. Give this code to any Store Officer to claim delegation. The code can only be used once.',
-                    confirmButtonColor: '#4f46e5'
+                    confirmButtonColor: '#16a34a'
                 });
             } else {
-                Swal.fire({ icon: 'error', title: 'Error', text: data.message, confirmButtonColor: '#4f46e5' });
+                Swal.fire({ icon: 'error', title: 'Error', text: data.message, confirmButtonColor: '#16a34a' });
             }
         })
         .catch(() => {
-            Swal.fire({ icon: 'error', title: 'System Error', text: 'Failed to generate delegation OTP.', confirmButtonColor: '#4f46e5' });
+            Swal.fire({ icon: 'error', title: 'System Error', text: 'Failed to generate delegation OTP.', confirmButtonColor: '#16a34a' });
         });
     }
 
@@ -1253,7 +1253,7 @@
                     icon: 'success',
                     title: 'OTP Revoked',
                     text: 'Delegation OTP has been revoked successfully.',
-                    confirmButtonColor: '#4f46e5'
+                    confirmButtonColor: '#16a34a'
                 });
             }
         });
@@ -1308,7 +1308,7 @@
                             icon: 'warning',
                             title: 'Role Required',
                             text: 'Please select a role to assign before approving.',
-                            confirmButtonColor: '#4f46e5'
+                            confirmButtonColor: '#16a34a'
                         });
                     }
                     return;
@@ -1404,7 +1404,7 @@
                         icon: 'success',
                         title: 'Success',
                         text: message,
-                        confirmButtonColor: '#4f46e5'
+                        confirmButtonColor: '#16a34a'
                     });
                 }
             } catch (err) {
@@ -1417,7 +1417,7 @@
                         icon: 'error',
                         title: 'System Error',
                         text: errMsg,
-                        confirmButtonColor: '#4f46e5'
+                        confirmButtonColor: '#16a34a'
                     });
                 }
                 if (buttons) {
@@ -1641,7 +1641,7 @@
                             <h4 class="m-name">${u.name}</h4>
                             <div class="m-handle" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px;">
                                 <span>@ ${u.username}</span>
-                                <span class="badge-role" style="font-size:0.65rem;background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:6px;font-weight:800;font-family:sans-serif;text-transform:uppercase;border:1px solid rgba(67,56,202,0.1);">${roleLabel}</span>
+                                <span class="badge-role" style="font-size:0.65rem;background:#eef2ff;color:#15803d;padding:2px 8px;border-radius:6px;font-weight:800;font-family:sans-serif;text-transform:uppercase;border:1px solid rgba(67,56,202,0.1);">${roleLabel}</span>
                                 ${deptBadge}
                             </div>
                         </div>

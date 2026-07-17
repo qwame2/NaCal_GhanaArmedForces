@@ -7,14 +7,14 @@
     
     <!-- Premium User Settings Header -->
     <div class="glass-card header-mesh" style="padding: 2.5rem 3rem; border-radius: 32px; margin-bottom: 2.5rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08);">
-        <div style="position: absolute; top: -50px; right: -50px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%); z-index: 0;"></div>
+        <div style="position: absolute; top: -50px; right: -50px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(22, 163, 74, 0.1) 0%, transparent 70%); z-index: 0;"></div>
         
         <div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 2.5rem;">
             <div style="position: relative;" id="avatar-preview-container">
                 @if(auth()->user()->avatar)
                     <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 110px; height: 110px; border-radius: 28px; object-fit: cover; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 4px solid white;" id="user-avatar-img">
                 @else
-                    <div id="user-avatar-placeholder" style="width: 110px; height: 110px; background: var(--primary); border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 950; color: white; box-shadow: 0 15px 35px rgba(99,102,241,0.3); border: 4px solid white;">
+                    <div id="user-avatar-placeholder" style="width: 110px; height: 110px; background: var(--primary); border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 950; color: white; box-shadow: 0 15px 35px rgba(22,163,74,0.3); border: 4px solid white;">
                         {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', auth()->user()->name)[1] ?? '', 0, 1)) }}
                     </div>
                 @endif
@@ -26,7 +26,7 @@
             
             <div>
                 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
-                    <span style="background: rgba(99, 102, 241, 0.1); color: var(--primary); font-size: 0.65rem; font-weight: 950; padding: 0.35rem 1rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.1em;">Authenticated Personnel</span>
+                    <span style="background: rgba(22, 163, 74, 0.1); color: var(--primary); font-size: 0.65rem; font-weight: 950; padding: 0.35rem 1rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.1em;">Authenticated Personnel</span>
                     <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
                         <i data-lucide="shield-check" style="width: 14px; color: #10b981;"></i> Security Verified
                     </span>
@@ -178,7 +178,7 @@
                 </div>
                 @endif
 
-                <div style="background: rgba(99, 102, 241, 0.05); padding: 2rem; border-radius: 20px; border: 1px solid rgba(99, 102, 241, 0.1);">
+                <div style="background: rgba(22, 163, 74, 0.05); padding: 2rem; border-radius: 20px; border: 1px solid rgba(22, 163, 74, 0.1);">
                     <div style="display: flex; gap: 1rem; align-items: center;">
                         <i data-lucide="info" style="color: var(--primary); width: 24px;"></i>
                         <p style="font-size: 0.9rem; color: var(--text-main); font-weight: 700; margin: 0;">Your profile information is verified and visible for internal auditing and logistical tracking.</p>
@@ -243,7 +243,7 @@
                     <div class="setting-item">
                         <div style="flex: 1;">
                             <div style="font-weight: 850; color: var(--text-main); margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
-                                <i data-lucide="sparkles" style="width: 20px; color: #a855f7;"></i>
+                                <i data-lucide="sparkles" style="width: 20px; color: #4ade80;"></i>
                                 Glassmorphism Visuals
                             </div>
                             <div style="font-size: 0.85rem; color: var(--text-muted);">Enable semi-transparent surfaces and blur effects across the system.</div>
@@ -328,7 +328,7 @@
 
 <style>
     .header-mesh {
-        background: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.04) 0, transparent 50%),
+        background: radial-gradient(at 0% 0%, rgba(22, 163, 74, 0.04) 0, transparent 50%),
                     var(--bg-card);
         backdrop-filter: blur(20px);
     }
@@ -357,7 +357,7 @@
     }
     .settings-nav-btn i { width: 20px; height: 20px; transition: all 0.3s; color: var(--text-muted); }
     .settings-nav-btn:hover { 
-        background: rgba(99, 102, 241, 0.05); 
+        background: rgba(22, 163, 74, 0.05); 
         color: var(--primary); 
         transform: translateX(4px); 
     }
@@ -368,9 +368,9 @@
         transform: scaleX(1);
     }
     .settings-nav-btn.active {
-        background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%); 
+        background: linear-gradient(135deg, var(--primary) 0%, #15803d 100%); 
         color: white;
-        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.35);
+        box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.35);
     }
     .settings-nav-btn.active i { color: white; }
     .settings-nav-btn.active::before {
@@ -399,7 +399,7 @@
     .modern-input:focus { 
         border-color: var(--primary); 
         background: var(--bg-card); 
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12), 0 8px 20px rgba(99, 102, 241, 0.04); 
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12), 0 8px 20px rgba(22, 163, 74, 0.04); 
     }
     .modern-input[readonly] {
         opacity: 0.65;
@@ -448,7 +448,7 @@
         border: 1px solid var(--border-color);
         transition: 0.3s;
     }
-    .setting-item:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.02); }
+    .setting-item:hover { border-color: var(--primary); background: rgba(22, 163, 74, 0.02); }
 
     .toggle-switch {
         width: 58px; height: 32px; background: #e2e8f0; border-radius: 99px;
@@ -479,12 +479,12 @@
 
     .save-btn {
         padding: 1.25rem 3rem; border-radius: 20px; border: none;
-        background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, #15803d 100%);
         color: white; font-weight: 950; font-size: 1.05rem; cursor: pointer;
         display: flex; align-items: center; gap: 14px;
-        transition: all 0.4s; box-shadow: 0 12px 30px rgba(79, 70, 229, 0.3);
+        transition: all 0.4s; box-shadow: 0 12px 30px rgba(22, 163, 74, 0.3);
     }
-    .save-btn:hover { transform: translateY(-5px); box-shadow: 0 20px 45px rgba(79, 70, 229, 0.45); }
+    .save-btn:hover { transform: translateY(-5px); box-shadow: 0 20px 45px rgba(22, 163, 74, 0.45); }
 
     .modal-overlay {
         position: fixed; top: 0; left: 0;
@@ -519,7 +519,7 @@
     }
     .password-toggle:hover {
         color: var(--primary);
-        background: rgba(99, 102, 241, 0.05);
+        background: rgba(22, 163, 74, 0.05);
     }
     .password-toggle i {
         width: 18px;
@@ -552,7 +552,7 @@
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     }
     .security-action-btn:hover i {
-        color: #3b82f6;
+        color: #16a34a;
         transform: rotate(15deg);
     }
 
@@ -716,8 +716,8 @@
 
             strengthBar.style.width = strength + '%';
             if (strength <= 25) strengthBar.style.background = '#ef4444';
-            else if (strength <= 50) strengthBar.style.background = '#f59e0b';
-            else if (strength <= 75) strengthBar.style.background = '#3b82f6';
+            else if (strength <= 50) strengthBar.style.background = '#10b981';
+            else if (strength <= 75) strengthBar.style.background = '#16a34a';
             else strengthBar.style.background = '#10b981';
         } else {
             strengthCont.style.display = 'none';

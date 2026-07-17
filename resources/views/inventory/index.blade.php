@@ -13,10 +13,10 @@
             <p style="color: var(--text-muted); margin: 0.5rem 0 0;">Comprehensive overview of all cataloged items across all ledges.</p>
         </div>
         <div style="display: flex; gap: 0.75rem;">
-            <button class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); transition: all 0.3s;" onmouseover="this.style.background='rgba(99, 102, 241, 0.05)'" onmouseout="this.style.background='var(--bg-card)'">
+            <button class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); transition: all 0.3s;" onmouseover="this.style.background='rgba(22, 163, 74, 0.05)'" onmouseout="this.style.background='var(--bg-card)'">
                 <i data-lucide="printer" style="width: 18px;"></i> Print Ledger
             </button>
-            <button class="btn-primary" style="padding: 0.75rem 1.25rem; border: none; background: var(--primary-gradient); color: white; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);">
+            <button class="btn-primary" style="padding: 0.75rem 1.25rem; border: none; background: var(--primary-gradient); color: white; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; box-shadow: 0 8px 20px rgba(22, 163, 74, 0.3);">
                 <i data-lucide="download-cloud" style="width: 18px;"></i> Export CSV
             </button>
         </div>
@@ -26,7 +26,7 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
         
         <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--primary);">
-            <div style="width: 54px; height: 54px; border-radius: 14px; background: rgba(99, 102, 241, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <div style="width: 54px; height: 54px; border-radius: 14px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                 <i data-lucide="boxes" style="width: 28px; height: 28px;"></i>
             </div>
             <div>
@@ -45,8 +45,8 @@
             </div>
         </div>
 
-        <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid #f59e0b;">
-            <div style="width: 54px; height: 54px; border-radius: 14px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid #10b981;">
+            <div style="width: 54px; height: 54px; border-radius: 14px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                 <i data-lucide="alert-triangle" style="width: 28px; height: 28px;"></i>
             </div>
             <div>
@@ -118,7 +118,7 @@
                             <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-top: 4px;">Last Refill: 2 days ago</div>
                         </td>
                         <td style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);">
-                            <span style="background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">Ledge A (Stationary)</span>
+                            <span style="background: rgba(22, 163, 74, 0.1); color: var(--primary); padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">Ledge A (Stationary)</span>
                         </td>
                         <td style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); font-weight: 600; color: var(--text-main);">450</td>
                         <td style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); text-align: center; font-weight: 600; color: var(--text-muted);">308</td>
@@ -141,13 +141,13 @@
                             <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-top: 4px;">Last Refill: 4 months ago</div>
                         </td>
                         <td style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);">
-                            <span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">Ledge C (IT)</span>
+                            <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">Ledge C (IT)</span>
                         </td>
                         <td style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); font-weight: 600; color: var(--text-main);">20</td>
                         <td style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); text-align: center; font-weight: 600; color: var(--text-muted);">8</td>
                         <td style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); font-weight: 900; color: var(--text-main); font-size: 1.1rem;">12</td>
                         <td style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);">
-                            <span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;"><div style="width:6px; height:6px; border-radius:50%; background:#f59e0b;"></div> LOW STOCK</span>
+                            <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;"><div style="width:6px; height:6px; border-radius:50%; background:#10b981;"></div> LOW STOCK</span>
                         </td>
                         <td style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); text-align: right;">
                             <button style="background: transparent; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem; cursor: pointer; color: var(--text-main);" data-tooltip="View Details">

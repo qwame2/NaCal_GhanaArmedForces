@@ -12,15 +12,15 @@
 
         <div style="display: flex; gap: 1rem; background: #fff; padding: 0.5rem; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.02); flex-wrap: wrap;">
             <a href="{{ route('admin.archive', ['type' => 'messages']) }}"
-               style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s; {{ $type === 'messages' ? 'background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);' : 'color: var(--text-muted);' }}">
+               style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s; {{ $type === 'messages' ? 'background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(22, 163, 74, 0.2);' : 'color: var(--text-muted);' }}">
                <i data-lucide="message-square" style="width: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i> Archived Messages
             </a>
             <a href="{{ route('admin.archive', ['type' => 'logs']) }}"
-               style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s; {{ $type === 'logs' ? 'background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);' : 'color: var(--text-muted);' }}">
+               style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s; {{ $type === 'logs' ? 'background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(22, 163, 74, 0.2);' : 'color: var(--text-muted);' }}">
                <i data-lucide="activity" style="width: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i> Archived Logs
             </a>
             <a href="{{ route('admin.archive', ['type' => 'disbursements']) }}"
-               style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s; {{ $type === 'disbursements' ? 'background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);' : 'color: var(--text-muted);' }}">
+               style="padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s; {{ $type === 'disbursements' ? 'background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(22, 163, 74, 0.2);' : 'color: var(--text-muted);' }}">
                <i data-lucide="package-2" style="width: 18px; display: inline-block; vertical-align: middle; margin-right: 8px;"></i> Archived Issuance
             </a>
         </div>
@@ -36,7 +36,7 @@
                 <div style="display: flex; align-items: center; background: #fff; padding: 0.6rem 1.25rem; border-radius: 100px; border: 1px solid #f1f5f9; box-shadow: 0 2px 5px rgba(0,0,0,0.02); min-width: 280px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='#f1f5f9'">
                     <i data-lucide="search" style="width: 16px; color: var(--primary); margin-right: 12px;"></i>
                     <input type="text" name="search" id="archiveSearchInput" value="{{ $search }}" placeholder="Search archive records..." oninput="window.debounceSearch()"
-                           style="border: none; outline: none; background: transparent; font-weight: 800; color: var(--text-main); font-size: 0.85rem; width: 100%;" onfocus="this.parentElement.style.boxShadow='0 0 0 4px rgba(79, 70, 229, 0.1)'" onblur="this.parentElement.style.boxShadow='0 2px 5px rgba(0,0,0,0.02)'">
+                           style="border: none; outline: none; background: transparent; font-weight: 800; color: var(--text-main); font-size: 0.85rem; width: 100%;" onfocus="this.parentElement.style.boxShadow='0 0 0 4px rgba(22, 163, 74, 0.1)'" onblur="this.parentElement.style.boxShadow='0 2px 5px rgba(0,0,0,0.02)'">
                 </div>
 
                 <div style="width: 1px; height: 24px; background: #e2e8f0; margin: 0 0.5rem;"></div>
@@ -62,7 +62,7 @@
 
                 <!-- Action Hub -->
                 <div style="display: flex; gap: 0.5rem;">
-                    <button type="submit" style="background: var(--primary); color: white; border: none; width: 46px; height: 46px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; box-shadow: 0 8px 15px rgba(79, 70, 229, 0.2);" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 12px 20px rgba(79, 70, 229, 0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 15px rgba(79, 70, 229, 0.2)'">
+                    <button type="submit" style="background: var(--primary); color: white; border: none; width: 46px; height: 46px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; box-shadow: 0 8px 15px rgba(22, 163, 74, 0.2);" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 12px 20px rgba(22, 163, 74, 0.3)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 15px rgba(22, 163, 74, 0.2)'">
                         <i data-lucide="arrow-right-circle" style="width: 22px;"></i>
                     </button>
 
@@ -78,7 +78,7 @@
 
     <div style="background: linear-gradient(145deg, #f8fafc 0%, #ffffff 100%); padding: 2.5rem; border-radius: 40px; border: 1px solid rgba(0,0,0,0.03); box-shadow: inset 0 2px 10px rgba(0,0,0,0.02), 0 40px 80px rgba(0,0,0,0.03); margin-bottom: 3rem;">
         @if($type === 'messages')
-    <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 28px; box-shadow: 0 25px 70px rgba(0,0,0,0.07); border: 1px solid rgba(79, 70, 229, 0.1);">
+    <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 28px; box-shadow: 0 25px 70px rgba(0,0,0,0.07); border: 1px solid rgba(22, 163, 74, 0.1);">
         <div style="max-height: 72vh; overflow: auto;" class="custom-scrollbar">
             <table style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0; text-align: left;">
                 <thead style="position: sticky; top: 0; z-index: 30; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-color);">
@@ -100,7 +100,7 @@
                                     @if($msg->sender && $msg->sender->avatar)
                                         <img src="{{ asset('storage/' . $msg->sender->avatar) }}" style="width: 42px; height: 42px; border-radius: 14px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                                     @else
-                                        <div style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, var(--primary) 0%, #312e81 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 900; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);">
+                                        <div style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, var(--primary) 0%, #312e81 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 900; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);">
                                             {{ $msg->sender ? substr($msg->sender->name, 0, 1) : 'S' }}
                                         </div>
                                     @endif
@@ -133,7 +133,7 @@
                                     {!! strip_tags($msg->message, '<b><strong><i><em><br>') !!}
                                 </div>
                                 @if($msg->attachment)
-                                <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px; color: var(--primary); font-size: 0.75rem; font-weight: 800; background: white; padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(79, 70, 229, 0.1); width: fit-content;">
+                                <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px; color: var(--primary); font-size: 0.75rem; font-weight: 800; background: white; padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(22, 163, 74, 0.1); width: fit-content;">
                                     <i data-lucide="paperclip" style="width: 13px;"></i>
                                     {{ $msg->attachment_name ?: 'Secured Asset' }}
                                 </div>
@@ -168,7 +168,7 @@
                                     } elseif (str_contains($msgLower, 'recovery')) {
                                         $context = 'Asset Recovery';
                                         $icon = 'refresh-cw';
-                                        $color = '#7c3aed';
+                                        $color = '#15803d';
                                         $bg = '#f5f3ff';
                                     }
                                 }
@@ -224,7 +224,7 @@
         </div>
     </div>
     @elseif($type === 'logs')
-    <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); border: 1px solid rgba(79, 70, 229, 0.08);">
+    <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); border: 1px solid rgba(22, 163, 74, 0.08);">
         <div style="max-height: 70vh; overflow: auto;" class="custom-scrollbar">
             <table style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0; text-align: left;">
                 <thead style="position: sticky; top: 0; z-index: 20; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px); box-shadow: 0 1px 0 var(--border-color);">
@@ -271,7 +271,7 @@
                                 $severity = strtolower($log->severity ?? 'info');
                                 $sevConfig = match($severity) {
                                     'danger', 'critical', 'high' => ['#fef2f2', '#ef4444', 'CRITICAL'],
-                                    'warning', 'medium' => ['#fffbeb', '#f59e0b', 'WARNING'],
+                                    'warning', 'medium' => ['#ecfdf5', '#10b981', 'WARNING'],
                                     'success', 'low', 'stable' => ['#f0fdf4', '#10b981', 'STABLE'],
                                     'info' => ['#e0f2fe', '#0ea5e9', 'INFO'],
                                     default => ['#f8fafc', '#64748b', strtoupper($severity)]
@@ -320,7 +320,7 @@
         </div>
     </div>
     @elseif($type === 'disbursements')
-    <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); border: 1px solid rgba(79, 70, 229, 0.08);">
+    <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.05); border: 1px solid rgba(22, 163, 74, 0.08);">
         <div style="max-height: 70vh; overflow: auto;" class="custom-scrollbar">
             <table style="width: 100%; min-width: 1100px; border-collapse: separate; border-spacing: 0; text-align: left;">
                 <thead style="position: sticky; top: 0; z-index: 20; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px); box-shadow: 0 1px 0 var(--border-color);">
@@ -344,7 +344,7 @@
                         if ($item->quantity === 0 && $item->issuance_type === 'Temporary') {
                             $statusBadge = '<span class="status-badge" style="background: rgba(100, 116, 139, 0.1); color: var(--text-muted); font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em; border: 1px dashed rgba(100, 116, 139, 0.3);">RETURNED</span>';
                         } else {
-                            $statusColor = $item->issuance_type === 'Temporary' ? '#ea580c' : '#10b981';
+                            $statusColor = $item->issuance_type === 'Temporary' ? '#15803d' : '#10b981';
                             $statusBg = $item->issuance_type === 'Temporary' ? 'rgba(234,88,12,0.1)' : 'rgba(16,185,129,0.1)';
                             $statusBadge = '<span class="status-badge" style="background: ' . $statusBg . '; color: ' . $statusColor . '; font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em;">' . strtoupper($item->issuance_type) . '</span>';
                         }
@@ -357,7 +357,7 @@
                         <td style="padding: 1.5rem 2rem;">
                             <div style="font-weight: 950; color: var(--primary); font-size: 1.05rem;">{{ $item->description }}</div>
                             <div style="margin-top: 4px;">
-                                <span style="background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.6rem; font-weight: 900; border: 1px solid rgba(99, 102, 241, 0.1); letter-spacing: 0.03em;">
+                                <span style="background: rgba(22, 163, 74, 0.08); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.6rem; font-weight: 900; border: 1px solid rgba(22, 163, 74, 0.1); letter-spacing: 0.03em;">
                                     CATEGORY {{ $item->ledge_category }}
                                 </span>
                             </div>
@@ -412,7 +412,7 @@
 <!-- Details Modal (Ported from Logs page) -->
 <div id="logDetailsModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
     <div class="glass-card animate-zoom-in" style="width: 100%; max-width: 600px; padding: 0; overflow: hidden; border-radius: 32px; box-shadow: 0 30px 60px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);">
-        <div class="modal-header" style="padding: 2.5rem; background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); color: white; display: flex; justify-content: space-between; align-items: center; position: relative;">
+        <div class="modal-header" style="padding: 2.5rem; background: linear-gradient(135deg, #16a34a 0%, #3730a3 100%); color: white; display: flex; justify-content: space-between; align-items: center; position: relative;">
             <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.05); border-radius: 50%;"></div>
             <div style="display: flex; align-items: center; gap: 1rem; position: relative;">
                 <div style="width: 54px; height: 54px; background: rgba(255,255,255,0.15); border-radius: 16px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
@@ -457,7 +457,7 @@
     .custom-pagination .page-item.active .page-link {
         background: var(--primary); color: white;
         border-color: var(--primary);
-        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.25);
+        box-shadow: 0 10px 25px rgba(22, 163, 74, 0.25);
         transform: scale(1.1);
         z-index: 10;
     }
@@ -466,7 +466,7 @@
         color: var(--primary);
         transform: translateY(-4px);
         background: #f5f3ff;
-        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.1);
+        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.1);
     }
     .custom-pagination .page-item.disabled .page-link {
         opacity: 0.5;
@@ -491,7 +491,7 @@
         border-radius: 10px;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: rgba(79, 70, 229, 0.2);
+        background: rgba(22, 163, 74, 0.2);
         border-radius: 10px;
         border: 2px solid transparent;
         background-clip: content-box;
@@ -538,7 +538,7 @@
 
             let html = `
                 <div class="detail-card" style="display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem; background: #f8fafc; border: 1px solid var(--border-color); box-shadow: none;">
-                    ${userAvatar ? `<img src="${userAvatar}" style="width: 54px; height: 54px; border-radius: 16px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">` : `<div style="width: 54px; height: 54px; border-radius: 16px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 900; box-shadow: 0 4px 10px rgba(79,70,229,0.2);">${userName.charAt(0)}</div>`}
+                    ${userAvatar ? `<img src="${userAvatar}" style="width: 54px; height: 54px; border-radius: 16px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">` : `<div style="width: 54px; height: 54px; border-radius: 16px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 900; box-shadow: 0 4px 10px rgba(22,163,74,0.2);">${userName.charAt(0)}</div>`}
                     <div>
                         <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px; letter-spacing: 0.05em;">Originating User</div>
                         <div style="font-size: 1.2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">${userName}</div>
@@ -589,7 +589,7 @@
 <!-- Message Detail Modal -->
 <div id="messageDetailModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
     <div class="glass-card animate-zoom-in" style="width: 100%; max-width: 700px; padding: 0; overflow: hidden; border-radius: 32px; box-shadow: 0 30px 60px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);">
-        <div style="padding: 2.5rem; background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); color: white; display: flex; justify-content: space-between; align-items: center;">
+        <div style="padding: 2.5rem; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 1rem;">
                 <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 14px; display: flex; align-items: center; justify-content: center;">
                     <i data-lucide="mail-open" style="width: 24px;"></i>

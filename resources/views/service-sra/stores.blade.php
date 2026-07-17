@@ -32,7 +32,7 @@
                style="padding: 0.5rem 1.25rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: all 0.2s; 
                       background: transparent; 
                       color: var(--text-muted);"
-               onmouseover="this.style.background='rgba(99,102,241,0.05)'"
+               onmouseover="this.style.background='rgba(22,163,74,0.05)'"
                onmouseout="this.style.background='transparent'">
                 <i data-lucide="shield-alert" style="width: 14px; height: 14px;"></i>
                 Admin Queue (Stage 1)
@@ -184,7 +184,7 @@ function openStoresModal(id) {
         <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Submitted By</div><div style="font-weight:700;color:var(--text-main);">${sra.submitter?.name ?? '—'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${sra.dept ?? ''}</div></div>
         <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Supplier</div><div style="font-weight:700;color:var(--text-main);">${sra.supplier_name}</div></div>
         <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Admin Approved By</div><div style="font-weight:700;color:#10b981;">${sra.admin_approved_by ?? '—'}</div></div>
-        <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Delivery</div><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:0.7rem;font-weight:800;background:${sra.delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)'};color:${sra.delivery_type === 'full' ? '#10b981' : '#f59e0b'};">${sra.delivery_type === 'full' ? 'Full' : 'Part'}</span></div>
+        <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Delivery</div><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:0.7rem;font-weight:800;background:${sra.delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.1)'};color:${sra.delivery_type === 'full' ? '#10b981' : '#10b981'};">${sra.delivery_type === 'full' ? 'Full' : 'Part'}</span></div>
         <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Date</div><div style="font-weight:700;">${sra.date_of_delivery}</div></div>
     `;
 

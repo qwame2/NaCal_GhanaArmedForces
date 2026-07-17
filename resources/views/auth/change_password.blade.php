@@ -60,22 +60,22 @@
         background: #e2e8f0;
     }
     .step-pip.done  { background: #10b981; }
-    .step-pip.active { background: #6366f1; }
+    .step-pip.active { background: #16a34a; }
 
     /* === MAIN CARD === */
     .sync-card {
         background: white;
-        border: 1px solid rgba(99,102,241,0.12);
+        border: 1px solid rgba(22,163,74,0.12);
         border-radius: 28px;
         overflow: hidden;
         box-shadow:
             0 4px 6px -1px rgba(0,0,0,0.05),
-            0 20px 50px -10px rgba(99,102,241,0.12);
+            0 20px 50px -10px rgba(22,163,74,0.12);
     }
 
     /* === HERO BANNER === */
     .sync-hero {
-        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #15803d 100%);
         padding: 2.5rem 2.5rem 1.5rem;
         position: relative;
         overflow: hidden;
@@ -194,7 +194,7 @@
         padding: 12px 14px;
         margin-bottom: 1.75rem;
     }
-    .info-strip i { width: 15px; color: #7c3aed; flex-shrink: 0; margin-top: 1px; }
+    .info-strip i { width: 15px; color: #15803d; flex-shrink: 0; margin-top: 1px; }
     .info-strip p {
         margin: 0;
         font-size: 0.75rem;
@@ -240,8 +240,8 @@
     }
     .field-input:focus-within {
         background: white;
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        border-color: #16a34a;
+        box-shadow: 0 0 0 3px rgba(22,163,74,0.1);
     }
     .field-icon {
         padding: 0 14px;
@@ -249,7 +249,7 @@
         align-items: center;
     }
     .field-icon i { width: 16px; color: #94a3b8; transition: 0.2s; }
-    .field-input:focus-within .field-icon i { color: #6366f1; }
+    .field-input:focus-within .field-icon i { color: #16a34a; }
 
     .field-input input {
         flex: 1;
@@ -272,7 +272,7 @@
         transition: 0.2s;
         display: flex;
     }
-    .eye-btn:hover { color: #6366f1; }
+    .eye-btn:hover { color: #16a34a; }
     .eye-btn i { width: 16px; }
 
     .divider {
@@ -285,7 +285,7 @@
     .sync-btn {
         width: 100%;
         height: 52px;
-        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        background: linear-gradient(135deg, #16a34a 0%, #16a34a 100%);
         border: none;
         border-radius: 14px;
         color: white;
@@ -298,7 +298,7 @@
         justify-content: center;
         gap: 10px;
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 8px 25px rgba(99,102,241,0.3);
+        box-shadow: 0 8px 25px rgba(22,163,74,0.3);
         position: relative;
         overflow: hidden;
     }
@@ -312,7 +312,7 @@
     }
     .sync-btn:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 35px rgba(99,102,241,0.4);
+        box-shadow: 0 15px 35px rgba(22,163,74,0.4);
     }
     .sync-btn:hover::before { opacity: 1; }
     .sync-btn:active { transform: translateY(-1px); }
@@ -380,7 +380,7 @@
     .select2-dropdown {
         border: 1px solid #e2e8f0 !important;
         border-radius: 12px !important;
-        box-shadow: 0 10px 30px rgba(99, 102, 241, 0.08) !important;
+        box-shadow: 0 10px 30px rgba(22, 163, 74, 0.08) !important;
         z-index: 999999 !important;
     }
     .select2-search__field {
@@ -394,7 +394,7 @@
         font-weight: 600 !important;
     }
     .select2-results__option--highlighted[aria-selected] {
-        background-color: #6366f1 !important;
+        background-color: #16a34a !important;
         color: white !important;
     }
     .select2-results__group {
@@ -571,7 +571,7 @@
                     <div class="field-block">
                         <div class="field-label">
                             <label>Department</label>
-                            <span class="req-badge" style="background:#fffbeb; color:#d97706; border:1px solid #fef3c7;">REQUIRED</span>
+                            <span class="req-badge" style="background:#ecfdf5; color:#047857; border:1px solid #fef3c7;">REQUIRED</span>
                         </div>
                         <div class="field-input">
                             <div class="field-icon"><i data-lucide="building"></i></div>

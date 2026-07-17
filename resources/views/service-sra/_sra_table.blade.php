@@ -48,7 +48,7 @@
                             @endif
                         </td>
                         <td style="padding: 1rem 1.5rem;">
-                            <span class="sra-status-badge" style="background: {{ $sra->delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)' }}; color: {{ $sra->delivery_type === 'full' ? '#10b981' : '#f59e0b' }};">
+                            <span class="sra-status-badge" style="background: {{ $sra->delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.1)' }}; color: {{ $sra->delivery_type === 'full' ? '#10b981' : '#10b981' }};">
                                 {{ ucfirst($sra->delivery_type) }}
                             </span>
                         </td>

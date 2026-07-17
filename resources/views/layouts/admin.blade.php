@@ -21,15 +21,15 @@
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-glow: rgba(79, 70, 229, 0.1);
-            --primary-hover: #4338ca;
+            --primary: #16a34a;
+            --primary-glow: rgba(22, 163, 74, 0.1);
+            --primary-hover: #15803d;
             --bg-main: #f8fafc;
             --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --text-heading: #0f172a;
-            --border-color: #e2e8f0;
+            --text-main: #000000;
+            --text-muted: #4b5563;
+            --text-heading: #000000;
+            --border-color: #e5e7eb;
             --shadow-luxe: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             --radius-luxe: 16px;
         }
@@ -82,8 +82,8 @@
         .toast-error { border-left: 4px solid #ef4444; }
         .toast-error .toast-icon { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
-        .toast-warning { border-left: 4px solid #f59e0b; }
-        .toast-warning .toast-icon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .toast-warning { border-left: 4px solid #10b981; }
+        .toast-warning .toast-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 
         .toast-content { flex: 1; }
         .toast-title { display: block; font-weight: 800; font-size: 0.85rem; color: #0f172a; margin-bottom: 2px; }
@@ -128,11 +128,11 @@
         :root {
             --bg-body: #f8fafc;
             --sidebar-bg: #ffffff;
-            --text-heading: #0f172a;
-            --text-body: #475569;
-            --text-muted: #94a3b8;
+            --text-heading: #000000;
+            --text-body: #111827;
+            --text-muted: #4b5563;
             --shadow-luxe: 0 10px 40px rgba(0, 0, 0, 0.04), 0 2px 10px rgba(0, 0, 0, 0.02);
-            --shadow-sidebar: 10px 0 30px rgba(0, 0, 0, 0.1);
+            --shadow-sidebar: 10px 0 30px rgba(0, 0, 0, 0.05);
         }
 
         body {
@@ -192,7 +192,7 @@
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 8px 16px rgba(79, 70, 229, 0.2);
+            box-shadow: 0 8px 16px rgba(22, 163, 74, 0.2);
         }
 
         .brand-text h1 {
@@ -274,7 +274,7 @@
             background: white;
             color: var(--primary);
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 1px solid rgba(79, 70, 229, 0.1);
+            border: 1px solid rgba(22, 163, 74, 0.1);
         }
 
         .nav-link i {
@@ -468,7 +468,7 @@
 
         .title-capsule:hover {
             border-color: var(--primary);
-            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.08);
+            box-shadow: 0 8px 20px rgba(22, 163, 74, 0.08);
         }
 
         .capsule-prefix {
@@ -690,7 +690,7 @@
                     }
                 }
             }
-            $isActingStoresHead = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
+            $isActingStoresHead = $isStoresHead && !auth()->user()->isMainAdminOrSub() && auth()->user()->role !== 'Head of Stores' && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
         }
     @endphp
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
@@ -733,14 +733,34 @@
                         <span>Inventory Oversight</span>
                     </a>
                 </li>
-                @if(!$isActingStoresHead)
-                <li>
-                    <a href="{{ route('admin.suppliers') }}" class="nav-link {{ request()->routeIs('admin.suppliers') ? 'active' : '' }}" title="Suppliers Details">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
-                        <span>Suppliers Details</span>
-                    </a>
-                </li>
                 @endif
+
+                @php
+                    $showSuppliersDetails = auth()->user()->is_admin 
+                        || auth()->user()->isMainAdminOrSub() 
+                        || auth()->user()->isDelegatedApprover() 
+                        || ((strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0) && !$isActingStoresHead);
+                @endphp
+
+                @if($showSuppliersDetails)
+                    @if(auth()->user()->isMainAdminOrSub())
+                    <li>
+                        <a href="{{ route('admin.admin_suppliers') }}" class="nav-link {{ request()->routeIs('admin.admin_suppliers') ? 'active' : '' }}" title="Suppliers Details">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
+                            <span>Suppliers Details</span>
+                        </a>
+                    </li>
+                    @elseif(!$isActingStoresHead)
+                    <li>
+                        <a href="{{ route('admin.suppliers') }}" class="nav-link {{ request()->routeIs('admin.suppliers') ? 'active' : '' }}" title="Suppliers Details">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
+                            <span>Suppliers Details</span>
+                        </a>
+                    </li>
+                    @endif
+                @endif
+
+                @if(auth()->user()->is_admin)
                 <li>
                     <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" title="Report Generation">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/><path d="M12 13v5"/><path d="M16 13v5"/><path d="M8 13v5"/></svg>
@@ -927,7 +947,7 @@
                         <div style="max-height: 400px; overflow-y: auto;">
                             @forelse($globalNotifications as $notif)
                             <a href="{{ route($notif['route']) }}" class="notif-item" style="display: flex; gap: 1rem; padding: 1.25rem 1.5rem; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
-                                <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ $notif['type'] === 'warning' ? '#fffbeb' : '#fef2f2' }}; color: {{ $notif['type'] === 'warning' ? '#f59e0b' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ $notif['type'] === 'warning' ? '#ecfdf5' : '#fef2f2' }}; color: {{ $notif['type'] === 'warning' ? '#10b981' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                     <i data-lucide="{{ $notif['icon'] }}" style="width: 20px;"></i>
                                 </div>
                                 <div style="flex: 1;">
@@ -1159,7 +1179,7 @@
                                     html += `
                                         <div style="position: relative; border-bottom: 1px solid #f1f5f9;">
                                             <a href="${routeUrl}" class="notif-item" style="display: flex; gap: 1rem; padding: 1.25rem 1.5rem; padding-right: 3.5rem; text-decoration: none;">
-                                                <div style="width: 44px; height: 44px; border-radius: 12px; background: ${notif.type === 'warning' ? '#fffbeb' : '#fef2f2'}; color: ${notif.type === 'warning' ? '#f59e0b' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                <div style="width: 44px; height: 44px; border-radius: 12px; background: ${notif.type === 'warning' ? '#ecfdf5' : '#fef2f2'}; color: ${notif.type === 'warning' ? '#10b981' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                                     <i data-lucide="${notif.icon}" style="width: 20px;"></i>
                                                 </div>
                                                 <div style="flex: 1;">
@@ -1457,7 +1477,7 @@
                 <i data-lucide="x" style="width: 14px;"></i>
             </button>
             <div class="toast-progress">
-                <div class="toast-progress-bar" style="animation-duration: ${duration}ms; color: ${type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#f59e0b')}"></div>
+                <div class="toast-progress-bar" style="animation-duration: ${duration}ms; color: ${type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#10b981')}"></div>
             </div>
         `;
 
@@ -1789,7 +1809,7 @@
         <!-- Signature Requirement Warning Popover -->
         <div id="signature-warning-overlay" class="modal-overlay" style="display: none; z-index: 10000000 !important;">
             <div class="glass-card animate-pop-in" style="max-width: 500px; width: 90%; border-radius: 28px; padding: 2.5rem; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); text-align: center; position: relative;">
-                <div style="width: 80px; height: 80px; background: rgba(79, 70, 229, 0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                <div style="width: 80px; height: 80px; background: rgba(22, 163, 74, 0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
                     <i data-lucide="signature" style="width: 42px; height: 42px; color: var(--primary);"></i>
                 </div>
                 <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--text-heading); margin-bottom: 0.75rem; letter-spacing: -0.02em;">Digital Signature Required</h3>

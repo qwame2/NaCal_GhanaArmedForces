@@ -185,7 +185,7 @@
                 <span style="font-size: 0.72rem; font-weight: 700; color: #94a3b8;">
                     {{ $lowStockItems->count() }} flagged item{{ $lowStockItems->count() !== 1 ? 's' : '' }} — scroll to view all
                 </span>
-                <a href="{{ route('admin.inventory') }}?stock_level=low" style="display: inline-flex; align-items: center; gap: 6px; color: #4f46e5; text-decoration: none; font-size: 0.78rem; font-weight: 800; padding: 7px 16px; border-radius: 10px; border: 1px solid #e0e7ff; background: #eef2ff; transition: 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'">
+                <a href="{{ route('admin.inventory') }}?stock_level=low" style="display: inline-flex; align-items: center; gap: 6px; color: #16a34a; text-decoration: none; font-size: 0.78rem; font-weight: 800; padding: 7px 16px; border-radius: 10px; border: 1px solid #e0e7ff; background: #eef2ff; transition: 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'">
                     <i data-lucide="arrow-right" style="width: 13px; height: 13px;"></i>
                     View All Low Stock
                 </a>
@@ -473,7 +473,7 @@
 
             <!-- Segment 4: Actions -->
             <div class="filter-actions" style="padding-left: 1rem; display: flex; gap: 8px;">
-                <button type="submit" class="audit-btn" style="background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 16px rgba(79, 70, 229, 0.2);">
+                <button type="submit" class="audit-btn" style="background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 16px rgba(22, 163, 74, 0.2);">
                     <i data-lucide="filter" style="width: 16px;"></i> Filter
                 </button>
                 <a href="{{ route('admin.inventory') }}" style="width: 44px; height: 44px; background: #f8fafc; color: #94a3b8; border: 1px solid #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.3s; margin-right: 8px;" title="Reset Category">
@@ -482,8 +482,8 @@
 
                 <!-- Per Page Dropdown -->
                 <div style="display: flex; align-items: center; gap: 10px; border-left: 1px solid #f1f5f9; padding-left: 1.5rem;">
-                    <div class="per-page-capsule" style="display: flex; align-items: center; gap: 6px; background: white; padding: 6px 14px; border-radius: 14px; border: 1.5px solid #eef2ff; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.04); transition: all 0.3s ease;">
-                        <div style="width: 24px; height: 24px; background: #eef2ff; color: #4f46e5; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <div class="per-page-capsule" style="display: flex; align-items: center; gap: 6px; background: white; padding: 6px 14px; border-radius: 14px; border: 1.5px solid #eef2ff; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.04); transition: all 0.3s ease;">
+                        <div style="width: 24px; height: 24px; background: #eef2ff; color: #16a34a; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                             <i data-lucide="layers" style="width: 14px;"></i>
                         </div>
                         <div style="display: flex; flex-direction: column;">
@@ -566,7 +566,7 @@
                                 @endif
                             </td>
                             <td data-label="Category" style="padding: 1.25rem 1.5rem;">
-                                <span style="font-size: 0.75rem; background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
+                                <span style="font-size: 0.75rem; background: rgba(22, 163, 74, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
                                     {{ $ledgeMap[$item->ledge_category] ?? "Category " . $item->ledge_category }}
                                 </span>
                             </td>
@@ -581,12 +581,12 @@
                                 $isIssuedOut = $item->hasActiveTemporaryLoan();
                                 if ($isIssuedOut) {
                                     $displayStatus = 'ISSUED OUT';
-                                    $statusColor = '#f59e0b';
+                                    $statusColor = '#10b981';
                                 } else {
                                     $displayStatus = $dbStatus;
                                     $statusColor = '#94a3b8';
                                     if ($acquisitionType === 'Donor' || $displayStatus === 'DONOR') {
-                                        $statusColor = '#8b5cf6';
+                                        $statusColor = '#4ade80';
                                         $displayStatus = 'DONOR';
                                     } elseif ($displayStatus === 'FULL DELIVERY' || str_contains($displayStatus, 'FULL')) {
                                         $statusColor = '#10b981';
@@ -599,7 +599,7 @@
                             @endphp
                             <td data-label="Supplier / Donor" style="padding: 1.25rem 1.5rem; color: var(--text-main);">
                                 @if($acquisitionType === 'Donor')
-                                    <div style="font-weight: 800; color: #8b5cf6;">{{ $donorName }}</div>
+                                    <div style="font-weight: 800; color: #4ade80;">{{ $donorName }}</div>
                                 @else
                                     <div>{{ $cleanSupplier ?: '-' }}</div>
                                 @endif
@@ -687,7 +687,7 @@
                         <tr>
                             <td colspan="11" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
                                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; margin: 0 auto;">
-                                    <div style="background: rgba(99, 102, 241, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(99, 102, 241, 0.2); animation: pulse 2s infinite;">
+                                    <div style="background: rgba(22, 163, 74, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(22, 163, 74, 0.2); animation: pulse 2s infinite;">
                                         <i data-lucide="package-search" style="width: 44px; stroke-width: 1.5px;"></i>
                                     </div>
                                     <div style="max-width: 500px; text-align: center;">
@@ -1016,11 +1016,11 @@
 
 
     .id-badge { background: #f1f5f9; color: #475569; padding: 4px 8px; border-radius: 6px; font-weight: 800; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
-    .category-tag { background: rgba(79, 70, 229, 0.05); color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; }
+    .category-tag { background: rgba(22, 163, 74, 0.05); color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; }
     
     .type-tag { padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; }
-    .type-tag.permanent { background: #eef2ff; color: #4f46e5; }
-    .type-tag.temporary { background: #fffbeb; color: #f59e0b; }
+    .type-tag.permanent { background: #eef2ff; color: #16a34a; }
+    .type-tag.temporary { background: #ecfdf5; color: #10b981; }
     .type-tag.consumption { background: #ecfdf5; color: #10b981; }
 
     /* Custom Pagination Styling */
@@ -1045,7 +1045,7 @@
         color: white;
         border-color: var(--primary);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
     }
     .page-btn.disabled {
         background: #f8fafc;
@@ -1110,9 +1110,9 @@
     }
     .custom-premium-select:focus {
         outline: none !important;
-        border-color: #4f46e5 !important;
+        border-color: #16a34a !important;
         background-color: #ffffff !important;
-        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05) !important;
     }
     
     [data-theme='dark'] .custom-premium-select {
@@ -1127,9 +1127,9 @@
         background-color: #334155 !important;
     }
     [data-theme='dark'] .custom-premium-select:focus {
-        border-color: #6366f1 !important;
+        border-color: #16a34a !important;
         background-color: #0f172a !important;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2), 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.2), 0 4px 10px rgba(0, 0, 0, 0.3) !important;
     }
 
     .modal-body {
@@ -1197,7 +1197,7 @@
 <div id="editBatchModal" class="modal-backdrop">
     <div class="modal-content glass-card animate-scale-up" style="max-width: 1000px; width: 95%; padding: 0; overflow: hidden; border: none; background: #ffffff; display: flex; flex-direction: column; max-height: 90vh;">
         <!-- Premium Modal Header -->
-        <div style="padding: 1.5rem 2.5rem; background: linear-gradient(to right, #4f46e5, #6366f1); display: flex; justify-content: space-between; align-items: center; color: white;">
+        <div style="padding: 1.5rem 2.5rem; background: linear-gradient(to right, #16a34a, #16a34a); display: flex; justify-content: space-between; align-items: center; color: white;">
             <div>
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
                     <div style="background: rgba(255, 255, 255, 0.2); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
@@ -1223,7 +1223,7 @@
                     <!-- Metadata Section -->
                     <div style="margin-bottom: 2.5rem;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem;">
-                            <span style="font-size: 0.75rem; font-weight: 900; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.1em;">Record Details</span>
+                            <span style="font-size: 0.75rem; font-weight: 900; color: #16a34a; text-transform: uppercase; letter-spacing: 0.1em;">Record Details</span>
                             <div style="flex: 1; height: 1px; background: #f1f5f9;"></div>
                         </div>
                         
@@ -1280,7 +1280,7 @@
                     <div>
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
                             <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                                <span style="font-size: 0.75rem; font-weight: 900; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.1em;">Batch Contents</span>
+                                <span style="font-size: 0.75rem; font-weight: 900; color: #16a34a; text-transform: uppercase; letter-spacing: 0.1em;">Batch Contents</span>
                                 <div style="flex: 1; height: 1px; background: #f1f5f9; margin-right: 1.5rem;"></div>
                             </div>
                             <span id="editItemsCountLabel" style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">0 Items Identified</span>
@@ -1298,7 +1298,7 @@
                 <button type="button" onclick="closeEditBatchModal()" style="padding: 0.85rem 2rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; background: #ffffff; border: 1.5px solid #e2e8f0; color: #475569; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Discard
                 </button>
-                <button type="submit" id="saveEditBtn" style="padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; background: #4f46e5; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2); transition: 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 30px rgba(79, 70, 229, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 20px rgba(79, 70, 229, 0.2)'">
+                <button type="submit" id="saveEditBtn" style="padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; background: #16a34a; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(22, 163, 74, 0.2); transition: 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 30px rgba(22, 163, 74, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 20px rgba(22, 163, 74, 0.2)'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> Commit Changes
                 </button>
             </div>
@@ -1394,8 +1394,8 @@ function openEditBatchModal(batchId) {
                     <div class="edit-item-card" data-id="${item.id}" style="background: #ffffff; padding: 1.5rem; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s; position: relative;">
                         <input type="hidden" class="item-id" value="${item.id}">
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;">
-                            <div style="background: #eff6ff; color: #3b82f6; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900;">${index + 1}</div>
-                            <input type="text" class="item-description" value="${item.description}" placeholder="Asset Description" style="flex: 1; border: none; background: transparent; font-size: 0.95rem; font-weight: 800; color: #1e293b; outline: none; padding: 4px 0; border-bottom: 2px solid transparent; transition: 0.3s;" onfocus="this.style.borderBottomColor='#4f46e5'">
+                            <div style="background: #eff6ff; color: #16a34a; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900;">${index + 1}</div>
+                            <input type="text" class="item-description" value="${item.description}" placeholder="Asset Description" style="flex: 1; border: none; background: transparent; font-size: 0.95rem; font-weight: 800; color: #1e293b; outline: none; padding: 4px 0; border-bottom: 2px solid transparent; transition: 0.3s;" onfocus="this.style.borderBottomColor='#16a34a'">
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
@@ -1409,7 +1409,7 @@ function openEditBatchModal(batchId) {
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Ledger Balance</label>
-                                <input type="number" class="item-stock-balance" value="${item.stock_balance}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.75rem; border: 1.5px solid #4f46e5; border-radius: 10px; font-size: 0.85rem; font-weight: 900; color: #4f46e5; background: #f5f3ff;">
+                                <input type="number" class="item-stock-balance" value="${item.stock_balance}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.75rem; border: 1.5px solid #16a34a; border-radius: 10px; font-size: 0.85rem; font-weight: 900; color: #16a34a; background: #f5f3ff;">
                             </div>
                         </div>
 

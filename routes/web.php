@@ -1115,6 +1115,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/admin/self-deactivate', [AdminController::class, 'deactivateSelf'])->name('admin.self_deactivate');
 
     Route::get('/admin/suppliers', [AdminController::class, 'suppliers'])->name('admin.suppliers');
+    Route::get('/admin/head-of-admin/suppliers', [AdminController::class, 'adminSuppliers'])->name('admin.admin_suppliers');
     Route::get('/admin/settings', [AdminController::class, 'settings'])->name('admin.settings');
     Route::post('/admin/settings', [AdminController::class, 'updateSettings'])->name('admin.settings.update');
     Route::post('/admin/settings/category', [AdminController::class, 'addCategory'])->name('admin.settings.category');

@@ -3,12 +3,12 @@
 @section('content')
 <style>
     :root {
-        --audit-primary: #6366f1;
-        --audit-primary-hover: #4f46e5;
+        --audit-primary: #16a34a;
+        --audit-primary-hover: #16a34a;
         --audit-slate: #0f172a;
         --audit-slate-light: #1e293b;
         --audit-danger-glow: rgba(239, 68, 68, 0.08);
-        --audit-warning-glow: rgba(245, 158, 11, 0.08);
+        --audit-warning-glow: rgba(16, 185, 129, 0.08);
         --audit-info-glow: rgba(59, 130, 246, 0.08);
         --audit-success-glow: rgba(16, 185, 129, 0.08);
         --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
@@ -70,7 +70,7 @@
     .audit-tab-btn.active {
         background: var(--bg-card);
         color: var(--audit-primary);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(99, 102, 241, 0.1);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(22, 163, 74, 0.1);
     }
 
     .audit-tab-panel {
@@ -94,7 +94,7 @@
     }
 
     .log-row:hover {
-        background: rgba(99, 102, 241, 0.01);
+        background: rgba(22, 163, 74, 0.01);
     }
 
     .log-badge {
@@ -110,8 +110,8 @@
     }
 
     .log-badge.danger { background: var(--audit-danger-glow); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-    .log-badge.warning { background: var(--audit-warning-glow); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-    .log-badge.info { background: var(--audit-info-glow); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+    .log-badge.warning { background: var(--audit-warning-glow); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .log-badge.info { background: var(--audit-info-glow); color: #16a34a; border: 1px solid rgba(59, 130, 246, 0.2); }
     .log-badge.success { background: var(--audit-success-glow); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
 
     .audit-table {
@@ -228,7 +228,7 @@
 
     .filter-control-audit:focus {
         border-color: var(--audit-primary);
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1);
         background: var(--bg-card);
     }
 
@@ -316,7 +316,7 @@
         color: white;
         border-color: var(--audit-primary);
         transform: translateY(-1.5px);
-        box-shadow: 0 8px 16px rgba(99, 102, 241, 0.2);
+        box-shadow: 0 8px 16px rgba(22, 163, 74, 0.2);
     }
 
     .audit-page-btn.disabled {
@@ -344,7 +344,7 @@
     .select2-container--default.select2-container--focus .select2-selection--single,
     .select2-container--default.select2-container--open .select2-selection--single {
         border-color: var(--audit-primary) !important;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1) !important;
         background: var(--bg-card) !important;
     }
     .select2-container--default .select2-selection--single .select2-selection__rendered {
@@ -445,7 +445,7 @@
                 'log_severity' => request('log_severity'),
                 'log_event' => request('log_event'),
                 'user_id' => request('user_id')
-            ], fn($val) => !is_null($val) && $val !== '')) }}" target="_blank" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: var(--audit-primary); border-radius: 12px; border: 1.5px solid var(--audit-primary); background: rgba(99,102,241,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(99,102,241,0.05)'">
+            ], fn($val) => !is_null($val) && $val !== '')) }}" target="_blank" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: var(--audit-primary); border-radius: 12px; border: 1.5px solid var(--audit-primary); background: rgba(22,163,74,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(22,163,74,0.1)'" onmouseout="this.style.background='rgba(22,163,74,0.05)'">
                 <i data-lucide="printer" style="width: 18px;"></i>
                 Print Audit Ledger
             </a>
@@ -460,7 +460,7 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
         <div class="auditor-card">
             <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(99,102,241,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="database" style="color: var(--audit-primary); width: 16px;"></i></div>
+                <div style="width: 32px; height: 32px; background: rgba(22,163,74,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="database" style="color: var(--audit-primary); width: 16px;"></i></div>
                 Audit Trail Logs
             </div>
             <div class="stat-number" id="stat-total-logs">{{ number_format($totalLogsCount) }}</div>
@@ -478,7 +478,7 @@
 
         <div class="auditor-card">
             <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(245,158,11,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="clock" style="color: #f59e0b; width: 16px;"></i></div>
+                <div style="width: 32px; height: 32px; background: rgba(16,185,129,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="clock" style="color: #10b981; width: 16px;"></i></div>
                 Active Loans (Temp)
             </div>
             <div class="stat-number" id="stat-active-loans">{{ number_format($activeLoansCount) }}</div>
@@ -767,9 +767,9 @@
                                                     data-acquisition="{{ $item->acquisition_type }}"
                                                     data-delivery-person="{{ $item->delivery_person ?: '-' }}"
                                                     data-delivery-phone="{{ $item->delivery_phone ?: '-' }}"
-                                                    style="border: none; background: rgba(99, 102, 241, 0.08); cursor: pointer; color: var(--audit-primary); width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;"
-                                                    onmouseover="this.style.background='rgba(99, 102, 241, 0.18)';"
-                                                    onmouseout="this.style.background='rgba(99, 102, 241, 0.08)';"
+                                                    style="border: none; background: rgba(22, 163, 74, 0.08); cursor: pointer; color: var(--audit-primary); width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                                                    onmouseover="this.style.background='rgba(22, 163, 74, 0.18)';"
+                                                    onmouseout="this.style.background='rgba(22, 163, 74, 0.08)';"
                                                     onclick="toggleSupplierPopover(this, event)">
                                                 <i data-lucide="chevron-down" style="width: 14px; height: 14px; transition: transform 0.2s;"></i>
                                             </button>
@@ -850,7 +850,7 @@
                                                 <span class="log-badge success" style="padding: 2px 6px; font-size: 0.6rem; font-weight: 900;">Returned</span>
                                             </div>
                                         @else
-                                            <div style="font-weight: 800; color: #ea580c;">
+                                            <div style="font-weight: 800; color: #15803d;">
                                                 {{ number_format($item->quantity + $item->total_returned) }} <span style="font-size: 0.7rem; color: var(--text-muted);">{{ $item->unit }}</span>
                                             </div>
                                             <div style="margin-top: 4px; display: flex; flex-direction: column; align-items: center; gap: 2px;">
@@ -859,7 +859,7 @@
                                             </div>
                                         @endif
                                     @else
-                                        <div style="font-weight: 800; color: #ea580c; text-align: center;">
+                                        <div style="font-weight: 800; color: #15803d; text-align: center;">
                                             {{ number_format($item->quantity) }} <span style="font-size: 0.7rem; color: var(--text-muted);">{{ $item->unit }}</span>
                                         </div>
                                     @endif
@@ -878,16 +878,16 @@
                                             <div>{{ $item->origin_approved_by }} <span style="font-size: 0.68rem; color: var(--audit-primary); font-weight: 800;">(Dept Head)</span></div>
                                         @endif
                                         @if($item->stores_approved_by)
-                                            <div style="margin-top: 2px;">{{ $item->stores_approved_by }} <span style="font-size: 0.68rem; color: #f59e0b; font-weight: 800;">(Head of Admin(Authorizer))</span></div>
+                                            <div style="margin-top: 2px;">{{ $item->stores_approved_by }} <span style="font-size: 0.68rem; color: #10b981; font-weight: 800;">(Head of Admin(Authorizer))</span></div>
                                         @endif
                                         @if($item->dg_approved_by)
-                                            <div style="margin-top: 2px;">{{ $item->dg_approved_by }} <span style="font-size: 0.68rem; color: #8b5cf6; font-weight: 800;">(Director General)</span></div>
+                                            <div style="margin-top: 2px;">{{ $item->dg_approved_by }} <span style="font-size: 0.68rem; color: #4ade80; font-weight: 800;">(Director General)</span></div>
                                         @endif
                                         @if($item->final_approved_by)
                                             <div style="margin-top: 2px;">{{ $item->final_approved_by }} <span style="font-size: 0.68rem; color: #10b981; font-weight: 800;">(Head of Stores)</span></div>
                                         @endif
                                         @if($item->store_officer_name)
-                                            <div style="margin-top: 2px;">{{ $item->store_officer_name }} <span style="font-size: 0.68rem; color: #6366f1; font-weight: 800;">(Store Officer)</span></div>
+                                            <div style="margin-top: 2px;">{{ $item->store_officer_name }} <span style="font-size: 0.68rem; color: #16a34a; font-weight: 800;">(Store Officer)</span></div>
                                         @endif
                                     @else
                                         {{ $item->authority ?: 'N/A' }}
@@ -898,9 +898,9 @@
                                         <a href="{{ route('requisitions.receipt.print', $item->requisition_id) }}" 
                                            target="_blank" 
                                            class="btn-view-receipt" 
-                                           style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
+                                           style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(22, 163, 74, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
                                            onmouseover="this.style.background='var(--audit-primary)'; this.style.color='white';"
-                                           onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='var(--audit-primary)';"
+                                           onmouseout="this.style.background='rgba(22, 163, 74, 0.08)'; this.style.color='var(--audit-primary)';"
                                            title="Print Requisition Receipt">
                                             <i data-lucide="receipt" style="width: 13px; height: 13px;"></i>
                                             <span>Receipt</span>
@@ -1065,9 +1065,9 @@
                                         <a href="{{ route('requisitions.receipt.print', $req->id) }}" 
                                            target="_blank" 
                                            class="btn-view-receipt" 
-                                           style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
+                                           style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(22, 163, 74, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
                                            onmouseover="this.style.background='var(--audit-primary)'; this.style.color='white';"
-                                           onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='var(--audit-primary)';"
+                                           onmouseout="this.style.background='rgba(22, 163, 74, 0.08)'; this.style.color='var(--audit-primary)';"
                                            title="Print Requisition Receipt">
                                             <i data-lucide="receipt" style="width: 13px; height: 13px;"></i>
                                             <span>Receipt</span>
@@ -1157,9 +1157,9 @@
                                     <a href="{{ route('receiveditems.sra', $batch->id) }}" 
                                        target="_blank" 
                                        class="btn-view-receipt" 
-                                       style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
+                                       style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(22, 163, 74, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
                                        onmouseover="this.style.background='var(--audit-primary)'; this.style.color='white';"
-                                       onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='var(--audit-primary)';"
+                                       onmouseout="this.style.background='rgba(22, 163, 74, 0.08)'; this.style.color='var(--audit-primary)';"
                                        title="Review SRA Receipt">
                                         <i data-lucide="file-signature" style="width: 13px; height: 13px;"></i>
                                         <span>Review & Approve</span>
@@ -1188,14 +1188,14 @@
         <button onclick="closeServiceSraAuditModal()" style="position:absolute; top:1.25rem; right:1.25rem; background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:1.5rem;">&times;</button>
         <div style="display:flex; align-items:center; gap:16px; margin-bottom:1.75rem;">
             <div style="width:48px; height:48px; background:rgba(139,92,246,0.1); border-radius:14px; display:flex; align-items:center; justify-content:center;">
-                <i data-lucide="file-signature" style="width:24px; height:24px; color:#8b5cf6;"></i>
+                <i data-lucide="file-signature" style="width:24px; height:24px; color:#4ade80;"></i>
             </div>
             <div>
-                <div style="font-size:0.75rem; font-weight:800; color:#8b5cf6; text-transform:uppercase; letter-spacing:0.1em; margin-bottom: 2px;">Auditor Review</div>
+                <div style="font-size:0.75rem; font-weight:800; color:#4ade80; text-transform:uppercase; letter-spacing:0.1em; margin-bottom: 2px;">Auditor Review</div>
                 <h3 style="margin:0; font-size:1.35rem; font-weight:900; color:var(--text-main);">Service SRA Verification</h3>
             </div>
         </div>
-        <div id="ssra-modal-info" style="background:rgba(139,92,246,0.04); border:1px solid rgba(139,92,246,0.12); border-radius:14px; padding:1.5rem; margin-bottom:1.5rem; font-size:0.9rem; color:var(--text-muted); line-height:1.7; border-left: 4px solid #8b5cf6;"></div>
+        <div id="ssra-modal-info" style="background:rgba(139,92,246,0.04); border:1px solid rgba(139,92,246,0.12); border-radius:14px; padding:1.5rem; margin-bottom:1.5rem; font-size:0.9rem; color:var(--text-muted); line-height:1.7; border-left: 4px solid #4ade80;"></div>
         <div style="margin-bottom:1.75rem;">
             <label style="display:block; font-size:0.78rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Auditor Notes (Optional)</label>
             <textarea id="ssra-audit-notes" rows="4" placeholder="Add any verification notes or comments..." style="width:100%; padding:1rem; border:1.5px solid var(--border-color); border-radius:12px; background:var(--bg-main); color:var(--text-main); font-family:inherit; font-size:0.9rem; resize:vertical; outline:none; box-sizing:border-box; line-height: 1.5;"></textarea>
@@ -1276,7 +1276,7 @@
             <div style="font-size: 0.85rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
                     <span style="font-weight: 900; color: var(--text-main);">Entity Details</span>
-                    <span style="background: rgba(99, 102, 241, 0.1); color: var(--audit-primary); font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+                    <span style="background: rgba(22, 163, 74, 0.1); color: var(--audit-primary); font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
                         ${acq}
                     </span>
                 </div>
@@ -1694,7 +1694,7 @@
                 return `
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
                     <div style="display:flex;align-items:center;gap:.75rem;">
-                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(99,102,241,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#6366f1;">
+                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(22,163,74,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#16a34a;">
                             ${(acc.name || acc.username).charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -1808,7 +1808,7 @@
                 return `
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
                     <div style="display:flex;align-items:center;gap:.75rem;">
-                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(99,102,241,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#6366f1;">
+                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(22,163,74,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#16a34a;">
                             ${(reg.name || reg.username).charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -1817,7 +1817,7 @@
                         </div>
                     </div>
                     <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
-                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(245,158,11,.1);color:#d97706;">
+                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(16,185,129,.1);color:#047857;">
                             PENDING HOD APPROVAL
                         </span>
                         <button onclick="approveRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;">

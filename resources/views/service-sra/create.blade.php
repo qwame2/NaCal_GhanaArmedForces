@@ -41,7 +41,7 @@
     .sra-input:focus {
         outline: none;
         border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+        box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
     }
     .delivery-toggle {
         display: flex;
@@ -61,11 +61,11 @@
     }
     .delivery-option:hover {
         border-color: var(--primary);
-        background: rgba(99,102,241,0.04);
+        background: rgba(22,163,74,0.04);
     }
     .delivery-option.selected {
         border-color: var(--primary);
-        background: rgba(99,102,241,0.07);
+        background: rgba(22,163,74,0.07);
     }
     .delivery-option input[type="radio"] {
         accent-color: var(--primary);
@@ -95,16 +95,16 @@
     <div class="page-header sra-header-section" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: rgba(99,102,241,0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">Stores Division</span>
+                <span style="background: rgba(22,163,74,0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">Stores Division</span>
             </div>
             <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main); margin: 0;">Service <span style="color: var(--primary);">SRA</span></h2>
             <p style="color: var(--text-muted); margin: 0.5rem 0 0;">Stores / Service Received Advice — Submit for administrative approval.</p>
         </div>
         <div style="display: flex; gap: 0.75rem;">
-            <a href="{{ route('service-sra.index') }}" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); text-decoration: none; transition: all 0.3s;" onmouseover="this.style.background='rgba(99,102,241,0.05)'" onmouseout="this.style.background='var(--bg-card)'">
+            <a href="{{ route('service-sra.index') }}" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); text-decoration: none; transition: all 0.3s;" onmouseover="this.style.background='rgba(22,163,74,0.05)'" onmouseout="this.style.background='var(--bg-card)'">
                 <i data-lucide="list" style="width: 16px;"></i> My SRAs
             </a>
-            <a href="{{ route('dashboard') }}" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); text-decoration: none; transition: all 0.3s;" onmouseover="this.style.background='rgba(99,102,241,0.05)'" onmouseout="this.style.background='var(--bg-card)'">
+            <a href="{{ route('dashboard') }}" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); text-decoration: none; transition: all 0.3s;" onmouseover="this.style.background='rgba(22,163,74,0.05)'" onmouseout="this.style.background='var(--bg-card)'">
                 <i data-lucide="arrow-left" style="width: 16px;"></i> Dashboard
             </a>
         </div>
@@ -245,9 +245,9 @@
             </div>
 
             {{-- Previous SRA Nos (shown only for partial) --}}
-            <div id="previousSraGroup" style="display: none; margin-bottom: 1.5rem; background: rgba(245,158,11,0.06); border: 1px dashed rgba(245,158,11,0.4); border-radius: 14px; padding: 1.25rem;">
+            <div id="previousSraGroup" style="display: none; margin-bottom: 1.5rem; background: rgba(16,185,129,0.06); border: 1px dashed rgba(16,185,129,0.4); border-radius: 14px; padding: 1.25rem;">
                 <label class="sra-field-label" for="previous_sra_nos">
-                    <i data-lucide="link" style="width: 13px; color: #f59e0b;"></i>
+                    <i data-lucide="link" style="width: 13px; color: #10b981;"></i>
                     Previous SRA Numbers (if part delivery) <span style="color: #ef4444;">*</span>
                 </label>
                 <textarea id="previous_sra_nos" name="previous_sra_nos" class="sra-input" rows="3" placeholder="Enter previous SRA numbers, separated by commas or new lines&#10;e.g. SRA-000001, SRA-000002"></textarea>
@@ -274,7 +274,7 @@
                 <a href="{{ route('service-sra.index') }}" class="glass-card" style="padding: 1rem 2rem; text-decoration: none; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; border-radius: 14px;">
                     Cancel
                 </a>
-                <button type="submit" id="sraSubmitBtn" class="btn-primary" style="padding: 1rem 3rem; border: none; border-radius: 14px; cursor: pointer; background: linear-gradient(135deg, var(--primary), #4f46e5); color: white; font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 10px 25px -5px rgba(99,102,241,0.4);">
+                <button type="submit" id="sraSubmitBtn" class="btn-primary" style="padding: 1rem 3rem; border: none; border-radius: 14px; cursor: pointer; background: linear-gradient(135deg, var(--primary), #16a34a); color: white; font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 10px 25px -5px rgba(22,163,74,0.4);">
                     <i data-lucide="send" style="width: 18px;"></i>
                     Submit for Approval
                 </button>

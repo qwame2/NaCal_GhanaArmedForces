@@ -22,9 +22,9 @@
         <!-- Hero Banner -->
         <div class="sync-hero" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
             <div class="hero-grid"></div>
-            <div class="hero-glow" style="background: radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 70%);"></div>
+            <div class="hero-glow" style="background: radial-gradient(circle, rgba(16,185,129,0.2) 0%, transparent 70%);"></div>
             <div class="hero-content">
-                <div class="hero-badge" style="background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.2); color: #f59e0b;">
+                <div class="hero-badge" style="background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2); color: #10b981;">
                     <i data-lucide="help-circle"></i>
                     Access Recovery
                 </div>
@@ -36,8 +36,8 @@
         <!-- Form Body -->
         <div class="sync-body">
 
-            <div class="info-strip" style="background: #fffbeb; border-color: #fef3c7;">
-                <i data-lucide="info" style="color: #d97706;"></i>
+            <div class="info-strip" style="background: #ecfdf5; border-color: #fef3c7;">
+                <i data-lucide="info" style="color: #047857;"></i>
                 <p style="color: #92400e;">Enter your username. The Administrator will review your request and provide a one-time security code (OTP).</p>
             </div>
 
@@ -91,8 +91,8 @@
     @keyframes livepulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
     .status-step { display: flex; align-items: center; gap: 6px; }
     .step-pip { width: 24px; height: 4px; border-radius: 4px; background: #e2e8f0; }
-    .step-pip.active { background: #6366f1; }
-    .sync-card { background: white; border: 1px solid rgba(99,102,241,0.12); border-radius: 28px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 20px 50px -10px rgba(99,102,241,0.12); }
+    .step-pip.active { background: #16a34a; }
+    .sync-card { background: white; border: 1px solid rgba(22,163,74,0.12); border-radius: 28px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 20px 50px -10px rgba(22,163,74,0.12); }
     .sync-hero { padding: 2.5rem 2.5rem 1.5rem; position: relative; overflow: hidden; }
     .hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 32px 32px; }
     .hero-glow { position: absolute; bottom: -60px; right: -60px; width: 200px; height: 200px; }
@@ -100,7 +100,7 @@
     .hero-badge { display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(255,255,255,0.15); border-radius: 999px; padding: 4px 12px; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1.25rem; }
     .hero-badge i { width: 12px; height: 12px; }
     .hero-title { font-size: 1.85rem; font-weight: 900; color: white; letter-spacing: -0.04em; line-height: 1.1; margin: 0 0 0.5rem; }
-    .hero-title span { background: linear-gradient(135deg, #f59e0b, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero-title span { background: linear-gradient(135deg, #10b981, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .hero-sub { font-size: 0.8rem; color: rgba(255,255,255,0.55); font-weight: 600; margin: 0; }
     .sync-body { padding: 2rem 2.5rem; }
     .info-strip { display: flex; gap: 10px; align-items: flex-start; border-radius: 14px; padding: 12px 14px; margin-bottom: 1.75rem; }
@@ -110,17 +110,17 @@
     .field-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 0 2px; }
     .field-label label { font-size: 0.7rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; }
     .field-input { display: flex; align-items: center; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; transition: all 0.25s ease; overflow: hidden; }
-    .field-input:focus-within { background: white; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+    .field-input:focus-within { background: white; border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
     .field-icon { padding: 0 14px; display: flex; align-items: center; }
     .field-icon i { width: 16px; color: #94a3b8; transition: 0.2s; }
-    .field-input:focus-within .field-icon i { color: #6366f1; }
+    .field-input:focus-within .field-icon i { color: #16a34a; }
     .field-input input { flex: 1; border: none; background: transparent; padding: 14px 4px; font-size: 0.9rem; font-weight: 700; color: #0f172a; outline: none; }
     .divider { height: 1px; background: #f1f5f9; margin: 1.5rem 0; }
     .sync-btn { width: 100%; height: 52px; border: none; border-radius: 14px; color: white; font-weight: 900; font-size: 0.9rem; letter-spacing: 0.03em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
     .sync-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
     .sync-footer { text-align: center; padding: 1.25rem; border-top: 1px solid #f8fafc; }
     .logout-btn { background: none; border: none; display: inline-flex; align-items: center; gap: 6px; color: #94a3b8; font-size: 0.72rem; font-weight: 700; cursor: pointer; text-decoration: none; transition: 0.2s; letter-spacing: 0.03em; }
-    .logout-btn:hover { color: #6366f1; }
+    .logout-btn:hover { color: #16a34a; }
     .logout-btn i { width: 13px; }
 </style>
 @endsection

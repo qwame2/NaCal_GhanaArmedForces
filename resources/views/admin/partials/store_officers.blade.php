@@ -9,7 +9,7 @@
             <h4 class="m-name">{{ $user->name }}</h4>
             <div class="m-handle" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px;">
                 <span>@ {{ $user->username }}</span>
-                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
+                <span class="badge-role" style="font-size: 0.65rem; background: #eef2ff; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(67, 56, 202, 0.1);">
                     @if($user->role === 'Main Admin')
                         Head of Admin(Authorizer)
                     @elseif($user->role === 'Officer')

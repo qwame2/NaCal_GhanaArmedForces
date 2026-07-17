@@ -96,7 +96,7 @@
                     }
                 }
             }
-            $isActingStoresHead = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
+            $isActingStoresHead = $isStoresHead && !auth()->user()->isMainAdminOrSub() && auth()->user()->role !== 'Head of Stores' && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
         }
     @endphp
     <div class="toast-container" id="toast-container"></div>
@@ -219,7 +219,7 @@
                         <span>Make Request</span>
                     </a>
                 </li>
-                @if((auth()->user()->isMainAdminOrSub() || (strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0)) && !$isActingStoresHead)
+                @if(auth()->user()->isMainAdminOrSub() || ((strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0) && !$isActingStoresHead))
                 <li class="nav-item">
                     <a href="{{ route('receiveditems') }}" class="nav-link {{ request()->routeIs('receiveditems') ? 'active' : '' }}" data-tooltip="Received Items Log">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="M12 7H7.5"/><path d="m10 5-2.5 2 2.5 2"/></svg>
@@ -239,10 +239,17 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.suppliers') }}" class="nav-link {{ request()->routeIs('admin.suppliers') ? 'active' : '' }}" data-tooltip="Suppliers Details">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
-                        <span>Suppliers Details</span>
-                    </a>
+                     @if(auth()->user()->isMainAdminOrSub())
+                     <a href="{{ route('admin.admin_suppliers') }}" class="nav-link {{ request()->routeIs('admin.admin_suppliers') ? 'active' : '' }}" data-tooltip="Suppliers Details">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
+                         <span>Suppliers Details</span>
+                     </a>
+                     @else
+                     <a href="{{ route('admin.suppliers') }}" class="nav-link {{ request()->routeIs('admin.suppliers') ? 'active' : '' }}" data-tooltip="Suppliers Details">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
+                         <span>Suppliers Details</span>
+                     </a>
+                     @endif
                 </li>
                 @endif
             @else
@@ -273,6 +280,14 @@
                         <span>Returns</span>
                     </a>
                 </li>
+                @if(strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0)
+                <li class="nav-item">
+                     <a href="{{ route('admin.suppliers') }}" class="nav-link {{ request()->routeIs('admin.suppliers') ? 'active' : '' }}" data-tooltip="Suppliers Details">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
+                         <span>Suppliers Details</span>
+                     </a>
+                </li>
+                @endif
                 @endif
 
                 @if(auth()->user()->role === 'Requisitioner')
@@ -352,8 +367,8 @@
         </ul>
 
         @if(auth()->user()->isDelegatedApprover())
-            <div class="nav-section-title" style="color: #4f46e5; display: flex; align-items: center; gap: 6px;">
-                <span style="width: 6px; height: 6px; border-radius: 50%; background: #4f46e5;"></span>
+            <div class="nav-section-title" style="color: #16a34a; display: flex; align-items: center; gap: 6px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #16a34a;"></span>
                 Delegated Admin Authority
             </div>
             <ul class="nav-menu">
@@ -361,7 +376,7 @@
                     <a href="{{ route('admin.requisitions') }}" class="nav-link {{ request()->routeIs('admin.requisitions') ? 'active' : '' }}" data-tooltip="Admin Store Requisitions">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                         <span>Store Requisitions</span>
-                        <span id="sidebar-badge-delegated-reqs" style="background: #4f46e5; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingRequisitionsCount) || $pendingRequisitionsCount <= 0) ? 'display: none;' : '' }}">
+                        <span id="sidebar-badge-delegated-reqs" style="background: #16a34a; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingRequisitionsCount) || $pendingRequisitionsCount <= 0) ? 'display: none;' : '' }}">
                             {{ $pendingRequisitionsCount ?? 0 }}
                         </span>
                     </a>
@@ -370,7 +385,7 @@
                     <a href="{{ route('admin.messages') }}" class="nav-link {{ request()->routeIs('admin.messages') ? 'active' : '' }}" data-tooltip="Admin Staff Messages">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         <span>Staff Messages</span>
-                        <span id="sidebar-badge-delegated-messages" style="background: #4f46e5; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($unreadMessagesCount) || $unreadMessagesCount <= 0) ? 'display: none;' : '' }}">
+                        <span id="sidebar-badge-delegated-messages" style="background: #16a34a; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($unreadMessagesCount) || $unreadMessagesCount <= 0) ? 'display: none;' : '' }}">
                             {{ $unreadMessagesCount ?? 0 }}
                         </span>
                     </a>
@@ -385,7 +400,7 @@
                     <a href="{{ route('admin.password.requests') }}" class="nav-link {{ request()->routeIs('admin.password.requests') ? 'active' : '' }}" data-tooltip="Password Reset Requests">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         <span>Password Resets</span>
-                        <span id="sidebar-badge-delegated-password-reqs" style="background: #4f46e5; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingPasswordRequests) || $pendingPasswordRequests <= 0) ? 'display: none;' : '' }}">
+                        <span id="sidebar-badge-delegated-password-reqs" style="background: #16a34a; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingPasswordRequests) || $pendingPasswordRequests <= 0) ? 'display: none;' : '' }}">
                             {{ $pendingPasswordRequests ?? 0 }}
                         </span>
                     </a>
@@ -426,7 +441,7 @@
                 @if(auth()->user()->avatar)
                 <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 44px; height: 44px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid white;">
                 @else
-                <div style="width: 44px; height: 44px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);">
+                <div style="width: 44px; height: 44px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);">
                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', auth()->user()->name)[1] ?? '', 0, 1)) }}
                 </div>
                 @endif
@@ -500,7 +515,7 @@
 
                     <!-- Notification Dropdown -->
                     <div id="notification-dropdown" style="display: none; position: absolute; top: calc(100% + 15px); right: 0; width: 320px; z-index: 2100; padding: 0; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); border: 1px solid #edf2f7; background: white; overflow: hidden; animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);">
-                        <div style="padding: 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(99, 102, 241, 0.03);">
+                        <div style="padding: 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(22, 163, 74, 0.03);">
                             <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin: 0;">Notifications</h3>
                             @if($globalNotificationCount > 0)
                             <span style="font-size: 0.7rem; background: var(--primary); color: white; padding: 0.2rem 0.6rem; border-radius: 99px; font-weight: 700;">{{ $globalNotificationCount }} New</span>
@@ -509,7 +524,7 @@
                         <div style="max-height: 380px; overflow-y: auto;" class="no-scrollbar">
                             @forelse($globalNotifications as $notif)
                             <a href="{{ route($notif['route']) }}" style="display: flex; gap: 1rem; padding: 1.25rem; text-decoration: none; border-bottom: 1px solid var(--border-color); transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background='transparent'">
-                                <div style="width: 40px; height: 40px; border-radius: 12px; background: {{ $notif['type'] === 'warning' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}; color: {{ $notif['type'] === 'warning' ? '#f59e0b' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <div style="width: 40px; height: 40px; border-radius: 12px; background: {{ $notif['type'] === 'warning' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}; color: {{ $notif['type'] === 'warning' ? '#10b981' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                     <i data-lucide="{{ $notif['icon'] }}" style="width: 20px;"></i>
                                 </div>
                                 <div style="flex: 1; text-align: left;">
@@ -783,7 +798,7 @@
                                     data.forEach(item => {
                                         html += `
                                             <a href="${item.url}" style="padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; text-decoration: none; border-bottom: 1px solid var(--border-color); transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">
-                                                <div style="width: 36px; height: 36px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                <div style="width: 36px; height: 36px; background: rgba(22, 163, 74, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                                                 </div>
                                                 <div style="flex: 1; overflow: hidden;">
@@ -918,7 +933,7 @@
                                          html += `
                                              <div style="position: relative; border-bottom: 1px solid var(--border-color);">
                                                  <a href="${routeUrl}" style="display: flex; gap: 1rem; padding: 1.25rem; padding-right: 3rem; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background='transparent'">
-                                                     <div style="width: 40px; height: 40px; border-radius: 12px; background: ${notif.type === 'warning' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; color: ${notif.type === 'warning' ? '#f59e0b' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                     <div style="width: 40px; height: 40px; border-radius: 12px; background: ${notif.type === 'warning' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; color: ${notif.type === 'warning' ? '#10b981' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                                          <i data-lucide="${notif.icon}" style="width: 20px;"></i>
                                                      </div>
                                                      <div style="flex: 1; text-align: left;">
@@ -1435,7 +1450,7 @@
         <!-- Signature Requirement Warning Popover -->
         <div id="signature-warning-overlay" class="modal-overlay" style="display: none; z-index: 10000000 !important;">
             <div class="glass-card animate-pop-in" style="max-width: 500px; width: 90%; border-radius: 28px; padding: 2.5rem; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); text-align: center; position: relative;">
-                <div style="width: 80px; height: 80px; background: rgba(79, 70, 229, 0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                <div style="width: 80px; height: 80px; background: rgba(22, 163, 74, 0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
                     <i data-lucide="signature" style="width: 42px; height: 42px; color: var(--primary);"></i>
                 </div>
                 <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--text-heading); margin-bottom: 0.75rem; letter-spacing: -0.02em;">Digital Signature Required</h3>

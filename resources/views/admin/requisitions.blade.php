@@ -23,7 +23,7 @@
     }
 
     .req-table-row:hover {
-        background: rgba(99, 102, 241, .03);
+        background: rgba(22, 163, 74, .03);
     }
 
     .req-table-row:last-child {
@@ -124,7 +124,7 @@
     }
 
     .modal-box.normal-priority {
-        border-top: 6px solid #4f46e5;
+        border-top: 6px solid #16a34a;
     }
 
     .modal-box.low-priority {
@@ -220,20 +220,20 @@
 
     @keyframes activePulse {
         0% {
-            box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+            box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4);
         }
 
         70% {
-            box-shadow: 0 0 0 8px rgba(79, 70, 229, 0);
+            box-shadow: 0 0 0 8px rgba(22, 163, 74, 0);
         }
 
         100% {
-            box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+            box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
         }
     }
 
     .stepper-step.active .stepper-bubble {
-        background: linear-gradient(135deg, var(--primary) 0%, #4338ca 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, #15803d 100%);
         border-color: var(--primary);
         color: white;
         animation: activePulse 2s infinite;
@@ -313,8 +313,8 @@
     }
 
     .profile-card:hover {
-        border-color: rgba(79, 70, 229, 0.25);
-        background: rgba(99, 102, 241, 0.02);
+        border-color: rgba(22, 163, 74, 0.25);
+        background: rgba(22, 163, 74, 0.02);
         transform: translateY(-1px);
     }
 
@@ -329,7 +329,7 @@
         justify-content: center;
         font-weight: 800;
         font-size: 1.25rem;
-        border: 1.5px solid rgba(79, 70, 229, 0.15);
+        border: 1.5px solid rgba(22, 163, 74, 0.15);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
     }
 
@@ -362,7 +362,7 @@
     .purpose-quote:before {
         content: '“';
         font-size: 3.5rem;
-        color: rgba(79, 70, 229, 0.08);
+        color: rgba(22, 163, 74, 0.08);
         position: absolute;
         top: -0.8rem;
         left: 0.5rem;
@@ -499,7 +499,7 @@
     }
 
     .item-decision-card:hover {
-        background: rgba(99, 102, 241, 0.012);
+        background: rgba(22, 163, 74, 0.012);
     }
 
     .item-card-header {
@@ -580,7 +580,7 @@
 
     /* Live Summary Board */
     .summary-dashboard {
-        background: linear-gradient(135deg, var(--bg-main) 0%, rgba(99, 102, 241, 0.02) 100%);
+        background: linear-gradient(135deg, var(--bg-main) 0%, rgba(22, 163, 74, 0.02) 100%);
         border: 1.5px solid var(--border-color);
         border-radius: 16px;
         padding: 1.25rem 1.5rem;
@@ -629,7 +629,7 @@
 
     .fulfill-progress-bar {
         height: 100%;
-        background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+        background: linear-gradient(90deg, #16a34a 0%, #10b981 100%);
         border-radius: 99px;
         transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -647,8 +647,8 @@
     }
 
     .fulfill-ratio-badge.reduced {
-        background: rgba(245, 158, 11, 0.1);
-        color: #f59e0b;
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
     }
 
     .fulfill-ratio-badge.declined {
@@ -676,9 +676,9 @@
     }
 
     #statusBar.partial {
-        background: rgba(245, 158, 11, .12);
+        background: rgba(16, 185, 129, .12);
         color: #92400e;
-        border: 1px solid rgba(245, 158, 11, .25);
+        border: 1px solid rgba(16, 185, 129, .25);
     }
 
     #statusBar.all-declined {
@@ -737,7 +737,7 @@
     .alternative-item-select:focus {
         border-color: var(--store-orange) !important;
         background: var(--bg-card) !important;
-        box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12) !important;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12) !important;
     }
 
     /* Modern Premium Filter Card Section */
@@ -814,13 +814,13 @@
     }
 
     .filter-control:focus {
-        border-color: #4f46e5;
+        border-color: #16a34a;
         background: var(--bg-card);
-        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
     }
 
     .filter-control:focus + .filter-icon {
-        color: #4f46e5;
+        color: #16a34a;
     }
 
     .filter-control::placeholder {
@@ -888,8 +888,8 @@
     }
 
     .mini-step.active .mini-dot {
-        background: #ea580c;
-        border-color: #ea580c;
+        background: #15803d;
+        border-color: #15803d;
         color: white;
         box-shadow: 0 0 8px rgba(234, 88, 12, 0.35);
     }
@@ -933,7 +933,7 @@
     }
 
     .mini-step.active .mini-label {
-        color: #ea580c;
+        color: #15803d;
         font-weight: 900;
     }
 
@@ -950,7 +950,7 @@
 
     {{-- Header --}}
     <div style="margin-bottom:2rem;">
-        <div style="font-size:.7rem;font-weight:800;color:#4f46e5;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">Store Management</div>
+        <div style="font-size:.7rem;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">Store Management</div>
         <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Stores Requisition</h1>
         <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">Review and process department item requests</p>
     </div>
@@ -958,7 +958,7 @@
     {{-- Stats --}}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;">
         <div class="req-stat-card">
-            <div style="width:44px;height:44px;background:rgba(99,102,241,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:20px;color:#6366f1;"></i></div>
+            <div style="width:44px;height:44px;background:rgba(22,163,74,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:20px;color:#16a34a;"></i></div>
             <div>
                 <div id="stats-pending" style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['pending'] }}</div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Pending</div>
@@ -979,7 +979,7 @@
             </div>
         </div>
         <div class="req-stat-card">
-            <div style="width:44px;height:44px;background:rgba(245,158,11,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="git-merge" style="width:20px;color:#f59e0b;"></i></div>
+            <div style="width:44px;height:44px;background:rgba(16,185,129,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="git-merge" style="width:20px;color:#10b981;"></i></div>
             <div>
                 <div id="stats-partially-approved" style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['partially_approved'] }}</div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Partial</div>
@@ -1035,7 +1035,7 @@
     {{-- Filters --}}
     <div class="filter-card">
         <div class="filter-header">
-            <i data-lucide="sliders-horizontal" style="width: 14px; height: 14px; color: #4f46e5;"></i>
+            <i data-lucide="sliders-horizontal" style="width: 14px; height: 14px; color: #16a34a;"></i>
             <span>Filter Options</span>
         </div>
         <form method="GET" class="filter-row" id="filter-form" action="{{ route('admin.requisitions') }}">
@@ -1083,8 +1083,8 @@
     <div class="modal-box">
         <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
             <div style="display:flex;align-items:center;gap:1rem;">
-                <div style="width:44px;height:44px;background:rgba(79,70,229,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                    <i data-lucide="clipboard-list" style="width:20px;color:#4f46e5;"></i>
+                <div style="width:44px;height:44px;background:rgba(22,163,74,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                    <i data-lucide="clipboard-list" style="width:20px;color:#16a34a;"></i>
                 </div>
                 <div>
                     <h2 style="margin:0;font-size:1.1rem;font-weight:900;color:var(--text-main);">Requisition Review</h2>
@@ -1169,8 +1169,8 @@
             document.getElementById('sra-modal-number').textContent = sra.sra_number;
 
             const deliveryLabel = sra.delivery_type === 'full' ? 'Full Delivery' : 'Part Delivery';
-            const deliveryColor = sra.delivery_type === 'full' ? '#10b981' : '#f59e0b';
-            const deliveryBg = sra.delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)';
+            const deliveryColor = sra.delivery_type === 'full' ? '#10b981' : '#10b981';
+            const deliveryBg = sra.delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.1)';
 
             document.getElementById('sra-modal-details').innerHTML = `
                 <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Submitted By</div><div style="font-weight:700;color:var(--text-main);">${sra.submitter ? sra.submitter.name : '—'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${sra.dept || ''}</div></div>
@@ -1185,7 +1185,7 @@
             document.getElementById('sra-modal-details-text').innerHTML = `
                 <div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">Details of Order / Service</div>
                 <div style="background:var(--bg-main);border-radius:12px;padding:1rem 1.25rem;font-size:0.88rem;font-weight:500;color:var(--text-main);white-space:pre-wrap;line-height:1.7;border:1px solid var(--border-color);">${sra.details}</div>
-                ${sra.previous_sra_nos ? `<div style="margin-top:0.75rem;font-size:0.72rem;font-weight:800;color:#f59e0b;">Previous SRA Nos: ${sra.previous_sra_nos}</div>` : ''}
+                ${sra.previous_sra_nos ? `<div style="margin-top:0.75rem;font-size:0.72rem;font-weight:800;color:#10b981;">Previous SRA Nos: ${sra.previous_sra_nos}</div>` : ''}
             `;
 
             const isSraProcessed = sra.status === 'approved' || sra.status === 'declined';
@@ -1343,8 +1343,8 @@
                 }
             } catch(e) {}
             returnDateBannerHtml = `
-            <div style="background:rgba(245, 158, 11, 0.06); border:1px solid rgba(245, 158, 11, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#d97706; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(245, 158, 11, 0.03); width:100%;">
-                <i data-lucide="calendar-clock" style="width:16px; height:16px; color:#d97706; flex-shrink:0;"></i>
+            <div style="background:rgba(16, 185, 129, 0.06); border:1px solid rgba(16, 185, 129, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#047857; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(16, 185, 129, 0.03); width:100%;">
+                <i data-lucide="calendar-clock" style="width:16px; height:16px; color:#047857; flex-shrink:0;"></i>
                 <span>Expected Return Date: <strong style="color:#b45309; font-size:0.95rem; font-weight:950; text-decoration: underline;">${formattedDate}</strong></span>
             </div>`;
             purposeText = purposeText.replace(/\[Expected Return Date:\s*[^\]]+\]/i, '').trim();
@@ -1429,7 +1429,7 @@
 
                 const stockInfo = item.stock_sufficient ?
                     `<span style="color:#10b981;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="check-circle-2" style="width:12px;height:12px;"></i> Sufficient Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>` :
-                    `<span style="color:#f59e0b;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-triangle" style="width:12px;height:12px;"></i> Critical Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>`;
+                    `<span style="color:#10b981;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-triangle" style="width:12px;height:12px;"></i> Critical Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>`;
 
                 const descTextHtml = isAltAgreed ?
                     `<span>${item.description}</span> <span style="color:var(--store-orange); font-weight:800; margin-left:6px;"><i data-lucide="shuffle" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px;"></i>Alternative: ${item.alternative_description}</span>` :
@@ -1577,7 +1577,7 @@
                     <div style="flex:2; min-width:180px;">
                         <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:6px;">Fulfillment Progress</div>
                         <div class="fulfill-progress-container" style="margin-top:0;">
-                            <div class="fulfill-progress-bar" style="width: ${pct}%; background:${totalApproved === 0 ? '#ef4444' : (totalApproved < requested ? '#f59e0b' : 'linear-gradient(90deg, #4f46e5 0%, #10b981 100%)')}"></div>
+                            <div class="fulfill-progress-bar" style="width: ${pct}%; background:${totalApproved === 0 ? '#ef4444' : (totalApproved < requested ? '#10b981' : 'linear-gradient(90deg, #16a34a 0%, #10b981 100%)')}"></div>
                         </div>
                     </div>
                 </div>
@@ -1640,8 +1640,8 @@
                 </div>`;
             } else {
                 collectorInfoHtml = `
-                <div style="background:rgba(245,158,11,0.03); border:1.5px dashed rgba(245,158,11,0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; align-items:center; gap:12px;">
-                    <div style="width:34px; height:34px; background:rgba(245,158,11,0.08); color:#f59e0b; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <div style="background:rgba(16,185,129,0.03); border:1.5px dashed rgba(16,185,129,0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; align-items:center; gap:12px;">
+                    <div style="width:34px; height:34px; background:rgba(16,185,129,0.08); color:#10b981; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                         <i data-lucide="clock" style="width:16px;"></i>
                     </div>
                     <div>
@@ -1678,7 +1678,7 @@
     ${profileGridHtml}
 
     <!-- Stock Warning Banner -->
-    <div id="stockWarningBanner" style="display:none; background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #ef4444; padding:12px 16px; border-radius:12px; margin-bottom:1.5rem; align-items:center; gap:12px;">
+    <div id="stockWarningBanner" style="display:none; background:#ecfdf5; border:1px solid #fef3c7; border-left:4px solid #ef4444; padding:12px 16px; border-radius:12px; margin-bottom:1.5rem; align-items:center; gap:12px;">
         <div style="width:32px; height:32px; background:rgba(239, 68, 68, 0.08); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#ef4444; flex-shrink:0;">
             <i data-lucide="alert-triangle" style="width:20px;"></i>
         </div>
@@ -1726,7 +1726,7 @@
                 <span class="metric-lbl">Approved</span>
             </div>
             <div class="metric-box">
-                <span class="metric-val" id="metricReduced" style="color:#f59e0b;">0</span>
+                <span class="metric-val" id="metricReduced" style="color:#10b981;">0</span>
                 <span class="metric-lbl">Reduced</span>
             </div>
             <div class="metric-box">
@@ -1754,7 +1754,7 @@
         </label>
         <textarea id="declineReason" rows="3" placeholder="State the reason for declining this requisition. The requester will see this message..." style="width:100%;padding:.85rem 1rem;border:1.5px solid rgba(239,68,68,0.3);border-radius:10px;font-family:inherit;font-size:.88rem;background:var(--bg-card);color:var(--text-main);resize:vertical;box-sizing:border-box;transition:all 0.25s ease;" onfocus="this.style.borderColor='#ef4444';" onblur="this.style.borderColor='rgba(239,68,68,0.3)'"></textarea>
     </div>` : `
-    ${data.admin_notes?`<div style="background:rgba(79,70,229,.03);border:1px solid rgba(79,70,229,.15);border-radius:16px;padding:1.25rem; margin-top: 1rem;"><div style="font-size:.68rem;font-weight:900;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:4px;margin-bottom:4px;"><i data-lucide="message-square" style="width:14px;"></i> Store Officer Notes</div><p style="margin:0;font-size:.9rem;color:var(--text-main);line-height:1.6;font-style:italic;">"${data.admin_notes}"</p></div>`:''}
+    ${data.admin_notes?`<div style="background:rgba(22,163,74,.03);border:1px solid rgba(22,163,74,.15);border-radius:16px;padding:1.25rem; margin-top: 1rem;"><div style="font-size:.68rem;font-weight:900;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:4px;margin-bottom:4px;"><i data-lucide="message-square" style="width:14px;"></i> Store Officer Notes</div><p style="margin:0;font-size:.9rem;color:var(--text-main);line-height:1.6;font-style:italic;">"${data.admin_notes}"</p></div>`:''}
 
     ${data.status === 'declined' && data.decline_reason ? `
     <div style="background:rgba(239,68,68,0.04); border:1px solid rgba(239,68,68,0.2); border-radius:16px; padding:1.25rem; margin-top:0.75rem;">
@@ -1766,7 +1766,7 @@
 
     <div style="background:var(--bg-main); border:1px solid var(--border-color); border-radius:16px; padding:1.15rem; margin-top:1.25rem; display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex; align-items:center; gap:8px;">
-            <div style="width:34px; height:34px; background:rgba(79,70,229,0.08); color:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+            <div style="width:34px; height:34px; background:rgba(22,163,74,0.08); color:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center;">
                 <i data-lucide="user-check" style="width:16px;"></i>
             </div>
             <div>
@@ -1800,7 +1800,7 @@
                 Cancel
             </button>
             <button onclick="submitDecision()" id="submitDecisionBtn"
-                style="background:#4f46e5;color:white;border:none;padding:.75rem 2.25rem;border-radius:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.88rem;box-shadow:0 8px 20px rgba(79, 70, 229, 0.25);transition:0.2s;" onmouseover="this.style.background='#4338ca'" onmouseout="this.style.background='#4f46e5'">
+                style="background:#16a34a;color:white;border:none;padding:.75rem 2.25rem;border-radius:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.88rem;box-shadow:0 8px 20px rgba(22, 163, 74, 0.25);transition:0.2s;" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'">
                 <i data-lucide="send" style="width:16px;"></i> Approve for final Collection
             </button>`;
             }
@@ -1813,7 +1813,7 @@
             if (data.collected_at) {
                 footerHtml = `
                 <a href="{{ request()->getBasePath() }}/requisitions/receipt/${id}" target="_blank"
-                    style="background:rgba(99, 102, 241, 0.08); border: 1.5px solid rgba(99, 102, 241, 0.2); color: #4f46e5; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#4f46e5'; this.style.color='white';" onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='#4f46e5';">
+                    style="background:rgba(22, 163, 74, 0.08); border: 1.5px solid rgba(22, 163, 74, 0.2); color: #16a34a; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#16a34a'; this.style.color='white';" onmouseout="this.style.background='rgba(22, 163, 74, 0.08)'; this.style.color='#16a34a';">
                     <i data-lucide="printer" style="width: 16px;"></i> Print Collection Receipt
                 </a>` + footerHtml;
             }
@@ -2017,8 +2017,8 @@
                 summaryBadge.style.color = '#10b981';
                 summaryBadge.textContent = '✅ Full Approval';
             } else {
-                summaryBadge.style.background = 'rgba(245,158,11,0.1)';
-                summaryBadge.style.color = '#f59e0b';
+                summaryBadge.style.background = 'rgba(16,185,129,0.1)';
+                summaryBadge.style.color = '#10b981';
                 summaryBadge.textContent = '⚠️ Partial Approval';
             }
         }
@@ -2101,16 +2101,16 @@
             text.innerHTML = 'Department has <b>agreed</b> to suggested quantity proposal. Proceed to Commit.';
         } else if (currentReqData && currentReqData.alternative_status === 'proposed' && cntReduced > 0) {
             bar.className = 'partial';
-            bar.style.background = 'rgba(245,158,11,.12)';
+            bar.style.background = 'rgba(16,185,129,.12)';
             bar.style.color = '#92400e';
-            bar.style.border = '1px solid rgba(245,158,11,.25)';
+            bar.style.border = '1px solid rgba(16,185,129,.25)';
             icon.textContent = '⏳';
             text.innerHTML = 'Suggested quantity proposed. <b>Awaiting department response...</b>';
         } else if (cntReduced > 0) {
             bar.className = 'partial';
-            bar.style.background = 'rgba(245,158,11,.12)';
+            bar.style.background = 'rgba(16,185,129,.12)';
             bar.style.color = '#92400e';
-            bar.style.border = '1px solid rgba(245,158,11,.25)';
+            bar.style.border = '1px solid rgba(16,185,129,.25)';
             icon.textContent = '🔀';
             text.innerHTML = 'Quantity reduced. <b>Click button below to suggest new quantity to department</b>';
         } else if (allDeclined) {
@@ -2129,9 +2129,9 @@
             text.innerHTML = 'All items will be <b>Approved</b>';
         } else {
             bar.className = 'partial';
-            bar.style.background = 'rgba(245,158,11,.12)';
+            bar.style.background = 'rgba(16,185,129,.12)';
             bar.style.color = '#92400e';
-            bar.style.border = '1px solid rgba(245,158,11,.25)';
+            bar.style.border = '1px solid rgba(16,185,129,.25)';
             icon.textContent = '⚠️';
             text.innerHTML = 'Some items differ — will be <b>Partially Approved</b>';
         }
@@ -2512,7 +2512,7 @@
             },
             series: @json($deptCounts),
             labels: @json($deptLabels),
-            colors: ['#6366f1', '#10b981', '#f59e0b', '#db2777', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6'],
+            colors: ['#16a34a', '#10b981', '#10b981', '#db2777', '#4ade80', '#06b6d4', '#ec4899', '#22c55e', '#14b8a6'],
             dataLabels: {
                 enabled: false
             },
@@ -2597,7 +2597,7 @@
                     borderRadius: 4
                 }
             },
-            colors: ['#6366f1', '#10b981', '#f59e0b', '#db2777', '#8b5cf6', '#06b6d4', '#ec4899', '#f97316', '#14b8a6'],
+            colors: ['#16a34a', '#10b981', '#10b981', '#db2777', '#4ade80', '#06b6d4', '#ec4899', '#22c55e', '#14b8a6'],
             xaxis: {
                 categories: @json($itemLabels),
                 axisBorder: {

@@ -21,14 +21,14 @@
 @endphp
 <style>
     :root {
-        --store-orange: #f97316;
-        --store-orange-hover: #ea580c;
-        --store-orange-light: rgba(249, 115, 22, 0.08);
-        --store-indigo: #6366f1;
-        --store-indigo-hover: #4f46e5;
-        --store-indigo-light: rgba(99, 102, 241, 0.08);
+        --store-orange: #22c55e;
+        --store-orange-hover: #15803d;
+        --store-orange-light: rgba(34, 197, 94, 0.08);
+        --store-indigo: #16a34a;
+        --store-indigo-hover: #16a34a;
+        --store-indigo-light: rgba(22, 163, 74, 0.08);
         --success-color: #10b981;
-        --warning-color: #f59e0b;
+        --warning-color: #10b981;
         --danger-color: #ef4444;
         --text-muted: #64748b;
         --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
@@ -56,7 +56,7 @@
     }
 
     .req-table-row:hover {
-        background: rgba(99, 102, 241, .03);
+        background: rgba(22, 163, 74, .03);
     }
 
     .req-table-row:last-child {
@@ -143,7 +143,7 @@
 
     /* Priority-specific visual accents */
     .modal-box.urgent-priority { border-top: 6px solid #dc2626; }
-    .modal-box.normal-priority { border-top: 6px solid #4f46e5; }
+    .modal-box.normal-priority { border-top: 6px solid #16a34a; }
     .modal-box.low-priority { border-top: 6px solid #64748b; }
 
     /* Profile Panel & Grid */
@@ -159,8 +159,8 @@
     }
 
     .profile-card:hover {
-        border-color: rgba(99, 102, 241, 0.25);
-        background: rgba(99, 102, 241, 0.02);
+        border-color: rgba(22, 163, 74, 0.25);
+        background: rgba(22, 163, 74, 0.02);
         transform: translateY(-1px);
     }
 
@@ -175,7 +175,7 @@
         justify-content: center;
         font-weight: 800;
         font-size: 1.25rem;
-        border: 1.5px solid rgba(79, 70, 229, 0.15);
+        border: 1.5px solid rgba(22, 163, 74, 0.15);
     }
 
     .stat-pill {
@@ -206,7 +206,7 @@
     .purpose-quote:before {
         content: '“';
         font-size: 3.5rem;
-        color: rgba(79, 70, 229, 0.08);
+        color: rgba(22, 163, 74, 0.08);
         position: absolute;
         top: -0.8rem;
         left: 0.5rem;
@@ -387,7 +387,7 @@
 
     .decision-text-area:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
     }
 
     /* --- CARD REQUISITION LIST VIEW --- */
@@ -419,7 +419,7 @@
     .history-ref {
         font-size: 0.82rem;
         font-weight: 800;
-        color: #ea580c;
+        color: #15803d;
         background: rgba(234, 88, 12, 0.08);
         padding: 5px 12px;
         border-radius: 99px;
@@ -547,9 +547,9 @@
     }
 
     @keyframes pulse-orange-stepper {
-        0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
-        70% { box-shadow: 0 0 0 8px rgba(249, 115, 22, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+        70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
     }
     @keyframes alertPulse {
         0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
@@ -603,7 +603,7 @@
     }
 
     .oversight-row:hover {
-        background: rgba(99, 102, 241, 0.02);
+        background: rgba(22, 163, 74, 0.02);
     }
 
     /* Table Stepper/Tracker */
@@ -648,7 +648,7 @@
         background: var(--store-orange);
         border-color: var(--store-orange);
         color: white;
-        box-shadow: 0 0 8px rgba(249, 115, 22, 0.35);
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.35);
     }
 
     .mini-step.declined .mini-dot {
@@ -806,7 +806,7 @@
         background: white;
         border-radius: 28px;
         border: 1.5px solid var(--border-color);
-        box-shadow: 0 10px 30px rgba(79, 70, 229, 0.03);
+        box-shadow: 0 10px 30px rgba(22, 163, 74, 0.03);
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         overflow: hidden;
         margin-bottom: 2rem;
@@ -814,7 +814,7 @@
 
     .workflow-card-modern:hover {
         border-color: #c7d2fe;
-        box-shadow: 0 16px 40px rgba(79, 70, 229, 0.06);
+        box-shadow: 0 16px 40px rgba(22, 163, 74, 0.06);
     }
 
     .workflow-cat-grid-modern {
@@ -847,13 +847,13 @@
 
     .workflow-cat-card-modern.active {
         background: linear-gradient(145deg, #f5f7ff 0%, #edf1ff 100%);
-        border-color: #4f46e5;
-        box-shadow: 0 8px 24px rgba(79, 70, 229, 0.06);
+        border-color: #16a34a;
+        box-shadow: 0 8px 24px rgba(22, 163, 74, 0.06);
     }
 
     .workflow-cat-card-modern.active:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(79, 70, 229, 0.1);
+        box-shadow: 0 12px 28px rgba(22, 163, 74, 0.1);
     }
 
     .workflow-cat-card-modern .corner-glow {
@@ -862,7 +862,7 @@
         right: -20px;
         width: 50px;
         height: 50px;
-        background: radial-gradient(circle, rgba(79, 70, 229, 0.2) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(22, 163, 74, 0.2) 0%, transparent 70%);
         opacity: 0;
         transition: opacity 0.25s ease;
         pointer-events: none;
@@ -877,7 +877,7 @@
         height: 38px;
         border-radius: 12px;
         background: #ffffff;
-        color: #4f46e5;
+        color: #16a34a;
         font-weight: 900;
         font-size: 0.85rem;
         display: flex;
@@ -889,10 +889,10 @@
     }
 
     .workflow-cat-card-modern.active .cat-circle {
-        background: linear-gradient(135deg, #4f46e5, #3730a3);
+        background: linear-gradient(135deg, #16a34a, #3730a3);
         color: #ffffff;
         border-color: transparent;
-        box-shadow: 0 4px 8px rgba(79, 70, 229, 0.18);
+        box-shadow: 0 4px 8px rgba(22, 163, 74, 0.18);
     }
 
     .workflow-cat-card-modern .status-label {
@@ -904,7 +904,7 @@
     }
 
     .workflow-cat-card-modern.active .status-label {
-        color: #4f46e5;
+        color: #16a34a;
     }
 
     .workflow-cat-card-modern .indicator-dot {
@@ -922,9 +922,9 @@
     }
 
     .workflow-cat-card-modern.active .indicator-dot {
-        background: #4f46e5;
-        border-color: #4f46e5;
-        box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
+        background: #16a34a;
+        border-color: #16a34a;
+        box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
     }
 
     .flow-line {
@@ -936,8 +936,8 @@
     }
 
     .flow-line.active {
-        background: #4f46e5;
-        box-shadow: 0 0 8px rgba(79, 70, 229, 0.25);
+        background: #16a34a;
+        box-shadow: 0 0 8px rgba(22, 163, 74, 0.25);
     }
 
     .flow-line.dashed {
@@ -995,7 +995,7 @@
     {{-- Stats Cards --}}
     <div id="oversight-stats-container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;margin-bottom:2rem;">
         <div class="req-stat-card">
-            <div style="width:48px;height:48px;background:rgba(99,102,241,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:24px;color:#6366f1;"></i></div>
+            <div style="width:48px;height:48px;background:rgba(22,163,74,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:24px;color:#16a34a;"></i></div>
             <div>
                 <div style="font-size:1.75rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['pending'] }}</div>
                 <div style="font-size:.75rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">Awaiting My Review</div>
@@ -1032,7 +1032,7 @@
     <div class="workflow-card-modern" style="display: none;">
         <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 1.25rem;">
-                <div class="cfg-icon-box" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); box-shadow: 0 8px 20px rgba(79,70,229,0.15); width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white;">
+                <div class="cfg-icon-box" style="background: linear-gradient(135deg, #16a34a 0%, #3730a3 100%); box-shadow: 0 8px 20px rgba(22,163,74,0.15); width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white;">
                     <i data-lucide="shield-check" style="width: 24px; height: 24px; color: white;"></i>
                 </div>
                 <div>
@@ -1040,8 +1040,8 @@
                     <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review by the Department Head (Stores).</p>
                 </div>
             </div>
-            <span id="workflow-active-badge" style="background: rgba(79,70,229,0.08); color: #4f46e5; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(79,70,229,0.15); box-shadow: 0 2px 4px rgba(79,70,229,0.02); transition: all 0.3s ease;">
-                <span style="width: 6px; height: 6px; border-radius: 50%; background: #4f46e5; transition: all 0.3s ease;" id="workflow-badge-dot"></span>
+            <span id="workflow-active-badge" style="background: rgba(22,163,74,0.08); color: #16a34a; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(22,163,74,0.15); box-shadow: 0 2px 4px rgba(22,163,74,0.02); transition: all 0.3s ease;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #16a34a; transition: all 0.3s ease;" id="workflow-badge-dot"></span>
                 <span id="workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($selectedCats) }}</span>
             </span>
         </div>
@@ -1102,14 +1102,14 @@
                     <div style="display: grid; grid-template-columns: 1fr 480px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
 
                         <!-- Sleek Gradient Alert Card -->
-                        <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.03) 0%, rgba(99, 102, 241, 0.01) 100%);
+                        <div style="background: linear-gradient(135deg, rgba(22, 163, 74, 0.03) 0%, rgba(22, 163, 74, 0.01) 100%);
                                         border: 1.5px solid #edf2f7;
                                         border-radius: 24px;
                                         padding: 1.75rem 2rem;
                                         display: flex;
                                         gap: 1.25rem;
                                         align-items: flex-start;">
-                            <div style="width: 42px; height: 42px; background: rgba(79,70,229,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #4f46e5; flex-shrink: 0; margin-top: 2px;">
+                            <div style="width: 42px; height: 42px; background: rgba(22,163,74,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #16a34a; flex-shrink: 0; margin-top: 2px;">
                                 <i data-lucide="info" style="width: 20px; height: 20px;"></i>
                             </div>
                             <div style="flex: 1;">
@@ -1128,11 +1128,11 @@
 
                                 <!-- Origin Node -->
                                 <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                    <div class="flow-node-icon" style="background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; box-shadow: 0 4px 12px rgba(79,70,229,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                    <div class="flow-node-icon" style="background: linear-gradient(135deg, #16a34a, #3730a3); color: white; box-shadow: 0 4px 12px rgba(22,163,74,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                         <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
                                     </div>
                                     <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Dept. Head</span>
-                                    <span class="flow-node-badge" style="background: #e0e7ff; color: #4f46e5; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
+                                    <span class="flow-node-badge" style="background: #e0e7ff; color: #16a34a; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
                                 </div>
 
                                 <!-- Connector 1 (Now connects to DG Node, so controlled by DG active state) -->
@@ -1181,7 +1181,7 @@
 
                     <!-- Submit trigger -->
                     <div style="display: flex; justify-content: flex-end; margin-top: 1rem; margin-bottom: 1.5rem;">
-                        <button type="submit" style="padding: 0.75rem 2rem; border-radius: 12px; border: none; background: #4f46e5; color: white; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#3730a3'" onmouseout="this.style.background='#4f46e5'">
+                        <button type="submit" style="padding: 0.75rem 2rem; border-radius: 12px; border: none; background: #16a34a; color: white; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#3730a3'" onmouseout="this.style.background='#16a34a'">
                             <i data-lucide="save" style="width: 18px; height: 18px;"></i> Save Workflow Changes
                         </button>
                     </div>
@@ -1604,8 +1604,8 @@
                 }
             } catch(e) {}
             returnDateBannerHtml = `
-            <div style="background:rgba(245, 158, 11, 0.06); border:1px solid rgba(245, 158, 11, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#d97706; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(245, 158, 11, 0.03);">
-                <i data-lucide="calendar-clock" style="width:16px; height:16px; color:#d97706; flex-shrink:0;"></i>
+            <div style="background:rgba(16, 185, 129, 0.06); border:1px solid rgba(16, 185, 129, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#047857; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(16, 185, 129, 0.03);">
+                <i data-lucide="calendar-clock" style="width:16px; height:16px; color:#047857; flex-shrink:0;"></i>
                 <span>Expected Return Date: <strong style="color:#b45309; font-size:0.95rem; font-weight:950; text-decoration: underline;">${formattedDate}</strong></span>
             </div>`;
             purposeText = purposeText.replace(/\[Expected Return Date:\s*[^\]]+\]/i, '').trim();
@@ -1686,8 +1686,8 @@
                     fulfillBadgeColor = '#ef4444';
                     fulfillLabel = 'Declined';
                 } else if (totalApproved < requested) {
-                    fulfillBadgeBg = 'rgba(245, 158, 11, 0.1)';
-                    fulfillBadgeColor = '#f59e0b';
+                    fulfillBadgeBg = 'rgba(16, 185, 129, 0.1)';
+                    fulfillBadgeColor = '#10b981';
                     fulfillLabel = `${pct}% Reduced`;
                 }
 
@@ -1736,7 +1736,7 @@
                         <div style="flex:2; min-width:180px;">
                             <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:6px;">Fulfillment Progress</div>
                             <div style="background:rgba(0,0,0,0.05); height:6px; border-radius:10px; overflow:hidden; width:100%;">
-                                <div style="height:100%; width: ${pct}%; background:${approved === 0 ? '#ef4444' : (approved < requested ? '#f59e0b' : 'linear-gradient(90deg, #4f46e5 0%, #10b981 100%)')}; border-radius:10px;"></div>
+                                <div style="height:100%; width: ${pct}%; background:${approved === 0 ? '#ef4444' : (approved < requested ? '#10b981' : 'linear-gradient(90deg, #16a34a 0%, #10b981 100%)')}; border-radius:10px;"></div>
                             </div>
                         </div>
                     </div>
@@ -1802,10 +1802,10 @@
 
         if (isStoresHead && !isActingAsHOD && data.origin_admin_status === 'pending') {
             decisionHtml = `
-            <div style="background: rgba(99, 102, 241, 0.05); border: 1.5px dashed rgba(99, 102, 241, 0.25); border-radius: 16px; padding: 1.25rem; margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="background: rgba(22, 163, 74, 0.05); border: 1.5px dashed rgba(22, 163, 74, 0.25); border-radius: 16px; padding: 1.25rem; margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width:34px; height:34px; background:rgba(99, 102, 241, 0.1); color:#6366f1; border-radius:10px; display:flex; align-items:center; justify-content:center;">
-                        <i data-lucide="clock" style="width:16px; height:16px; color:#6366f1;"></i>
+                    <div style="width:34px; height:34px; background:rgba(22, 163, 74, 0.1); color:#16a34a; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="clock" style="width:16px; height:16px; color:#16a34a;"></i>
                     </div>
                     <div>
                         <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Pending HOD Approval</h4>
@@ -1819,8 +1819,8 @@
             decisionHtml = `
             <div style="background: rgba(139, 92, 246, 0.05); border: 1.5px dashed rgba(139, 92, 246, 0.25); border-radius: 16px; padding: 1.25rem; margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width:34px; height:34px; background:rgba(139, 92, 246, 0.1); color:#8b5cf6; border-radius:10px; display:flex; align-items:center; justify-content:center;">
-                        <i data-lucide="clock" style="width:16px; height:16px; color:#8b5cf6;"></i>
+                    <div style="width:34px; height:34px; background:rgba(139, 92, 246, 0.1); color:#4ade80; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="clock" style="width:16px; height:16px; color:#4ade80;"></i>
                     </div>
                     <div>
                         <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Pending DG Approval</h4>
@@ -1834,7 +1834,7 @@
             if (data.alternative_status === 'proposed' && !isStoresHead) {
                 // Render suggested quantity proposal review buttons with Yes/No choices and comment box
                 decisionHtml = `
-                <div class="decision-area animate-slide-up" style="background: rgba(249, 115, 22, 0.04); border: 1.5px dashed rgba(249, 115, 22, 0.2); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                <div class="decision-area animate-slide-up" style="background: rgba(34, 197, 94, 0.04); border: 1.5px dashed rgba(34, 197, 94, 0.2); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
                     <div style="font-size: 0.72rem; font-weight: 800; color: var(--store-orange); text-transform: uppercase; letter-spacing: 0.05em; display:flex; align-items:center; gap:6px;">
                         <i data-lucide="shuffle" style="width: 14px; color: var(--store-orange);"></i>
                         Suggested Quantity Proposal
@@ -1979,9 +1979,9 @@
         let storesFeedbackHtml = '';
         if (data.status !== 'pending') {
             let storeStatusLabel = 'PROCESSING';
-            let storeStatusColor = '#6366f1';
-            let storeStatusBg = 'rgba(99, 102, 241, 0.05)';
-            let storeStatusBorder = 'rgba(99, 102, 241, 0.2)';
+            let storeStatusColor = '#16a34a';
+            let storeStatusBg = 'rgba(22, 163, 74, 0.05)';
+            let storeStatusBorder = 'rgba(22, 163, 74, 0.2)';
 
             if (data.status === 'approved') {
                 storeStatusLabel = 'STORES APPROVED';
@@ -1990,9 +1990,9 @@
                 storeStatusBorder = 'rgba(16, 185, 129, 0.2)';
             } else if (data.status === 'partially_approved') {
                 storeStatusLabel = 'STORES PARTIALLY APPROVED';
-                storeStatusColor = '#f59e0b';
-                storeStatusBg = 'rgba(245, 158, 11, 0.05)';
-                storeStatusBorder = 'rgba(245, 158, 11, 0.2)';
+                storeStatusColor = '#10b981';
+                storeStatusBg = 'rgba(16, 185, 129, 0.05)';
+                storeStatusBorder = 'rgba(16, 185, 129, 0.2)';
             } else if (data.status === 'declined') {
                 storeStatusLabel = 'STORES DECLINED';
                 storeStatusColor = '#ef4444';
@@ -2070,8 +2070,8 @@
                 </div>`;
             } else {
                 collectorInfoHtml = `
-                <div style="background:rgba(245, 158, 11, 0.03); border:1.5px dashed rgba(245, 158, 11, 0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; align-items:center; gap:10px; color:#d97706; font-weight:800; font-size:0.85rem;">
-                    <i data-lucide="clock" style="width:16px; height:16px; color:#d97706; flex-shrink:0;"></i>
+                <div style="background:rgba(16, 185, 129, 0.03); border:1.5px dashed rgba(16, 185, 129, 0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; align-items:center; gap:10px; color:#047857; font-weight:800; font-size:0.85rem;">
+                    <i data-lucide="clock" style="width:16px; height:16px; color:#047857; flex-shrink:0;"></i>
                     <span>Status: Requisition is approved by stores. Awaiting physical collection by staff.</span>
                 </div>`;
             }
@@ -2100,7 +2100,7 @@
         if (data.collected_at) {
             footerHtml = `
             <a href="{{ request()->getBasePath() }}/requisitions/receipt/${id}" target="_blank"
-                style="background:rgba(99, 102, 241, 0.08); border: 1.5px solid rgba(99, 102, 241, 0.2); color: #4f46e5; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#4f46e5'; this.style.color='white';" onmouseout="this.style.background='rgba(99, 102, 241, 0.08)'; this.style.color='#4f46e5';">
+                style="background:rgba(22, 163, 74, 0.08); border: 1.5px solid rgba(22, 163, 74, 0.2); color: #16a34a; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#16a34a'; this.style.color='white';" onmouseout="this.style.background='rgba(22, 163, 74, 0.08)'; this.style.color='#16a34a';">
                 <i data-lucide="printer" style="width: 16px;"></i> Print Collection Receipt
             </a>` + footerHtml;
         }
@@ -2119,7 +2119,7 @@
                 title: 'Strategic Security Alert',
                 text: 'A formal decline reason must be recorded in the feedback form before de-activating a requisition request.',
                 icon: 'warning',
-                confirmButtonColor: '#4f46e5'
+                confirmButtonColor: '#16a34a'
             });
             return;
         }
@@ -2188,7 +2188,7 @@
                             title: 'Failure!',
                             text: responseData.message || 'An error occurred during submission.',
                             icon: 'error',
-                            confirmButtonColor: '#4f46e5'
+                            confirmButtonColor: '#16a34a'
                         });
                     }
                 } catch (e) {
@@ -2196,7 +2196,7 @@
                         title: 'Failure!',
                         text: 'Critical communication sync error.',
                         icon: 'error',
-                        confirmButtonColor: '#4f46e5'
+                        confirmButtonColor: '#16a34a'
                     });
                 }
             }
@@ -2304,7 +2304,7 @@
                     title: 'Feedback Required',
                     text: 'Please enter a comment or feedback regarding this decision in the text area.',
                     icon: 'warning',
-                    confirmButtonColor: '#4f46e5'
+                    confirmButtonColor: '#16a34a'
                 });
                 return;
             }
@@ -2382,7 +2382,7 @@
                             title: 'Failure!',
                             text: responseData.message || 'An error occurred during submission.',
                             icon: 'error',
-                            confirmButtonColor: '#4f46e5'
+                            confirmButtonColor: '#16a34a'
                         });
                     }
                 } catch (e) {
@@ -2390,7 +2390,7 @@
                         title: 'Failure!',
                         text: 'Critical communication sync error.',
                         icon: 'error',
-                        confirmButtonColor: '#4f46e5'
+                        confirmButtonColor: '#16a34a'
                     });
                 }
             }
@@ -2445,7 +2445,7 @@
                 return `
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
                     <div style="display:flex;align-items:center;gap:.75rem;">
-                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(99,102,241,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#6366f1;">
+                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(22,163,74,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#16a34a;">
                             ${(reg.name || reg.username).charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -2454,7 +2454,7 @@
                         </div>
                     </div>
                     <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
-                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(245,158,11,.1);color:#d97706;">
+                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(16,185,129,.1);color:#047857;">
                             PENDING HOD APPROVAL
                         </span>
                         <button onclick="approveRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;">
@@ -2618,7 +2618,7 @@
                 return `
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
                     <div style="display:flex;align-items:center;gap:.75rem;">
-                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(99,102,241,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#6366f1;">
+                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(22,163,74,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#16a34a;">
                             ${(acc.name || acc.username).charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -2926,11 +2926,11 @@
         const badgeContainerStores = document.getElementById('workflow-active-badge');
         if (badgeTextStores) badgeTextStores.textContent = `Active Categories: ${activeCountStores}`;
         if (activeCountStores > 0) {
-            if (badgeDotStores) badgeDotStores.style.background = '#4f46e5';
+            if (badgeDotStores) badgeDotStores.style.background = '#16a34a';
             if (badgeContainerStores) {
-                badgeContainerStores.style.background = 'rgba(79, 70, 229, 0.08)';
-                badgeContainerStores.style.color = '#4f46e5';
-                badgeContainerStores.style.borderColor = 'rgba(79, 70, 229, 0.2)';
+                badgeContainerStores.style.background = 'rgba(22, 163, 74, 0.08)';
+                badgeContainerStores.style.color = '#16a34a';
+                badgeContainerStores.style.borderColor = 'rgba(22, 163, 74, 0.2)';
             }
         } else {
             if (badgeDotStores) badgeDotStores.style.background = '#64748b';
@@ -2950,10 +2950,10 @@
             if (activeCountStores > 0) {
                 node.className = 'flow-node flow-node-stores active';
                 if (iconBox) {
-                    iconBox.style.background = 'linear-gradient(135deg, #4f46e5, #3730a3)';
+                    iconBox.style.background = 'linear-gradient(135deg, #16a34a, #3730a3)';
                     iconBox.style.color = '#ffffff';
                     iconBox.style.borderColor = 'transparent';
-                    iconBox.style.boxShadow = '0 6px 15px rgba(79,70,229,0.2)';
+                    iconBox.style.boxShadow = '0 6px 15px rgba(22,163,74,0.2)';
                 }
                 if (label) {
                     label.style.color = '#1e293b';
@@ -2961,8 +2961,8 @@
                 }
                 if (badge) {
                     badge.textContent = 'Required';
-                    badge.style.background = 'rgba(79, 70, 229, 0.1)';
-                    badge.style.color = '#4f46e5';
+                    badge.style.background = 'rgba(22, 163, 74, 0.1)';
+                    badge.style.color = '#16a34a';
                     badge.style.borderColor = 'transparent';
                 }
             } else {
@@ -2995,7 +2995,7 @@
             if (activeCountDG > 0) {
                 node.className = 'flow-node flow-node-dg active';
                 if (iconBox) {
-                    iconBox.style.background = 'linear-gradient(135deg, #8b5cf6, #6d28d9)';
+                    iconBox.style.background = 'linear-gradient(135deg, #4ade80, #6d28d9)';
                     iconBox.style.color = '#ffffff';
                     iconBox.style.borderColor = 'transparent';
                     iconBox.style.boxShadow = '0 6px 15px rgba(139,92,246,0.2)';
@@ -3007,7 +3007,7 @@
                 if (badge) {
                     badge.textContent = 'Required';
                     badge.style.background = 'rgba(139, 92, 246, 0.1)';
-                    badge.style.color = '#8b5cf6';
+                    badge.style.color = '#4ade80';
                     badge.style.borderColor = 'transparent';
                 }
             } else {
@@ -3035,7 +3035,7 @@
         document.querySelectorAll('.flow-line-1').forEach(line => {
             if (activeCountStores > 0) {
                 line.className = 'flow-line flow-line-1 active';
-                line.style.background = '#4f46e5';
+                line.style.background = '#16a34a';
             } else {
                 line.className = 'flow-line flow-line-1 dashed';
                 line.style.background = '';
@@ -3045,7 +3045,7 @@
         document.querySelectorAll('.flow-line-2').forEach(line => {
             if (activeCountDG > 0) {
                 line.className = 'flow-line flow-line-2 active';
-                line.style.background = '#8b5cf6';
+                line.style.background = '#4ade80';
             } else {
                 line.className = 'flow-line flow-line-2 dashed';
                 line.style.background = '';
@@ -3062,13 +3062,13 @@
             const isStoresCard = hint.closest('.workflow-card-modern').querySelector('h3').textContent.includes('Stores');
             if (isStoresCard) {
                 if (activeCountStores > 0) {
-                    hint.innerHTML = `Routing through <strong>Head of Admin(Authorizer)</strong> for <strong style="color: #4f46e5;">${activeCountStores}</strong> selected category${activeCountStores == 1 ? '' : 'ies'}.`;
+                    hint.innerHTML = `Routing through <strong>Head of Admin(Authorizer)</strong> for <strong style="color: #16a34a;">${activeCountStores}</strong> selected category${activeCountStores == 1 ? '' : 'ies'}.`;
                 } else {
                     hint.innerHTML = 'Currently bypassing intermediate Stores Head step due to settings configuration.';
                 }
             } else {
                 if (activeCountDG > 0) {
-                    hint.innerHTML = `Routing through <strong>Director General</strong> for <strong style="color: #8b5cf6;">${activeCountDG}</strong> selected category${activeCountDG == 1 ? '' : 'ies'}.`;
+                    hint.innerHTML = `Routing through <strong>Director General</strong> for <strong style="color: #4ade80;">${activeCountDG}</strong> selected category${activeCountDG == 1 ? '' : 'ies'}.`;
                 } else {
                     hint.innerHTML = 'Currently bypassing intermediate Director General step due to settings configuration.';
                 }
@@ -3105,8 +3105,8 @@
             document.getElementById('sra-modal-number').textContent = sra.sra_number;
 
             const deliveryLabel = sra.delivery_type === 'full' ? 'Full Delivery' : 'Part Delivery';
-            const deliveryColor = sra.delivery_type === 'full' ? '#10b981' : '#f59e0b';
-            const deliveryBg = sra.delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)';
+            const deliveryColor = sra.delivery_type === 'full' ? '#10b981' : '#10b981';
+            const deliveryBg = sra.delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.1)';
 
             document.getElementById('sra-modal-details').innerHTML = `
                 <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Submitted By</div><div style="font-weight:700;color:var(--text-main);">${sra.submitter ? sra.submitter.name : '—'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${sra.dept || ''}</div></div>
@@ -3121,7 +3121,7 @@
             document.getElementById('sra-modal-details-text').innerHTML = `
                 <div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">Details of Order / Service</div>
                 <div style="background:var(--bg-main);border-radius:12px;padding:1rem 1.25rem;font-size:0.88rem;font-weight:500;color:var(--text-main);white-space:pre-wrap;line-height:1.7;border:1px solid var(--border-color);">${sra.details}</div>
-                ${sra.previous_sra_nos ? `<div style="margin-top:0.75rem;font-size:0.72rem;font-weight:800;color:#f59e0b;">Previous SRA Nos: ${sra.previous_sra_nos}</div>` : ''}
+                ${sra.previous_sra_nos ? `<div style="margin-top:0.75rem;font-size:0.72rem;font-weight:800;color:#10b981;">Previous SRA Nos: ${sra.previous_sra_nos}</div>` : ''}
             `;
 
             const isSraProcessed = sra.status === 'approved' || sra.status === 'declined';

@@ -169,8 +169,8 @@
     
     <div class="review-banner" style="position: sticky; top: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); color: #fff; padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; z-index: 10000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); border-bottom: 2px solid #334155; font-family: system-ui, -apple-system, sans-serif; margin-bottom: 20px;">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="width: 42px; height: 42px; background: rgba(99, 102, 241, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(99, 102, 241, 0.4);">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            <div style="width: 42px; height: 42px; background: rgba(22, 163, 74, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(22, 163, 74, 0.4);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
             </div>
             <div style="text-align: left;">
                 <div style="font-weight: 800; font-size: 0.95rem; letter-spacing: -0.01em;">Donation SRA Review Board</div>
@@ -260,7 +260,7 @@
                                 icon: 'success',
                                 title: 'SRA Processed!',
                                 text: data.message,
-                                confirmButtonColor: '#4f46e5'
+                                confirmButtonColor: '#16a34a'
                             }).then(() => {
                                 window.location.reload();
                             });

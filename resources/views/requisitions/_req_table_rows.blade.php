@@ -6,8 +6,8 @@
             $badgeBg = 'rgba(239,68,68,0.1)';
             $badgeLabel = 'Awaiting Authorizer Review';
             if ($req->auditor_status === 'approved') {
-                $badgeColor = '#6366f1';
-                $badgeBg = 'rgba(99,102,241,0.1)';
+                $badgeColor = '#16a34a';
+                $badgeBg = 'rgba(22,163,74,0.1)';
                 $badgeLabel = 'Auditor Approved (Pending Authorizer)';
             }
             
@@ -81,16 +81,16 @@
     @elseif($req instanceof \App\Models\ServiceSra)
         @php
             $sraStatus = $req->status;
-            $badgeColor = '#6366f1';
-            $badgeBg = 'rgba(99,102,241,0.1)';
+            $badgeColor = '#16a34a';
+            $badgeBg = 'rgba(22,163,74,0.1)';
             $badgeLabel = 'Awaiting Authorizer Review';
             if ($sraStatus === 'auditor_pending') {
-                $badgeColor = '#8b5cf6';
+                $badgeColor = '#4ade80';
                 $badgeBg = 'rgba(139,92,246,0.1)';
                 $badgeLabel = 'Awaiting Auditor Review';
             } elseif ($sraStatus === 'admin_approved') {
-                $badgeColor = '#f59e0b';
-                $badgeBg = 'rgba(245,158,11,0.1)';
+                $badgeColor = '#10b981';
+                $badgeBg = 'rgba(16,185,129,0.1)';
                 $badgeLabel = 'Awaiting Stores Review';
             } elseif ($sraStatus === 'approved') {
                 $badgeColor = '#10b981';
@@ -103,8 +103,8 @@
             }
             
             $usageLabel = 'Service';
-            $usageBg = 'rgba(79, 70, 229, 0.08)';
-            $usageColor = '#4f46e5';
+            $usageBg = 'rgba(22, 163, 74, 0.08)';
+            $usageColor = '#16a34a';
             
             $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
             if ($isStoresHead && $sraStatus === 'admin_approved') {
@@ -113,9 +113,9 @@
                 $reviewUrl = route('admin.service-sra.index') . '?review=' . $req->id;
             }
         @endphp
-        <tr class="oversight-row" style="background: rgba(99, 102, 241, 0.015);">
+        <tr class="oversight-row" style="background: rgba(22, 163, 74, 0.015);">
             <td data-label="Ref">
-                <span class="history-ref" style="font-size:0.75rem; color:#4f46e5; font-weight:800;">
+                <span class="history-ref" style="font-size:0.75rem; color:#16a34a; font-weight:800;">
                     {{ $req->sra_number }}
                 </span>
             </td>
@@ -129,8 +129,8 @@
             </td>
             <td data-label="Items Requested">
                 <div style="display:flex;flex-wrap:wrap;gap:4px;">
-                    <span class="table-item-pill" title="{{ $req->supplier_name }}" style="background: rgba(99,102,241,0.06); border-color: rgba(99,102,241,0.15);">
-                        <i data-lucide="wrench" style="width:12px;height:12px;display:inline-block;margin-right:3px;vertical-align:middle;color:#4f46e5;"></i>
+                    <span class="table-item-pill" title="{{ $req->supplier_name }}" style="background: rgba(22,163,74,0.06); border-color: rgba(22,163,74,0.15);">
+                        <i data-lucide="wrench" style="width:12px;height:12px;display:inline-block;margin-right:3px;vertical-align:middle;color:#16a34a;"></i>
                         {{ Str::limit($req->supplier_name, 25) }}
                     </span>
                 </div>
@@ -165,7 +165,7 @@
                         <i data-lucide="check" style="width:13px;height:13px;"></i> Processed
                     </button>
                 @else
-                    <button type="button" onclick="openSraOversightModal({{ $req->id }}, '{{ $sraStatus === 'admin_approved' ? 'stores' : 'admin' }}')" style="background: rgba(99,102,241,0.08); color: #4f46e5; border: 1.5px solid rgba(99,102,241,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#4f46e5'; this.style.color='white'; this.style.borderColor='#4f46e5';" onmouseout="this.style.background='rgba(99,102,241,0.08)'; this.style.color='#4f46e5'; this.style.borderColor='rgba(99,102,241,0.2)';">
+                    <button type="button" onclick="openSraOversightModal({{ $req->id }}, '{{ $sraStatus === 'admin_approved' ? 'stores' : 'admin' }}')" style="background: rgba(22,163,74,0.08); color: #16a34a; border: 1.5px solid rgba(22,163,74,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';" onmouseout="this.style.background='rgba(22,163,74,0.08)'; this.style.color='#16a34a'; this.style.borderColor='rgba(22,163,74,0.2)';">
                         <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
                     </button>
                 @endif
@@ -271,7 +271,7 @@
                     <i data-lucide="check" style="width:13px;height:13px;"></i> Processed
                 </button>
             @else
-                <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(99,102,241,0.08); color: #4f46e5; border: 1.5px solid rgba(99,102,241,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#4f46e5'; this.style.color='white'; this.style.borderColor='#4f46e5';" onmouseout="this.style.background='rgba(99,102,241,0.08)'; this.style.color='#4f46e5'; this.style.borderColor='rgba(99,102,241,0.2);'">
+                <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(22,163,74,0.08); color: #16a34a; border: 1.5px solid rgba(22,163,74,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';" onmouseout="this.style.background='rgba(22,163,74,0.08)'; this.style.color='#16a34a'; this.style.borderColor='rgba(22,163,74,0.2);'">
                     <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
                 </button>
             @endif

@@ -16,7 +16,7 @@
         border-bottom: 1px solid var(--border-color);
         transition: background 0.15s;
     }
-    .sra-table-row:hover { background: rgba(99,102,241,0.03); }
+    .sra-table-row:hover { background: rgba(22,163,74,0.03); }
     .sra-table-row:last-child { border-bottom: none; }
 
     /* Modern Premium Filter Card Section */
@@ -136,12 +136,12 @@
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: rgba(99,102,241,0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">Stores Division</span>
+                <span style="background: rgba(22,163,74,0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">Stores Division</span>
             </div>
             <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main); margin: 0;">My <span style="color: var(--primary);">Service SRAs</span></h2>
             <p style="color: var(--text-muted); margin: 0.5rem 0 0;">Track the status of your submitted Stores / Service Received Advice forms.</p>
         </div>
-        <a href="{{ route('service-sra.create') }}" class="btn-primary" style="padding: 0.85rem 1.75rem; border: none; border-radius: 14px; cursor: pointer; background: linear-gradient(135deg, var(--primary), #4f46e5); color: white; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; text-decoration: none; box-shadow: 0 8px 20px -5px rgba(99,102,241,0.4);">
+        <a href="{{ route('service-sra.create') }}" class="btn-primary" style="padding: 0.85rem 1.75rem; border: none; border-radius: 14px; cursor: pointer; background: linear-gradient(135deg, var(--primary), #16a34a); color: white; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; text-decoration: none; box-shadow: 0 8px 20px -5px rgba(22,163,74,0.4);">
             <i data-lucide="plus-circle" style="width: 18px;"></i> New SRA
         </a>
     </div>
