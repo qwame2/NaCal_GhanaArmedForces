@@ -203,6 +203,46 @@ class AuditorController extends Controller
             ->paginate(15, ['*'], 'dept_reqs_page')
             ->withQueryString();
 
+        if ($request->input('format') === 'json' && $request->ajax()) {
+            return response()->json([
+                'pending_count'     => $pendingSras->count() + $pendingServiceSras->count(),
+                'total_logs'        => number_format(SystemLog::count()),
+                'total_variance'    => number_format($totalVariance),
+                'active_loans'      => number_format($activeLoansCount),
+                'tabs' => [
+                    'audit_trail'    => [
+                        'tbody' => view('auditor._tab_audit_trail', compact('systemLogs'))->render(),
+                        'pager' => view('auditor._tab_pager', ['items' => $systemLogs, 'param' => 'logs_page'])->render(),
+                        'total' => $systemLogs->total(),
+                    ],
+                    'received_items' => [
+                        'tbody' => view('auditor._tab_received_items', compact('receivedItems', 'ledgeMap'))->render(),
+                        'pager' => view('auditor._tab_pager', ['items' => $receivedItems, 'param' => 'received_page'])->render(),
+                        'total' => $receivedItems->total(),
+                    ],
+                    'issued_items'   => [
+                        'tbody' => view('auditor._tab_issued_items', compact('issuedItems', 'ledgeMap'))->render(),
+                        'pager' => view('auditor._tab_pager', ['items' => $issuedItems, 'param' => 'issued_page'])->render(),
+                        'total' => $issuedItems->total(),
+                    ],
+                    'returned_items' => [
+                        'tbody' => view('auditor._tab_returned_items', compact('returnedItems', 'ledgeMap'))->render(),
+                        'pager' => view('auditor._tab_pager', ['items' => $returnedItems, 'param' => 'returned_page'])->render(),
+                        'total' => $returnedItems->total(),
+                    ],
+                    'requisitions'   => [
+                        'tbody' => view('auditor._tab_requisitions', compact('requisitions'))->render(),
+                        'pager' => view('auditor._tab_pager', ['items' => $requisitions, 'param' => 'requisitions_page'])->render(),
+                        'total' => $requisitions->total(),
+                    ],
+                    'pending_sra'    => [
+                        'tbody' => view('auditor._tab_pending_sra', compact('pendingSras', 'pendingServiceSras'))->render(),
+                        'total' => $pendingSras->count() + $pendingServiceSras->count(),
+                    ],
+                ],
+            ]);
+        }
+
         return view('auditor.index', compact(
             'totalLogsCount',
             'totalVariance',

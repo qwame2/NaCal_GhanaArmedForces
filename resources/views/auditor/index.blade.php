@@ -609,7 +609,7 @@
                             <th>IP Address</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tbody-audit-trail">
                         @forelse($systemLogs as $log)
                             <tr class="log-row">
                                 <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem; white-space: nowrap;">
@@ -690,7 +690,7 @@
                 </table>
             </div>
             @if($systemLogs->hasPages())
-                <div class="audit-pagination-container">
+                <div class="audit-pagination-container" id="pager-audit-trail">
                     <div class="audit-pagination-info">
                         Showing <span>{{ $systemLogs->firstItem() ?? 0 }}</span> to <span>{{ $systemLogs->lastItem() ?? 0 }}</span> of <span>{{ $systemLogs->total() }}</span> events
                     </div>
@@ -730,7 +730,7 @@
                             <th>Supplier / Donor</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tbody-received-items">
                         @forelse($receivedItems as $item)
                             <tr class="log-row">
                                 <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
@@ -789,7 +789,7 @@
                 </table>
             </div>
             @if($receivedItems->hasPages())
-                <div class="audit-pagination-container">
+                <div class="audit-pagination-container" id="pager-received-items">
                     <div class="audit-pagination-info">
                         Showing <span>{{ $receivedItems->firstItem() ?? 0 }}</span> to <span>{{ $receivedItems->lastItem() ?? 0 }}</span> of <span>{{ $receivedItems->total() }}</span> records
                     </div>
@@ -828,7 +828,7 @@
                             <th style="text-align: center;">Receipt</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tbody-issued-items">
                         @forelse($issuedItems as $item)
                             <tr class="log-row">
                                 <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
@@ -922,7 +922,7 @@
                 </table>
             </div>
             @if($issuedItems->hasPages())
-                <div class="audit-pagination-container">
+                <div class="audit-pagination-container" id="pager-issued-items">
                     <div class="audit-pagination-info">
                         Showing <span>{{ $issuedItems->firstItem() ?? 0 }}</span> to <span>{{ $issuedItems->lastItem() ?? 0 }}</span> of <span>{{ $issuedItems->total() }}</span> records
                     </div>
@@ -959,7 +959,7 @@
                             <th>Auditor Verification Notes</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tbody-returned-items">
                         @forelse($returnedItems as $item)
                             <tr class="log-row">
                                 <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
@@ -993,7 +993,7 @@
                 </table>
             </div>
             @if($returnedItems->hasPages())
-                <div class="audit-pagination-container">
+                <div class="audit-pagination-container" id="pager-returned-items">
                     <div class="audit-pagination-info">
                         Showing <span>{{ $returnedItems->firstItem() ?? 0 }}</span> to <span>{{ $returnedItems->lastItem() ?? 0 }}</span> of <span>{{ $returnedItems->total() }}</span> records
                     </div>
@@ -1031,7 +1031,7 @@
                             <th style="text-align: center;">Receipt</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tbody-requisitions">
                         @forelse($requisitions as $req)
                             <tr class="log-row">
                                 <td style="font-weight: 900; font-family: monospace; color: var(--audit-primary);">
@@ -1089,7 +1089,7 @@
                 </table>
             </div>
             @if($requisitions->hasPages())
-                <div class="audit-pagination-container">
+                <div class="audit-pagination-container" id="pager-requisitions">
                     <div class="audit-pagination-info">
                         Showing <span>{{ $requisitions->firstItem() ?? 0 }}</span> to <span>{{ $requisitions->lastItem() ?? 0 }}</span> of <span>{{ $requisitions->total() }}</span> records
                     </div>
@@ -1127,7 +1127,7 @@
                             <th style="text-align: center;">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tbody-pending-sra">
                         @forelse($pendingSras as $batch)
                             @php
                                 $cleanSupplier = trim(preg_replace('/\[.*?\]/', '', ($batch->acquisition_type === 'Donor' ? ($batch->donor_name ?: $batch->supplier_name) : $batch->supplier_name) ?? 'N/A'));
@@ -1925,5 +1925,158 @@
     document.getElementById('service-sra-audit-modal').addEventListener('click', function(e) {
         if (e.target === this) closeServiceSraAuditModal();
     });
+    // ── Silent Background Refresh ─────────────────────────────────────────────
+    // Polls every 30s and patches only tbody + pagination HTML per tab.
+    // Never runs if: a modal is open, a filter is active, or user is interacting.
+
+    const _auditRefreshMap = {
+        audit_trail:    { tbody: 'tbody-audit-trail',    pager: 'pager-audit-trail'    },
+        received_items: { tbody: 'tbody-received-items', pager: 'pager-received-items' },
+        issued_items:   { tbody: 'tbody-issued-items',   pager: 'pager-issued-items'   },
+        returned_items: { tbody: 'tbody-returned-items', pager: 'pager-returned-items' },
+        requisitions:   { tbody: 'tbody-requisitions',   pager: 'pager-requisitions'   },
+        pending_sra:    { tbody: 'tbody-pending-sra',    pager: null                   },
+    };
+
+    // Last-seen HTML fingerprints to avoid needless DOM writes
+    const _auditLastHtml = {};
+
+    function _auditIsBlocked() {
+        // Block if any modal overlay is visible
+        const modalOpen = document.querySelector(
+            '#service-sra-audit-modal[style*="flex"], #active-supplier-popover'
+        );
+        if (modalOpen) return true;
+
+        // Block if any filter field has focus (user is typing/selecting)
+        const focused = document.activeElement;
+        if (focused && focused.closest('.filter-card-audit')) return true;
+
+        return false;
+    }
+
+    async function _auditSilentRefresh() {
+        if (_auditIsBlocked()) return;
+
+        // Build URL from current address bar (respects active filters & pagination)
+        const url = window.location.href.split('#')[0];
+        const sep = url.includes('?') ? '&' : '?';
+        const fetchUrl = url + sep + 'format=json';
+
+        let data;
+        try {
+            const res = await fetch(fetchUrl, {
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            if (!res.ok) return;
+            data = await res.json();
+        } catch (_) {
+            return; // silently ignore network errors
+        }
+
+        if (!data || !data.tabs) return;
+
+        // Patch each tab
+        for (const [key, cfg] of Object.entries(_auditRefreshMap)) {
+            const tabData = data.tabs[key];
+            if (!tabData) continue;
+
+            // --- tbody ---
+            const tbody = document.getElementById(cfg.tbody);
+            if (tbody && tabData.tbody !== undefined) {
+                const sig = cfg.tbody;
+                if (_auditLastHtml[sig] !== tabData.tbody) {
+                    _auditLastHtml[sig] = tabData.tbody;
+                    tbody.innerHTML = tabData.tbody;
+                    if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [tbody] });
+                }
+            }
+
+            // --- pagination ---
+            if (cfg.pager && tabData.pager !== undefined) {
+                const sig = cfg.pager;
+                const existingPager = document.getElementById(cfg.pager);
+                if (_auditLastHtml[sig] !== tabData.pager) {
+                    _auditLastHtml[sig] = tabData.pager;
+                    if (tabData.pager.trim() === '') {
+                        // Server says no pages needed — remove old pager if present
+                        if (existingPager) existingPager.remove();
+                    } else {
+                        if (existingPager) {
+                            existingPager.outerHTML = tabData.pager;
+                        } else {
+                            // Append pager to the panel's inner card div
+                            const tbody2 = document.getElementById(cfg.tbody);
+                            if (tbody2) {
+                                const card = tbody2.closest('div[style*="background: var(--bg-card)"]') ||
+                                             tbody2.closest('.audit-tab-panel > div');
+                                if (card) {
+                                    const tmp = document.createElement('div');
+                                    tmp.innerHTML = tabData.pager;
+                                    while (tmp.firstChild) card.appendChild(tmp.firstChild);
+                                    if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [card] });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- Update stat cards silently ---
+        const statMap = {
+            'stat-total-logs':     data.total_logs,
+            'stat-total-variance': data.total_variance,
+            'stat-active-loans':   data.active_loans,
+        };
+        for (const [id, val] of Object.entries(statMap)) {
+            const el = document.getElementById(id);
+            if (el && val !== undefined && el.textContent.trim() !== String(val)) {
+                el.textContent = val;
+            }
+        }
+
+        // --- Update Pending SRA tab badge & button state ---
+        const pendingCount = data.pending_count ?? 0;
+        const sraTabBtn = document.querySelector('.audit-tab-btn[onclick*="pending-sra-tab"]');
+        if (sraTabBtn) {
+            const existingBadge = sraTabBtn.querySelector('.badge.blinking-danger-badge');
+            if (pendingCount > 0) {
+                sraTabBtn.classList.add('pending-sras-active');
+                if (existingBadge) {
+                    existingBadge.textContent = pendingCount;
+                } else {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge blinking-danger-badge';
+                    badge.style.cssText = 'position:absolute;top:-8px;right:-8px;padding:2.5px 6.5px;border-radius:99px;font-size:0.65rem;font-weight:900;z-index:10;';
+                    badge.textContent = pendingCount;
+                    sraTabBtn.appendChild(badge);
+                }
+            } else {
+                sraTabBtn.classList.remove('pending-sras-active');
+                if (existingBadge) existingBadge.remove();
+            }
+        }
+
+        // Also update the sidebar badge (already polled by layout, but keep in sync)
+        const sidebarBadge = document.getElementById('sidebar-badge-auditor-pending');
+        if (sidebarBadge) {
+            if (pendingCount > 0) {
+                sidebarBadge.textContent = pendingCount;
+                sidebarBadge.style.display = 'flex';
+            } else {
+                sidebarBadge.style.display = 'none';
+            }
+        }
+    }
+
+    // Start after 5s, then every 30s
+    setTimeout(_auditSilentRefresh, 5000);
+    setInterval(_auditSilentRefresh, 30000);
 </script>
 @endsection
+

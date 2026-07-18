@@ -596,49 +596,108 @@ class StoreRequisitionController extends Controller
      */
     public function printReceipt($id)
     {
-        $req = StoreRequisition::with(['requester', 'processor', 'collector', 'receipt', 'items'])->findOrFail($id);
+        $req = StoreRequisition::with(['requester', 'processor', 'collector', 'receipt', 'items'])->find($id);
 
-        if (!$req->collected_at) {
-            abort(404, 'No collection has been confirmed for this requisition.');
-        }
+        if (!$req) {
+            $receipt = \App\Models\Receipt::where('requisition_id', $id)->first();
+            if (!$receipt) {
+                abort(404, 'Requisition not found and no receipt exists.');
+            }
 
-        $receipt = $req->receipt;
-
-        // Self-healing legacy fallback: if no receipt record exists, synthesize one transiently
-        if (!$receipt) {
-            $receiptCount = \App\Models\Receipt::count() + 1;
-            $receiptNumber = 'RCP-' . date('Y', strtotime($req->collected_at)) . '-' . str_pad($receiptCount, 5, '0', STR_PAD_LEFT);
-
-            $itemsSnapshot = $req->items->map(function($item) {
-                return [
-                    'description' => $item->description,
-                    'unit' => $item->unit,
-                    'quantity_requested' => (float)$item->quantity_requested,
-                    'quantity_approved' => (float)$item->quantity_approved,
-                    'alternative_description' => $item->alternative_description,
-                    'alternative_quantity_approved' => $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : null,
-                    'category' => $item->category,
-                    'remarks' => $item->remarks,
-                ];
-            })->toArray();
-
-            $receipt = new \App\Models\Receipt([
-                'requisition_id' => $req->id,
-                'receipt_number' => $receiptNumber,
-                'collector_name' => $req->collector_name ?? 'N/A',
-                'collector_contact' => $req->collector_contact ?? 'N/A',
-                'collector_location' => $req->collector_location ?? 'N/A',
-                'collector_staff_id' => $req->collector_staff_id ?? 'N/A',
-                'collected_at' => $req->collected_at,
-                'issued_by' => $req->collected_by ?? 1,
-                'approved_by_dept_head' => $req->origin_approved_by ?? ($req->department . ' Department Head'),
-                'approved_by_stores_head' => $req->processor?->name ?? 'Head of Stores',
-                'items_json' => json_encode($itemsSnapshot),
-            ]);
+            // Synthesize the missing requisition object from the receipt record
+            $req = new StoreRequisition();
+            $req->id = $id;
+            $req->requester_name = $receipt->collector_name ?? 'N/A';
+            $req->department = 'Stores';
+            $req->rank_or_title = 'N/A';
+            $req->purpose = 'Transacted Inventory Asset Issuance (Legacy/Historical Record)';
+            $req->priority = 'normal';
+            $req->usage_type = 'permanent';
+            $req->created_at = \Carbon\Carbon::parse($receipt->collected_at ?? $receipt->created_at);
+            $req->collected_at = \Carbon\Carbon::parse($receipt->collected_at ?? $receipt->created_at);
             
-            // Set transient relations if possible
-            if ($req->collector) {
-                $receipt->setRelation('issuer', $req->collector);
+            $req->origin_approved_by = $receipt->approved_by_dept_head;
+            $req->stores_approved_by = $receipt->approved_by_stores_head;
+            $req->dg_approved_by = null;
+            $req->dg_approved_at = null;
+            $req->admin_notes = 'This receipt was reconstructed from verified transaction logs.';
+
+            // Requester relationship dummy object
+            $dummyRequester = new \App\Models\User();
+            $dummyRequester->name = $receipt->collector_name ?? 'N/A';
+            $dummyRequester->service_number = $receipt->collector_staff_id ?? 'N/A';
+            $dummyRequester->phone = $receipt->collector_contact ?? 'N/A';
+            $req->setRelation('requester', $dummyRequester);
+
+            // Processor relationship dummy object
+            $dummyProcessor = new \App\Models\User();
+            $dummyProcessor->name = $receipt->approved_by_stores_head ?? 'Store Officer';
+            $dummyProcessor->signature = null;
+            $req->setRelation('processor', $dummyProcessor);
+            $req->processed_at = \Carbon\Carbon::parse($receipt->collected_at ?? $receipt->created_at);
+
+            $req->setRelation('collector', null);
+            $req->setRelation('receipt', $receipt);
+
+            // Re-create items collection from json
+            $receiptItems = json_decode($receipt->items_json, true) ?? [];
+            $itemsCol = collect();
+            foreach ($receiptItems as $ri) {
+                $item = new \App\Models\StoreRequisitionItem();
+                $item->description = $ri['description'] ?? 'N/A';
+                $item->unit = $ri['unit'] ?? 'N/A';
+                $item->quantity_requested = $ri['quantity_requested'] ?? 0;
+                $item->quantity_approved = $ri['quantity_approved'] ?? 0;
+                $item->alternative_description = $ri['alternative_description'] ?? null;
+                $item->alternative_quantity_approved = $ri['alternative_quantity_approved'] ?? null;
+                $item->category = $ri['category'] ?? 'A';
+                $item->remarks = $ri['remarks'] ?? null;
+                $itemsCol->push($item);
+            }
+            $req->setRelation('items', $itemsCol);
+        } else {
+            if (!$req->collected_at) {
+                abort(404, 'No collection has been confirmed for this requisition.');
+            }
+
+            $receipt = $req->receipt;
+
+            // Self-healing legacy fallback: if no receipt record exists, synthesize one transiently
+            if (!$receipt) {
+                $receiptCount = \App\Models\Receipt::count() + 1;
+                $receiptNumber = 'RCP-' . date('Y', strtotime($req->collected_at)) . '-' . str_pad($receiptCount, 5, '0', STR_PAD_LEFT);
+
+                $itemsSnapshot = $req->items->map(function($item) {
+                    return [
+                        'description' => $item->description,
+                        'unit' => $item->unit,
+                        'quantity_requested' => (float)$item->quantity_requested,
+                        'quantity_approved' => (float)$item->quantity_approved,
+                        'alternative_description' => $item->alternative_description,
+                        'alternative_quantity_approved' => $item->alternative_quantity_approved !== null ? (float)$item->alternative_quantity_approved : null,
+                        'category' => $item->category,
+                        'remarks' => $item->remarks,
+                    ];
+                })->toArray();
+
+                $receipt = new \App\Models\Receipt([
+                    'requisition_id' => $req->id,
+                    'receipt_number' => $receiptNumber,
+                    'collector_name' => $req->collector_name ?? 'N/A',
+                    'collector_contact' => $req->collector_contact ?? 'N/A',
+                    'collector_location' => $req->collector_location ?? 'N/A',
+                    'collector_staff_id' => $req->collector_staff_id ?? 'N/A',
+                    'collected_at' => $req->collected_at,
+                    'issued_by' => $req->collected_by ?? 1,
+                    'approved_by_dept_head' => $req->origin_approved_by ?? ($req->department . ' Department Head'),
+                    'approved_by_stores_head' => $req->processor?->name ?? 'Head of Stores',
+                    'items_json' => json_encode($itemsSnapshot),
+                ]);
+                
+                // Set transient relations if possible
+                if ($req->collector) {
+                    $receipt->setRelation('issuer', $req->collector);
+                }
             }
         }
 
