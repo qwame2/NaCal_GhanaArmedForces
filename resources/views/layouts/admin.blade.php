@@ -736,14 +736,15 @@
                 @endif
 
                 @php
-                    $showSuppliersDetails = auth()->user()->is_admin 
-                        || auth()->user()->isMainAdminOrSub() 
-                        || auth()->user()->isDelegatedApprover() 
-                        || ((strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0) && !$isActingStoresHead);
+                    $showSuppliersDetails = auth()->user()->role === 'Main Admin'
+                        || auth()->user()->role === 'Head of Stores'
+                        || auth()->user()->role === 'Store Officer'
+                        || auth()->user()->role === 'Dept. Head (Stores)'
+                        || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
                 @endphp
 
                 @if($showSuppliersDetails)
-                    @if(auth()->user()->isMainAdminOrSub())
+                    @if(auth()->user()->role === 'Main Admin')
                     <li>
                         <a href="{{ route('admin.admin_suppliers') }}" class="nav-link {{ request()->routeIs('admin.admin_suppliers') ? 'active' : '' }}" title="Suppliers Details">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
@@ -777,6 +778,26 @@
                         </span>
                     </a>
                 </li>
+                @php
+                    $isSraStoresHead = auth()->check() && (
+                        auth()->user()->role === 'Main Admin'
+                        || auth()->user()->role === 'Head of Stores'
+                        || auth()->user()->role === 'Store Officer'
+                        || auth()->user()->role === 'Dept. Head (Stores)'
+                        || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])
+                    );
+                @endphp
+                @if($isSraStoresHead)
+                <li>
+                    <a href="{{ route('stores.item-entry-approval') }}" class="nav-link {{ request()->routeIs('stores.item-entry-approval') ? 'active' : '' }}" title="Item Entry Approval">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-check"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+                        <span>Item Entry Approval</span>
+                        <span id="sidebar-badge-item-entry-approval" style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingItemEntryApprovalsCount) || $pendingItemEntryApprovalsCount <= 0) ? 'display: none;' : '' }}">
+                            {{ $pendingItemEntryApprovalsCount ?? 0 }}
+                        </span>
+                    </a>
+                </li>
+                @endif
                 <li>
                     <a href="{{ route('admin.sra-history') }}" class="nav-link {{ request()->routeIs('admin.sra-history') ? 'active' : '' }}" title="SRA History">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8H8"/><path d="M16 12H8"/><path d="M15 16H9"/></svg>
@@ -1744,6 +1765,7 @@
                     updateBadge('sidebar-badge-alerts', data.alerts);
                     updateBadge('sidebar-badge-requisitions', data.pending_requisitions);
                     updateBadge('sidebar-badge-registrations', data.pending_registrations);
+                    updateBadge('sidebar-badge-item-entry-approval', data.pending_item_entry_approvals);
 
                     // Also update the global header message badge if it exists
                     const globalUnreadBadge = document.getElementById('global-unread-badge');

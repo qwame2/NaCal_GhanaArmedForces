@@ -1,0 +1,286 @@
+@php
+    $layout = auth()->user()->isMainAdminOrSub() ? 'layouts.dashboard' : 'layouts.admin';
+@endphp
+
+@extends($layout)
+
+@section('title', 'Item Entry Approval')
+
+@section('content')
+<style>
+    .main-wrapper > *:not(header) {
+        max-width: 2000px !important;
+    }
+    .sra-table-row { border-bottom: 1px solid var(--border-color); transition: background 0.15s; }
+    .sra-table-row:hover { background: rgba(16,185,129,0.03); }
+    .sra-table-row:last-child { border-bottom: none; }
+    .sra-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 99px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    .sra-tabs-container { display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border-color); margin-bottom: 1.5rem; padding-bottom: 2px; }
+    .sra-tab-btn { padding: 0.75rem 1.5rem; font-weight: 700; font-size: 0.88rem; color: var(--text-muted); text-decoration: none; border-bottom: 3px solid transparent; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .sra-tab-btn:hover { color: var(--primary); }
+    .sra-tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .sra-tab-badge { font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: #f1f5f9; color: #475569; }
+    .sra-tab-btn.active .sra-tab-badge { background: var(--primary-glow); color: var(--primary); }
+
+    /* Premium Pagination Styling */
+    .custom-pagination nav { display: flex; justify-content: center; }
+    .custom-pagination ul.pagination { display: flex; gap: 0.5rem; list-style: none; padding: 0; margin: 0; align-items: center; }
+    .custom-pagination .page-item .page-link {
+        display: flex; align-items: center; justify-content: center;
+        min-width: 48px; height: 48px; border-radius: 16px;
+        background: white; border: 1.5px solid #edf2f7;
+        color: var(--text-main); font-weight: 900; text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.95rem; box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    }
+    .custom-pagination .page-item.active .page-link {
+        background: var(--primary); color: white;
+        border-color: var(--primary);
+        box-shadow: 0 10px 25px rgba(22, 163, 74, 0.25);
+        transform: scale(1.1);
+        z-index: 10;
+    }
+    .custom-pagination .page-item:not(.active):not(.disabled) .page-link:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-4px);
+        background: #f5f3ff;
+        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.1);
+    }
+    .custom-pagination .page-item.disabled .page-link {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f8fafc;
+    }
+    .custom-pagination .page-item:first-child .page-link,
+    .custom-pagination .page-item:last-child .page-link {
+        padding: 0 1.25rem;
+        min-width: auto;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+</style>
+
+<div class="animate-slide-up" style="padding: 2rem; width: 100%; box-sizing: border-box;">
+    
+    <!-- Page Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <span style="background: rgba(16,185,129,0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">Head of Stores — Entry Authorization</span>
+            </div>
+            <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main); margin: 0;">Item Entry <span style="color: #10b981;">Approval Panel</span></h2>
+            <p style="color: var(--text-muted); margin: 0.5rem 0 0;">Review, authorize, or rollback new stock entries entered by Store Officers.</p>
+        </div>
+    </div>
+
+    <!-- Tabs Header -->
+    <div class="sra-tabs-container">
+        <div onclick="switchTab('pending')" id="tab-btn-pending" class="sra-tab-btn active">
+            Pending Approval <span class="sra-tab-badge" style="background: #ef4444; color: white;">{{ $pending->total() }}</span>
+        </div>
+        <div onclick="switchTab('history')" id="tab-btn-history" class="sra-tab-btn">
+            Decision History <span class="sra-tab-badge">{{ $history->total() }}</span>
+        </div>
+    </div>
+
+    <!-- Pending Queue Table Wrapper -->
+    <div id="section-pending" class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0; margin-bottom: 2rem; display: block; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--shadow-luxe);">
+        <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
+            <i data-lucide="clock" style="color: #f59e0b; width: 20px;"></i>
+            <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: var(--text-main);">Awaiting Your Authorization ({{ $pending->total() }})</h3>
+        </div>
+        
+        @if($pending->isEmpty())
+            <div style="padding: 4rem 2rem; text-align: center; color: var(--text-muted);">
+                <i data-lucide="check-circle" style="width: 48px; height: 48px; opacity: 0.3; display: block; margin: 0 auto 1rem;"></i>
+                <p style="margin: 0; font-weight: 700; font-size: 1rem;">All caught up! No item entries awaiting authorization.</p>
+            </div>
+        @else
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="background: var(--bg-main); border-bottom: 1.5px solid var(--border-color);">
+                            <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">Request ID</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">Date Submitted</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">Entered By</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">Supplier</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">Category</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">Item Description</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); text-align: center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($pending as $req)
+                            @php
+                                $payload = json_decode($req->payload, true) ?? [];
+                                $supplier = $payload['supplier_name'] ?? ($payload['donor_name'] ?? 'System / N/A');
+                                $itemsCount = count($payload['items'] ?? []);
+                            @endphp
+                            <tr class="sra-table-row" style="cursor: pointer;" onclick="window.location.href='{{ route('sra.preview', $req->id) }}'">
+                                <td style="padding: 1.25rem 1.5rem; font-weight: 800; color: #10b981;">REQ-{{ str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</td>
+                                <td style="padding: 1.25rem 1.5rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
+                                    {{ $req->created_at->format('d M Y, h:i A') }}
+                                </td>
+                                <td style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">
+                                    {{ $req->user->name ?? 'Unknown' }}
+                                </td>
+                                <td style="padding: 1.25rem 1.5rem; font-weight: 600; color: var(--text-main);">
+                                    {{ $supplier }}
+                                    @if(($payload['acquisition_type'] ?? '') === 'Donor')
+                                        <span style="font-size: 0.65rem; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 800; margin-left: 4px; text-transform: uppercase;">Donor</span>
+                                    @endif
+                                </td>
+                                <td style="padding: 1.25rem 1.5rem; font-size: 0.82rem; font-weight: 800;">
+                                    <span style="background: rgba(22, 163, 74, 0.08); color: var(--primary); padding: 4px 10px; border-radius: 6px; text-transform: uppercase;">
+                                        Cat {{ $payload['ledge_category'] ?? '—' }}
+                                    </span>
+                                </td>
+                                <td style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">
+                                    @php
+                                        $itemsList = $payload['items'] ?? [];
+                                    @endphp
+                                    @if(count($itemsList) === 1)
+                                        {{ $itemsList[0]['description'] ?? 'N/A' }}
+                                    @else
+                                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                                            @foreach($itemsList as $itm)
+                                                <span style="display: block; font-weight: 600; font-size: 0.85rem;">• {{ $itm['description'] ?? 'N/A' }}</span>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </td>
+                                <td style="padding: 1.25rem 1.5rem; text-align: center;">
+                                    <button onclick="event.stopPropagation(); window.location.href='{{ route('sra.preview', $req->id) }}'" style="background: rgba(16,185,129,0.08); color: #10b981; border: 1px solid rgba(16,185,129,0.2); border-radius: 10px; padding: 0.5rem 1.25rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                                        <i data-lucide="eye" style="width: 14px;"></i> Review Entry
+                                    </button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @if($pending->hasPages())
+                <div class="custom-pagination" style="padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background: var(--bg-main);">
+                    {{ $pending->appends(['history_page' => request('history_page')])->links('pagination::bootstrap-4') }}
+                </div>
+            @endif
+        @endif
+    </div>
+
+    <!-- History Queue Table Wrapper -->
+    <div id="section-history" class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0; margin-bottom: 2rem; display: none; border: 1px solid var(--border-color); background: var(--bg-card); box-shadow: var(--shadow-luxe);">
+        <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
+            <i data-lucide="history" style="color: var(--text-muted); width: 20px;"></i>
+            <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: var(--text-main);">Completed Decisions (Last 50)</h3>
+        </div>
+        
+        @if($history->isEmpty())
+            <div style="padding: 3rem 2rem; text-align: center; color: var(--text-muted);">
+                <p style="margin: 0; font-weight: 600;">No historic item entry decisions found.</p>
+            </div>
+        @else
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="background: var(--bg-main); border-bottom: 1.5px solid var(--border-color);">
+                            <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">Request ID</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">Date Processed</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">Entered By</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">Supplier</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">Decision</th>
+                            <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); text-align: right;">Oversight</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($history as $req)
+                            @php
+                                $payload = json_decode($req->payload, true) ?? [];
+                                $supplier = $payload['supplier_name'] ?? ($payload['donor_name'] ?? 'System / N/A');
+                                $badgeColor = $req->status === 'approved' || $req->status === 'completed' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
+                                $badgeTextColor = $req->status === 'approved' || $req->status === 'completed' ? '#10b981' : '#ef4444';
+                                $decisionText = $req->status === 'approved' || $req->status === 'completed' ? 'Authorized' : 'Rejected / Declined';
+                            @endphp
+                            @php
+                                $isApproved = in_array($req->status, ['approved', 'completed']);
+                                $batchId = $req->item_id;
+                                if ($isApproved && !$batchId) {
+                                    $batchId = \App\Models\InventoryBatch::where('recorded_by', $req->user_id)
+                                        ->where('supplier_name', $supplier)
+                                        ->orderBy('id', 'desc')
+                                        ->value('id');
+                                }
+                                $rowClickUrl = ($isApproved && $batchId) ? route('receiveditems.sra', $batchId) : route('sra.preview', $req->id);
+                            @endphp
+                            <tr class="sra-table-row" style="cursor: pointer;" onclick="@if($isApproved && $batchId) window.open('{{ $rowClickUrl }}', '_blank'); @else window.location.href='{{ $rowClickUrl }}'; @endif">
+                                <td style="padding: 1.25rem 1.5rem; font-weight: 800; color: #4b5563;">REQ-{{ str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</td>
+                                <td style="padding: 1.25rem 1.5rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
+                                    {{ $req->updated_at->format('d M Y, h:i A') }}
+                                </td>
+                                <td style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">
+                                    {{ $req->user->name ?? 'Unknown' }}
+                                </td>
+                                <td style="padding: 1.25rem 1.5rem; font-weight: 600; color: var(--text-main);">
+                                    {{ $supplier }}
+                                </td>
+                                <td style="padding: 1.25rem 1.5rem;">
+                                    <span class="sra-badge" style="background: {{ $badgeColor }}; color: {{ $badgeTextColor }};">
+                                        {{ $decisionText }}
+                                    </span>
+                                </td>
+                                <td style="padding: 1.25rem 1.5rem; text-align: right;">
+                                    @if($isApproved && $batchId)
+                                        <a href="{{ route('receiveditems.sra', $batchId) }}" target="_blank" onclick="event.stopPropagation();" style="background: rgba(16,185,129,0.08); color: #10b981; border: 1px solid rgba(16,185,129,0.2); border-radius: 10px; padding: 0.5rem 1.25rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16,185,129,0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16,185,129,0.2)';">
+                                            <i data-lucide="receipt" style="width: 14px; height: 14px;"></i> Receipt
+                                        </a>
+                                    @else
+                                        <button onclick="event.stopPropagation(); window.location.href='{{ route('sra.preview', $req->id) }}'" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.4rem 0.85rem; font-size: 0.75rem; font-weight: 700; cursor: pointer;">
+                                            View Details
+                                        </button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @if($history->hasPages())
+                <div class="custom-pagination" style="padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background: var(--bg-main);">
+                    {{ $history->appends(['pending_page' => request('pending_page')])->links('pagination::bootstrap-4') }}
+                </div>
+            @endif
+        @endif
+    </div>
+
+</div>
+@endsection
+
+@push('scripts')
+<script>
+function switchTab(tab) {
+    if (tab === 'pending') {
+        document.getElementById('tab-btn-pending').classList.add('active');
+        document.getElementById('tab-btn-history').classList.remove('active');
+        document.getElementById('section-pending').style.display = 'block';
+        document.getElementById('section-history').style.display = 'none';
+    } else {
+        document.getElementById('tab-btn-pending').classList.remove('active');
+        document.getElementById('tab-btn-history').classList.add('active');
+        document.getElementById('section-pending').style.display = 'none';
+        document.getElementById('section-history').style.display = 'block';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    
+    // Auto switch to history tab if history pagination page parameter is set
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('history_page')) {
+        switchTab('history');
+    }
+});
+</script>
+@endpush

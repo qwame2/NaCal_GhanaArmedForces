@@ -525,6 +525,9 @@ class EditRequestController extends Controller
 
                         // Notify Auditor and Main Admin for review
                         InventoryBatch::sendSraReviewNotifications($batch);
+
+                        $editReq->item_id = $batch->id;
+                        $editReq->save();
                     }
 
                     \App\Models\SystemLog::create([
@@ -1409,5 +1412,46 @@ class EditRequestController extends Controller
 
         if (ob_get_length()) ob_clean();
         return response()->json(['success' => true]);
+    }
+
+    public function itemEntryIndex(\Illuminate\Http\Request $request)
+    {
+        $user = auth()->user();
+        $isStores = $user->is_admin
+            || $user->role === 'Main Admin'
+            || $user->role === 'Head of Stores'
+            || $user->role === 'Dept. Head (Stores)'
+            || strcasecmp($user->department ?? '', 'Stores') === 0
+            || strcasecmp($user->department ?? '', 'Store') === 0;
+
+        if (!$isStores) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $pending = EditRequest::with('user')
+            ->where('item_type', 'batch_creation')
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->paginate(15, ['*'], 'pending_page');
+
+        $history = EditRequest::with('user')
+            ->where('item_type', 'batch_creation')
+            ->whereIn('status', ['approved', 'rejected', 'completed'])
+            ->orderBy('updated_at', 'desc')
+            ->paginate(15, ['*'], 'history_page');
+
+        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
+
+        return view('edit-requests.item_entry_approval', compact('pending', 'history', 'ledgeMap'));
     }
 }

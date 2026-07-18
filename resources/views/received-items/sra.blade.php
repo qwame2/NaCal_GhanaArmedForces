@@ -257,11 +257,11 @@
 </head>
 <body>
 <body>
-@if(auth()->check() && (auth()->user()->role === 'Auditor' || auth()->user()->role === 'Main Admin') && $batch->approval_status === 'pending_auditor_admin')
+@if(auth()->check() && (auth()->user()->role === 'Auditor' || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Sub Main Admin') && $batch->approval_status === 'pending_auditor_admin')
     @php
         $role = auth()->user()->role;
-        $hasApproved = ($role === 'Auditor' && $batch->auditor_status === 'approved') || ($role === 'Main Admin' && $batch->admin_status === 'approved');
-        $hasDeclined = ($role === 'Auditor' && $batch->auditor_status === 'declined') || ($role === 'Main Admin' && $batch->admin_status === 'declined');
+        $hasApproved = ($role === 'Auditor' && $batch->auditor_status === 'approved') || (($role === 'Main Admin' || $role === 'Sub Main Admin') && $batch->admin_status === 'approved');
+        $hasDeclined = ($role === 'Auditor' && $batch->auditor_status === 'declined') || (($role === 'Main Admin' || $role === 'Sub Main Admin') && $batch->admin_status === 'declined');
     @endphp
     
     <div class="review-banner" style="position: sticky; top: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); color: #fff; padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; z-index: 10000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); border-bottom: 2px solid #334155; font-family: system-ui, -apple-system, sans-serif; margin-bottom: 20px;">

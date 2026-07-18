@@ -857,7 +857,7 @@ class ReceivedItemsController extends Controller
         ]);
 
         $user = auth()->user();
-        if ($user->role !== 'Auditor' && $user->role !== 'Main Admin') {
+        if ($user->role !== 'Auditor' && $user->role !== 'Main Admin' && $user->role !== 'Sub Main Admin') {
             return response()->json(['success' => false, 'message' => 'Clearance Restricted: Action requires Auditor or Head of Admin role.'], 403);
         }
 
@@ -877,7 +877,7 @@ class ReceivedItemsController extends Controller
                     $batch->auditor_status = 'approved';
                     $batch->auditor_approved_by = $user->id;
                     $batch->auditor_approved_at = now();
-                } elseif ($user->role === 'Main Admin') {
+                } elseif ($user->role === 'Main Admin' || $user->role === 'Sub Main Admin') {
                     $batch->admin_status = 'approved';
                     $batch->admin_approved_by = $user->id;
                     $batch->admin_approved_at = now();
@@ -933,7 +933,7 @@ class ReceivedItemsController extends Controller
             } elseif ($action === 'decline') {
                 if ($user->role === 'Auditor') {
                     $batch->auditor_status = 'declined';
-                } elseif ($user->role === 'Main Admin') {
+                } elseif ($user->role === 'Main Admin' || $user->role === 'Sub Main Admin') {
                     $batch->admin_status = 'declined';
                 }
                 

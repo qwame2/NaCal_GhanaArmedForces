@@ -717,6 +717,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     // Head of Stores final approval
     Route::get('/stores/service-sra', [ServiceSraController::class, 'storesIndex'])->name('stores.service-sra.index');
     Route::post('/stores/service-sra/{id}/process', [ServiceSraController::class, 'storesProcess'])->name('stores.service-sra.process');
+    Route::get('/stores/item-entry-approval', [\App\Http\Controllers\EditRequestController::class, 'itemEntryIndex'])->name('stores.item-entry-approval');
     // Auditor verification
     Route::get('/auditor/service-sra', [ServiceSraController::class, 'auditorIndex'])->name('auditor.service-sra.index');
     Route::post('/auditor/service-sra/{id}/process', [ServiceSraController::class, 'auditorProcess'])->name('auditor.service-sra.process');
@@ -1077,6 +1078,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             'alerts' => $alertCount,
             'pending_requisitions' => $pendingRequisitions,
             'pending_registrations' => $pendingRegistrations,
+            'pending_item_entry_approvals' => \App\Models\EditRequest::where('item_type', 'batch_creation')->where('status', 'pending')->count(),
         ]);
     })->name('api.admin.sidebar-counts');
 
@@ -1101,6 +1103,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
         return response()->json([
             'approved_requisitions' => $approvedRequisitions,
+            'pending_item_entry_approvals' => \App\Models\EditRequest::where('item_type', 'batch_creation')->where('status', 'pending')->count(),
         ]);
     })->name('api.personnel.sidebar-counts');
 

@@ -36,8 +36,8 @@
     
     <!-- Back Navigation -->
     <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;">
-        <a href="{{ route('admin.messages') }}" style="display: inline-flex; align-items: center; gap: 8px; color: #16a34a; background: #fff; border: 1.5px solid var(--border-color); padding: 10px 20px; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 800; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='#fff'; this.style.borderColor='var(--border-color)';">
-            <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back to Oversight Board
+        <a href="{{ str_contains(url()->previous(), 'item-entry-approval') ? route('stores.item-entry-approval') : route('admin.messages') }}" style="display: inline-flex; align-items: center; gap: 8px; color: #16a34a; background: #fff; border: 1.5px solid var(--border-color); padding: 10px 20px; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 800; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='var(--primary)';" onmouseout="this.style.background='#fff'; this.style.borderColor='var(--border-color)';">
+            <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Back to {{ str_contains(url()->previous(), 'item-entry-approval') ? 'Item Entry Approval' : 'Oversight Board' }}
         </a>
     </div>
 
@@ -107,7 +107,7 @@
         </div>
 
         <div style="background: white; border: 1px solid var(--border-color); padding: 1.5rem 3rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; border-radius: 24px; box-shadow: var(--shadow-luxe);">
-            <a href="{{ route('admin.messages') }}" style="background: #f1f5f9; color: #0f172a; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 800; font-size: 0.9rem;">Close</a>
+            <a href="{{ str_contains(url()->previous(), 'item-entry-approval') ? route('stores.item-entry-approval') : route('admin.messages') }}" style="background: #f1f5f9; color: #0f172a; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 800; font-size: 0.9rem;">Close</a>
         </div>
 
     @else
@@ -826,7 +826,11 @@
                         text: 'Entry sent back to user for correction.',
                         confirmButtonColor: '#16a34a'
                     }).then(() => {
-                        window.location.href = '{{ route("admin.messages") }}';
+                        let targetUrl = '{{ route("admin.messages") }}';
+                        if (document.referrer && document.referrer.includes('item-entry-approval')) {
+                            targetUrl = document.referrer;
+                        }
+                        window.location.href = targetUrl;
                     });
                 } else {
                     Swal.fire('Rollback Failed', data.message || 'Error processing rollback.', 'error');
@@ -943,7 +947,11 @@
                         text: 'The inventory batch edits have been successfully merged.',
                         confirmButtonColor: '#16a34a'
                     }).then(() => {
-                        window.location.href = '{{ route("admin.messages") }}';
+                        let targetUrl = '{{ route("admin.messages") }}';
+                        if (document.referrer && document.referrer.includes('item-entry-approval')) {
+                            targetUrl = document.referrer;
+                        }
+                        window.location.href = targetUrl;
                     });
                 } else {
                     Swal.fire('Error', data.message || 'Could not save changes.', 'error');
@@ -995,7 +1003,11 @@
                     text: status === 'approved' ? 'Stock entry successfully approved.' : 'Stock entry submission rejected.',
                     confirmButtonColor: '#16a34a'
                 }).then(() => {
-                    window.location.href = '{{ route("admin.messages") }}';
+                    let targetUrl = '{{ route("admin.messages") }}';
+                    if (document.referrer && document.referrer.includes('item-entry-approval')) {
+                        targetUrl = document.referrer;
+                    }
+                    window.location.href = targetUrl;
                 });
             } else {
                 Swal.fire('Action Failed', data.message || 'Error processing request', 'error');

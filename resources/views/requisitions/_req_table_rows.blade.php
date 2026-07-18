@@ -2,13 +2,36 @@
     @if($req instanceof \App\Models\InventoryBatch)
         @php
             $sraStatus = $req->approval_status;
-            $badgeColor = '#ef4444';
-            $badgeBg = 'rgba(239,68,68,0.1)';
-            $badgeLabel = 'Awaiting Authorizer Review';
-            if ($req->auditor_status === 'approved') {
-                $badgeColor = '#16a34a';
-                $badgeBg = 'rgba(22,163,74,0.1)';
-                $badgeLabel = 'Auditor Approved (Pending Authorizer)';
+            
+            if ($sraStatus === 'approved') {
+                $badgeColor = '#10b981';
+                $badgeBg = 'rgba(16, 185, 129, 0.1)';
+                $badgeLabel = 'Approved';
+            } elseif ($sraStatus === 'declined') {
+                $badgeColor = '#ef4444';
+                $badgeBg = 'rgba(239, 68, 68, 0.1)';
+                $badgeLabel = 'Declined';
+            } else {
+                $adminApproved = ($req->admin_status === 'approved');
+                $auditorApproved = ($req->auditor_status === 'approved');
+                
+                if ($adminApproved && $auditorApproved) {
+                    $badgeColor = '#10b981';
+                    $badgeBg = 'rgba(16, 185, 129, 0.1)';
+                    $badgeLabel = 'Approved';
+                } elseif ($adminApproved) {
+                    $badgeColor = '#3b82f6';
+                    $badgeBg = 'rgba(59, 130, 246, 0.1)';
+                    $badgeLabel = 'Authorizer Approved (Pending Auditor)';
+                } elseif ($auditorApproved) {
+                    $badgeColor = '#f59e0b';
+                    $badgeBg = 'rgba(245, 158, 11, 0.1)';
+                    $badgeLabel = 'Auditor Approved (Pending Authorizer)';
+                } else {
+                    $badgeColor = '#ef4444';
+                    $badgeBg = 'rgba(239, 68, 68, 0.1)';
+                    $badgeLabel = 'Awaiting Review (Auditor & Authorizer)';
+                }
             }
             
             $usageLabel = 'Inventory SRA';
@@ -240,6 +263,23 @@
         </td>
         <td data-label="Actions">
             @php
+                $deptsMatch = function($dept1, $dept2) {
+                    $d1 = strtolower(trim($dept1));
+                    $d2 = strtolower(trim($dept2));
+                    if ($d1 === $d2) return true;
+                    
+                    $hrTerms = ['hr', 'human resource', 'human resource management department', 'human resources'];
+                    if (in_array($d1, $hrTerms) && in_array($d2, $hrTerms)) return true;
+                    
+                    $welfareTerms = ['welfare', 'welfare department'];
+                    if (in_array($d1, $welfareTerms) && in_array($d2, $welfareTerms)) return true;
+                    
+                    $storesTerms = ['stores', 'store', 'stores department', 'store department'];
+                    if (in_array($d1, $storesTerms) && in_array($d2, $storesTerms)) return true;
+                    
+                    return false;
+                };
+
                 $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
                 if (!$isStoresHead) {
                     $isBackup = (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
@@ -252,7 +292,7 @@
                 $isReqProcessed = false;
                 if (in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin'])) {
                     // Authorizers (Main Admin / Sub Main Admin)
-                    $isActingAsHOD = (strcasecmp($req->department ?? '', auth()->user()->department ?? '') === 0 && $req->origin_admin_status === 'pending');
+                    $isActingAsHOD = ($deptsMatch($req->department ?? '', auth()->user()->department ?? '') && $req->origin_admin_status === 'pending');
                     if ($isActingAsHOD) {
                         $isReqProcessed = ($req->origin_admin_status !== 'pending');
                     } else {

@@ -366,6 +366,11 @@ class AppServiceProvider extends ServiceProvider
                     ->where('is_archived', false)
                     ->count();
                 $view->with('unreadMessagesCount', $unreadMessagesCount);
+
+                $pendingItemEntryApprovalsCount = \App\Models\EditRequest::where('item_type', 'batch_creation')
+                    ->where('status', 'pending')
+                    ->count();
+                $view->with('pendingItemEntryApprovalsCount', $pendingItemEntryApprovalsCount);
                 
                 // Fetch Pending Password Requests Count (for Admin)
                 if ((auth()->user()->is_admin || auth()->user()->isDelegatedApprover()) && !auth()->user()->isMainAdminOrSub()) {

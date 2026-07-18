@@ -969,7 +969,9 @@
     {{-- Header --}}
     <div style="margin-bottom:2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
         <div>
-            @if(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin']))
+            @if(auth()->user()->role === 'Sub Main Admin')
+                <div style="font-size:.7rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }}</div>
+            @elseif(auth()->user()->role === 'Main Admin')
                 <div style="font-size:.7rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Head of Administration</div>
             @elseif(auth()->user()->role === 'Auditor')
                 <div style="font-size:.7rem;font-weight:800;color:#10b981;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Department Head</div>

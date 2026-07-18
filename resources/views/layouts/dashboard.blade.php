@@ -222,7 +222,7 @@
                         <span>Make Request</span>
                     </a>
                 </li>
-                @if(auth()->user()->isMainAdminOrSub() || ((strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0) && !$isActingStoresHead))
+                @if(auth()->user()->role === 'Main Admin' || ((auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Store Officer' || auth()->user()->role === 'Dept. Head (Stores)' || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])) && !$isActingStoresHead))
                 <li class="nav-item">
                     <a href="{{ route('receiveditems') }}" class="nav-link {{ request()->routeIs('receiveditems') ? 'active' : '' }}" data-tooltip="Received Items Log">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="M12 7H7.5"/><path d="m10 5-2.5 2 2.5 2"/></svg>
@@ -241,6 +241,27 @@
                         <span>Returned Items</span>
                     </a>
                 </li>
+                @endif
+                @php
+                    $isSraStoresHead = auth()->check() && (
+                        auth()->user()->role === 'Main Admin'
+                        || auth()->user()->role === 'Head of Stores'
+                        || auth()->user()->role === 'Store Officer'
+                        || auth()->user()->role === 'Dept. Head (Stores)'
+                        || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])
+                    );
+                @endphp
+                @if($isSraStoresHead)
+                <li class="nav-item">
+                    <a href="{{ route('stores.item-entry-approval') }}" class="nav-link {{ request()->routeIs('stores.item-entry-approval') ? 'active' : '' }}" data-tooltip="Item Entry Approval">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-check"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+                        <span>Item Entry Approval</span>
+                        <span id="sidebar-badge-item-entry-approval" style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingItemEntryApprovalsCount) || $pendingItemEntryApprovalsCount <= 0) ? 'display: none;' : '' }}">
+                            {{ $pendingItemEntryApprovalsCount ?? 0 }}
+                        </span>
+                    </a>
+                </li>
+                @endif
                 @if(auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Auditor')
                 <li class="nav-item">
                     <a href="{{ route('admin.sra-history') }}" class="nav-link {{ request()->routeIs('admin.sra-history') ? 'active' : '' }}" data-tooltip="SRA History">
@@ -249,8 +270,9 @@
                     </a>
                 </li>
                 @endif
+                @if(auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Store Officer' || auth()->user()->role === 'Dept. Head (Stores)' || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']))
                 <li class="nav-item">
-                     @if(auth()->user()->isMainAdminOrSub())
+                     @if(auth()->user()->role === 'Main Admin')
                      <a href="{{ route('admin.admin_suppliers') }}" class="nav-link {{ request()->routeIs('admin.admin_suppliers') ? 'active' : '' }}" data-tooltip="Suppliers Details">
                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
                          <span>Suppliers Details</span>
@@ -270,7 +292,7 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
-                @if(!$isActingStoresHead)
+                @if((strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0) && !$isActingStoresHead)
                 <li class="nav-item">
                     <a href="{{ route('receiveditems') }}" class="nav-link {{ request()->routeIs('receiveditems') ? 'active' : '' }}" data-tooltip="Received Items Log">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="M12 7H7.5"/><path d="m10 5-2.5 2 2.5 2"/></svg>
@@ -1456,10 +1478,11 @@
             setInterval(pollAuditorPendingApprovals, 15000);
             @endif
 
-            @if(auth()->check() && !auth()->user()->is_admin)
-            // ── Personnel Sidebar Badge: Approved Requisitions Awaiting Collection ──
-            function pollApprovedRequisitions() {
-                fetch("{{ route('api.personnel.sidebar-counts') }}", {
+            @if(auth()->check() && auth()->user()->role !== 'Auditor')
+            // ── Sidebar Badge Polling: Approved Requisitions & Item Entry Approvals ──
+            function pollSidebarCounts() {
+                let url = "{{ auth()->user()->is_admin ? route('api.admin.sidebar-counts') : route('api.personnel.sidebar-counts') }}";
+                fetch(url, {
                     credentials: 'same-origin',
                     headers: { 'Accept': 'application/json' }
                 })
@@ -1470,22 +1493,37 @@
                 })
                 .then(data => {
                     if (!data) return;
-                    const badge = document.getElementById('sidebar-badge-approved-reqs');
-                    if (!badge) return;
-                    const count = data.approved_requisitions || 0;
-                    if (count > 0) {
-                        badge.textContent = count;
-                        badge.style.display = 'flex';
-                    } else {
-                        badge.style.display = 'none';
+                    
+                    // Approved Requisitions Badge
+                    const badgeReqs = document.getElementById('sidebar-badge-approved-reqs');
+                    if (badgeReqs) {
+                        const countReqs = data.approved_requisitions || 0;
+                        if (countReqs > 0) {
+                            badgeReqs.textContent = countReqs;
+                            badgeReqs.style.display = 'flex';
+                        } else {
+                            badgeReqs.style.display = 'none';
+                        }
+                    }
+
+                    // Item Entry Approval Badge
+                    const badgeItemEntry = document.getElementById('sidebar-badge-item-entry-approval');
+                    if (badgeItemEntry) {
+                        const countItemEntry = data.pending_item_entry_approvals || 0;
+                        if (countItemEntry > 0) {
+                            badgeItemEntry.textContent = countItemEntry;
+                            badgeItemEntry.style.display = 'flex';
+                        } else {
+                            badgeItemEntry.style.display = 'none';
+                        }
                     }
                 })
                 .catch(() => {});
             }
 
             // Poll every 15 seconds; first check after 4 seconds
-            setTimeout(pollApprovedRequisitions, 4000);
-            setInterval(pollApprovedRequisitions, 15000);
+            setTimeout(pollSidebarCounts, 4000);
+            setInterval(pollSidebarCounts, 15000);
             @endif
         })();
     </script>
