@@ -986,10 +986,27 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         return response()->json(['success' => true]);
     })->name('api.notifications.dismiss');
 
+    // Auditor Sidebar Badge: Pending approvals count
+    Route::get('/api/auditor/sidebar-counts', function() {
+        if (!auth()->check() || auth()->user()->role !== 'Auditor') {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+        $pendingSras = \App\Models\InventoryBatch::where('approval_status', 'pending_auditor_admin')
+            ->where('auditor_status', 'pending')
+            ->count();
+        $pendingServiceSras = \App\Models\ServiceSra::where('status', 'auditor_pending')
+            ->where('auditor_status', 'pending')
+            ->count();
+        return response()->json([
+            'pending_approvals' => $pendingSras + $pendingServiceSras,
+        ]);
+    })->name('api.auditor.sidebar-counts');
+
     Route::get('/api/admin/sidebar-counts', function() {
         if (!auth()->check() || !auth()->user()->is_admin) return response()->json(['error' => 'Unauthorized'], 401);
 
         $messages = \App\Models\Message::where('receiver_id', auth()->id())->whereNull('read_at')->where('is_archived', false)->count();
+
         $passwordRequests = \App\Models\PasswordResetRequest::where('status', 'pending')->count();
         
         try {
@@ -1094,6 +1111,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/admin/users/{id}/reject-registration', [AdminController::class, 'rejectRegistration'])->name('admin.users.reject_registration');
     Route::get('/admin/logs', [AdminController::class, 'logs'])->name('admin.logs');
     Route::get('/admin/inventory', [AdminController::class, 'viewInventory'])->name('admin.inventory');
+    Route::get('/admin/sra-history', [AdminController::class, 'sraHistory'])->name('admin.sra-history');
 
     // Admin Requisition Routes
     Route::get('/admin/requisitions', [\App\Http\Controllers\StoreRequisitionController::class, 'adminIndex'])->name('admin.requisitions');

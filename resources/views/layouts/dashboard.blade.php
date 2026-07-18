@@ -134,9 +134,12 @@
         <ul class="nav-menu">
             @if(auth()->user()->role === 'Auditor')
                 <li class="nav-item">
-                    <a href="{{ route('auditor.dashboard') }}" class="nav-link {{ request()->routeIs('auditor.dashboard') ? 'active' : '' }}" data-tooltip="Auditing Center">
+                    <a href="{{ route('auditor.dashboard') }}" class="nav-link {{ request()->routeIs('auditor.dashboard') ? 'active' : '' }}" data-tooltip="Auditing Center" style="position: relative;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="12" r="3"/></svg>
                         <span>Auditing Center</span>
+                        <span id="sidebar-badge-auditor-pending"
+                              style="display: none; background: #ef4444; color: white; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 50%; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; margin-left: auto; animation: auditor-badge-blink 1s infinite; flex-shrink: 0;"
+                              title="Pending approvals in Auditing Center">0</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -238,6 +241,14 @@
                         <span>Returned Items</span>
                     </a>
                 </li>
+                @if(auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Auditor')
+                <li class="nav-item">
+                    <a href="{{ route('admin.sra-history') }}" class="nav-link {{ request()->routeIs('admin.sra-history') ? 'active' : '' }}" data-tooltip="SRA History">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8H8"/><path d="M16 12H8"/><path d="M15 16H9"/></svg>
+                        <span>SRA History</span>
+                    </a>
+                </li>
+                @endif
                 <li class="nav-item">
                      @if(auth()->user()->isMainAdminOrSub())
                      <a href="{{ route('admin.admin_suppliers') }}" class="nav-link {{ request()->routeIs('admin.admin_suppliers') ? 'active' : '' }}" data-tooltip="Suppliers Details">
@@ -1336,6 +1347,10 @@
             0%, 100% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.15); opacity: 0.85; }
         }
+        @keyframes auditor-badge-blink {
+            0%, 49% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+            50%, 100% { opacity: 0.4; transform: scale(0.92); box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+        }
     </style>
     <script>
         // CIA SECURITY ENFORCEMENT: Tab-Scoped Authentication Lock
@@ -1411,6 +1426,35 @@
                 }
             }
 
+
+            @if(auth()->check() && auth()->user()->role === 'Auditor')
+            // ── Auditor Sidebar Badge: Pending Approvals in Auditing Center ──
+            function pollAuditorPendingApprovals() {
+                fetch("{{ route('api.auditor.sidebar-counts') }}", {
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(res => {
+                    if (res.status === 200) return res.json();
+                    return null;
+                })
+                .then(data => {
+                    if (!data) return;
+                    const badge = document.getElementById('sidebar-badge-auditor-pending');
+                    if (!badge) return;
+                    const count = data.pending_approvals || 0;
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                })
+                .catch(() => {});
+            }
+            setTimeout(pollAuditorPendingApprovals, 2000);
+            setInterval(pollAuditorPendingApprovals, 15000);
+            @endif
 
             @if(auth()->check() && !auth()->user()->is_admin)
             // ── Personnel Sidebar Badge: Approved Requisitions Awaiting Collection ──

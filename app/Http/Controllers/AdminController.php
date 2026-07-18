@@ -1553,4 +1553,73 @@ class AdminController extends Controller
             'message' => 'Delegated access successfully claimed!'
         ]);
     }
+
+    public function sraHistory(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user->is_admin && !$user->isMainAdminOrSub() && $user->role !== 'Auditor') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $query = InventoryBatch::with(['items', 'recorder', 'approver', 'adminApprover', 'auditorApprover'])
+            ->where('supplier_status', '!=', 'System Draft');
+
+        // Optional filters
+        if ($request->has('date_from') && $request->date_from) {
+            $query->whereDate('entry_date', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $query->whereDate('entry_date', '<=', $request->date_to);
+        }
+        if ($request->has('supplier') && $request->supplier) {
+            $query->where('supplier_name', 'LIKE', '%' . $request->supplier . '%');
+        }
+
+        // Status tabs
+        $status = $request->input('status', 'all');
+        if ($status === 'pending') {
+            $query->where('approval_status', 'pending_auditor_admin');
+        } elseif ($status === 'approved') {
+            $query->where('approval_status', 'approved');
+        } elseif ($status === 'declined') {
+            $query->where('approval_status', 'declined');
+        }
+
+        $perPage = $request->input('per_page', 10);
+        $batches = $query->orderBy('entry_date', 'desc')->paginate($perPage);
+
+        // Fetch counts for tabs badges
+        $totalPendingCount = InventoryBatch::where('supplier_status', '!=', 'System Draft')
+            ->where('approval_status', 'pending_auditor_admin')
+            ->count();
+        $totalApprovedCount = InventoryBatch::where('supplier_status', '!=', 'System Draft')
+            ->where('approval_status', 'approved')
+            ->count();
+        $totalDeclinedCount = InventoryBatch::where('supplier_status', '!=', 'System Draft')
+            ->where('approval_status', 'declined')
+            ->count();
+        $totalAllCount = InventoryBatch::where('supplier_status', '!=', 'System Draft')->count();
+
+        $ledgeMap = \Illuminate\Support\Facades\Schema::hasTable('settings') 
+            ? \App\Models\Setting::getCategories() 
+            : [
+                'A' => 'Stationary',
+                'B' => 'Cleaning',
+                'C' => 'IT & Acc.',
+                'D' => 'Transport',
+                'E' => 'Safety',
+                'G' => 'Pharmacy',
+                'J' => 'Equipment'
+            ];
+
+        return view('admin.sra_history', compact(
+            'batches', 
+            'status', 
+            'ledgeMap', 
+            'totalPendingCount', 
+            'totalApprovedCount', 
+            'totalDeclinedCount', 
+            'totalAllCount'
+        ));
+    }
 }

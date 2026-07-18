@@ -441,9 +441,23 @@
                     <span class="order-label">{{ $batch->acquisition_type === 'Donor' ? 'Donor:' : 'Supplier:' }}</span>
                     <span>{{ trim(preg_replace('/\[.*?\]/', '', ($batch->acquisition_type === 'Donor' ? ($batch->donor_name ?: $batch->supplier_name) : $batch->supplier_name) ?? 'N/A')) }}</span>
                 </div>
-                <div class="order-line" style="border: none;">
+                @if($batch->supplier_number ?? $batch->supplier_phone ?? null)
+                <div class="order-line">
+                    <span class="order-label">Supplier No.:</span>
+                    <span>{{ $batch->supplier_number ?? $batch->supplier_phone ?? '—' }}</span>
+                </div>
+                @endif
+                <div class="order-line">
                     <span class="order-label">Address:</span>
                     <span>NACOC Headquarters, Accra</span>
+                </div>
+                <div class="order-line">
+                    <span class="order-label">Delivery Person:</span>
+                    <span>{{ $batch->delivery_person ?: '______________________' }}</span>
+                </div>
+                <div class="order-line" style="border: none;">
+                    <span class="order-label">Delivery No.:</span>
+                    <span>{{ $batch->delivery_phone ?: '______________________' }}</span>
                 </div>
             </div>
             <div class="delivery-status">
