@@ -263,11 +263,12 @@ class InventoryController extends Controller
             if (!$is_admin) {
                 // Divert to staged approval process
                 $payloadData = $validated;
+                $payloadData['is_discrepancy'] = true;
                 $editReq = \App\Models\EditRequest::create([
                     'user_id' => auth()->id(),
                     'item_id' => 0,
                     'item_type' => 'batch_creation',
-                    'request_type' => 'sra_creation',
+                    'request_type' => 'discrepancy_creation',
                     'reason' => 'Discrepancy Entry Submission',
                     'status' => 'pending',
                     'payload' => json_encode($payloadData)
@@ -311,7 +312,7 @@ class InventoryController extends Controller
                         . "</div>"
                         . "<div>"
                         . "<b style='color: #4f46e5; font-size: 0.88rem; display: block; margin-bottom: 2px;'>DISCREPANCY ENTRY SUBMITTED FOR AUTHORIZATION</b>"
-                        . "<span style='font-size: 0.78rem; color: #64748b; font-weight: 600;'>Awaiting Authorization — Your submission is pending review by the Admin.</span>"
+                        . "<span style='font-size: 0.78rem; color: #64748b; font-weight: 600;'>Awaiting Authorization — Your submission is pending review by the Head of Stores.</span>"
                         . "</div></div>";
 
                     \App\Models\Message::create([
@@ -328,7 +329,7 @@ class InventoryController extends Controller
                 return response()->json([
                     'success' => true,
                     'is_pending' => true,
-                    'message' => 'Submission pending admin approval. The record will be saved once authorized.'
+                    'message' => 'Submission pending Head of Stores approval. The record will be saved once authorized.'
                 ]);
             }
 
@@ -349,15 +350,18 @@ class InventoryController extends Controller
                     'driver_phone' => $validated['driver_phone'] ?? null,
                     'entry_date' => $validated['entry_date'],
                     'arrival_date' => $validated['arrival_date'],
-                    'approval_status' => 'pending_auditor_admin',
+                    'approval_status' => 'approved',
                     'approved_by' => auth()->id(),
                     'approved_at' => now(),
                     'stores_approved_by' => auth()->id(),
                     'stores_approved_at' => now(),
+                    'auditor_status' => 'approved',
+                    'auditor_approved_by' => auth()->id(),
+                    'auditor_approved_at' => now(),
+                    'admin_status' => 'approved',
+                    'admin_approved_by' => auth()->id(),
+                    'admin_approved_at' => now(),
                 ]);
-
-                // Send SRA review notifications to Auditors and Head of Admin
-                InventoryBatch::sendSraReviewNotifications($batch);
 
                 foreach ($catItems as $item) {
                     $itemData = $item;
@@ -371,7 +375,7 @@ class InventoryController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Discrepancy inventory records saved successfully and routed to Auditor and Head of Admin for final review.',
+                'message' => 'Discrepancy inventory records saved successfully into inventory.',
                 'batch_id' => $batch->id
             ]);
 

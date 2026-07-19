@@ -779,9 +779,8 @@
                     </a>
                 </li>
                 @php
-                    $isSraStoresHead = auth()->check() && (
-                        auth()->user()->role === 'Main Admin'
-                        || auth()->user()->role === 'Head of Stores'
+                    $isSraStoresHead = auth()->check() && !auth()->user()->isMainAdminOrSub() && (
+                        auth()->user()->role === 'Head of Stores'
                         || auth()->user()->role === 'Store Officer'
                         || auth()->user()->role === 'Dept. Head (Stores)'
                         || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])
@@ -799,9 +798,9 @@
                 </li>
                 @endif
                 <li>
-                    <a href="{{ route('admin.sra-history') }}" class="nav-link {{ request()->routeIs('admin.sra-history') ? 'active' : '' }}" title="SRA History">
+                    <a href="{{ route('admin.sra-history') }}" class="nav-link {{ request()->routeIs('admin.sra-history') ? 'active' : '' }}" title="Service SRA Approvals">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8H8"/><path d="M16 12H8"/><path d="M15 16H9"/></svg>
-                        <span>SRA History</span>
+                        <span>Service SRA Approvals</span>
                     </a>
                 </li>
                 <li>
@@ -1842,7 +1841,7 @@
                 </div>
                 <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--text-heading); margin-bottom: 0.75rem; letter-spacing: -0.02em;">Digital Signature Required</h3>
                 <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; font-weight: 600;">
-                    Hello <strong>{{ auth()->user()->name }}</strong>, as an approved authority (<span style="color: var(--primary);">{{ auth()->user()->role }}</span>), you must upload your digital signature to authorize inventory release receipts and SRA vouchers.
+                    Hello <strong>{{ auth()->user()->name }}</strong>, as an approved authority (<span style="color: var(--primary);">{{ auth()->user()->getRoleDisplayLabel() }}</span>), you must upload your digital signature to authorize inventory release receipts and SRA vouchers.
                 </p>
                 <div style="background: var(--bg-main); border-radius: 16px; padding: 1rem; border: 1px solid var(--border-color); text-align: left; margin-bottom: 2rem;">
                     <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 6px;">How to upload:</span>

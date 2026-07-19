@@ -4,7 +4,7 @@
 
 @extends($sraLayout)
 
-@section('title', 'SRA History')
+@section('title', 'Service SRA Approvals')
 
 @section('content')
 <style>
@@ -314,7 +314,7 @@
     <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
         <div>
-            <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--text-heading); margin: 0;">SRA History Logs</h3>
+            <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--text-heading); margin: 0;">Service SRA Approvals</h3>
             <p style="font-size: 0.88rem; color: var(--text-muted); margin: 4px 0 0;">Track, review, and print Stock Receipt Advice (SRA) documents.</p>
         </div>
     </div>

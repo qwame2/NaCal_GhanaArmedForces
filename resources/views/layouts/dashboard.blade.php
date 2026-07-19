@@ -243,9 +243,8 @@
                 </li>
                 @endif
                 @php
-                    $isSraStoresHead = auth()->check() && (
-                        auth()->user()->role === 'Main Admin'
-                        || auth()->user()->role === 'Head of Stores'
+                    $isSraStoresHead = auth()->check() && !auth()->user()->isMainAdminOrSub() && (
+                        auth()->user()->role === 'Head of Stores'
                         || auth()->user()->role === 'Store Officer'
                         || auth()->user()->role === 'Dept. Head (Stores)'
                         || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])
@@ -264,9 +263,9 @@
                 @endif
                 @if(auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Auditor')
                 <li class="nav-item">
-                    <a href="{{ route('admin.sra-history') }}" class="nav-link {{ request()->routeIs('admin.sra-history') ? 'active' : '' }}" data-tooltip="SRA History">
+                    <a href="{{ route('admin.sra-history') }}" class="nav-link {{ request()->routeIs('admin.sra-history') ? 'active' : '' }}" data-tooltip="Service SRA Approvals">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8H8"/><path d="M16 12H8"/><path d="M15 16H9"/></svg>
-                        <span>SRA History</span>
+                        <span>Service SRA Approvals</span>
                     </a>
                 </li>
                 @endif
@@ -459,12 +458,7 @@
                 </a>
             </li>
 
-            <li class="nav-item">
-                <a href="{{ route('notifications.index') }}" class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}" title="Notifications">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                    <span>Notifications</span>
-                </a>
-            </li>
+
 
             
         </ul>
@@ -538,48 +532,7 @@
                         }
                     }
                 @endphp
-                @if(!$isOtherDeptHeadPage && auth()->user()->role !== 'Auditor')
-                <div style="height: 32px; width: 1px; background: var(--border-color);"></div>
-                <div class="icon-btn" id="notification-btn" style="position: relative; cursor: pointer; transition: var(--transition);">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                    @if($globalNotificationCount > 0)
-                    <span class="badge" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 99px; border: 2px solid var(--bg-main); transition: var(--transition);">{{ $globalNotificationCount }}</span>
-                    @endif
 
-                    <!-- Notification Dropdown -->
-                    <div id="notification-dropdown" style="display: none; position: absolute; top: calc(100% + 15px); right: 0; width: 320px; z-index: 2100; padding: 0; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); border: 1px solid #edf2f7; background: white; overflow: hidden; animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);">
-                        <div style="padding: 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(22, 163, 74, 0.03);">
-                            <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin: 0;">Notifications</h3>
-                            @if($globalNotificationCount > 0)
-                            <span style="font-size: 0.7rem; background: var(--primary); color: white; padding: 0.2rem 0.6rem; border-radius: 99px; font-weight: 700;">{{ $globalNotificationCount }} New</span>
-                            @endif
-                        </div>
-                        <div style="max-height: 380px; overflow-y: auto;" class="no-scrollbar">
-                            @forelse($globalNotifications as $notif)
-                            <a href="{{ route($notif['route']) }}" style="display: flex; gap: 1rem; padding: 1.25rem; text-decoration: none; border-bottom: 1px solid var(--border-color); transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background='transparent'">
-                                <div style="width: 40px; height: 40px; border-radius: 12px; background: {{ $notif['type'] === 'warning' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}; color: {{ $notif['type'] === 'warning' ? '#10b981' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                    <i data-lucide="{{ $notif['icon'] }}" style="width: 20px;"></i>
-                                </div>
-                                <div style="flex: 1; text-align: left;">
-                                    <div style="font-weight: 700; color: var(--text-main); font-size: 0.85rem; margin-bottom: 0.25rem;">{{ $notif['title'] }}</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">{{ $notif['message'] }}</div>
-                                    <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.5rem; font-weight: 600;">Just now</div>
-                                </div>
-                            </a>
-                            @empty
-                            <div style="padding: 3rem 1.5rem; text-align: center; color: var(--text-muted);">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem; opacity: 0.3;"><path d="M18.4 12c.4 3.8 2.6 5 2.6 5H3s3-2 3-9c0-1.2.3-2.3.9-3.3"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
-                                <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">All caught up!</p>
-                                <p style="font-size: 0.75rem;">No new notifications at this time.</p>
-                            </div>
-                            @endforelse
-                        </div>
-                        <div style="padding: 1rem; text-align: center; background: rgba(0,0,0,0.01); border-top: 1px solid var(--border-color);">
-                            <a href="{{ route('notifications.index') }}" style="font-size: 0.75rem; font-weight: 800; color: var(--primary); text-decoration: none;">View All Notifications</a>
-                        </div>
-                    </div>
-                </div>
-                @endif
                 <div class="icon-btn" id="theme-toggle" style="border: none; background: transparent;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="theme-icon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
                 </div>
@@ -1537,7 +1490,7 @@
                 </div>
                 <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--text-heading); margin-bottom: 0.75rem; letter-spacing: -0.02em;">Digital Signature Required</h3>
                 <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; font-weight: 600;">
-                    Hello <strong>{{ auth()->user()->name }}</strong>, as an approved authority (<span style="color: var(--primary);">{{ auth()->user()->role }}</span>), you must upload your digital signature to authorize inventory release receipts and SRA vouchers.
+                    Hello <strong>{{ auth()->user()->name }}</strong>, as an approved authority (<span style="color: var(--primary);">{{ auth()->user()->getRoleDisplayLabel() }}</span>), you must upload your digital signature to authorize inventory release receipts and SRA vouchers.
                 </p>
                 <div style="background: var(--bg-main); border-radius: 16px; padding: 1rem; border: 1px solid var(--border-color); text-align: left; margin-bottom: 2rem;">
                     <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 6px;">How to upload:</span>

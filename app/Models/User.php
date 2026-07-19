@@ -254,6 +254,9 @@ class User extends Authenticatable implements LdapAuthenticatable
      */
     public function getRoleDisplayLabel(): string
     {
+        if ($this->role === 'Main Admin') {
+            return 'Head of Admin';
+        }
         if ($this->isSubMainAdmin()) {
             $num = $this->getSubMainAdminNumber();
             return 'Sub Main Admin' . ($num ? " {$num}" : '');

@@ -53,10 +53,7 @@
                     </div>
                     <div class="registry-title-stack">
                         <h3 class="vault-title">User Details</h3>
-                        <div class="status-indicator-pill">
-                            <span class="live-pulse"></span>
-                            SECURE & UPDATED
-                        </div>
+                        
                     </div>
                 </div>
                 <p class="vault-subtitle">Managing {{ $totalUsers }} user records</p>

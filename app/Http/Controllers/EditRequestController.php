@@ -494,9 +494,12 @@ class EditRequestController extends Controller
                     // Group items by category
                     $itemsByCategory = collect($data['items'])->groupBy('ledge_category');
                     $batch = null;
+                    $isDiscrepancy = ($editReq->request_type === 'discrepancy_creation') 
+                        || ($editReq->reason === 'Discrepancy Entry Submission')
+                        || !empty($data['is_discrepancy']);
 
                     foreach ($itemsByCategory as $cat => $catItems) {
-                        $batch = InventoryBatch::create([
+                        $batchData = [
                             'ledge_category' => $cat,
                             'supplier_name' => $data['supplier_name'],
                             'supplier_status' => $data['supplier_status'],
@@ -509,12 +512,25 @@ class EditRequestController extends Controller
                             'entry_date' => $data['entry_date'] ?? now(),
                             'arrival_date' => $data['arrival_date'],
                             'recorded_by' => $editReq->user_id,
-                            'approval_status' => 'pending_auditor_admin',
                             'approved_by' => auth()->id(),
                             'approved_at' => now(),
                             'stores_approved_by' => auth()->id(),
                             'stores_approved_at' => now(),
-                        ]);
+                        ];
+
+                        if ($isDiscrepancy) {
+                            $batchData['approval_status'] = 'approved';
+                            $batchData['auditor_status'] = 'approved';
+                            $batchData['auditor_approved_by'] = auth()->id();
+                            $batchData['auditor_approved_at'] = now();
+                            $batchData['admin_status'] = 'approved';
+                            $batchData['admin_approved_by'] = auth()->id();
+                            $batchData['admin_approved_at'] = now();
+                        } else {
+                            $batchData['approval_status'] = 'pending_auditor_admin';
+                        }
+
+                        $batch = InventoryBatch::create($batchData);
 
                         foreach ($catItems as $item) {
                             $itemData = $item;
@@ -523,8 +539,10 @@ class EditRequestController extends Controller
                             $batch->items()->create($itemData);
                         }
 
-                        // Notify Auditor and Main Admin for review
-                        InventoryBatch::sendSraReviewNotifications($batch);
+                        if (!$isDiscrepancy) {
+                            // Notify Auditor and Main Admin for review
+                            InventoryBatch::sendSraReviewNotifications($batch);
+                        }
 
                         $editReq->item_id = $batch->id;
                         $editReq->save();
@@ -637,10 +655,17 @@ class EditRequestController extends Controller
         $finalMsg = "<div class='personnel-view{$approvedClass}' style='padding: 15px; border: 1px solid {$color}; border-radius: 12px; background: " . ($request->status === 'approved' ? 'rgba(16, 185, 129, 0.05)' : 'rgba(220, 38, 38, 0.05)') . ";'>";
         $finalMsg .= "<b style='color: {$color}'>{$statusHeader}</b><br>";
         
+        $isDiscrepancy = ($editReq->request_type === 'discrepancy_creation') 
+            || ($editReq->reason === 'Discrepancy Entry Submission')
+            || !empty($data['is_discrepancy'] ?? false);
+
         if ($request->status === 'approved' && isset($batch) && $batch) {
             $printUrl = route('receiveditems.sra', ['id' => $batch->id]);
             if ($requestType === 'remainder_submission') {
                 $desc = "The remainder items for Batch #{$batch->id} have been authorized and added to stock. You can now download the updated SRA voucher.";
+                $btnText = "Download / Print SRA";
+            } else if ($isDiscrepancy) {
+                $desc = "Your existing items entry has been approved by the Head of Stores and saved directly into inventory.";
                 $btnText = "Download / Print SRA";
             } else {
                 $desc = "Your inventory entry request has been approved by the Head of Stores. It has now been routed to the Auditor and Head of Admin for final verification. Once approved, the SRA receipt will become live and show their signatures.";
@@ -1451,6 +1476,14 @@ class EditRequestController extends Controller
                 'G' => 'Pharmacy',
                 'J' => 'Equipment'
             ];
+
+        if ($request->ajax() || $request->wantsJson()) {
+            $pendingHtml = view('edit-requests._pending_table', compact('pending'))->render();
+            return response()->json([
+                'pending_count' => $pending->total(),
+                'pending_html'  => $pendingHtml,
+            ]);
+        }
 
         return view('edit-requests.item_entry_approval', compact('pending', 'history', 'ledgeMap'));
     }

@@ -402,7 +402,7 @@ class ApiTest extends TestCase
         $responseTrack->assertStatus(200);
         $responseTrack->assertDontSee('id="notification-btn"', false);
 
-        // Case 3: Stores Department Head (Main Admin) on main-admin.requisitions (should still see notification btn)
+        // Case 3: Stores Department Head (Main Admin) on main-admin.requisitions (notification btn has been removed from top bar)
         $storesHead = User::factory()->create([
             'role' => 'Main Admin',
             'department' => 'Stores',
@@ -412,7 +412,7 @@ class ApiTest extends TestCase
 
         $responseStores = $this->actingAs($storesHead)->get(route('main-admin.requisitions'));
         $responseStores->assertStatus(200);
-        $responseStores->assertSee('id="notification-btn"', false);
+        $responseStores->assertDontSee('id="notification-btn"', false);
     }
 
     /**
