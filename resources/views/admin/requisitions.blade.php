@@ -1188,7 +1188,8 @@
                 ${sra.previous_sra_nos ? `<div style="margin-top:0.75rem;font-size:0.72rem;font-weight:800;color:#10b981;">Previous SRA Nos: ${sra.previous_sra_nos}</div>` : ''}
             `;
 
-            const isSraProcessed = sra.status === 'approved' || sra.status === 'declined';
+            const isSraProcessed = sra.status === 'approved' || sra.status === 'declined' || (currentSraStage === 'admin' ? (sra.admin_status && sra.admin_status !== 'pending') : (sra.stores_status && sra.stores_status !== 'pending'));
+            const isSraApproved = sra.status === 'approved' || (currentSraStage === 'admin' ? sra.admin_status === 'approved' : sra.stores_status === 'approved');
             const sraDecisionForm = document.getElementById('sra-modal-decision-form');
             if (isSraProcessed) {
                 let noteVal = sra.stores_notes || sra.admin_notes || sra.auditor_notes || '';
@@ -1199,7 +1200,7 @@
                         <div style="font-size:0.9rem; font-weight:700; color:var(--text-main); font-style: italic;">"${noteVal}"</div>
                     </div>` : ''}
                     <div style="display: flex; gap: 1rem; margin-top: 1.25rem;">
-                        ${sra.status === 'approved' ? `
+                        ${isSraApproved ? `
                             <button style="flex:1; padding: 0.85rem 2rem; border: none; background: #10b981; color: white; border-radius: 12px; cursor: default; pointer-events: none; font-weight: 950; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" disabled>
                                 <i data-lucide="check-circle" style="width: 16px;"></i> Approved
                             </button>

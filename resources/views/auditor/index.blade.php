@@ -1557,20 +1557,46 @@
     // ── Service SRA Audit Modal ────────────────────────────────────────────────
     let currentServiceSraId = null;
 
-    function openServiceSraAuditModal(btn) {
-        const id = btn.getAttribute('data-id');
-        const sraNumber = btn.getAttribute('data-sra-number');
-        const supplier = btn.getAttribute('data-supplier');
-        const details = btn.getAttribute('data-details');
+    async function openServiceSraAuditModal(target) {
+        let id, sraNumber, supplier, details;
+
+        if (typeof target === 'object' && target !== null && typeof target.getAttribute === 'function') {
+            id = target.getAttribute('data-id');
+            sraNumber = target.getAttribute('data-sra-number');
+            supplier = target.getAttribute('data-supplier');
+            details = target.getAttribute('data-details');
+        } else {
+            id = target;
+        }
 
         currentServiceSraId = id;
-        document.getElementById('ssra-modal-info').innerHTML =
-            `<strong style="color:var(--text-main);">${sraNumber}</strong> &mdash; ${supplier}<br>
-            <span style="font-size:0.78rem;">${details}</span>`;
+        const infoBox = document.getElementById('ssra-modal-info');
+        infoBox.innerHTML =
+            `<div style="font-size:0.85rem;">Fetching SRA details...</div>`;
         document.getElementById('ssra-audit-notes').value = '';
         const modal = document.getElementById('service-sra-audit-modal');
         modal.style.display = 'flex';
-        if (window.lucide) window.lucide.createIcons({ node: modal });
+
+        if (sraNumber && supplier) {
+            infoBox.innerHTML =
+                `<strong style="color:var(--text-main);">${sraNumber}</strong> &mdash; ${supplier}<br>
+                <span style="font-size:0.78rem;">${details || ''}</span>`;
+            if (window.lucide) window.lucide.createIcons({ node: modal });
+        } else {
+            try {
+                const res = await fetch(`{{ url('/api/service-sra') }}/${id}`);
+                const json = await res.json();
+                if (json.success) {
+                    const sra = json.data;
+                    infoBox.innerHTML =
+                        `<strong style="color:var(--text-main);">${sra.sra_number}</strong> &mdash; ${sra.supplier_name}<br>
+                        <span style="font-size:0.78rem;">${sra.details || ''}</span>`;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            if (window.lucide) window.lucide.createIcons({ node: modal });
+        }
     }
 
     function closeServiceSraAuditModal() {

@@ -397,6 +397,11 @@
                     <span class="order-val">{{ $sra->lpo_number ?: '-' }}</span>
                 </div>
                 <div class="order-line">
+                    <span class="order-label">Vehicle Licence No.</span>
+                    <span class="order-dot"></span>
+                    <span class="order-val">{{ $sra->vehicle_number ?: '-' }}</span>
+                </div>
+                <div class="order-line">
                     <span class="order-label">Supplier:</span>
                     <span class="order-dot"></span>
                     <span class="order-val">{{ $sra->supplier_name }}</span>

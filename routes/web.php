@@ -709,6 +709,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/service-sra', [ServiceSraController::class, 'store'])->name('service-sra.store');
     Route::get('/service-sra', [ServiceSraController::class, 'index'])->name('service-sra.index');
     Route::get('/service-sra/{id}/receipt', [ServiceSraController::class, 'receipt'])->name('service-sra.receipt');
+    Route::get('/service-sra/{id}/preview', [ServiceSraController::class, 'receiptPreview'])->name('service-sra.preview');
     Route::get('/api/service-sra/supplier-info', [ServiceSraController::class, 'supplierInfo'])->name('service-sra.supplier-info');
     Route::get('/api/service-sra/{id}', [ServiceSraController::class, 'showApi'])->name('api.service-sra.show');
     // Admin (Head of Admin) approval
@@ -716,6 +717,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/admin/service-sra/{id}/process', [ServiceSraController::class, 'adminProcess'])->name('admin.service-sra.process');
     // Head of Stores final approval
     Route::get('/stores/service-sra', [ServiceSraController::class, 'storesIndex'])->name('stores.service-sra.index');
+    Route::get('/stores/service-sra/{id}/review', [ServiceSraController::class, 'storesReview'])->name('stores.service-sra.review');
     Route::post('/stores/service-sra/{id}/process', [ServiceSraController::class, 'storesProcess'])->name('stores.service-sra.process');
     Route::get('/stores/item-entry-approval', [\App\Http\Controllers\EditRequestController::class, 'itemEntryIndex'])->name('stores.item-entry-approval');
     // Auditor verification

@@ -798,9 +798,24 @@
                 </li>
                 @endif
                 <li>
-                    <a href="{{ route('admin.sra-history') }}" class="nav-link {{ request()->routeIs('admin.sra-history') ? 'active' : '' }}" title="Service SRA Approvals">
+                    @php
+                        if (auth()->user()->isMainAdminOrSub() || in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin'])) {
+                            $adminSraNavRoute = 'admin.service-sra.index';
+                        } elseif (auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)') {
+                            $adminSraNavRoute = 'stores.service-sra.index';
+                        } elseif (auth()->user()->role === 'Auditor') {
+                            $adminSraNavRoute = 'auditor.service-sra.index';
+                        } else {
+                            $adminSraNavRoute = 'admin.service-sra.index';
+                        }
+                        $pendingAdminServiceSraBadge = \App\Models\ServiceSra::where('status', '!=', 'approved')->where('status', '!=', 'declined')->count();
+                    @endphp
+                    <a href="{{ route($adminSraNavRoute) }}" class="nav-link {{ request()->routeIs(['admin.service-sra.index', 'stores.service-sra.index', 'auditor.service-sra.index', 'admin.sra-history']) ? 'active' : '' }}" title="Service SRA Approvals">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8H8"/><path d="M16 12H8"/><path d="M15 16H9"/></svg>
                         <span>Service SRA Approvals</span>
+                        <span id="sidebar-badge-admin-service-sra" style="background: #ef4444; color: white; padding: 2px 7px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ ($pendingAdminServiceSraBadge <= 0) ? 'display: none;' : '' }}">
+                            {{ $pendingAdminServiceSraBadge }}
+                        </span>
                     </a>
                 </li>
                 <li>

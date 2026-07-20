@@ -183,12 +183,12 @@
                 </div>
             </td>
             <td data-label="Actions">
-                @if($req->status === 'approved' || $req->status === 'declined')
+                @if($req->status === 'approved' || $req->status === 'declined' || ($req->admin_status && $req->admin_status !== 'pending'))
                     <button type="button" onclick="openSraOversightModal({{ $req->id }}, '{{ $sraStatus === 'admin_approved' ? 'stores' : 'admin' }}')" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
                         <i data-lucide="check" style="width:13px;height:13px;"></i> Processed
                     </button>
                 @else
-                    <button type="button" onclick="openSraOversightModal({{ $req->id }}, '{{ $sraStatus === 'admin_approved' ? 'stores' : 'admin' }}')" style="background: rgba(22,163,74,0.08); color: #16a34a; border: 1.5px solid rgba(22,163,74,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';" onmouseout="this.style.background='rgba(22,163,74,0.08)'; this.style.color='#16a34a'; this.style.borderColor='rgba(22,163,74,0.2)';">
+                    <button type="button" onclick="openSraOversightModal({{ $req->id }}, '{{ $sraStatus === 'admin_approved' ? 'stores' : 'admin' }}')" style="background: rgba(22,163,74,0.08); color: #16a34a; border: 1.5px solid rgba(22,163,74,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';" onmouseout="this.style.background='rgba(22,163,74,0.08)'; this.style.color='white'; this.style.borderColor='rgba(22,163,74,0.2)';">
                         <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
                     </button>
                 @endif

@@ -1562,7 +1562,10 @@ class AdminController extends Controller
     public function sraHistory(Request $request)
     {
         $user = auth()->user();
-        if (!$user->is_admin && !$user->isMainAdminOrSub() && $user->role !== 'Auditor') {
+        if (!$user->is_admin && !$user->isMainAdminOrSub() && $user->role !== 'Auditor'
+            && !in_array($user->role, ['Head of Stores', 'Dept. Head (Stores)'])
+            && !(strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0)
+            && !$user->isDelegatedApprover()) {
             abort(403, 'Unauthorized.');
         }
 
@@ -1617,6 +1620,32 @@ class AdminController extends Controller
                 'J' => 'Equipment'
             ];
 
+        // ── Service SRAs ──────────────────────────────────────────────────────
+        $serviceSraQuery = \App\Models\ServiceSra::with('submitter');
+
+        if ($request->has('supplier') && $request->supplier) {
+            $serviceSraQuery->where('supplier_name', 'LIKE', '%' . $request->supplier . '%');
+        }
+        if ($request->has('date_from') && $request->date_from) {
+            $serviceSraQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $serviceSraQuery->whereDate('created_at', '<=', $request->date_to);
+        }
+        if ($status === 'pending') {
+            $serviceSraQuery->whereNotIn('status', ['approved', 'declined']);
+        } elseif ($status === 'approved') {
+            $serviceSraQuery->where('status', 'approved');
+        } elseif ($status === 'declined') {
+            $serviceSraQuery->where('status', 'declined');
+        }
+
+        $serviceSras = $serviceSraQuery->orderBy('created_at', 'desc')->get();
+
+        $pendingServiceSrasCount = \App\Models\ServiceSra::whereNotIn('status', ['approved', 'declined'])->count();
+        $approvedServiceSrasCount = \App\Models\ServiceSra::where('status', 'approved')->count();
+        $declinedServiceSrasCount = \App\Models\ServiceSra::where('status', 'declined')->count();
+
         return view('admin.sra_history', compact(
             'batches', 
             'status', 
@@ -1624,7 +1653,11 @@ class AdminController extends Controller
             'totalPendingCount', 
             'totalApprovedCount', 
             'totalDeclinedCount', 
-            'totalAllCount'
+            'totalAllCount',
+            'pendingServiceSrasCount',
+            'approvedServiceSrasCount',
+            'declinedServiceSrasCount',
+            'serviceSras'
         ));
     }
 }

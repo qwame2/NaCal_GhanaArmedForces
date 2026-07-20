@@ -1,4 +1,7 @@
-@extends('layouts.admin')
+@php
+    $layout = auth()->user()->isMainAdminOrSub() ? 'layouts.dashboard' : 'layouts.admin';
+@endphp
+@extends($layout)
 @section('content')
 @section('title', 'Service SRA – Admin Approval')
 
@@ -27,26 +30,7 @@
         </div>
     </div>
 
-    @if(auth()->user()->role === 'Main Admin' || auth()->user()->is_admin)
-        <div style="display: flex; gap: 0.5rem; background: var(--bg-card); padding: 4px; border-radius: 12px; border: 1px solid var(--border-color); width: fit-content; margin-bottom: 1.5rem;">
-            <a href="{{ route('admin.service-sra.index') }}" 
-               style="padding: 0.5rem 1.25rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: all 0.2s; 
-                      background: var(--primary); 
-                      color: white;">
-                <i data-lucide="shield-alert" style="width: 14px; height: 14px;"></i>
-                Admin Queue (Stage 1)
-            </a>
-            <a href="{{ route('stores.service-sra.index') }}" 
-               style="padding: 0.5rem 1.25rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: all 0.2s; 
-                      background: transparent; 
-                      color: var(--text-muted);"
-               onmouseover="this.style.background='rgba(22,163,74,0.05)'"
-               onmouseout="this.style.background='transparent'">
-                <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
-                Stores Queue (Stage 2)
-            </a>
-        </div>
-    @endif
+
 
     {{-- Pending Table --}}
     <div class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0; margin-bottom: 2rem;">
@@ -179,13 +163,13 @@
 @endsection
 @push('scripts')
 <script>
-const srasData = @json($pending->keyBy('id'));
-let currentSraId = null;
+window.srasData = @json($pending->keyBy('id'));
+window.currentSraId = null;
 
-function openSraModal(id) {
-    const sra = srasData[id];
+window.openSraModal = function(id) {
+    const sra = window.srasData[id];
     if (!sra) return;
-    currentSraId = id;
+    window.currentSraId = id;
 
     document.getElementById('modal-sra-number').textContent = sra.sra_number;
 
@@ -209,16 +193,16 @@ function openSraModal(id) {
     document.getElementById('modal-notes').value = '';
     document.getElementById('sraModalOverlay').style.display = 'flex';
     if (typeof lucide !== 'undefined') lucide.createIcons();
-}
+};
 
-function closeSraModal(e) {
+window.closeSraModal = function(e) {
     if (e && e.target !== document.getElementById('sraModalOverlay')) return;
     document.getElementById('sraModalOverlay').style.display = 'none';
-    currentSraId = null;
-}
+    window.currentSraId = null;
+};
 
-function processAdminSra(action) {
-    if (!currentSraId) return;
+window.processAdminSra = function(action) {
+    if (!window.currentSraId) return;
     const notes = document.getElementById('modal-notes').value.trim();
     const label = action === 'approved' ? 'Approve' : 'Decline';
 
@@ -239,7 +223,7 @@ function processAdminSra(action) {
         $btn.disabled = true;
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
-        fetch(`/admin/service-sra/${currentSraId}/process`, {
+        fetch(`/admin/service-sra/${window.currentSraId}/process`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -267,13 +251,14 @@ function processAdminSra(action) {
             $btn.innerHTML = origHtml;
             $btn.disabled = false;
         });
-}
+    });
+};
 
-jQuery(document).ready(function($) {
+document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const reviewId = urlParams.get('review');
     if (reviewId) {
-        openSraModal(parseInt(reviewId));
+        window.openSraModal(parseInt(reviewId));
     }
 });
 </script>

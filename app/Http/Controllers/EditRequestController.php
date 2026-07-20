@@ -1478,14 +1478,20 @@ class EditRequestController extends Controller
                 'J' => 'Equipment'
             ];
 
+        $pendingServiceSras = \App\Models\ServiceSra::with('submitter')
+            ->where('status', '!=', 'approved')
+            ->where('status', '!=', 'declined')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         if ($request->ajax() || $request->wantsJson()) {
             $pendingHtml = view('edit-requests._pending_table', compact('pending'))->render();
             return response()->json([
-                'pending_count' => $pending->total(),
+                'pending_count' => $pending->total() + $pendingServiceSras->count(),
                 'pending_html'  => $pendingHtml,
             ]);
         }
 
-        return view('edit-requests.item_entry_approval', compact('pending', 'history', 'ledgeMap'));
+        return view('edit-requests.item_entry_approval', compact('pending', 'history', 'ledgeMap', 'pendingServiceSras'));
     }
 }

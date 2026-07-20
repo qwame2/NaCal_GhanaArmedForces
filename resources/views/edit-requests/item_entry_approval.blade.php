@@ -76,6 +76,28 @@
         </div>
     </div>
 
+    @if(isset($pendingServiceSras) && $pendingServiceSras->count() > 0)
+        <div style="background: linear-gradient(135deg, rgba(22, 163, 74, 0.08) 0%, rgba(16, 185, 129, 0.12) 100%); border: 1.5px solid #16a34a; border-radius: 20px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; box-shadow: 0 4px 20px rgba(22, 163, 74, 0.12);">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 44px; height: 44px; background: #16a34a; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);">
+                    <i data-lucide="receipt" style="width: 22px; height: 22px;"></i>
+                </div>
+                <div>
+                    <div style="font-size: 0.95rem; font-weight: 900; color: #15803d; margin-bottom: 2px;">
+                        Pending Service SRA Approvals ({{ $pendingServiceSras->count() }})
+                    </div>
+                    <div style="font-size: 0.83rem; color: #475569; font-weight: 600;">
+                        Store Officers have submitted Service Stores Received Advice (SRA) requests awaiting authorization.
+                    </div>
+                </div>
+            </div>
+            <a href="{{ route('admin.service-sra.index') }}" style="background: #16a34a; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3); transition: all 0.2s;">
+                <span>Review Service SRAs</span>
+                <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+            </a>
+        </div>
+    @endif
+
     <!-- Tabs Header -->
     <div class="sra-tabs-container">
         <div onclick="switchTab('pending')" id="tab-btn-pending" class="sra-tab-btn active">

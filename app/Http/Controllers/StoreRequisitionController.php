@@ -1707,7 +1707,7 @@ class StoreRequisitionController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $showSRAs = auth()->user()->role === 'Auditor' || auth()->user()->role === 'Main Admin' || auth()->user()->isMainAdminOrSub();
+        $showSRAs = auth()->user()->role === 'Auditor' || auth()->user()->role === 'Main Admin' || auth()->user()->isMainAdminOrSub() || auth()->user()->isDelegatedApprover();
 
         $sraPending = 0;
         $sraApproved = 0;
@@ -1723,10 +1723,16 @@ class StoreRequisitionController extends Controller
             $sraDeclined = \App\Models\InventoryBatch::where('approval_status', 'declined')
                 ->where('supplier_status', '!=', 'System Draft')
                 ->count();
+
+            // Include ServiceSra counts
+            $sraPending += \App\Models\ServiceSra::where('status', '!=', 'approved')->where('status', '!=', 'declined')->count();
+            $sraApproved += \App\Models\ServiceSra::where('status', 'approved')->count();
+            $sraDeclined += \App\Models\ServiceSra::where('status', 'declined')->count();
         }
 
         // Get matching SRA batches if authorized
         $sraCol = collect();
+        $serviceSraCol = collect();
         if ($showSRAs) {
             $sraQuery = \App\Models\InventoryBatch::with(['items', 'recorder'])
                 ->where('supplier_status', '!=', 'System Draft');
@@ -1773,10 +1779,43 @@ class StoreRequisitionController extends Controller
             }
 
             $sraCol = $sraQuery->get();
+
+            // Query ServiceSra requests for authorizers
+            $serviceQuery = \App\Models\ServiceSra::with('submitter');
+            if ($request->filled('status')) {
+                if ($request->status === 'pending') {
+                    $serviceQuery->where('status', '!=', 'approved')->where('status', '!=', 'declined');
+                } elseif ($request->status === 'approved') {
+                    $serviceQuery->where('status', 'approved');
+                } elseif ($request->status === 'declined') {
+                    $serviceQuery->where('status', 'declined');
+                } elseif ($request->status === 'history') {
+                    $serviceQuery->whereIn('status', ['approved', 'declined']);
+                }
+            } else {
+                $serviceQuery->where('status', '!=', 'approved')->where('status', '!=', 'declined');
+            }
+
+            if ($request->filled('date_from')) {
+                $serviceQuery->whereDate('created_at', '>=', $request->date_from);
+            }
+            if ($request->filled('date_to')) {
+                $serviceQuery->whereDate('created_at', '<=', $request->date_to);
+            }
+            if ($request->filled('search_id')) {
+                $search = trim($request->input('search_id'));
+                $serviceQuery->where(function($q) use ($search) {
+                    $q->where('sra_number', 'LIKE', '%' . $search . '%')
+                      ->orWhere('supplier_name', 'LIKE', '%' . $search . '%')
+                      ->orWhere('details', 'LIKE', '%' . $search . '%');
+                });
+            }
+
+            $serviceSraCol = $serviceQuery->get();
         }
 
         $requisitionsCol = $query->get();
-        $merged = $requisitionsCol->concat($sraCol)->sortByDesc('created_at');
+        $merged = $requisitionsCol->concat($sraCol)->concat($serviceSraCol)->sortByDesc('created_at');
 
         $perPage = 15;
         $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();

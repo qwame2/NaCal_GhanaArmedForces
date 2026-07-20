@@ -263,11 +263,26 @@
                     </a>
                 </li>
                 @endif
-                @if(auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Auditor')
+                @if(auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Sub Main Admin' || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Auditor')
+                @php
+                    if (auth()->user()->isMainAdminOrSub() || in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin'])) {
+                        $sraNavRoute = 'admin.service-sra.index';
+                    } elseif (auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)') {
+                        $sraNavRoute = 'stores.service-sra.index';
+                    } elseif (auth()->user()->role === 'Auditor') {
+                        $sraNavRoute = 'auditor.service-sra.index';
+                    } else {
+                        $sraNavRoute = 'admin.service-sra.index';
+                    }
+                    $pendingServiceSraBadgeCount = \App\Models\ServiceSra::where('status', '!=', 'approved')->where('status', '!=', 'declined')->count();
+                @endphp
                 <li class="nav-item">
-                    <a href="{{ route('admin.sra-history') }}" class="nav-link {{ request()->routeIs('admin.sra-history') ? 'active' : '' }}" data-tooltip="Service SRA Approvals">
+                    <a href="{{ route($sraNavRoute) }}" class="nav-link {{ request()->routeIs(['admin.service-sra.index', 'stores.service-sra.index', 'auditor.service-sra.index', 'admin.sra-history']) ? 'active' : '' }}" data-tooltip="Service SRA Approvals">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8H8"/><path d="M16 12H8"/><path d="M15 16H9"/></svg>
                         <span>Service SRA Approvals</span>
+                        <span id="sidebar-badge-service-sra" style="background: #ef4444; color: white; padding: 2px 7px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ ($pendingServiceSraBadgeCount <= 0) ? 'display: none;' : '' }}">
+                            {{ $pendingServiceSraBadgeCount }}
+                        </span>
                     </a>
                 </li>
                 @endif
@@ -358,19 +373,19 @@
                  * Department Head / Main Admin who is NOT a Stores admin = Admin approver.
                  */
                 $sraUser      = auth()->user();
-                $sraIsStoresHead = $sraUser->is_admin
+                $sraIsAdminApprover = $sraUser->is_admin
                     || $sraUser->isMainAdminOrSub()
-                    || $sraUser->role === 'Head of Stores'
-                    || $sraUser->role === 'Dept. Head (Stores)';
-                $sraIsAdminApprover = !$sraIsStoresHead
-                    && in_array($sraUser->role, ['Department Head', 'Dept Head HR', 'Head of Welfare']);
+                    || in_array($sraUser->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Dept Head HR', 'Head of Welfare']);
+                $sraIsStoresHead = !$sraIsAdminApprover && ($sraUser->role === 'Head of Stores'
+                    || $sraUser->role === 'Dept. Head (Stores)'
+                    || strcasecmp($sraUser->department ?? '', 'Stores') === 0);
 
-                if ($sraIsStoresHead) {
+                if ($sraIsAdminApprover) {
+                    $sraRoute       = 'admin.service-sra.index';
+                    $sraRouteActive = request()->routeIs(['admin.service-sra.index', 'admin.sra-history']);
+                } elseif ($sraIsStoresHead) {
                     $sraRoute       = 'stores.service-sra.index';
                     $sraRouteActive = request()->routeIs(['stores.service-sra.index']);
-                } elseif ($sraIsAdminApprover) {
-                    $sraRoute       = 'admin.service-sra.index';
-                    $sraRouteActive = request()->routeIs('admin.service-sra.index');
                 } else {
                     $sraRoute       = 'service-sra.index';
                     $sraRouteActive = request()->routeIs(['service-sra.index', 'service-sra.create']);

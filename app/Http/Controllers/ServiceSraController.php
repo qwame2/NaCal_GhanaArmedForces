@@ -72,15 +72,29 @@ class ServiceSraController extends Controller
             'stores_status'     => 'pending',
         ]);
 
-        // System log
-        SystemLog::create([
-            'user_id'     => $user->id,
-            'event_type'  => 'SERVICE_SRA',
-            'action'      => 'Service SRA Submitted',
-            'description' => "Store Officer {$user->name} submitted SRA {$sra->sra_number} for supplier: {$sra->supplier_name}.",
-            'severity'    => 'info',
-            'ip_address'  => $request->ip(),
-        ]);
+        // Notify Authorizers (Main Admin, Sub Main Admin, Head of Stores)
+        $authorizers = User::where(function($q) {
+            $q->where('is_admin', true)
+              ->orWhereIn('role', ['Main Admin', 'Sub Main Admin', 'Head of Stores', 'Dept. Head (Stores)']);
+        })->where('is_active', true)->get();
+
+        $reviewLink = route('admin.service-sra.index');
+        $msg  = "<div class='admin-view requisition-msg' style='padding:15px;border:1px solid #16a34a;border-radius:12px;background:rgba(22,163,74,0.05);'>";
+        $msg .= "<b style='color:#15803d;'>📦 NEW SERVICE SRA SUBMITTED — Ref: #{$sra->sra_number}</b><br><br>";
+        $msg .= "Store Officer <b>" . e($user->name) . "</b> has submitted a new Service Stock Received Advice (SRA) for Supplier: <b>" . e($sra->supplier_name) . "</b>.<br><br>";
+        $msg .= "<b>Delivery Date:</b> " . e(\Carbon\Carbon::parse($sra->date_of_delivery)->format('d M Y')) . "<br>";
+        $msg .= "<b>Details:</b> " . e($sra->details) . "<br><br>";
+        $msg .= "<a href='" . $reviewLink . "' style='display:inline-block;background:#16a34a;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-weight:800;font-size:0.85rem;'>Review & Approve Service SRA</a>";
+        $msg .= "</div>";
+
+        foreach ($authorizers as $auth) {
+            \App\Models\Message::create([
+                'sender_id'    => $user->id,
+                'receiver_id'  => $auth->id,
+                'message'      => $msg,
+                'is_automated' => true,
+            ]);
+        }
 
         return response()->json([
             'success'    => true,
@@ -177,19 +191,54 @@ class ServiceSraController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // RECEIPT PREVIEW (for review before approval — no status gate)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function receiptPreview($id)
+    {
+        $sra = ServiceSra::with('submitter')->findOrFail($id);
+
+        // Gate: only admin/stores/auditor roles can preview
+        $user = auth()->user();
+        $allowed = $user->is_admin
+            || $user->isMainAdminOrSub()
+            || $user->role === 'Head of Stores'
+            || $user->role === 'Auditor'
+            || in_array(strtoupper($user->department ?? ''), ['STORES', 'STORE'])
+            || $user->isDelegatedApprover()
+            || $sra->submitted_by === $user->id;
+
+        if (!$allowed) {
+            abort(403, 'Unauthorized');
+        }
+
+        $orgName = Setting::get('organization_name', 'NACOC');
+
+        return view('service-sra.receipt', compact('sra', 'orgName'));
+    }
+
+
+    // ─────────────────────────────────────────────────────────────────────────
     // HEAD OF ADMIN: Approval queue
     // ─────────────────────────────────────────────────────────────────────────
 
     public function adminIndex()
     {
         $user = auth()->user();
-        if (!$user->is_admin && $user->role !== 'Main Admin') {
-            abort(403);
+        $isAuthorizer = $user->is_admin 
+            || $user->isMainAdminOrSub() 
+            || in_array($user->role, ['Main Admin', 'Sub Main Admin', 'Head of Stores', 'Dept. Head (Stores)']) 
+            || $user->isDelegatedApprover();
+
+        if (!$isAuthorizer) {
+            abort(403, 'Unauthorized access.');
         }
 
         $pending = ServiceSra::with('submitter')
-            ->where('admin_status', 'pending')
-            ->where('status', 'pending')
+            ->where(function($q) {
+                $q->where('admin_status', 'pending')
+                  ->orWhere('status', 'pending');
+            })
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -209,8 +258,13 @@ class ServiceSraController extends Controller
     public function adminProcess(Request $request, $id)
     {
         $user = auth()->user();
-        if (!$user->is_admin && $user->role !== 'Main Admin') {
-            abort(403);
+        $isAuthorizer = $user->is_admin 
+            || $user->isMainAdminOrSub() 
+            || in_array($user->role, ['Main Admin', 'Sub Main Admin', 'Head of Stores', 'Dept. Head (Stores)']) 
+            || $user->isDelegatedApprover();
+
+        if (!$isAuthorizer) {
+            abort(403, 'Unauthorized access.');
         }
 
         $request->validate([
@@ -256,31 +310,59 @@ class ServiceSraController extends Controller
     // HEAD OF STORES: Final approval queue
     // ─────────────────────────────────────────────────────────────────────────
 
-    public function storesIndex()
+    public function storesIndex(Request $request)
     {
         $user = auth()->user();
         $isStores = $user->is_admin
-            || $user->role === 'Main Admin'
-            || $user->role === 'Head of Stores'
-            || $user->role === 'Dept. Head (Stores)';
+            || $user->isMainAdminOrSub()
+            || in_array($user->role, ['Main Admin', 'Sub Main Admin', 'Head of Stores', 'Dept. Head (Stores)'])
+            || (strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0)
+            || $user->isDelegatedApprover();
 
         if (!$isStores) {
-            abort(403);
+            abort(403, 'Unauthorized access.');
         }
 
         $pending = ServiceSra::with('submitter')
-            ->where('status', 'admin_approved')
-            ->where('stores_status', 'pending')
+            ->where(function($q) {
+                $q->where('status', 'admin_approved')
+                  ->orWhere('admin_status', 'pending')
+                  ->orWhere('stores_status', 'pending');
+            })
+            ->where('status', '!=', 'approved')
+            ->where('status', '!=', 'declined')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10, ['*'], 'pending_page');
 
         $history = ServiceSra::with('submitter')
             ->whereIn('stores_status', ['approved', 'declined'])
             ->orderBy('updated_at', 'desc')
-            ->limit(50)
-            ->get();
+            ->paginate(10, ['*'], 'history_page');
 
         return view('service-sra.stores', compact('pending', 'history'));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // HEAD OF STORES: Review Board page
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function storesReview($id)
+    {
+        $user = auth()->user();
+        $isStores = $user->is_admin
+            || $user->isMainAdminOrSub()
+            || in_array($user->role, ['Main Admin', 'Sub Main Admin', 'Head of Stores', 'Dept. Head (Stores)'])
+            || (strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0)
+            || $user->isDelegatedApprover();
+
+        if (!$isStores) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $sra = ServiceSra::with('submitter')->findOrFail($id);
+        $orgName = Setting::get('organization_name', 'NACOC');
+
+        return view('service-sra.review', compact('sra', 'orgName'));
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -291,12 +373,13 @@ class ServiceSraController extends Controller
     {
         $user = auth()->user();
         $isStores = $user->is_admin
-            || $user->role === 'Main Admin'
-            || $user->role === 'Head of Stores'
-            || $user->role === 'Dept. Head (Stores)';
+            || $user->isMainAdminOrSub()
+            || in_array($user->role, ['Main Admin', 'Sub Main Admin', 'Head of Stores', 'Dept. Head (Stores)'])
+            || (strcasecmp($user->department ?? '', 'Stores') === 0 || strcasecmp($user->department ?? '', 'Store') === 0)
+            || $user->isDelegatedApprover();
 
         if (!$isStores) {
-            abort(403);
+            abort(403, 'Unauthorized access.');
         }
 
         $request->validate([
@@ -306,14 +389,20 @@ class ServiceSraController extends Controller
 
         $sra = ServiceSra::findOrFail($id);
 
-        if ($sra->status !== 'admin_approved') {
-            return response()->json(['success' => false, 'message' => 'This SRA has not been admin-approved yet or has already been processed.'], 422);
+        if ($sra->status === 'approved' || $sra->status === 'declined') {
+            return response()->json(['success' => false, 'message' => 'This SRA has already been finalized.'], 422);
         }
 
         $sra->stores_status      = $request->action;
         $sra->stores_approved_by = $user->name;
         $sra->stores_approved_at = now();
         $sra->stores_notes       = $request->notes;
+
+        if ($sra->admin_status === 'pending') {
+            $sra->admin_status      = $request->action;
+            $sra->admin_approved_by = $user->name;
+            $sra->admin_approved_at = now();
+        }
 
         $sra->status = $request->action === 'approved' ? 'approved' : 'declined';
         $sra->save();
@@ -366,8 +455,8 @@ class ServiceSraController extends Controller
     public function auditorProcess(Request $request, $id)
     {
         $user = auth()->user();
-        if ($user->role !== 'Auditor') {
-            abort(403);
+        if ($user->role !== 'Auditor' && !$user->isMainAdminOrSub() && !$user->is_admin && !$user->isDelegatedApprover()) {
+            abort(403, 'Unauthorized access.');
         }
 
         $request->validate([
@@ -377,7 +466,7 @@ class ServiceSraController extends Controller
 
         $sra = ServiceSra::findOrFail($id);
 
-        if ($sra->status !== 'auditor_pending' || $sra->auditor_status !== 'pending') {
+        if ($sra->auditor_status !== 'pending') {
             return response()->json(['success' => false, 'message' => 'This SRA has already been processed by the Auditor.'], 422);
         }
 
