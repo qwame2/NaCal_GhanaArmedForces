@@ -1240,5 +1240,67 @@ class ApiTest extends TestCase
         $response = $this->actingAs($auditor)->get(route('main-admin.track-requests'));
         $response->assertStatus(200);
     }
+
+    public function test_store_officer_cannot_submit_duplicate_item_entry(): void
+    {
+        $admin = User::factory()->create([
+            'is_admin' => true,
+            'role' => 'Main Admin',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $officer1 = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'can_add_inventory' => true,
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $officer2 = User::factory()->create([
+            'role' => 'Officer',
+            'department' => 'Stores',
+            'can_add_inventory' => true,
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $payload = [
+            'ledge_category' => 'A',
+            'supplier_name' => 'Acme Supplies',
+            'supplier_status' => 'Full Delivery',
+            'acquisition_type' => 'Purchased',
+            'entry_date' => now()->toDateString(),
+            'arrival_date' => now()->toDateString(),
+            'items' => [
+                [
+                    'ledge_category' => 'A',
+                    'description' => 'UNIFORM SHIRT',
+                    'unit' => 'Piece',
+                    'stock_balance' => '100',
+                    'qty' => '100',
+                    'variance' => '0',
+                ]
+            ]
+        ];
+
+        // Officer 1 submits -> Success (Staged pending approval)
+        $response1 = $this->actingAs($officer1)->postJson(route('inventory.store'), $payload);
+        $response1->assertStatus(200)
+                  ->assertJson(['success' => true, 'is_pending' => true]);
+
+        // Officer 2 attempts to submit exact same item description & quantity -> Blocked (422 Duplicate)
+        $response2 = $this->actingAs($officer2)->postJson(route('inventory.store'), $payload);
+        $response2->assertStatus(422)
+                  ->assertJson(['success' => false]);
+        $this->assertStringContainsString('Duplicate Entry Blocked', $response2->json('message'));
+
+        // Officer 2 submits item with DIFFERENT description -> Success
+        $payload['items'][0]['description'] = 'UNIFORM TROUSERS';
+        $response3 = $this->actingAs($officer2)->postJson(route('inventory.store'), $payload);
+        $response3->assertStatus(200)
+                  ->assertJson(['success' => true]);
+    }
 }
 

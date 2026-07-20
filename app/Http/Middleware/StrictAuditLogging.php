@@ -122,14 +122,18 @@ class StrictAuditLogging
                     $description = str_replace(['Main Admin', 'Head of Admin'], 'PLACEHOLDER_HOA_AUTH', $description);
                     $description = str_replace('PLACEHOLDER_HOA_AUTH', 'Head of Admin(Authorizer)', $description);
 
-                    \App\Models\SystemLog::create([
-                        'user_id' => auth()->id(),
-                        'event_type' => 'ACTIVITY',
-                        'action' => $actionType,
-                        'description' => $description,
-                        'severity' => $severity,
-                        'ip_address' => $request->ip()
-                    ]);
+                    try {
+                        \App\Models\SystemLog::create([
+                            'user_id' => auth()->id(),
+                            'event_type' => 'ACTIVITY',
+                            'action' => $actionType,
+                            'description' => $description,
+                            'severity' => $severity,
+                            'ip_address' => $request->ip()
+                        ]);
+                    } catch (\Throwable $e) {
+                        // Ignore log creation failures to prevent interrupting user actions
+                    }
             }
         }
 

@@ -255,7 +255,35 @@ class InventoryController extends Controller
 
         $arrivalDate = $validated['arrival_date'];
 
+        $fingerprint = md5(json_encode(collect($validated['items'])->map(function($i) {
+            return [
+                'd' => trim(strtoupper($i['description'] ?? '')),
+                'q' => floatval(str_replace(',', '', $i['qty'] ?? ($i['stock_balance'] ?? 0)))
+            ];
+        })->toArray()));
+
+        $lock = \Illuminate\Support\Facades\Cache::lock('item_entry_lock_' . $fingerprint, 10);
+
         try {
+            if (!$lock->get()) {
+                usleep(300000); // Retry after 300ms
+                if (!$lock->get()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'System is processing a concurrent entry request with identical items. Please try again in a moment.'
+                    ], 422);
+                }
+            }
+
+            $dupCheck = $this->checkForDuplicateItemEntry($validated['items'], $arrivalDate);
+            if ($dupCheck) {
+                optional($lock)->release();
+                return response()->json([
+                    'success' => false,
+                    'message' => $dupCheck['message']
+                ], 422);
+            }
+
             DB::beginTransaction();
 
             $is_admin = auth()->user()->is_admin || auth()->user()->isDelegatedApprover();
@@ -372,6 +400,7 @@ class InventoryController extends Controller
             }
 
             DB::commit();
+            optional($lock)->release();
 
             return response()->json([
                 'success' => true,
@@ -380,7 +409,10 @@ class InventoryController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            DB::rollBack();
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            optional($lock)->release();
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to save records: ' . $e->getMessage()
@@ -424,7 +456,35 @@ class InventoryController extends Controller
 
         $arrivalDate = $validated['arrival_date'];
 
+        $fingerprint = md5(json_encode(collect($validated['items'])->map(function($i) {
+            return [
+                'd' => trim(strtoupper($i['description'] ?? '')),
+                'q' => floatval(str_replace(',', '', $i['qty'] ?? ($i['stock_balance'] ?? 0)))
+            ];
+        })->toArray()));
+
+        $lock = \Illuminate\Support\Facades\Cache::lock('item_entry_lock_' . $fingerprint, 10);
+
         try {
+            if (!$lock->get()) {
+                usleep(300000); // Retry after 300ms
+                if (!$lock->get()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'System is processing a concurrent entry request with identical items. Please try again in a moment.'
+                    ], 422);
+                }
+            }
+
+            $dupCheck = $this->checkForDuplicateItemEntry($validated['items'], $arrivalDate);
+            if ($dupCheck) {
+                optional($lock)->release();
+                return response()->json([
+                    'success' => false,
+                    'message' => $dupCheck['message']
+                ], 422);
+            }
+
             DB::beginTransaction();
 
 
@@ -503,6 +563,7 @@ class InventoryController extends Controller
                 }
 
                 DB::commit();
+                optional($lock)->release();
 
                 return response()->json([
                     'success' => true,
@@ -613,7 +674,10 @@ class InventoryController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            DB::rollBack();
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            optional($lock)->release();
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to save records: ' . $e->getMessage()
@@ -734,6 +798,85 @@ class InventoryController extends Controller
 
     public function checkDuplicate(Request $request)
     {
+        $items = $request->input('items', []);
+        $arrivalDate = $request->input('arrival_date', date('Y-m-d'));
+        
+        if (empty($items) && $request->has('description')) {
+            $items = [[
+                'description' => $request->input('description'),
+                'qty' => $request->input('qty') ?? $request->input('stock_balance')
+            ]];
+        }
+
+        $dup = $this->checkForDuplicateItemEntry($items, $arrivalDate);
+        if ($dup) {
+            return response()->json(['duplicate' => true, 'message' => $dup['message']], 422);
+        }
+
         return response()->json(['duplicate' => false]);
+    }
+
+    /**
+     * Check if any item in the incoming submission matches an existing pending EditRequest
+     * or a recently created inventory batch item (exact same description and received quantity).
+     */
+    private function checkForDuplicateItemEntry(array $items, string $arrivalDate): ?array
+    {
+        foreach ($items as $item) {
+            $desc = trim(strtoupper($item['description'] ?? ''));
+            if (empty($desc)) continue;
+
+            $rawQty = $item['qty'] ?? ($item['stock_balance'] ?? 0);
+            $qtyVal = floatval(str_replace(',', '', $rawQty));
+            if ($qtyVal <= 0) continue;
+
+            // 1. Check Pending Approval Queue (EditRequest)
+            $pendingRequests = \App\Models\EditRequest::with('user')
+                ->where('item_type', 'batch_creation')
+                ->where('status', 'pending')
+                ->get();
+
+            foreach ($pendingRequests as $pendingReq) {
+                $payload = json_decode($pendingReq->payload, true);
+                if (empty($payload['items']) || !is_array($payload['items'])) continue;
+
+                foreach ($payload['items'] as $pendingItem) {
+                    $pDesc = trim(strtoupper($pendingItem['description'] ?? ''));
+                    $pRawQty = $pendingItem['qty'] ?? ($pendingItem['stock_balance'] ?? 0);
+                    $pQty = floatval(str_replace(',', '', $pRawQty));
+
+                    if ($pDesc === $desc && abs($pQty - $qtyVal) < 0.001) {
+                        $submitter = $pendingReq->user->name ?? 'another Store Officer';
+                        $reqCode = 'REQ-' . str_pad($pendingReq->id, 5, '0', STR_PAD_LEFT);
+                        return [
+                            'duplicate' => true,
+                            'message' => "Duplicate Entry Blocked: An item entry request for '{$item['description']}' with quantity {$qtyVal} is already pending authorization ({$reqCode}, submitted by {$submitter}). Please wait for it to be reviewed or check with your Head of Stores."
+                        ];
+                    }
+                }
+            }
+
+            // 2. Check Recent Inventory Records (within last 24h or matching arrival date)
+            $recentMatch = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
+                ->whereRaw('TRIM(UPPER(inventory_items.description)) = ?', [$desc])
+                ->whereRaw('CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2)) = ?', [$qtyVal])
+                ->where(function($q) use ($arrivalDate) {
+                    $q->where('inventory_batches.arrival_date', '=', $arrivalDate)
+                      ->orWhere('inventory_batches.created_at', '>=', now()->subHours(24));
+                })
+                ->where('inventory_batches.supplier_status', '!=', 'System Draft')
+                ->select('inventory_items.description', 'inventory_batches.id as batch_id', 'inventory_batches.arrival_date')
+                ->first();
+
+            if ($recentMatch) {
+                $formattedDate = \Carbon\Carbon::parse($recentMatch->arrival_date)->format('d M Y');
+                return [
+                    'duplicate' => true,
+                    'message' => "Duplicate Entry Blocked: An identical inventory record for '{$item['description']}' (Qty: {$qtyVal}) was already recorded on {$formattedDate} (Batch #SRA-{$recentMatch->batch_id}). Please verify your entry details."
+                ];
+            }
+        }
+
+        return null;
     }
 }
