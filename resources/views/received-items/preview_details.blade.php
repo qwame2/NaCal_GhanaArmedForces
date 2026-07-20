@@ -832,18 +832,17 @@
             })
             .then(data => {
                 if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Rolled Back!',
-                        text: 'Entry sent back to user for correction.',
-                        confirmButtonColor: '#16a34a'
-                    }).then(() => {
-                        let targetUrl = '{{ route("admin.messages") }}';
-                        if (document.referrer && document.referrer.includes('item-entry-approval')) {
-                            targetUrl = document.referrer;
-                        }
-                        window.location.href = targetUrl;
-                    });
+                    sessionStorage.setItem('flash_toast', JSON.stringify({
+                        title: 'Item Entry Rolled Back',
+                        message: 'The item entry request has been successfully rolled back and sent for correction.',
+                        type: 'warning',
+                        duration: 300000
+                    }));
+                    let targetUrl = '{{ route("admin.messages") }}';
+                    if (document.referrer && document.referrer.includes('item-entry-approval')) {
+                        targetUrl = document.referrer;
+                    }
+                    window.location.href = targetUrl;
                 } else {
                     Swal.fire('Rollback Failed', data.message || 'Error processing rollback.', 'error');
                 }
@@ -953,18 +952,17 @@
             })
             .then(data => {
                 if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Changes Saved!',
-                        text: 'The inventory batch edits have been successfully merged.',
-                        confirmButtonColor: '#16a34a'
-                    }).then(() => {
-                        let targetUrl = '{{ route("admin.messages") }}';
-                        if (document.referrer && document.referrer.includes('item-entry-approval')) {
-                            targetUrl = document.referrer;
-                        }
-                        window.location.href = targetUrl;
-                    });
+                    sessionStorage.setItem('flash_toast', JSON.stringify({
+                        title: 'Edits Authorized & Merged',
+                        message: 'The proposed inventory batch edits have been successfully authorized and merged into live stock.',
+                        type: 'success',
+                        duration: 300000
+                    }));
+                    let targetUrl = '{{ route("admin.messages") }}';
+                    if (document.referrer && document.referrer.includes('item-entry-approval')) {
+                        targetUrl = document.referrer;
+                    }
+                    window.location.href = targetUrl;
                 } else {
                     Swal.fire('Error', data.message || 'Could not save changes.', 'error');
                 }
@@ -1009,18 +1007,18 @@
         })
         .then(data => {
             if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Action Logged!',
-                    text: status === 'approved' ? 'Stock entry successfully approved.' : 'Stock entry submission rejected.',
-                    confirmButtonColor: '#16a34a'
-                }).then(() => {
-                    let targetUrl = '{{ route("admin.messages") }}';
-                    if (document.referrer && document.referrer.includes('item-entry-approval')) {
-                        targetUrl = document.referrer;
-                    }
-                    window.location.href = targetUrl;
-                });
+                const isApproved = (status === 'approved');
+                sessionStorage.setItem('flash_toast', JSON.stringify({
+                    title: isApproved ? 'Item Entry Authorized' : 'Item Entry Rejected',
+                    message: isApproved ? 'Stock entry request successfully authorized and added to live stock.' : 'Stock entry submission has been rejected.',
+                    type: isApproved ? 'success' : 'error',
+                    duration: 300000
+                }));
+                let targetUrl = '{{ route("admin.messages") }}';
+                if (document.referrer && document.referrer.includes('item-entry-approval')) {
+                    targetUrl = document.referrer;
+                }
+                window.location.href = targetUrl;
             } else {
                 Swal.fire('Action Failed', data.message || 'Error processing request', 'error');
                 if (approveBtn) approveBtn.disabled = false;

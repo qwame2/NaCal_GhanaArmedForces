@@ -1528,14 +1528,23 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => {
+        try {
+            const pendingToast = sessionStorage.getItem('flash_toast');
+            if (pendingToast) {
+                const tObj = JSON.parse(pendingToast);
+                sessionStorage.removeItem('flash_toast');
+                showToast(tObj.title, tObj.message, tObj.type || 'success', tObj.duration || 300000);
+            }
+        } catch(e) {}
+
         @if(session('success'))
-            showToast('Success', "{!! addslashes(session('success')) !!}", 'success');
+            showToast('Success', "{!! addslashes(session('success')) !!}", 'success', {{ session('flash_duration', 10000) }});
         @endif
         @if(session('error'))
-            showToast('Error', "{!! addslashes(session('error')) !!}", 'error');
+            showToast('Error', "{!! addslashes(session('error')) !!}", 'error', {{ session('flash_duration', 10000) }});
         @endif
         @if(session('warning'))
-            showToast('Warning', "{!! addslashes(session('warning')) !!}", 'warning');
+            showToast('Warning', "{!! addslashes(session('warning')) !!}", 'warning', {{ session('flash_duration', 10000) }});
         @endif
         @if($errors->any())
             showToast('Validation Error', "{!! addslashes($errors->first()) !!}", 'error');

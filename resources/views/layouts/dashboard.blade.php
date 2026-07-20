@@ -1154,17 +1154,28 @@
             };
         }
 
-        @if(session('success'))
         document.addEventListener('DOMContentLoaded', () => {
-            showToast('Success', "{{ session('success') }}", 'success');
-        });
-        @endif
+            try {
+                const pendingToast = sessionStorage.getItem('flash_toast');
+                if (pendingToast) {
+                    const tObj = JSON.parse(pendingToast);
+                    sessionStorage.removeItem('flash_toast');
+                    showToast(tObj.title, tObj.message, tObj.type || 'success', tObj.duration || 300000);
+                }
+            } catch(e) {}
 
-        @if(session('error'))
-        document.addEventListener('DOMContentLoaded', () => {
-            showToast('Action Failed', "{{ session('error') }}", 'error');
+            @if(session('success'))
+                showToast('Success', "{{ session('success') }}", 'success', {{ session('flash_duration', 10000) }});
+            @endif
+
+            @if(session('error'))
+                showToast('Action Failed', "{{ session('error') }}", 'error', {{ session('flash_duration', 10000) }});
+            @endif
+
+            @if(session('warning'))
+                showToast('Notice', "{{ session('warning') }}", 'warning', {{ session('flash_duration', 10000) }});
+            @endif
         });
-        @endif
         // Global Premium Tooltip Engine
         const initTooltips = () => {
             // Convert title attributes to data-tooltip to avoid default browser tooltips
