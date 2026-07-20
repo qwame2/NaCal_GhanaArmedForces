@@ -52,19 +52,15 @@
         </td>
         <td style="font-weight: 800; color: var(--text-main);">{{ $sra->submitter->name ?? 'N/A' }}</td>
         <td style="text-align: center; vertical-align: middle;">
-            <button type="button"
-                    onclick="openServiceSraAuditModal(this)"
-                    data-id="{{ $sra->id }}"
-                    data-sra-number="{{ $sra->sra_number }}"
-                    data-supplier="{{ e($sra->supplier_name ?? '—') }}"
-                    data-details="{{ e($sra->details ?? '—') }}"
-                    style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(139,92,246,0.08); color: #8b5cf6; font-size: 0.72rem; font-weight: 800; border: 1px solid transparent; cursor: pointer; transition: all 0.2s;"
-                    onmouseover="this.style.background='#8b5cf6'; this.style.color='white';"
-                    onmouseout="this.style.background='rgba(139,92,246,0.08)'; this.style.color='#8b5cf6';"
-                    title="Review Service SRA">
+            <a href="{{ route('auditor.service-sra.review', $sra->id) }}"
+               target="_blank"
+               style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(139,92,246,0.08); color: #8b5cf6; font-size: 0.72rem; font-weight: 800; border: 1px solid transparent; text-decoration: none; cursor: pointer; transition: all 0.2s;"
+               onmouseover="this.style.background='#8b5cf6'; this.style.color='white';"
+               onmouseout="this.style.background='rgba(139,92,246,0.08)'; this.style.color='#8b5cf6';"
+               title="Review Service SRA">
                 <i data-lucide="file-signature" style="width: 13px; height: 13px;"></i>
                 <span>Review &amp; Approve</span>
-            </button>
+            </a>
         </td>
     </tr>
 @endforeach

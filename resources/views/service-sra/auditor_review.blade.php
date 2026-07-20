@@ -13,8 +13,8 @@
     
     <style>
         :root {
-            --primary: #10b981;
-            --primary-hover: #059669;
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
             --bg-dark: #0f172a;
             --bg-page: #f8fafc;
             --border-color: #e2e8f0;
@@ -52,8 +52,8 @@
         .icon-badge {
             width: 44px;
             height: 44px;
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -98,24 +98,13 @@
         .btn-approve {
             background: var(--primary);
             color: #ffffff;
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
         }
 
         .btn-approve:hover {
             background: var(--primary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-        }
-
-        .btn-decline {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
-
-        .btn-decline:hover {
-            background: rgba(239, 68, 68, 0.2);
-            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
         }
 
         /* Document Container */
@@ -427,11 +416,11 @@
             </div>
             <div class="header-title-area">
                 <h2>SRA Receipt Review Board</h2>
-                <p>This receipt requires your verification and approval to become active stock.</p>
+                <p>This receipt requires your verification and approval to proceed in the pipeline.</p>
             </div>
         </div>
         <div class="header-actions">
-            <button onclick="handleStoresProcess('approved')" class="btn-action btn-approve">
+            <button onclick="handleAuditorProcess('approved')" class="btn-action btn-approve">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 Approve
             </button>
@@ -673,54 +662,66 @@
         </div>
     </div>
 
-    <!-- Script to handle stores final process action -->
+    <!-- Script to handle auditor process action -->
     <script>
-        function handleStoresProcess(action) {
-            const notes = '';
-
-            // Show processing loading dialog
+        function handleAuditorProcess(action) {
             Swal.fire({
-                title: 'Processing SRA...',
-                html: 'Please wait a moment.',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+                title: 'Approve SRA?',
+                text: 'This will verify and auditor-approve the Service SRA.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Approve',
+                confirmButtonColor: '#8b5cf6',
+                cancelButtonColor: '#64748b',
+            }).then(result => {
+                if (!result.isConfirmed) return;
 
-            fetch(`/stores/service-sra/{{ $sra->id }}/process`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({ action, notes }),
-            })
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: action === 'approved' ? 'Approved!' : 'Declined',
-                        text: res.message,
-                        timer: 2500,
-                        showConfirmButton: false,
-                    }).then(() => {
-                        // Close tab or redirect back
-                        window.close();
-                        // Fallback if window.close doesn't work (due to browser security)
-                        setTimeout(() => {
-                            window.location.href = '/stores/service-sra';
-                        }, 500);
-                    });
-                } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: res.message });
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                Swal.fire({ icon: 'error', title: 'Network Error', text: 'Please try again.' });
+                const notes = '';
+
+                // Show processing loading dialog
+                Swal.fire({
+                    title: 'Processing SRA...',
+                    html: 'Please wait a moment.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(`/auditor/service-sra/{{ $sra->id }}/process`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ action, notes }),
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Approved!',
+                            text: res.message,
+                            timer: 2500,
+                            showConfirmButton: false,
+                        }).then(() => {
+                            // Close tab or redirect back
+                            window.close();
+                            // Fallback if window.close doesn't work (due to browser security)
+                            setTimeout(() => {
+                                window.location.href = '/auditor';
+                            }, 500);
+                        });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Error', text: res.message });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({ icon: 'error', title: 'Network Error', text: 'Please try again.' });
+                });
             });
         }
     </script>

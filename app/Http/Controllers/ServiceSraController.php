@@ -324,13 +324,8 @@ class ServiceSraController extends Controller
         }
 
         $pending = ServiceSra::with('submitter')
-            ->where(function($q) {
-                $q->where('status', 'admin_approved')
-                  ->orWhere('admin_status', 'pending')
-                  ->orWhere('stores_status', 'pending');
-            })
-            ->where('status', '!=', 'approved')
-            ->where('status', '!=', 'declined')
+            ->where('status', 'admin_approved')
+            ->where('stores_status', 'pending')
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'pending_page');
 
@@ -446,6 +441,23 @@ class ServiceSraController extends Controller
             ->get();
 
         return view('service-sra.auditor', compact('pending', 'history'));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // AUDITOR: Review Board page
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function auditorReview($id)
+    {
+        $user = auth()->user();
+        if ($user->role !== 'Auditor' && !$user->isMainAdminOrSub() && !$user->is_admin && !$user->isDelegatedApprover()) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $sra = ServiceSra::with('submitter')->findOrFail($id);
+        $orgName = Setting::get('organization_name', 'NACOC');
+
+        return view('service-sra.auditor_review', compact('sra', 'orgName'));
     }
 
     // ─────────────────────────────────────────────────────────────────────────

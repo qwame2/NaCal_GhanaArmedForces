@@ -722,6 +722,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/stores/item-entry-approval', [\App\Http\Controllers\EditRequestController::class, 'itemEntryIndex'])->name('stores.item-entry-approval');
     // Auditor verification
     Route::get('/auditor/service-sra', [ServiceSraController::class, 'auditorIndex'])->name('auditor.service-sra.index');
+    Route::get('/auditor/service-sra/{id}/review', [ServiceSraController::class, 'auditorReview'])->name('auditor.service-sra.review');
     Route::post('/auditor/service-sra/{id}/process', [ServiceSraController::class, 'auditorProcess'])->name('auditor.service-sra.process');
     Route::get('/notifications', function() {
         return view('notifications');

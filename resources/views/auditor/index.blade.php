@@ -1182,31 +1182,7 @@
 
 </div>
 
-{{-- Service SRA Audit Approval Modal --}}
-<div id="service-sra-audit-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:20px; padding:2.5rem; max-width:750px; width:90%; box-shadow:0 25px 60px rgba(0,0,0,0.25); position:relative;">
-        <button onclick="closeServiceSraAuditModal()" style="position:absolute; top:1.25rem; right:1.25rem; background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:1.5rem;">&times;</button>
-        <div style="display:flex; align-items:center; gap:16px; margin-bottom:1.75rem;">
-            <div style="width:48px; height:48px; background:rgba(139,92,246,0.1); border-radius:14px; display:flex; align-items:center; justify-content:center;">
-                <i data-lucide="file-signature" style="width:24px; height:24px; color:#4ade80;"></i>
-            </div>
-            <div>
-                <div style="font-size:0.75rem; font-weight:800; color:#4ade80; text-transform:uppercase; letter-spacing:0.1em; margin-bottom: 2px;">Auditor Review</div>
-                <h3 style="margin:0; font-size:1.35rem; font-weight:900; color:var(--text-main);">Service SRA Verification</h3>
-            </div>
-        </div>
-        <div id="ssra-modal-info" style="background:rgba(139,92,246,0.04); border:1px solid rgba(139,92,246,0.12); border-radius:14px; padding:1.5rem; margin-bottom:1.5rem; font-size:0.9rem; color:var(--text-muted); line-height:1.7; border-left: 4px solid #4ade80;"></div>
-        <div style="margin-bottom:1.75rem;">
-            <label style="display:block; font-size:0.78rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">Auditor Notes (Optional)</label>
-            <textarea id="ssra-audit-notes" rows="4" placeholder="Add any verification notes or comments..." style="width:100%; padding:1rem; border:1.5px solid var(--border-color); border-radius:12px; background:var(--bg-main); color:var(--text-main); font-family:inherit; font-size:0.9rem; resize:vertical; outline:none; box-sizing:border-box; line-height: 1.5;"></textarea>
-        </div>
-        <div>
-            <button id="ssra-approve-btn" onclick="submitServiceSraAudit('approved')" style="width:100%; padding:0.95rem; background:linear-gradient(135deg,#10b981,#059669); color:white; border:none; border-radius:12px; font-weight:900; font-size:0.95rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-                <i data-lucide="check-circle" style="width:18px; height:18px;"></i> Approve & Forward to Head of Stores
-            </button>
-        </div>
-    </div>
-</div>
+
 <script>
     function toggleSupplierPopover(btn, event) {
         event.stopPropagation();
@@ -1554,118 +1530,7 @@
         }, 10000);
     });
 
-    // ── Service SRA Audit Modal ────────────────────────────────────────────────
-    let currentServiceSraId = null;
 
-    async function openServiceSraAuditModal(target) {
-        let id, sraNumber, supplier, details;
-
-        if (typeof target === 'object' && target !== null && typeof target.getAttribute === 'function') {
-            id = target.getAttribute('data-id');
-            sraNumber = target.getAttribute('data-sra-number');
-            supplier = target.getAttribute('data-supplier');
-            details = target.getAttribute('data-details');
-        } else {
-            id = target;
-        }
-
-        currentServiceSraId = id;
-        const infoBox = document.getElementById('ssra-modal-info');
-        infoBox.innerHTML =
-            `<div style="font-size:0.85rem;">Fetching SRA details...</div>`;
-        document.getElementById('ssra-audit-notes').value = '';
-        const modal = document.getElementById('service-sra-audit-modal');
-        modal.style.display = 'flex';
-
-        if (sraNumber && supplier) {
-            infoBox.innerHTML =
-                `<strong style="color:var(--text-main);">${sraNumber}</strong> &mdash; ${supplier}<br>
-                <span style="font-size:0.78rem;">${details || ''}</span>`;
-            if (window.lucide) window.lucide.createIcons({ node: modal });
-        } else {
-            try {
-                const res = await fetch(`{{ url('/api/service-sra') }}/${id}`);
-                const json = await res.json();
-                if (json.success) {
-                    const sra = json.data;
-                    infoBox.innerHTML =
-                        `<strong style="color:var(--text-main);">${sra.sra_number}</strong> &mdash; ${sra.supplier_name}<br>
-                        <span style="font-size:0.78rem;">${sra.details || ''}</span>`;
-                }
-            } catch (e) {
-                console.error(e);
-            }
-            if (window.lucide) window.lucide.createIcons({ node: modal });
-        }
-    }
-
-    function closeServiceSraAuditModal() {
-        document.getElementById('service-sra-audit-modal').style.display = 'none';
-        currentServiceSraId = null;
-    }
-
-    async function submitServiceSraAudit(action) {
-        if (!currentServiceSraId) return;
-
-        const notes  = document.getElementById('ssra-audit-notes').value.trim();
-        const approveBtn = document.getElementById('ssra-approve-btn');
-
-        approveBtn.disabled = true;
-        approveBtn.style.opacity = '0.6';
-
-        try {
-            const res = await fetch(`/auditor/service-sra/${currentServiceSraId}/process`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json',
-                },
-                body: JSON.stringify({ action, notes }),
-            });
-
-            const data = await res.json();
-
-            if (data.success) {
-                closeServiceSraAuditModal();
-                // Remove the row from the table
-                const rows = document.querySelectorAll('#service-sra-pending-section tbody tr');
-                rows.forEach(row => {
-                    if (row.querySelector(`button[onclick*="${currentServiceSraId}"]`)) {
-                        row.remove();
-                    }
-                });
-
-                // Display success SweetAlert
-                if (window.Swal) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Approved!',
-                        text: 'Service SRA receipt verified and forwarded to Head of Stores.',
-                        timer: 2000,
-                        showConfirmButton: false,
-                        background: 'var(--bg-card)',
-                        color: 'var(--text-main)'
-                    });
-                } else {
-                    alert('Service SRA receipt verified and forwarded to Head of Stores.');
-                }
-
-                // Reload page after short delay so counts update
-                setTimeout(() => window.location.reload(), 2000);
-            } else {
-                alert('Error: ' + (data.message || 'Could not process request.'));
-            }
-        } catch (err) {
-            console.error(err);
-            alert('A network error occurred. Please try again.');
-        } finally {
-            if (approveBtn) {
-                approveBtn.disabled = false;
-                approveBtn.style.opacity = '1';
-            }
-        }
-    }
 
     // ── Staff Provisioning (AJAX wrappers) ──────────────────────────────────────
     async function loadTempAccounts(isSilent = false) {
@@ -1947,10 +1812,6 @@
         }
     }
 
-    // Close modal on backdrop click
-    document.getElementById('service-sra-audit-modal').addEventListener('click', function(e) {
-        if (e.target === this) closeServiceSraAuditModal();
-    });
     // ── Silent Background Refresh ─────────────────────────────────────────────
     // Polls every 30s and patches only tbody + pagination HTML per tab.
     // Never runs if: a modal is open, a filter is active, or user is interacting.
@@ -1970,7 +1831,7 @@
     function _auditIsBlocked() {
         // Block if any modal overlay is visible
         const modalOpen = document.querySelector(
-            '#service-sra-audit-modal[style*="flex"], #active-supplier-popover'
+            '#active-supplier-popover'
         );
         if (modalOpen) return true;
 
@@ -2018,7 +1879,7 @@
                 if (_auditLastHtml[sig] !== tabData.tbody) {
                     _auditLastHtml[sig] = tabData.tbody;
                     tbody.innerHTML = tabData.tbody;
-                    if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [tbody] });
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
                 }
             }
 
@@ -2044,7 +1905,7 @@
                                     const tmp = document.createElement('div');
                                     tmp.innerHTML = tabData.pager;
                                     while (tmp.firstChild) card.appendChild(tmp.firstChild);
-                                    if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [card] });
+                                    if (typeof lucide !== 'undefined') lucide.createIcons();
                                 }
                             }
                         }
@@ -2100,9 +1961,9 @@
         }
     }
 
-    // Start after 5s, then every 30s
-    setTimeout(_auditSilentRefresh, 5000);
-    setInterval(_auditSilentRefresh, 30000);
+    // Start after 2s, then every 5s
+    setTimeout(_auditSilentRefresh, 2000);
+    setInterval(_auditSilentRefresh, 5000);
 </script>
 @endsection
 

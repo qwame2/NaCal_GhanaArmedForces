@@ -546,9 +546,10 @@
                 <div>
                     <div class="sig-line" style="text-align: center;">
                         @php
-                            $auditorUser = (auth()->check() && auth()->user()->role === 'Auditor') 
-                                ? auth()->user() 
-                                : (\App\Models\User::where('role', 'Auditor')->where('name', '!=', $sra->supplier_name)->first() ?? \App\Models\User::where('role', 'Auditor')->first());
+                            $auditorUser = null;
+                            if ($sra->auditor_status === 'approved' && $sra->auditor_approved_by) {
+                                $auditorUser = \App\Models\User::where('name', $sra->auditor_approved_by)->first();
+                            }
                         @endphp
                         @if($auditorUser && $auditorUser->signature)
                             <img src="{{ asset('storage/' . $auditorUser->signature) }}" style="max-height: 95px; object-fit: contain; vertical-align: middle; margin-bottom: -20px; transform: translateY(12px);">
@@ -556,8 +557,8 @@
                     </div>
                     <div class="sig-label">Internal Audit/Stores Verifier</div>
                     <div class="sig-name-date">
-                        <div><strong>Name:</strong> {{ $auditorUser->name ?? '____________________' }}</div>
-                        <div><strong>Date:</strong> {{ $sra->stores_approved_at ? $sra->stores_approved_at->format('d/m/y') : ($auditorUser ? date('d/m/y') : '____________________') }}</div>
+                        <div><strong>Name:</strong> {{ $sra->auditor_approved_by ?: '____________________' }}</div>
+                        <div><strong>Date:</strong> {{ $sra->auditor_approved_at ? $sra->auditor_approved_at->format('d/m/y') : '____________________' }}</div>
                     </div>
                 </div>
             </div>
