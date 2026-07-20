@@ -18,6 +18,7 @@ class InventoryItem extends Model
         'qty',
         'variance',
         'remarks',
+        'store_location',
         'book_qty',
         'discrepancy_explanation'
     ];

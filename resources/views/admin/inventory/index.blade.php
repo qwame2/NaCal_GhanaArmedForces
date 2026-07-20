@@ -157,7 +157,18 @@
                     @endphp
                     <tr style="border-bottom: 1px solid #f8fafc; transition: background 0.15s;" onmouseover="this.style.background='#fafcff'" onmouseout="this.style.background=''">
                         <td style="padding: 0.9rem 1.75rem; font-size: 0.72rem; font-weight: 800; color: #cbd5e1;">{{ str_pad($idx + 1, 2, '0', STR_PAD_LEFT) }}</td>
-                        <td style="padding: 0.9rem 1rem; font-size: 0.85rem; font-weight: 700; color: #1e293b; max-width: 260px;">{{ $lowItem->description }}</td>
+                        <td style="padding: 0.9rem 1rem; font-size: 0.85rem; font-weight: 700; color: #1e293b; max-width: 260px;">
+                            <div>{{ $lowItem->description }}</div>
+                            @php
+                                $rawLowLoc = $lowItem->store_location ?? 'Store A';
+                                $stLowLoc = str_replace('Stores', 'Store', $rawLowLoc);
+                                $isLowB = str_contains($stLowLoc, 'B');
+                            @endphp
+                            <div style="font-size: 0.65rem; font-weight: 800; color: {{ $isLowB ? '#3b82f6' : '#16a34a' }}; margin-top: 2px; display: inline-flex; align-items: center; gap: 3px;">
+                                <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i>
+                                {{ $stLowLoc }}
+                            </div>
+                        </td>
                         <td style="padding: 0.9rem 1rem;">
                             <span style="font-size: 0.68rem; font-weight: 800; color: #64748b; background: #f1f5f9; padding: 3px 10px; border-radius: 6px;">{{ $catName }}</span>
                         </td>
@@ -225,6 +236,7 @@
                     
                     const perPage = document.getElementsByName('per_page')[0].value;
                     const stockLevel = document.getElementById('stock-level-input').value;
+                    const storeLoc = document.getElementById('store-location-input') ? document.getElementById('store-location-input').value : '';
                     
                     const container = document.getElementById('oversight-container');
                     if (!container) return;
@@ -240,6 +252,7 @@
                     url.searchParams.set('date_to', to);
                     url.searchParams.set('per_page', perPage);
                     url.searchParams.set('stock_level', stockLevel);
+                    url.searchParams.set('store_location', storeLoc);
 
 
                     fetch(url, {
@@ -358,6 +371,27 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Segment 2.6: Store Location Filter Buttons -->
+            <div class="filter-segment" style="display: flex; align-items: center; gap: 6px; padding: 0 1rem; border-right: 1px solid #f1f5f9;">
+                <input type="hidden" name="store_location" id="store-location-input" value="{{ request('store_location') }}">
+                <button type="button" onclick="setStoreLocFilter('')" id="btn-store-all" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; border: 1.5px solid #e2e8f0; background: {{ !request('store_location') ? '#0f172a' : 'white' }}; color: {{ !request('store_location') ? 'white' : '#64748b' }}; cursor: pointer; transition: 0.2s;">All Stores</button>
+                <button type="button" onclick="setStoreLocFilter('Store A')" id="btn-store-a" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; border: 1.5px solid rgba(22, 163, 74, 0.2); background: {{ request('store_location') === 'Store A' ? '#16a34a' : 'rgba(22, 163, 74, 0.05)' }}; color: {{ request('store_location') === 'Store A' ? 'white' : '#16a34a' }}; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 4px;">
+                    <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i> Store A
+                </button>
+                <button type="button" onclick="setStoreLocFilter('Store B')" id="btn-store-b" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; border: 1.5px solid rgba(59, 130, 246, 0.2); background: {{ request('store_location') === 'Store B' ? '#3b82f6' : 'rgba(59, 130, 246, 0.05)' }}; color: {{ request('store_location') === 'Store B' ? 'white' : '#3b82f6' }}; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 4px;">
+                    <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i> Store B
+                </button>
+            </div>
+
+            <script>
+                function setStoreLocFilter(val) {
+                    document.getElementById('store-location-input').value = val;
+                    if (typeof performLiveUpdate === 'function') {
+                        performLiveUpdate();
+                    }
+                }
+            </script>
 
             <style>
                 .cat-opt:hover, .stock-opt:hover { background: #f8fafc; color: var(--primary) !important; padding-left: 20px !important; }
@@ -527,6 +561,7 @@
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Received Date</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Description</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Category</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Store Location</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Supplier / Donor</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Delivery Status</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Return Date</th>
@@ -550,12 +585,19 @@
                             <td data-label="Received Date" style="padding: 1.25rem 1.5rem; color: var(--primary); font-weight: 700;">
                                 {{ $item->arrival_date ? \Carbon\Carbon::parse($item->arrival_date)->format('d/m/y') : '-' }}
                             </td>
-                            <td data-label="Description" style="padding: 1.25rem 1.5rem;">
+                             <td data-label="Description" style="padding: 1.25rem 1.5rem;">
                                 <div style="font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
                                     <span>{{ $item->description }}</span>
                                     <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $item->unit ?? 'Package Types' }})</span>
                                 </div>
-                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Batch #{{ $item->batch_id }}</div>
+                                @php
+                                    $rawLocItem = $item->store_location ?? 'Store A';
+                                    $stLocBadgeItem = str_replace('Stores', 'Store', $rawLocItem);
+                                    $isStoreBItem = str_contains($stLocBadgeItem, 'B');
+                                @endphp
+                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                                    <span>Batch #{{ $item->batch_id }}</span>
+                                </div>
                                 @if(is_numeric($item->variance) && (float)$item->variance != 0 && !empty($item->remarks))
                                     <div style="margin-top: 4px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
                                         <div class="variance-remark" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.15); font-size: 0.72rem; padding: 3px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
@@ -568,6 +610,12 @@
                             <td data-label="Category" style="padding: 1.25rem 1.5rem;">
                                 <span style="font-size: 0.75rem; background: rgba(22, 163, 74, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
                                     {{ $ledgeMap[$item->ledge_category] ?? "Category " . $item->ledge_category }}
+                                </span>
+                            </td>
+                            <td data-label="Store Location" style="padding: 1.25rem 1.5rem;">
+                                <span style="font-size: 0.72rem; font-weight: 800; color: {{ $isStoreBItem ? '#3b82f6' : '#16a34a' }}; background: {{ $isStoreBItem ? 'rgba(59, 130, 246, 0.1)' : 'rgba(22, 163, 74, 0.1)' }}; padding: 0.35rem 0.75rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid {{ $isStoreBItem ? 'rgba(59, 130, 246, 0.2)' : 'rgba(22, 163, 74, 0.2)' }};">
+                                    <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i>
+                                    {{ $stLocBadgeItem }}
                                 </span>
                             </td>
                             @php
@@ -685,7 +733,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="11" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
+                            <td colspan="12" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
                                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; margin: 0 auto;">
                                     <div style="background: rgba(22, 163, 74, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(22, 163, 74, 0.2); animation: pulse 2s infinite;">
                                         <i data-lucide="package-search" style="width: 44px; stroke-width: 1.5px;"></i>

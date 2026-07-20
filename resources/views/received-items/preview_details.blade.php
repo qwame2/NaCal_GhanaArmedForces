@@ -190,8 +190,9 @@
                             <th style="padding: 1rem 1.5rem; width: 40px; text-align: center;">
                                 <input type="checkbox" id="rollback-select-all" style="width: 16px; height: 16px; cursor: pointer; accent-color: #ef4444;" onclick="let boxes = document.querySelectorAll('.item-rollback-checkbox'); boxes.forEach(b => b.checked = this.checked); updateRollbackBtn();">
                             </th>
-                            <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; width: 35%;">Description</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; width: 30%;">Description</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
+                            <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Store Location</th>
                             <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">{{ $isDiscrepancy ? 'Received Qty (Actual)' : 'Received Qty' }}</th>
                             @if($isDiscrepancy)
                                 <th style="padding: 1.25rem 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Book Qty (Ledger)</th>
@@ -238,12 +239,17 @@
                             </td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #64748b;">
                                 {{ $item['unit'] ?? 'Package Types' }}
-                                @if(!empty($item['location']))
-                                    <div style="font-size: 0.7rem; font-weight: 600; color: #16a34a; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-                                        <i data-lucide="map-pin" style="width: 10px; height: 10px; color: #16a34a;"></i>
-                                        {{ $item['location'] }}
-                                    </div>
-                                @endif
+                            </td>
+                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem;">
+                                @php
+                                    $rawLoc = $item['store_location'] ?? ($item['location'] ?? 'Store A');
+                                    $stLoc = str_replace('Stores', 'Store', $rawLoc);
+                                    $isStoreB = str_contains($stLoc, 'B');
+                                @endphp
+                                <span style="font-size: 0.75rem; font-weight: 800; color: {{ $isStoreB ? '#3b82f6' : '#16a34a' }}; background: {{ $isStoreB ? 'rgba(59, 130, 246, 0.1)' : 'rgba(22, 163, 74, 0.1)' }}; padding: 3px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+                                    <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i>
+                                    {{ $stLoc }}
+                                </span>
                             </td>
                             <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; text-align: right; color: {{ $isQtyChanged ? '#10b981' : '#0f172a' }}; {!! $isQtyChanged ? 'background: rgba(16, 185, 129, 0.1); border-left: 2px solid #10b981;' : '' !!}">
                                 {{ number_format($item['qty'] ?? 0) }}
@@ -271,7 +277,7 @@
                     </tbody>
                     <tfoot style="background: #f8fafc; border-top: 2px solid #e2e8f0;">
                         <tr>
-                            <td colspan="3" style="padding: 1rem 1.5rem; font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
+                            <td colspan="4" style="padding: 1rem 1.5rem; font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
                                 Total Items in This Entry
                             </td>
                             <td style="padding: 1rem 1.5rem; text-align: right; font-size: 1rem; font-weight: 900; color: #16a34a;">
@@ -312,6 +318,7 @@
                             <tr style="border-bottom: 1px solid #fee2e2; background: #fff5f5;">
                                 <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em;">Description</th>
                                 <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em;">Package Type</th>
+                                <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em;">Store Location</th>
                                 <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Received Qty</th>
                                 @if($isDiscrepancy)
                                     <th style="padding: 1rem 1.5rem; font-size: 0.72rem; font-weight: 850; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em; text-align: right;">Book Qty</th>
@@ -335,12 +342,17 @@
                                 </td>
                                 <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: #991b1b;">
                                     {{ $prevItem['unit'] ?? 'Package Types' }}
-                                    @if(!empty($prevItem['location']))
-                                        <div style="font-size: 0.7rem; font-weight: 600; color: #7f1d1d; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-                                            <i data-lucide="map-pin" style="width: 10px; height: 10px; color: #7f1d1d;"></i>
-                                            {{ $prevItem['location'] }}
-                                        </div>
-                                    @endif
+                                </td>
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem;">
+                                    @php
+                                        $rawPrevLoc = $prevItem['store_location'] ?? ($prevItem['location'] ?? 'Store A');
+                                        $stPrevLoc = str_replace('Stores', 'Store', $rawPrevLoc);
+                                        $isPrevStoreB = str_contains($stPrevLoc, 'B');
+                                    @endphp
+                                    <span style="font-size: 0.75rem; font-weight: 800; color: {{ $isPrevStoreB ? '#3b82f6' : '#b91c1c' }}; background: {{ $isPrevStoreB ? 'rgba(59, 130, 246, 0.1)' : '#fff5f5' }}; padding: 3px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid {{ $isPrevStoreB ? 'rgba(59, 130, 246, 0.2)' : '#fee2e2' }};">
+                                        <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i>
+                                        {{ $stPrevLoc }}
+                                    </span>
                                 </td>
                                 <td style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 800; color: #991b1b; text-align: right;">
                                     {{ number_format($prevItem['qty'] ?? 0) }}

@@ -242,6 +242,23 @@ class ReceivedItemsController extends Controller
             $query->where('inventory_batches.ledge_category', $request->ledge_category);
         }
 
+        // Store Location filter (Store A / Store B)
+        if ($request->has('store_location') && $request->store_location) {
+            $loc = $request->store_location;
+            if ($loc === 'Store A' || $loc === 'Stores A') {
+                $query->where(function($q) {
+                    $q->where('inventory_items.store_location', 'Store A')
+                      ->orWhere('inventory_items.store_location', 'Stores A')
+                      ->orWhereNull('inventory_items.store_location');
+                });
+            } else {
+                $query->where(function($q) use ($loc) {
+                    $q->where('inventory_items.store_location', $loc)
+                      ->orWhere('inventory_items.store_location', 'Stores B');
+                });
+            }
+        }
+
         $isSearching = false;
         $searchSum = 0;
         $searchQtySum = 0;

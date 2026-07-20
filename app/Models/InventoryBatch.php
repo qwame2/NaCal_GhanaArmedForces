@@ -84,6 +84,16 @@ class InventoryBatch extends Model
             }
         }
 
+        if (Schema::hasTable('inventory_items') && !Schema::hasColumn('inventory_items', 'store_location')) {
+            try {
+                Schema::table('inventory_items', function (Blueprint $table) {
+                    $table->string('store_location')->default('Store A')->after('remarks');
+                });
+            } catch (\Exception $e) {
+                $success = false;
+            }
+        }
+
         // Cache the successful validation for 7 days if all schema modifications succeeded
         if ($success) {
             \Illuminate\Support\Facades\Cache::put($cacheKey, true, 604800);

@@ -116,6 +116,18 @@
                 <i data-lucide="{{ request('status') === 'baseline' ? 'x-circle' : 'database' }}" style="width: 16px;"></i>
                 {{ request('status') === 'baseline' ? 'Clear Baseline' : 'Baseline Stock' }}
             </a>
+
+            <!-- Store A Button -->
+            <a href="{{ request()->fullUrlWithQuery(['store_location' => (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? null : 'Store A']) }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: {{ (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? '1.5px solid var(--primary)' : '1.5px solid var(--border-color)' }}; background: {{ (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? 'rgba(22, 163, 74, 0.1)' : 'var(--bg-card)' }}; color: {{ (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? 'var(--primary)' : 'var(--text-main)' }}; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 0.85rem;">
+                <i data-lucide="{{ (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? 'x-circle' : 'building-2' }}" style="width: 16px;"></i>
+                {{ (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? 'Clear Store A' : 'Store A' }}
+            </a>
+
+            <!-- Store B Button -->
+            <a href="{{ request()->fullUrlWithQuery(['store_location' => (request('store_location') === 'Store B' || request('store_location') === 'Stores B') ? null : 'Store B']) }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: {{ (request('store_location') === 'Store B' || request('store_location') === 'Stores B') ? '1.5px solid #3b82f6' : '1.5px solid var(--border-color)' }}; background: {{ (request('store_location') === 'Store B' || request('store_location') === 'Stores B') ? 'rgba(59, 130, 246, 0.1)' : 'var(--bg-card)' }}; color: {{ (request('store_location') === 'Store B' || request('store_location') === 'Stores B') ? '#3b82f6' : 'var(--text-main)' }}; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 0.85rem;">
+                <i data-lucide="{{ (request('store_location') === 'Store B' || request('store_location') === 'Stores B') ? 'x-circle' : 'building-2' }}" style="width: 16px;"></i>
+                {{ (request('store_location') === 'Store B' || request('store_location') === 'Stores B') ? 'Clear Store B' : 'Store B' }}
+            </a>
         </div>
 
         <!-- Vertical Divider -->
@@ -395,7 +407,13 @@
                                 <span>{{ $item->description }}</span>
                                 <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">({{ $item->unit ?? 'Package Types' }})</span>
                             </div>
-                            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Batch #{{ $item->batch_id }}</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                                <span>Batch #{{ $item->batch_id }}</span>
+                                <span style="font-size: 0.65rem; font-weight: 800; color: {{ str_contains($item->store_location ?? 'Store A', 'B') ? '#3b82f6' : 'var(--primary)' }}; background: {{ str_contains($item->store_location ?? 'Store A', 'B') ? 'rgba(59, 130, 246, 0.1)' : 'rgba(22, 163, 74, 0.1)' }}; padding: 1px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;">
+                                    <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i>
+                                    {{ str_replace('Stores', 'Store', $item->store_location ?? 'Store A') }}
+                                </span>
+                            </div>
                             @if(!empty($item->serial_number))
                                 @php
                                     $snList = array_filter(array_map('trim', explode(',', $item->serial_number)));

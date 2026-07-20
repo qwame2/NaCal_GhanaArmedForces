@@ -249,6 +249,7 @@ class InventoryController extends Controller
             'items.*.qty' => 'nullable|string',
             'items.*.variance' => 'required|string',
             'items.*.remarks' => 'nullable|string',
+            'items.*.store_location' => 'nullable|string',
             'items.*.book_qty' => 'required|numeric',
             'items.*.discrepancy_explanation' => 'nullable|string',
         ]);
@@ -452,6 +453,7 @@ class InventoryController extends Controller
             'items.*.variance' => 'required|string',
 
             'items.*.remarks' => 'nullable|string',
+            'items.*.store_location' => 'nullable|string',
         ]);
 
         $arrivalDate = $validated['arrival_date'];
@@ -856,14 +858,12 @@ class InventoryController extends Controller
                 }
             }
 
-            // 2. Check Recent Inventory Records (within last 24h or matching arrival date)
+            // 2. Check Recent Inventory Records (matching SAME arrival date created within 30 minutes)
             $recentMatch = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
                 ->whereRaw('TRIM(UPPER(inventory_items.description)) = ?', [$desc])
                 ->whereRaw('CAST(REPLACE(inventory_items.stock_balance, ",", "") AS DECIMAL(15,2)) = ?', [$qtyVal])
-                ->where(function($q) use ($arrivalDate) {
-                    $q->where('inventory_batches.arrival_date', '=', $arrivalDate)
-                      ->orWhere('inventory_batches.created_at', '>=', now()->subHours(24));
-                })
+                ->where('inventory_batches.arrival_date', '=', $arrivalDate)
+                ->where('inventory_batches.created_at', '>=', now()->subMinutes(30))
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
                 ->select('inventory_items.description', 'inventory_batches.id as batch_id', 'inventory_batches.arrival_date')
                 ->first();

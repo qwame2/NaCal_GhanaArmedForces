@@ -502,6 +502,23 @@
                                      ${packageOptionsHtml}
                                  </select>
                              </div>
+
+                            <!-- Store Location -->
+                            <div class="form-group">
+                                 <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">
+                                     <i data-lucide="map-pin" style="width: 14px; color: var(--primary);"></i>
+                                     Store Location <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                 </label>
+                                 <div class="store-location-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
+                                     <select class="row-store-location-select" style="width: 100%;" required>
+                                         <option value="Store A" selected>Store A</option>
+                                         <option value="Store B">Store B</option>
+                                     </select>
+                                     <div style="position: absolute; left: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); opacity: 0.8; pointer-events: none; z-index: 5;">
+                                         <i data-lucide="building-2" style="width: 16px; height: 16px;"></i>
+                                     </div>
+                                 </div>
+                             </div>
                         </div>
 
                         <!-- Quantity Analysis Row -->
@@ -637,6 +654,14 @@
                     placeholder: 'Select Package Type',
                     width: '100%',
                     tags: true
+                });
+
+                // Initialize Select2 on store location dropdown
+                const $rowStoreLocationSelect = $row.find('.row-store-location-select');
+                $rowStoreLocationSelect.select2({
+                    placeholder: 'Select Store Location',
+                    width: '100%',
+                    minimumResultsForSearch: Infinity
                 });
 
                 // Initialize Select2 on discrepancy explanation dropdown
@@ -889,9 +914,12 @@
 
                 const isTyre = (rowLedge === 'D' && (desc.toUpperCase().includes('TYRE') || desc.toUpperCase().includes('TYRES')));
 
+                const storeLocation = ($(this).find('.row-store-location-select').val() || '').trim();
+
                 if (!rowLedge) missing.push(`Item Type #${idx}: Category Section`);
                 if (!desc) missing.push(`Item Type #${idx}: Description`);
                 if (!unit) missing.push(`Item Type #${idx}: Package Type`);
+                if (!storeLocation) missing.push(`Item Type #${idx}: Store Location`);
                 if (bookQty === '') missing.push(`Item Type #${idx}: Book Quantity`);
                 if (receivedQty === '') missing.push(`Item Type #${idx}: Received Quantity`);
 
@@ -916,6 +944,7 @@
                     description: desc,
                     serial_number: serialNum || null,
                     unit: unit,
+                    store_location: storeLocation || 'Store A',
                     qty: receivedQty,
                     stock_balance: bookQty,
                     variance: (parseFloat(receivedQty) || 0) - (parseFloat(bookQty) || 0),
@@ -1130,6 +1159,7 @@
                 const ledgeCategory = $(this).find('.row-ledge-select').val() || '';
                 const desc = $(this).find('.row-item-select').val() || '';
                 const unit = $(this).find('.row-unit-select').val() || '';
+                const storeLocation = $(this).find('.row-store-location-select').val() || 'Store A';
                 const bookQty = $(this).find('.row-book-qty').val() || '';
                 const qty = $(this).find('.row-received-qty').val() || '';
                 const calculatedDiscrepancy = $(this).find('.row-calculated-discrepancy').val() || '';
@@ -1149,6 +1179,7 @@
                     ledge_category: ledgeCategory,
                     description: desc,
                     unit: unit,
+                    store_location: storeLocation,
                     book_qty: bookQty,
                     qty: qty,
                     calculated_discrepancy: calculatedDiscrepancy,
@@ -1201,6 +1232,10 @@
                     $unitSelect.append(new Option(item.unit, item.unit, true, true));
                 }
                 $unitSelect.val(item.unit).trigger('change.select2').trigger('change');
+            }
+
+            if (item.store_location) {
+                $row.find('.row-store-location-select').val(item.store_location).trigger('change.select2').trigger('change');
             }
 
             if (item.book_qty) {

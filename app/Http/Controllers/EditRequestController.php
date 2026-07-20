@@ -872,6 +872,7 @@ class EditRequestController extends Controller
                                 'stock_balance' => $itemData['stock_balance'],
                                 'variance' => $itemData['variance'],
                                 'remarks' => $itemData['remarks'] ?? null,
+                                'store_location' => $itemData['store_location'] ?? 'Store A',
                             ]);
                         }
                     }

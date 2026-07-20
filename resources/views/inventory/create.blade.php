@@ -280,7 +280,8 @@
     }
 
     /* Premium styling overrides for select2 fields in unit container */
-    .unit-container-sleek .select2-container--default .select2-selection--single {
+    .unit-container-sleek .select2-container--default .select2-selection--single,
+    .store-location-container-sleek .select2-container--default .select2-selection--single {
         padding-left: 2.5rem !important;
         height: 48px !important;
         border-radius: 12px !important;
@@ -289,7 +290,8 @@
         align-items: center !important;
         background: rgba(22, 163, 74, 0.03) !important;
     }
-    .unit-container-sleek .select2-container--default .select2-selection--single .select2-selection__rendered {
+    .unit-container-sleek .select2-container--default .select2-selection--single .select2-selection__rendered,
+    .store-location-container-sleek .select2-container--default .select2-selection--single .select2-selection__rendered {
         color: var(--text-main) !important;
         font-weight: 800 !important;
         font-size: 0.95rem !important;
@@ -297,7 +299,8 @@
         letter-spacing: 0.05em !important;
         padding-left: 0px !important;
     }
-    .unit-container-sleek .select2-container--default .select2-selection--single .select2-selection__arrow {
+    .unit-container-sleek .select2-container--default .select2-selection--single .select2-selection__arrow,
+    .store-location-container-sleek .select2-container--default .select2-selection--single .select2-selection__arrow {
         height: 46px !important;
     }
 </style>
@@ -724,6 +727,10 @@ jQuery(document).ready(function($) {
             if (!unit) {
                 missingFields.push(`Item Type #${itemIdx}: Package Types`);
             }
+            const storeLocation = ($(this).find('.row-store-location').val() || '').trim();
+            if (!storeLocation) {
+                missingFields.push(`Item Type #${itemIdx}: Store Location`);
+            }
             if (!qty) {
                 missingFields.push(`Item Type #${itemIdx}: Received Qty`);
             }
@@ -767,6 +774,7 @@ jQuery(document).ready(function($) {
                 description: desc,
                 serial_number: $(this).find('.row-serial-number').val() || null,
                 unit: unit,
+                store_location: $(this).find('.row-store-location').val() || 'Store A',
                 stock_balance: $(this).find('.row-stock-balance').val(),
                 qty: $(this).find('.row-qty').val(),
                 variance: $(this).find('.row-variance').val() || '0',
@@ -1039,6 +1047,22 @@ jQuery(document).ready(function($) {
                         </div>
 
                         <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="map-pin" style="width: 12px; color: var(--primary);"></i>
+                                Store Location <span style="color: #ef4444; margin-left: 2px;">*</span>
+                            </label>
+                            <div class="store-location-container-sleek" style="position: relative; display: flex; align-items: center; width: 100%;">
+                                <select class="row-store-location" style="width: 100%;" required>
+                                    <option value="Store A" selected>Store A</option>
+                                    <option value="Store B">Store B</option>
+                                </select>
+                                <div style="position: absolute; left: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); opacity: 0.8; pointer-events: none; z-index: 5;">
+                                    <i data-lucide="building-2" style="width: 16px; height: 16px;"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                 <div>
                                     <label class="lbl-received-qty" style="display: flex; align-items: center; gap: 6px;">
@@ -1187,6 +1211,15 @@ jQuery(document).ready(function($) {
                         newTag: true
                     };
                 }
+            });
+
+            // Initialize Select2 for Store Location
+            const $storeLocationInput = $row.find('.row-store-location');
+            $storeLocationInput.select2({
+                placeholder: "Select Store Location",
+                width: '100%',
+                minimumResultsForSearch: Infinity,
+                dropdownParent: $row
             });
 
             // Handle Item Selection to show previous data explicitly

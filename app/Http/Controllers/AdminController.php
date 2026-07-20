@@ -812,6 +812,11 @@ class AdminController extends Controller
             $query->where('inventory_batches.ledge_category', $request->category);
         }
 
+        // Apply Store Location Filter
+        if ($request->has('store_location') && $request->store_location) {
+            $query->where('inventory_items.store_location', 'LIKE', '%' . $request->store_location . '%');
+        }
+
         // Apply Date Range
         if ($request->has('date_from') && $request->date_from) {
             $query->whereDate('inventory_batches.entry_date', '>=', $request->date_from);

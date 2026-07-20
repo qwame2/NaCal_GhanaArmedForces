@@ -46,9 +46,21 @@
                             @endif
                         </td>
                         <td style="padding: 1.25rem 1.5rem; font-size: 0.82rem; font-weight: 800;">
-                            <span style="background: rgba(22, 163, 74, 0.08); color: var(--primary); padding: 4px 10px; border-radius: 6px; text-transform: uppercase;">
-                                Cat {{ $payload['ledge_category'] ?? '—' }}
-                            </span>
+                            @php
+                                $firstItem = ($payload['items'] ?? [])[0] ?? [];
+                                $rawLocPending = $firstItem['store_location'] ?? ($firstItem['location'] ?? 'Store A');
+                                $stLocPending = str_replace('Stores', 'Store', $rawLocPending);
+                                $isPendingB = str_contains($stLocPending, 'B');
+                            @endphp
+                            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                <span style="background: rgba(22, 163, 74, 0.08); color: var(--primary); padding: 4px 10px; border-radius: 6px; text-transform: uppercase;">
+                                    Cat {{ $payload['ledge_category'] ?? '—' }}
+                                </span>
+                                <span style="font-size: 0.7rem; font-weight: 800; color: {{ $isPendingB ? '#3b82f6' : '#16a34a' }}; background: {{ $isPendingB ? 'rgba(59, 130, 246, 0.1)' : 'rgba(22, 163, 74, 0.1)' }}; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;">
+                                    <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i>
+                                    {{ $stLocPending }}
+                                </span>
+                            </div>
                         </td>
                         <td style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">
                             @php
