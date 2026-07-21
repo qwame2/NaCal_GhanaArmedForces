@@ -1479,8 +1479,8 @@ class EditRequestController extends Controller
             ];
 
         $pendingServiceSras = \App\Models\ServiceSra::with('submitter')
-            ->where('status', 'admin_approved')
             ->where('stores_status', 'pending')
+            ->whereNotIn('status', ['approved', 'declined'])
             ->orderBy('created_at', 'desc')
             ->get();
 

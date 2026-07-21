@@ -1546,108 +1546,10 @@ class StoreRequisitionController extends Controller
             || auth()->user()->isMainAdminOrSub()
             || $isBackupActive;
 
-        if ($request->filled('status')) {
-            if ($request->status === 'pending') {
-                if ($isStoresHead) {
-                    $query->where('status', 'pending')
-                          ->where(function($q) use ($isStoresHOD, $isBackupActive, $depts) {
-                              $q->whereRaw('1 = 0');
-                              if ($isStoresHOD) {
-                                  // Requisitions pending Stores HOD approval (after DG approval if required)
-                                  $q->orWhere(function($q2) {
-                                      $q2->where('origin_admin_status', 'approved')
-                                         ->where('main_admin_status', 'pending')
-                                         ->where(function($q3) {
-                                             $q3->where('requires_dg_approval', false)
-                                                ->orWhere('dg_status', 'approved');
-                                         });
-                                  });
-                              }
-                              // Requisitions where Stores HOD approved (or bypassed) and any required DG approval is approved, awaiting final stores checkout
-                              // (Visible to all Stores staff since they perform final checkout/issuance)
-                              $q->orWhere(function($q2) {
-                                  $q2->where('origin_admin_status', 'approved')
-                                     ->where('main_admin_status', 'approved')
-                                     ->where(function($q3) {
-                                         $q3->where('requires_dg_approval', false)
-                                            ->orWhere('dg_status', 'approved');
-                                     });
-                              });
-                              if ($isStoresHOD && !$isBackupActive) {
-                                  $q->orWhere(function($q2) {
-                                      $q2->where('origin_admin_status', 'pending')
-                                         ->whereIn('department', ['Stores', 'Store']);
-                                  });
-                              }
-                              if ($isBackupActive) {
-                                  $q->orWhere(function($q2) use ($depts) {
-                                      $q2->whereIn('department', $depts)
-                                         ->where(function($q3) {
-                                             $q3->where('origin_admin_status', 'pending')
-                                                ->orWhere('alternative_status', 'proposed');
-                                         });
-                                  });
-                              }
-                          });
-                } else {
-                    $query->where('status', 'pending');
-                }
-            } elseif ($request->status === 'approved') {
-                if ($isStoresHead) {
-                    if ($isBackupActive) {
-                        $query->where(function($q) use ($depts) {
-                            $q->whereIn('status', ['approved', 'partially_approved'])
-                              ->orWhere(function($q2) use ($depts) {
-                                  $q2->whereIn('department', $depts)
-                                     ->whereIn('status', ['approved', 'partially_approved']);
-                              });
-                        });
-                    } else {
-                        $query->whereIn('status', ['approved', 'partially_approved']);
-                    }
-                } else {
-                    $query->where(function($q) {
-                        $q->where('origin_admin_status', 'approved')
-                          ->orWhereIn('status', ['approved', 'partially_approved']);
-                    });
-                }
-            } elseif ($request->status === 'declined') {
-                if ($isStoresHead) {
-                    if ($isBackupActive) {
-                        $query->where(function($q) use ($depts) {
-                            $q->where('status', 'declined')
-                              ->orWhere(function($q2) use ($depts) {
-                                  $q2->whereIn('department', $depts)
-                                     ->where('status', 'declined');
-                              });
-                        });
-                    } else {
-                        $query->where('status', 'declined');
-                    }
-                } else {
-                    $query->where(function($q) {
-                        $q->where('origin_admin_status', 'declined')
-                          ->orWhere('status', 'declined');
-                    });
-                }
-            } elseif ($request->status === 'history') {
-                if ($isStoresHead) {
-                    if ($isBackupActive) {
-                        $query->where(function($q) use ($depts) {
-                            $q->whereIn('status', ['approved', 'partially_approved', 'declined'])
-                              ->orWhere(function($q2) use ($depts) {
-                                  $q2->whereIn('department', $depts)
-                                     ->whereIn('status', ['approved', 'partially_approved', 'declined']);
-                              });
-                        });
-                    } else {
-                        $query->whereIn('status', ['approved', 'partially_approved', 'declined']);
-                    }
-                } else {
-                    // Oversight History (All) for HODs/Auditors should show all statuses (do not restrict query by status)
-                }
-            }
-        } else {
+        $defaultStatus = (auth()->user()->role === 'Auditor') ? 'approved' : 'pending';
+        $statusFilter = $request->input('status', $defaultStatus);
+
+        if ($statusFilter === 'pending') {
             if ($isStoresHead) {
                 $query->where('status', 'pending')
                       ->where(function($q) use ($isStoresHOD, $isBackupActive, $depts) {
@@ -1691,6 +1593,64 @@ class StoreRequisitionController extends Controller
                       });
             } else {
                 $query->where('status', 'pending');
+            }
+        } elseif ($statusFilter === 'approved') {
+            if ($isStoresHead) {
+                if ($isBackupActive) {
+                    $query->where(function($q) use ($depts) {
+                        $q->whereIn('status', ['approved', 'partially_approved'])
+                          ->orWhere(function($q2) use ($depts) {
+                              $q2->whereIn('department', $depts)
+                                 ->whereIn('status', ['approved', 'partially_approved']);
+                          });
+                    });
+                } else {
+                    $query->whereIn('status', ['approved', 'partially_approved']);
+                }
+            } else {
+                if (auth()->user()->role === 'Auditor') {
+                    $query->whereIn('status', ['approved', 'partially_approved']);
+                } else {
+                    $query->where(function($q) {
+                        $q->where('origin_admin_status', 'approved')
+                          ->orWhereIn('status', ['approved', 'partially_approved']);
+                    });
+                }
+            }
+        } elseif ($statusFilter === 'declined') {
+            if ($isStoresHead) {
+                if ($isBackupActive) {
+                    $query->where(function($q) use ($depts) {
+                        $q->where('status', 'declined')
+                          ->orWhere(function($q2) use ($depts) {
+                              $q2->whereIn('department', $depts)
+                                 ->where('status', 'declined');
+                          });
+                    });
+                } else {
+                    $query->where('status', 'declined');
+                }
+            } else {
+                $query->where(function($q) {
+                    $q->where('origin_admin_status', 'declined')
+                      ->orWhere('status', 'declined');
+                });
+            }
+        } elseif ($statusFilter === 'history') {
+            if ($isStoresHead) {
+                if ($isBackupActive) {
+                    $query->where(function($q) use ($depts) {
+                        $q->whereIn('status', ['approved', 'partially_approved', 'declined'])
+                          ->orWhere(function($q2) use ($depts) {
+                              $q2->whereIn('department', $depts)
+                                 ->whereIn('status', ['approved', 'partially_approved', 'declined']);
+                          });
+                    });
+                } else {
+                    $query->whereIn('status', ['approved', 'partially_approved', 'declined']);
+                }
+            } else {
+                // Oversight History (All) for HODs/Auditors should show all statuses (do not restrict query by status)
             }
         }
 
@@ -1737,18 +1697,14 @@ class StoreRequisitionController extends Controller
             $sraQuery = \App\Models\InventoryBatch::with(['items', 'recorder'])
                 ->where('supplier_status', '!=', 'System Draft');
 
-            if ($request->filled('status')) {
-                if ($request->status === 'pending') {
-                    $sraQuery->where('approval_status', 'pending_auditor_admin');
-                } elseif ($request->status === 'approved') {
-                    $sraQuery->where('approval_status', 'approved');
-                } elseif ($request->status === 'declined') {
-                    $sraQuery->where('approval_status', 'declined');
-                } elseif ($request->status === 'history') {
-                    $sraQuery->whereIn('approval_status', ['approved', 'declined']);
-                }
-            } else {
+            if ($statusFilter === 'pending') {
                 $sraQuery->where('approval_status', 'pending_auditor_admin');
+            } elseif ($statusFilter === 'approved') {
+                $sraQuery->where('approval_status', 'approved');
+            } elseif ($statusFilter === 'declined') {
+                $sraQuery->where('approval_status', 'declined');
+            } elseif ($statusFilter === 'history') {
+                $sraQuery->whereIn('approval_status', ['approved', 'declined']);
             }
 
             if ($request->filled('department')) {
@@ -1782,18 +1738,14 @@ class StoreRequisitionController extends Controller
 
             // Query ServiceSra requests for authorizers
             $serviceQuery = \App\Models\ServiceSra::with('submitter');
-            if ($request->filled('status')) {
-                if ($request->status === 'pending') {
-                    $serviceQuery->where('status', '!=', 'approved')->where('status', '!=', 'declined');
-                } elseif ($request->status === 'approved') {
-                    $serviceQuery->where('status', 'approved');
-                } elseif ($request->status === 'declined') {
-                    $serviceQuery->where('status', 'declined');
-                } elseif ($request->status === 'history') {
-                    $serviceQuery->whereIn('status', ['approved', 'declined']);
-                }
-            } else {
+            if ($statusFilter === 'pending') {
                 $serviceQuery->where('status', '!=', 'approved')->where('status', '!=', 'declined');
+            } elseif ($statusFilter === 'approved') {
+                $serviceQuery->where('status', 'approved');
+            } elseif ($statusFilter === 'declined') {
+                $serviceQuery->where('status', 'declined');
+            } elseif ($statusFilter === 'history') {
+                $serviceQuery->whereIn('status', ['approved', 'declined']);
             }
 
             if ($request->filled('date_from')) {

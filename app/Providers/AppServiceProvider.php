@@ -398,12 +398,12 @@ class AppServiceProvider extends ServiceProvider
                         || \App\Models\User::whereIn('role', ['Department Head', 'Dept Head HR', 'Head of Welfare'])->whereIn('department', ['Stores', 'Store'])->where('is_active', true)->exists();
                     $isStoresHOD = (auth()->user()->role === 'Head of Stores')
                         || (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Stores', 'Store']))
-                        || (auth()->user()->isMainAdminOrSub() && !$hasActiveStoresHead);
+                        || auth()->user()->isMainAdminOrSub();
 
                     $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
 
                     if ($isStoresHead) {
-                        $mainRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
+                        $mainStoreRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
                             ->where(function($q) use ($isStoresHOD, $isBackupActive) {
                                 $q->where(function($q2) {
                                     $q2->where('origin_admin_status', 'approved')
@@ -431,11 +431,32 @@ class AppServiceProvider extends ServiceProvider
                             })
                             ->count();
                     } else {
-                        $mainRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
+                        $mainStoreRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
                             ->where('department', auth()->user()->department)
                             ->where('origin_admin_status', 'pending')
                             ->count();
                     }
+
+                    // Count pending Service SRAs awaiting review for current user's role
+                    if (auth()->user()->role === 'Auditor') {
+                        $pendingSrasCount = \App\Models\ServiceSra::where('auditor_status', 'pending')
+                            ->whereNotIn('status', ['approved', 'declined'])
+                            ->count();
+                    } elseif (auth()->user()->isMainAdminOrSub() || in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin'])) {
+                        $pendingSrasCount = \App\Models\ServiceSra::where('admin_status', 'pending')
+                            ->whereNotIn('status', ['approved', 'declined'])
+                            ->count();
+                    } elseif (auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0) {
+                        $pendingSrasCount = \App\Models\ServiceSra::where('stores_status', 'pending')
+                            ->whereNotIn('status', ['approved', 'declined'])
+                            ->count();
+                    } else {
+                        $pendingSrasCount = \App\Models\ServiceSra::where('admin_status', 'pending')
+                            ->whereNotIn('status', ['approved', 'declined'])
+                            ->count();
+                    }
+
+                    $mainRequisitionsCount = $mainStoreRequisitionsCount + $pendingSrasCount;
                     $view->with('mainRequisitionsCount', $mainRequisitionsCount);
 
                     if (auth()->user()->role === 'Requisitioner') {

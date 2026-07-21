@@ -1199,7 +1199,7 @@
     {{-- Staff Access & Registration Approvals (All Department Heads) --}}
     @php
         $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
-        $hideProvisioning = $isStoresHead && !$isBackupActive;
+        $hideProvisioning = ($isStoresHead && !$isBackupActive) || auth()->user()->role === 'Auditor';
     @endphp
     <div id="provisioningSection" style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);padding:1.75rem;margin-bottom:2rem;box-shadow:0 4px 20px rgba(0,0,0,0.04); display: {{ $hideProvisioning ? 'none' : 'block' }};">
         @if(!empty($hasOverdueReturn))
@@ -1266,13 +1266,16 @@
         </div>
         <form method="GET" class="filter-row" id="filter-form" action="{{ route('main-admin.requisitions') }}">
             {{-- Status --}}
+            @php
+                $defaultStatus = (auth()->user()->role === 'Auditor') ? 'approved' : 'pending';
+            @endphp
             <div class="filter-field-wrapper" style="min-width:200px;flex:1.5;">
                 <i data-lucide="activity" class="filter-icon" style="width:14px;height:14px;"></i>
                 <select name="status" class="filter-control" id="filter-status">
-                    <option value="pending"  {{ request('status','pending')==='pending'  ?'selected':'' }}>Awaiting My Review</option>
-                    <option value="approved" {{ request('status')==='approved' ?'selected':'' }}>Approved History</option>
-                    <option value="declined" {{ request('status')==='declined' ?'selected':'' }}>Declined History</option>
-                    <option value="history"  {{ request('status')==='history'  ?'selected':'' }}>Oversight History (All)</option>
+                    <option value="pending"  {{ request('status', $defaultStatus)==='pending'  ?'selected':'' }}>Awaiting My Review</option>
+                    <option value="approved" {{ request('status', $defaultStatus)==='approved' ?'selected':'' }}>Approved History</option>
+                    <option value="declined" {{ request('status', $defaultStatus)==='declined' ?'selected':'' }}>Declined History</option>
+                    <option value="history"  {{ request('status', $defaultStatus)==='history'  ?'selected':'' }}>Oversight History (All)</option>
                 </select>
             </div>
 
@@ -1450,7 +1453,7 @@
             const clearBtn = document.getElementById('filter-clear-btn');
             if (clearBtn) {
                 clearBtn.addEventListener('click', function() {
-                    document.getElementById('filter-status').value    = 'pending';
+                    document.getElementById('filter-status').value    = '{{ $defaultStatus }}';
                     document.getElementById('filter-department').value = '';
                     document.getElementById('filter-date-from').value = '';
                     document.getElementById('filter-date-to').value   = '';
@@ -3234,6 +3237,24 @@
                 $btn.innerHTML = origHtml;
                 $btn.disabled = false;
             }
+        });
+    };
+
+    window.showReceiptNotice = function() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Notice',
+            text: 'The SRA receipt is only available after full approval by all required actors.',
+            confirmButtonColor: 'var(--primary)'
+        });
+    };
+
+    window.showDeclinedNotice = function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Declined',
+            text: 'This Service SRA has been declined and does not have an active receipt.',
+            confirmButtonColor: 'var(--primary)'
         });
     };
 

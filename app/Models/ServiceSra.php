@@ -87,9 +87,7 @@ class ServiceSra extends Model
          }
 
         // Step 2 – Auditor
-        if ($this->admin_status !== 'approved') {
-            $steps['auditor'] = ['label' => 'Pending Auditor Review', 'status' => 'pending', 'icon' => 'circle', 'user' => 'Auditor'];
-        } elseif ($this->auditor_status === 'approved') {
+        if ($this->auditor_status === 'approved') {
             $steps['auditor'] = ['label' => 'Auditor Approved',  'status' => 'completed', 'icon' => 'check', 'user' => $this->auditor_approved_by];
         } elseif ($this->auditor_status === 'declined') {
             $steps['auditor'] = ['label' => 'Auditor Declined',  'status' => 'declined',  'icon' => 'x',     'user' => $this->auditor_approved_by];
@@ -98,9 +96,7 @@ class ServiceSra extends Model
         }
 
         // Step 3 – Head of Stores
-        if ($this->auditor_status !== 'approved') {
-            $steps['stores'] = ['label' => 'Pending Stores Review', 'status' => 'pending', 'icon' => 'circle', 'user' => 'Head of Stores'];
-        } elseif ($this->stores_status === 'approved') {
+        if ($this->stores_status === 'approved') {
             $steps['stores'] = ['label' => 'Stores Approved',  'status' => 'completed', 'icon' => 'check', 'user' => $this->stores_approved_by];
         } elseif ($this->stores_status === 'declined') {
             $steps['stores'] = ['label' => 'Stores Declined',  'status' => 'declined',  'icon' => 'x',     'user' => $this->stores_approved_by];

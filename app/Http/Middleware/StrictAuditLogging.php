@@ -77,8 +77,19 @@ class StrictAuditLogging
 
                     // Fallback to turn any unmatched raw path like "/personnel/requisitions" into a friendly sentence
                     if (str_starts_with($friendlyPath, '/')) {
-                        $cleaned = str_replace(['/', '-', '_'], ' ', ltrim($friendlyPath, '/'));
-                        $friendlyPath = 'the ' . ucwords($cleaned) . ' page';
+                        if (preg_match('#^(admin|stores|auditor)?/?service-sra/(\d+)(?:/(review|receipt|preview))?$#i', ltrim($friendlyPath, '/'), $matches)) {
+                            $prefix = $matches[1] ? ucwords($matches[1]) . ' ' : '';
+                            $sraId = $matches[2];
+                            $suffix = isset($matches[3]) ? ' ' . ucwords($matches[3]) : '';
+                            
+                            $sra = \App\Models\ServiceSra::find($sraId);
+                            $sraNum = $sra ? $sra->sra_number : "#{$sraId}";
+                            
+                            $friendlyPath = "the {$prefix}Service Sra with ID {$sraNum}{$suffix} page";
+                        } else {
+                            $cleaned = str_replace(['/', '-', '_'], ' ', ltrim($friendlyPath, '/'));
+                            $friendlyPath = 'the ' . ucwords($cleaned) . ' page';
+                        }
                     }
 
                     // Custom Overrides for Specific System Endpoints

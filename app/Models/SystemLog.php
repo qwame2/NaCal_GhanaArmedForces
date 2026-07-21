@@ -32,6 +32,20 @@ class SystemLog extends Model
     public function getFriendlyDescriptionAttribute()
     {
         $desc = $this->description;
+
+        if (preg_match('#Service Sra (\d+)(?: (Review|Receipt|Preview))? page#i', $desc, $matches)) {
+            $sraId = $matches[1];
+            $sra = \App\Models\ServiceSra::find($sraId);
+            $sraNum = $sra ? $sra->sra_number : "SRA-" . str_pad($sraId, 6, '0', STR_PAD_LEFT);
+            $suffix = isset($matches[2]) ? ' ' . ucwords($matches[2]) : '';
+            
+            $desc = preg_replace(
+                '#Service Sra ' . $sraId . '\s*(Review|Receipt|Preview)?\s*page#i',
+                "Service Sra with ID {$sraNum}{$suffix} page",
+                $desc
+            );
+        }
+
         $desc = str_replace('Head of Admin(Authorizer)', 'PLACEHOLDER_HOA_AUTH', $desc);
         $desc = str_replace(['Main Admin', 'Head of Admin'], 'PLACEHOLDER_HOA_AUTH', $desc);
         $desc = str_replace('PLACEHOLDER_HOA_AUTH', 'Head of Admin(Authorizer)', $desc);

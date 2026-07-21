@@ -72,10 +72,10 @@ class ServiceSraController extends Controller
             'stores_status'     => 'pending',
         ]);
 
-        // Notify Authorizers (Main Admin, Sub Main Admin, Head of Stores)
+        // Notify Authorizers (Main Admin, Sub Main Admin, Head of Stores, Auditor)
         $authorizers = User::where(function($q) {
             $q->where('is_admin', true)
-              ->orWhereIn('role', ['Main Admin', 'Sub Main Admin', 'Head of Stores', 'Dept. Head (Stores)']);
+              ->orWhereIn('role', ['Main Admin', 'Sub Main Admin', 'Head of Stores', 'Dept. Head (Stores)', 'Auditor']);
         })->where('is_active', true)->get();
 
         $reviewLink = route('admin.service-sra.index');
@@ -169,20 +169,23 @@ class ServiceSraController extends Controller
     {
         $sra = ServiceSra::with('submitter')->findOrFail($id);
 
-        // Gate: only the submitter OR admin/stores staff can view
+        // Gate: submitter, admin, auditor, stores staff, or authorizers can view
         $user = auth()->user();
-        $isAdmin = $user->is_admin 
-            || $user->role === 'Main Admin' 
-            || $user->role === 'Head of Stores' 
-            || in_array(strtoupper($user->department ?? ''), ['STORES', 'STORE']);
-        if (!$isAdmin && $sra->submitted_by !== $user->id) {
-            abort(403, 'Unauthorized');
+        $isAuthorizedUser = $user->is_admin 
+            || $user->isMainAdminOrSub() 
+            || in_array($user->role, ['Main Admin', 'Sub Main Admin', 'Head of Stores', 'Auditor', 'Department Head', 'Dept. Head (Stores)'])
+            || in_array(strtoupper($user->department ?? ''), ['STORES', 'STORE', 'INTERNAL AUDIT', 'AUDIT DEPARTMENT'])
+            || $user->isDelegatedApprover()
+            || $sra->submitted_by === $user->id;
+
+        if (!$isAuthorizedUser) {
+            abort(403, 'Unauthorized access to SRA receipt.');
         }
 
         // Gate: receipt only available when fully approved
         if ($sra->status !== 'approved') {
             return redirect()->route('service-sra.index')
-                ->with('warning', 'The SRA receipt is only available after full approval by the Head of Stores.');
+                ->with('warning', 'The SRA receipt is only available after full approval by all required actors.');
         }
 
         $orgName = Setting::get('organization_name', 'NACOC');
@@ -235,10 +238,8 @@ class ServiceSraController extends Controller
         }
 
         $pending = ServiceSra::with('submitter')
-            ->where(function($q) {
-                $q->where('admin_status', 'pending')
-                  ->orWhere('status', 'pending');
-            })
+            ->where('admin_status', 'pending')
+            ->whereNotIn('status', ['approved', 'declined'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -283,8 +284,27 @@ class ServiceSraController extends Controller
         $sra->admin_approved_at = now();
         $sra->admin_notes       = $request->notes;
 
+        // If Main Admin also has Stores authority AND stores hasn't been separately set by an actual stores person,
+        // mark stores as covered so the SRA can finalise — but only if no dedicated stores person has signed.
+        $userHasStoresAuthority = $user->isMainAdminOrSub()
+            || in_array($user->role, ['Main Admin', 'Sub Main Admin'])
+            || in_array(strtoupper($user->department ?? ''), ['STORES', 'STORE']);
+        if ($userHasStoresAuthority && $sra->stores_status === 'pending') {
+            // Mark the stores column as approved too but keep the admin's name in admin_* only.
+            // The stores receipt slot will show "Authorizer" name if no dedicated stores person signed.
+            $sra->stores_status = $request->action;
+            // Do NOT overwrite stores_approved_by — leave blank so the receipt shows correctly.
+            // Only set it if there's genuinely no other stores person.
+            if (empty($sra->stores_approved_by)) {
+                $sra->stores_approved_by = $user->name;
+                $sra->stores_approved_at = now();
+            }
+        }
+
         if ($request->action === 'approved') {
-            $sra->status = 'auditor_pending'; // goes to Auditor next
+            if ($sra->admin_status === 'approved' && $sra->auditor_status === 'approved' && $sra->stores_status === 'approved') {
+                $sra->status = 'approved';
+            }
         } else {
             $sra->status = 'declined';
         }
@@ -324,8 +344,8 @@ class ServiceSraController extends Controller
         }
 
         $pending = ServiceSra::with('submitter')
-            ->where('status', 'admin_approved')
             ->where('stores_status', 'pending')
+            ->whereNotIn('status', ['approved', 'declined'])
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'pending_page');
 
@@ -388,18 +408,36 @@ class ServiceSraController extends Controller
             return response()->json(['success' => false, 'message' => 'This SRA has already been finalized.'], 422);
         }
 
-        $sra->stores_status      = $request->action;
-        $sra->stores_approved_by = $user->name;
-        $sra->stores_approved_at = now();
-        $sra->stores_notes       = $request->notes;
+        $isMainAdmin = $user->isMainAdminOrSub()
+            || in_array($user->role, ['Main Admin', 'Sub Main Admin']);
 
-        if ($sra->admin_status === 'pending') {
+        if ($isMainAdmin) {
+            // Main Admin/Sub Main Admin: always record in admin_* columns.
+            // Do NOT put their name in stores_approved_by — that slot is reserved
+            // for the actual Head of Stores signature on the receipt.
             $sra->admin_status      = $request->action;
             $sra->admin_approved_by = $user->name;
             $sra->admin_approved_at = now();
+            // Also mark stores_status so finalization can proceed (without polluting stores_approved_by)
+            if ($sra->stores_status === 'pending') {
+                $sra->stores_status = $request->action;
+                // stores_approved_by intentionally left blank so the receipt stores slot stays for HoS
+            }
+        } else {
+            // Regular stores staff: record in stores_* columns only
+            $sra->stores_status      = $request->action;
+            $sra->stores_approved_by = $user->name;
+            $sra->stores_approved_at = now();
+            $sra->stores_notes       = $request->notes;
         }
 
-        $sra->status = $request->action === 'approved' ? 'approved' : 'declined';
+        if ($request->action === 'approved') {
+            if ($sra->admin_status === 'approved' && $sra->auditor_status === 'approved' && $sra->stores_status === 'approved') {
+                $sra->status = 'approved';
+            }
+        } else {
+            $sra->status = 'declined';
+        }
         $sra->save();
 
         SystemLog::create([
@@ -429,8 +467,8 @@ class ServiceSraController extends Controller
         }
 
         $pending = ServiceSra::with('submitter')
-            ->where('status', 'auditor_pending')
             ->where('auditor_status', 'pending')
+            ->whereNotIn('status', ['approved', 'declined'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -488,7 +526,9 @@ class ServiceSraController extends Controller
         $sra->auditor_notes       = $request->notes;
 
         if ($request->action === 'approved') {
-            $sra->status = 'admin_approved'; // now goes to Head of Stores
+            if ($sra->admin_status === 'approved' && $sra->auditor_status === 'approved' && $sra->stores_status === 'approved') {
+                $sra->status = 'approved';
+            }
         } else {
             $sra->status = 'declined';
         }
@@ -499,14 +539,14 @@ class ServiceSraController extends Controller
             'user_id'     => $user->id,
             'event_type'  => 'SERVICE_SRA',
             'action'      => 'Service SRA Auditor ' . ucfirst($request->action),
-            'description' => "Auditor {$user->name} " . ($request->action === 'approved' ? 'approved' : 'declined') . " SRA {$sra->sra_number} for Stores review.",
+            'description' => "Auditor {$user->name} " . ($request->action === 'approved' ? 'approved' : 'declined') . " SRA {$sra->sra_number}.",
             'severity'    => 'info',
             'ip_address'  => $request->ip(),
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Service SRA has been ' . ($request->action === 'approved' ? 'auditor-approved and forwarded to Head of Stores.' : 'declined.'),
+            'message' => 'Service SRA has been ' . ($request->action === 'approved' ? 'approved successfully.' : 'declined.'),
         ]);
     }
 

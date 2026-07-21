@@ -180,8 +180,8 @@ class AuditorController extends Controller
             ->get();
 
         $pendingServiceSras = ServiceSra::with('submitter')
-            ->where('status', 'auditor_pending')
             ->where('auditor_status', 'pending')
+            ->whereNotIn('status', ['approved', 'declined'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -365,5 +365,16 @@ class AuditorController extends Controller
             'first_delivery' => $firstDeliveryFormatted,
             'last_delivery' => $lastDeliveryFormatted
         ]);
+    }
+
+    public function staffApprovals(Request $request)
+    {
+        if (auth()->user()->role !== 'Auditor') {
+            abort(403, 'Access Restricted: Auditor clearance required.');
+        }
+
+        $hasOverdueReturn = \App\Http\Controllers\TempRequisitionerController::hasOverdueReturn(auth()->user()->department);
+
+        return view('auditor.staff_approvals', compact('hasOverdueReturn'));
     }
 }

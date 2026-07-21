@@ -23,7 +23,7 @@
             @endif
         </td>
         <td style="text-align: center; vertical-align: middle;">
-            @if($req->collected_at)
+            @if(in_array($req->status, ['approved', 'partially_approved']))
                 <a href="{{ route('requisitions.receipt.print', $req->id) }}"
                    target="_blank"
                    class="btn-view-receipt"
@@ -34,8 +34,10 @@
                     <i data-lucide="receipt" style="width: 13px; height: 13px;"></i>
                     <span>Receipt</span>
                 </a>
+            @elseif($req->status === 'declined')
+                <span style="font-size: 0.72rem; color: #ef4444; font-weight: 800;">Declined</span>
             @else
-                <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 800;">Awaiting Collection</span>
+                <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 800;">Pending Approval</span>
             @endif
         </td>
     </tr>

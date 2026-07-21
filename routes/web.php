@@ -666,6 +666,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/auditor', [\App\Http\Controllers\AuditorController::class, 'index'])->name('auditor.dashboard');
     Route::get('/auditor/print', [\App\Http\Controllers\AuditorController::class, 'printReport'])->name('auditor.print');
     Route::get('/auditor/supplier-info', [\App\Http\Controllers\AuditorController::class, 'getSupplierInfo'])->name('auditor.supplier_info');
+    Route::get('/auditor/staff-approvals', [\App\Http\Controllers\AuditorController::class, 'staffApprovals'])->name('auditor.staff-approvals');
 
     // Director General Routes
     Route::get('/dg', [\App\Http\Controllers\DGController::class, 'index'])->name('dg.dashboard');

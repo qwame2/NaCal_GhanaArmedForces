@@ -90,10 +90,14 @@
                 </div>
             </td>
             <td data-label="Actions">
-                @if($req->approval_status === 'approved' || $req->approval_status === 'declined')
+                @if($req->approval_status === 'approved')
                     <a href="{{ $reviewUrl }}" target="_blank" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
-                        <i data-lucide="check" style="width:13px;height:13px;"></i> Processed
+                        <i data-lucide="file-text" style="width:13px;height:13px;"></i> View Receipt
                     </a>
+                @elseif($req->approval_status === 'declined')
+                    <button type="button" onclick="showDeclinedNotice()" style="background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#ef4444'; this.style.color='white'; this.style.borderColor='#ef4444';" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'; this.style.color='#ef4444'; this.style.borderColor='rgba(239, 68, 68, 0.2)';">
+                        <i data-lucide="x-circle" style="width:13px;height:13px;"></i> Declined
+                    </button>
                 @else
                     <a href="{{ $reviewUrl }}" target="_blank" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
                         <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
@@ -104,36 +108,57 @@
     @elseif($req instanceof \App\Models\ServiceSra)
         @php
             $sraStatus = $req->status;
-            $badgeColor = '#16a34a';
-            $badgeBg = 'rgba(22,163,74,0.1)';
-            $badgeLabel = 'Awaiting Authorizer Review';
-            if ($sraStatus === 'auditor_pending') {
-                $badgeColor = '#4ade80';
-                $badgeBg = 'rgba(139,92,246,0.1)';
-                $badgeLabel = 'Awaiting Auditor Review';
-            } elseif ($sraStatus === 'admin_approved') {
-                $badgeColor = '#10b981';
-                $badgeBg = 'rgba(16,185,129,0.1)';
-                $badgeLabel = 'Awaiting Stores Review';
-            } elseif ($sraStatus === 'approved') {
-                $badgeColor = '#10b981';
-                $badgeBg = 'rgba(16,185,129,0.1)';
-                $badgeLabel = 'Approved';
-            } elseif ($sraStatus === 'declined') {
-                $badgeColor = '#ef4444';
-                $badgeBg = 'rgba(239,68,68,0.1)';
-                $badgeLabel = 'Declined';
+            $pendingActors = [];
+            if ($req->admin_status === 'pending') $pendingActors[] = 'Authorizer';
+            if ($req->auditor_status === 'pending') $pendingActors[] = 'Auditor';
+            if ($req->stores_status === 'pending') $pendingActors[] = 'Stores';
+            
+            if (empty($pendingActors)) {
+                if ($sraStatus === 'approved') {
+                    $badgeColor = '#10b981';
+                    $badgeBg = 'rgba(16,185,129,0.1)';
+                    $badgeLabel = 'Approved';
+                } else {
+                    $badgeColor = '#ef4444';
+                    $badgeBg = 'rgba(239,68,68,0.1)';
+                    $badgeLabel = 'Declined';
+                }
+            } else {
+                if ($sraStatus === 'declined') {
+                    $badgeColor = '#ef4444';
+                    $badgeBg = 'rgba(239,68,68,0.1)';
+                    $badgeLabel = 'Declined';
+                } else {
+                    $badgeColor = '#eab308';
+                    $badgeBg = 'rgba(234,179,8,0.1)';
+                    $badgeLabel = 'Pending: ' . implode(', ', $pendingActors);
+                }
             }
             
             $usageLabel = 'Service';
             $usageBg = 'rgba(22, 163, 74, 0.08)';
             $usageColor = '#16a34a';
             
-            $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
-            if ($isStoresHead && $sraStatus === 'admin_approved') {
+            $currentUser = auth()->user();
+            if ($currentUser->role === 'Auditor') {
+                $reviewUrl = route('auditor.service-sra.review', $req->id);
+            } elseif ($currentUser->isMainAdminOrSub() || in_array($currentUser->role, ['Main Admin', 'Sub Main Admin'])) {
+                $reviewUrl = route('admin.service-sra.index') . '?review=' . $req->id;
+            } elseif ($currentUser->role === 'Head of Stores' || strcasecmp($currentUser->department ?? '', 'Stores') === 0 || strcasecmp($currentUser->department ?? '', 'Store') === 0) {
                 $reviewUrl = route('stores.service-sra.index') . '?review=' . $req->id;
             } else {
                 $reviewUrl = route('admin.service-sra.index') . '?review=' . $req->id;
+            }
+
+            $isUserProcessed = false;
+            if ($currentUser->role === 'Auditor') {
+                $isUserProcessed = ($req->auditor_status !== 'pending');
+            } elseif ($currentUser->isMainAdminOrSub() || in_array($currentUser->role, ['Main Admin', 'Sub Main Admin'])) {
+                $isUserProcessed = ($req->admin_status !== 'pending');
+            } elseif ($currentUser->role === 'Head of Stores' || strcasecmp($currentUser->department ?? '', 'Stores') === 0 || strcasecmp($currentUser->department ?? '', 'Store') === 0) {
+                $isUserProcessed = ($req->stores_status !== 'pending');
+            } else {
+                $isUserProcessed = ($req->admin_status !== 'pending');
             }
         @endphp
         <tr class="oversight-row" style="background: rgba(22, 163, 74, 0.015);">
@@ -183,14 +208,38 @@
                 </div>
             </td>
             <td data-label="Actions">
-                @if($req->status === 'approved' || $req->status === 'declined' || ($req->admin_status && $req->admin_status !== 'pending'))
-                    <button type="button" onclick="openSraOversightModal({{ $req->id }}, '{{ $sraStatus === 'admin_approved' ? 'stores' : 'admin' }}')" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
-                        <i data-lucide="check" style="width:13px;height:13px;"></i> Processed
+                @if($req->status === 'approved')
+                    <a href="{{ route('service-sra.receipt', $req->id) }}" target="_blank" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+                        <i data-lucide="file-text" style="width:13px;height:13px;"></i> View Receipt
+                    </a>
+                @elseif($req->status === 'declined')
+                    <button type="button" onclick="showDeclinedNotice()" style="background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#ef4444'; this.style.color='white'; this.style.borderColor='#ef4444';" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'; this.style.color='#ef4444'; this.style.borderColor='rgba(239, 68, 68, 0.2)';">
+                        <i data-lucide="x-circle" style="width:13px;height:13px;"></i> Declined
+                    </button>
+                @elseif($isUserProcessed)
+                    <button type="button" onclick="showReceiptNotice()" style="background: rgba(100, 116, 139, 0.08); color: #64748b; border: 1.5px solid rgba(100, 116, 139, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#64748b'; this.style.color='white'; this.style.borderColor='#64748b';" onmouseout="this.style.background='rgba(100, 116, 139, 0.08)'; this.style.color='#64748b'; this.style.borderColor='rgba(100, 116, 139, 0.2)';">
+                        <i data-lucide="file-text" style="width:13px;height:13px;"></i> View Receipt
                     </button>
                 @else
-                    <button type="button" onclick="openSraOversightModal({{ $req->id }}, '{{ $sraStatus === 'admin_approved' ? 'stores' : 'admin' }}')" style="background: rgba(22,163,74,0.08); color: #16a34a; border: 1.5px solid rgba(22,163,74,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';" onmouseout="this.style.background='rgba(22,163,74,0.08)'; this.style.color='white'; this.style.borderColor='rgba(22,163,74,0.2)';">
-                        <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
-                    </button>
+                    @php
+                        $sraModalStage = 'admin';
+                        if ($currentUser->isMainAdminOrSub() || in_array($currentUser->role, ['Main Admin', 'Sub Main Admin'])) {
+                            $sraModalStage = 'admin';
+                        } elseif ($currentUser->role === 'Head of Stores' || strcasecmp($currentUser->department ?? '', 'Stores') === 0 || strcasecmp($currentUser->department ?? '', 'Store') === 0) {
+                            $sraModalStage = 'stores';
+                        } else {
+                            $sraModalStage = 'admin';
+                        }
+                    @endphp
+                    @if($currentUser->role === 'Auditor')
+                        <a href="{{ $reviewUrl }}" target="_blank" style="background: rgba(22,163,74,0.08); color: #16a34a; border: 1.5px solid rgba(22,163,74,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';" onmouseout="this.style.background='rgba(22,163,74,0.08)'; this.style.color='#16a34a'; this.style.borderColor='rgba(22,163,74,0.2)';">
+                            <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
+                        </a>
+                    @else
+                        <button type="button" onclick="openSraOversightModal({{ $req->id }}, '{{ $sraModalStage }}')" style="background: rgba(22,163,74,0.08); color: #16a34a; border: 1.5px solid rgba(22,163,74,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';" onmouseout="this.style.background='rgba(22,163,74,0.08)'; this.style.color='#16a34a'; this.style.borderColor='rgba(22,163,74,0.2)';">
+                            <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
+                        </button>
+                    @endif
                 @endif
             </td>
         </tr>
@@ -306,12 +355,20 @@
                     $isReqProcessed = ($req->origin_admin_status !== 'pending' || $req->status !== 'pending');
                 }
             @endphp
-            @if($isReqProcessed)
+            @if($req->status === 'approved' || $req->status === 'partially_approved')
+                <a href="{{ route('requisitions.receipt.print', $req->id) }}" target="_blank" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+                    <i data-lucide="file-text" style="width:13px;height:13px;"></i> View Receipt
+                </a>
+            @elseif($req->status === 'declined')
+                <button type="button" onclick="showDeclinedNotice()" style="background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#ef4444'; this.style.color='white'; this.style.borderColor='#ef4444';" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'; this.style.color='#ef4444'; this.style.borderColor='rgba(239, 68, 68, 0.2)';">
+                    <i data-lucide="x-circle" style="width:13px;height:13px;"></i> Declined
+                </button>
+            @elseif($isReqProcessed)
                 <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
                     <i data-lucide="check" style="width:13px;height:13px;"></i> Processed
                 </button>
             @else
-                <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(22,163,74,0.08); color: #16a34a; border: 1.5px solid rgba(22,163,74,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';" onmouseout="this.style.background='rgba(22,163,74,0.08)'; this.style.color='#16a34a'; this.style.borderColor='rgba(22,163,74,0.2);'">
+                <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(22,163,74,0.08); color: #16a34a; border: 1.5px solid rgba(22,163,74,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';" onmouseout="this.style.background='rgba(22,163,74,0.08)'; this.style.color='#16a34a'; this.style.borderColor='rgba(22,163,74,0.2)';">
                     <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
                 </button>
             @endif

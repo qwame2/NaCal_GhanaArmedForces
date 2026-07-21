@@ -167,14 +167,31 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" data-tooltip="Review Requests">
+                    <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" data-tooltip="Approved Requests">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                        <span>Review Requests</span>
+                        <span>Approved Requests</span>
                         @php $mainReqsCount = $mainRequisitionsCount ?? 0; @endphp
                         <span id="sidebar-badge-main-reqs"
-                              style="background: #10b981; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $mainReqsCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
+                              style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $mainReqsCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
                               title="{{ $mainReqsCount }} requisition(s) awaiting your review">
                             {{ $mainReqsCount }}
+                        </span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('auditor.staff-approvals') }}" class="nav-link {{ request()->routeIs('auditor.staff-approvals') ? 'active' : '' }}" data-tooltip="Staff Access &amp; Approvals">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span>Staff Access &amp; Approvals</span>
+                        @php
+                            $pendingRegCount = \App\Models\User::where('department', auth()->user()->department)
+                                ->where('registration_status', 'pending_hod')
+                                ->where('role', 'Requisitioner')
+                                ->count();
+                        @endphp
+                        <span id="sidebar-badge-auditor-staff-regs"
+                              style="background: #10b981; color: white; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 50%; display: {{ $pendingRegCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; margin-left: auto;"
+                              title="{{ $pendingRegCount }} pending registration request(s)">
+                            {{ $pendingRegCount }}
                         </span>
                     </a>
                 </li>
@@ -203,7 +220,7 @@
                         @endif
                         @php $mainReqsCount = $mainRequisitionsCount ?? 0; @endphp
                         <span id="sidebar-badge-main-reqs"
-                              style="background: #10b981; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $mainReqsCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
+                              style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $mainReqsCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
                               title="{{ $mainReqsCount }} requisition(s) awaiting your review">
                             {{ $mainReqsCount }}
                         </span>
@@ -265,16 +282,19 @@
                 @endif
                 @if(auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Sub Main Admin' || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Auditor')
                 @php
-                    if (auth()->user()->isMainAdminOrSub() || in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin'])) {
+                    if (auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Sub Main Admin' || auth()->user()->isMainAdminOrSub() || auth()->user()->isDelegatedApprover()) {
                         $sraNavRoute = 'admin.service-sra.index';
+                        $pendingServiceSraBadgeCount = \App\Models\ServiceSra::where('admin_status', 'pending')->whereNotIn('status', ['approved', 'declined'])->count();
                     } elseif (auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)') {
                         $sraNavRoute = 'stores.service-sra.index';
+                        $pendingServiceSraBadgeCount = \App\Models\ServiceSra::where('stores_status', 'pending')->whereNotIn('status', ['approved', 'declined'])->count();
                     } elseif (auth()->user()->role === 'Auditor') {
                         $sraNavRoute = 'auditor.service-sra.index';
+                        $pendingServiceSraBadgeCount = \App\Models\ServiceSra::where('auditor_status', 'pending')->whereNotIn('status', ['approved', 'declined'])->count();
                     } else {
                         $sraNavRoute = 'admin.service-sra.index';
+                        $pendingServiceSraBadgeCount = \App\Models\ServiceSra::whereNotIn('status', ['approved', 'declined'])->count();
                     }
-                    $pendingServiceSraBadgeCount = \App\Models\ServiceSra::where('status', '!=', 'approved')->where('status', '!=', 'declined')->count();
                 @endphp
                 <li class="nav-item">
                     <a href="{{ route($sraNavRoute) }}" class="nav-link {{ request()->routeIs(['admin.service-sra.index', 'stores.service-sra.index', 'auditor.service-sra.index', 'admin.sra-history']) ? 'active' : '' }}" data-tooltip="Service SRA Approvals">
@@ -377,8 +397,7 @@
                     || $sraUser->isMainAdminOrSub()
                     || in_array($sraUser->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Dept Head HR', 'Head of Welfare']);
                 $sraIsStoresHead = !$sraIsAdminApprover && ($sraUser->role === 'Head of Stores'
-                    || $sraUser->role === 'Dept. Head (Stores)'
-                    || strcasecmp($sraUser->department ?? '', 'Stores') === 0);
+                    || $sraUser->role === 'Dept. Head (Stores)');
 
                 if ($sraIsAdminApprover) {
                     $sraRoute       = 'admin.service-sra.index';

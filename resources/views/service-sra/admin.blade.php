@@ -32,96 +32,128 @@
 
 
 
-    {{-- Pending Table --}}
-    <div class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0; margin-bottom: 2rem;">
-        <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
-            <i data-lucide="clock" style="color: #10b981; width: 20px;"></i>
-            <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: var(--text-main);">Awaiting Your Review ({{ $pending->count() }})</h3>
-        </div>
-        @if($pending->isEmpty())
-            <div style="padding: 3rem 2rem; text-align: center; color: var(--text-muted);">
-                <i data-lucide="check-circle" style="width: 48px; height: 48px; opacity: 0.3; display: block; margin: 0 auto 1rem;"></i>
-                <p style="margin: 0; font-weight: 600;">No pending SRAs — all caught up!</p>
-            </div>
-        @else
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: var(--bg-main);">
-                            <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">SRA No.</th>
-                            <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Submitted By</th>
-                            <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Supplier</th>
-                            <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Delivery</th>
-                            <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Date</th>
-                            <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: center;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($pending as $sra)
-                        <tr class="sra-table-row" style="cursor: pointer;" onclick="openSraModal({{ $sra->id }})">
-                            <td style="padding: 1rem 1.5rem; font-weight: 800; color: var(--primary); font-size: 0.85rem;">{{ $sra->sra_number }}</td>
-                            <td style="padding: 1rem 1.5rem;">
-                                <div style="font-weight: 700; color: var(--text-main);">{{ $sra->submitter->name ?? '—' }}</div>
-                                <div style="font-size: 0.72rem; color: var(--text-muted);">{{ $sra->dept }}</div>
-                            </td>
-                            <td style="padding: 1rem 1.5rem; font-weight: 600; color: var(--text-main);">{{ $sra->supplier_name }}</td>
-                            <td style="padding: 1rem 1.5rem;">
-                                <span class="sra-badge" style="background: {{ $sra->delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.1)' }}; color: {{ $sra->delivery_type === 'full' ? '#10b981' : '#10b981' }};">
-                                    {{ ucfirst($sra->delivery_type) }}
-                                </span>
-                            </td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">{{ $sra->date_of_delivery->format('d M Y') }}</td>
-                            <td style="padding: 1rem 1.5rem; text-align: center;">
-                                <button onclick="event.stopPropagation(); openSraModal({{ $sra->id }})" style="background: rgba(22,163,74,0.08); color: var(--primary); border: 1px solid rgba(22,163,74,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
-                                    <i data-lucide="clipboard-check" style="width: 13px;"></i> Review
-                                </button>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
+    {{-- Tab Buttons --}}
+    <div style="display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border-color); margin-bottom: 1.5rem; padding-bottom: 2px;">
+        <button onclick="switchAdminTab('pending')" id="tab-btn-pending" style="padding: 0.75rem 1.5rem; font-weight: 700; font-size: 0.88rem; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid var(--primary); color: var(--primary); display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+            Awaiting Your Review 
+            <span style="background: rgba(22,163,74,0.12); color: var(--primary); padding: 2px 8px; border-radius: 99px; font-size: 0.72rem; font-weight: 800;">{{ $pending->count() }}</span>
+        </button>
+        <button onclick="switchAdminTab('history')" id="tab-btn-history" style="padding: 0.75rem 1.5rem; font-weight: 700; font-size: 0.88rem; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid transparent; color: var(--text-muted); display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+            Recent Decisions 
+            <span style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 99px; font-size: 0.72rem; font-weight: 800;">{{ $history->count() }}</span>
+        </button>
     </div>
 
-    {{-- History Table --}}
-    <div class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0;">
-        <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
-            <i data-lucide="history" style="color: var(--text-muted); width: 20px;"></i>
-            <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: var(--text-main);">Recent Decisions ({{ $history->count() }})</h3>
-        </div>
-        @if($history->isEmpty())
-            <div style="padding: 2rem; text-align: center; color: var(--text-muted);"><p style="margin: 0; font-weight: 600;">No decisions made yet.</p></div>
-        @else
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: var(--bg-main);">
-                            <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">SRA No.</th>
-                            <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Submitted By</th>
-                            <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Supplier</th>
-                            <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Admin Decision</th>
-                            <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Decided At</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($history as $sra)
-                        <tr class="sra-table-row">
-                            <td style="padding: 1rem 1.5rem; font-weight: 800; color: var(--primary);">{{ $sra->sra_number }}</td>
-                            <td style="padding: 1rem 1.5rem; font-weight: 600; color: var(--text-main);">{{ $sra->submitter->name ?? '—' }}</td>
-                            <td style="padding: 1rem 1.5rem; color: var(--text-muted);">{{ $sra->supplier_name }}</td>
-                            <td style="padding: 1rem 1.5rem;">
-                                <span class="sra-badge" style="background: {{ $sra->admin_status === 'approved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)' }}; color: {{ $sra->admin_status === 'approved' ? '#10b981' : '#ef4444' }};">
-                                    {{ ucfirst($sra->admin_status) }}
-                                </span>
-                            </td>
-                            <td style="padding: 1rem 1.5rem; font-size: 0.82rem; color: var(--text-muted);">{{ $sra->admin_approved_at?->format('d M Y H:i') ?? '—' }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+    {{-- Pending Table Pane --}}
+    <div id="admin-pane-pending" style="display: block;">
+        <div class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0; margin-bottom: 2rem;">
+            <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="clock" style="color: #10b981; width: 20px;"></i>
+                <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: var(--text-main);">Awaiting Your Review ({{ $pending->count() }})</h3>
             </div>
-        @endif
+            @if($pending->isEmpty())
+                <div style="padding: 3rem 2rem; text-align: center; color: var(--text-muted);">
+                    <i data-lucide="check-circle" style="width: 48px; height: 48px; opacity: 0.3; display: block; margin: 0 auto 1rem;"></i>
+                    <p style="margin: 0; font-weight: 600;">No pending SRAs — all caught up!</p>
+                </div>
+            @else
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--bg-main);">
+                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">SRA No.</th>
+                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Submitted By</th>
+                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Supplier</th>
+                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Delivery</th>
+                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Date</th>
+                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($pending as $sra)
+                            <tr class="sra-table-row" style="cursor: pointer;" onclick="openSraModal({{ $sra->id }})">
+                                <td style="padding: 1rem 1.5rem; font-weight: 800; color: var(--primary); font-size: 0.85rem;">{{ $sra->sra_number }}</td>
+                                <td style="padding: 1rem 1.5rem;">
+                                    <div style="font-weight: 700; color: var(--text-main);">{{ $sra->submitter->name ?? '—' }}</div>
+                                    <div style="font-size: 0.72rem; color: var(--text-muted);">{{ $sra->dept }}</div>
+                                </td>
+                                <td style="padding: 1rem 1.5rem; font-weight: 600; color: var(--text-main);">{{ $sra->supplier_name }}</td>
+                                <td style="padding: 1rem 1.5rem;">
+                                    <span class="sra-badge" style="background: {{ $sra->delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.1)' }}; color: {{ $sra->delivery_type === 'full' ? '#10b981' : '#10b981' }};">
+                                        {{ ucfirst($sra->delivery_type) }}
+                                    </span>
+                                </td>
+                                <td style="padding: 1rem 1.5rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">{{ $sra->date_of_delivery->format('d M Y') }}</td>
+                                <td style="padding: 1rem 1.5rem; text-align: center;">
+                                    <button onclick="event.stopPropagation(); openSraModal({{ $sra->id }})" style="background: rgba(22,163,74,0.08); color: var(--primary); border: 1px solid rgba(22,163,74,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                                        <i data-lucide="clipboard-check" style="width: 13px;"></i> Review
+                                    </button>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- History Table Pane --}}
+    <div id="admin-pane-history" style="display: none;">
+        <div class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0;">
+            <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
+                <i data-lucide="history" style="color: var(--text-muted); width: 20px;"></i>
+                <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: var(--text-main);">Recent Decisions ({{ $history->count() }})</h3>
+            </div>
+            @if($history->isEmpty())
+                <div style="padding: 2rem; text-align: center; color: var(--text-muted);"><p style="margin: 0; font-weight: 600;">No decisions made yet.</p></div>
+            @else
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--bg-main);">
+                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">SRA No.</th>
+                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Submitted By</th>
+                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Supplier</th>
+                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Admin Decision</th>
+                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Decided At</th>
+                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($history as $sra)
+                            <tr class="sra-table-row">
+                                <td style="padding: 1rem 1.5rem; font-weight: 800; color: var(--primary);">{{ $sra->sra_number }}</td>
+                                <td style="padding: 1rem 1.5rem; font-weight: 600; color: var(--text-main);">{{ $sra->submitter->name ?? '—' }}</td>
+                                <td style="padding: 1rem 1.5rem; color: var(--text-muted);">{{ $sra->supplier_name }}</td>
+                                <td style="padding: 1rem 1.5rem;">
+                                    <span class="sra-badge" style="background: {{ $sra->admin_status === 'approved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)' }}; color: {{ $sra->admin_status === 'approved' ? '#10b981' : '#ef4444' }};">
+                                        {{ ucfirst($sra->admin_status) }}
+                                    </span>
+                                </td>
+                                <td style="padding: 1rem 1.5rem; font-size: 0.82rem; color: var(--text-muted);">{{ $sra->admin_approved_at?->format('d M Y H:i') ?? '—' }}</td>
+                                <td style="padding: 1rem 1.5rem; text-align: center;">
+                                    @if($sra->admin_status === 'approved')
+                                        @if($sra->status === 'approved')
+                                            <a href="{{ route('service-sra.receipt', $sra->id) }}" target="_blank" style="background: rgba(22,163,74,0.08); color: var(--primary); border: 1px solid rgba(22,163,74,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                                                <i data-lucide="file-text" style="width: 13px;"></i> View Receipt
+                                            </a>
+                                        @else
+                                            <button onclick="showReceiptNotice()" style="background: rgba(100,116,139,0.08); color: #64748b; border: 1px solid rgba(100,116,139,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                                                <i data-lucide="file-text" style="width: 13px;"></i> View Receipt
+                                            </button>
+                                        @endif
+                                    @else
+                                        <span style="color: var(--text-muted); font-size: 0.78rem; font-weight: 600;">—</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
     </div>
 </div>
 
@@ -251,6 +283,36 @@ window.processAdminSra = function(action) {
             $btn.innerHTML = origHtml;
             $btn.disabled = false;
         });
+    });
+};
+window.switchAdminTab = function(tab) {
+    if (tab === 'pending') {
+        document.getElementById('admin-pane-pending').style.display = 'block';
+        document.getElementById('admin-pane-history').style.display = 'none';
+        
+        document.getElementById('tab-btn-pending').style.borderBottomColor = 'var(--primary)';
+        document.getElementById('tab-btn-pending').style.color = 'var(--primary)';
+        
+        document.getElementById('tab-btn-history').style.borderBottomColor = 'transparent';
+        document.getElementById('tab-btn-history').style.color = 'var(--text-muted)';
+    } else {
+        document.getElementById('admin-pane-pending').style.display = 'none';
+        document.getElementById('admin-pane-history').style.display = 'block';
+        
+        document.getElementById('tab-btn-history').style.borderBottomColor = 'var(--primary)';
+        document.getElementById('tab-btn-history').style.color = 'var(--primary)';
+        
+        document.getElementById('tab-btn-pending').style.borderBottomColor = 'transparent';
+        document.getElementById('tab-btn-pending').style.color = 'var(--text-muted)';
+    }
+};
+
+window.showReceiptNotice = function() {
+    Swal.fire({
+        icon: 'info',
+        title: 'Notice',
+        text: 'The SRA receipt is only available after full approval by all required actors.',
+        confirmButtonColor: 'var(--primary)'
     });
 };
 

@@ -326,9 +326,6 @@
 
     {{-- Print Controls --}}
     <div class="print-controls">
-        <a href="{{ route('service-sra.index') }}" class="print-btn btn-back">
-            ← Back to SRA List
-        </a>
         <button onclick="window.print()" class="print-btn btn-print">
             🖨 Print / Download
         </button>

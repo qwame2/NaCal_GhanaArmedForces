@@ -18,10 +18,10 @@
 <div class="animate-slide-up">
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;" id="header-badge-container">
                 <span style="background: rgba(16,185,129,0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">Head of Stores — Final Review</span>
-                @if($pending->count() > 0)
-                    <span style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; animation: reqs-pulse 1.8s infinite;">{{ $pending->count() }}</span>
+                @if($pending->total() > 0)
+                    <span style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; animation: reqs-pulse 1.8s infinite;">{{ $pending->total() }}</span>
                 @endif
             </div>
             <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main); margin: 0;">Service SRA <span style="color: #10b981;">Final Approval</span></h2>
@@ -29,17 +29,15 @@
         </div>
     </div>
 
-
-
     {{-- Tab Buttons --}}
     <div style="display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border-color); margin-bottom: 1.5rem; padding-bottom: 2px;">
         <button onclick="switchStoresTab('pending')" id="tab-btn-pending" style="padding: 0.75rem 1.5rem; font-weight: 700; font-size: 0.88rem; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid var(--primary); color: var(--primary); display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
             Awaiting Final Approval 
-            <span style="background: rgba(16,185,129,0.12); color: #10b981; padding: 2px 8px; border-radius: 99px; font-size: 0.72rem; font-weight: 800;">{{ $pending->count() }}</span>
+            <span id="tab-pending-count" style="background: rgba(16,185,129,0.12); color: #10b981; padding: 2px 8px; border-radius: 99px; font-size: 0.72rem; font-weight: 800;">{{ $pending->total() }}</span>
         </button>
         <button onclick="switchStoresTab('history')" id="tab-btn-history" style="padding: 0.75rem 1.5rem; font-weight: 700; font-size: 0.88rem; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid transparent; color: var(--text-muted); display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
             Approved SRA 
-            <span style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 99px; font-size: 0.72rem; font-weight: 800;">{{ $history->count() }}</span>
+            <span id="tab-history-count" style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 99px; font-size: 0.72rem; font-weight: 800;">{{ $history->total() }}</span>
         </button>
     </div>
 
@@ -176,11 +174,91 @@
         }
     }
 
+    function getNormalizedHTML(element) {
+        if (!element) return '';
+        const clone = element.cloneNode(true);
+        clone.querySelectorAll('svg, i, [data-lucide]').forEach(el => el.remove());
+        return clone.innerHTML.replace(/\s+/g, ' ').trim();
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('history_page')) {
             switchStoresTab('history');
         }
+
+        // Silent auto-refresh every 10 seconds
+        setInterval(async () => {
+            if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+                return;
+            }
+
+            try {
+                const res = await fetch(window.location.href);
+                if (!res.ok) return;
+                const html = await res.text();
+                
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                let updated = false;
+
+                // 1. Update Header Badge Container
+                const newHeaderBadge = doc.getElementById('header-badge-container');
+                const curHeaderBadge = document.getElementById('header-badge-container');
+                if (newHeaderBadge && curHeaderBadge) {
+                    if (getNormalizedHTML(newHeaderBadge) !== getNormalizedHTML(curHeaderBadge)) {
+                        curHeaderBadge.innerHTML = newHeaderBadge.innerHTML;
+                        updated = true;
+                    }
+                }
+
+                // 2. Update Tab Count: Pending
+                const newTabPending = doc.getElementById('tab-pending-count');
+                const curTabPending = document.getElementById('tab-pending-count');
+                if (newTabPending && curTabPending) {
+                    if (newTabPending.textContent !== curTabPending.textContent) {
+                        curTabPending.textContent = newTabPending.textContent;
+                    }
+                }
+
+                // 3. Update Tab Count: History
+                const newTabHistory = doc.getElementById('tab-history-count');
+                const curTabHistory = document.getElementById('tab-history-count');
+                if (newTabHistory && curTabHistory) {
+                    if (newTabHistory.textContent !== curTabHistory.textContent) {
+                        curTabHistory.textContent = newTabHistory.textContent;
+                    }
+                }
+
+                // 4. Update Pending Table Pane
+                const newPendingPane = doc.getElementById('stores-pane-pending');
+                const curPendingPane = document.getElementById('stores-pane-pending');
+                if (newPendingPane && curPendingPane) {
+                    if (getNormalizedHTML(newPendingPane) !== getNormalizedHTML(curPendingPane)) {
+                        newPendingPane.querySelectorAll('.animate-slide-up').forEach(el => el.classList.remove('animate-slide-up'));
+                        curPendingPane.innerHTML = newPendingPane.innerHTML;
+                        updated = true;
+                    }
+                }
+
+                // 5. Update History Table Pane
+                const newHistoryPane = doc.getElementById('stores-pane-history');
+                const curHistoryPane = document.getElementById('stores-pane-history');
+                if (newHistoryPane && curHistoryPane) {
+                    if (getNormalizedHTML(newHistoryPane) !== getNormalizedHTML(curHistoryPane)) {
+                        newHistoryPane.querySelectorAll('.animate-slide-up').forEach(el => el.classList.remove('animate-slide-up'));
+                        curHistoryPane.innerHTML = newHistoryPane.innerHTML;
+                        updated = true;
+                    }
+                }
+
+                if (updated && typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            } catch (e) {
+                console.error('Silent refresh failed:', e);
+            }
+        }, 10000);
     });
 </script>
 @endpush
