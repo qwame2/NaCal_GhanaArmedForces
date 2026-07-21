@@ -1767,6 +1767,19 @@ class StoreRequisitionController extends Controller
         }
 
         $requisitionsCol = $query->get();
+        
+        $typeFilter = $request->input('type', '');
+        if ($typeFilter === 'inventory_sra') {
+            $requisitionsCol = collect();
+            $serviceSraCol = collect();
+        } elseif ($typeFilter === 'service_sra') {
+            $requisitionsCol = collect();
+            $sraCol = collect();
+        } elseif ($typeFilter === 'requisition') {
+            $sraCol = collect();
+            $serviceSraCol = collect();
+        }
+
         $merged = $requisitionsCol->concat($sraCol)->concat($serviceSraCol)->sortByDesc('created_at');
 
         $perPage = 15;

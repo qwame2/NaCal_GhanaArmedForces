@@ -135,7 +135,7 @@
                 }
             }
             
-            $usageLabel = 'Service';
+            $usageLabel = 'Service SRA';
             $usageBg = 'rgba(22, 163, 74, 0.08)';
             $usageColor = '#16a34a';
             
