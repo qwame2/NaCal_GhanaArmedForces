@@ -18,14 +18,7 @@
 <div class="animate-slide-up">
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;" id="header-badge-container">
-                <span style="background: rgba(16,185,129,0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">Head of Stores — Final Review</span>
-                @if($pending->total() > 0)
-                    <span style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; animation: reqs-pulse 1.8s infinite;">{{ $pending->total() }}</span>
-                @endif
-            </div>
             <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main); margin: 0;">Service SRA <span style="color: #10b981;">Final Approval</span></h2>
-            <p style="color: var(--text-muted); margin: 0.5rem 0 0;">Final review and approval of SRAs already cleared by Admin. Your approval enables receipt download.</p>
         </div>
     </div>
 
@@ -87,9 +80,51 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="padding: 1.25rem 2rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
-                    {{ $pending->appends(['history_page' => request('history_page')])->links('pagination::bootstrap-4') }}
+                @if($pending->hasPages())
+                <div style="padding: 1.25rem 2rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">
+                        Showing
+                        <span style="font-weight: 900; color: var(--text-main);">{{ $pending->firstItem() }}</span>
+                        &ndash;
+                        <span style="font-weight: 900; color: var(--text-main);">{{ $pending->lastItem() }}</span>
+                        of
+                        <span style="font-weight: 900; color: var(--text-main);">{{ $pending->total() }}</span>
+                        SRAs
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        {{-- Previous --}}
+                        @if($pending->onFirstPage())
+                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-main); border: 1.5px solid var(--border-color); color: var(--text-muted); opacity: 0.45; cursor: not-allowed;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                            </span>
+                        @else
+                            <a href="{{ $pending->appends(['history_page' => request('history_page')])->previousPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#10b981';this.style.color='white';this.style.borderColor='#10b981';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                            </a>
+                        @endif
+
+                        {{-- Page Numbers --}}
+                        @foreach($pending->appends(['history_page' => request('history_page')])->getUrlRange(max(1, $pending->currentPage()-2), min($pending->lastPage(), $pending->currentPage()+2)) as $page => $url)
+                            @if($page == $pending->currentPage())
+                                <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: #10b981; color: white; font-weight: 900; font-size: 0.82rem; border: 1.5px solid #10b981; box-shadow: 0 4px 12px rgba(16,185,129,0.3);">{{ $page }}</span>
+                            @else
+                                <a href="{{ $url }}" style="display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: var(--bg-card); color: var(--text-main); font-weight: 700; font-size: 0.82rem; border: 1.5px solid var(--border-color); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='rgba(16,185,129,0.08)';this.style.borderColor='rgba(16,185,129,0.3)';this.style.color='#10b981';" onmouseout="this.style.background='var(--bg-card)';this.style.borderColor='var(--border-color)';this.style.color='var(--text-main)';">{{ $page }}</a>
+                            @endif
+                        @endforeach
+
+                        {{-- Next --}}
+                        @if($pending->hasMorePages())
+                            <a href="{{ $pending->appends(['history_page' => request('history_page')])->nextPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#10b981';this.style.color='white';this.style.borderColor='#10b981';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                            </a>
+                        @else
+                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-main); border: 1.5px solid var(--border-color); color: var(--text-muted); opacity: 0.45; cursor: not-allowed;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                            </span>
+                        @endif
+                    </div>
                 </div>
+                @endif
             @endif
         </div>
     </div>
@@ -142,9 +177,51 @@
                         </tbody>
                     </table>
                 </div>
-                <div style="padding: 1.25rem 2rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
-                    {{ $history->appends(['pending_page' => request('pending_page')])->links('pagination::bootstrap-4') }}
+                @if($history->hasPages())
+                <div style="padding: 1.25rem 2rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">
+                        Showing
+                        <span style="font-weight: 900; color: var(--text-main);">{{ $history->firstItem() }}</span>
+                        &ndash;
+                        <span style="font-weight: 900; color: var(--text-main);">{{ $history->lastItem() }}</span>
+                        of
+                        <span style="font-weight: 900; color: var(--text-main);">{{ $history->total() }}</span>
+                        approved SRAs
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                        {{-- Previous --}}
+                        @if($history->onFirstPage())
+                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-main); border: 1.5px solid var(--border-color); color: var(--text-muted); opacity: 0.45; cursor: not-allowed;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                            </span>
+                        @else
+                            <a href="{{ $history->appends(['pending_page' => request('pending_page')])->previousPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#10b981';this.style.color='white';this.style.borderColor='#10b981';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                            </a>
+                        @endif
+
+                        {{-- Page Numbers --}}
+                        @foreach($history->appends(['pending_page' => request('pending_page')])->getUrlRange(max(1, $history->currentPage()-2), min($history->lastPage(), $history->currentPage()+2)) as $page => $url)
+                            @if($page == $history->currentPage())
+                                <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: #10b981; color: white; font-weight: 900; font-size: 0.82rem; border: 1.5px solid #10b981; box-shadow: 0 4px 12px rgba(16,185,129,0.3);">{{ $page }}</span>
+                            @else
+                                <a href="{{ $url }}" style="display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: var(--bg-card); color: var(--text-main); font-weight: 700; font-size: 0.82rem; border: 1.5px solid var(--border-color); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='rgba(16,185,129,0.08)';this.style.borderColor='rgba(16,185,129,0.3)';this.style.color='#10b981';" onmouseout="this.style.background='var(--bg-card)';this.style.borderColor='var(--border-color)';this.style.color='var(--text-main)';">{{ $page }}</a>
+                            @endif
+                        @endforeach
+
+                        {{-- Next --}}
+                        @if($history->hasMorePages())
+                            <a href="{{ $history->appends(['pending_page' => request('pending_page')])->nextPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#10b981';this.style.color='white';this.style.borderColor='#10b981';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                            </a>
+                        @else
+                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-main); border: 1.5px solid var(--border-color); color: var(--text-muted); opacity: 0.45; cursor: not-allowed;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                            </span>
+                        @endif
+                    </div>
                 </div>
+                @endif
             @endif
         </div>
     </div>
@@ -187,11 +264,15 @@
             switchStoresTab('history');
         }
 
-        // Silent auto-refresh every 10 seconds
+        // Silent auto-refresh every 30 seconds (paused when tab is hidden)
+        let _storesSilentRefreshPaused = document.hidden;
+        document.addEventListener('visibilitychange', () => {
+            _storesSilentRefreshPaused = document.hidden;
+        });
+
         setInterval(async () => {
-            if (typeof Swal !== 'undefined' && Swal.isVisible()) {
-                return;
-            }
+            if (_storesSilentRefreshPaused) return;
+            if (typeof Swal !== 'undefined' && Swal.isVisible()) return;
 
             try {
                 const res = await fetch(window.location.href);
@@ -258,7 +339,7 @@
             } catch (e) {
                 console.error('Silent refresh failed:', e);
             }
-        }, 10000);
+        }, 30000);
     });
 </script>
 @endpush

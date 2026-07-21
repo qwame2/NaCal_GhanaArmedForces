@@ -85,99 +85,168 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        loadTempAccounts();
-        loadPendingRegistrations();
+        loadProvisioningData();
 
-        // Auto-refresh every 15 seconds for real-time responsiveness
+        // Auto-refresh every 30 seconds (paused when tab is hidden)
+        let _auditorStaffPollPaused = document.hidden;
+        document.addEventListener('visibilitychange', () => { _auditorStaffPollPaused = document.hidden; });
         setInterval(() => {
-            loadTempAccounts(true);
-            loadPendingRegistrations(true);
-        }, 15000);
+            if (!_auditorStaffPollPaused) loadProvisioningData(true);
+        }, 30000);
     });
 
     // ── Staff Provisioning (AJAX wrappers) ──────────────────────────────────────
-    async function loadTempAccounts(isSilent = false) {
-        const container = document.getElementById('tempAccountsList');
-        if (!container) return;
+    async function loadProvisioningData(isSilent = false) {
+        const tempContainer = document.getElementById('tempAccountsList');
+        const pendingContainer = document.getElementById('pendingRegistrationsList');
+        
+        if (!tempContainer && !pendingContainer) return;
 
         if (!isSilent) {
-            container.innerHTML = `
-                <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
-                    <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;animation: spin 1s linear infinite;"></i><br>Loading department staff directory...
-                </div>`;
+            if (tempContainer) {
+                tempContainer.innerHTML = `
+                    <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                        <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;animation: spin 1s linear infinite;"></i><br>Loading department staff directory...
+                    </div>`;
+            }
+            if (pendingContainer) {
+                pendingContainer.innerHTML = `
+                    <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                        <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;animation: spin 1s linear infinite;"></i><br>Loading pending registrations...
+                    </div>`;
+            }
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         try {
-            const res = await fetch('{{ route("dept-head.temp-requisitioners.index") }}');
+            const res = await fetch('{{ route("dept-head.provisioning-dashboard") }}');
             const data = await res.json();
 
-            if (!data.success || !data.accounts || data.accounts.length === 0) {
-                const emptyHtml = `
-                    <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
-                        <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
-                        <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No department staff found</div>
-                        <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any registered staff in your department will appear here.</div>
-                    </div>`;
-                if (container.innerHTML !== emptyHtml) {
-                    container.innerHTML = emptyHtml;
+            if (!data.success) return;
+
+            // Render active accounts
+            if (tempContainer) {
+                if (!data.accounts || data.accounts.length === 0) {
+                    const emptyHtml = `
+                        <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
+                            <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
+                            <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No department staff found</div>
+                            <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any registered staff in your department will appear here.</div>
+                        </div>`;
+                    if (tempContainer.innerHTML !== emptyHtml) {
+                        tempContainer.innerHTML = emptyHtml;
+                    }
+                    window._lastStaffDataString = '';
+                } else {
+                    const currentDataString = JSON.stringify(data.accounts);
+                    if (!isSilent || window._lastStaffDataString !== currentDataString) {
+                        window._lastStaffDataString = currentDataString;
+
+                        let rows = data.accounts.map(acc => {
+                            const isAccessActive = acc.can_make_requisition;
+                            const badgeStyle = isAccessActive 
+                                ? 'background:rgba(16,185,129,.1);color:#10b981;' 
+                                : 'background:rgba(239,68,68,.1);color:#ef4444;';
+                            const badgeText = isAccessActive ? 'Active Access' : 'Access Suspended';
+                            
+                            const btnStyle = isAccessActive
+                                ? 'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;'
+                                : 'background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;';
+                            const btnText = isAccessActive ? 'Suspend Access' : 'Grant Access';
+                            const btnIcon = isAccessActive ? 'user-minus' : 'user-check';
+
+                            return `
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
+                                <div style="display:flex;align-items:center;gap:.75rem;">
+                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(22,163,74,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#16a34a;">
+                                        ${(acc.name || acc.username).charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${acc.name || '@' + acc.username}</div>
+                                        <div style="font-size:.7rem;color:var(--text-muted);">${acc.role} · @${acc.username}</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(16,185,129,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#10b981' : '#64748b'};">
+                                        ${acc.is_online ? '● ONLINE' : '○ OFFLINE'}
+                                    </span>
+                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;${badgeStyle}">
+                                        ${badgeText}
+                                    </span>
+                                    <button onclick="toggleStaffAccess(${acc.id}, '${acc.username}', ${isAccessActive})" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;${btnStyle}">
+                                        <i data-lucide="${btnIcon}" style="width:13px;height:13px;"></i> ${btnText}
+                                    </button>
+                                </div>
+                            </div>
+                            `;
+                        }).join('');
+
+                        tempContainer.innerHTML = `<div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">${rows}</div>`;
+                    }
                 }
-                window._lastStaffDataString = '';
-                return;
             }
 
-            const currentDataString = JSON.stringify(data.accounts);
-            if (isSilent && window._lastStaffDataString === currentDataString) {
-                return;
+            // Render pending registrations
+            if (pendingContainer) {
+                if (!data.pending || data.pending.length === 0) {
+                    const emptyHtml = `
+                        <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
+                            <div style="font-size:1.75rem;margin-bottom:.4rem;">📝</div>
+                            <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No pending registrations</div>
+                            <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">New staff registration requests will show up here.</div>
+                        </div>`;
+                    if (pendingContainer.innerHTML !== emptyHtml) {
+                        pendingContainer.innerHTML = emptyHtml;
+                    }
+                    window._lastPendingString = '';
+                } else {
+                    const currentPendingString = JSON.stringify(data.pending);
+                    if (!isSilent || window._lastPendingString !== currentPendingString) {
+                        window._lastPendingString = currentPendingString;
+
+                        let rows = data.pending.map(req => {
+                            return `
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
+                                <div>
+                                    <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${req.name}</div>
+                                    <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;">
+                                        Username: <b>@${req.username}</b> · Service No: <b>${req.service_number || 'N/A'}</b> · Phone: <b>${req.phone || 'N/A'}</b>
+                                    </div>
+                                    <div style="font-size:.65rem;color:var(--text-muted);margin-top:4px;">Requested: ${req.created_at}</div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:.75rem;">
+                                    <button onclick="approveRegistration(${req.id}, '${req.username}')" style="padding:.45rem .9rem;border:none;background:rgba(16,185,129,.1);color:#10b981;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;" onmouseover="this.style.background='#10b981';this.style.color='white';" onmouseout="this.style.background='rgba(16,185,129,.1)';this.style.color='#10b981';">
+                                        <i data-lucide="user-check" style="width:13px;height:13px;"></i> Approve
+                                    </button>
+                                    <button onclick="declineRegistration(${req.id}, '${req.username}')" style="padding:.45rem .9rem;border:none;background:rgba(239,68,68,.08);color:#ef4444;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;" onmouseover="this.style.background='#ef4444';this.style.color='white';" onmouseout="this.style.background='rgba(239,68,68,.08)';this.style.color='#ef4444';">
+                                        <i data-lucide="user-x" style="width:13px;height:13px;"></i> Decline
+                                    </button>
+                                </div>
+                            </div>
+                            `;
+                        }).join('');
+
+                        pendingContainer.innerHTML = `<div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">${rows}</div>`;
+                    }
+                }
             }
-            window._lastStaffDataString = currentDataString;
 
-            let rows = data.accounts.map(acc => {
-                const isAccessActive = acc.can_make_requisition;
-                const badgeStyle = isAccessActive 
-                    ? 'background:rgba(16,185,129,.1);color:#10b981;' 
-                    : 'background:rgba(239,68,68,.1);color:#ef4444;';
-                const badgeText = isAccessActive ? 'Active Access' : 'Access Suspended';
-                
-                const btnStyle = isAccessActive
-                    ? 'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;'
-                    : 'background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;';
-                const btnText = isAccessActive ? 'Suspend Access' : 'Grant Access';
-                const btnIcon = isAccessActive ? 'user-minus' : 'user-check';
-
-                return `
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
-                    <div style="display:flex;align-items:center;gap:.75rem;">
-                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(22,163,74,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#16a34a;">
-                            ${(acc.name || acc.username).charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                            <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${acc.name || '@' + acc.username}</div>
-                            <div style="font-size:.7rem;color:var(--text-muted);">${acc.role} · @${acc.username}</div>
-                        </div>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
-                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(16,185,129,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#10b981' : '#64748b'};">
-                            ${acc.is_online ? '● ONLINE' : '○ OFFLINE'}
-                        </span>
-                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;${badgeStyle}">
-                            ${badgeText}
-                        </span>
-                        <button onclick="toggleStaffAccess(${acc.id}, '${acc.username}', ${isAccessActive})" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;${btnStyle}">
-                            <i data-lucide="${btnIcon}" style="width:13px;height:13px;"></i> ${btnText}
-                        </button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-
-            container.innerHTML = `<div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">${rows}</div>`;
             if (typeof lucide !== 'undefined') lucide.createIcons();
         } catch (e) {
+            console.error('Failed to load provisioning data:', e);
             if (!isSilent) {
-                container.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load staff list.</div>`;
+                if (tempContainer) {
+                    tempContainer.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load staff list.</div>`;
+                }
+                if (pendingContainer) {
+                    pendingContainer.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load registration requests.</div>`;
+                }
             }
         }
+    }
+
+    function loadTempAccounts(isSilent = false) {
+        loadProvisioningData(isSilent);
     }
 
     async function toggleStaffAccess(id, username, isCurrentlyActive) {
@@ -222,71 +291,8 @@
         }
     }
 
-    async function loadPendingRegistrations(isSilent = false) {
-        const container = document.getElementById('pendingRegistrationsList');
-        if (!container) return;
-
-        if (!isSilent) {
-            container.innerHTML = `
-                <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
-                    <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;animation: spin 1s linear infinite;"></i><br>Loading pending registrations...
-                </div>`;
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }
-
-        try {
-            const res = await fetch('{{ route("dept-head.pending-registrations") }}');
-            const data = await res.json();
-
-            if (!data.success || !data.pending || data.pending.length === 0) {
-                const emptyHtml = `
-                    <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
-                        <div style="font-size:1.75rem;margin-bottom:.4rem;">📝</div>
-                        <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No pending registrations</div>
-                        <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">New staff registration requests will show up here.</div>
-                    </div>`;
-                if (container.innerHTML !== emptyHtml) {
-                    container.innerHTML = emptyHtml;
-                }
-                window._lastPendingString = '';
-                return;
-            }
-
-            const currentPendingString = JSON.stringify(data.pending);
-            if (isSilent && window._lastPendingString === currentPendingString) {
-                return;
-            }
-            window._lastPendingString = currentPendingString;
-
-            let rows = data.pending.map(req => {
-                return `
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
-                    <div>
-                        <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${req.name}</div>
-                        <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;">
-                            Username: <b>@${req.username}</b> · Service No: <b>${req.service_number || 'N/A'}</b> · Phone: <b>${req.phone || 'N/A'}</b>
-                        </div>
-                        <div style="font-size:.65rem;color:var(--text-muted);margin-top:4px;">Requested: ${req.created_at}</div>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:.75rem;">
-                        <button onclick="approveRegistration(${req.id}, '${req.username}')" style="padding:.45rem .9rem;border:none;background:rgba(16,185,129,.1);color:#10b981;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;" onmouseover="this.style.background='#10b981';this.style.color='white';" onmouseout="this.style.background='rgba(16,185,129,.1)';this.style.color='#10b981';">
-                            <i data-lucide="user-check" style="width:13px;height:13px;"></i> Approve
-                        </button>
-                        <button onclick="declineRegistration(${req.id}, '${req.username}')" style="padding:.45rem .9rem;border:none;background:rgba(239,68,68,.08);color:#ef4444;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;" onmouseover="this.style.background='#ef4444';this.style.color='white';" onmouseout="this.style.background='rgba(239,68,68,.08)';this.style.color='#ef4444';">
-                            <i data-lucide="user-x" style="width:13px;height:13px;"></i> Decline
-                        </button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-
-            container.innerHTML = `<div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">${rows}</div>`;
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        } catch (e) {
-            if (!isSilent) {
-                container.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load registration requests.</div>`;
-            }
-        }
+    function loadPendingRegistrations(isSilent = false) {
+        loadProvisioningData(isSilent);
     }
 
     async function approveRegistration(id, username) {

@@ -116,6 +116,10 @@ class InventoryController extends Controller
 
     public function createDiscrepancy()
     {
+        if (!\App\Models\Setting::get('allow_record_existing_item', true)) {
+            return redirect()->route('dashboard')->with('error', 'The Record Existing Item feature is disabled by system settings.');
+        }
+
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
             abort(403, 'Unauthorized: Department Heads are only allowed to view received items and cannot make changes.');
         }
@@ -221,6 +225,10 @@ class InventoryController extends Controller
 
     public function storeDiscrepancy(Request $request)
     {
+        if (!\App\Models\Setting::get('allow_record_existing_item', true)) {
+            return response()->json(['success' => false, 'message' => 'The Record Existing Item feature is disabled by system settings.'], 403);
+        }
+
         if (in_array(auth()->user()->role, ['Main Admin', 'Department Head'])) {
             return response()->json(['success' => false, 'message' => 'Unauthorized: Department Heads are only allowed to view received items and cannot make changes.'], 403);
         }

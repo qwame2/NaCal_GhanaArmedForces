@@ -309,4 +309,63 @@ class TempRequisitionerController extends Controller
             'message' => "Registration request for @{$staff->username} has been declined."
         ]);
     }
+
+    /**
+     * GET /api/dept-head/provisioning-dashboard
+     * Combined endpoint returning pending registrations and active staff directory.
+     */
+    public function dashboardData(Request $request)
+    {
+        $head = auth()->user();
+
+        if (!in_array($head->role, ['Department Head', 'Main Admin', 'Sub Main Admin', 'Dept Head HR', 'Head of Welfare', 'Auditor'])) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        // 1. Fetch pending registrations
+        $pending = User::where(function($q) use ($head) {
+                $q->where('department', $head->department)
+                  ->orWhere('sponsored_by', $head->id);
+            })
+            ->where('registration_status', 'pending_hod')
+            ->where('role', 'Requisitioner')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn($u) => [
+                'id'             => $u->id,
+                'name'           => $u->name,
+                'username'       => $u->username,
+                'phone'          => $u->phone,
+                'service_number' => $u->service_number,
+                'created_at'     => $u->created_at ? $u->created_at->format('d/m/y H:i') : 'N/A',
+            ]);
+
+        // 2. Fetch approved active accounts
+        $accounts = User::where(function($q) use ($head) {
+                $q->where('department', $head->department)
+                  ->orWhere('sponsored_by', $head->id);
+            })
+            ->where('registration_status', 'approved')
+            ->where('id', '!=', $head->id)
+            ->orderBy('name', 'asc')
+            ->get()
+            ->map(fn($u) => [
+                'id'         => $u->id,
+                'name'       => $u->name,
+                'username'   => $u->username,
+                'role'       => $u->role,
+                'department' => $u->department,
+                'is_active'  => $u->is_active,
+                'is_online'  => $u->is_online,
+                'can_make_requisition' => (bool)($u->can_make_requisition ?? true),
+                'created_at' => $u->created_at ? $u->created_at->format('d/m/y H:i') : 'N/A',
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'pending' => $pending,
+            'accounts' => $accounts
+        ]);
+    }
 }
+

@@ -648,9 +648,12 @@ function getNormalizedHTML(element) {
     return clone.innerHTML.replace(/\s+/g, ' ').trim();
 }
 
-// Auto silent refresh every 10 seconds to show all requests without page reload
+// Auto silent refresh every 30 seconds (paused when tab is hidden)
+let _pwResetRefreshPaused = document.hidden;
+document.addEventListener('visibilitychange', () => { _pwResetRefreshPaused = document.hidden; });
 setInterval(async () => {
-    // Prevent refresh if SweetAlert is open
+    // Prevent refresh if hidden or SweetAlert is open
+    if (_pwResetRefreshPaused) return;
     const isSwalOpen = typeof Swal !== 'undefined' && Swal.isVisible();
     if (isSwalOpen) return;
     
@@ -720,7 +723,7 @@ setInterval(async () => {
     } catch (e) {
         console.error('Password requests silent refresh failed:', e);
     }
-}, 10000);
+}, 30000);
 
 document.addEventListener("DOMContentLoaded", initCountdowns);
 </script>

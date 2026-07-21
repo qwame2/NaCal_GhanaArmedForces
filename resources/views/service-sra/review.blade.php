@@ -9,7 +9,7 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
     
     <style>
         :root {
@@ -707,7 +707,14 @@
                         timer: 2500,
                         showConfirmButton: false,
                     }).then(() => {
-                        // Close tab or redirect back
+                        // Reload the parent (stores) page so the list refreshes immediately
+                        try {
+                            if (window.opener && !window.opener.closed) {
+                                window.opener.location.reload();
+                            }
+                        } catch (e) { /* cross-origin guard */ }
+
+                        // Close this review tab
                         window.close();
                         // Fallback if window.close doesn't work (due to browser security)
                         setTimeout(() => {

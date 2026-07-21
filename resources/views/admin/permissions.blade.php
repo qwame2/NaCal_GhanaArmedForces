@@ -1682,8 +1682,10 @@
     }
 
     // Start polling every 10 seconds
-    setInterval(pollPendingRegistrations, 10000);
-    setInterval(pollStoreOfficers, 10000);
+    let _permsPollPaused = document.hidden;
+    document.addEventListener('visibilitychange', () => { _permsPollPaused = document.hidden; });
+    setInterval(() => { if (!_permsPollPaused) pollPendingRegistrations(); }, 20000);
+    setInterval(() => { if (!_permsPollPaused) pollStoreOfficers(); }, 20000);
 
     document.addEventListener('DOMContentLoaded', () => {
         // General Pagination Helper for all Tabs

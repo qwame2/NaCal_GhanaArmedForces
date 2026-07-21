@@ -674,6 +674,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/dg/requisitions/{id}/process', [\App\Http\Controllers\DGController::class, 'processRequisition'])->name('dg.requisitions.process');
 
     // Staff Access Provisioning & Registration Approval Routes
+    Route::get('/api/dept-head/provisioning-dashboard', [\App\Http\Controllers\TempRequisitionerController::class, 'dashboardData'])->name('dept-head.provisioning-dashboard');
     Route::get('/api/dept-head/temp-requisitioners', [\App\Http\Controllers\TempRequisitionerController::class, 'index'])->name('dept-head.temp-requisitioners.index');
     Route::post('/dept-head/staff/{id}/toggle-request-access', [\App\Http\Controllers\TempRequisitionerController::class, 'toggleRequestAccess'])->name('dept-head.staff.toggle-request-access');
     Route::get('/api/dept-head/pending-registrations', [\App\Http\Controllers\TempRequisitionerController::class, 'pendingRegistrations'])->name('dept-head.pending-registrations');

@@ -1012,6 +1012,18 @@ class AdminController extends Controller
             return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
         }
 
+        if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {
+            \App\Models\Setting::firstOrCreate(
+                ['key' => 'allow_record_existing_item'],
+                [
+                    'value' => 'true',
+                    'type' => 'boolean',
+                    'group' => 'system',
+                    'description' => 'Enable or disable the Record Existing Item button for Store Officers on their dashboard.'
+                ]
+            );
+        }
+
         // We check if the table exists to prevent crash before migration
         $settings = \Illuminate\Support\Facades\Schema::hasTable('settings') 
             ? \App\Models\Setting::where('group', '!=', 'ui')

@@ -34,6 +34,7 @@
                 <i data-lucide="plus" style="width: 20px;"></i>
                 New Entry
             </a>
+            @if(\App\Models\Setting::get('allow_record_existing_item', true))
             <a href="{{ auth()->user()->can_add_inventory ? route('inventory.discrepancy') : '#' }}"
                 @if(!auth()->user()->can_add_inventory)
                 style="padding: 0.85rem 1.75rem; border-radius: 12px; border: none; background: #cbd5e1; color: white; display: flex; align-items: center; gap: 0.75rem; cursor: not-allowed; transition: var(--transition); text-decoration: none;"
@@ -45,6 +46,7 @@
                 <i data-lucide="file-text" style="width: 20px;"></i>
                 Record Existing Item
             </a>
+            @endif
         </div>
     </div>
 

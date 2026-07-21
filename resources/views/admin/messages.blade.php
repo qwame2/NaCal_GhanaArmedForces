@@ -608,7 +608,7 @@
         fetchMessages();
 
         if (pollInterval) clearInterval(pollInterval);
-        pollInterval = setInterval(fetchMessages, 3000);
+        pollInterval = setInterval(fetchMessages, 10000);
 
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
@@ -1895,7 +1895,19 @@
 
     // Initial counts and polling
     updateUnreadCounts();
-    setInterval(updateUnreadCounts, 3000);
+    // Poll unread counts every 10 seconds (paused when tab is hidden)
+    let _adminMsgUnreadPaused = document.hidden;
+    document.addEventListener('visibilitychange', () => {
+        _adminMsgUnreadPaused = document.hidden;
+        if (_adminMsgUnreadPaused && pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+        } else if (!_adminMsgUnreadPaused && !pollInterval) {
+            fetchMessages();
+            pollInterval = setInterval(fetchMessages, 10000);
+        }
+    });
+    setInterval(() => { if (!_adminMsgUnreadPaused) updateUnreadCounts(); }, 10000);
 
     // Add animation for badges
     const style = document.createElement('style');

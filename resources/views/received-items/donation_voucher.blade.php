@@ -197,7 +197,8 @@
     </div>
 
     <!-- Include SweetAlert2 for beautiful alerts if not loaded -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/sweetalert2.all.min.js') }}"></script>
+
     <script>
         function processSraReviewAction(action) {
             const batchId = "{{ $batch->id }}";

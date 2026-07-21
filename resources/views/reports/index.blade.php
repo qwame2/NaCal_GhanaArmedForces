@@ -1931,7 +1931,9 @@
     }
 
     // Run sync pulse every 5 seconds for real-time reactivity
-    setInterval(syncPermissionState, 5000);
+    let _reportsPollPaused = document.hidden;
+    document.addEventListener('visibilitychange', () => { _reportsPollPaused = document.hidden; });
+    setInterval(() => { if (!_reportsPollPaused) syncPermissionState(); }, 15000);
 
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();

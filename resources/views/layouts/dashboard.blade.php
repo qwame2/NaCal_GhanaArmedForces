@@ -988,7 +988,7 @@
             };
 
             // Start polling (every 30 seconds)
-            setInterval(window.refreshNotifications, 30000);
+            setInterval(window.refreshNotifications, 60000);
 
             window.dismissNotification = function(description) {
                 // Optimistic UI Update: Instantly remove/hide elements containing this description
@@ -1060,7 +1060,7 @@
                     if (!window._messagesPageActiveTimer) {
                         window._messagesPageActiveTimer = setInterval(() => {
                             localStorage.setItem('messages_page_active', Date.now());
-                        }, 5000);
+                        }, 10000);
                     }
 
                     // Clear active status on page unload
@@ -1136,7 +1136,7 @@
                 }
             });
 
-            setInterval(window.refreshUnreadMessages, 10000);
+            setInterval(window.refreshUnreadMessages, 30000);
             window.refreshUnreadMessages();
         });
 
@@ -1474,8 +1474,8 @@
                 })
                 .catch(() => {});
             }
-            setTimeout(pollAuditorPendingApprovals, 2000);
-            setInterval(pollAuditorPendingApprovals, 15000);
+            setTimeout(pollAuditorPendingApprovals, 5000);
+            setInterval(pollAuditorPendingApprovals, 30000);
             @endif
 
             @if(auth()->check() && auth()->user()->role !== 'Auditor')
@@ -1521,9 +1521,9 @@
                 .catch(() => {});
             }
 
-            // Poll every 15 seconds; first check after 4 seconds
-            setTimeout(pollSidebarCounts, 4000);
-            setInterval(pollSidebarCounts, 15000);
+            // Poll every 30 seconds; first check after 6 seconds
+            setTimeout(pollSidebarCounts, 6000);
+            setInterval(pollSidebarCounts, 30000);
             @endif
         })();
     </script>

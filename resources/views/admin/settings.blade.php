@@ -182,8 +182,8 @@
     }
 
     .select2-container--default .select2-selection--multiple .select2-selection__choice {
-        background: linear-gradient(135deg, #e0e7ff, #e0e7ff) !important;
-        border: 1px solid #c7d2fe !important;
+        background: rgba(16, 185, 129, 0.1) !important;
+        border: 1px solid rgba(16, 185, 129, 0.25) !important;
         border-radius: 8px !important;
         color: #16a34a !important;
         font-weight: 700 !important;
@@ -313,7 +313,7 @@
 
     .cfg-item:hover {
         background: white;
-        border-color: #c7d2fe;
+        border-color: #10b981;
         box-shadow: 0 8px 24px rgba(22, 163, 74, 0.07);
         transform: translateY(-2px);
     }
@@ -473,7 +473,7 @@
         width: 34px;
         height: 34px;
         border-radius: 10px;
-        background: linear-gradient(135deg, #16a34a, #3730a3);
+        background: #16a34a;
         color: white;
         font-weight: 900;
         font-size: 0.8rem;
@@ -596,7 +596,7 @@
         align-items: center;
         gap: 8px;
         padding: 0.75rem 2rem;
-        background: linear-gradient(135deg, #16a34a, #3730a3);
+        background: #16a34a;
         color: white;
         border: none;
         border-radius: 14px;
@@ -689,7 +689,7 @@
     }
 
     .workflow-card-modern:hover {
-        border-color: #c7d2fe;
+        border-color: #10b981;
         box-shadow: 0 16px 40px rgba(22, 163, 74, 0.06);
     }
 
@@ -722,7 +722,7 @@
     }
 
     .workflow-cat-card-modern.active {
-        background: linear-gradient(145deg, #f5f7ff 0%, #edf1ff 100%);
+        background: rgba(16, 185, 129, 0.06);
         border-color: #16a34a;
         box-shadow: 0 8px 24px rgba(22, 163, 74, 0.06);
     }
@@ -765,7 +765,7 @@
     }
 
     .workflow-cat-card-modern.active .cat-circle {
-        background: linear-gradient(135deg, #16a34a, #3730a3);
+        background: #16a34a;
         color: #ffffff;
         border-color: transparent;
         box-shadow: 0 4px 8px rgba(22, 163, 74, 0.18);
@@ -805,26 +805,26 @@
 
     /* Special theme colors for the DG workflow cards */
     .dg-workflow-container .workflow-cat-card-modern.active {
-        background: linear-gradient(145deg, #faf5ff 0%, #f3e8ff 100%);
-        border-color: #4ade80;
-        box-shadow: 0 8px 24px rgba(139, 92, 246, 0.06);
+        background: rgba(16, 185, 129, 0.08);
+        border-color: #16a34a;
+        box-shadow: 0 8px 24px rgba(22, 163, 74, 0.06);
     }
     .dg-workflow-container .workflow-cat-card-modern.active:hover {
-        box-shadow: 0 12px 28px rgba(139, 92, 246, 0.1);
+        box-shadow: 0 12px 28px rgba(22, 163, 74, 0.1);
     }
     .dg-workflow-container .workflow-cat-card-modern.active .cat-circle {
-        background: linear-gradient(135deg, #4ade80, #6d28d9);
-        box-shadow: 0 4px 8px rgba(139, 92, 246, 0.18);
+        background: #16a34a;
+        box-shadow: 0 4px 8px rgba(22, 163, 74, 0.18);
         color: #ffffff;
         border-color: transparent;
     }
     .dg-workflow-container .workflow-cat-card-modern.active .status-label {
-        color: #4ade80;
+        color: #16a34a;
     }
     .dg-workflow-container .workflow-cat-card-modern.active .indicator-dot {
-        background: #4ade80;
-        border-color: #4ade80;
-        box-shadow: 0 2px 6px rgba(139, 92, 246, 0.25);
+        background: #16a34a;
+        border-color: #16a34a;
+        box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
     }
 
     .flow-line {
@@ -867,7 +867,7 @@
 {{-- Page Header --}}
 <div class="view-header" style="margin-bottom: 2rem;">
     <div style="display: flex; align-items: center; gap: 1rem;">
-        <div style="width: 52px; height: 52px; background: linear-gradient(135deg, #16a34a, #3730a3); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 8px 20px rgba(22,163,74,0.25);">
+        <div style="width: 52px; height: 52px; background: #16a34a; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 8px 20px rgba(22,163,74,0.25);">
             <i data-lucide="sliders-horizontal" style="width: 24px;"></i>
         </div>
         <div>
@@ -902,11 +902,11 @@
 
             @php
             $colorMap = [
-            'security' => ['color' => '#ef4444', 'bg' => 'linear-gradient(135deg,#ef4444,#dc2626)', 'icon' => 'shield-alert'],
-            'inventory' => ['color' => '#10b981', 'bg' => 'linear-gradient(135deg,#10b981,#059669)', 'icon' => 'package'],
-            'system' => ['color' => '#10b981', 'bg' => 'linear-gradient(135deg,#10b981,#047857)', 'icon' => 'server'],
+            'security' => ['color' => '#ef4444', 'bg' => '#ef4444', 'icon' => 'shield-alert'],
+            'inventory' => ['color' => '#10b981', 'bg' => '#10b981', 'icon' => 'package'],
+            'system' => ['color' => '#10b981', 'bg' => '#10b981', 'icon' => 'server'],
             ];
-            $meta = $colorMap[$group] ?? ['color' => '#16a34a', 'bg' => 'linear-gradient(135deg,#16a34a,#3730a3)', 'icon' => 'settings'];
+            $meta = $colorMap[$group] ?? ['color' => '#16a34a', 'bg' => '#16a34a', 'icon' => 'settings'];
             @endphp
 
             <div class="cfg-card" style="margin-bottom: 1.5rem;">
@@ -926,6 +926,8 @@
                         <div class="cfg-item">
                             @if($setting->key === 'allow_personnel_registration')
                             <p class="cfg-item-label">Allow User Registration</p>
+                            @elseif($setting->key === 'allow_record_existing_item')
+                            <p class="cfg-item-label">Allow Record Existing Item</p>
                             @else
                             <p class="cfg-item-label">{{ ucwords(str_replace('_', ' ', $setting->key)) }}</p>
                             @endif
@@ -954,7 +956,7 @@
 
                             @if($setting->description)
                             <p class="cfg-item-desc">
-                                {{ $setting->key === 'allow_personnel_registration' ? 'Allow new users to register accounts (requires admin approval later).' : $setting->description }}
+                                {{ $setting->key === 'allow_personnel_registration' ? 'Allow new users to register accounts (requires admin approval later).' : ($setting->key === 'allow_record_existing_item' ? 'Enable or disable the Record Existing Item button for Store Officers on their dashboard.' : $setting->description) }}
                             </p>
                             @endif
                         </div>
@@ -994,12 +996,12 @@
                 @php
                 $selectedCats = \App\Models\Setting::get('stores_dept_head_approval_categories', []);
                 if (!is_array($selectedCats)) {
-                $selectedCats = json_decode($selectedCats, true) ?? [];
+                    $selectedCats = json_decode($selectedCats, true) ?? [];
                 }
                 @endphp
-                <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
+                <div class="cfg-card-header" style="background: #ffffff; padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
                     <div style="display: flex; align-items: center; gap: 1.25rem;">
-                        <div class="cfg-icon-box" style="background: linear-gradient(135deg, #16a34a 0%, #3730a3 100%); box-shadow: 0 8px 20px rgba(22,163,74,0.15); width: 50px; height: 50px; border-radius: 16px;">
+                        <div class="cfg-icon-box" style="background: #16a34a; box-shadow: 0 8px 20px rgba(22,163,74,0.15); width: 50px; height: 50px; border-radius: 16px;">
                             <i data-lucide="shield-check" style="width: 24px; height: 24px; color: white;"></i>
                         </div>
                         <div>
@@ -1059,13 +1061,13 @@
                         <div style="display: grid; grid-template-columns: 1fr 480px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
 
                             <!-- Sleek Gradient Alert Card -->
-                            <div style="background: linear-gradient(135deg, rgba(22, 163, 74, 0.03) 0%, rgba(22, 163, 74, 0.01) 100%);
-                                            border: 1.5px solid #edf2f7;
-                                            border-radius: 24px;
-                                            padding: 1.75rem 2rem;
-                                            display: flex;
-                                            gap: 1.25rem;
-                                            align-items: flex-start;">
+                            <div style="background: rgba(22, 163, 74, 0.03);
+                                             border: 1.5px solid #edf2f7;
+                                             border-radius: 24px;
+                                             padding: 1.75rem 2rem;
+                                             display: flex;
+                                             gap: 1.25rem;
+                                             align-items: flex-start;">
                                 <div style="width: 42px; height: 42px; background: rgba(22,163,74,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #16a34a; flex-shrink: 0; margin-top: 2px;">
                                     <i data-lucide="info" style="width: 20px; height: 20px;"></i>
                                 </div>
@@ -1078,18 +1080,19 @@
                             </div>
 
                             <!-- Dynamic Mini Infographic Visualizer Card -->
-                            <div style="background: linear-gradient(to bottom, #fafbff, #ffffff); border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
+                            <div style="background: #ffffff; border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
                                 <div style="font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; text-align: center; margin-bottom: 0.25rem;">Live Approval Routing Pathway</div>
 
                                 <div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%; padding: 0.5rem 0;" class="flow-nodes-container">
 
                                     <!-- Origin Node -->
                                     <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #16a34a, #3730a3); color: white; box-shadow: 0 4px 12px rgba(22,163,74,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <div class="flow-node-icon" style="background: #16a34a; color: white; box-shadow: 0 4px 12px rgba(22,163,74,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                             <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
                                         </div>
                                         <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Dept. Head</span>
-                                        <span class="flow-node-badge" style="background: #e0e7ff; color: #16a34a; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
+                                        <span class="flow-node-badge" style="background: #dcfce7; color: #16a34a; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
+                                    </div>800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
                                     </div>
 
                                     <!-- Connector 1 (Now connects to DG Node, so controlled by DG active state) -->
@@ -1150,9 +1153,9 @@
                     $dgSelectedCats = json_decode($dgSelectedCats, true) ?? [];
                 }
                 @endphp
-                <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
+                <div class="cfg-card-header" style="background: #ffffff; padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
                     <div style="display: flex; align-items: center; gap: 1.25rem;">
-                        <div class="cfg-icon-box" style="background: linear-gradient(135deg, #4ade80 0%, #6d28d9 100%); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15); width: 50px; height: 50px; border-radius: 16px;">
+                        <div class="cfg-icon-box" style="background: #16a34a; box-shadow: 0 8px 20px rgba(22, 163, 74, 0.15); width: 50px; height: 50px; border-radius: 16px;">
                             <i data-lucide="user-cog" style="width: 24px; height: 24px; color: white;"></i>
                         </div>
                         <div>
@@ -1160,8 +1163,8 @@
                             <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review and sign-off by the Director General.</p>
                         </div>
                     </div>
-                    <span id="dg-workflow-active-badge" style="background: rgba(139,92,246,0.08); color: #4ade80; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(139,92,246,0.15); box-shadow: 0 2px 4px rgba(139,92,246,0.02); transition: all 0.3s ease;">
-                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #4ade80; transition: all 0.3s ease;" id="dg-workflow-badge-dot"></span>
+                    <span id="dg-workflow-active-badge" style="background: rgba(22,163,74,0.08); color: #16a34a; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(22,163,74,0.15); box-shadow: 0 2px 4px rgba(22,163,74,0.02); transition: all 0.3s ease;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #16a34a; transition: all 0.3s ease;" id="dg-workflow-badge-dot"></span>
                         <span id="dg-workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($dgSelectedCats) }}</span>
                     </span>
                 </div>
@@ -1212,14 +1215,14 @@
                         <div style="display: grid; grid-template-columns: 1fr 480px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
 
                             <!-- Sleek Gradient Alert Card -->
-                            <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(22, 163, 74, 0.01) 100%);
-                                            border: 1.5px solid #edf2f7;
-                                            border-radius: 24px;
-                                            padding: 1.75rem 2rem;
-                                            display: flex;
-                                            gap: 1.25rem;
-                                            align-items: flex-start;">
-                                <div style="width: 42px; height: 42px; background: rgba(139,92,246,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #4ade80; flex-shrink: 0; margin-top: 2px;">
+                            <div style="background: rgba(22, 163, 74, 0.03);
+                                             border: 1.5px solid #edf2f7;
+                                             border-radius: 24px;
+                                             padding: 1.75rem 2rem;
+                                             display: flex;
+                                             gap: 1.25rem;
+                                             align-items: flex-start;">
+                                <div style="width: 42px; height: 42px; background: rgba(22,163,74,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #16a34a; flex-shrink: 0; margin-top: 2px;">
                                     <i data-lucide="info" style="width: 20px; height: 20px;"></i>
                                 </div>
                                 <div style="flex: 1;">
@@ -1231,18 +1234,18 @@
                             </div>
 
                             <!-- Dynamic Mini Infographic Visualizer Card -->
-                            <div style="background: linear-gradient(to bottom, #fafbff, #ffffff); border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
+                            <div style="background: #ffffff; border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
                                 <div style="font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; text-align: center; margin-bottom: 0.25rem;">Live Approval Routing Pathway</div>
 
                                 <div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%; padding: 0.5rem 0;" class="flow-nodes-container">
 
                                     <!-- Origin Node -->
                                     <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #16a34a, #3730a3); color: white; box-shadow: 0 4px 12px rgba(22,163,74,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <div class="flow-node-icon" style="background: #16a34a; color: white; box-shadow: 0 4px 12px rgba(22,163,74,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                             <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
                                         </div>
                                         <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Dept. Head</span>
-                                        <span class="flow-node-badge" style="background: #e0e7ff; color: #16a34a; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
+                                        <span class="flow-node-badge" style="background: #dcfce7; color: #16a34a; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
                                     </div>
 
                                     <!-- Connector 1 (Now connects to DG Node, so controlled by DG active state) -->
@@ -1334,7 +1337,7 @@
                     <!-- Upload Controls -->
                     <div>
                         <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
-                            <button type="button" class="btn-cfg-save" onclick="document.getElementById('signature-file-upload-admin').click()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; background: linear-gradient(135deg, #16a34a, #3730a3); color: white; width: auto; height: auto; border-radius: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; font-weight: 900; box-shadow: 0 4px 10px rgba(22,163,74,0.15);">
+                            <button type="button" class="btn-cfg-save" onclick="document.getElementById('signature-file-upload-admin').click()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; background: #16a34a; color: white; width: auto; height: auto; border-radius: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; font-weight: 900; box-shadow: 0 4px 10px rgba(22,163,74,0.15);">
                                 <i data-lucide="upload-cloud" style="width: 16px;"></i>
                                 Upload Signature Image
                             </button>
@@ -2568,7 +2571,7 @@
         document.getElementById('categoryNameInput').value = name;
         
         document.getElementById('categorySubmitText').innerText = 'Update Category';
-        document.getElementById('categorySubmitBtn').style.background = 'linear-gradient(135deg, #16a34a, #3730a3)';
+        document.getElementById('categorySubmitBtn').style.background = '#16a34a';
         document.getElementById('categorySubmitBtn').style.boxShadow = '0 6px 16px rgba(22, 163, 74, 0.25)';
         
         document.getElementById('categoryResetBtn').style.display = 'block';

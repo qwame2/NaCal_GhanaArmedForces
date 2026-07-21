@@ -2402,84 +2402,170 @@
         });
     }
 
-    async function loadPendingRegistrations(isSilent = false) {
-        const container = document.getElementById('pendingRegistrationsList');
-        if (!container) return;
+    async function loadProvisioningData(isSilent = false) {
+        const pendingContainer = document.getElementById('pendingRegistrationsList');
+        const tempContainer = document.getElementById('tempAccountsList');
+        
+        if (!pendingContainer && !tempContainer) return;
 
         if (!isSilent) {
-            container.innerHTML = `
-                <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
-                    <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;"></i><br>Loading pending registrations...
-                </div>`;
+            if (pendingContainer) {
+                pendingContainer.innerHTML = `
+                    <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                        <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;"></i><br>Loading pending registrations...
+                    </div>`;
+            }
+            if (tempContainer) {
+                tempContainer.innerHTML = `
+                    <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
+                        <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;"></i><br>Loading department staff directory...
+                    </div>`;
+            }
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         try {
-            const res = await fetch('{{ route("dept-head.pending-registrations") }}');
+            const res = await fetch('{{ route("dept-head.provisioning-dashboard") }}');
             const data = await res.json();
 
-            if (!data.success || !data.pending || data.pending.length === 0) {
-                const emptyHtml = `
-                    <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
-                        <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
-                        <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No pending registrations</div>
-                        <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any pending staff registrations in your department will appear here.</div>
-                    </div>`;
-                if (container.innerHTML !== emptyHtml) {
-                    container.innerHTML = emptyHtml;
+            if (!data.success) return;
+
+            // --- Render Pending Registrations ---
+            if (pendingContainer) {
+                if (!data.pending || data.pending.length === 0) {
+                    const emptyHtml = `
+                        <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
+                            <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
+                            <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No pending registrations</div>
+                            <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any pending staff registrations in your department will appear here.</div>
+                        </div>`;
+                    if (pendingContainer.innerHTML !== emptyHtml) {
+                        pendingContainer.innerHTML = emptyHtml;
+                    }
+                    if (isStoresHead && !isBackupActive) {
+                        const section = document.getElementById('provisioningSection');
+                        if (section) section.style.display = 'none';
+                    }
+                    window._lastPendingRegsString = '';
+                } else {
+                    const currentDataString = JSON.stringify(data.pending);
+                    if (!isSilent || window._lastPendingRegsString !== currentDataString) {
+                        window._lastPendingRegsString = currentDataString;
+
+                        // Make sure the section is visible
+                        const section = document.getElementById('provisioningSection');
+                        if (section) section.style.display = 'block';
+
+                        let rows = data.pending.map(reg => {
+                            return `
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
+                                <div style="display:flex;align-items:center;gap:.75rem;">
+                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(22,163,74,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#16a34a;">
+                                        ${(reg.name || reg.username).charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${reg.name}</div>
+                                        <div style="font-size:.7rem;color:var(--text-muted);">Requisitioner · @${reg.username} · Phone: ${reg.phone} · Staff ID: ${reg.service_number}</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(16,185,129,.1);color:#047857;">
+                                        PENDING HOD APPROVAL
+                                    </span>
+                                    <button onclick="approveRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;">
+                                        <i data-lucide="user-check" style="width:13px;height:13px;"></i> Approve
+                                    </button>
+                                    <button onclick="rejectRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;">
+                                        <i data-lucide="user-x" style="width:13px;height:13px;"></i> Decline
+                                    </button>
+                                </div>
+                            </div>
+                            `;
+                        }).join('');
+
+                        pendingContainer.innerHTML = `<div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">${rows}</div>`;
+                    }
                 }
-                if (isStoresHead && !isBackupActive) {
-                    const section = document.getElementById('provisioningSection');
-                    if (section) section.style.display = 'none';
-                }
-                window._lastPendingRegsString = '';
-                return;
             }
 
-            const currentDataString = JSON.stringify(data.pending);
-            if (isSilent && window._lastPendingRegsString === currentDataString) {
-                return;
+            // --- Render Temp Accounts ---
+            if (tempContainer) {
+                if (!data.accounts || data.accounts.length === 0) {
+                    const emptyHtml = `
+                        <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
+                            <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
+                            <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No department staff found</div>
+                            <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any registered staff in your department will appear here.</div>
+                        </div>`;
+                    if (tempContainer.innerHTML !== emptyHtml) {
+                        tempContainer.innerHTML = emptyHtml;
+                    }
+                    window._lastStaffDataString = '';
+                } else {
+                    const currentDataString = JSON.stringify(data.accounts);
+                    if (!isSilent || window._lastStaffDataString !== currentDataString) {
+                        window._lastStaffDataString = currentDataString;
+
+                        let rows = data.accounts.map(acc => {
+                            const isAccessActive = acc.can_make_requisition;
+                            const badgeStyle = isAccessActive 
+                                ? 'background:rgba(16,185,129,.1);color:#10b981;' 
+                                : 'background:rgba(239,68,68,.1);color:#ef4444;';
+                            const badgeText = isAccessActive ? 'Active Access' : 'Access Suspended';
+                            
+                            const btnStyle = isAccessActive
+                                ? 'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;'
+                                : 'background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;';
+                            const btnText = isAccessActive ? 'Suspend Access' : 'Grant Access';
+                            const btnIcon = isAccessActive ? 'user-minus' : 'user-check';
+
+                            return `
+                            <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
+                                <div style="display:flex;align-items:center;gap:.75rem;">
+                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(22,163,74,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#16a34a;">
+                                        ${(acc.name || acc.username).charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${acc.name || '@' + acc.username}</div>
+                                        <div style="font-size:.7rem;color:var(--text-muted);">${acc.role} · @${acc.username}</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(16,185,129,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#10b981' : '#64748b'};">
+                                        ${acc.is_online ? '● ONLINE' : '○ OFFLINE'}
+                                    </span>
+                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;${badgeStyle}">
+                                        ${badgeText}
+                                    </span>
+                                    <button onclick="toggleStaffAccess(${acc.id}, '${acc.username}', ${isAccessActive})" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;${btnStyle}">
+                                        <i data-lucide="${btnIcon}" style="width:13px;height:13px;"></i> ${btnText}
+                                    </button>
+                                </div>
+                            </div>
+                            `;
+                        }).join('');
+
+                        tempContainer.innerHTML = `<div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">${rows}</div>`;
+                    }
+                }
             }
-            window._lastPendingRegsString = currentDataString;
 
-            // Make sure the section is visible
-            const section = document.getElementById('provisioningSection');
-            if (section) section.style.display = 'block';
-
-            let rows = data.pending.map(reg => {
-                return `
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
-                    <div style="display:flex;align-items:center;gap:.75rem;">
-                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(22,163,74,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#16a34a;">
-                            ${(reg.name || reg.username).charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                            <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${reg.name}</div>
-                            <div style="font-size:.7rem;color:var(--text-muted);">Requisitioner · @${reg.username} · Phone: ${reg.phone} · Staff ID: ${reg.service_number}</div>
-                        </div>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
-                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(16,185,129,.1);color:#047857;">
-                            PENDING HOD APPROVAL
-                        </span>
-                        <button onclick="approveRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;">
-                            <i data-lucide="user-check" style="width:13px;height:13px;"></i> Approve
-                        </button>
-                        <button onclick="rejectRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;">
-                            <i data-lucide="user-x" style="width:13px;height:13px;"></i> Decline
-                        </button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-
-            container.innerHTML = `<div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">${rows}</div>`;
             if (typeof lucide !== 'undefined') lucide.createIcons();
         } catch (e) {
+            console.error('Failed to load provisioning data:', e);
             if (!isSilent) {
-                container.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load pending registrations list.</div>`;
+                if (pendingContainer) {
+                    pendingContainer.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load pending registrations list.</div>`;
+                }
+                if (tempContainer) {
+                    tempContainer.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load staff list.</div>`;
+                }
             }
         }
+    }
+
+    async function loadPendingRegistrations(isSilent = false) {
+        await loadProvisioningData(isSilent);
     }
 
     async function approveRegistration(id, username) {
@@ -2571,88 +2657,7 @@
     // =====================================================================
     @if(!$hideProvisioning)
     async function loadTempAccounts(isSilent = false) {
-        const container = document.getElementById('tempAccountsList');
-        if (!container) return;
-
-        if (!isSilent) {
-            container.innerHTML = `
-                <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
-                    <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;"></i><br>Loading department staff directory...
-                </div>`;
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }
-
-        try {
-            const res = await fetch('{{ route("dept-head.temp-requisitioners.index") }}');
-            const data = await res.json();
-
-            if (!data.success || !data.accounts || data.accounts.length === 0) {
-                const emptyHtml = `
-                    <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
-                        <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
-                        <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No department staff found</div>
-                        <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any registered staff in your department will appear here.</div>
-                    </div>`;
-                if (container.innerHTML !== emptyHtml) {
-                    container.innerHTML = emptyHtml;
-                }
-                window._lastStaffDataString = '';
-                return;
-            }
-
-            const currentDataString = JSON.stringify(data.accounts);
-            if (isSilent && window._lastStaffDataString === currentDataString) {
-                // No change in staff data, skip DOM rendering to avoid blinking and preserve user state
-                return;
-            }
-            window._lastStaffDataString = currentDataString;
-
-            let rows = data.accounts.map(acc => {
-                const isAccessActive = acc.can_make_requisition;
-                const badgeStyle = isAccessActive 
-                    ? 'background:rgba(16,185,129,.1);color:#10b981;' 
-                    : 'background:rgba(239,68,68,.1);color:#ef4444;';
-                const badgeText = isAccessActive ? 'Active Access' : 'Access Suspended';
-                
-                const btnStyle = isAccessActive
-                    ? 'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;'
-                    : 'background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;';
-                const btnText = isAccessActive ? 'Suspend Access' : 'Grant Access';
-                const btnIcon = isAccessActive ? 'user-minus' : 'user-check';
-
-                return `
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
-                    <div style="display:flex;align-items:center;gap:.75rem;">
-                        <div style="width:38px;height:38px;border-radius:10px;background:rgba(22,163,74,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#16a34a;">
-                            ${(acc.name || acc.username).charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                            <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${acc.name || '@' + acc.username}</div>
-                            <div style="font-size:.7rem;color:var(--text-muted);">${acc.role} · @${acc.username}</div>
-                        </div>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
-                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(16,185,129,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#10b981' : '#64748b'};">
-                            ${acc.is_online ? '● ONLINE' : '○ OFFLINE'}
-                        </span>
-                        <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;${badgeStyle}">
-                            ${badgeText}
-                        </span>
-                        <button onclick="toggleStaffAccess(${acc.id}, '${acc.username}', ${isAccessActive})" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;${btnStyle}">
-                            <i data-lucide="${btnIcon}" style="width:13px;height:13px;"></i> ${btnText}
-                        </button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-
-            container.innerHTML = `<div style="border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">${rows}</div>`;
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        } catch (e) {
-            if (!isSilent) {
-                container.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:.8rem;">Failed to load staff list.</div>`;
-            }
-        }
+        await loadProvisioningData(isSilent);
     }
 
     async function toggleStaffAccess(id, username, isCurrentlyActive) {
@@ -2765,10 +2770,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
-        @if(!$hideProvisioning)
-        loadTempAccounts();
-        @endif
-        loadPendingRegistrations();
+        loadProvisioningData();
 
         // Auto-open specific requisition if open_id is present in query parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -2796,8 +2798,11 @@
         return clone.innerHTML.replace(/\s+/g, ' ').trim();
     }
 
-    // Auto silent refresh every 10 seconds to show all requests without page reload
+    // Auto silent refresh every 30 seconds (paused when tab is hidden)
+    let _mainAdminRefreshPaused = document.hidden;
+    document.addEventListener('visibilitychange', () => { _mainAdminRefreshPaused = document.hidden; });
     setInterval(async () => {
+        if (_mainAdminRefreshPaused) return;
         const reqModal = document.getElementById('reqModal');
         
         const isModalOpen = (reqModal && reqModal.classList.contains('open'));
@@ -2858,14 +2863,12 @@
                 lucide.createIcons();
             }
 
-            await loadPendingRegistrations(true);
-            if (!isStoresHead || isBackupActive) {
-                await loadTempAccounts(true);
-            }
+            await loadProvisioningData(true);
         } catch (e) {
             console.error('Silent refresh failed:', e);
         }
-    }, 10000);
+    }, 30000);
+
 
     function toggleWorkflowCategory(code, card) {
         const select = document.getElementById('stores_dept_head_approval_categories');

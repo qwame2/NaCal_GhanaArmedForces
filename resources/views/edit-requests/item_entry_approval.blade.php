@@ -1,5 +1,17 @@
 @php
     $layout = auth()->user()->isMainAdminOrSub() ? 'layouts.dashboard' : 'layouts.admin';
+
+    $uRole = auth()->user()->role ?? '';
+    $uDept = auth()->user()->department ?? '';
+    if (auth()->user()->isMainAdminOrSub() || in_array($uRole, ['Main Admin', 'Sub Main Admin', 'Head of Admin', 'Director General'])) {
+        $sraNavRoute = 'admin.service-sra.index';
+    } elseif (in_array($uRole, ['Head of Stores', 'Dept. Head (Stores)']) || strcasecmp($uDept, 'Stores') === 0 || strcasecmp($uDept, 'Store') === 0 || auth()->user()->isDelegatedApprover()) {
+        $sraNavRoute = 'stores.service-sra.index';
+    } elseif ($uRole === 'Auditor' || strcasecmp($uDept, 'Audit') === 0) {
+        $sraNavRoute = 'auditor.service-sra.index';
+    } else {
+        $sraNavRoute = 'stores.service-sra.index';
+    }
 @endphp
 
 @extends($layout)
@@ -91,7 +103,7 @@
                     </div>
                 </div>
             </div>
-            <a href="{{ route('admin.service-sra.index') }}" style="background: #16a34a; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3); transition: all 0.2s;">
+            <a href="{{ route($sraNavRoute) }}" style="background: #16a34a; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3); transition: all 0.2s;">
                 <span>Review Service SRAs</span>
                 <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
             </a>
@@ -278,6 +290,7 @@ function pollPendingApprovalsSilently() {
     .catch(() => {});
 }
 
-setInterval(pollPendingApprovalsSilently, 5000);
+setInterval(pollPendingApprovalsSilently, 15000);
+
 </script>
 @endpush

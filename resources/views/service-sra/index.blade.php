@@ -410,8 +410,10 @@
         if (window.lucide) {
             window.lucide.createIcons();
         }
-        // Poll every 10 seconds for silent refresh
-        setInterval(pollServiceSras, 10000);
+        // Poll every 20 seconds for silent refresh (paused when tab is hidden)
+        let _sraPollPaused = document.hidden;
+        document.addEventListener('visibilitychange', () => { _sraPollPaused = document.hidden; });
+        setInterval(() => { if (!_sraPollPaused) pollServiceSras(); }, 20000);
     });
 </script>
 
