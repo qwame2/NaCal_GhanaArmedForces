@@ -284,23 +284,6 @@ class ServiceSraController extends Controller
         $sra->admin_approved_at = now();
         $sra->admin_notes       = $request->notes;
 
-        // If Main Admin also has Stores authority AND stores hasn't been separately set by an actual stores person,
-        // mark stores as covered so the SRA can finalise — but only if no dedicated stores person has signed.
-        $userHasStoresAuthority = $user->isMainAdminOrSub()
-            || in_array($user->role, ['Main Admin', 'Sub Main Admin'])
-            || in_array(strtoupper($user->department ?? ''), ['STORES', 'STORE']);
-        if ($userHasStoresAuthority && $sra->stores_status === 'pending') {
-            // Mark the stores column as approved too but keep the admin's name in admin_* only.
-            // The stores receipt slot will show "Authorizer" name if no dedicated stores person signed.
-            $sra->stores_status = $request->action;
-            // Do NOT overwrite stores_approved_by — leave blank so the receipt shows correctly.
-            // Only set it if there's genuinely no other stores person.
-            if (empty($sra->stores_approved_by)) {
-                $sra->stores_approved_by = $user->name;
-                $sra->stores_approved_at = now();
-            }
-        }
-
         if ($request->action === 'approved') {
             if ($sra->admin_status === 'approved' && $sra->auditor_status === 'approved' && $sra->stores_status === 'approved') {
                 $sra->status = 'approved';
