@@ -103,19 +103,25 @@
         if (!tempContainer && !pendingContainer) return;
 
         if (!isSilent) {
+            const skeletonStaffList = `
+                <div style="border:1px solid var(--border-color); border-radius:14px; padding: 1rem; margin-bottom: 0.5rem; display:flex; align-items:center; justify-content:space-between;">
+                    <div style="display:flex; align-items:center; gap: 12px; width: 60%;">
+                        <div class="skeleton-avatar" style="width:36px; height:36px; border-radius:50%;"></div>
+                        <div style="flex:1;">
+                            <div class="skeleton-line" style="width:140px; margin-bottom:4px;"></div>
+                            <div class="skeleton-line" style="width:80px; height:10px;"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-badge" style="width:90px;"></div>
+                </div>
+            `.repeat(3);
+
             if (tempContainer) {
-                tempContainer.innerHTML = `
-                    <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
-                        <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;animation: spin 1s linear infinite;"></i><br>Loading department staff directory...
-                    </div>`;
+                tempContainer.innerHTML = skeletonStaffList;
             }
             if (pendingContainer) {
-                pendingContainer.innerHTML = `
-                    <div style="text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.85rem;">
-                        <i data-lucide="loader" style="width:18px;height:18px;display:inline-block;margin-bottom:6px;opacity:.5;animation: spin 1s linear infinite;"></i><br>Loading pending registrations...
-                    </div>`;
+                pendingContainer.innerHTML = skeletonStaffList;
             }
-            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         try {

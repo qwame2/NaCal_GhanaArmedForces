@@ -34,6 +34,56 @@
             --radius-luxe: 16px;
         }
 
+        /* Global System-Wide Skeleton Loading Framework */
+        @keyframes system-skeleton-shimmer {
+            0% { background-position: -300px 0; opacity: 0.5; }
+            50% { opacity: 0.95; }
+            100% { background-position: 300px 0; opacity: 0.5; }
+        }
+        .skeleton-shimmer,
+        .skeleton-line,
+        .skeleton-badge,
+        .skeleton-box,
+        .skeleton-avatar {
+            display: inline-block;
+            border-radius: 6px;
+            background: linear-gradient(90deg, rgba(148, 163, 184, 0.12) 25%, rgba(148, 163, 184, 0.28) 50%, rgba(148, 163, 184, 0.12) 75%);
+            background-size: 600px 100%;
+            animation: system-skeleton-shimmer 1.4s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .skeleton-line { height: 14px; width: 100%; }
+        .skeleton-badge { height: 22px; width: 80px; border-radius: 99px; }
+        .skeleton-box { height: 40px; width: 100%; border-radius: 12px; }
+        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+        .skeleton-row td { padding: 1.1rem 1.5rem !important; }
+    </style>
+    <script>
+        window.renderSkeletonTable = function(tbodyOrId, rowsCount = 5, colsCount = 6) {
+            let el = typeof tbodyOrId === 'string' ? document.getElementById(tbodyOrId) : tbodyOrId;
+            if (!el) return;
+            let rowsHtml = '';
+            for (let r = 0; r < rowsCount; r++) {
+                rowsHtml += '<tr class="skeleton-row">';
+                for (let c = 0; c < colsCount; c++) {
+                    if (c === 0) {
+                        rowsHtml += '<td><div class="skeleton-line" style="width: 75%;"></div></td>';
+                    } else if (c === 1) {
+                        rowsHtml += '<td><div class="skeleton-line" style="width: 85%; margin-bottom: 6px;"></div><div class="skeleton-line" style="width: 45%; height: 10px;"></div></td>';
+                    } else if (c === colsCount - 2) {
+                        rowsHtml += '<td><div class="skeleton-badge"></div></td>';
+                    } else if (c === colsCount - 1) {
+                        rowsHtml += '<td style="text-align: center;"><div class="skeleton-badge" style="width: 90px;"></div></td>';
+                    } else {
+                        rowsHtml += '<td><div class="skeleton-line" style="width: 70%;"></div></td>';
+                    }
+                }
+                rowsHtml += '</tr>';
+            }
+            el.innerHTML = rowsHtml;
+        };
+    </script>
+
         /* Toast System */
         .toast-container {
             position: fixed;

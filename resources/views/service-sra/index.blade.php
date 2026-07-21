@@ -208,7 +208,12 @@
         const container = document.getElementById('sra-table-container');
         if (!form || !container) return;
 
-        container.style.opacity = '0.5';
+        const tbody = container.querySelector('tbody');
+        if (tbody && window.renderSkeletonTable) {
+            window.renderSkeletonTable(tbody, 5, 6);
+        } else {
+            container.style.opacity = '0.5';
+        }
 
         const formData = new FormData(form);
         const searchParams = new URLSearchParams();
@@ -254,7 +259,12 @@
                 const page = this.dataset.page;
                 if (!page) return;
 
-                container.style.opacity = '0.5';
+                const tbody = container.querySelector('tbody');
+                if (tbody && window.renderSkeletonTable) {
+                    window.renderSkeletonTable(tbody, 5, 6);
+                } else {
+                    container.style.opacity = '0.5';
+                }
                 
                 // Construct URL preserving current filter settings
                 const form = document.getElementById('sra-filter-form');

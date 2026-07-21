@@ -13,6 +13,28 @@
     .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.5); backdrop-filter: blur(8px); z-index: 10000; display: none; align-items: center; justify-content: center; }
     .modal-box { background: var(--bg-card); border-radius: 24px; padding: 2.5rem; max-width: 680px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.2); animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1); }
     @keyframes slideUp { from { opacity:0; transform: translateY(30px); } to { opacity:1; transform: translateY(0); } }
+    @keyframes skeleton-shimmer {
+        0% { background-position: -200px 0; opacity: 0.6; }
+        50% { opacity: 1; }
+        100% { background-position: 200px 0; opacity: 0.6; }
+    }
+    .skeleton-line {
+        display: inline-block;
+        height: 14px;
+        border-radius: 6px;
+        background: linear-gradient(90deg, rgba(148, 163, 184, 0.15) 25%, rgba(148, 163, 184, 0.32) 50%, rgba(148, 163, 184, 0.15) 75%);
+        background-size: 400px 100%;
+        animation: skeleton-shimmer 1.4s ease-in-out infinite;
+    }
+    .skeleton-badge {
+        display: inline-block;
+        height: 24px;
+        width: 85px;
+        border-radius: 99px;
+        background: linear-gradient(90deg, rgba(148, 163, 184, 0.15) 25%, rgba(148, 163, 184, 0.32) 50%, rgba(148, 163, 184, 0.15) 75%);
+        background-size: 400px 100%;
+        animation: skeleton-shimmer 1.4s ease-in-out infinite;
+    }
 </style>
 
 <div class="animate-slide-up">
@@ -132,9 +154,20 @@
     {{-- History Table Pane --}}
     <div id="stores-pane-history" style="display: none;">
         <div class="glass-card" style="border-radius: 24px; overflow: hidden; padding: 0;">
-            <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem;">
-                <i data-lucide="history" style="color: var(--text-muted); width: 20px;"></i>
-                <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: var(--text-main);">Approved SRA ({{ $history->count() }})</h3>
+            <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <i data-lucide="history" style="color: var(--text-muted); width: 20px;"></i>
+                    <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: var(--text-main);">Approved SRA ({{ $history->total() }})</h3>
+                </div>
+                {{-- SRA Type Filter --}}
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="filter" style="width: 14px; height: 14px; color: var(--text-muted);"></i>
+                    <select id="sra-type-filter" class="filter-control" style="padding: 0.45rem 0.85rem; border-radius: 10px; font-size: 0.82rem; font-weight: 700; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main);" onchange="filterApprovedSra(this.value)">
+                        <option value="" {{ empty(request('sra_type')) ? 'selected' : '' }}>All Approved SRAs</option>
+                        <option value="inventory_sra" {{ request('sra_type') === 'inventory_sra' ? 'selected' : '' }}>Inventory SRA</option>
+                        <option value="service_sra" {{ request('sra_type') === 'service_sra' ? 'selected' : '' }}>Service SRA</option>
+                    </select>
+                </div>
             </div>
             @if($history->isEmpty())
                 <div style="padding: 2rem; text-align: center; color: var(--text-muted);"><p style="margin: 0; font-weight: 600;">No decisions made yet.</p></div>
@@ -146,33 +179,70 @@
                                 <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">SRA No.</th>
                                 <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Submitted By</th>
                                 <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Supplier</th>
-                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Stores Decision</th>
+                                <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Decision</th>
                                 <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: left;">Decided At</th>
                                 <th style="padding: 0.85rem 1.5rem; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); text-align: center;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($history as $sra)
-                            <tr class="sra-table-row">
-                                <td style="padding: 1rem 1.5rem; font-weight: 800; color: #10b981;">{{ $sra->sra_number }}</td>
-                                <td style="padding: 1rem 1.5rem; font-weight: 600; color: var(--text-main);">{{ $sra->submitter->name ?? '—' }}</td>
-                                <td style="padding: 1rem 1.5rem; color: var(--text-muted);">{{ $sra->supplier_name }}</td>
-                                <td style="padding: 1rem 1.5rem;">
-                                    <span class="sra-badge" style="background: {{ $sra->stores_status === 'approved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)' }}; color: {{ $sra->stores_status === 'approved' ? '#10b981' : '#ef4444' }};">
-                                        {{ ucfirst($sra->stores_status) }}
-                                    </span>
-                                </td>
-                                <td style="padding: 1rem 1.5rem; font-size: 0.82rem; color: var(--text-muted);">{{ $sra->stores_approved_at?->format('d M Y H:i') ?? '—' }}</td>
-                                <td style="padding: 1rem 1.5rem; text-align: center;">
-                                    @if($sra->stores_status === 'approved')
-                                        <a href="{{ route('service-sra.receipt', $sra->id) }}" target="_blank" style="background: rgba(16,185,129,0.08); color: #10b981; border: 1px solid rgba(16,185,129,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
-                                            <i data-lucide="file-text" style="width: 13px;"></i> View Receipt
-                                        </a>
-                                    @else
-                                        <span style="color: var(--text-muted); font-size: 0.78rem; font-weight: 600;">—</span>
-                                    @endif
-                                </td>
-                            </tr>
+                                @if($sra instanceof \App\Models\InventoryBatch)
+                                    @php
+                                        $refNo = 'SRA-' . str_pad($sra->id, 5, '0', STR_PAD_LEFT);
+                                        $submittedBy = $sra->recorder->name ?? 'Store Officer';
+                                        $supplierName = $sra->supplier_name ?: ($sra->donor_name ?: 'Supplier');
+                                        $decidedAt = $sra->auditor_approved_at ? \Carbon\Carbon::parse($sra->auditor_approved_at)->format('d M Y H:i') : ($sra->updated_at ? $sra->updated_at->format('d M Y H:i') : '—');
+                                    @endphp
+                                    <tr class="sra-table-row">
+                                        <td style="padding: 1rem 1.5rem; font-weight: 800; color: #10b981;">
+                                            {{ $refNo }}
+                                            <span class="sra-badge" style="background: rgba(16,185,129,0.08); color: #10b981; margin-left: 6px; font-size: 0.65rem;">Inventory SRA</span>
+                                        </td>
+                                        <td style="padding: 1rem 1.5rem;">
+                                            <div style="font-weight: 600; color: var(--text-main);">{{ $submittedBy }}</div>
+                                            <div style="font-size: 0.72rem; color: var(--text-muted);">Stores</div>
+                                        </td>
+                                        <td style="padding: 1rem 1.5rem; color: var(--text-muted);">{{ $supplierName }}</td>
+                                        <td style="padding: 1rem 1.5rem;">
+                                            <span class="sra-badge" style="background: rgba(16,185,129,0.1); color: #10b981;">
+                                                Approved
+                                            </span>
+                                        </td>
+                                        <td style="padding: 1rem 1.5rem; font-size: 0.82rem; color: var(--text-muted);">{{ $decidedAt }}</td>
+                                        <td style="padding: 1rem 1.5rem; text-align: center;">
+                                            <a href="{{ route('receiveditems.sra', $sra->id) }}" target="_blank" style="background: rgba(16,185,129,0.08); color: #10b981; border: 1px solid rgba(16,185,129,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                                                <i data-lucide="file-text" style="width: 13px;"></i> View Receipt
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @else
+                                    <tr class="sra-table-row">
+                                        <td style="padding: 1rem 1.5rem; font-weight: 800; color: #16a34a;">
+                                            {{ $sra->sra_number }}
+                                            <span class="sra-badge" style="background: rgba(22,163,74,0.08); color: #16a34a; margin-left: 6px; font-size: 0.65rem;">Service SRA</span>
+                                        </td>
+                                        <td style="padding: 1rem 1.5rem;">
+                                            <div style="font-weight: 600; color: var(--text-main);">{{ $sra->submitter->name ?? '—' }}</div>
+                                            <div style="font-size: 0.72rem; color: var(--text-muted);">{{ $sra->dept }}</div>
+                                        </td>
+                                        <td style="padding: 1rem 1.5rem; color: var(--text-muted);">{{ $sra->supplier_name }}</td>
+                                        <td style="padding: 1rem 1.5rem;">
+                                            <span class="sra-badge" style="background: {{ $sra->stores_status === 'approved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)' }}; color: {{ $sra->stores_status === 'approved' ? '#10b981' : '#ef4444' }};">
+                                                {{ ucfirst($sra->stores_status) }}
+                                            </span>
+                                        </td>
+                                        <td style="padding: 1rem 1.5rem; font-size: 0.82rem; color: var(--text-muted);">{{ $sra->stores_approved_at?->format('d M Y H:i') ?? ($sra->updated_at ? $sra->updated_at->format('d M Y H:i') : '—') }}</td>
+                                        <td style="padding: 1rem 1.5rem; text-align: center;">
+                                            @if($sra->stores_status === 'approved')
+                                                <a href="{{ route('service-sra.receipt', $sra->id) }}" target="_blank" style="background: rgba(16,185,129,0.08); color: #10b981; border: 1px solid rgba(16,185,129,0.2); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.78rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                                                    <i data-lucide="file-text" style="width: 13px;"></i> View Receipt
+                                                </a>
+                                            @else
+                                                <span style="color: var(--text-muted); font-size: 0.78rem; font-weight: 600;">—</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endif
                             @endforeach
                         </tbody>
                     </table>
@@ -195,13 +265,13 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                             </span>
                         @else
-                            <a href="{{ $history->appends(['pending_page' => request('pending_page')])->previousPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#10b981';this.style.color='white';this.style.borderColor='#10b981';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
+                            <a href="{{ $history->appends(['pending_page' => request('pending_page'), 'sra_type' => request('sra_type'), 'tab' => 'history'])->previousPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#10b981';this.style.color='white';this.style.borderColor='#10b981';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                             </a>
                         @endif
 
                         {{-- Page Numbers --}}
-                        @foreach($history->appends(['pending_page' => request('pending_page')])->getUrlRange(max(1, $history->currentPage()-2), min($history->lastPage(), $history->currentPage()+2)) as $page => $url)
+                        @foreach($history->appends(['pending_page' => request('pending_page'), 'sra_type' => request('sra_type'), 'tab' => 'history'])->getUrlRange(max(1, $history->currentPage()-2), min($history->lastPage(), $history->currentPage()+2)) as $page => $url)
                             @if($page == $history->currentPage())
                                 <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: #10b981; color: white; font-weight: 900; font-size: 0.82rem; border: 1.5px solid #10b981; box-shadow: 0 4px 12px rgba(16,185,129,0.3);">{{ $page }}</span>
                             @else
@@ -211,7 +281,7 @@
 
                         {{-- Next --}}
                         @if($history->hasMorePages())
-                            <a href="{{ $history->appends(['pending_page' => request('pending_page')])->nextPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#10b981';this.style.color='white';this.style.borderColor='#10b981';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
+                            <a href="{{ $history->appends(['pending_page' => request('pending_page'), 'sra_type' => request('sra_type'), 'tab' => 'history'])->nextPageUrl() }}" style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card); border: 1.5px solid var(--border-color); color: var(--text-main); text-decoration: none; transition: 0.15s;" onmouseover="this.style.background='#10b981';this.style.color='white';this.style.borderColor='#10b981';" onmouseout="this.style.background='var(--bg-card)';this.style.color='var(--text-main)';this.style.borderColor='var(--border-color)';">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                             </a>
                         @else
@@ -229,6 +299,89 @@
 
 @push('scripts')
 <script>
+    function showStoresHistorySkeleton() {
+        const tbody = document.querySelector('#stores-pane-history tbody');
+        if (!tbody) return;
+        let skeletonHtml = '';
+        for (let i = 0; i < 5; i++) {
+            skeletonHtml += `
+                <tr class="sra-table-row">
+                    <td style="padding: 1rem 1.5rem;"><div class="skeleton-line" style="width: 110px;"></div></td>
+                    <td style="padding: 1rem 1.5rem;">
+                        <div class="skeleton-line" style="width: 130px; display: block; margin-bottom: 6px;"></div>
+                        <div class="skeleton-line" style="width: 55px; height: 10px; display: block;"></div>
+                    </td>
+                    <td style="padding: 1rem 1.5rem;"><div class="skeleton-line" style="width: 150px;"></div></td>
+                    <td style="padding: 1rem 1.5rem;"><div class="skeleton-badge"></div></td>
+                    <td style="padding: 1rem 1.5rem;"><div class="skeleton-line" style="width: 120px;"></div></td>
+                    <td style="padding: 1rem 1.5rem; text-align: center;"><div class="skeleton-badge" style="width: 100px;"></div></td>
+                </tr>
+            `;
+        }
+        tbody.innerHTML = skeletonHtml;
+    }
+
+    async function filterApprovedSra(val, page) {
+        const historyPane = document.getElementById('stores-pane-history');
+        if (!historyPane) return;
+
+        showStoresHistorySkeleton();
+
+        const url = new URL(window.location.href);
+        if (val !== undefined && val !== null) {
+            if (val) {
+                url.searchParams.set('sra_type', val);
+            } else {
+                url.searchParams.delete('sra_type');
+            }
+        }
+        if (page) {
+            url.searchParams.set('history_page', page);
+        } else {
+            url.searchParams.delete('history_page');
+        }
+        url.searchParams.set('tab', 'history');
+
+        history.replaceState(null, '', url.toString());
+
+        try {
+            const res = await fetch(url.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            if (res.ok) {
+                const html = await res.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newHistoryPane = doc.getElementById('stores-pane-history');
+                if (newHistoryPane) {
+                    historyPane.innerHTML = newHistoryPane.innerHTML;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                    bindStoresHistoryPagination();
+                }
+            }
+        } catch (err) {
+            console.error('Failed to filter approved SRAs:', err);
+        }
+    }
+
+    function bindStoresHistoryPagination() {
+        const historyPane = document.getElementById('stores-pane-history');
+        if (!historyPane) return;
+
+        historyPane.querySelectorAll('a[href*="history_page"]').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const href = this.getAttribute('href');
+                if (href) {
+                    const u = new URL(href, window.location.origin);
+                    const page = u.searchParams.get('history_page');
+                    const sraType = u.searchParams.get('sra_type') || document.getElementById('sra-type-filter')?.value || '';
+                    filterApprovedSra(sraType, page);
+                }
+            });
+        });
+    }
+
     function switchStoresTab(tab) {
         if (tab === 'pending') {
             document.getElementById('stores-pane-pending').style.display = 'block';
@@ -260,9 +413,10 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('history_page')) {
+        if (urlParams.has('history_page') || urlParams.has('sra_type') || urlParams.get('tab') === 'history') {
             switchStoresTab('history');
         }
+        bindStoresHistoryPagination();
 
         // Silent auto-refresh every 30 seconds (paused when tab is hidden)
         let _storesSilentRefreshPaused = document.hidden;

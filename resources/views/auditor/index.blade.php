@@ -1381,6 +1381,14 @@
             const searchInput = form.querySelector('input[name="search_query"]');
 
             function performAuditAjaxFilter(url) {
+                const activePanel = document.querySelector('.audit-tab-panel.active');
+                if (activePanel) {
+                    const tbody = activePanel.querySelector('tbody');
+                    if (tbody && window.renderSkeletonTable) {
+                        window.renderSkeletonTable(tbody, 5, 6);
+                    }
+                }
+
                 fetch(url, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'

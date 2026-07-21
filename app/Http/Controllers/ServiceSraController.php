@@ -332,12 +332,45 @@ class ServiceSraController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'pending_page');
 
-        $history = ServiceSra::with('submitter')
-            ->whereIn('stores_status', ['approved', 'declined'])
-            ->orderBy('updated_at', 'desc')
-            ->paginate(10, ['*'], 'history_page');
+        $sraTypeFilter = $request->input('sra_type', '');
 
-        return view('service-sra.stores', compact('pending', 'history'));
+        $serviceSraCol = collect();
+        $inventorySraCol = collect();
+
+        if (empty($sraTypeFilter) || $sraTypeFilter === 'service_sra') {
+            $serviceSraCol = ServiceSra::with('submitter')
+                ->whereIn('stores_status', ['approved', 'declined'])
+                ->get();
+        }
+
+        if (empty($sraTypeFilter) || $sraTypeFilter === 'inventory_sra') {
+            $inventorySraCol = \App\Models\InventoryBatch::with(['items', 'recorder'])
+                ->where('approval_status', 'approved')
+                ->where('supplier_status', '!=', 'System Draft')
+                ->get();
+        }
+
+        $mergedHistory = $serviceSraCol->concat($inventorySraCol)->sortByDesc(function($item) {
+            return $item->stores_approved_at ?? $item->auditor_approved_at ?? $item->updated_at ?? $item->created_at;
+        });
+
+        $perPage = 10;
+        $historyPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage('history_page');
+        $currentItems = $mergedHistory->slice(($historyPage - 1) * $perPage, $perPage)->values();
+
+        $history = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentItems,
+            $mergedHistory->count(),
+            $perPage,
+            $historyPage,
+            [
+                'path'     => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath(),
+                'pageName' => 'history_page',
+                'query'    => $request->query()
+            ]
+        );
+
+        return view('service-sra.stores', compact('pending', 'history', 'sraTypeFilter'));
     }
 
     // ─────────────────────────────────────────────────────────────────────────

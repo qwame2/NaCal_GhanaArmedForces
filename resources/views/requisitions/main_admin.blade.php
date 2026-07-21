@@ -1412,6 +1412,10 @@
             // Update browser URL without reload
             history.replaceState(null, '', url);
 
+            if (window.renderSkeletonTable) {
+                window.renderSkeletonTable('req-tbody', 5, 8);
+            }
+
             showLoading(true);
             fetch(url, {
                 headers: {
