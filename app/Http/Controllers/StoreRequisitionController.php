@@ -1005,6 +1005,7 @@ class StoreRequisitionController extends Controller
         }
 
         $canView = $user->is_admin || 
+                   $user->isMainAdminOrSub() ||
                    $user->isDelegatedApprover() || 
                    $isStoresHead ||
                    ($user->isDepartmentHead() && ($this->departmentsMatch($user->department, $req->department) || strcasecmp($req->department, 'Audit Department') === 0 || ($req->requester && $req->requester->sponsored_by === $user->id))) ||
@@ -2796,6 +2797,7 @@ class StoreRequisitionController extends Controller
 
     private function departmentsMatch($dept1, $dept2)
     {
+        if (empty($dept1) || empty($dept2)) return false;
         $d1 = strtolower(trim($dept1));
         $d2 = strtolower(trim($dept2));
         if ($d1 === $d2) return true;
@@ -2808,6 +2810,12 @@ class StoreRequisitionController extends Controller
         
         $storesTerms = ['stores', 'store', 'stores department', 'store department'];
         if (in_array($d1, $storesTerms) && in_array($d2, $storesTerms)) return true;
+
+        $clean1 = trim(preg_replace('/\b(department|dept\.?|section|management)\b/i', '', $d1));
+        $clean2 = trim(preg_replace('/\b(department|dept\.?|section|management)\b/i', '', $d2));
+        if (!empty($clean1) && !empty($clean2) && ($clean1 === $clean2 || str_contains($clean1, $clean2) || str_contains($clean2, $clean1))) {
+            return true;
+        }
         
         return false;
     }

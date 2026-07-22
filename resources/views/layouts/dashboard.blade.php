@@ -1606,12 +1606,6 @@
                 <!-- Top Accent Line -->
                 <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #16a34a 0%, #22c55e 50%, #4ade80 100%);"></div>
 
-                <!-- Action Required Pill -->
-                <div style="display: inline-flex; align-items: center; justify-content: center; background: rgba(22, 163, 74, 0.08); color: #16a34a; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.12em; padding: 6px 16px; border-radius: 999px; border: 1px solid rgba(22, 163, 74, 0.18); margin-bottom: 1.5rem; text-transform: uppercase; gap: 6px;">
-                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #16a34a; animation: sigDotPulse 1.8s infinite;"></span>
-                    Action Required
-                </div>
-
                 <!-- Animated Signature Icon Box -->
                 <div style="width: 84px; height: 84px; background: linear-gradient(135deg, rgba(22,163,74,0.12), rgba(22,163,74,0.04)); border: 2px solid rgba(22,163,74,0.18); border-radius: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 12px 25px rgba(22, 163, 74, 0.12); animation: sigIconFloat 3s ease-in-out infinite;">
                     <i data-lucide="signature" style="width: 42px; height: 42px; color: #16a34a;"></i>

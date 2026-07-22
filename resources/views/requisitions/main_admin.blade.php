@@ -1587,9 +1587,15 @@
         document.getElementById('modalFooter').innerHTML = '';
         document.getElementById('modalSubtitle').textContent = 'Loading...';
 
-        const res = await fetch(`{{ url('/admin/requisitions') }}/${id}/show`);
-        const data = await res.json();
-        window.currentReqData = data;
+        try {
+            const res = await fetch(`{{ url('/admin/requisitions') }}/${id}/show`);
+            const data = await res.json();
+            if (!res.ok || !data || !data.items) {
+                Swal.fire('Error', data?.message || 'Failed to load requisition details.', 'error');
+                closeModal();
+                return;
+            }
+            window.currentReqData = data;
 
         // Apply priority border accents
         const modalBox = document.querySelector('.modal-box');
@@ -2131,6 +2137,11 @@
 
         lucide.createIcons();
         checkAltOptions();
+        } catch (err) {
+            console.error(err);
+            Swal.fire('Error', 'Network error. Failed to load requisition details.', 'error');
+            closeModal();
+        }
     }
 
     async function processDecision(decision) {

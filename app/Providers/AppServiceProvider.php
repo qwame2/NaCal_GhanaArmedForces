@@ -358,7 +358,7 @@ class AppServiceProvider extends ServiceProvider
                 }
 
                 $view->with('globalNotifications', $notifications);
-                $view->with('globalNotificationCount', count($notifications));
+                $view->with('globalNotificationCount', count($lowStockNotifications));
                 
                 // Fetch Unread Messages Count
                 $unreadMessagesCount = \App\Models\Message::where('receiver_id', auth()->id())

@@ -801,18 +801,11 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 ->toArray();
         });
 
-        // Count total alert notifications (used for navbar badge)
+        // Count total alert notifications (used for navbar red badge — low stock only)
         $alertCount = 0;
         foreach ($lowStockAlerts as $alert) {
             if (!in_array(trim($alert['description']), $acknowledgedClean)) {
                 $alertCount++;
-            }
-        }
-        if ($is_admin) {
-            foreach ($expiredAlerts as $item) {
-                if (!in_array(trim($item['description']), $acknowledgedClean)) {
-                    $alertCount++;
-                }
             }
         }
 
@@ -1064,12 +1057,6 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         $alertCount = 0;
         foreach ($lowStockAlerts as $alert) {
             if (!in_array(trim($alert['description']), $acknowledgedClean)) {
-                $alertCount++;
-            }
-        }
-
-        foreach ($expiredAlerts as $item) {
-            if (!in_array(trim($item['description']), $acknowledgedClean)) {
                 $alertCount++;
             }
         }
