@@ -1828,7 +1828,7 @@
                 isProcessed = true;
             }
         } else {
-            isProcessed = (data.origin_admin_status !== 'pending' && data.alternative_status !== 'proposed');
+            isProcessed = (data.origin_admin_status !== 'pending' || data.main_admin_status !== 'pending' || data.status !== 'pending') && (data.alternative_status !== 'proposed');
         }
         let decisionHtml = '';
 

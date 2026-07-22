@@ -1331,7 +1331,7 @@
         if (isStoresHeadUser) {
             isPending = (data.status === 'pending' && data.origin_admin_status !== 'pending');
         } else {
-            isPending = (data.origin_admin_status === 'pending' && data.status === 'pending');
+            isPending = (data.origin_admin_status === 'pending' && data.main_admin_status === 'pending' && data.status === 'pending');
         }
 
         const isAwaitingPriorApproval = isPending && (
