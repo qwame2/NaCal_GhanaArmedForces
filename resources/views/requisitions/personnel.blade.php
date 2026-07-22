@@ -774,6 +774,7 @@
         @endif
     </div>
 </div>
+@endsection
 
 @push('modals')
 {{-- Review Modal --}}
@@ -998,7 +999,12 @@
 
     async function openRequisitionModal(id) {
         currentReqId = id;
-        document.getElementById('reqModal').classList.add('open');
+        const reqModal = document.getElementById('reqModal');
+        if (!reqModal) {
+            console.error('Modal element #reqModal not found in DOM.');
+            return;
+        }
+        reqModal.classList.add('open');
         document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);"><div style="width:24px;height:24px;border:2px solid rgba(0,0,0,.1);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;"></div>Loading details...</div>';
         document.getElementById('modalFooter').innerHTML = '';
         document.getElementById('modalSubtitle').textContent = 'Loading...';
@@ -1355,7 +1361,10 @@
     }
 
     function closeModal() {
-        document.getElementById('reqModal').classList.remove('open');
+        const reqModal = document.getElementById('reqModal');
+        if (reqModal) {
+            reqModal.classList.remove('open');
+        }
     }
 
     async function confirmCollection(id, btn) {
