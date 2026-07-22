@@ -1326,7 +1326,14 @@
 
         document.getElementById('modalSubtitle').textContent = `Requisition Ref: ${data.unique_id || ('REQ-' + String(data.id).padStart(5, '0'))}`;
 
-        const isPending = data.status === 'pending';
+        const isStoresHeadUser = {{ (auth()->user()->role === 'Head of Stores' || auth()->user()->department === 'Stores & Logistics Department') ? 'true' : 'false' }};
+        let isPending = false;
+        if (isStoresHeadUser) {
+            isPending = (data.status === 'pending' && data.origin_admin_status !== 'pending');
+        } else {
+            isPending = (data.origin_admin_status === 'pending' && data.status === 'pending');
+        }
+
         const isAwaitingPriorApproval = isPending && (
             data.status_badge.label.includes('Awaiting Dept Head') ||
             data.status_badge.label.includes('Awaiting Authorizer') ||
