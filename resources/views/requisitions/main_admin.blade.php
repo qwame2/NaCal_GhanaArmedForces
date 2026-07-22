@@ -1514,8 +1514,7 @@
     })();
     </script>
     @endpush
-@endsection
-@push('modals')
+
 {{-- Oversight Approval & Detail Modal --}}
 <div class="modal-overlay" id="reqModal" onclick="if(event.target===this)closeModal()">
     <div class="modal-box">
@@ -1574,7 +1573,6 @@
         </div>
     </div>
 </div>
-@endpush
 
 <script>
     const isStoresHead = {{ $isStoresHead ? 'true' : 'false' }};
@@ -3304,3 +3302,4 @@
         }
     });
 </script>
+@endsection

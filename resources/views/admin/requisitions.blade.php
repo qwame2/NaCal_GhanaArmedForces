@@ -1076,9 +1076,7 @@
         @include('admin._requisitions_table')
     </div>
 </div>
-@endsection
 
-@push('modals')
 {{-- Review Modal --}}
 <div class="modal-overlay" id="reqModal" onclick="if(event.target===this)closeModal()">
     <div class="modal-box">
@@ -1137,7 +1135,6 @@
         </div>
     </div>
 </div>
-@endpush
 
 <script>
     let currentReqId = null;
@@ -2656,3 +2653,4 @@
         @endif
     });
 </script>
+@endsection

@@ -774,9 +774,7 @@
         @endif
     </div>
 </div>
-@endsection
 
-@push('modals')
 {{-- Review Modal --}}
 <div class="modal-overlay" id="reqModal" onclick="if(event.target===this)closeModal()">
     <div class="modal-box">
@@ -800,12 +798,10 @@
         <div id="modalFooter" style="padding:1.25rem 2rem;border-top:1px solid var(--border-color);display:flex;justify-content:flex-end;gap:.75rem;flex-shrink:0;"></div>
     </div>
 </div>
-@endpush
 
 {{-- ════════════════════════════════════════════════════════
      NEW REQUISITION SLIDE-OVER PANEL
      ════════════════════════════════════════════════════════ --}}
-@push('modals')
 <div id="newReqOverlay" onclick="if(event.target===this)closeNewReqPanel()" style="position:fixed;inset:0;width:100vw;height:100vh;background:rgba(15,23,42,.5);backdrop-filter:blur(6px);z-index:99998;display:none;align-items:flex-start;justify-content:flex-end;">
     <div id="newReqPanel" style="background:var(--bg-card);width:100%;max-width:1100px;height:100vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:-30px 0 80px rgba(15,23,42,.18);transform:translateX(100%);transition:transform .4s cubic-bezier(.16,1,.3,1);">
 
@@ -970,7 +966,6 @@
         </div>
     </div>
 </div>
-@endpush
 
 <style>
 .nr-step-bubble {
@@ -2211,3 +2206,4 @@
         }
     }
 </script>
+@endsection
