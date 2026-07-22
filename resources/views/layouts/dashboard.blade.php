@@ -1676,5 +1676,6 @@
             });
         }
     </script>
+    @include('partials._collection_popover')
 </body>
 </html>

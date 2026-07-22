@@ -360,10 +360,11 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('globalNotifications', $notifications);
                 $view->with('globalNotificationCount', count($lowStockNotifications));
                 
-                // Fetch Unread Messages Count
+                // Fetch Unread Messages Count (peer-to-peer user chats only)
                 $unreadMessagesCount = \App\Models\Message::where('receiver_id', auth()->id())
                     ->whereNull('read_at')
                     ->where('is_archived', false)
+                    ->where('is_automated', false)
                     ->count();
                 $view->with('unreadMessagesCount', $unreadMessagesCount);
 

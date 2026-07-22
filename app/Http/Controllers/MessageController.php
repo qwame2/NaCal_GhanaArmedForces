@@ -142,7 +142,8 @@ class MessageController extends Controller
     {
         $authId = auth()->id();
         $query = Message::where('is_archived', false)->where('receiver_id', $authId)
-            ->whereNull('read_at');
+            ->whereNull('read_at')
+            ->where('is_automated', false);
 
         // Exclude suggested quantities / alternative proposals for everyone
         $query->where(function($q) {
@@ -202,7 +203,8 @@ class MessageController extends Controller
     public function getTotalUnreadCount()
     {
         $query = Message::where('is_archived', false)->where('receiver_id', auth()->id())
-            ->whereNull('read_at');
+            ->whereNull('read_at')
+            ->where('is_automated', false);
 
         // Exclude suggested quantities / alternative proposals for everyone
         $query->where(function($q) {

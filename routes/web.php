@@ -748,6 +748,103 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
 
     Route::get('/api/inventory/check-duplicate', [InventoryController::class, 'checkDuplicate'])->name('api.inventory.check-duplicate');
 
+    // Collection Pop-over API Endpoints for Requisitioners & Department Heads
+    Route::get('/api/collection-popover-data', function() {
+        if (!auth()->check()) {
+            return response()->json(['has_popover' => false, 'requisitions' => []]);
+        }
+
+        $user = auth()->user();
+
+        // Fetch acknowledged keys for this user
+        $acknowledgedKeys = \App\Models\NotificationAcknowledgement::where('user_id', $user->id)
+            ->where('alert_type', 'approved_requisition_collection')
+            ->pluck('item_description')
+            ->toArray();
+
+        $query = \App\Models\StoreRequisition::with('items')
+            ->whereIn('status', ['approved', 'partially_approved'])
+            ->whereNull('collected_at');
+
+        if ($user->role === 'Requisitioner') {
+            $query->where('requested_by', $user->id);
+        } elseif ($user->isDepartmentHead()) {
+            $dept = $user->department;
+            $query->where(function($q) use ($user, $dept) {
+                $q->where('requested_by', $user->id);
+                if ($dept) {
+                    $q->orWhere('department', $dept);
+                }
+            });
+        } else {
+            $query->where('requested_by', $user->id);
+        }
+
+        $approvedReqs = $query->orderBy('updated_at', 'desc')->get();
+        $unacknowledged = [];
+
+        foreach ($approvedReqs as $req) {
+            $key = 'requisition_' . $req->id;
+            if (!in_array($key, $acknowledgedKeys)) {
+                if ($user->isDepartmentHead() && $req->requested_by !== $user->id) {
+                    if (!\App\Http\Controllers\StoreRequisitionController::departmentsMatch($req->department, $user->department)) {
+                        continue;
+                    }
+                }
+
+                $totalItems = $req->items->count();
+                $approvedQtySum = $req->items->sum(function($item) {
+                    return (float)($item->quantity_approved ?? 0) + (float)($item->alternative_quantity_approved ?? 0);
+                });
+
+                $unacknowledged[] = [
+                    'id'               => $req->id,
+                    'key'              => $key,
+                    'ref'              => $req->unique_id ?: ('REQ-' . str_pad($req->id, 5, '0', STR_PAD_LEFT)),
+                    'requester'        => $req->requester_name,
+                    'department'       => $req->department,
+                    'status_label'     => $req->status === 'approved' ? 'Approved' : 'Partially Approved',
+                    'status_color'     => $req->status === 'approved' ? '#10b981' : '#f59e0b',
+                    'total_items'      => $totalItems,
+                    'approved_qty_sum' => $approvedQtySum,
+                    'purpose'          => \Illuminate\Support\Str::limit($req->purpose ?? '', 90),
+                    'approved_at'      => $req->updated_at ? $req->updated_at->format('d M Y, h:i A') : '',
+                ];
+            }
+        }
+
+        return response()->json([
+            'has_popover'  => count($unacknowledged) > 0,
+            'requisitions' => $unacknowledged
+        ]);
+    })->name('api.collection-popover-data');
+
+    Route::post('/api/acknowledge-collection-popover', function(\Illuminate\Http\Request $request) {
+        if (!auth()->check()) {
+            return response()->json(['success' => false], 401);
+        }
+
+        $user = auth()->user();
+        $keys = $request->input('keys', []);
+        if (empty($keys) && $request->filled('key')) {
+            $keys = [$request->input('key')];
+        }
+
+        foreach ($keys as $key) {
+            if (!empty($key)) {
+                \App\Models\NotificationAcknowledgement::firstOrCreate([
+                    'user_id'          => $user->id,
+                    'item_description' => $key,
+                    'alert_type'       => 'approved_requisition_collection'
+                ], [
+                    'acknowledged_at'  => now()
+                ]);
+            }
+        }
+
+        return response()->json(['success' => true]);
+    })->name('api.acknowledge-collection-popover');
+
     Route::get('/api/notifications', function() {
         if (!auth()->check()) return response()->json(['error' => 'Unauthenticated'], 401);
 
@@ -1004,7 +1101,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/api/admin/sidebar-counts', function() {
         if (!auth()->check() || !auth()->user()->is_admin) return response()->json(['error' => 'Unauthorized'], 401);
 
-        $messages = \App\Models\Message::where('receiver_id', auth()->id())->whereNull('read_at')->where('is_archived', false)->count();
+        $messages = \App\Models\Message::where('receiver_id', auth()->id())->whereNull('read_at')->where('is_archived', false)->where('is_automated', false)->count();
 
         $passwordRequests = \App\Models\PasswordResetRequest::where('status', 'pending')->count();
         
