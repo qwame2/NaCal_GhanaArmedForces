@@ -37,9 +37,9 @@
             --font-sans: 'Outfit', sans-serif;
 
             /* Modern E-commerce Jumia-Inspired Color Palette */
-            --store-orange: #22c55e;
+            --store-orange: #881337;
             --store-orange-hover: #4c0519;
-            --store-orange-light: rgba(34, 197, 94, 0.08);
+            --store-orange-light: rgba(136, 19, 55, 0.08);
 
             --store-indigo: #881337;
             --store-indigo-hover: #881337;
@@ -106,13 +106,13 @@
         .brand-logo-container {
             width: 42px;
             height: 42px;
-            background: linear-gradient(135deg, var(--store-orange), var(--store-indigo));
+            background: #881337;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+            box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
         }
 
         .brand-name {
@@ -155,7 +155,7 @@
         .store-search-input:focus {
             border-color: var(--store-orange);
             background: var(--bg-card);
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+            box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.12);
         }
 
         .store-search-icon {
@@ -200,7 +200,7 @@
 
         .cart-toggle-btn {
             background: var(--store-orange-light);
-            border: 1px solid rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(136, 19, 55, 0.2);
             color: var(--store-orange);
             padding: 0 1.25rem;
             border-radius: 99px;
@@ -217,7 +217,7 @@
         .cart-toggle-btn:hover {
             background: var(--store-orange);
             color: white;
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+            box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
             transform: translateY(-1px);
         }
 
@@ -289,7 +289,7 @@
         }
 
         .hero-banner {
-            background: linear-gradient(135deg, #1e1b4b, #311042);
+            background: #881337;
             border-radius: 24px;
             padding: 2.5rem 3rem;
             color: white;
@@ -305,7 +305,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 80% 20%, rgba(34, 197, 94, 0.15) 0%, transparent 50%);
+            background: radial-gradient(circle at 80% 20%, rgba(136, 19, 55, 0.15) 0%, transparent 50%);
             pointer-events: none;
         }
 
@@ -316,8 +316,8 @@
         }
 
         .hero-badge {
-            background: rgba(34, 197, 94, 0.2);
-            border: 1px solid rgba(34, 197, 94, 0.3);
+            background: rgba(136, 19, 55, 0.2);
+            border: 1px solid rgba(136, 19, 55, 0.3);
             color: var(--store-orange);
             display: inline-flex;
             align-items: center;
@@ -371,7 +371,7 @@
         .hero-btn:hover {
             background: var(--store-orange-hover);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+            box-shadow: 0 8px 20px rgba(136, 19, 55, 0.3);
         }
 
         .hero-btn-secondary {
@@ -462,7 +462,7 @@
 
         .category-item.active {
             background: var(--store-orange-light);
-            border-color: rgba(34, 197, 94, 0.15);
+            border-color: rgba(136, 19, 55, 0.15);
             color: var(--store-orange);
             font-weight: 700;
         }
@@ -544,7 +544,7 @@
 
         .product-image-container {
             height: 140px;
-            background: linear-gradient(135deg, rgba(136, 19, 55, 0.05), rgba(34, 197, 94, 0.05));
+            background: rgba(136, 19, 55, 0.05);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
@@ -554,7 +554,7 @@
         }
 
         .product-card:hover .product-image-container {
-            background: linear-gradient(135deg, rgba(136, 19, 55, 0.08), rgba(34, 197, 94, 0.08));
+            background: rgba(136, 19, 55, 0.08);
         }
 
         .product-icon-box {
@@ -926,13 +926,13 @@
         .form-input:focus {
             border-color: var(--store-orange);
             background: var(--bg-card);
-            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.08);
+            box-shadow: 0 0 0 3px rgba(136, 19, 55, 0.08);
         }
 
         .checkout-btn {
             width: 100%;
             padding: 0.9rem;
-            background: linear-gradient(135deg, var(--store-orange), #4c0519);
+            background: #881337;
             color: white;
             border: none;
             border-radius: 12px;
@@ -943,14 +943,14 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 6px 16px rgba(34, 197, 94, 0.2);
+            box-shadow: 0 6px 16px rgba(136, 19, 55, 0.2);
             transition: all 0.25s ease;
             margin-top: 1.5rem;
         }
 
         .checkout-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.35);
+            box-shadow: 0 8px 20px rgba(136, 19, 55, 0.35);
         }
 
         .checkout-btn:disabled {
@@ -1206,11 +1206,11 @@
             }
             30% {
                 border-color: var(--store-orange);
-                box-shadow: 0 0 0 6px var(--store-orange-light), 0 20px 40px -15px rgba(34, 197, 94, 0.25);
+                box-shadow: 0 0 0 6px var(--store-orange-light), 0 20px 40px -15px rgba(136, 19, 55, 0.25);
             }
             70% {
                 border-color: var(--store-orange);
-                box-shadow: 0 0 0 6px var(--store-orange-light), 0 20px 40px -15px rgba(34, 197, 94, 0.25);
+                box-shadow: 0 0 0 6px var(--store-orange-light), 0 20px 40px -15px rgba(136, 19, 55, 0.25);
             }
             100% {
                 border-color: var(--border-color);
@@ -1501,7 +1501,7 @@
         }
 
         .sticky-cart-btn {
-            background: linear-gradient(135deg, var(--store-orange) 0%, var(--store-orange-hover) 100%);
+            background: #881337;
             border: none;
             color: white;
             padding: 0.75rem 1.5rem;
@@ -1512,13 +1512,13 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+            box-shadow: 0 4px 14px rgba(136, 19, 55, 0.3);
             transition: all 0.25s ease;
         }
 
         .sticky-cart-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.45);
+            box-shadow: 0 8px 20px rgba(136, 19, 55, 0.45);
         }
 
         @keyframes pulse-icon {
@@ -1611,7 +1611,7 @@
             </div>
             <!-- Interactive Floating Art (fallback illustration via Lucide graphics) -->
             <div class="hero-art">
-                <i data-lucide="package-open" style="width: 260px; height: 260px; color: rgba(34, 197, 94, 0.15); stroke-width: 1;"></i>
+                <i data-lucide="package-open" style="width: 260px; height: 260px; color: rgba(136, 19, 55, 0.15); stroke-width: 1;"></i>
             </div>
         </div>
     </section>
@@ -2014,7 +2014,7 @@
             Swal.fire({
                 title: `
                     <div style="display: flex; align-items: center; gap: 15px; text-align: left; width: 100%;">
-                        <div style="width: 48px; height: 48px; background: rgba(34, 197, 94, 0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #22c55e;">
+                        <div style="width: 48px; height: 48px; background: rgba(136, 19, 55, 0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #881337;">
                             <i data-lucide="user-check"></i>
                         </div>
                         <div>
@@ -2110,7 +2110,7 @@
                 showCancelButton: true,
                 confirmButtonText: 'Save Profile Settings',
                 cancelButtonText: 'Close',
-                confirmButtonColor: '#22c55e',
+                confirmButtonColor: '#881337',
                 cancelButtonColor: '#f1f5f9',
                 customClass: {
                     popup: 'glass-monolith-popup',
@@ -2185,7 +2185,7 @@
                         title: 'Profile Updated',
                         text: 'Your details have been successfully synchronized.',
                         icon: 'success',
-                        confirmButtonColor: '#22c55e'
+                        confirmButtonColor: '#881337'
                     }).then(() => {
                         location.reload();
                     });
@@ -2213,7 +2213,7 @@
                 const originalHTML = container.innerHTML;
                 container.innerHTML = `
                     <div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
-                        <i data-lucide="loader-2" class="spin" style="width: 24px; color: #22c55e;"></i>
+                        <i data-lucide="loader-2" class="spin" style="width: 24px; color: #881337;"></i>
                     </div>
                 `;
                 if (typeof lucide !== 'undefined') lucide.createIcons();

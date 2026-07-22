@@ -176,7 +176,7 @@
     <div class="cfg-card" id="suppliers-registry">
         <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <div class="cfg-icon-box" style="background: linear-gradient(135deg, #881337, #059669);">
+                <div class="cfg-icon-box" style="background: #881337;">
                     <i data-lucide="truck"></i>
                 </div>
                 <div>
@@ -277,7 +277,7 @@
                                 <textarea name="desc" id="supplierDescInput" class="cfg-text-input" placeholder="e.g. Lead distributor for stationery items" style="min-height: 80px; font-family: inherit; resize: vertical; padding: 0.75rem 1rem; border-radius: 12px;"></textarea>
                             </div>
                             <div style="display: flex; gap: 10px;">
-                                <button type="submit" id="supplierSubmitBtn" class="btn-cfg-add" style="flex: 1; background: linear-gradient(135deg, #881337, #059669); margin-top: 0.5rem;">
+                                <button type="submit" id="supplierSubmitBtn" class="btn-cfg-add" style="flex: 1; background: #881337; margin-top: 0.5rem;">
                                     <i data-lucide="plus-circle" id="supplierSubmitIcon"></i> <span id="supplierSubmitText">Add Supplier</span>
                                 </button>
                                 <button type="button" id="supplierResetBtn" onclick="resetSupplierForm()" style="display: none; padding: 0.75rem 1rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; margin-top: 0.5rem;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
@@ -746,7 +746,7 @@
         document.getElementById('supplierNameInput').style.background = '';
 
         document.getElementById('supplierSubmitText').innerText = 'Add Supplier';
-        document.getElementById('supplierSubmitBtn').style.background = 'linear-gradient(135deg, #881337, #059669)';
+        document.getElementById('supplierSubmitBtn').style.background = '#881337';
         document.getElementById('supplierResetBtn').style.display = 'none';
 
         const icon = document.getElementById('supplierSubmitIcon');

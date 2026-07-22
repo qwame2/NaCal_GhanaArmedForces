@@ -1939,7 +1939,7 @@
         <div id="signature-warning-overlay" class="modal-overlay" style="display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); align-items: center; justify-content: center; z-index: 10000000 !important; padding: 1.25rem; box-sizing: border-box;">
             <div class="glass-card" style="max-width: 520px; width: 100%; border-radius: 32px; padding: 2.75rem 2.25rem 2.25rem; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 35px 90px -15px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(136, 19, 55, 0.08); text-align: center; position: relative; overflow: hidden; animation: sigModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-sizing: border-box;">
                 <!-- Top Accent Line -->
-                <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #881337 0%, #22c55e 50%, #9f1239 100%);"></div>
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: #881337;"></div>
 
                 <!-- Animated Signature Icon Box -->
                 <div style="width: 84px; height: 84px; background: linear-gradient(135deg, rgba(136,19,55,0.12), rgba(136,19,55,0.04)); border: 2px solid rgba(136,19,55,0.18); border-radius: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 12px 25px rgba(136, 19, 55, 0.12); animation: sigIconFloat 3s ease-in-out infinite;">

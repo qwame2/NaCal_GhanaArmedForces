@@ -4,7 +4,7 @@
 <style>
     :root {
         --audit-primary: #881337;
-        --audit-primary-hover: #059669;
+        --audit-primary-hover: #4c0519;
         --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
     }
 </style>

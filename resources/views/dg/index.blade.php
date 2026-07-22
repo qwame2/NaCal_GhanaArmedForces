@@ -1283,7 +1283,7 @@
 
                                     <!-- Head of Stores Node -->
                                     <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #881337, #059669); color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <div class="flow-node-icon" style="background: #881337; color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                             <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
                                         </div>
                                         <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>

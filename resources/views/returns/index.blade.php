@@ -21,7 +21,7 @@
                     <i data-lucide="shield" style="width: 14px; color: #881337;"></i> System Verified
                 </span> -->
             </div>
-            <h1 style="margin: 0; font-size: 3.5rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.06em; line-height: 1;">Return <span style="background: linear-gradient(135deg, #881337 0%, #047857 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Item(s)</span></h1>
+            <h1 style="margin: 0; font-size: 3.5rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.06em; line-height: 1;">Return <span style="color: #881337;">Item(s)</span></h1>
             <p style="margin: 15px 0 0; color: var(--text-muted); font-size: 1.15rem; font-weight: 600; max-width: 600px; line-height: 1.6;">Return issued items to main store. Track what's still out in real time.</p>
         </div>
 
@@ -483,7 +483,7 @@
         <div class="samsung-drag-handle"></div>
         <div class="modal-header-premium" style="display: flex; justify-content: space-between; align-items: center; padding: 2rem 3rem; background: var(--bg-card);">
             <div>
-                <h3 style="margin: 0; font-size: 2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">Return <span style="background: linear-gradient(135deg, #881337 0%, #047857 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">History</span></h3>
+                <h3 style="margin: 0; font-size: 2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">Return <span style="color: #881337;">History</span></h3>
                 <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600;">Tracking history of all recovered assets</p>
             </div>
             <button type="button" onclick="closeHistorySheet()" class="close-btn-premium modern-action-btn secondary" style="width: 54px; height: 54px; border-radius: 18px; border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">

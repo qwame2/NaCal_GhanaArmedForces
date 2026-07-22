@@ -32,9 +32,9 @@
             --font-display: 'Outfit', sans-serif;
             --font-sans: 'Outfit', sans-serif;
             
-            --store-orange: #22c55e;
+            --store-orange: #881337;
             --store-orange-hover: #4c0519;
-            --store-orange-light: rgba(34, 197, 94, 0.08);
+            --store-orange-light: rgba(136, 19, 55, 0.08);
             
             --store-indigo: #881337;
             --store-indigo-hover: #881337;
@@ -106,7 +106,7 @@
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+            box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
         }
 
         .brand-name {
@@ -149,7 +149,7 @@
         .store-search-input:focus {
             border-color: var(--store-orange);
             background: var(--bg-card);
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+            box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.12);
         }
 
         .store-search-icon {
@@ -203,15 +203,21 @@
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             text-decoration: none;
         }
 
         .cart-toggle-btn:hover {
-            background: var(--store-orange-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+            background: var(--store-orange);
+            color: white;
+            box-shadow: 0 4px 14px rgba(136, 19, 55, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .cart-toggle-btn.has-items {
+            background: var(--store-orange);
+            color: white;
+            box-shadow: 0 6px 20px rgba(136, 19, 55, 0.4);
         }
 
         .user-widget {
@@ -259,8 +265,8 @@
         }
 
         /* --- HERO BANNER --- */
-        .store-hero {
-            background: linear-gradient(135deg, rgba(136, 19, 55, 0.05) 0%, rgba(34, 197, 94, 0.05) 100%);
+        .history-card-header {
+            background: rgba(136, 19, 55, 0.05);
             padding: 3rem 2rem 2.5rem 2rem;
             border-bottom: 1px solid var(--border-color);
         }
@@ -293,7 +299,7 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 1.25rem;
-            border: 1px solid rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(136, 19, 55, 0.12);
         }
 
         .hero-title {
@@ -518,14 +524,14 @@
 
         /* Timeline Step States */
         .tracker-step.completed .tracker-dot {
-            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
-            border-color: var(--success-color);
+            background: var(--store-orange);
+            border-color: var(--store-orange);
             color: white;
             box-shadow: 0 4px 10px rgba(136, 19, 55, 0.25);
         }
 
         .tracker-step.completed .tracker-label {
-            color: var(--success-color);
+            color: var(--store-orange);
         }
 
         .tracker-step.active .tracker-dot {
@@ -551,9 +557,9 @@
         }
 
         @keyframes pulse-orange {
-            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-            70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(136, 19, 55, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0); }
         }
 
         /* --- SUPPLIES LIST GRID --- */
@@ -602,7 +608,7 @@
         }
 
         @keyframes card-pulse {
-            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); border-color: var(--store-orange); }
+            0% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); border-color: var(--store-orange); }
             100% { box-shadow: var(--shadow-premium); border-color: var(--border-color); }
         }
 
@@ -644,7 +650,7 @@
             font-weight: 800 !important;
             font-size: 0.85rem !important;
             letter-spacing: 0.02em !important;
-            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.2) !important;
+            box-shadow: 0 10px 20px rgba(136, 19, 55, 0.2) !important;
         }
         .premium-swal-cancel-btn {
             height: 48px !important;
@@ -706,7 +712,7 @@
         .swal-field-input:focus {
             border-color: var(--store-orange) !important;
             background: white !important;
-            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.06) !important;
+            box-shadow: 0 8px 20px rgba(136, 19, 55, 0.06) !important;
         }
         .swal-field-input[readonly] {
             opacity: 0.65;
@@ -1278,7 +1284,7 @@
             Swal.fire({
                 title: `
                     <div style="display: flex; align-items: center; gap: 15px; text-align: left; width: 100%;">
-                        <div style="width: 48px; height: 48px; background: rgba(34, 197, 94, 0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #22c55e;">
+                        <div style="width: 48px; height: 48px; background: rgba(136, 19, 55, 0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #881337;">
                             <i data-lucide="user-check"></i>
                         </div>
                         <div>
@@ -1374,7 +1380,7 @@
                 showCancelButton: true,
                 confirmButtonText: 'Save Profile Settings',
                 cancelButtonText: 'Close',
-                confirmButtonColor: '#22c55e',
+                confirmButtonColor: '#881337',
                 cancelButtonColor: '#f1f5f9',
                 customClass: {
                     popup: 'glass-monolith-popup',
@@ -1449,7 +1455,7 @@
                         title: 'Profile Updated',
                         text: 'Your details have been successfully synchronized.',
                         icon: 'success',
-                        confirmButtonColor: '#22c55e'
+                        confirmButtonColor: '#881337'
                     }).then(() => {
                         location.reload();
                     });
@@ -1477,7 +1483,7 @@
                 const originalHTML = container.innerHTML;
                 container.innerHTML = `
                     <div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
-                        <i data-lucide="loader-2" class="spin" style="width: 24px; color: #22c55e;"></i>
+                        <i data-lucide="loader-2" class="spin" style="width: 24px; color: #881337;"></i>
                     </div>
                 `;
                 if (typeof lucide !== 'undefined') lucide.createIcons();

@@ -208,7 +208,7 @@
     }
 
     .stepper-step.completed .stepper-bubble {
-        background: linear-gradient(135deg, #881337 0%, #059669 100%);
+        background: #881337;
         border-color: #881337;
         color: white;
         box-shadow: 0 4px 10px rgba(136, 19, 55, 0.25);
@@ -233,7 +233,7 @@
     }
 
     .stepper-step.active .stepper-bubble {
-        background: linear-gradient(135deg, var(--primary) 0%, #4c0519 100%);
+        background: #881337;
         border-color: var(--primary);
         color: white;
         animation: activePulse 2s infinite;
@@ -1128,7 +1128,7 @@
                 <button onclick="processOversightSra('declined')" id="sraBtnDecline" style="padding: 0.85rem 2rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: #ef4444; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
                     <i data-lucide="x-circle" style="width: 16px;"></i> Decline
                 </button>
-                <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: linear-gradient(135deg, #881337, #059669); color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
+                <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: #881337; color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
                     <i data-lucide="check-circle" style="width: 16px;"></i> Approve
                 </button>
             </div>
@@ -1220,7 +1220,7 @@
                         <button onclick="processOversightSra('declined')" id="sraBtnDecline" style="padding: 0.85rem 2rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: #ef4444; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
                             <i data-lucide="x-circle" style="width: 16px;"></i> Decline
                         </button>
-                        <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: linear-gradient(135deg, #881337, #059669); color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
+                        <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: #881337; color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
                             <i data-lucide="check-circle" style="width: 16px;"></i> Approve
                         </button>
                     </div>
@@ -1594,7 +1594,7 @@
                     <div style="flex:2; min-width:180px;">
                         <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:6px;">Fulfillment Progress</div>
                         <div class="fulfill-progress-container" style="margin-top:0;">
-                            <div class="fulfill-progress-bar" style="width: ${pct}%; background:${totalApproved === 0 ? '#ef4444' : (totalApproved < requested ? '#881337' : 'linear-gradient(90deg, #881337 0%, #881337 100%)')}"></div>
+                            <div class="fulfill-progress-bar" style="width: ${pct}%; background:${totalApproved === 0 ? '#ef4444' : '#881337'}"></div>
                         </div>
                     </div>
                 </div>

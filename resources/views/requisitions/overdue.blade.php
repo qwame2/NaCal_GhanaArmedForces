@@ -57,7 +57,7 @@
 
     .tab-btn.active {
         color: #ffffff !important;
-        background: linear-gradient(135deg, #881337 0%, #9f1239 100%) !important;
+        background: #881337 !important;
         border-color: rgba(255, 255, 255, 0.2) !important;
         box-shadow: 0 8px 24px rgba(136, 19, 55, 0.35);
     }

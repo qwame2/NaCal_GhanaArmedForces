@@ -625,7 +625,7 @@
         align-items: center;
         gap: 8px;
         padding: 0.75rem 1.5rem;
-        background: linear-gradient(135deg, #881337, #059669);
+        background: #881337;
         color: white;
         border: none;
         border-radius: 14px;
@@ -1124,7 +1124,7 @@
 
                                     <!-- Head of Stores Node -->
                                     <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #881337, #059669); color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <div class="flow-node-icon" style="background: #881337; color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                             <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
                                         </div>
                                         <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
@@ -1277,7 +1277,7 @@
 
                                     <!-- Head of Stores Node -->
                                     <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #881337, #059669); color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <div class="flow-node-icon" style="background: #881337; color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                             <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
                                         </div>
                                         <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
@@ -1306,62 +1306,14 @@
         </form>
         @endif
 
-        @if(auth()->user()->is_admin && auth()->user()->role === 'Head of Stores')
-        {{-- Head of Stores Digital Signature Upload Card --}}
-        <div class="cfg-card" id="head-stores-signature" style="margin-bottom: 2rem;">
-            <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9;">
-                <div style="display: flex; align-items: center; gap: 1.25rem;">
-                    <div class="cfg-icon-box" style="background: linear-gradient(135deg, #881337 0%, #047857 100%); box-shadow: 0 8px 20px rgba(136,19,55,0.15); width: 50px; height: 50px; border-radius: 16px;">
-                        <i data-lucide="signature" style="width: 24px; height: 24px; color: white;"></i>
-                    </div>
-                    <div>
-                        <h3 style="font-weight: 950; font-size: 1.25rem; color: #0f172a; margin: 0; letter-spacing: -0.03em;">Head of Stores Digital Signature</h3>
-                        <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Upload your official signature image to authorize and automatically sign collection receipts.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="cfg-card-body" style="padding: 2.5rem; background: #ffffff;">
-                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 2.5rem; align-items: center;">
-                    <!-- Signature Preview Box -->
-                    <div style="width: 100%; height: 130px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 20px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;" id="signature-preview-box-admin">
-                        @if(auth()->user()->signature)
-                        <img src="{{ Storage::url(auth()->user()->signature) }}" style="max-width: 90%; max-height: 90%; object-fit: contain;" id="user-signature-img-admin">
-                        @else
-                        <div style="text-align: center; color: #64748b;" id="user-signature-placeholder-admin">
-                            <i data-lucide="edit-3" style="width: 32px; margin: 0 auto 6px; display: block; opacity: 0.4; color: #881337;"></i>
-                            <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">No Signature Uploaded</span>
-                        </div>
-                        @endif
-                    </div>
 
-                    <!-- Upload Controls -->
-                    <div>
-                        <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
-                            <button type="button" class="btn-cfg-save" onclick="document.getElementById('signature-file-upload-admin').click()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; background: #881337; color: white; width: auto; height: auto; border-radius: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; font-weight: 900; box-shadow: 0 4px 10px rgba(136,19,55,0.15);">
-                                <i data-lucide="upload-cloud" style="width: 16px;"></i>
-                                Upload Signature Image
-                            </button>
-                            <input type="file" id="signature-file-upload-admin" accept="image/*" style="display: none;" onchange="uploadSignatureFileAdmin(this)">
-
-                            <button type="button" id="remove-sig-btn-admin" class="otp-preset-btn" onclick="removeSignatureImageAdmin()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; border: 1.5px solid rgba(239, 68, 68, 0.2); color: #ef4444; width: auto; height: auto; border-radius: 14px; display: {{ auth()->user()->signature ? 'inline-flex' : 'none' }}; align-items: center; gap: 8px; cursor: pointer; background: white; font-weight: 800; border-radius: 12px;">
-                                <i data-lucide="trash-2" style="width: 16px;"></i>
-                                Remove Signature
-                            </button>
-                        </div>
-                        <span style="font-size: 0.72rem; color: #64748b; font-weight: 600; display: block; margin-top: 4px;">Supports PNG, JPG, or JPEG. Transparent PNG is highly recommended for official audit receipt formatting. Max size: 5MB.</span>
-                    </div>
-                </div>
-        </div>
-
-
-        @endif
 
 
         {{-- Category Management --}}
         <div class="cfg-card" id="category-configs">
             <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <div class="cfg-icon-box" style="background: linear-gradient(135deg,#881337,#059669);">
+                    <div class="cfg-icon-box" style="background: #881337;">
                         <i data-lucide="tags"></i>
                     </div>
                     <div>
@@ -2070,7 +2022,7 @@
             badgeEl.style.color = '#dc2626';
             hintEl.textContent = 'This item is currently out of stock. Setting a limit here will keep it as Unavailable on the dashboard.';
         } else if (stock <= 5) {
-            iconEl.style.background = 'linear-gradient(135deg,#881337,#047857)';
+            iconEl.style.background = '#881337';
             valEl.textContent = stock + ' units available';
             badgeEl.textContent = 'Very Low';
             badgeEl.style.background = '#fef3c7';
@@ -2084,7 +2036,7 @@
             badgeEl.style.color = '#ca8a04';
             hintEl.textContent = 'Stock is running low. Set a limit that reflects the quantity you wish to make available for requisitions.';
         } else {
-            iconEl.style.background = 'linear-gradient(135deg,#881337,#059669)';
+            iconEl.style.background = '#881337';
             valEl.textContent = stock + ' units available';
             badgeEl.textContent = 'In Stock';
             badgeEl.style.background = '#dcfce7';
@@ -2407,151 +2359,7 @@
         });
     }
 
-    async function uploadSignatureFileAdmin(input) {
-        if (!input.files || !input.files[0]) return;
 
-        const file = input.files[0];
-        const maxSizeMB = 5;
-        if (file.size > maxSizeMB * 1024 * 1024) {
-            if (typeof showToast === 'function') {
-                showToast('File Too Large', `Please select an image smaller than ${maxSizeMB}MB.`, 'error');
-            } else {
-                alert(`File Too Large: Please select an image smaller than ${maxSizeMB}MB.`);
-            }
-            input.value = '';
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('signature', file);
-
-        const btn = input.previousElementSibling;
-        const orgHtml = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin" style="width: 16px;"></i> Uploading...`;
-        if (window.lucide) lucide.createIcons();
-
-        try {
-            const res = await fetch("{{ route('settings.signature') }}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                },
-                body: formData
-            });
-
-            const textResponse = await res.text();
-            let data;
-            try {
-                const jsonMatch = textResponse.match(/\{.*\}/s);
-                const jsonClean = jsonMatch ? jsonMatch[0] : textResponse;
-                data = JSON.parse(jsonClean);
-            } catch (err) {
-                const snippet = textResponse.substring(0, 100).replace(/<[^>]*>/g, '');
-                if (typeof showToast === 'function') {
-                    showToast('Server Error', `Upload failed. Snippet: ${snippet}`, 'error');
-                } else {
-                    alert(`Server Error: Upload failed. Snippet: ${snippet}`);
-                }
-                btn.innerHTML = orgHtml;
-                btn.disabled = false;
-                if (window.lucide) lucide.createIcons();
-                return;
-            }
-
-            if (res.ok && data.success) {
-                if (typeof showToast === 'function') {
-                    showToast('Signature Updated', data.message, 'success');
-                } else {
-                    alert('Signature Updated: ' + data.message);
-                }
-
-                // Dynamically update preview
-                const previewBox = document.getElementById('signature-preview-box-admin');
-                previewBox.innerHTML = `<img src="${data.url}?t=${new Date().getTime()}" style="max-width: 90%; max-height: 90%; object-fit: contain;" id="user-signature-img-admin">`;
-
-                // Show remove button
-                document.getElementById('remove-sig-btn-admin').style.display = 'inline-flex';
-            } else {
-                let serverError = data.message || 'Image rejected by validation.';
-                if (data.errors && data.errors.signature) {
-                    serverError = data.errors.signature[0];
-                }
-                if (typeof showToast === 'function') {
-                    showToast('Upload Failed', serverError, 'error');
-                } else {
-                    alert('Upload Failed: ' + serverError);
-                }
-            }
-        } catch (e) {
-            if (typeof showToast === 'function') {
-                showToast('Connection Error', 'Could not transmit signature image.', 'error');
-            } else {
-                alert('Connection Error: Could not transmit signature image.');
-            }
-        } finally {
-            btn.innerHTML = orgHtml;
-            btn.disabled = false;
-            input.value = '';
-            if (window.lucide) lucide.createIcons();
-        }
-    }
-
-    async function removeSignatureImageAdmin() {
-        if (!confirm('Are you sure you want to remove your digital signature?')) return;
-
-        const btn = document.getElementById('remove-sig-btn-admin');
-        const orgHtml = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin" style="width: 16px;"></i> Removing...`;
-        if (window.lucide) lucide.createIcons();
-
-        try {
-            const res = await fetch("{{ route('settings.signature.remove') }}", {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
-            });
-            const data = await res.json();
-            if (data.success) {
-                if (typeof showToast === 'function') {
-                    showToast('Signature Removed', data.message, 'success');
-                } else {
-                    alert('Signature Removed: ' + data.message);
-                }
-
-                // Reset preview
-                const previewBox = document.getElementById('signature-preview-box-admin');
-                previewBox.innerHTML = `
-                    <div style="text-align: center; color: #64748b;" id="user-signature-placeholder-admin">
-                        <i data-lucide="edit-3" style="width: 32px; margin: 0 auto 6px; display: block; opacity: 0.4; color: #881337;"></i>
-                        <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">No Signature Uploaded</span>
-                    </div>
-                `;
-
-                // Hide remove button
-                btn.style.display = 'none';
-            } else {
-                if (typeof showToast === 'function') {
-                    showToast('Action Failed', data.message || 'Could not complete request.', 'error');
-                } else {
-                    alert('Action Failed: ' + (data.message || 'Could not complete request.'));
-                }
-            }
-        } catch (e) {
-            if (typeof showToast === 'function') {
-                showToast('Connection Error', 'Could not reach deletion node.', 'error');
-            } else {
-                alert('Connection Error: Could not reach deletion node.');
-            }
-        } finally {
-            btn.disabled = false;
-            if (window.lucide) lucide.createIcons();
-        }
-    }
 
 
 

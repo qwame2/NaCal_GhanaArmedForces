@@ -13,7 +13,7 @@
             --primary-light: #475569;
             --accent: #881337;
             --accent-light: rgba(136, 19, 55, 0.06);
-            --success: #059669;
+            --success: #881337;
             --success-light: rgba(5, 150, 105, 0.06);
             --warning: #047857;
             --warning-light: rgba(217, 119, 6, 0.06);

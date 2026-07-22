@@ -34,7 +34,7 @@
     <title>{{ \App\Models\Setting::get('organization_name', 'NACOC') }} | Security Portal</title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
     
     <!-- Scripts -->
     <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
@@ -48,42 +48,22 @@
     </script>
     
     <style>
-        body {
-            background-color: var(--bg-main);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        }
-        
-        .auth-page-wrapper {
-            width: 100%;
-            padding: 2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Glassmorphism background effect */
         .auth-background {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-page, #f8fafc);
+            z-index: -2;
             overflow: hidden;
-            background: var(--bg-main);
         }
 
         .auth-blob {
             position: absolute;
             width: 600px;
             height: 600px;
-            background: linear-gradient(135deg, var(--primary) 0%, #9f1239 100%);
+            background: linear-gradient(135deg, var(--primary, #881337) 0%, #9f1239 100%);
             filter: blur(80px);
             opacity: 0.15;
             border-radius: 50%;
@@ -105,6 +85,14 @@
         @keyframes rt-live {
             0%, 100% { box-shadow: 0 0 0 0 rgba(148, 163, 184, 0.5); }
             50% { box-shadow: 0 0 0 5px rgba(148, 163, 184, 0); }
+        }
+        @keyframes approvedPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.3); }
+            50%       { box-shadow: 0 0 0 14px rgba(136, 19, 55, 0); }
+        }
+        #approvedLoginBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 40px rgba(136, 19, 55, 0.4) !important;
         }
     </style>
 </head>
@@ -131,11 +119,8 @@
     </div>
     @endif
 
-    {{-- ═══════════════════════════════════════════════════════════════
-         ACCOUNT APPROVED NOTIFICATION OVERLAY
-         Shows when: (a) the server detects approval on page load, or
-         (b) JS polling detects approval while user waits on the page
-    ════════════════════════════════════════════════════�    <div id="accountApprovedOverlay" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); z-index: 9999; display: none; align-items: center; justify-content: center; text-align: center; animation: lockOverlayIn 0.4s ease;">
+    {{-- ACCOUNT APPROVED NOTIFICATION OVERLAY --}}
+    <div id="accountApprovedOverlay" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); z-index: 9999; display: none; align-items: center; justify-content: center; text-align: center; animation: lockOverlayIn 0.4s ease;">
         <div style="background: white; padding: 3rem 2.5rem 2.5rem; border-radius: 36px; box-shadow: 0 40px 100px rgba(0,0,0,0.25), 0 0 0 1px rgba(136,19,55,0.15); width: 92%; max-width: 460px; position: relative; overflow: hidden;">
             {{-- Decorative top bar --}}
             <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: #881337;"></div>
@@ -164,7 +149,7 @@
             {{-- CTA Button --}}
             <button id="approvedLoginBtn" onclick="dismissApprovedOverlay()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #881337 0%, #4c0519 100%); color: white; border: none; padding: 0.85rem 2.5rem; border-radius: 16px; font-size: 0.9rem; font-weight: 800; cursor: pointer; letter-spacing: 0.04em; box-shadow: 0 10px 30px rgba(136,19,55,0.3); transition: all 0.2s ease; width: 100%;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-                Go Ahead & Login
+                Go Ahead &amp; Login
             </button>
 
             {{-- Small note --}}
@@ -173,24 +158,6 @@
             </p>
         </div>
     </div>
-
-    <style>
-        @keyframes approvedPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.3); }
-            50%       { box-shadow: 0 0 0 14px rgba(136, 19, 55, 0); }
-        }
-        #approvedLoginBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 16px 40px rgba(136, 19, 55, 0.4) !important;
-        }
-    </style> }
-            50%       { box-shadow: 0 0 0 14px rgba(34, 197, 94, 0); }
-        }
-        #approvedLoginBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 16px 40px rgba(34, 197, 94, 0.4) !important;
-        }
-    </style>
 
     <div class="auth-background">
         <div class="auth-blob" style="top: -200px; right: -200px;"></div>
@@ -202,7 +169,7 @@
     </div>
 
     <script>
-        /* ── Account Approved Overlay ── */
+        /* Account Approved Overlay */
         function showApprovedOverlay() {
             const overlay = document.getElementById('accountApprovedOverlay');
             if (overlay) {
@@ -248,12 +215,12 @@
             });
 
             @if(!empty($showApprovedNotification) && $showApprovedNotification)
-            // PHP already detected this page load is post-approval — show immediately
+            // PHP already detected this page load is post-approval
             showApprovedOverlay();
             @endif
 
             @if(!empty($pendingApprovalUsername) && !($showApprovedNotification ?? false))
-            // User is still pending — start polling every 8 seconds
+            // User is still pending - start polling every 8 seconds
             const pendingUsername = "{{ $pendingApprovalUsername }}";
             let approvalPollInterval = setInterval(() => {
                 fetch(`/api/check-approval-status?username=${encodeURIComponent(pendingUsername)}`)

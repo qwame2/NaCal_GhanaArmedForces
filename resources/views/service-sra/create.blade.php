@@ -274,7 +274,7 @@
                 <a href="{{ route('service-sra.index') }}" class="glass-card" style="padding: 1rem 2rem; text-decoration: none; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; border-radius: 14px;">
                     Cancel
                 </a>
-                <button type="submit" id="sraSubmitBtn" class="btn-primary" style="padding: 1rem 3rem; border: none; border-radius: 14px; cursor: pointer; background: linear-gradient(135deg, var(--primary), #881337); color: white; font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 10px 25px -5px rgba(136,19,55,0.4);">
+                <button type="submit" id="sraSubmitBtn" class="btn-primary" style="padding: 1rem 3rem; border: none; border-radius: 14px; cursor: pointer; background: #881337; color: white; font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 10px 25px -5px rgba(136,19,55,0.4);">
                     <i data-lucide="send" style="width: 18px;"></i>
                     Submit for Approval
                 </button>

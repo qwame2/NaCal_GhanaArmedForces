@@ -1408,7 +1408,7 @@
                     <button onclick="window.processRecoveryApproval(${reqId}, 'rejected', this)" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
                         <i data-lucide="x-circle" style="width: 18px;"></i> Reject
                     </button>
-                    <button onclick="window.processRecoveryApproval(${reqId}, 'approved', this)" style="background: #881337; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#881337'">
+                    <button onclick="window.processRecoveryApproval(${reqId}, 'approved', this)" style="background: #881337; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#4c0519'" onmouseout="this.style.background='#881337'">
                         <i data-lucide="check-circle" style="width: 18px;"></i> Approve Re-integration
                     </button>
                 </div>
@@ -1434,7 +1434,7 @@
                 </button>
 
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #881337 0%, #047857 100%); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.3);">
+                    <div style="width: 64px; height: 64px; background: #881337; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.3);">
                         <i data-lucide="refresh-cw" style="width: 32px; height: 32px;"></i>
                     </div>
                     <div>
@@ -1586,7 +1586,7 @@
                     <button onclick="window.processVerificationApproval(${reqId}, 'rejected', this)" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
                         <i data-lucide="x-circle" style="width: 18px;"></i> Reject
                     </button>
-                    <button onclick="window.processVerificationApproval(${reqId}, 'approved', this)" style="background: #881337; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#881337'">
+                    <button onclick="window.processVerificationApproval(${reqId}, 'approved', this)" style="background: #881337; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#4c0519'" onmouseout="this.style.background='#881337'">
                         <i data-lucide="check-circle" style="width: 18px;"></i> Approve Reconciliation
                     </button>
                 </div>
@@ -2066,7 +2066,7 @@
                     <button onclick="window.processSraCreationApproval(${reqId}, 'rejected', this)" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
                         <i data-lucide="x-circle" style="width: 18px;"></i> Reject
                     </button>
-                    <button onclick="window.processSraCreationApproval(${reqId}, 'approved', this)" style="background: #881337; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#881337'">
+                    <button onclick="window.processSraCreationApproval(${reqId}, 'approved', this)" style="background: #881337; color: white; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#4c0519'" onmouseout="this.style.background='#881337'">
                         <i data-lucide="check-circle" style="width: 18px;"></i> Approve Entry
                     </button>
                 </div>
@@ -2625,7 +2625,7 @@
         Swal.fire({
             html: `
                 <div style="text-align: left;">
-                    <div style="background: linear-gradient(135deg, #881337 0%, #047857 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                    <div style="background: #881337; margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
                         <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.07); border-radius: 50%;"></div>
                         <div style="display: flex; align-items: center; gap: 14px; position: relative;">
                             <div style="width: 46px; height: 46px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">

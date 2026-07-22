@@ -141,7 +141,7 @@
             <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main); margin: 0;">My <span style="color: var(--primary);">Service SRAs</span></h2>
             <p style="color: var(--text-muted); margin: 0.5rem 0 0;">Track the status of your submitted Stores / Service Received Advice forms.</p>
         </div>
-        <a href="{{ route('service-sra.create') }}" class="btn-primary" style="padding: 0.85rem 1.75rem; border: none; border-radius: 14px; cursor: pointer; background: linear-gradient(135deg, var(--primary), #881337); color: white; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; text-decoration: none; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
+        <a href="{{ route('service-sra.create') }}" class="btn-primary" style="padding: 0.85rem 1.75rem; border: none; border-radius: 14px; cursor: pointer; background: #881337; color: white; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; text-decoration: none; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
             <i data-lucide="plus-circle" style="width: 18px;"></i> New SRA
         </a>
     </div>

@@ -154,7 +154,7 @@
         top: 50%;
         left: 4rem;
         height: 3px;
-        background: linear-gradient(90deg, var(--primary) 0%, #881337 100%);
+        background: #881337;
         z-index: 1;
         transform: translateY(-50%);
         transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -202,7 +202,7 @@
     }
 
     .stepper-step.completed .stepper-bubble {
-        background: linear-gradient(135deg, #881337 0%, #059669 100%);
+        background: #881337;
         border-color: #881337;
         color: white;
         box-shadow: 0 4px 10px rgba(136, 19, 55, 0.25);
@@ -227,7 +227,7 @@
     }
 
     .stepper-step.active .stepper-bubble {
-        background: linear-gradient(135deg, var(--primary) 0%, #4c0519 100%);
+        background: #881337;
         border-color: var(--primary);
         color: white;
         animation: activePulse 2s infinite;
@@ -390,7 +390,7 @@
 
     .fulfill-progress-bar {
         height: 100%;
-        background: linear-gradient(90deg, #881337 0%, #881337 100%);
+        background: #881337;
         border-radius: 99px;
         transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -548,7 +548,7 @@
         </div>
         @if(auth()->user()->can_make_requisition)
         <button onclick="openNewReqPanel()" id="new-req-btn"
-            style="display:inline-flex;align-items:center;gap:8px;padding:.75rem 1.5rem;background:linear-gradient(135deg,#881337 0%,#4c0519 100%);color:white;border:none;border-radius:14px;font-weight:800;font-size:.875rem;cursor:pointer;box-shadow:0 4px 15px rgba(136,19,55,.3);transition:all .25s cubic-bezier(.16,1,.3,1);flex-shrink:0;"
+            style="display:inline-flex;align-items:center;gap:8px;padding:.75rem 1.5rem;background:#881337;color:white;border:none;border-radius:14px;font-weight:800;font-size:.875rem;cursor:pointer;box-shadow:0 4px 15px rgba(136,19,55,.3);transition:all .25s cubic-bezier(.16,1,.3,1);flex-shrink:0;"
             onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 25px rgba(136,19,55,.4)'"
             onmouseout="this.style.transform='';this.style.boxShadow='0 4px 15px rgba(136,19,55,.3)'">
             <i data-lucide="plus-circle" style="width:17px;height:17px;"></i>
@@ -808,7 +808,7 @@
         {{-- Panel Header --}}
         <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:linear-gradient(135deg,rgba(136,19,55,.04) 0%,transparent 100%);">
             <div style="display:flex;align-items:center;gap:1rem;">
-                <div style="width:44px;height:44px;background:linear-gradient(135deg,#881337,#4c0519);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(136,19,55,.3);">
+                <div style="width:44px;height:44px;background:#881337;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(136,19,55,.3);">
                     <i data-lucide="clipboard-plus" style="width:20px;color:white;"></i>
                 </div>
                 <div>
@@ -829,14 +829,14 @@
                     <span class="nr-step-label active" id="nr-label-1">Details</span>
                 </div>
                 <div style="flex:1;height:2px;background:var(--border-color);margin:0 .75rem;border-radius:2px;position:relative;">
-                    <div id="nr-progress-1" style="position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,#881337,#4c0519);border-radius:2px;transition:width .4s;"></div>
+                    <div id="nr-progress-1" style="position:absolute;left:0;top:0;height:100%;width:0;background:#881337;border-radius:2px;transition:width .4s;"></div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
                     <div class="nr-step-bubble" id="nr-bubble-2">2</div>
                     <span class="nr-step-label" id="nr-label-2">Items</span>
                 </div>
                 <div style="flex:1;height:2px;background:var(--border-color);margin:0 .75rem;border-radius:2px;position:relative;">
-                    <div id="nr-progress-2" style="position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,#881337,#4c0519);border-radius:2px;transition:width .4s;"></div>
+                    <div id="nr-progress-2" style="position:absolute;left:0;top:0;height:100%;width:0;background:#881337;border-radius:2px;transition:width .4s;"></div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
                     <div class="nr-step-bubble" id="nr-bubble-3">3</div>
@@ -869,7 +869,7 @@
                     </div>
                 </div>
                 <div style="margin-bottom:1.5rem;">
-                    <div style="font-size:.7rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Usage Type <span style="color:#ef4444;">*</span></div>
+                    <div style="font-size:.7rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Usage Type <span style="color:#ef4444;">*</span></label>
                     <div style="display:flex;gap:1rem;">
                         <label style="flex:1;display:flex;align-items:center;gap:.75rem;padding:1rem;border:1.5px solid #881337;background:rgba(136,19,55,.04);border-radius:12px;cursor:pointer;transition:.2s;" id="nr-usage-perm-label" onclick="selectNrUsage('permanent')">
                             <input type="radio" name="nr_usage" id="nr-usage-permanent" value="permanent" checked style="accent-color:#881337;width:16px;height:16px;">
@@ -957,10 +957,10 @@
             <button id="nr-btn-cancel" onclick="closeNewReqPanel()" style="padding:.75rem 1.5rem;border:1.5px solid var(--border-color);border-radius:12px;background:var(--bg-main);color:var(--text-muted);font-weight:800;font-size:.85rem;cursor:pointer;transition:.2s;">
                 Cancel
             </button>
-            <button id="nr-btn-next" onclick="nrGoNext()" style="padding:.75rem 1.75rem;border:none;border-radius:12px;background:linear-gradient(135deg,#881337,#4c0519);color:white;font-weight:800;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(136,19,55,.25);transition:.2s;">
+            <button id="nr-btn-next" onclick="nrGoNext()" style="padding:.75rem 1.75rem;border:none;border-radius:12px;background:#881337;color:white;font-weight:800;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(136,19,55,.25);transition:.2s;">
                 Next <i data-lucide="arrow-right" style="width:15px;"></i>
             </button>
-            <button id="nr-btn-submit" onclick="submitNewReq()" style="display:none;padding:.75rem 1.75rem;border:none;border-radius:12px;background:linear-gradient(135deg,#881337,#059669);color:white;font-weight:800;font-size:.85rem;cursor:pointer;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(136,19,55,.25);transition:.2s;">
+            <button id="nr-btn-submit" onclick="submitNewReq()" style="display:none;padding:.75rem 1.75rem;border:none;border-radius:12px;background:#881337;color:white;font-weight:800;font-size:.85rem;cursor:pointer;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(136,19,55,.25);transition:.2s;">
                 <i data-lucide="send" style="width:15px;"></i> Submit Requisition
             </button>
         </div>
@@ -974,11 +974,11 @@
     transition:all .3s cubic-bezier(.16,1,.3,1);
 }
 .nr-step-bubble.active {
-    background:linear-gradient(135deg,#881337,#4c0519);border-color:#881337;color:white;
+    background:#881337;border-color:#881337;color:white;
     box-shadow:0 4px 10px rgba(136,19,55,.3);
 }
 .nr-step-bubble.done {
-    background:linear-gradient(135deg,#881337,#059669);border-color:#881337;color:white;
+    background:#881337;border-color:#881337;color:white;
     box-shadow:0 4px 10px rgba(136,19,55,.25);
 }
 .nr-step-label { font-size:.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;transition:color .3s; }
@@ -1144,7 +1144,7 @@
                 <div style="flex:2; min-width:180px;">
                     <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:6px;">Fulfillment Progress</div>
                     <div class="fulfill-progress-container" style="margin-top:0;">
-                        <div class="fulfill-progress-bar" style="width: ${pct}%; background:${approved === 0 ? '#ef4444' : (approved < requested ? '#881337' : 'linear-gradient(90deg, #881337 0%, #881337 100%)')}"></div>
+                        <div class="fulfill-progress-bar" style="width: ${pct}%; background:${approved === 0 ? '#ef4444' : '#881337'}"></div>
                     </div>
                 </div>
             </div>

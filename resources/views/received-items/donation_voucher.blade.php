@@ -188,7 +188,7 @@
         
         @if(!$hasApproved && !$hasDeclined)
             <div style="display: flex; gap: 12px;">
-                <button onclick="processSraReviewAction('approve')" style="background: #881337; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 750; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(136, 19, 55, 0.25); transition: all 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#881337'">
+                <button onclick="processSraReviewAction('approve')" style="background: #881337; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 750; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(136, 19, 55, 0.25); transition: all 0.2s;" onmouseover="this.style.background='#4c0519'" onmouseout="this.style.background='#881337'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                     Accept & Approve
                 </button>

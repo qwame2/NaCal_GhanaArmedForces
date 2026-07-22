@@ -45,7 +45,7 @@
         <!-- ==================== ISSUE ENTRY DETAILS ==================== -->
         <div style="background: white; padding: 3.5rem 3rem 2.5rem 3rem; border-radius: 24px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; position: relative; box-shadow: var(--shadow-luxe); margin-bottom: 2rem;">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #881337 0%, #047857 100%); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.3);">
+                <div style="width: 64px; height: 64px; background: #881337; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.3);">
                     <i data-lucide="package-minus" style="width: 32px; height: 32px;"></i>
                 </div>
                 <div>
@@ -402,7 +402,7 @@
             @php
                 $approveFn = $requestType === 'edit_submission' ? "processEditRequestApproval($reqId)" : "processApproval('approved')";
             @endphp
-            <button id="approveBtn" onclick="{!! $approveFn !!}" style="background: #881337; color: white; border: none; padding: 12px 28px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#881337'">
+            <button id="approveBtn" onclick="{!! $approveFn !!}" style="background: #881337; color: white; border: none; padding: 12px 28px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#4c0519'" onmouseout="this.style.background='#881337'">
                 <i data-lucide="check-circle" style="width: 18px;"></i> {{ $requestType === 'edit_submission' ? 'Approve Changes' : 'Approve Entry' }}
             </button>
         </div>
@@ -692,7 +692,7 @@
         Swal.fire({
             html: `
                 <div style="text-align: left;">
-                    <div style="background: linear-gradient(135deg, #881337 0%, #047857 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                    <div style="background: #881337; margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
                         <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255,255,255,0.07); border-radius: 50%;"></div>
                         <div style="display: flex; align-items: center; gap: 14px; position: relative;">
                             <div style="width: 46px; height: 46px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">

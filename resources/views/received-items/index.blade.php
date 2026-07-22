@@ -995,9 +995,9 @@
 <style>
     /* Premium Design System */
     :root {
-        --primary-gradient: linear-gradient(135deg, #881337 0%, #9f1239 100%);
-        --success-gradient: linear-gradient(135deg, #881337 0%, #059669 100%);
-        --warning-gradient: linear-gradient(135deg, #881337 0%, #047857 100%);
+        --primary-gradient: #881337;
+        --success-gradient: #881337;
+        --warning-gradient: #881337;
         --glass-bg: rgba(255, 255, 255, 0.7);
         --glass-border: rgba(255, 255, 255, 0.3);
     }

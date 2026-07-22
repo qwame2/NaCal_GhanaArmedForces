@@ -21,9 +21,9 @@
 @endphp
 <style>
     :root {
-        --store-orange: #22c55e;
+        --store-orange: #881337;
         --store-orange-hover: #4c0519;
-        --store-orange-light: rgba(34, 197, 94, 0.08);
+        --store-orange-light: rgba(136, 19, 55, 0.08);
         --store-indigo: #881337;
         --store-indigo-hover: #881337;
         --store-indigo-light: rgba(136, 19, 55, 0.08);
@@ -97,7 +97,7 @@
         background: var(--store-orange);
         border-color: var(--store-orange);
         color: white;
-        box-shadow: 0 0 10px rgba(34,197,94,0.35);
+        box-shadow: 0 0 10px rgba(136, 19, 55, 0.35);
         animation: pulse-orange-dot 2s infinite;
     }
     .stepper-node.declined .stepper-dot {
@@ -140,7 +140,7 @@
         background: var(--danger-color) !important;
     }
     .stepper-connector.active {
-        background: linear-gradient(90deg, var(--success-color) 0%, var(--store-orange) 100%) !important;
+        background: #881337 !important;
     }
     .stepper-connector.bypassed {
         background: var(--border-color) !important;
@@ -149,9 +149,9 @@
     }
 
     @keyframes pulse-orange-dot {
-        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-        70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        0% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); }
+        70% { box-shadow: 0 0 0 8px rgba(136, 19, 55, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0); }
     }
 
     /* Modal Overlay & Details Drawer styles */
@@ -820,7 +820,7 @@
                         <div style="flex:2;">
                             <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:4px;">Fulfillment Progress</div>
                             <div style="background:rgba(0,0,0,0.05); height:6px; border-radius:10px; overflow:hidden; width:100%;">
-                                <div style="height:100%; width: ${pct}%; background:${approved === 0 ? '#ef4444' : (approved < requested ? '#881337' : 'linear-gradient(90deg, #881337 0%, #881337 100%)')}; border-radius:10px;"></div>
+                                <div style="height:100%; width: ${pct}%; background:${approved === 0 ? '#ef4444' : '#881337'}; border-radius:10px;"></div>
                             </div>
                         </div>
                     </div>

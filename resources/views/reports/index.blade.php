@@ -207,7 +207,7 @@
     <div class="glass-card print-chart-card rpt-chart-card received-chart-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); margin-bottom: 2.5rem; background: var(--bg-card); {{ ($totalReceivedQty > 0 || $totalIssuedQty > 0) ? '' : 'display: none;' }}">
         <div class="rpt-section-header" style="margin-bottom: 1.75rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span class="rpt-section-icon" style="background: linear-gradient(135deg, #881337, #059669);">
+                <span class="rpt-section-icon" style="background: #881337;">
                     <i data-lucide="bar-chart-2" style="width:17px;height:17px;"></i>
                 </span>
                 <div>
@@ -241,7 +241,7 @@
     <div class="glass-card print-chart-card rpt-chart-card issued-chart-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); margin-bottom: 2.5rem; background: var(--bg-card); {{ (count($selectedItems) !== 1 && $totalIssuedQty > 0 && $issuedDistribution->count() > 0) ? '' : 'display: none;' }}">
         <div class="rpt-section-header" style="margin-bottom: 1.75rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <span class="rpt-section-icon" style="background: linear-gradient(135deg, #881337, #047857);">
+                <span class="rpt-section-icon" style="background: #881337;">
                     <i data-lucide="bar-chart-2" style="width:17px;height:17px;"></i>
                 </span>
                 <div>

@@ -14,7 +14,7 @@
     <style>
         :root {
             --primary: #881337;
-            --primary-hover: #059669;
+            --primary-hover: #4c0519;
             --bg-dark: #0f172a;
             --bg-page: #f8fafc;
             --border-color: #e2e8f0;

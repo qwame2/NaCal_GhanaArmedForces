@@ -475,8 +475,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                     return $items->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
                 });
 
-            $distLabels = $distData->keys()->map(fn($key) => $ledgeMap[$key] ?? "Category $key")->toArray();
-            $distSeries = $distData->values()->toArray();
+            $distLabels = array_values($distData->keys()->map(fn($key) => $ledgeMap[$key] ?? "Category $key")->toArray());
+            $distSeries = array_values($distData->values()->toArray());
 
             $topCategory = 'None';
             if ($distData->count() > 0 && $distData->max() > 0) {
@@ -696,8 +696,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::post('/officer/delegation/claim', [AdminController::class, 'claimDelegationOtp'])->name('officer.delegation.claim');
 
     Route::post('/settings/avatar', [SettingsController::class, 'updateAvatar'])->name('settings.avatar');
-    Route::post('/settings/signature', [SettingsController::class, 'updateSignature'])->name('settings.signature');
-    Route::post('/settings/signature/remove', [SettingsController::class, 'removeSignature'])->name('settings.signature.remove');
+
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/print', [ReportController::class, 'printReport'])->name('reports.print');
 

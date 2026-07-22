@@ -21,9 +21,9 @@
 @endphp
 <style>
     :root {
-        --store-orange: #22c55e;
+        --store-orange: #881337;
         --store-orange-hover: #4c0519;
-        --store-orange-light: rgba(34, 197, 94, 0.08);
+        --store-orange-light: rgba(136, 19, 55, 0.08);
         --store-indigo: #881337;
         --store-indigo-hover: #881337;
         --store-indigo-light: rgba(136, 19, 55, 0.08);
@@ -514,7 +514,7 @@
 
     /* Timeline Step States */
     .tracker-step.completed .tracker-dot {
-        background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+        background: #881337;
         border-color: var(--success-color);
         color: white;
         box-shadow: 0 4px 10px rgba(136, 19, 55, 0.25);
@@ -525,7 +525,7 @@
     }
 
     .tracker-step.active .tracker-dot {
-        background: linear-gradient(135deg, var(--store-orange) 0%, var(--store-orange-hover) 100%);
+        background: #881337;
         border-color: var(--store-orange);
         color: white;
         animation: pulse-orange-stepper 2s infinite;
@@ -547,9 +547,9 @@
     }
 
     @keyframes pulse-orange-stepper {
-        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-        70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        0% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); }
+        70% { box-shadow: 0 0 0 8px rgba(136, 19, 55, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0); }
     }
     @keyframes alertPulse {
         0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
@@ -648,7 +648,7 @@
         background: var(--store-orange);
         border-color: var(--store-orange);
         color: white;
-        box-shadow: 0 0 8px rgba(34, 197, 94, 0.35);
+        box-shadow: 0 0 8px rgba(136, 19, 55, 0.35);
     }
 
     .mini-step.declined .mini-dot {
@@ -889,7 +889,7 @@
     }
 
     .workflow-cat-card-modern.active .cat-circle {
-        background: linear-gradient(135deg, #881337, #3730a3);
+        background: #881337;
         color: #ffffff;
         border-color: transparent;
         box-shadow: 0 4px 8px rgba(136, 19, 55, 0.18);
@@ -1034,7 +1034,7 @@
     <div class="workflow-card-modern" style="display: none;">
         <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 1.25rem;">
-                <div class="cfg-icon-box" style="background: linear-gradient(135deg, #881337 0%, #3730a3 100%); box-shadow: 0 8px 20px rgba(136,19,55,0.15); width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white;">
+                <div class="cfg-icon-box" style="background: #881337; box-shadow: 0 8px 20px rgba(136,19,55,0.15); width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white;">
                     <i data-lucide="shield-check" style="width: 24px; height: 24px; color: white;"></i>
                 </div>
                 <div>
@@ -1130,7 +1130,7 @@
 
                                 <!-- Origin Node -->
                                 <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                    <div class="flow-node-icon" style="background: linear-gradient(135deg, #881337, #3730a3); color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                    <div class="flow-node-icon" style="background: #881337; color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                         <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
                                     </div>
                                     <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Dept. Head</span>
@@ -1166,7 +1166,7 @@
 
                                 <!-- Head of Stores Node -->
                                 <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                    <div class="flow-node-icon" style="background: linear-gradient(135deg, #881337, #059669); color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                    <div class="flow-node-icon" style="background: #881337; color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                         <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
                                     </div>
                                     <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
@@ -1225,7 +1225,7 @@
 
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
             <div style="display:flex;align-items:center;gap:0.85rem;">
-                <div style="width:42px;height:42px;background:linear-gradient(135deg,rgba(136,19,55,0.15),rgba(5,150,105,0.1));border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(136,19,55,0.2);">
+                <div style="width:42px;height:42px;background:rgba(136,19,55,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(136,19,55,0.2);">
                     <i data-lucide="user-plus" style="width:20px;height:20px;color:#881337;"></i>
                 </div>
                 <div>
@@ -1566,7 +1566,7 @@
                 <button onclick="processOversightSra('declined')" id="sraBtnDecline" style="padding: 0.85rem 2rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: #ef4444; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
                     <i data-lucide="x-circle" style="width: 16px;"></i> Decline
                 </button>
-                <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: linear-gradient(135deg, #881337, #059669); color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
+                <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: #881337; color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
                     <i data-lucide="check-circle" style="width: 16px;"></i> Approve
                 </button>
             </div>
@@ -1768,7 +1768,7 @@
                         <div style="flex:2; min-width:180px;">
                             <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:6px;">Fulfillment Progress</div>
                             <div style="background:rgba(0,0,0,0.05); height:6px; border-radius:10px; overflow:hidden; width:100%;">
-                                <div style="height:100%; width: ${pct}%; background:${approved === 0 ? '#ef4444' : (approved < requested ? '#881337' : 'linear-gradient(90deg, #881337 0%, #881337 100%)')}; border-radius:10px;"></div>
+                                <div style="height:100%; width: ${pct}%; background:${approved === 0 ? '#ef4444' : '#881337'}; border-radius:10px;"></div>
                             </div>
                         </div>
                     </div>
@@ -1866,7 +1866,7 @@
             if (data.alternative_status === 'proposed' && !isStoresHead) {
                 // Render suggested quantity proposal review buttons with Yes/No choices and comment box
                 decisionHtml = `
-                <div class="decision-area animate-slide-up" style="background: rgba(34, 197, 94, 0.04); border: 1.5px dashed rgba(34, 197, 94, 0.2); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                <div class="decision-area animate-slide-up" style="background: rgba(136, 19, 55, 0.04); border: 1.5px dashed rgba(136, 19, 55, 0.2); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
                     <div style="font-size: 0.72rem; font-weight: 800; color: var(--store-orange); text-transform: uppercase; letter-spacing: 0.05em; display:flex; align-items:center; gap:6px;">
                         <i data-lucide="shuffle" style="width: 14px; color: var(--store-orange);"></i>
                         Suggested Quantity Proposal
@@ -1908,7 +1908,7 @@
                             <i data-lucide="x-circle" style="width: 18px;"></i>
                             <span id="declineAltBtnText">Decline Suggested Qty</span>
                         </button>
-                        <button id="agreeAltBtn" onclick="processAlternativeResponse('agree')" disabled style="flex:1.5; background: #881337; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; opacity: 0.4; box-shadow: 0 8px 20px rgba(136, 19, 55, 0.25);" onmouseover="if(!this.disabled)this.style.background='#059669';" onmouseout="if(!this.disabled)this.style.background='#881337';">
+                        <button id="agreeAltBtn" onclick="processAlternativeResponse('agree')" disabled style="flex:1.5; background: #881337; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; opacity: 0.4; box-shadow: 0 8px 20px rgba(136, 19, 55, 0.25);" onmouseover="if(!this.disabled)this.style.background='#4c0519';" onmouseout="if(!this.disabled)this.style.background='#881337';">
                             <i data-lucide="check-circle" style="width: 18px;"></i>
                             Agree to Suggested Qty
                         </button>
@@ -1936,7 +1936,7 @@
                             Approve (Awaiting DG Approval)
                         </button>
                         ` : `
-                        <button onclick="processDecision('approved')" style="flex:1.5; background: #881337; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 8px 20px rgba(136, 19, 55, 0.25);" onmouseover="this.style.background='#059669';" onmouseout="this.style.background='#881337';">
+                        <button onclick="processDecision('approved')" style="flex:1.5; background: #881337; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 8px 20px rgba(136, 19, 55, 0.25);" onmouseover="this.style.background='#4c0519';" onmouseout="this.style.background='#881337';">
                             <i data-lucide="check-circle" style="width: 18px;"></i>
                             Approve
                         </button>
@@ -3001,7 +3001,7 @@
             if (activeCountStores > 0) {
                 node.className = 'flow-node flow-node-stores active';
                 if (iconBox) {
-                    iconBox.style.background = 'linear-gradient(135deg, #881337, #3730a3)';
+                    iconBox.style.background = '#881337';
                     iconBox.style.color = '#ffffff';
                     iconBox.style.borderColor = 'transparent';
                     iconBox.style.boxShadow = '0 6px 15px rgba(136,19,55,0.2)';
@@ -3209,7 +3209,7 @@
                         <button onclick="processOversightSra('declined')" id="sraBtnDecline" style="padding: 0.85rem 2rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: #ef4444; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
                             <i data-lucide="x-circle" style="width: 16px;"></i> Decline
                         </button>
-                        <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: linear-gradient(135deg, #881337, #059669); color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
+                        <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: #881337; color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
                             <i data-lucide="check-circle" style="width: 16px;"></i> Approve
                         </button>
                     </div>

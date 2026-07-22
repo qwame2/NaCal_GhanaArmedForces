@@ -357,7 +357,7 @@
                 <span id="btnMonthly" style="font-size: 0.75rem; background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; transition: var(--transition);">Monthly</span>
             </div>
         </div>
-        <div id="advancedAreaChart"></div>
+        <div id="advancedAreaChart" style="min-height: 350px; width: 100%;"></div>
     </div>
     <div class="glass-card special-card pop-in float-card" style="border-left: 4px solid var(--primary); background: var(--bg-card); animation-delay: 0.6s;">
         <div class="card-title">
@@ -613,384 +613,139 @@
 </div>
 @endsection
 
-@push('scripts')
-<script>
-    // Advanced Area Chart
-    var areaOptions = {
-        series: [{
-            name: 'Received',
-            data: @json($receivedSeries)
-        }, {
-            name: 'Net Variance',
-            data: @json($varianceSeries)
-        }],
-        chart: {
-            type: 'area',
-            height: 350,
-            toolbar: {
-                show: false
-            },
-            sparkline: {
-                enabled: false
-            },
-            fontFamily: 'Outfit, sans-serif',
-            background: 'transparent'
-        },
-        theme: {
-            mode: document.documentElement.getAttribute('data-theme') || 'light'
-        },
-        colors: ['#881337', '#ef4444'],
-        fill: {
-            type: 'gradient',
-            gradient: {
-                shadeIntensity: 1,
-                opacityFrom: 0.45,
-                opacityTo: 0.05,
-                stops: [20, 100, 100, 100]
-            }
-        },
-        dataLabels: {
-            enabled: false
-        },
-        stroke: {
-            curve: 'smooth',
-            width: 3
-        },
-        grid: {
-            borderColor: 'var(--border-color)',
-            strokeDashArray: 4,
-            yaxis: {
-                lines: {
-                    show: true
-                }
-            }
-        },
-        xaxis: {
-            categories: @json($chartMonths),
-            axisBorder: {
-                show: false
-            },
-            axisTicks: {
-                show: false
-            }
-        },
-        legend: {
-            position: 'top',
-            horizontalAlign: 'right',
-            markers: {
-                radius: 12,
-                width: 12,
-                height: 12
-            }
-        },
-        tooltip: {
-            theme: document.documentElement.getAttribute('data-theme') || 'light'
-        },
-        responsive: [{
-            breakpoint: 768,
-            options: {
-                chart: {
-                    height: 280
-                },
-                legend: {
-                    position: 'bottom',
-                    horizontalAlign: 'center'
-                }
-            }
-        }]
-    };
+@php
+    $jsonReceivedSeries = json_encode(array_values($receivedSeries ?? []));
+    $jsonVarianceSeries = json_encode(array_values($varianceSeries ?? []));
+    $jsonChartMonths    = json_encode(array_values($chartMonths ?? []));
+    $jsonDayLabels      = json_encode(array_values($dayLabels ?? []));
+    $jsonDayReceived    = json_encode(array_values($dayReceived ?? []));
+    $jsonDayVariance    = json_encode(array_values($dayVariance ?? []));
+    $jsonWeekLabels     = json_encode(array_values($weekLabels ?? []));
+    $jsonWeekReceived   = json_encode(array_values($weekReceived ?? []));
+    $jsonWeekVariance   = json_encode(array_values($weekVariance ?? []));
+    $jsonDistSeries     = json_encode(array_values($distSeries ?? []));
+    $jsonDistLabels     = json_encode(array_values($distLabels ?? []));
+    $jsonIsEmptyDist    = json_encode((bool)($isEmptyDist ?? true));
+@endphp
 
-    if (document.querySelector("#advancedAreaChart")) {
-        var areaChart = new ApexCharts(document.querySelector("#advancedAreaChart"), areaOptions);
-        areaChart.render();
+@push('scripts')
+<script src="{{ asset('js/apexcharts.js') }}"></script>
+<script>
+function initAllDashboardCharts() {
+    if (typeof ApexCharts === 'undefined') {
+        setTimeout(initAllDashboardCharts, 100);
+        return;
     }
 
-    // Chart Timeframe Toggling Logic
-    const dailyData = {
-        labels: @json($dayLabels),
-        received: @json($dayReceived),
-        variance: @json($dayVariance)
-    };
+    var areaEl = document.getElementById("advancedAreaChart");
+    if (areaEl && !areaEl.dataset.rendered) {
+        areaEl.dataset.rendered = "true";
+        var receivedData = {!! $jsonReceivedSeries !!};
+        var varianceData = {!! $jsonVarianceSeries !!};
+        var monthCategories = {!! $jsonChartMonths !!};
 
-    const weeklyData = {
-        labels: @json($weekLabels),
-        received: @json($weekReceived),
-        variance: @json($weekVariance)
-    };
-
-    const monthlyData = {
-        labels: @json($chartMonths),
-        received: @json($receivedSeries),
-        variance: @json($varianceSeries)
-    };
-
-    document.getElementById('btnDaily').addEventListener('click', function() {
-        areaChart.updateOptions({
-            xaxis: {
-                categories: dailyData.labels
-            }
-        });
-        areaChart.updateSeries([{
-                name: 'Received',
-                data: dailyData.received
+        var areaOptions = {
+            series: [
+                { name: 'Received', data: receivedData },
+                { name: 'Net Variance', data: varianceData }
+            ],
+            chart: {
+                type: 'area',
+                height: 350,
+                toolbar: { show: false }
             },
-            {
-                name: 'Net Variance',
-                data: dailyData.variance
-            }
-        ]);
-        this.style.background = 'var(--primary)';
-        this.style.color = 'white';
-        document.getElementById('btnWeekly').style.background = 'var(--bg-main)';
-        document.getElementById('btnWeekly').style.color = 'var(--text-main)';
-        document.getElementById('btnMonthly').style.background = 'var(--bg-main)';
-        document.getElementById('btnMonthly').style.color = 'var(--text-main)';
-    });
-
-    document.getElementById('btnWeekly').addEventListener('click', function() {
-        areaChart.updateOptions({
-            xaxis: {
-                categories: weeklyData.labels
-            }
-        });
-        areaChart.updateSeries([{
-                name: 'Received',
-                data: weeklyData.received
-            },
-            {
-                name: 'Net Variance',
-                data: weeklyData.variance
-            }
-        ]);
-        this.style.background = 'var(--primary)';
-        this.style.color = 'white';
-        document.getElementById('btnDaily').style.background = 'var(--bg-main)';
-        document.getElementById('btnDaily').style.color = 'var(--text-main)';
-        document.getElementById('btnMonthly').style.background = 'var(--bg-main)';
-        document.getElementById('btnMonthly').style.color = 'var(--text-main)';
-    });
-
-    document.getElementById('btnMonthly').addEventListener('click', function() {
-        areaChart.updateOptions({
-            xaxis: {
-                categories: monthlyData.labels
-            }
-        });
-        areaChart.updateSeries([{
-                name: 'Received',
-                data: monthlyData.received
-            },
-            {
-                name: 'Net Variance',
-                data: monthlyData.variance
-            }
-        ]);
-        this.style.background = 'var(--primary)';
-        this.style.color = 'white';
-        document.getElementById('btnDaily').style.background = 'var(--bg-main)';
-        document.getElementById('btnDaily').style.color = 'var(--text-main)';
-        document.getElementById('btnWeekly').style.background = 'var(--bg-main)';
-        document.getElementById('btnWeekly').style.color = 'var(--text-main)';
-    });
-
-    // Enhanced Donut Chart
-    var donutOptions = {
-        series: @json($distSeries),
-        chart: {
-            type: 'donut',
-            height: 400,
-            animations: {
-                enabled: true,
-                easing: 'easeinout',
-                speed: 1200,
-                animateGradually: {
-                    enabled: true,
-                    delay: 400
-                },
-                dynamicAnimation: {
-                    enabled: true,
-                    speed: 600
+            colors: ['#881337', '#ef4444'],
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.45,
+                    opacityTo: 0.05,
+                    stops: [20, 100]
                 }
             },
-            dropShadow: {
-                enabled: true,
-                top: 10,
-                left: 0,
-                blur: 10,
-                opacity: 0.1
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 3 },
+            xaxis: {
+                categories: monthCategories
             },
-            background: 'transparent'
-        },
-        theme: {
-            mode: document.documentElement.getAttribute('data-theme') || 'light'
-        },
-        labels: @json($distLabels),
-        colors: @json($isEmptyDist) ? ['#cbd5e1'] : ['#881337', '#881337', '#881337', '#db2777', '#9f1239', '#06b6d4', '#ec4899', '#22c55e', '#14b8a6'],
-        dataLabels: {
-            enabled: false
-        },
-        legend: {
-            position: 'bottom',
-            fontFamily: 'Outfit',
-            fontSize: '12px',
-            markers: {
-                radius: 12,
-                width: 12,
-                height: 12
+            legend: {
+                position: 'top',
+                horizontalAlign: 'right'
             }
-        },
-        tooltip: {
-            theme: document.documentElement.getAttribute('data-theme') || 'light',
-            y: {
-                formatter: function(val) {
-                    return @json($isEmptyDist) ? "No inventory recorded" : val.toLocaleString() + " units"
-                }
-            }
-        },
-        stroke: {
-            show: true,
-            width: 8,
-            colors: [document.documentElement.getAttribute('data-theme') === 'dark' ? '#1e293b' : '#ffffff']
-        },
-        plotOptions: {
-            pie: {
-                expandOnClick: true,
-                donut: {
-                    size: '72%',
-                    borderRadius: 10,
-                    labels: {
-                        show: true,
-                        total: {
+        };
+
+        try {
+            var areaChart = new ApexCharts(areaEl, areaOptions);
+            areaChart.render();
+            window._areaChart = areaChart;
+        } catch (e) {
+            console.error("Area chart error:", e);
+        }
+    }
+
+    var donutEl = document.getElementById("enhancedDonutChart");
+    if (donutEl && !donutEl.dataset.rendered) {
+        donutEl.dataset.rendered = "true";
+        var rawSeries = {!! $jsonDistSeries !!};
+        var rawLabels = {!! $jsonDistLabels !!};
+        var isEmpty = {!! $jsonIsEmptyDist !!};
+
+        var donutOptions = {
+            series: rawSeries,
+            chart: {
+                type: 'donut',
+                height: 380
+            },
+            labels: rawLabels,
+            colors: isEmpty ? ['#cbd5e1'] : ['#881337', '#9f1239', '#be123c', '#e11d48', '#f43f5e', '#fb7185', '#fda4af', '#991b1b', '#7f1d1d'],
+            dataLabels: { enabled: false },
+            legend: {
+                position: 'bottom'
+            },
+            stroke: {
+                show: true,
+                width: 4
+            },
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '72%',
+                        labels: {
                             show: true,
-                            label: @json($isEmptyDist) ? 'Awaiting Records' : 'Total Package Types',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: '#64748b',
-                            formatter: function(w) {
-                                if (@json($isEmptyDist)) return "0";
-                                return w.globals.seriesTotals.reduce((a, b) => a + b, 0).toLocaleString();
-                            }
-                        },
-                        value: {
-                            show: true,
-                            fontSize: '28px',
-                            fontWeight: 800,
-                            color: 'var(--text-main)',
-                            formatter: function(val) {
-                                return @json($isEmptyDist) ? '0' : val.toLocaleString()
+                            total: {
+                                show: true,
+                                label: isEmpty ? 'Awaiting Records' : 'Total Units',
+                                formatter: function(w) {
+                                    if (isEmpty || !w || !w.globals || !w.globals.seriesTotals) return "0";
+                                    var sum = 0;
+                                    for (var i = 0; i < w.globals.seriesTotals.length; i++) {
+                                        sum += Number(w.globals.seriesTotals[i]) || 0;
+                                    }
+                                    return sum.toLocaleString();
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-    };
+        };
 
-    if (document.querySelector("#enhancedDonutChart")) {
-        var donutChart = new ApexCharts(document.querySelector("#enhancedDonutChart"), donutOptions);
-        donutChart.render();
-    }
-</script>
-
-<script>
-    // Listen for theme changes to update charts
-    window.addEventListener('themeChanged', (e) => {
-        const newTheme = e.detail.theme;
-        areaChart.updateOptions({
-            theme: {
-                mode: newTheme
-            },
-            tooltip: {
-                theme: newTheme
-            }
-        });
-        donutChart.updateOptions({
-            theme: {
-                mode: newTheme
-            },
-            tooltip: {
-                theme: newTheme
-            },
-            stroke: {
-                colors: [newTheme === 'dark' ? '#1e293b' : '#ffffff']
-            }
-        });
-    });
-</script>
-
-
-@endpush
-
-@push('scripts')
-<script>
-    function toggleLowStockPopover(event) {
-        event.stopPropagation();
-        const popover = document.getElementById('lowStockPopover');
-        if (popover) {
-            popover.style.display = popover.style.display === 'block' ? 'none' : 'block';
+        try {
+            var donutChart = new ApexCharts(donutEl, donutOptions);
+            donutChart.render();
+            window._donutChart = donutChart;
+        } catch (e) {
+            console.error("Donut chart error:", e);
         }
     }
+}
 
-    // Close popover when clicking anywhere else
-    document.addEventListener('click', function(event) {
-        const popover = document.getElementById('lowStockPopover');
-        const card = event.target.closest('.stat-card');
-        if (popover && !card) {
-            popover.style.display = 'none';
-        }
-    });
-
-    function claimDelegationAccess() {
-        const otpInput = document.getElementById('delegation-otp-input');
-        if (!otpInput) return;
-        const otp = otpInput.value.trim();
-        if (otp.length !== 6) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Invalid OTP',
-                text: 'Please enter a 6-digit OTP code.',
-                confirmButtonColor: '#881337'
-            });
-            return;
-        }
-
-        fetch('{{ route("officer.delegation.claim", [], false) }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ otp: otp })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Delegation Claimed',
-                    text: data.message,
-                    confirmButtonColor: '#881337'
-                }).then(() => {
-                    window.location.reload();
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Verification Failed',
-                    text: data.message,
-                    confirmButtonColor: '#881337'
-                });
-            }
-        })
-        .catch(() => {
-            Swal.fire({
-                icon: 'error',
-                title: 'System Error',
-                text: 'An error occurred while validating the delegation OTP.',
-                confirmButtonColor: '#881337'
-            });
-        });
-    }
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(initAllDashboardCharts, 50);
+} else {
+    document.addEventListener('DOMContentLoaded', initAllDashboardCharts);
+    window.addEventListener('load', initAllDashboardCharts);
+}
 </script>
 @endpush
