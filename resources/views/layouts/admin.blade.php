@@ -1911,30 +1911,74 @@
 
     @if(auth()->check() && auth()->user()->registration_status === 'approved' && (in_array(auth()->user()->role, ['Head of Stores', 'Auditor', 'Director General', 'Main Admin', 'Sub Main Admin']) || auth()->user()->isDelegatedApprover()) && !auth()->user()->signature)
         <!-- Signature Requirement Warning Popover -->
-        <div id="signature-warning-overlay" class="modal-overlay" style="display: none; z-index: 10000000 !important;">
-            <div class="glass-card animate-pop-in" style="max-width: 500px; width: 90%; border-radius: 28px; padding: 2.5rem; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); text-align: center; position: relative;">
-                <div style="width: 80px; height: 80px; background: rgba(22, 163, 74, 0.1); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
-                    <i data-lucide="signature" style="width: 42px; height: 42px; color: var(--primary);"></i>
+        <style>
+            @keyframes sigModalIn {
+                from { opacity: 0; transform: scale(0.92) translateY(16px); }
+                to   { opacity: 1; transform: scale(1) translateY(0); }
+            }
+            @keyframes sigIconFloat {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-6px); }
+            }
+            @keyframes sigDotPulse {
+                0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
+                50% { box-shadow: 0 0 0 8px rgba(22, 163, 74, 0); }
+            }
+            @media (max-width: 576px) {
+                .sig-warning-btn-group {
+                    flex-direction: column-reverse !important;
+                }
+                .sig-warning-btn-group > * {
+                    width: 100% !important;
+                    flex: none !important;
+                    justify-content: center !important;
+                }
+            }
+        </style>
+
+        <div id="signature-warning-overlay" class="modal-overlay" style="display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); align-items: center; justify-content: center; z-index: 10000000 !important; padding: 1.25rem; box-sizing: border-box;">
+            <div class="glass-card" style="max-width: 520px; width: 100%; border-radius: 32px; padding: 2.75rem 2.25rem 2.25rem; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 35px 90px -15px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(22, 163, 74, 0.08); text-align: center; position: relative; overflow: hidden; animation: sigModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-sizing: border-box;">
+                <!-- Top Accent Line -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #16a34a 0%, #22c55e 50%, #4ade80 100%);"></div>
+
+                <!-- Action Required Pill -->
+                <div style="display: inline-flex; align-items: center; justify-content: center; background: rgba(22, 163, 74, 0.08); color: #16a34a; font-size: 0.68rem; font-weight: 900; letter-spacing: 0.12em; padding: 6px 16px; border-radius: 999px; border: 1px solid rgba(22, 163, 74, 0.18); margin-bottom: 1.5rem; text-transform: uppercase; gap: 6px;">
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #16a34a; animation: sigDotPulse 1.8s infinite;"></span>
+                    Action Required
                 </div>
-                <h3 style="font-size: 1.5rem; font-weight: 900; color: var(--text-heading); margin-bottom: 0.75rem; letter-spacing: -0.02em;">Digital Signature Required</h3>
-                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; font-weight: 600;">
-                    Hello <strong>{{ auth()->user()->name }}</strong>, as an approved authority (<span style="color: var(--primary);">{{ auth()->user()->getRoleDisplayLabel() }}</span>), you must upload your digital signature to authorize inventory release receipts and SRA vouchers.
+
+                <!-- Animated Signature Icon Box -->
+                <div style="width: 84px; height: 84px; background: linear-gradient(135deg, rgba(22,163,74,0.12), rgba(22,163,74,0.04)); border: 2px solid rgba(22,163,74,0.18); border-radius: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 12px 25px rgba(22, 163, 74, 0.12); animation: sigIconFloat 3s ease-in-out infinite;">
+                    <i data-lucide="signature" style="width: 42px; height: 42px; color: #16a34a;"></i>
+                </div>
+
+                <!-- Heading & Intro -->
+                <h3 style="font-size: 1.6rem; font-weight: 950; color: #0f172a; margin: 0 0 0.75rem; letter-spacing: -0.03em; line-height: 1.25;">Digital Signature Required</h3>
+                <p style="color: #475569; font-size: 0.92rem; line-height: 1.65; margin: 0 0 1.75rem; font-weight: 600;">
+                    Hello <strong style="color: #0f172a;">{{ auth()->user()->name }}</strong>, as an authorized official (<span style="color: #16a34a; font-weight: 800;">{{ auth()->user()->getRoleDisplayLabel() }}</span>), you are required to upload your official digital signature to validate inventory releases &amp; SRA vouchers.
                 </p>
-                <div style="background: var(--bg-main); border-radius: 16px; padding: 1rem; border: 1px solid var(--border-color); text-align: left; margin-bottom: 2rem;">
-                    <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 6px;">How to upload:</span>
-                    <ol style="font-size: 0.8rem; color: var(--text-body); margin: 0; padding-left: 1.2rem; line-height: 1.5; font-weight: 600;">
-                        <li>Navigate to your personal <strong style="color: var(--primary);">User Settings</strong> page.</li>
-                        <li>Find the <strong style="color: var(--primary);">Official Digital Signature</strong> section.</li>
-                        <li>Upload a clear photo of your signature (background is automatically removed).</li>
+
+                <!-- Instructions Card -->
+                <div style="background: #f8fafc; border-radius: 20px; padding: 1.25rem 1.5rem; border: 1px solid #e2e8f0; text-align: left; margin-bottom: 2rem;">
+                    <div style="font-size: 0.72rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px; margin-bottom: 0.85rem;">
+                        <i data-lucide="info" style="width: 14px; height: 14px; color: #16a34a;"></i>
+                        How to Upload:
+                    </div>
+                    <ol style="font-size: 0.82rem; color: #334155; margin: 0; padding-left: 1.2rem; line-height: 1.6; font-weight: 600;">
+                        <li style="margin-bottom: 4px;">Go to your personal <strong style="color: #16a34a;">User Settings</strong> page.</li>
+                        <li style="margin-bottom: 4px;">Locate the <strong style="color: #16a34a;">Official Digital Signature</strong> section.</li>
+                        <li>Upload a photo of your signature (background is auto-cleaned).</li>
                     </ol>
                 </div>
-                <div style="display: flex; gap: 1rem;">
-                    <button onclick="dismissSignatureWarning()" class="modern-action-btn secondary" style="flex: 1; padding: 0.85rem; font-size: 0.85rem; border-radius: 14px; cursor: pointer; font-weight: 800;">
+
+                <!-- Action Buttons -->
+                <div class="sig-warning-btn-group" style="display: flex; gap: 12px; align-items: center;">
+                    <button type="button" onclick="dismissSignatureWarning()" class="modern-action-btn secondary" style="flex: 1; padding: 0.9rem 1.25rem; font-size: 0.88rem; border-radius: 16px; cursor: pointer; font-weight: 800; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; transition: all 0.2s ease;">
                         Configure Later
                     </button>
-                    <a href="{{ route('settings.index') }}" class="save-btn" style="flex: 2; justify-content: center; padding: 0.85rem; font-size: 0.85rem; border-radius: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                        <i data-lucide="settings" style="width: 16px;"></i>
-                        Upload Signature Now
+                    <a href="{{ route('settings.index') }}" class="save-btn" style="flex: 1.3; justify-content: center; padding: 0.9rem 1.25rem; font-size: 0.88rem; border-radius: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; font-weight: 800; box-shadow: 0 10px 25px rgba(22, 163, 74, 0.35); border: none; transition: all 0.25s ease;">
+                        <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
+                        <span>Upload Signature Now</span>
                     </a>
                 </div>
             </div>
