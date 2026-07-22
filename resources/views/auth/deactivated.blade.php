@@ -8,7 +8,7 @@
     <script src="{{ asset('js/lucide.min.js') }}"></script>
     <style>
         :root {
-            --primary: #16a34a;
+            --primary: #881337;
             --danger: #ef4444;
             --bg: #f8fafc;
             --text-heading: #0f172a;
@@ -21,7 +21,7 @@
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg);
             background-image: 
-                radial-gradient(circle at 0% 0%, rgba(22, 163, 74, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 0% 0%, rgba(136, 19, 55, 0.05) 0%, transparent 50%),
                 radial-gradient(circle at 100% 100%, rgba(239, 68, 68, 0.05) 0%, transparent 50%);
             height: 100vh;
             display: flex;
@@ -110,7 +110,7 @@
         .btn-return:hover {
             transform: translateY(-4px);
             background: var(--primary);
-            box-shadow: 0 15px 40px rgba(22, 163, 74, 0.3);
+            box-shadow: 0 15px 40px rgba(136, 19, 55, 0.3);
         }
 
         .system-footer {

@@ -29,9 +29,9 @@
                     @if($admin->avatar)
                         <img src="{{ Storage::url($admin->avatar) }}" style="width: 48px; height: 48px; border-radius: 14px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                     @else
-                        <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);">{{ substr($admin->name, 0, 1) }}</div>
+                        <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);">{{ substr($admin->name, 0, 1) }}</div>
                     @endif
-                    <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $admin->is_online ? '#10b981' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
+                    <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $admin->is_online ? '#881337' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
                 </div>
                 <div style="flex: 1; overflow: hidden;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px; min-width: 0;">
@@ -64,7 +64,7 @@
                     @else
                         <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--bg-main); color: var(--text-main); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; border: 1px solid var(--border-color);">{{ substr($colleague->name, 0, 1) }}</div>
                     @endif
-                    <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $colleague->is_online ? '#10b981' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
+                    <div style="position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; background: {{ $colleague->is_online ? '#881337' : '#94a3b8' }}; border: 3px solid var(--bg-card); border-radius: 50%;"></div>
                 </div>
                 <div style="flex: 1; overflow: hidden;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px; min-width: 0;">
@@ -100,13 +100,13 @@
                         <span id="activeUnreadBadge" style="display: none; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 900; padding: 2px 8px; border-radius: 20px; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); border: 2px solid white;">0</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 6px;">
-                        <span id="statusDot" style="width: 10px; height: 10px; background: #10b981; border-radius: 50%;"></span>
+                        <span id="statusDot" style="width: 10px; height: 10px; background: #881337; border-radius: 50%;"></span>
                         <span id="activeRole" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Role</span>
                     </div>
                 </div>
             </div>
             <div style="display: flex; gap: 1rem;">
-                <button class="comms-btn" title="Encryption Status"><i data-lucide="shield-check" style="color: #10b981;"></i></button>
+                <button class="comms-btn" title="Encryption Status"><i data-lucide="shield-check" style="color: #881337;"></i></button>
                 <button class="comms-btn" title="Registry Logs"><i data-lucide="clipboard-list"></i></button>
                 <button class="comms-btn" title="End Session"><i data-lucide="more-horizontal"></i></button>
             </div>
@@ -127,7 +127,7 @@
                     </button>
                     <div style="flex: 1; position: relative;">
                         <textarea id="msgContent" placeholder="Transmit secure data..." rows="1" style="width: 100%; padding: 1.1rem 5rem 1.1rem 1.75rem; border-radius: 20px; border: 2px solid var(--border-color); background: var(--bg-main); font-family: inherit; font-size: 1rem; font-weight: 600; outline: none; resize: none; transition: 0.3s; color: var(--text-main);" onfocus="this.style.borderColor='var(--primary)'; this.style.background='var(--bg-card)'; this.style.boxShadow='0 10px 30px var(--primary-glow)'"></textarea>
-                        <button type="submit" id="sendBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--primary); color: white; border: none; width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 16px rgba(22, 163, 74, 0.3); transition: 0.3s;" onmouseover="this.style.transform='translateY(-50%) scale(1.05)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">
+                        <button type="submit" id="sendBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--primary); color: white; border: none; width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 16px rgba(136, 19, 55, 0.3); transition: 0.3s;" onmouseover="this.style.transform='translateY(-50%) scale(1.05)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">
                             <i data-lucide="send" style="width: 20px;"></i>
                         </button>
                     </div>
@@ -211,7 +211,7 @@
         background: var(--primary);
         color: white;
         border-bottom-right-radius: 6px;
-        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.2);
+        box-shadow: 0 8px 20px rgba(136, 19, 55, 0.2);
     }
 
     .recipient .comms-bubble {
@@ -287,7 +287,7 @@
         if (avatar) {
             avatarDiv.innerHTML = `<img src="${avatar}" style="width: 52px; height: 52px; border-radius: 16px; object-fit: cover; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">`;
         } else {
-            avatarDiv.innerHTML = `<div style="width: 52px; height: 52px; border-radius: 16px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);">${name.charAt(0)}</div>`;
+            avatarDiv.innerHTML = `<div style="width: 52px; height: 52px; border-radius: 16px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);">${name.charAt(0)}</div>`;
         }
 
         document.querySelectorAll('.network-item').forEach(el => {
@@ -408,7 +408,7 @@
                         const isRecipientOnline = onlineStatuses[activeUserId];
 
                         if (isRead) {
-                            ticksHtml = '<i data-lucide="check-check" style="color: #10b981; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
+                            ticksHtml = '<i data-lucide="check-check" style="color: #881337; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
                         } else if (isRecipientOnline) {
                             ticksHtml = '<i data-lucide="check-check" style="color: #94a3b8; width: 14px; height: 14px; margin-left: 4px; vertical-align: -3px;"></i>';
                         } else {
@@ -564,12 +564,12 @@
                     const isOnline = statuses[userId];
                     const dot = document.querySelector(`#user-${userId} div[style*="border-radius: 50%"]`);
                     if (dot) {
-                        dot.style.background = isOnline ? '#10b981' : '#94a3b8';
+                        dot.style.background = isOnline ? '#881337' : '#94a3b8';
                     }
 
                     if (activeUserId == userId) {
                         const statusDot = document.getElementById('statusDot');
-                        if (statusDot) statusDot.style.background = isOnline ? '#10b981' : '#94a3b8';
+                        if (statusDot) statusDot.style.background = isOnline ? '#881337' : '#94a3b8';
                     }
                 });
             });

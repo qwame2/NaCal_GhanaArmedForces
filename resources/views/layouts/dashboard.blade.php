@@ -149,7 +149,7 @@
             </div>
             <div>
                 <h1 style="font-size: 1.25rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1.2; max-width: 150px;">NACOC</h1>
-                <div class="sidebar-branding-subtitle" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; opacity: 0.8;">Stores Inventory Management System<span style="color:#10b981;">(NSIMs)</span></div>
+                <div class="sidebar-branding-subtitle" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; opacity: 0.8;">Stores Inventory Management System<span style="color:#881337;">(NSIMs)</span></div>
             </div>
         </div>
 
@@ -213,7 +213,7 @@
                                 ->count();
                         @endphp
                         <span id="sidebar-badge-auditor-staff-regs"
-                              style="background: #10b981; color: white; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 50%; display: {{ $pendingRegCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; margin-left: auto;"
+                              style="background: #881337; color: white; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 50%; display: {{ $pendingRegCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; margin-left: auto;"
                               title="{{ $pendingRegCount }} pending registration request(s)">
                             {{ $pendingRegCount }}
                         </span>
@@ -459,8 +459,8 @@
         </ul>
 
         @if(auth()->user()->isDelegatedApprover())
-            <div class="nav-section-title" style="color: #16a34a; display: flex; align-items: center; gap: 6px;">
-                <span style="width: 6px; height: 6px; border-radius: 50%; background: #16a34a;"></span>
+            <div class="nav-section-title" style="color: #881337; display: flex; align-items: center; gap: 6px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #881337;"></span>
                 Delegated Admin Authority
             </div>
             <ul class="nav-menu">
@@ -468,7 +468,7 @@
                     <a href="{{ route('admin.requisitions') }}" class="nav-link {{ request()->routeIs('admin.requisitions') ? 'active' : '' }}" data-tooltip="Admin Store Requisitions">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                         <span>Store Requisitions</span>
-                        <span id="sidebar-badge-delegated-reqs" style="background: #16a34a; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingRequisitionsCount) || $pendingRequisitionsCount <= 0) ? 'display: none;' : '' }}">
+                        <span id="sidebar-badge-delegated-reqs" style="background: #881337; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingRequisitionsCount) || $pendingRequisitionsCount <= 0) ? 'display: none;' : '' }}">
                             {{ $pendingRequisitionsCount ?? 0 }}
                         </span>
                     </a>
@@ -477,7 +477,7 @@
                     <a href="{{ route('admin.messages') }}" class="nav-link {{ request()->routeIs('admin.messages') ? 'active' : '' }}" data-tooltip="Admin Staff Messages">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         <span>Staff Messages</span>
-                        <span id="sidebar-badge-delegated-messages" style="background: #16a34a; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($unreadMessagesCount) || $unreadMessagesCount <= 0) ? 'display: none;' : '' }}">
+                        <span id="sidebar-badge-delegated-messages" style="background: #881337; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($unreadMessagesCount) || $unreadMessagesCount <= 0) ? 'display: none;' : '' }}">
                             {{ $unreadMessagesCount ?? 0 }}
                         </span>
                     </a>
@@ -492,7 +492,7 @@
                     <a href="{{ route('admin.password.requests') }}" class="nav-link {{ request()->routeIs('admin.password.requests') ? 'active' : '' }}" data-tooltip="Password Reset Requests">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         <span>Password Resets</span>
-                        <span id="sidebar-badge-delegated-password-reqs" style="background: #16a34a; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingPasswordRequests) || $pendingPasswordRequests <= 0) ? 'display: none;' : '' }}">
+                        <span id="sidebar-badge-delegated-password-reqs" style="background: #881337; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingPasswordRequests) || $pendingPasswordRequests <= 0) ? 'display: none;' : '' }}">
                             {{ $pendingPasswordRequests ?? 0 }}
                         </span>
                     </a>
@@ -528,7 +528,7 @@
                 @if(auth()->user()->avatar)
                 <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 44px; height: 44px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid white;">
                 @else
-                <div style="width: 44px; height: 44px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);">
+                <div style="width: 44px; height: 44px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; box-shadow: 0 4px 10px rgba(136, 19, 55, 0.3);">
                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', auth()->user()->name)[1] ?? '', 0, 1)) }}
                 </div>
                 @endif
@@ -844,7 +844,7 @@
                                     data.forEach(item => {
                                         html += `
                                             <a href="${item.url}" style="padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; text-decoration: none; border-bottom: 1px solid var(--border-color); transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">
-                                                <div style="width: 36px; height: 36px; background: rgba(22, 163, 74, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                <div style="width: 36px; height: 36px; background: rgba(136, 19, 55, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                                                 </div>
                                                 <div style="flex: 1; overflow: hidden;">
@@ -979,7 +979,7 @@
                                          html += `
                                              <div style="position: relative; border-bottom: 1px solid var(--border-color);">
                                                  <a href="${routeUrl}" style="display: flex; gap: 1rem; padding: 1.25rem; padding-right: 3rem; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background='transparent'">
-                                                     <div style="width: 40px; height: 40px; border-radius: 12px; background: ${notif.type === 'warning' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; color: ${notif.type === 'warning' ? '#10b981' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                     <div style="width: 40px; height: 40px; border-radius: 12px; background: ${notif.type === 'warning' ? 'rgba(136, 19, 55, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; color: ${notif.type === 'warning' ? '#881337' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                                          <i data-lucide="${notif.icon}" style="width: 20px;"></i>
                                                      </div>
                                                      <div style="flex: 1; text-align: left;">
@@ -1586,8 +1586,8 @@
                 50% { transform: translateY(-6px); }
             }
             @keyframes sigDotPulse {
-                0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
-                50% { box-shadow: 0 0 0 8px rgba(22, 163, 74, 0); }
+                0%, 100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); }
+                50% { box-shadow: 0 0 0 8px rgba(136, 19, 55, 0); }
             }
             @media (max-width: 576px) {
                 .sig-warning-btn-group {
@@ -1602,30 +1602,30 @@
         </style>
 
         <div id="signature-warning-overlay" class="modal-overlay" style="display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); align-items: center; justify-content: center; z-index: 10000000 !important; padding: 1.25rem; box-sizing: border-box;">
-            <div class="glass-card" style="max-width: 520px; width: 100%; border-radius: 32px; padding: 2.75rem 2.25rem 2.25rem; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 35px 90px -15px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(22, 163, 74, 0.08); text-align: center; position: relative; overflow: hidden; animation: sigModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-sizing: border-box;">
+            <div class="glass-card" style="max-width: 520px; width: 100%; border-radius: 32px; padding: 2.75rem 2.25rem 2.25rem; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 35px 90px -15px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(136, 19, 55, 0.08); text-align: center; position: relative; overflow: hidden; animation: sigModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-sizing: border-box;">
                 <!-- Top Accent Line -->
-                <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #16a34a 0%, #22c55e 50%, #4ade80 100%);"></div>
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #881337 0%, #22c55e 50%, #9f1239 100%);"></div>
 
                 <!-- Animated Signature Icon Box -->
-                <div style="width: 84px; height: 84px; background: linear-gradient(135deg, rgba(22,163,74,0.12), rgba(22,163,74,0.04)); border: 2px solid rgba(22,163,74,0.18); border-radius: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 12px 25px rgba(22, 163, 74, 0.12); animation: sigIconFloat 3s ease-in-out infinite;">
-                    <i data-lucide="signature" style="width: 42px; height: 42px; color: #16a34a;"></i>
+                <div style="width: 84px; height: 84px; background: linear-gradient(135deg, rgba(136,19,55,0.12), rgba(136,19,55,0.04)); border: 2px solid rgba(136,19,55,0.18); border-radius: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 12px 25px rgba(136, 19, 55, 0.12); animation: sigIconFloat 3s ease-in-out infinite;">
+                    <i data-lucide="signature" style="width: 42px; height: 42px; color: #881337;"></i>
                 </div>
 
                 <!-- Heading & Intro -->
                 <h3 style="font-size: 1.6rem; font-weight: 950; color: #0f172a; margin: 0 0 0.75rem; letter-spacing: -0.03em; line-height: 1.25;">Digital Signature Required</h3>
                 <p style="color: #475569; font-size: 0.92rem; line-height: 1.65; margin: 0 0 1.75rem; font-weight: 600;">
-                    Hello <strong style="color: #0f172a;">{{ auth()->user()->name }}</strong>, as an authorized official (<span style="color: #16a34a; font-weight: 800;">{{ auth()->user()->getRoleDisplayLabel() }}</span>), you are required to upload your official digital signature to validate inventory releases &amp; SRA vouchers.
+                    Hello <strong style="color: #0f172a;">{{ auth()->user()->name }}</strong>, as an authorized official (<span style="color: #881337; font-weight: 800;">{{ auth()->user()->getRoleDisplayLabel() }}</span>), you are required to upload your official digital signature to validate inventory releases &amp; SRA vouchers.
                 </p>
 
                 <!-- Instructions Card -->
                 <div style="background: #f8fafc; border-radius: 20px; padding: 1.25rem 1.5rem; border: 1px solid #e2e8f0; text-align: left; margin-bottom: 2rem;">
                     <div style="font-size: 0.72rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px; margin-bottom: 0.85rem;">
-                        <i data-lucide="info" style="width: 14px; height: 14px; color: #16a34a;"></i>
+                        <i data-lucide="info" style="width: 14px; height: 14px; color: #881337;"></i>
                         How to Upload:
                     </div>
                     <ol style="font-size: 0.82rem; color: #334155; margin: 0; padding-left: 1.2rem; line-height: 1.6; font-weight: 600;">
-                        <li style="margin-bottom: 4px;">Go to your personal <strong style="color: #16a34a;">User Settings</strong> page.</li>
-                        <li style="margin-bottom: 4px;">Locate the <strong style="color: #16a34a;">Official Digital Signature</strong> section.</li>
+                        <li style="margin-bottom: 4px;">Go to your personal <strong style="color: #881337;">User Settings</strong> page.</li>
+                        <li style="margin-bottom: 4px;">Locate the <strong style="color: #881337;">Official Digital Signature</strong> section.</li>
                         <li>Upload a photo of your signature (background is auto-cleaned).</li>
                     </ol>
                 </div>
@@ -1635,7 +1635,7 @@
                     <button type="button" onclick="dismissSignatureWarning()" class="modern-action-btn secondary" style="flex: 1; padding: 0.9rem 1.25rem; font-size: 0.88rem; border-radius: 16px; cursor: pointer; font-weight: 800; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; transition: all 0.2s ease;">
                         Configure Later
                     </button>
-                    <a href="{{ route('settings.index') }}" class="save-btn" style="flex: 1.3; justify-content: center; padding: 0.9rem 1.25rem; font-size: 0.88rem; border-radius: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; font-weight: 800; box-shadow: 0 10px 25px rgba(22, 163, 74, 0.35); border: none; transition: all 0.25s ease;">
+                    <a href="{{ route('settings.index') }}" class="save-btn" style="flex: 1.3; justify-content: center; padding: 0.9rem 1.25rem; font-size: 0.88rem; border-radius: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #881337 0%, #4c0519 100%); color: white; font-weight: 800; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.35); border: none; transition: all 0.25s ease;">
                         <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
                         <span>Upload Signature Now</span>
                     </a>

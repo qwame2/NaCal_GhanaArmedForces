@@ -11,8 +11,8 @@
         :root {
             --primary: #1e3a8a;
             --primary-light: #475569;
-            --accent: #16a34a;
-            --accent-light: rgba(22, 163, 74, 0.06);
+            --accent: #881337;
+            --accent-light: rgba(136, 19, 55, 0.06);
             --success: #059669;
             --success-light: rgba(5, 150, 105, 0.06);
             --warning: #047857;
@@ -150,7 +150,7 @@
             display: inline-block;
             background: var(--accent-light);
             color: var(--accent);
-            border: 1.5px solid rgba(22, 163, 74, 0.2);
+            border: 1.5px solid rgba(136, 19, 55, 0.2);
             font-family: 'Outfit', sans-serif;
             font-weight: 900;
             font-size: 0.85rem;

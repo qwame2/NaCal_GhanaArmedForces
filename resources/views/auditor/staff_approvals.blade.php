@@ -3,7 +3,7 @@
 @section('content')
 <style>
     :root {
-        --audit-primary: #10b981;
+        --audit-primary: #881337;
         --audit-primary-hover: #059669;
         --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
     }
@@ -50,11 +50,11 @@
 
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
             <div style="display:flex; align-items:center; gap:0.85rem;">
-                <div style="width:42px; height:42px; background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.1)); border-radius:12px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(16,185,129,0.2);">
-                    <i data-lucide="user-plus" style="width:20px; height:20px; color:#10b981;"></i>
+                <div style="width:42px; height:42px; background:linear-gradient(135deg,rgba(136,19,55,0.15),rgba(5,150,105,0.1)); border-radius:12px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(136,19,55,0.2);">
+                    <i data-lucide="user-plus" style="width:20px; height:20px; color:#881337;"></i>
                 </div>
                 <div>
-                    <div style="font-size:.68rem; font-weight:800; color:#10b981; text-transform:uppercase; letter-spacing:.1em;">Dept. Access Management</div>
+                    <div style="font-size:.68rem; font-weight:800; color:#881337; text-transform:uppercase; letter-spacing:.1em;">Dept. Access Management</div>
                     <div style="font-size:1rem; font-weight:800; color:var(--text-main); margin-top:1px;">Staff Access &amp; Approvals</div>
                 </div>
             </div>
@@ -151,20 +151,20 @@
                         let rows = data.accounts.map(acc => {
                             const isAccessActive = acc.can_make_requisition;
                             const badgeStyle = isAccessActive 
-                                ? 'background:rgba(16,185,129,.1);color:#10b981;' 
+                                ? 'background:rgba(136,19,55,.1);color:#881337;' 
                                 : 'background:rgba(239,68,68,.1);color:#ef4444;';
                             const badgeText = isAccessActive ? 'Active Access' : 'Access Suspended';
                             
                             const btnStyle = isAccessActive
                                 ? 'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;'
-                                : 'background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;';
+                                : 'background:rgba(136,19,55,.1);border:1px solid rgba(136,19,55,.3);color:#881337;';
                             const btnText = isAccessActive ? 'Suspend Access' : 'Grant Access';
                             const btnIcon = isAccessActive ? 'user-minus' : 'user-check';
 
                             return `
                             <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
                                 <div style="display:flex;align-items:center;gap:.75rem;">
-                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(22,163,74,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#16a34a;">
+                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(136,19,55,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#881337;">
                                         ${(acc.name || acc.username).charAt(0).toUpperCase()}
                                     </div>
                                     <div>
@@ -173,7 +173,7 @@
                                     </div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
-                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(16,185,129,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#10b981' : '#64748b'};">
+                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(136,19,55,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#881337' : '#64748b'};">
                                         ${acc.is_online ? '● ONLINE' : '○ OFFLINE'}
                                     </span>
                                     <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;${badgeStyle}">
@@ -221,7 +221,7 @@
                                     <div style="font-size:.65rem;color:var(--text-muted);margin-top:4px;">Requested: ${req.created_at}</div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:.75rem;">
-                                    <button onclick="approveRegistration(${req.id}, '${req.username}')" style="padding:.45rem .9rem;border:none;background:rgba(16,185,129,.1);color:#10b981;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;" onmouseover="this.style.background='#10b981';this.style.color='white';" onmouseout="this.style.background='rgba(16,185,129,.1)';this.style.color='#10b981';">
+                                    <button onclick="approveRegistration(${req.id}, '${req.username}')" style="padding:.45rem .9rem;border:none;background:rgba(136,19,55,.1);color:#881337;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;" onmouseover="this.style.background='#881337';this.style.color='white';" onmouseout="this.style.background='rgba(136,19,55,.1)';this.style.color='#881337';">
                                         <i data-lucide="user-check" style="width:13px;height:13px;"></i> Approve
                                     </button>
                                     <button onclick="declineRegistration(${req.id}, '${req.username}')" style="padding:.45rem .9rem;border:none;background:rgba(239,68,68,.08);color:#ef4444;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;" onmouseover="this.style.background='#ef4444';this.style.color='white';" onmouseout="this.style.background='rgba(239,68,68,.08)';this.style.color='#ef4444';">
@@ -257,7 +257,7 @@
 
     async function toggleStaffAccess(id, username, isCurrentlyActive) {
         const actionWord = isCurrentlyActive ? 'Suspend' : 'Grant';
-        const actionColor = isCurrentlyActive ? '#ef4444' : '#10b981';
+        const actionColor = isCurrentlyActive ? '#ef4444' : '#881337';
         
         const confirm = await Swal.fire({
             title: `${actionWord} Requisition Access?`,
@@ -307,7 +307,7 @@
             text: `Are you sure you want to approve user account registration for @${username}?`,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#10b981',
+            confirmButtonColor: '#881337',
             cancelButtonColor: '#64748b',
             confirmButtonText: 'Yes, Approve',
             cancelButtonText: 'Cancel'

@@ -111,11 +111,11 @@
         justify-content: center;
         gap: 8px;
         transition: all 0.2s;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
     }
     .btn-cfg-add:hover {
         transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 6px 18px rgba(136, 19, 55, 0.3);
     }
 
     /* Supplier Pagination Premium Styling */
@@ -146,7 +146,7 @@
         background: var(--primary);
         border-color: var(--primary);
         color: white;
-        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+        box-shadow: 0 4px 12px rgba(136, 19, 55, 0.25);
     }
     .supplier-pag-btn:disabled {
         opacity: 0.5;
@@ -167,7 +167,7 @@
     <div class="cfg-card" id="suppliers-registry">
         <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <div class="cfg-icon-box" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <div class="cfg-icon-box" style="background: linear-gradient(135deg, #881337, #059669);">
                     <i data-lucide="truck"></i>
                 </div>
                 <div>
@@ -180,7 +180,7 @@
                 <span style="position: absolute; left: 14px; color: #94a3b8; display: flex; align-items: center; pointer-events: none;">
                     <i data-lucide="search" style="width: 16px; height: 16px;"></i>
                 </span>
-                <input type="text" id="supplierSearch" placeholder="Search suppliers..." oninput="filterSuppliers()" style="width: 100%; padding: 10px 16px 10px 40px; font-size: 0.85rem; font-weight: 700; height: 42px; border: 1.5px solid transparent; border-radius: 12px; outline: none; transition: all 0.3s ease; background: #f1f5f9; color: #0f172a;" onfocus="this.style.background='white'; this.style.borderColor='#16a34a'; this.style.boxShadow='0 8px 20px rgba(22, 163, 74, 0.08)';" onblur="this.style.background='#f1f5f9'; this.style.borderColor='transparent'; this.style.boxShadow='none';">
+                <input type="text" id="supplierSearch" placeholder="Search suppliers..." oninput="filterSuppliers()" style="width: 100%; padding: 10px 16px 10px 40px; font-size: 0.85rem; font-weight: 700; height: 42px; border: 1.5px solid transparent; border-radius: 12px; outline: none; transition: all 0.3s ease; background: #f1f5f9; color: #0f172a;" onfocus="this.style.background='white'; this.style.borderColor='#881337'; this.style.boxShadow='0 8px 20px rgba(136, 19, 55, 0.08)';" onblur="this.style.background='#f1f5f9'; this.style.borderColor='transparent'; this.style.boxShadow='none';">
             </div>
         </div>
         <div class="cfg-card-body">
@@ -268,7 +268,7 @@
                                 <textarea name="desc" id="supplierDescInput" class="cfg-text-input" placeholder="e.g. Lead distributor for stationery items" style="min-height: 80px; font-family: inherit; resize: vertical; padding: 0.75rem 1rem; border-radius: 12px;"></textarea>
                             </div>
                             <div style="display: flex; gap: 10px;">
-                                <button type="submit" id="supplierSubmitBtn" class="btn-cfg-add" style="flex: 1; background: linear-gradient(135deg, #10b981, #059669); margin-top: 0.5rem;">
+                                <button type="submit" id="supplierSubmitBtn" class="btn-cfg-add" style="flex: 1; background: linear-gradient(135deg, #881337, #059669); margin-top: 0.5rem;">
                                     <i data-lucide="plus-circle" id="supplierSubmitIcon"></i> <span id="supplierSubmitText">Add Supplier</span>
                                 </button>
                                 <button type="button" id="supplierResetBtn" onclick="resetSupplierForm()" style="display: none; padding: 0.75rem 1rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; margin-top: 0.5rem;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
@@ -351,7 +351,7 @@
             let html = `
             <div style="width: 194px; background: #fafbff; border: 1.5px solid #edf2f7; border-radius: 14px; padding: 8px; font-family: inherit; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.01);">
                 <div style="font-size: 0.78rem; font-weight: 800; color: #1e293b; text-align: center; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
-                    <span style="color: #16a34a;">${monthNames[month]} ${year}</span>
+                    <span style="color: #881337;">${monthNames[month]} ${year}</span>
                     <span style="font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">
                         ${highlightFirst && highlightLast ? 'History' : (highlightFirst ? 'First Del.' : 'Last Del.')}
                     </span>
@@ -380,7 +380,7 @@
                     cellTitle = 'Last Delivery';
                 } else if (currentDateStr === firstDateStr && highlightFirst) {
                     // First delivery is highlighted with a color (indigo)
-                    cellStyle += ' background: #16a34a; color: white; box-shadow: 0 2px 4px rgba(22, 163, 74, 0.3);';
+                    cellStyle += ' background: #881337; color: white; box-shadow: 0 2px 4px rgba(136, 19, 55, 0.3);';
                     cellTitle = 'First Delivery';
                 } else if (allDatesArr.includes(currentDateStr)) {
                     // Other delivery
@@ -413,7 +413,7 @@
             if (isDifferentMonth) {
                 tabsHtml = `
                 <div style="display: flex; background: #f1f5f9; padding: 3px; border-radius: 10px; margin-bottom: 10px; font-size: 0.68rem; font-weight: 800; border: 1px solid #e2e8f0;">
-                    <button type="button" onclick="event.stopPropagation(); document.getElementById('cal-first-${index}').style.display='block'; document.getElementById('cal-last-${index}').style.display='none'; this.style.background='white'; this.style.color='#16a34a'; this.style.boxShadow='0 2px 6px rgba(22,163,74,0.1)'; this.nextElementSibling.style.background='none'; this.nextElementSibling.style.color='#64748b'; this.nextElementSibling.style.boxShadow='none';" style="flex: 1; border: none; padding: 6px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; background: none; color: #64748b; font-weight: 900; outline: none;">
+                    <button type="button" onclick="event.stopPropagation(); document.getElementById('cal-first-${index}').style.display='block'; document.getElementById('cal-last-${index}').style.display='none'; this.style.background='white'; this.style.color='#881337'; this.style.boxShadow='0 2px 6px rgba(136,19,55,0.1)'; this.nextElementSibling.style.background='none'; this.nextElementSibling.style.color='#64748b'; this.nextElementSibling.style.boxShadow='none';" style="flex: 1; border: none; padding: 6px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; background: none; color: #64748b; font-weight: 900; outline: none;">
                         First Month
                     </button>
                     <button type="button" onclick="event.stopPropagation(); document.getElementById('cal-first-${index}').style.display='none'; document.getElementById('cal-last-${index}').style.display='block'; this.style.background='white'; this.style.color='#ef4444'; this.style.boxShadow='0 2px 6px rgba(239,68,68,0.1)'; this.previousElementSibling.style.background='none'; this.previousElementSibling.style.color='#64748b'; this.previousElementSibling.style.boxShadow='none';" style="flex: 1; border: none; padding: 6px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; background: white; color: #ef4444; font-weight: 900; box-shadow: 0 2px 6px rgba(239,68,68,0.1); outline: none;">
@@ -437,8 +437,8 @@
                 ${tabsHtml}
                 ${calendarsHtml}
                 <div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px; border-top: 1px solid #edf2f7; padding-top: 8px;">
-                    <span style="display: inline-flex; align-items: center; gap: 6px; background: #eef2ff; color: #16a34a; padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(22, 163, 74, 0.15);">
-                        <span style="width: 6px; height: 6px; background: #16a34a; border-radius: 50%;"></span>First
+                    <span style="display: inline-flex; align-items: center; gap: 6px; background: #eef2ff; color: #881337; padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(136, 19, 55, 0.15);">
+                        <span style="width: 6px; height: 6px; background: #881337; border-radius: 50%;"></span>First
                     </span>
                     <span style="display: inline-flex; align-items: center; gap: 6px; background: #fef2f2; color: #ef4444; padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(239, 68, 68, 0.15);">
                         <span style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%;"></span>Last
@@ -486,10 +486,10 @@
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 220px;">
             <div style="display: flex; flex-direction: column; gap: 2px;">
                 <div style="font-size: 0.72rem; color: #475569; display: flex; align-items: center; gap: 4px;">
-                    <strong>Total:</strong> <span style="background: #e0e7ff; color: #15803d; padding: 1px 6px; border-radius: 4px; font-weight: 800; font-size: 0.7rem;">${supplier.total_deliveries}</span>
+                    <strong>Total:</strong> <span style="background: #e0e7ff; color: #4c0519; padding: 1px 6px; border-radius: 4px; font-weight: 800; font-size: 0.7rem;">${supplier.total_deliveries}</span>
                 </div>
                 <div style="font-size: 0.65rem; color: #64748b; margin-top: 2px;">
-                    First: <span style="font-family: monospace; font-weight: 700; color: #16a34a;">${formatDate(firstDel)}</span>
+                    First: <span style="font-family: monospace; font-weight: 700; color: #881337;">${formatDate(firstDel)}</span>
                 </div>
                 <div style="font-size: 0.65rem; color: #64748b;">
                     Last: <span style="font-family: monospace; font-weight: 700; color: #ef4444;">${formatDate(lastDel)}</span>
@@ -731,7 +731,7 @@
         document.getElementById('supplierDescInput').value = desc;
 
         document.getElementById('supplierSubmitText').innerText = 'Update';
-        document.getElementById('supplierSubmitBtn').style.background = 'linear-gradient(135deg, #16a34a, #3730a3)';
+        document.getElementById('supplierSubmitBtn').style.background = 'linear-gradient(135deg, #881337, #3730a3)';
         document.getElementById('supplierResetBtn').style.display = 'block';
 
         const icon = document.getElementById('supplierSubmitIcon');
@@ -750,7 +750,7 @@
         document.getElementById('supplierNameInput').style.background = '';
 
         document.getElementById('supplierSubmitText').innerText = 'Add Supplier';
-        document.getElementById('supplierSubmitBtn').style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        document.getElementById('supplierSubmitBtn').style.background = 'linear-gradient(135deg, #881337, #059669)';
         document.getElementById('supplierResetBtn').style.display = 'none';
 
         const icon = document.getElementById('supplierSubmitIcon');

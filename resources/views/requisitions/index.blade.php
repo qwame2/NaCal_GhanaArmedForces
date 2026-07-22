@@ -38,15 +38,15 @@
 
             /* Modern E-commerce Jumia-Inspired Color Palette */
             --store-orange: #22c55e;
-            --store-orange-hover: #15803d;
+            --store-orange-hover: #4c0519;
             --store-orange-light: rgba(34, 197, 94, 0.08);
 
-            --store-indigo: #16a34a;
-            --store-indigo-hover: #16a34a;
-            --store-indigo-light: rgba(22, 163, 74, 0.08);
+            --store-indigo: #881337;
+            --store-indigo-hover: #881337;
+            --store-indigo-light: rgba(136, 19, 55, 0.08);
 
-            --success-color: #10b981;
-            --warning-color: #10b981;
+            --success-color: #881337;
+            --warning-color: #881337;
             --danger-color: #ef4444;
 
             /* Theme overrides */
@@ -254,7 +254,7 @@
             justify-content: center;
             font-weight: 800;
             font-size: 0.8rem;
-            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.2);
+            box-shadow: 0 2px 6px rgba(136, 19, 55, 0.2);
         }
 
         .user-info-name {
@@ -544,7 +544,7 @@
 
         .product-image-container {
             height: 140px;
-            background: linear-gradient(135deg, rgba(22, 163, 74, 0.05), rgba(34, 197, 94, 0.05));
+            background: linear-gradient(135deg, rgba(136, 19, 55, 0.05), rgba(34, 197, 94, 0.05));
             border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
@@ -554,7 +554,7 @@
         }
 
         .product-card:hover .product-image-container {
-            background: linear-gradient(135deg, rgba(22, 163, 74, 0.08), rgba(34, 197, 94, 0.08));
+            background: linear-gradient(135deg, rgba(136, 19, 55, 0.08), rgba(34, 197, 94, 0.08));
         }
 
         .product-icon-box {
@@ -636,12 +636,12 @@
         }
 
         .stock-in {
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(136, 19, 55, 0.1);
             color: var(--success-color);
         }
 
         .stock-low {
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(136, 19, 55, 0.1);
             color: var(--warning-color);
         }
 
@@ -718,7 +718,7 @@
 
         .add-cart-btn.added {
             background: var(--success-color);
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+            box-shadow: 0 4px 10px rgba(136, 19, 55, 0.25);
         }
 
         /* --- RIGHT SIDEBAR: CART & CHECKOUT --- */
@@ -932,7 +932,7 @@
         .checkout-btn {
             width: 100%;
             padding: 0.9rem;
-            background: linear-gradient(135deg, var(--store-orange), #15803d);
+            background: linear-gradient(135deg, var(--store-orange), #4c0519);
             color: white;
             border: none;
             border-radius: 12px;
@@ -1134,7 +1134,7 @@
             background: var(--success-color);
             border-color: var(--success-color);
             color: white;
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 0 10px rgba(136, 19, 55, 0.4);
         }
 
         .tracker-step.active .tracker-dot {
@@ -1188,8 +1188,8 @@
         .history-notes-box {
             margin-top: 1rem;
             font-size: 0.78rem;
-            background: rgba(16, 185, 129, 0.05);
-            border: 1px dashed rgba(16, 185, 129, 0.3);
+            background: rgba(136, 19, 55, 0.05);
+            border: 1px dashed rgba(136, 19, 55, 0.3);
             border-radius: 12px;
             padding: 10px 14px;
             color: #b45309;
@@ -1343,13 +1343,13 @@
         .action-btn-followup:hover {
             background: var(--warning-color) !important;
             color: white !important;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
             transform: translateY(-1px);
         }
         .action-btn-collect:hover {
             background: var(--success-color) !important;
             color: white !important;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
             transform: translateY(-1px);
         }
         .action-btn-followup:active, .action-btn-collect:active {
@@ -1545,7 +1545,7 @@
                 </div>
                 <div>
                     <div class="brand-name">NACOC</div>
-                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:#10b981;">(NSIMs)</span></div>
+                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:#881337;">(NSIMs)</span></div>
                 </div>
             </a>
 
@@ -1724,8 +1724,8 @@
                                 <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 0.5rem;">
                                     <span class="product-cat-tag" style="margin-bottom: 0;">{{ $catName }}</span>
                                     @if(in_array($item->ledge_category, $dgCategories))
-                                        <span style="font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #4ade80; background: rgba(139, 92, 246, 0.08); padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(139, 92, 246, 0.18);" title="This item requires Director General's approval prior to collection.">
-                                            <i data-lucide="shield-alert" style="width: 11px; height: 11px; color: #4ade80;"></i> Needs DG's Approval
+                                        <span style="font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: #9f1239; background: rgba(139, 92, 246, 0.08); padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid rgba(139, 92, 246, 0.18);" title="This item requires Director General's approval prior to collection.">
+                                            <i data-lucide="shield-alert" style="width: 11px; height: 11px; color: #9f1239;"></i> Needs DG's Approval
                                         </span>
                                     @endif
                                 </div>
@@ -2032,7 +2032,7 @@
                                 ${user.avatar ? `
                                     <img src="${user.avatar}" id="swal-avatar-preview" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
                                 ` : `
-                                    <div id="swal-avatar-placeholder" style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--store-indigo) 0%, #15803d 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 950; color: white; border: 4px solid white; box-shadow: 0 10px 20px rgba(22,163,74,0.25);">
+                                    <div id="swal-avatar-placeholder" style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--store-indigo) 0%, #4c0519 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 950; color: white; border: 4px solid white; box-shadow: 0 10px 20px rgba(136,19,55,0.25);">
                                         ${user.name.substring(0, 1).toUpperCase()}
                                     </div>
                                 `}

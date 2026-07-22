@@ -7,11 +7,11 @@
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
                 @if(auth()->user()->role === 'Auditor')
-                    <span style="background: rgba(22, 163, 74, 0.1); color: #16a34a; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Audit Oversight Clearance</span>
+                    <span style="background: rgba(136, 19, 55, 0.1); color: #881337; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Audit Oversight Clearance</span>
                 @elseif(in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
-                    <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · Department Head Hub</span>
+                    <span style="background: rgba(136, 19, 55, 0.1); color: #881337; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · Department Head Hub</span>
                 @else
-                    <span style="background: rgba(22, 163, 74, 0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Logistics Control</span>
+                    <span style="background: rgba(136, 19, 55, 0.1); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Logistics Control</span>
                 @endif
             </div>
             <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main);">Stock <span style="color: var(--primary);">Check</span></h2>
@@ -91,7 +91,7 @@
                         $stock = (float)$item->total_available;
                         $received = (float)$item->total_received;
                         $variance = (float)$item->total_variance;
-                        $statusColor = $stock <= 0 ? '#ef4444' : ($stock <= $threshold ? '#10b981' : '#10b981');
+                        $statusColor = $stock <= 0 ? '#ef4444' : ($stock <= $threshold ? '#881337' : '#881337');
                         $statusText = $stock <= 0 ? 'Out of Stock' : ($stock <= $threshold ? 'Low Stock' : 'In Stock');
                     @endphp
                     <tr class="activity-row" style="border-top: 1px solid var(--border-color);">
@@ -102,7 +102,7 @@
                             <div style="font-weight: 700; color: var(--text-main); font-size: 1.05rem;">{{ $item->description }}</div>
                         </td>
                         <td data-label="Category" style="padding: 1.25rem 1.5rem;">
-                            <span style="font-size: 0.75rem; background: rgba(22, 163, 74, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
+                            <span style="font-size: 0.75rem; background: rgba(136, 19, 55, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
                                 {{ $ledgeMap[$item->ledge_category] ?? "Category " . $item->ledge_category }}
                             </span>
                         </td>
@@ -113,7 +113,7 @@
                         <td data-label="Total Received" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ number_format($received) }}</td>
                         <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; font-weight: 800; color: var(--text-main); font-size: 1.1rem;">{{ number_format($stock) }}</td>
                         <td data-label="Variance" style="padding: 1.25rem 1.5rem;">
-                            <span style="font-weight: 800; color: {{ $variance > 0 ? '#10b981' : ($variance < 0 ? '#ef4444' : '#94a3b8') }};">
+                            <span style="font-weight: 800; color: {{ $variance > 0 ? '#881337' : ($variance < 0 ? '#ef4444' : '#94a3b8') }};">
                                 {{ $variance > 0 ? '+' : '' }}{{ number_format($variance) }}
                             </span>
                         </td>
@@ -161,7 +161,7 @@
 
         <div class="modal-body" style="display: flex; flex-direction: column; gap: 1.5rem;">
             {{-- Target Item Card --}}
-            <div style="background: linear-gradient(135deg, rgba(22, 163, 74, 0.02) 0%, rgba(139, 92, 246, 0.02) 100%); padding: 1.5rem; border-radius: 24px; border: 1.5px solid var(--border-color); box-shadow: var(--shadow-premium);">
+            <div style="background: linear-gradient(135deg, rgba(136, 19, 55, 0.02) 0%, rgba(139, 92, 246, 0.02) 100%); padding: 1.5rem; border-radius: 24px; border: 1.5px solid var(--border-color); box-shadow: var(--shadow-premium);">
                 <div style="margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Audit Target Asset</label>
@@ -174,7 +174,7 @@
 
                 {{-- Status Stats Grid --}}
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem;">
-                    <div class="audit-stat-card" style="background: rgba(22, 163, 74, 0.04); border-color: rgba(22, 163, 74, 0.18); border-radius: 16px; padding: 1rem; border-width: 1.5px; text-align: center;">
+                    <div class="audit-stat-card" style="background: rgba(136, 19, 55, 0.04); border-color: rgba(136, 19, 55, 0.18); border-radius: 16px; padding: 1rem; border-width: 1.5px; text-align: center;">
                         <label style="color: var(--primary); font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Stock Balance</label>
                         <div id="auditStockBal" style="font-size: 1.6rem; font-weight: 950; color: var(--primary); line-height: 1.1;">0</div>
                     </div>
@@ -186,9 +186,9 @@
                         <label style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; color: var(--text-muted);">Available Qty</label>
                         <div id="auditPrevAvail" style="font-size: 1.6rem; font-weight: 950; color: var(--text-main); line-height: 1.1;">0</div>
                     </div>
-                    <div class="audit-stat-card" style="border-radius: 16px; padding: 1rem; border: 1px solid rgba(16, 185, 129, 0.22); background: rgba(16, 185, 129, 0.02); text-align: center;">
-                        <label style="color: #10b981; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Active Loans</label>
-                        <div id="auditActiveLoans" style="color: #10b981; font-size: 1.6rem; font-weight: 950; line-height: 1.1;">0</div>
+                    <div class="audit-stat-card" style="border-radius: 16px; padding: 1rem; border: 1px solid rgba(136, 19, 55, 0.22); background: rgba(136, 19, 55, 0.02); text-align: center;">
+                        <label style="color: #881337; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px;">Active Loans</label>
+                        <div id="auditActiveLoans" style="color: #881337; font-size: 1.6rem; font-weight: 950; line-height: 1.1;">0</div>
                     </div>
                 </div>
 
@@ -197,7 +197,7 @@
                 </div>
 
                 <div id="activeLoansDrawer" style="display: none; margin-top: 1.5rem; border-top: 1.5px solid var(--border-color); padding-top: 1.5rem; max-height: 250px; overflow-y: auto;">
-                    <h4 style="font-size: 0.95rem; font-weight: 800; color: #10b981; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
+                    <h4 style="font-size: 0.95rem; font-weight: 800; color: #881337; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
                         <i data-lucide="info" style="width: 16px; height: 16px;"></i>
                         Active Temporary Loans Details
                     </h4>
@@ -221,7 +221,7 @@
                         </div>
                     </div>
                     <div id="auditInsightArea" style="margin-top: 1.25rem;">
-                        <div class="insight-pill" id="auditInsight" style="background: rgba(22, 163, 74, 0.05); color: var(--primary); display: flex; align-items: center; gap: 8px; padding: 0.6rem 1.1rem; border-radius: 12px; font-size: 0.85rem; font-weight: 750; border: 1px solid rgba(22, 163, 74, 0.15);">
+                        <div class="insight-pill" id="auditInsight" style="background: rgba(136, 19, 55, 0.05); color: var(--primary); display: flex; align-items: center; gap: 8px; padding: 0.6rem 1.1rem; border-radius: 12px; font-size: 0.85rem; font-weight: 750; border: 1px solid rgba(136, 19, 55, 0.15);">
                             <i data-lucide="info" style="width: 16px;"></i>
                             <span>Waiting for physical input...</span>
                         </div>
@@ -248,7 +248,7 @@
                 {{-- Action Buttons --}}
                 <div style="display: grid; grid-template-columns: {{ auth()->user()->role === 'Auditor' ? '1fr' : '1.2fr 1fr' }}; gap: 1rem; margin-top: 1.5rem; align-items: center;">
                     @if(auth()->user()->role !== 'Auditor')
-                    <button type="submit" class="btn-primary" style="width: 100%; padding: 1.1rem; border-radius: 18px; border: none; background: linear-gradient(135deg, #16a34a 0%, #16a34a 100%); color: white; font-weight: 900; font-size: 1rem; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 10px 25px rgba(22, 163, 74, 0.25);" onmouseover="this.style.transform='translateY(-1.5px)'; this.style.boxShadow='0 15px 30px rgba(22, 163, 74, 0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px rgba(22, 163, 74, 0.25)';" >
+                    <button type="submit" class="btn-primary" style="width: 100%; padding: 1.1rem; border-radius: 18px; border: none; background: linear-gradient(135deg, #881337 0%, #881337 100%); color: white; font-weight: 900; font-size: 1rem; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.25);" onmouseover="this.style.transform='translateY(-1.5px)'; this.style.boxShadow='0 15px 30px rgba(136, 19, 55, 0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px rgba(136, 19, 55, 0.25)';" >
                         <i data-lucide="shield-check" style="width: 18px; color: white !important;"></i>
                         <span style="color: white !important;">
                             @if(auth()->user()->is_admin)
@@ -275,7 +275,7 @@
         <span id="selectedCountBadge" style="background: var(--primary); color: white; padding: 0.2rem 0.6rem; border-radius: 99px; font-size: 0.8rem; font-weight: 900;">0</span>
         <span>Items Selected</span>
     </div>
-    <button onclick="openBatchVerifyPage()" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #16a34a 0%, #16a34a 100%) !important; color: white !important; cursor: pointer; font-weight: 800; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.4);">
+    <button onclick="openBatchVerifyPage()" class="btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #881337 0%, #881337 100%) !important; color: white !important; cursor: pointer; font-weight: 800; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 14px rgba(136, 19, 55, 0.4);">
         <i data-lucide="shield-check" style="width: 18px; color: white !important;"></i>
         <span style="color: white !important;">Verify Selected</span>
     </button>
@@ -441,7 +441,7 @@ function openStockCheckModal(description, ledgeBal, stockBal, prevVar, prevAvail
                     <div style="overflow-x: auto; border-radius: 12px; border: 1.5px solid var(--border-color); background: var(--bg-main);">
                         <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.8rem;">
                             <thead>
-                                <tr style="background: rgba(16, 185, 129, 0.04); border-bottom: 1px solid var(--border-color);">
+                                <tr style="background: rgba(136, 19, 55, 0.04); border-bottom: 1px solid var(--border-color);">
                                     <th style="padding: 0.6rem 0.8rem; font-weight: 700; color: var(--text-muted);">Borrower</th>
                                     <th style="padding: 0.6rem 0.8rem; font-weight: 700; color: var(--text-muted); text-align: center;">Qty</th>
                                     <th style="padding: 0.6rem 0.8rem; font-weight: 700; color: var(--text-muted);">Return Date</th>
@@ -453,7 +453,7 @@ function openStockCheckModal(description, ledgeBal, stockBal, prevVar, prevAvail
                 data.loans.forEach(loan => {
                     const overdueBadge = loan.is_overdue 
                         ? `<span style="font-size: 0.65rem; font-weight: 800; color: #ef4444; background: rgba(239, 68, 68, 0.08); padding: 0.15rem 0.4rem; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.15);">Overdue</span>`
-                        : `<span style="font-size: 0.65rem; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.08); padding: 0.15rem 0.4rem; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.15);">Active</span>`;
+                        : `<span style="font-size: 0.65rem; font-weight: 800; color: #881337; background: rgba(136, 19, 55, 0.08); padding: 0.15rem 0.4rem; border-radius: 4px; border: 1px solid rgba(136, 19, 55, 0.15);">Active</span>`;
                     html += `
                                 <tr style="border-bottom: 1px solid var(--border-color);">
                                     <td style="padding: 0.6rem 0.8rem; font-weight: 600; color: var(--text-main);">${loan.beneficiary} <span style="font-size: 0.72rem; color: var(--text-muted);">(${loan.department || 'N/A'})</span></td>
@@ -494,7 +494,7 @@ function calculateAuditVariance() {
 
     const varEl = document.getElementById('newAuditVariance');
     varEl.innerText = (variance > 0 ? '+' : '') + variance;
-    varEl.style.color = variance === 0 ? '#10b981' : (variance > 0 ? '#4ade80' : '#ef4444');
+    varEl.style.color = variance === 0 ? '#881337' : (variance > 0 ? '#9f1239' : '#ef4444');
 
     const insight = document.getElementById('auditInsight');
     if (variance === 0) {
@@ -606,7 +606,7 @@ function generateVerificationReport() {
 
         // Brand Colors (Navy Blue & Slate)
         const primaryColor = [30, 58, 138]; // #1e3a8a (Navy Blue)
-        const secondaryColor = [59, 130, 246]; // #16a34a (Blue)
+        const secondaryColor = [59, 130, 246]; // #881337 (Blue)
         const slateDark = [15, 23, 42]; // #0f172a (Navy Slate)
         const textMuted = [100, 116, 139]; // #64748b (Muted Slate)
         const bgLight = [248, 250, 252]; // #f8fafc (Ice Blue/Grey)
@@ -1065,8 +1065,8 @@ function printAuditList() {
             let textColor = [71, 85, 105]; // slate dark
             const varVal = parseFloat(row.variance.replace(/[^\d.-]/g, '')) || 0;
             if (varVal > 0) {
-                dotColor = [16, 185, 129]; // green
-                textColor = [16, 185, 129];
+                dotColor = [136, 19, 55]; // green
+                textColor = [136, 19, 55];
             } else if (varVal < 0) {
                 dotColor = [239, 68, 68]; // red
                 textColor = [239, 68, 68];

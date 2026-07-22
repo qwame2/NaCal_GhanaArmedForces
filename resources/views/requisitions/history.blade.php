@@ -33,15 +33,15 @@
             --font-sans: 'Outfit', sans-serif;
             
             --store-orange: #22c55e;
-            --store-orange-hover: #15803d;
+            --store-orange-hover: #4c0519;
             --store-orange-light: rgba(34, 197, 94, 0.08);
             
-            --store-indigo: #16a34a;
-            --store-indigo-hover: #16a34a;
-            --store-indigo-light: rgba(22, 163, 74, 0.08);
+            --store-indigo: #881337;
+            --store-indigo-hover: #881337;
+            --store-indigo-light: rgba(136, 19, 55, 0.08);
             
-            --success-color: #10b981;
-            --warning-color: #10b981;
+            --success-color: #881337;
+            --warning-color: #881337;
             --danger-color: #ef4444;
             
             --bg-main: #f8fafc;
@@ -260,7 +260,7 @@
 
         /* --- HERO BANNER --- */
         .store-hero {
-            background: linear-gradient(135deg, rgba(22, 163, 74, 0.05) 0%, rgba(34, 197, 94, 0.05) 100%);
+            background: linear-gradient(135deg, rgba(136, 19, 55, 0.05) 0%, rgba(34, 197, 94, 0.05) 100%);
             padding: 3rem 2rem 2.5rem 2rem;
             border-bottom: 1px solid var(--border-color);
         }
@@ -521,7 +521,7 @@
             background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
             border-color: var(--success-color);
             color: white;
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+            box-shadow: 0 4px 10px rgba(136, 19, 55, 0.25);
         }
 
         .tracker-step.completed .tracker-label {
@@ -581,8 +581,8 @@
         }
 
         .history-notes-box {
-            background: rgba(22, 163, 74, 0.03);
-            border: 1px dashed rgba(22, 163, 74, 0.25);
+            background: rgba(136, 19, 55, 0.03);
+            border: 1px dashed rgba(136, 19, 55, 0.25);
             border-radius: 14px;
             padding: 1rem;
             margin-top: 1rem;
@@ -725,7 +725,7 @@
                 </div>
                 <div>
                     <div class="brand-name">NACOC</div>
-                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:#10b981;">(NSIMs)</span></div>
+                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:#881337;">(NSIMs)</span></div>
                 </div>
             </a>
 
@@ -785,7 +785,7 @@
                 </div>
             </div>
             <div class="hero-art">
-                <i data-lucide="history" style="width: 240px; height: 240px; color: rgba(22, 163, 74, 0.15); stroke-width: 1;"></i>
+                <i data-lucide="history" style="width: 240px; height: 240px; color: rgba(136, 19, 55, 0.15); stroke-width: 1;"></i>
             </div>
         </div>
     </section>
@@ -1121,12 +1121,12 @@
 
                         <div class="requisition-actions-row" style="margin-top: 1rem; display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
                             ${req.status === 'pending' && req.origin_admin_status === 'approved' ? `
-                                <button class="action-btn-followup" onclick="sendFollowUp(${req.id}, this)" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); color: var(--warning-color); padding: 8px 16px; border-radius: 10px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;">
+                                <button class="action-btn-followup" onclick="sendFollowUp(${req.id}, this)" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(136, 19, 55, 0.08); border: 1px solid rgba(136, 19, 55, 0.2); color: var(--warning-color); padding: 8px 16px; border-radius: 10px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;">
                                     <i data-lucide="bell" style="width: 14px;"></i> Follow Up
                                 </button>
                             ` : ''}
                             ${req.collected_at ? `
-                                <div class="collection-status-indicator" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15); color: var(--success-color); padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 0.78rem;">
+                                <div class="collection-status-indicator" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(136, 19, 55, 0.05); border: 1px solid rgba(136, 19, 55, 0.15); color: var(--success-color); padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 0.78rem;">
                                     <i data-lucide="check-circle" style="width: 14px; color: var(--success-color);"></i> Collected on ${req.collected_at} ${req.collected_by_name ? `by ${req.collected_by_name}` : ''}
                                 </div>
                             ` : ''}
@@ -1296,7 +1296,7 @@
                                 ${user.avatar ? `
                                     <img src="${user.avatar}" id="swal-avatar-preview" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
                                 ` : `
-                                    <div id="swal-avatar-placeholder" style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--store-indigo) 0%, #15803d 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 950; color: white; border: 4px solid white; box-shadow: 0 10px 20px rgba(22,163,74,0.25);">
+                                    <div id="swal-avatar-placeholder" style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--store-indigo) 0%, #4c0519 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 950; color: white; border: 4px solid white; box-shadow: 0 10px 20px rgba(136,19,55,0.25);">
                                         ${user.name.substring(0, 1).toUpperCase()}
                                     </div>
                                 `}

@@ -9,25 +9,25 @@
 
 <!-- Premium Returns Header -->
 <div class="header-mesh" style="background: var(--bg-card); padding: 3.5rem; border-radius: 32px; margin-bottom: 3rem; position: relative; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
-    <div style="position: absolute; top: -50px; right: -50px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%); z-index: 0;"></div>
+    <div style="position: absolute; top: -50px; right: -50px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(136, 19, 55, 0.1) 0%, transparent 70%); z-index: 0;"></div>
 
     <div style="position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
                 @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head', 'Auditor']))
-                    <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · {{ auth()->user()->role === 'Auditor' ? 'Department Head' : 'Department Head Hub' }}</span>
+                    <span style="background: rgba(136, 19, 55, 0.1); color: #881337; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · {{ auth()->user()->role === 'Auditor' ? 'Department Head' : 'Department Head Hub' }}</span>
                 @endif
                 <!-- <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-                    <i data-lucide="shield" style="width: 14px; color: #10b981;"></i> System Verified
+                    <i data-lucide="shield" style="width: 14px; color: #881337;"></i> System Verified
                 </span> -->
             </div>
-            <h1 style="margin: 0; font-size: 3.5rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.06em; line-height: 1;">Return <span style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Item(s)</span></h1>
+            <h1 style="margin: 0; font-size: 3.5rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.06em; line-height: 1;">Return <span style="background: linear-gradient(135deg, #881337 0%, #047857 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Item(s)</span></h1>
             <p style="margin: 15px 0 0; color: var(--text-muted); font-size: 1.15rem; font-weight: 600; max-width: 600px; line-height: 1.6;">Return issued items to main store. Track what's still out in real time.</p>
         </div>
 
         <div style="display: flex; gap: 1rem;">
             <button onclick="openHistorySheet()" class="modern-action-btn" style="border-radius: 20px; padding: 1.15rem 1.75rem; border: 1px solid var(--border-color); background: var(--bg-main); box-shadow: 0 4px 10px rgba(0,0,0,0.02); cursor: pointer; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 10px; transition: all 0.2s ease;">
-                <i data-lucide="history" style="width: 22px; color: #10b981;"></i>
+                <i data-lucide="history" style="width: 22px; color: #881337;"></i>
                 <span>Return History</span>
             </button>
         </div>
@@ -37,7 +37,7 @@
 <!-- Statistical Insight Row -->
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
     <div class="glass-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem;">
-        <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center;">
+        <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(136, 19, 55, 0.1); color: #881337; display: flex; align-items: center; justify-content: center;">
             <i data-lucide="package-2" style="width: 32px;"></i>
         </div>
         <div>
@@ -47,7 +47,7 @@
     </div>
 
     <div class="glass-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem;">
-        <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+        <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(136, 19, 55, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
             <i data-lucide="users" style="width: 32px;"></i>
         </div>
         <div>
@@ -57,7 +57,7 @@
     </div>
 
     <div class="glass-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem;">
-        <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center;">
+        <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(136, 19, 55, 0.1); color: #881337; display: flex; align-items: center; justify-content: center;">
             <i data-lucide="check-circle" style="width: 32px;"></i>
         </div>
         <div>
@@ -73,7 +73,7 @@
         <div>
             <h3 style="margin: 0; font-size: 2rem; font-weight: 950; color: var(--text-main); letter-spacing: -0.02em;">Outstanding Allocations</h3>
             <p style="margin: 8px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981;"></span>
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #881337; box-shadow: 0 0 10px #881337;"></span>
                 Tracking {{ $stats['total_active_holdings'] }} active holdings
             </p>
         </div>
@@ -162,7 +162,7 @@
                                         {{ $returnDateFormatted }}
                                     </span>
                                 @else
-                                    <span class="status-pill" style="background: rgba(16, 185, 129, 0.08); color: #047857; border: 1px solid rgba(16, 185, 129, 0.2); font-size: 0.8rem; font-weight: 800; padding: 4px 10px; border-radius: 89px; display: inline-flex; align-items: center; gap: 4px;">
+                                    <span class="status-pill" style="background: rgba(136, 19, 55, 0.08); color: #047857; border: 1px solid rgba(136, 19, 55, 0.2); font-size: 0.8rem; font-weight: 800; padding: 4px 10px; border-radius: 89px; display: inline-flex; align-items: center; gap: 4px;">
                                         <i data-lucide="calendar" style="width: 12px; height: 12px;"></i>
                                         {{ $returnDateFormatted }}
                                     </span>
@@ -186,7 +186,7 @@
                         </td>
                         <td style="padding: 1.75rem 1.5rem;">
                             <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
-                                <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #10b981;"></i>
+                                <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #881337;"></i>
                                 {{ $item->confirming_officer_name ?: 'Adomako Emmanuel' }}
                             </div>
                         </td>
@@ -195,16 +195,16 @@
                         </td>
                         <td style="padding: 1.75rem 1.5rem; @if(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head'])) border-radius: 0 24px 24px 0; @endif">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="padding: 0.75rem 1.25rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px;">
+                                <div style="padding: 0.75rem 1.25rem; background: rgba(136, 19, 55, 0.1); border: 1px solid rgba(136, 19, 55, 0.2); border-radius: 16px;">
                                     <span style="font-weight: 950; font-size: 1.4rem; color: #047857;">{{ $item->quantity }}</span>
-                                    <span style="color: #10b981; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; margin-left: 4px;">{{ $item->actual_unit ?: ($item->unit ?: 'Package Types') }}</span>
+                                    <span style="color: #881337; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; margin-left: 4px;">{{ $item->actual_unit ?: ($item->unit ?: 'Package Types') }}</span>
                                 </div>
                             </div>
                         </td>
                         @if(!in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head']))
                         <td style="padding: 1.75rem 1.5rem; border-radius: 0 24px 24px 0; text-align: right;">
                             @if($item->pending_recovery)
-                            <button disabled class="recover-btn-premium" style="padding: 1rem 1.5rem; border-radius: 16px; font-weight: 900; background: #16a34a; color: white; border: none; cursor: wait; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); opacity: 0.85;">
+                            <button disabled class="recover-btn-premium" style="padding: 1rem 1.5rem; border-radius: 16px; font-weight: 900; background: #881337; color: white; border: none; cursor: wait; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2); opacity: 0.85;">
                                 <i data-lucide="clock" style="width: 18px;" class="animate-pulse"></i>
                                 <span>Pending Auth</span>
                             </button>
@@ -286,7 +286,7 @@
                     </div>
                     @endif
                     <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-top: 6px;">Head of Stores: {{ $item->authority ?: 'Adomako Emmanuel' }}</div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: #10b981; margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #881337; margin-top: 6px; display: flex; align-items: center; gap: 4px;">
                         <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i>
                         Store Officer: {{ $item->confirming_officer_name ?: 'Adomako Emmanuel' }}
                     </div>
@@ -299,7 +299,7 @@
                     </div>
                     @if(!in_array(auth()->user()->role, ['Main Admin', 'Department Head']))
                         @if($item->pending_recovery)
-                        <button disabled title="Awaiting Administrative Approval" style="width: 120px; height: 56px; border-radius: 18px; background: #16a34a; color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(22, 163, 74, 0.2); cursor: wait; opacity: 0.9;">
+                        <button disabled title="Awaiting Administrative Approval" style="width: 120px; height: 56px; border-radius: 18px; background: #881337; color: white; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(136, 19, 55, 0.2); cursor: wait; opacity: 0.9;">
                             <i data-lucide="clock" style="width: 20px;" class="animate-pulse"></i>
                             <span style="font-size: 0.75rem; font-weight: 900; text-transform: uppercase;">Pending</span>
                         </button>
@@ -338,23 +338,23 @@
             @if($issuedItems->onFirstPage())
                 <span style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-main); color: var(--text-muted); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); opacity: 0.5; cursor: not-allowed;">Prev</span>
             @else
-                <a href="{{ $issuedItems->appends(request()->query())->previousPageUrl() }}" style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#10b981'; this.style.color='#10b981'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">Prev</a>
+                <a href="{{ $issuedItems->appends(request()->query())->previousPageUrl() }}" style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#881337'; this.style.color='#881337'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">Prev</a>
             @endif
 
             {{-- Page Numbers --}}
             <div style="display: flex; gap: 0.25rem;">
                 @foreach($issuedItems->appends(request()->query())->getUrlRange(max(1, $issuedItems->currentPage()-2), min($issuedItems->lastPage(), $issuedItems->currentPage()+2)) as $page => $url)
                     @if($page == $issuedItems->currentPage())
-                        <span style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: #10b981; color: white; font-size: 0.85rem; font-weight: 900; box-shadow: 0 4px 10px rgba(16,185,129,0.2);">{{ $page }}</span>
+                        <span style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: #881337; color: white; font-size: 0.85rem; font-weight: 900; box-shadow: 0 4px 10px rgba(136,19,55,0.2);">{{ $page }}</span>
                     @else
-                        <a href="{{ $url }}" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.85rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#10b981'; this.style.color='#10b981'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">{{ $page }}</a>
+                        <a href="{{ $url }}" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.85rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#881337'; this.style.color='#881337'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">{{ $page }}</a>
                     @endif
                 @endforeach
             </div>
 
             {{-- Next --}}
             @if($issuedItems->hasMorePages())
-                <a href="{{ $issuedItems->appends(request()->query())->nextPageUrl() }}" style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#10b981'; this.style.color='#10b981'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">Next</a>
+                <a href="{{ $issuedItems->appends(request()->query())->nextPageUrl() }}" style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='#881337'; this.style.color='#881337'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">Next</a>
             @else
                 <span style="padding: 0.5rem 1rem; border-radius: 8px; background: var(--bg-main); color: var(--text-muted); font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border-color); opacity: 0.5; cursor: not-allowed;">Next</span>
             @endif
@@ -457,8 +457,8 @@
                     </div>
                 </div>
 
-                <div class="audit-warning" style="display: flex; align-items: center; gap: 12px; background: rgba(16, 185, 129, 0.05); padding: 1.25rem; border-radius: 16px; border: 1px dashed rgba(16, 185, 129, 0.3);">
-                    <i data-lucide="shield-check" style="width: 20px; color: #10b981;"></i>
+                <div class="audit-warning" style="display: flex; align-items: center; gap: 12px; background: rgba(136, 19, 55, 0.05); padding: 1.25rem; border-radius: 16px; border: 1px dashed rgba(136, 19, 55, 0.3);">
+                    <i data-lucide="shield-check" style="width: 20px; color: #881337;"></i>
                     <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; line-height: 1.5;">This action will automatically update current stock balances and mark this allocation as returned.</p>
                 </div>
             </div>
@@ -483,7 +483,7 @@
         <div class="samsung-drag-handle"></div>
         <div class="modal-header-premium" style="display: flex; justify-content: space-between; align-items: center; padding: 2rem 3rem; background: var(--bg-card);">
             <div>
-                <h3 style="margin: 0; font-size: 2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">Return <span style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">History</span></h3>
+                <h3 style="margin: 0; font-size: 2rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">Return <span style="background: linear-gradient(135deg, #881337 0%, #047857 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">History</span></h3>
                 <p style="margin: 6px 0 0; color: var(--text-muted); font-size: 1rem; font-weight: 600;">Tracking history of all recovered assets</p>
             </div>
             <button type="button" onclick="closeHistorySheet()" class="close-btn-premium modern-action-btn secondary" style="width: 54px; height: 54px; border-radius: 18px; border-color: rgba(239, 68, 68, 0.2); color: #ef4444;">
@@ -541,9 +541,9 @@
     }
 
     .premium-select-input:focus {
-        border-color: #10b981;
+        border-color: #881337;
         background-color: var(--bg-card);
-        box-shadow: 0 12px 25px rgba(16, 185, 129, 0.08);
+        box-shadow: 0 12px 25px rgba(136, 19, 55, 0.08);
     }
 
     /* Additional Professional Report Print Styles */
@@ -673,14 +673,14 @@
     }
 
     .header-mesh {
-        background: radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.06) 0, transparent 50%),
+        background: radial-gradient(at 0% 0%, rgba(136, 19, 55, 0.06) 0, transparent 50%),
             var(--bg-card) !important;
         backdrop-filter: blur(24px);
     }
 
     .status-badge-premium {
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
+        background: rgba(136, 19, 55, 0.1);
+        color: #881337;
         font-size: 0.7rem;
         font-weight: 950;
         padding: 0.5rem 1.25rem;
@@ -690,7 +690,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        border: 1px solid rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(136, 19, 55, 0.1);
     }
 
     .search-container-premium {
@@ -725,13 +725,13 @@
     }
 
     .search-container-premium:focus-within input {
-        border-color: #10b981;
+        border-color: #881337;
         background: var(--bg-card);
-        box-shadow: 0 15px 30px rgba(16, 185, 129, 0.08);
+        box-shadow: 0 15px 30px rgba(136, 19, 55, 0.08);
     }
 
     .search-container-premium:focus-within .search-icon {
-        color: #10b981;
+        color: #881337;
     }
 
     .return-row {
@@ -745,7 +745,7 @@
     .return-row:hover {
         transform: scale(1.008) translateY(-4px);
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
-        border-color: rgba(16, 185, 129, 0.2);
+        border-color: rgba(136, 19, 55, 0.2);
     }
 
     .ledge-badge-premium {
@@ -763,8 +763,8 @@
         padding: 0.85rem 1.5rem;
         border-radius: 14px;
         border: none;
-        background: rgba(16, 185, 129, 0.08);
-        color: #10b981;
+        background: rgba(136, 19, 55, 0.08);
+        color: #881337;
         font-weight: 850;
         font-size: 0.85rem;
         cursor: pointer;
@@ -775,10 +775,10 @@
     }
 
     .recover-btn-premium:hover {
-        background: #10b981;
+        background: #881337;
         color: white;
         transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 10px 20px rgba(136, 19, 55, 0.25);
     }
 
     .recover-btn-premium i {
@@ -881,7 +881,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #10b981;
+        color: #881337;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
     }
 
@@ -925,8 +925,8 @@
     }
 
     .stepper-component-premium:focus-within {
-        border-color: #10b981;
-        box-shadow: 0 12px 25px rgba(16, 185, 129, 0.1);
+        border-color: #881337;
+        box-shadow: 0 12px 25px rgba(136, 19, 55, 0.1);
         transform: translateY(-2px);
     }
 
@@ -945,7 +945,7 @@
 
     .stepper-btn:hover {
         background: rgba(0, 0, 0, 0.02);
-        color: #10b981;
+        color: #881337;
     }
 
     .stepper-btn:active {
@@ -982,9 +982,9 @@
     .audit-warning {
         margin-top: 2rem;
         padding: 1.5rem;
-        background: rgba(16, 185, 129, 0.05);
+        background: rgba(136, 19, 55, 0.05);
         border-radius: 20px;
-        border: 1px solid rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(136, 19, 55, 0.1);
         display: flex;
         gap: 1.25rem;
         align-items: center;
@@ -1038,7 +1038,7 @@
         height: 64px;
         border-radius: 999px;
         border: none;
-        background: #10b981;
+        background: #881337;
         color: white;
         font-weight: 700;
         font-size: 0.95rem;
@@ -1050,13 +1050,13 @@
         transition: all 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1);
         text-transform: none !important;
         letter-spacing: 0;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
     }
 
     .modern-btn-finalize:hover {
         background: #fbbf24;
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 6px 16px rgba(136, 19, 55, 0.25);
     }
 
     .modern-btn-finalize:active {
@@ -1110,7 +1110,7 @@
     .shortcut-btn-premium {
         background: transparent;
         border: none;
-        color: #10b981;
+        color: #881337;
         font-size: 0.75rem;
         font-weight: 950;
         cursor: pointer;
@@ -1124,7 +1124,7 @@
     }
 
     .shortcut-btn-premium:hover {
-        background: rgba(16, 185, 129, 0.08);
+        background: rgba(136, 19, 55, 0.08);
         transform: translateX(4px);
     }
 
@@ -1178,13 +1178,13 @@
         height: 56px;
         border-radius: 16px;
         border: none;
-        background: #10b981;
+        background: #881337;
         color: white;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+        box-shadow: 0 10px 20px rgba(136, 19, 55, 0.2);
     }
 
     .modal-grid-premium {
@@ -1428,7 +1428,7 @@
             submitBtn.style.opacity = '1';
             submitBtn.style.cursor = 'pointer';
             errorBanner.style.display = 'none';
-            input.style.borderColor = val > 0 ? '#10b981' : 'var(--border-color)';
+            input.style.borderColor = val > 0 ? '#881337' : 'var(--border-color)';
             input.style.backgroundColor = 'var(--bg-main)';
         }
     }
@@ -1554,7 +1554,7 @@
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${issueDateStr}</td>
                     <td style="padding: 1.25rem 1rem; font-weight: 800; color: var(--text-main); font-size: 1.05rem;">${item.description}</td>
                     <td style="padding: 1.25rem 1rem;">
-                        <span style="background: rgba(22, 163, 74, 0.08); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900; border: 1px solid rgba(22, 163, 74, 0.1);">CATEGORY ${item.ledge_category}</span>
+                        <span style="background: rgba(136, 19, 55, 0.08); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900; border: 1px solid rgba(136, 19, 55, 0.1);">CATEGORY ${item.ledge_category}</span>
                     </td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">
                         ${item.beneficiary}
@@ -1569,17 +1569,17 @@
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">${item.authority || 'Adomako Emmanuel'}</td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 700;">
                         <div style="display: flex; align-items: center; gap: 4px;">
-                            <i data-lucide="shield-check" style="width: 12px; height: 12px; color: #10b981;"></i>
+                            <i data-lucide="shield-check" style="width: 12px; height: 12px; color: #881337;"></i>
                             ${item.confirming_officer_name || 'Adomako Emmanuel'}
                         </div>
                     </td>
-                    <td style="padding: 1.25rem 1rem; font-weight: 900; font-size: 1.2rem; color: #10b981;">${item.returned_qty} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.actual_unit || item.unit || 'Package Types'}</span></td>
+                    <td style="padding: 1.25rem 1rem; font-weight: 900; font-size: 1.2rem; color: #881337;">${item.returned_qty} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.actual_unit || item.unit || 'Package Types'}</span></td>
                     <td style="padding: 1.25rem 1rem; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; max-width: 200px;">
                         <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.remarks || 'No remarks'}">${item.remarks || '-'}</div>
                     </td>
-                    <td style="padding: 1.25rem 1rem; border-radius: 0 16px 16px 0; font-weight: 900; font-size: 1.1rem; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'};">
+                    <td style="padding: 1.25rem 1rem; border-radius: 0 16px 16px 0; font-weight: 900; font-size: 1.1rem; color: ${item.current_balance > 0 ? '#ef4444' : '#881337'};">
                         ${item.current_balance} <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">${item.actual_unit || item.unit || 'Package Types'}</span>
-                        <div style="font-size: 0.6rem; font-weight: 950; text-transform: uppercase; margin-top: 4px; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'}; opacity: 0.8;">
+                        <div style="font-size: 0.6rem; font-weight: 950; text-transform: uppercase; margin-top: 4px; color: ${item.current_balance > 0 ? '#ef4444' : '#881337'}; opacity: 0.8;">
                             ${item.current_balance > 0 ? 'Pending' : 'Cleared'}
                         </div>
                     </td>
@@ -1594,7 +1594,7 @@
                     </div>
                     ` : ''}
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; ${window.isAdmin ? 'padding-right: 3rem;' : ''}">
-                        <span style="background: rgba(22, 163, 74, 0.08); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900;">CATEGORY ${item.ledge_category}</span>
+                        <span style="background: rgba(136, 19, 55, 0.08); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900;">CATEGORY ${item.ledge_category}</span>
                         <div style="text-align: right;">
                             <div style="color: var(--text-main); font-size: 0.75rem; font-weight: 800;">${dateStr}</div>
                             <div style="color: var(--text-muted); font-size: 0.65rem; font-weight: 700; margin-top: 2px; display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
@@ -1606,20 +1606,20 @@
                     <p style="margin: 6px 0 0; color: var(--text-muted); font-weight: 700; font-size: 0.9rem;">Recipient: ${item.beneficiary}</p>
                     ${item.collector_name ? `<p style="margin: 2px 0 0; color: var(--primary); font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;"><i data-lucide="user" style="width: 12px; height: 12px;"></i> Collector: ${item.collector_name}</p>` : ''}
                     <p style="margin: 2px 0 0.5rem; color: var(--text-muted); font-weight: 700; font-size: 0.85rem;">Head of Stores: ${item.authority || 'Adomako Emmanuel'}</p>
-                    <p style="margin: 2px 0 0.5rem; color: #10b981; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><i data-lucide="shield-check" style="width: 12px;"></i> Store Officer: ${item.confirming_officer_name || 'Adomako Emmanuel'}</p>
+                    <p style="margin: 2px 0 0.5rem; color: #881337; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><i data-lucide="shield-check" style="width: 12px;"></i> Store Officer: ${item.confirming_officer_name || 'Adomako Emmanuel'}</p>
                     <p style="margin: 0 0 1.25rem; color: var(--text-main); font-weight: 600; font-size: 0.8rem; background: rgba(0,0,0,0.02); padding: 8px; border-radius: 8px;">State: ${item.remarks || 'No description'}</p>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
                         <div>
                             <div style="font-size: 0.6rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase;">Returned</div>
-                            <div style="font-size: 1.35rem; font-weight: 950; color: #10b981;">${item.returned_qty} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.actual_unit || item.unit || 'Package Types'}</span></div>
+                            <div style="font-size: 1.35rem; font-weight: 950; color: #881337;">${item.returned_qty} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.actual_unit || item.unit || 'Package Types'}</span></div>
                         </div>
                         <div style="text-align: right;">
                             <div style="font-size: 0.6rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase;">Current Balance</div>
-                            <div style="font-size: 1.35rem; font-weight: 950; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'};">${item.current_balance} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.actual_unit || item.unit || 'Package Types'}</span></div>
+                            <div style="font-size: 1.35rem; font-weight: 950; color: ${item.current_balance > 0 ? '#ef4444' : '#881337'};">${item.current_balance} <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); opacity: 0.7;">${item.actual_unit || item.unit || 'Package Types'}</span></div>
                         </div>
                     </div>
-                    <div style="margin-top: 0.75rem; text-align: center; font-size: 0.65rem; font-weight: 900; color: ${item.current_balance > 0 ? '#ef4444' : '#10b981'}; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <div style="margin-top: 0.75rem; text-align: center; font-size: 0.65rem; font-weight: 900; color: ${item.current_balance > 0 ? '#ef4444' : '#881337'}; text-transform: uppercase; letter-spacing: 0.05em;">
                         ${item.current_balance > 0 ? 'Pending Collection' : 'Fully Recovered'}
                     </div>
                 </div>

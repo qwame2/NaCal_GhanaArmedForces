@@ -88,7 +88,7 @@
 
     .cfg-search-wrap input:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1);
+        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.1);
     }
 
     .cfg-search-wrap input::placeholder {
@@ -150,7 +150,7 @@
     }
 
     .select2-container--default.select2-container--focus .select2-selection--single {
-        border-color: #16a34a !important;
+        border-color: #881337 !important;
     }
 
     /* ── Select2 Multiple Selection Styling ── */
@@ -168,8 +168,8 @@
     }
 
     .select2-container--default.select2-container--focus .select2-selection--multiple {
-        border-color: #16a34a !important;
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1) !important;
+        border-color: #881337 !important;
+        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.1) !important;
     }
 
     .select2-container--default .select2-selection--multiple .select2-selection__rendered {
@@ -182,10 +182,10 @@
     }
 
     .select2-container--default .select2-selection--multiple .select2-selection__choice {
-        background: rgba(16, 185, 129, 0.1) !important;
-        border: 1px solid rgba(16, 185, 129, 0.25) !important;
+        background: rgba(136, 19, 55, 0.1) !important;
+        border: 1px solid rgba(136, 19, 55, 0.25) !important;
         border-radius: 8px !important;
-        color: #16a34a !important;
+        color: #881337 !important;
         font-weight: 700 !important;
         font-size: 0.8rem !important;
         padding: 4px 10px !important;
@@ -193,17 +193,17 @@
         display: inline-flex !important;
         align-items: center !important;
         transition: all 0.15s ease !important;
-        box-shadow: 0 1px 2px rgba(22, 163, 74, 0.05) !important;
+        box-shadow: 0 1px 2px rgba(136, 19, 55, 0.05) !important;
     }
 
     .select2-container--default .select2-selection--multiple .select2-selection__choice:hover {
-        background: #16a34a !important;
-        border-color: #16a34a !important;
+        background: #881337 !important;
+        border-color: #881337 !important;
         color: white !important;
     }
 
     .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-        color: #16a34a !important;
+        color: #881337 !important;
         border: none !important;
         background: transparent !important;
         font-weight: 800 !important;
@@ -271,7 +271,7 @@
     }
 
     .select2-container--default .select2-results__option--highlighted[aria-selected] {
-        background-color: #16a34a !important;
+        background-color: #881337 !important;
         color: white !important;
     }
 
@@ -313,8 +313,8 @@
 
     .cfg-item:hover {
         background: white;
-        border-color: #10b981;
-        box-shadow: 0 8px 24px rgba(22, 163, 74, 0.07);
+        border-color: #881337;
+        box-shadow: 0 8px 24px rgba(136, 19, 55, 0.07);
         transform: translateY(-2px);
     }
 
@@ -357,7 +357,7 @@
 
     .toggle-pill.on {
         background: #dcfce7;
-        color: #16a34a;
+        color: #881337;
     }
 
     .toggle-pill.off {
@@ -399,7 +399,7 @@
     }
 
     .cfg-toggle-label input:checked+.cfg-toggle-track {
-        background: #16a34a;
+        background: #881337;
     }
 
     .cfg-toggle-label input:checked+.cfg-toggle-track::after {
@@ -423,7 +423,7 @@
 
     .cfg-number-input:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1);
+        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.1);
     }
 
     /* ── Text Input ── */
@@ -443,7 +443,7 @@
 
     .cfg-text-input:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1);
+        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.1);
     }
 
     /* ── Category Badges ── */
@@ -473,7 +473,7 @@
         width: 34px;
         height: 34px;
         border-radius: 10px;
-        background: #16a34a;
+        background: #881337;
         color: white;
         font-weight: 900;
         font-size: 0.8rem;
@@ -566,7 +566,7 @@
         bottom: 1.5rem;
         background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(16px);
-        border: 1px solid rgba(22, 163, 74, 0.12);
+        border: 1px solid rgba(136, 19, 55, 0.12);
         border-radius: 20px;
         padding: 1rem 1.5rem;
         display: flex;
@@ -588,7 +588,7 @@
 
     .cfg-save-bar span i {
         width: 15px;
-        color: #10b981;
+        color: #881337;
     }
 
     .btn-cfg-save {
@@ -596,7 +596,7 @@
         align-items: center;
         gap: 8px;
         padding: 0.75rem 2rem;
-        background: #16a34a;
+        background: #881337;
         color: white;
         border: none;
         border-radius: 14px;
@@ -604,12 +604,12 @@
         font-size: 0.9rem;
         cursor: pointer;
         transition: 0.25s;
-        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.25);
+        box-shadow: 0 8px 20px rgba(136, 19, 55, 0.25);
     }
 
     .btn-cfg-save:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 25px rgba(22, 163, 74, 0.35);
+        box-shadow: 0 12px 25px rgba(136, 19, 55, 0.35);
     }
 
     .btn-cfg-save:active {
@@ -625,7 +625,7 @@
         align-items: center;
         gap: 8px;
         padding: 0.75rem 1.5rem;
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: linear-gradient(135deg, #881337, #059669);
         color: white;
         border: none;
         border-radius: 14px;
@@ -636,12 +636,12 @@
         justify-content: center;
         transition: 0.25s;
         margin-top: 1rem;
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 6px 16px rgba(136, 19, 55, 0.25);
     }
 
     .btn-cfg-add:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 22px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 10px 22px rgba(136, 19, 55, 0.3);
     }
 
     .btn-cfg-add i {
@@ -667,7 +667,7 @@
     }
 
     .otp-preset-btn.active {
-        background: #16a34a;
+        background: #881337;
         color: white;
     }
 
@@ -682,15 +682,15 @@
         background: white;
         border-radius: 28px;
         border: 1.5px solid #e2e8f0;
-        box-shadow: 0 10px 30px rgba(22, 163, 74, 0.03);
+        box-shadow: 0 10px 30px rgba(136, 19, 55, 0.03);
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         overflow: hidden;
         margin-bottom: 2rem;
     }
 
     .workflow-card-modern:hover {
-        border-color: #10b981;
-        box-shadow: 0 16px 40px rgba(22, 163, 74, 0.06);
+        border-color: #881337;
+        box-shadow: 0 16px 40px rgba(136, 19, 55, 0.06);
     }
 
     .workflow-cat-grid-modern {
@@ -722,14 +722,14 @@
     }
 
     .workflow-cat-card-modern.active {
-        background: rgba(16, 185, 129, 0.06);
-        border-color: #16a34a;
-        box-shadow: 0 8px 24px rgba(22, 163, 74, 0.06);
+        background: rgba(136, 19, 55, 0.06);
+        border-color: #881337;
+        box-shadow: 0 8px 24px rgba(136, 19, 55, 0.06);
     }
 
     .workflow-cat-card-modern.active:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(22, 163, 74, 0.1);
+        box-shadow: 0 12px 28px rgba(136, 19, 55, 0.1);
     }
 
     .workflow-cat-card-modern .corner-glow {
@@ -738,7 +738,7 @@
         right: -20px;
         width: 50px;
         height: 50px;
-        background: radial-gradient(circle, rgba(22, 163, 74, 0.2) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(136, 19, 55, 0.2) 0%, transparent 70%);
         opacity: 0;
         transition: opacity 0.25s ease;
         pointer-events: none;
@@ -753,7 +753,7 @@
         height: 38px;
         border-radius: 12px;
         background: #ffffff;
-        color: #16a34a;
+        color: #881337;
         font-weight: 900;
         font-size: 0.85rem;
         display: flex;
@@ -765,10 +765,10 @@
     }
 
     .workflow-cat-card-modern.active .cat-circle {
-        background: #16a34a;
+        background: #881337;
         color: #ffffff;
         border-color: transparent;
-        box-shadow: 0 4px 8px rgba(22, 163, 74, 0.18);
+        box-shadow: 0 4px 8px rgba(136, 19, 55, 0.18);
     }
 
     .workflow-cat-card-modern .status-label {
@@ -780,7 +780,7 @@
     }
 
     .workflow-cat-card-modern.active .status-label {
-        color: #16a34a;
+        color: #881337;
     }
 
     .workflow-cat-card-modern .indicator-dot {
@@ -798,33 +798,33 @@
     }
 
     .workflow-cat-card-modern.active .indicator-dot {
-        background: #16a34a;
-        border-color: #16a34a;
-        box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+        background: #881337;
+        border-color: #881337;
+        box-shadow: 0 2px 6px rgba(136, 19, 55, 0.25);
     }
 
     /* Special theme colors for the DG workflow cards */
     .dg-workflow-container .workflow-cat-card-modern.active {
-        background: rgba(16, 185, 129, 0.08);
-        border-color: #16a34a;
-        box-shadow: 0 8px 24px rgba(22, 163, 74, 0.06);
+        background: rgba(136, 19, 55, 0.08);
+        border-color: #881337;
+        box-shadow: 0 8px 24px rgba(136, 19, 55, 0.06);
     }
     .dg-workflow-container .workflow-cat-card-modern.active:hover {
-        box-shadow: 0 12px 28px rgba(22, 163, 74, 0.1);
+        box-shadow: 0 12px 28px rgba(136, 19, 55, 0.1);
     }
     .dg-workflow-container .workflow-cat-card-modern.active .cat-circle {
-        background: #16a34a;
-        box-shadow: 0 4px 8px rgba(22, 163, 74, 0.18);
+        background: #881337;
+        box-shadow: 0 4px 8px rgba(136, 19, 55, 0.18);
         color: #ffffff;
         border-color: transparent;
     }
     .dg-workflow-container .workflow-cat-card-modern.active .status-label {
-        color: #16a34a;
+        color: #881337;
     }
     .dg-workflow-container .workflow-cat-card-modern.active .indicator-dot {
-        background: #16a34a;
-        border-color: #16a34a;
-        box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+        background: #881337;
+        border-color: #881337;
+        box-shadow: 0 2px 6px rgba(136, 19, 55, 0.25);
     }
 
     .flow-line {
@@ -836,8 +836,8 @@
     }
 
     .flow-line.active {
-        background: #16a34a;
-        box-shadow: 0 0 8px rgba(22, 163, 74, 0.25);
+        background: #881337;
+        box-shadow: 0 0 8px rgba(136, 19, 55, 0.25);
     }
 
     .flow-line.dashed {
@@ -867,7 +867,7 @@
 {{-- Page Header --}}
 <div class="view-header" style="margin-bottom: 2rem;">
     <div style="display: flex; align-items: center; gap: 1rem;">
-        <div style="width: 52px; height: 52px; background: #16a34a; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 8px 20px rgba(22,163,74,0.25);">
+        <div style="width: 52px; height: 52px; background: #881337; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 8px 20px rgba(136,19,55,0.25);">
             <i data-lucide="sliders-horizontal" style="width: 24px;"></i>
         </div>
         <div>
@@ -903,10 +903,10 @@
             @php
             $colorMap = [
             'security' => ['color' => '#ef4444', 'bg' => '#ef4444', 'icon' => 'shield-alert'],
-            'inventory' => ['color' => '#10b981', 'bg' => '#10b981', 'icon' => 'package'],
-            'system' => ['color' => '#10b981', 'bg' => '#10b981', 'icon' => 'server'],
+            'inventory' => ['color' => '#881337', 'bg' => '#881337', 'icon' => 'package'],
+            'system' => ['color' => '#881337', 'bg' => '#881337', 'icon' => 'server'],
             ];
-            $meta = $colorMap[$group] ?? ['color' => '#16a34a', 'bg' => '#16a34a', 'icon' => 'settings'];
+            $meta = $colorMap[$group] ?? ['color' => '#881337', 'bg' => '#881337', 'icon' => 'settings'];
             @endphp
 
             <div class="cfg-card" style="margin-bottom: 1.5rem;">
@@ -970,7 +970,7 @@
                         ); @endphp
                         <div class="cfg-item" style="grid-column: span 2; max-width: 800px;">
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                                <i data-lucide="timer" style="width: 18px; color: #16a34a;"></i>
+                                <i data-lucide="timer" style="width: 18px; color: #881337;"></i>
                                 <p class="cfg-item-label" style="margin: 0;">Recovery OTP Expiration (Minutes)</p>
                             </div>
                             <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
@@ -1001,7 +1001,7 @@
                 @endphp
                 <div class="cfg-card-header" style="background: #ffffff; padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
                     <div style="display: flex; align-items: center; gap: 1.25rem;">
-                        <div class="cfg-icon-box" style="background: #16a34a; box-shadow: 0 8px 20px rgba(22,163,74,0.15); width: 50px; height: 50px; border-radius: 16px;">
+                        <div class="cfg-icon-box" style="background: #881337; box-shadow: 0 8px 20px rgba(136,19,55,0.15); width: 50px; height: 50px; border-radius: 16px;">
                             <i data-lucide="shield-check" style="width: 24px; height: 24px; color: white;"></i>
                         </div>
                         <div>
@@ -1009,8 +1009,8 @@
                             <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review by the Department Head (Stores).</p>
                         </div>
                     </div>
-                    <span id="workflow-active-badge" style="background: rgba(22,163,74,0.08); color: #16a34a; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(22,163,74,0.15); box-shadow: 0 2px 4px rgba(22,163,74,0.02); transition: all 0.3s ease;">
-                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #16a34a; transition: all 0.3s ease;" id="workflow-badge-dot"></span>
+                    <span id="workflow-active-badge" style="background: rgba(136,19,55,0.08); color: #881337; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(136,19,55,0.15); box-shadow: 0 2px 4px rgba(136,19,55,0.02); transition: all 0.3s ease;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #881337; transition: all 0.3s ease;" id="workflow-badge-dot"></span>
                         <span id="workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($selectedCats) }}</span>
                     </span>
                 </div>
@@ -1061,14 +1061,14 @@
                         <div style="display: grid; grid-template-columns: 1fr 480px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
 
                             <!-- Sleek Gradient Alert Card -->
-                            <div style="background: rgba(22, 163, 74, 0.03);
+                            <div style="background: rgba(136, 19, 55, 0.03);
                                              border: 1.5px solid #edf2f7;
                                              border-radius: 24px;
                                              padding: 1.75rem 2rem;
                                              display: flex;
                                              gap: 1.25rem;
                                              align-items: flex-start;">
-                                <div style="width: 42px; height: 42px; background: rgba(22,163,74,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #16a34a; flex-shrink: 0; margin-top: 2px;">
+                                <div style="width: 42px; height: 42px; background: rgba(136,19,55,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #881337; flex-shrink: 0; margin-top: 2px;">
                                     <i data-lucide="info" style="width: 20px; height: 20px;"></i>
                                 </div>
                                 <div style="flex: 1;">
@@ -1087,11 +1087,11 @@
 
                                     <!-- Origin Node -->
                                     <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                        <div class="flow-node-icon" style="background: #16a34a; color: white; box-shadow: 0 4px 12px rgba(22,163,74,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <div class="flow-node-icon" style="background: #881337; color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                             <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
                                         </div>
                                         <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Dept. Head</span>
-                                        <span class="flow-node-badge" style="background: #dcfce7; color: #16a34a; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
+                                        <span class="flow-node-badge" style="background: #dcfce7; color: #881337; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
                                     </div>800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
                                     </div>
 
@@ -1124,7 +1124,7 @@
 
                                     <!-- Head of Stores Node -->
                                     <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #881337, #059669); color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                             <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
                                         </div>
                                         <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
@@ -1155,7 +1155,7 @@
                 @endphp
                 <div class="cfg-card-header" style="background: #ffffff; padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
                     <div style="display: flex; align-items: center; gap: 1.25rem;">
-                        <div class="cfg-icon-box" style="background: #16a34a; box-shadow: 0 8px 20px rgba(22, 163, 74, 0.15); width: 50px; height: 50px; border-radius: 16px;">
+                        <div class="cfg-icon-box" style="background: #881337; box-shadow: 0 8px 20px rgba(136, 19, 55, 0.15); width: 50px; height: 50px; border-radius: 16px;">
                             <i data-lucide="user-cog" style="width: 24px; height: 24px; color: white;"></i>
                         </div>
                         <div>
@@ -1163,8 +1163,8 @@
                             <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review and sign-off by the Director General.</p>
                         </div>
                     </div>
-                    <span id="dg-workflow-active-badge" style="background: rgba(22,163,74,0.08); color: #16a34a; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(22,163,74,0.15); box-shadow: 0 2px 4px rgba(22,163,74,0.02); transition: all 0.3s ease;">
-                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #16a34a; transition: all 0.3s ease;" id="dg-workflow-badge-dot"></span>
+                    <span id="dg-workflow-active-badge" style="background: rgba(136,19,55,0.08); color: #881337; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(136,19,55,0.15); box-shadow: 0 2px 4px rgba(136,19,55,0.02); transition: all 0.3s ease;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #881337; transition: all 0.3s ease;" id="dg-workflow-badge-dot"></span>
                         <span id="dg-workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($dgSelectedCats) }}</span>
                     </span>
                 </div>
@@ -1215,14 +1215,14 @@
                         <div style="display: grid; grid-template-columns: 1fr 480px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
 
                             <!-- Sleek Gradient Alert Card -->
-                            <div style="background: rgba(22, 163, 74, 0.03);
+                            <div style="background: rgba(136, 19, 55, 0.03);
                                              border: 1.5px solid #edf2f7;
                                              border-radius: 24px;
                                              padding: 1.75rem 2rem;
                                              display: flex;
                                              gap: 1.25rem;
                                              align-items: flex-start;">
-                                <div style="width: 42px; height: 42px; background: rgba(22,163,74,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #16a34a; flex-shrink: 0; margin-top: 2px;">
+                                <div style="width: 42px; height: 42px; background: rgba(136,19,55,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #881337; flex-shrink: 0; margin-top: 2px;">
                                     <i data-lucide="info" style="width: 20px; height: 20px;"></i>
                                 </div>
                                 <div style="flex: 1;">
@@ -1241,11 +1241,11 @@
 
                                     <!-- Origin Node -->
                                     <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                        <div class="flow-node-icon" style="background: #16a34a; color: white; box-shadow: 0 4px 12px rgba(22,163,74,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <div class="flow-node-icon" style="background: #881337; color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                             <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
                                         </div>
                                         <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Dept. Head</span>
-                                        <span class="flow-node-badge" style="background: #dcfce7; color: #16a34a; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
+                                        <span class="flow-node-badge" style="background: #dcfce7; color: #881337; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
                                     </div>
 
                                     <!-- Connector 1 (Now connects to DG Node, so controlled by DG active state) -->
@@ -1277,7 +1277,7 @@
 
                                     <!-- Head of Stores Node -->
                                     <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #881337, #059669); color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                             <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
                                         </div>
                                         <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
@@ -1311,7 +1311,7 @@
         <div class="cfg-card" id="head-stores-signature" style="margin-bottom: 2rem;">
             <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9;">
                 <div style="display: flex; align-items: center; gap: 1.25rem;">
-                    <div class="cfg-icon-box" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); box-shadow: 0 8px 20px rgba(16,185,129,0.15); width: 50px; height: 50px; border-radius: 16px;">
+                    <div class="cfg-icon-box" style="background: linear-gradient(135deg, #881337 0%, #047857 100%); box-shadow: 0 8px 20px rgba(136,19,55,0.15); width: 50px; height: 50px; border-radius: 16px;">
                         <i data-lucide="signature" style="width: 24px; height: 24px; color: white;"></i>
                     </div>
                     <div>
@@ -1328,7 +1328,7 @@
                         <img src="{{ Storage::url(auth()->user()->signature) }}" style="max-width: 90%; max-height: 90%; object-fit: contain;" id="user-signature-img-admin">
                         @else
                         <div style="text-align: center; color: #64748b;" id="user-signature-placeholder-admin">
-                            <i data-lucide="edit-3" style="width: 32px; margin: 0 auto 6px; display: block; opacity: 0.4; color: #16a34a;"></i>
+                            <i data-lucide="edit-3" style="width: 32px; margin: 0 auto 6px; display: block; opacity: 0.4; color: #881337;"></i>
                             <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">No Signature Uploaded</span>
                         </div>
                         @endif
@@ -1337,7 +1337,7 @@
                     <!-- Upload Controls -->
                     <div>
                         <div style="display: flex; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
-                            <button type="button" class="btn-cfg-save" onclick="document.getElementById('signature-file-upload-admin').click()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; background: #16a34a; color: white; width: auto; height: auto; border-radius: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; font-weight: 900; box-shadow: 0 4px 10px rgba(22,163,74,0.15);">
+                            <button type="button" class="btn-cfg-save" onclick="document.getElementById('signature-file-upload-admin').click()" style="padding: 0.85rem 1.5rem; font-size: 0.85rem; background: #881337; color: white; width: auto; height: auto; border-radius: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; font-weight: 900; box-shadow: 0 4px 10px rgba(136,19,55,0.15);">
                                 <i data-lucide="upload-cloud" style="width: 16px;"></i>
                                 Upload Signature Image
                             </button>
@@ -1361,7 +1361,7 @@
         <div class="cfg-card" id="category-configs">
             <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
                 <div style="display: flex; align-items: center; gap: 1.5rem;">
-                    <div class="cfg-icon-box" style="background: linear-gradient(135deg,#10b981,#059669);">
+                    <div class="cfg-icon-box" style="background: linear-gradient(135deg,#881337,#059669);">
                         <i data-lucide="tags"></i>
                     </div>
                     <div>
@@ -1573,7 +1573,7 @@
     <div class="cfg-card" id="request-limits" style="margin-top: 2rem;">
         <div class="cfg-card-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <div class="cfg-icon-box" style="background: linear-gradient(135deg,#16a34a,#16a34a);">
+                <div class="cfg-icon-box" style="background: linear-gradient(135deg,#881337,#881337);">
                     <i data-lucide="ban"></i>
                 </div>
                 <div>
@@ -1620,7 +1620,7 @@
                             <div class="custom-scrollbar" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; max-height: 280px; overflow-y: auto; padding-right: 0.25rem;">
                                 @foreach($limitsGroup as $keyword => $limit)
                                 <div class="limit-rule-card" data-keyword="{{ strtolower($keyword) }}" style="display: flex; align-items: center; gap: 10px; padding: 0.75rem 1rem; background: white; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s;">
-                                    <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#16a34a,#16a34a); color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
+                                    <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#881337,#881337); color: white; font-weight: 900; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase;">
                                         <i data-lucide="ban" style="width: 14px;"></i>
                                     </div>
                                     <div style="flex: 1; min-width: 0;">
@@ -1718,7 +1718,7 @@
                                 <input type="number" name="limit" id="limitVal" class="cfg-text-input" placeholder="e.g. 5" required min="0">
                             </div>
                             <div style="display: flex; gap: 10px;">
-                                <button type="submit" id="limitSubmitBtn" class="btn-cfg-add" style="flex: 1; background: linear-gradient(135deg,#16a34a,#16a34a); box-shadow: 0 6px 16px rgba(22,163,74,0.25);">
+                                <button type="submit" id="limitSubmitBtn" class="btn-cfg-add" style="flex: 1; background: linear-gradient(135deg,#881337,#881337); box-shadow: 0 6px 16px rgba(136,19,55,0.25);">
                                     <i data-lucide="plus-circle" id="limitSubmitIcon"></i> <span id="limitSubmitText">Add Limit</span>
                                 </button>
                                 <button type="button" id="limitResetBtn" onclick="resetLimitForm()" style="display: none; padding: 0.75rem 1rem; background: #f1f5f9; color: #64748b; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.2s;">
@@ -1828,7 +1828,7 @@
 
         // Update button UI
         document.getElementById('thresholdSubmitText').innerText = 'Update';
-        document.getElementById('thresholdSubmitBtn').style.background = 'linear-gradient(135deg, #16a34a, #3730a3)';
+        document.getElementById('thresholdSubmitBtn').style.background = 'linear-gradient(135deg, #881337, #3730a3)';
         document.getElementById('thresholdResetBtn').style.display = 'block';
         const icon = document.getElementById('thresholdSubmitIcon');
         icon.setAttribute('data-lucide', 'refresh-cw');
@@ -1868,7 +1868,7 @@
 
         document.getElementById('limitVal').value = limit;
         document.getElementById('limitSubmitText').innerText = 'Update Limit';
-        document.getElementById('limitSubmitBtn').style.background = 'linear-gradient(135deg, #16a34a, #16a34a)';
+        document.getElementById('limitSubmitBtn').style.background = 'linear-gradient(135deg, #881337, #881337)';
         document.getElementById('limitResetBtn').style.display = 'inline-block';
         const icon = document.getElementById('limitSubmitIcon');
         icon.setAttribute('data-lucide', 'refresh-cw');
@@ -1884,7 +1884,7 @@
         $('#limitKeyword').val(null).trigger('change.select2');
         document.getElementById('limitStockInfo').style.display = 'none';
         document.getElementById('limitSubmitText').innerText = 'Add Limit';
-        document.getElementById('limitSubmitBtn').style.background = 'linear-gradient(135deg,#16a34a,#16a34a)';
+        document.getElementById('limitSubmitBtn').style.background = 'linear-gradient(135deg,#881337,#881337)';
         document.getElementById('limitResetBtn').style.display = 'none';
         const icon = document.getElementById('limitSubmitIcon');
         icon.setAttribute('data-lucide', 'plus-circle');
@@ -2020,7 +2020,7 @@
                         icon: 'warning',
                         title: 'Limit Exceeds Stock Balance',
                         text: `The request limit (${limit}) cannot exceed the current stock balance of "${keyword}" (${stock} units).`,
-                        confirmButtonColor: '#16a34a'
+                        confirmButtonColor: '#881337'
                     });
                     return false;
                 }
@@ -2070,7 +2070,7 @@
             badgeEl.style.color = '#dc2626';
             hintEl.textContent = 'This item is currently out of stock. Setting a limit here will keep it as Unavailable on the dashboard.';
         } else if (stock <= 5) {
-            iconEl.style.background = 'linear-gradient(135deg,#10b981,#047857)';
+            iconEl.style.background = 'linear-gradient(135deg,#881337,#047857)';
             valEl.textContent = stock + ' units available';
             badgeEl.textContent = 'Very Low';
             badgeEl.style.background = '#fef3c7';
@@ -2084,11 +2084,11 @@
             badgeEl.style.color = '#ca8a04';
             hintEl.textContent = 'Stock is running low. Set a limit that reflects the quantity you wish to make available for requisitions.';
         } else {
-            iconEl.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+            iconEl.style.background = 'linear-gradient(135deg,#881337,#059669)';
             valEl.textContent = stock + ' units available';
             badgeEl.textContent = 'In Stock';
             badgeEl.style.background = '#dcfce7';
-            badgeEl.style.color = '#16a34a';
+            badgeEl.style.color = '#881337';
             hintEl.textContent = 'Sufficient stock available. Set your desired request limit and it will be enforced on the requisition dashboard.';
         }
 
@@ -2235,11 +2235,11 @@
         const badgeContainerStores = document.getElementById('workflow-active-badge');
         if (badgeTextStores) badgeTextStores.textContent = `Active Categories: ${activeCountStores}`;
         if (activeCountStores > 0) {
-            if (badgeDotStores) badgeDotStores.style.background = '#16a34a';
+            if (badgeDotStores) badgeDotStores.style.background = '#881337';
             if (badgeContainerStores) {
-                badgeContainerStores.style.background = 'rgba(22, 163, 74, 0.08)';
-                badgeContainerStores.style.color = '#16a34a';
-                badgeContainerStores.style.borderColor = 'rgba(22, 163, 74, 0.2)';
+                badgeContainerStores.style.background = 'rgba(136, 19, 55, 0.08)';
+                badgeContainerStores.style.color = '#881337';
+                badgeContainerStores.style.borderColor = 'rgba(136, 19, 55, 0.2)';
             }
         } else {
             if (badgeDotStores) badgeDotStores.style.background = '#64748b';
@@ -2256,10 +2256,10 @@
         const badgeContainerDG = document.getElementById('dg-workflow-active-badge');
         if (badgeTextDG) badgeTextDG.textContent = `Active Categories: ${activeCountDG}`;
         if (activeCountDG > 0) {
-            if (badgeDotDG) badgeDotDG.style.background = '#4ade80';
+            if (badgeDotDG) badgeDotDG.style.background = '#9f1239';
             if (badgeContainerDG) {
                 badgeContainerDG.style.background = 'rgba(139, 92, 246, 0.08)';
-                badgeContainerDG.style.color = '#4ade80';
+                badgeContainerDG.style.color = '#9f1239';
                 badgeContainerDG.style.borderColor = 'rgba(139, 92, 246, 0.2)';
             }
         } else {
@@ -2280,10 +2280,10 @@
             if (activeCountStores > 0) {
                 node.className = 'flow-node flow-node-stores active';
                 if (iconBox) {
-                    iconBox.style.background = 'linear-gradient(135deg, #16a34a, #3730a3)';
+                    iconBox.style.background = 'linear-gradient(135deg, #881337, #3730a3)';
                     iconBox.style.color = '#ffffff';
                     iconBox.style.borderColor = 'transparent';
-                    iconBox.style.boxShadow = '0 6px 15px rgba(22,163,74,0.2)';
+                    iconBox.style.boxShadow = '0 6px 15px rgba(136,19,55,0.2)';
                 }
                 if (label) {
                     label.style.color = '#1e293b';
@@ -2291,8 +2291,8 @@
                 }
                 if (badge) {
                     badge.textContent = 'Required';
-                    badge.style.background = 'rgba(22, 163, 74, 0.1)';
-                    badge.style.color = '#16a34a';
+                    badge.style.background = 'rgba(136, 19, 55, 0.1)';
+                    badge.style.color = '#881337';
                     badge.style.borderColor = 'transparent';
                 }
             } else {
@@ -2325,7 +2325,7 @@
             if (activeCountDG > 0) {
                 node.className = 'flow-node flow-node-dg active';
                 if (iconBox) {
-                    iconBox.style.background = 'linear-gradient(135deg, #4ade80, #6d28d9)';
+                    iconBox.style.background = 'linear-gradient(135deg, #9f1239, #6d28d9)';
                     iconBox.style.color = '#ffffff';
                     iconBox.style.borderColor = 'transparent';
                     iconBox.style.boxShadow = '0 6px 15px rgba(139,92,246,0.2)';
@@ -2337,7 +2337,7 @@
                 if (badge) {
                     badge.textContent = 'Required';
                     badge.style.background = 'rgba(139, 92, 246, 0.1)';
-                    badge.style.color = '#4ade80';
+                    badge.style.color = '#9f1239';
                     badge.style.borderColor = 'transparent';
                 }
             } else {
@@ -2365,7 +2365,7 @@
         document.querySelectorAll('.flow-line-1').forEach(line => {
             if (activeCountStores > 0) {
                 line.className = 'flow-line flow-line-1 active';
-                line.style.background = '#16a34a';
+                line.style.background = '#881337';
             } else {
                 line.className = 'flow-line flow-line-1 dashed';
                 line.style.background = '';
@@ -2375,7 +2375,7 @@
         document.querySelectorAll('.flow-line-2').forEach(line => {
             if (activeCountDG > 0) {
                 line.className = 'flow-line flow-line-2 active';
-                line.style.background = '#4ade80';
+                line.style.background = '#9f1239';
             } else {
                 line.className = 'flow-line flow-line-2 dashed';
                 line.style.background = '';
@@ -2385,7 +2385,7 @@
         document.querySelectorAll('.flow-line-3').forEach(line => {
             // Since Head of Stores is always required:
             line.className = 'flow-line flow-line-3 active';
-            line.style.background = '#10b981';
+            line.style.background = '#881337';
         });
 
         // Update hints
@@ -2393,13 +2393,13 @@
             const isStoresCard = hint.closest('.workflow-card-modern').querySelector('h3').textContent.includes('Stores');
             if (isStoresCard) {
                 if (activeCountStores > 0) {
-                    hint.innerHTML = `Routing through <strong>Head of Admin</strong> for <strong style="color: #16a34a;">${activeCountStores}</strong> selected category${activeCountStores == 1 ? '' : 'ies'}.`;
+                    hint.innerHTML = `Routing through <strong>Head of Admin</strong> for <strong style="color: #881337;">${activeCountStores}</strong> selected category${activeCountStores == 1 ? '' : 'ies'}.`;
                 } else {
                     hint.innerHTML = 'Currently bypassing intermediate Stores Head step due to settings configuration.';
                 }
             } else {
                 if (activeCountDG > 0) {
-                    hint.innerHTML = `Routing through <strong>Director General</strong> for <strong style="color: #4ade80;">${activeCountDG}</strong> selected category${activeCountDG == 1 ? '' : 'ies'}.`;
+                    hint.innerHTML = `Routing through <strong>Director General</strong> for <strong style="color: #9f1239;">${activeCountDG}</strong> selected category${activeCountDG == 1 ? '' : 'ies'}.`;
                 } else {
                     hint.innerHTML = 'Currently bypassing intermediate Director General step due to settings configuration.';
                 }
@@ -2527,7 +2527,7 @@
                 const previewBox = document.getElementById('signature-preview-box-admin');
                 previewBox.innerHTML = `
                     <div style="text-align: center; color: #64748b;" id="user-signature-placeholder-admin">
-                        <i data-lucide="edit-3" style="width: 32px; margin: 0 auto 6px; display: block; opacity: 0.4; color: #16a34a;"></i>
+                        <i data-lucide="edit-3" style="width: 32px; margin: 0 auto 6px; display: block; opacity: 0.4; color: #881337;"></i>
                         <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">No Signature Uploaded</span>
                     </div>
                 `;
@@ -2571,8 +2571,8 @@
         document.getElementById('categoryNameInput').value = name;
         
         document.getElementById('categorySubmitText').innerText = 'Update Category';
-        document.getElementById('categorySubmitBtn').style.background = '#16a34a';
-        document.getElementById('categorySubmitBtn').style.boxShadow = '0 6px 16px rgba(22, 163, 74, 0.25)';
+        document.getElementById('categorySubmitBtn').style.background = '#881337';
+        document.getElementById('categorySubmitBtn').style.boxShadow = '0 6px 16px rgba(136, 19, 55, 0.25)';
         
         document.getElementById('categoryResetBtn').style.display = 'block';
 

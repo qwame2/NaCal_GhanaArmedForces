@@ -27,7 +27,7 @@
             border-radius: 40px;
             padding: 2.5rem 3.5rem;
             backdrop-filter: blur(40px);
-            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.1), 0 0 0 1px rgba(22,163,74,0.04);
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.1), 0 0 0 1px rgba(136,19,55,0.04);
             position: relative;
             overflow: hidden;
             transition: max-width 0.55s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s ease, box-shadow 0.4s ease;
@@ -36,7 +36,7 @@
         .auth-vault.mode-register {
             max-width: 1000px;
             padding: 2.5rem 4rem 3rem;
-            box-shadow: 0 50px 120px -20px rgba(22,163,74,0.12), 0 0 0 1px rgba(22,163,74,0.06);
+            box-shadow: 0 50px 120px -20px rgba(136,19,55,0.12), 0 0 0 1px rgba(136,19,55,0.06);
         }
 
         .auth-header {
@@ -155,10 +155,10 @@
         .form-section-divider .divider-line {
             flex: 1;
             height: 1px;
-            background: linear-gradient(to right, rgba(22,163,74,0.15), transparent);
+            background: linear-gradient(to right, rgba(136,19,55,0.15), transparent);
         }
         .form-section-divider .divider-line.right {
-            background: linear-gradient(to left, rgba(22,163,74,0.15), transparent);
+            background: linear-gradient(to left, rgba(136,19,55,0.15), transparent);
         }
 
         /* ── Register field animations ── */
@@ -212,8 +212,8 @@
 
         /* ── Register submit button: gradient ── */
         .register-submit-btn {
-            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
-            box-shadow: 0 12px 30px rgba(22,163,74,0.35) !important;
+            background: linear-gradient(135deg, #881337 0%, #4c0519 100%) !important;
+            box-shadow: 0 12px 30px rgba(136,19,55,0.35) !important;
             height: 60px !important;
             border-radius: 22px !important;
             font-size: 0.95rem !important;
@@ -221,9 +221,9 @@
             text-transform: uppercase !important;
         }
         .register-submit-btn:hover {
-            background: linear-gradient(135deg, #15803d 0%, #6d28d9 100%) !important;
+            background: linear-gradient(135deg, #4c0519 0%, #6d28d9 100%) !important;
             transform: translateY(-4px) !important;
-            box-shadow: 0 20px 45px rgba(22,163,74,0.45) !important;
+            box-shadow: 0 20px 45px rgba(136,19,55,0.45) !important;
         }
 
         /* ── Password hint chip ── */
@@ -231,13 +231,13 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            background: rgba(22,163,74,0.06);
-            border: 1px solid rgba(22,163,74,0.12);
+            background: rgba(136,19,55,0.06);
+            border: 1px solid rgba(136,19,55,0.12);
             border-radius: 999px;
             padding: 4px 10px;
             font-size: 0.65rem;
             font-weight: 800;
-            color: #16a34a;
+            color: #881337;
             margin-top: 8px;
             letter-spacing: 0.04em;
         }
@@ -423,7 +423,7 @@
                     <div style="font-size: 0.8rem; font-weight: 900; color: #0f172a;">{{ $adminUser->name ?? $adminUser->username }}</div>
                     <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700;">Currently Active &middot; Admin</div>
                 </div>
-                <div style="margin-left: auto; width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 0 3px rgba(16,185,129,0.2);"></div>
+                <div style="margin-left: auto; width: 8px; height: 8px; background: #881337; border-radius: 50%; box-shadow: 0 0 0 3px rgba(136,19,55,0.2);"></div>
             </div>
             @endif
             <!-- Dismiss Button -->
@@ -439,7 +439,7 @@
 
             <!-- Background Accents -->
             <div style="position: absolute; top: -100px; left: -100px; width: 250px; height: 250px; background: var(--primary); opacity: 0.08; filter: blur(80px); border-radius: 50%;"></div>
-            <div style="position: absolute; bottom: -100px; right: -100px; width: 250px; height: 250px; background: #16a34a; opacity: 0.08; filter: blur(80px); border-radius: 50%;"></div>
+            <div style="position: absolute; bottom: -100px; right: -100px; width: 250px; height: 250px; background: #881337; opacity: 0.08; filter: blur(80px); border-radius: 50%;"></div>
 
             <!-- Header Section (Compacted) -->
             <div class="auth-header">
@@ -447,7 +447,7 @@
                     <img src="{{ asset('img/NACOC1.png') }}" style="width: 32px;" alt="Logo">
                 </div>
                 <h2 style="color: var(--text-main); font-size: 1.6rem; font-weight: 950; letter-spacing: -0.04em; margin-bottom: 0.15rem;">NACOC</h2>
-                <p style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Stores Inventory Management System<span style="color:#10b981;">(NSIMs)</span></p>
+                <p style="color: var(--text-muted); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;">Stores Inventory Management System<span style="color:#881337;">(NSIMs)</span></p>
 
                 <!-- Target Interface Selector (Hidden for security) -->
                 <div class="interface-selector" style="display: none !important; margin-top: 1.5rem; width: 100%; max-width: 300px; margin-inline: auto;">
@@ -507,7 +507,7 @@
                                 <a href="{{ route('password.request') }}" id="forgotLink" style="font-size: 0.8rem; font-weight: 800; color: var(--primary); text-decoration: none;">Forgot Password?</a>
                             </div>
 
-                            <button type="submit" class="auth-btn-primary" style="background: var(--primary) !important; height: 56px; font-size: 1rem; border-radius: 20px; margin-top: 1rem; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(22, 163, 74, 0.3);">
+                            <button type="submit" class="auth-btn-primary" style="background: var(--primary) !important; height: 56px; font-size: 1rem; border-radius: 20px; margin-top: 1rem; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.3);">
                                 <span>Login</span>
                             </button>
 
@@ -687,7 +687,7 @@
 
                             <div class="form-grid" style="margin-top: 0.5rem;">
                                 {{-- Requisitioner Toggle Switch --}}
-                                <div class="input-modern-group" style="grid-column: span 2; display: flex; align-items: center; justify-content: space-between; background: rgba(22, 163, 74, 0.03); padding: 0.9rem 1.25rem; border: 1px dashed rgba(22, 163, 74, 0.2); border-radius: 20px;">
+                                <div class="input-modern-group" style="grid-column: span 2; display: flex; align-items: center; justify-content: space-between; background: rgba(136, 19, 55, 0.03); padding: 0.9rem 1.25rem; border: 1px dashed rgba(136, 19, 55, 0.2); border-radius: 20px;">
                                     <div style="display: flex; flex-direction: column; gap: 4px;">
                                         <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-main);">Register as Requisitioner</span>
                                         <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">Toggle if you are requesting items on behalf of your department</span>
@@ -857,15 +857,15 @@
         height: 56px;
     }
     .staff-id-split-wrapper:focus-within {
-        border-color: var(--primary, #16a34a);
-        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+        border-color: var(--primary, #881337);
+        box-shadow: 0 0 0 3px rgba(136, 19, 55, 0.12);
     }
     .staff-id-prefix-select {
         appearance: none;
         -webkit-appearance: none;
         border: none;
-        background: linear-gradient(135deg, rgba(22,163,74,0.1), rgba(22,163,74,0.06));
-        color: var(--primary, #16a34a);
+        background: linear-gradient(135deg, rgba(136,19,55,0.1), rgba(136,19,55,0.06));
+        color: var(--primary, #881337);
         font-weight: 900;
         font-size: 0.95rem;
         padding: 0 18px;
@@ -878,7 +878,7 @@
         transition: background 0.2s;
     }
     .staff-id-prefix-select:hover {
-        background: linear-gradient(135deg, rgba(22,163,74,0.18), rgba(22,163,74,0.1));
+        background: linear-gradient(135deg, rgba(136,19,55,0.18), rgba(136,19,55,0.1));
     }
     .staff-id-divider {
         width: 1.5px;
@@ -913,7 +913,7 @@
         letter-spacing: 0.04em;
     }
     .staff-id-preview strong {
-        color: var(--primary, #16a34a);
+        color: var(--primary, #881337);
         font-family: 'SF Mono', 'Monaco', monospace;
         font-size: 0.75rem;
     }
@@ -1036,12 +1036,12 @@
     .tab-btn.active {
         background: var(--primary) !important;
         color: white !important;
-        box-shadow: 0 10px 20px rgba(22, 163, 74, 0.3);
+        box-shadow: 0 10px 20px rgba(136, 19, 55, 0.3);
     }
 
     .tab-btn:hover:not(.active) {
         color: var(--primary) !important;
-        background: rgba(22, 163, 74, 0.08) !important;
+        background: rgba(136, 19, 55, 0.08) !important;
         transform: scale(1.02);
     }
 
@@ -1087,13 +1087,13 @@
         gap: 12px;
         cursor: pointer;
         transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 10px 30px rgba(22, 163, 74, 0.3);
+        box-shadow: 0 10px 30px rgba(136, 19, 55, 0.3);
         margin-top: 1rem;
     }
 
     .auth-btn-primary:hover {
         transform: translateY(-5px);
-        box-shadow: 0 20px 40px rgba(22, 163, 74, 0.45);
+        box-shadow: 0 20px 40px rgba(136, 19, 55, 0.45);
         filter: brightness(1.1);
     }
 
@@ -1232,7 +1232,7 @@
     }
 
     .select2-results__option--highlighted[aria-selected] {
-        background-color: #16a34a !important;
+        background-color: #881337 !important;
         color: white !important;
     }
 
@@ -1521,7 +1521,7 @@
 
         toast.className = `toast toast-${type}`;
         toast.innerHTML = `
-            <div style="background: ${type === 'success' ? 'rgba(22, 163, 74, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: ${type === 'success' ? 'var(--primary)' : '#ef4444'};">
+            <div style="background: ${type === 'success' ? 'rgba(136, 19, 55, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: ${type === 'success' ? 'var(--primary)' : '#ef4444'};">
                 <i data-lucide="${icon}"></i>
             </div>
             <div style="flex: 1;">
@@ -1659,7 +1659,7 @@
                     iconColor: '#ef4444',
                     background: 'rgba(255, 255, 255, 0.95)',
                     backdrop: `rgba(0,0,123,0.1)`,
-                    confirmButtonColor: '#16a34a',
+                    confirmButtonColor: '#881337',
                     confirmButtonText: 'UNDERSTOOD',
                     customClass: {
                         popup: 'glass-monolith',

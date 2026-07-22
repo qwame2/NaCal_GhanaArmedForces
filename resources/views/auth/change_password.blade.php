@@ -33,14 +33,14 @@
         gap: 8px;
         font-size: 0.7rem;
         font-weight: 800;
-        color: #10b981;
+        color: #881337;
         text-transform: uppercase;
         letter-spacing: 0.08em;
     }
     .live-dot {
         width: 8px;
         height: 8px;
-        background: #10b981;
+        background: #881337;
         border-radius: 50%;
         animation: livepulse 2s infinite;
     }
@@ -59,23 +59,23 @@
         border-radius: 4px;
         background: #e2e8f0;
     }
-    .step-pip.done  { background: #10b981; }
-    .step-pip.active { background: #16a34a; }
+    .step-pip.done  { background: #881337; }
+    .step-pip.active { background: #881337; }
 
     /* === MAIN CARD === */
     .sync-card {
         background: white;
-        border: 1px solid rgba(22,163,74,0.12);
+        border: 1px solid rgba(136,19,55,0.12);
         border-radius: 28px;
         overflow: hidden;
         box-shadow:
             0 4px 6px -1px rgba(0,0,0,0.05),
-            0 20px 50px -10px rgba(22,163,74,0.12);
+            0 20px 50px -10px rgba(136,19,55,0.12);
     }
 
     /* === HERO BANNER === */
     .sync-hero {
-        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #15803d 100%);
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c0519 100%);
         padding: 2.5rem 2.5rem 1.5rem;
         position: relative;
         overflow: hidden;
@@ -194,7 +194,7 @@
         padding: 12px 14px;
         margin-bottom: 1.75rem;
     }
-    .info-strip i { width: 15px; color: #15803d; flex-shrink: 0; margin-top: 1px; }
+    .info-strip i { width: 15px; color: #4c0519; flex-shrink: 0; margin-top: 1px; }
     .info-strip p {
         margin: 0;
         font-size: 0.75rem;
@@ -240,8 +240,8 @@
     }
     .field-input:focus-within {
         background: white;
-        border-color: #16a34a;
-        box-shadow: 0 0 0 3px rgba(22,163,74,0.1);
+        border-color: #881337;
+        box-shadow: 0 0 0 3px rgba(136,19,55,0.1);
     }
     .field-icon {
         padding: 0 14px;
@@ -249,7 +249,7 @@
         align-items: center;
     }
     .field-icon i { width: 16px; color: #94a3b8; transition: 0.2s; }
-    .field-input:focus-within .field-icon i { color: #16a34a; }
+    .field-input:focus-within .field-icon i { color: #881337; }
 
     .field-input input {
         flex: 1;
@@ -272,7 +272,7 @@
         transition: 0.2s;
         display: flex;
     }
-    .eye-btn:hover { color: #16a34a; }
+    .eye-btn:hover { color: #881337; }
     .eye-btn i { width: 16px; }
 
     .divider {
@@ -285,7 +285,7 @@
     .sync-btn {
         width: 100%;
         height: 52px;
-        background: linear-gradient(135deg, #16a34a 0%, #16a34a 100%);
+        background: linear-gradient(135deg, #881337 0%, #881337 100%);
         border: none;
         border-radius: 14px;
         color: white;
@@ -298,7 +298,7 @@
         justify-content: center;
         gap: 10px;
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 8px 25px rgba(22,163,74,0.3);
+        box-shadow: 0 8px 25px rgba(136,19,55,0.3);
         position: relative;
         overflow: hidden;
     }
@@ -312,7 +312,7 @@
     }
     .sync-btn:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 35px rgba(22,163,74,0.4);
+        box-shadow: 0 15px 35px rgba(136,19,55,0.4);
     }
     .sync-btn:hover::before { opacity: 1; }
     .sync-btn:active { transform: translateY(-1px); }
@@ -380,7 +380,7 @@
     .select2-dropdown {
         border: 1px solid #e2e8f0 !important;
         border-radius: 12px !important;
-        box-shadow: 0 10px 30px rgba(22, 163, 74, 0.08) !important;
+        box-shadow: 0 10px 30px rgba(136, 19, 55, 0.08) !important;
         z-index: 999999 !important;
     }
     .select2-search__field {
@@ -394,7 +394,7 @@
         font-weight: 600 !important;
     }
     .select2-results__option--highlighted[aria-selected] {
-        background-color: #16a34a !important;
+        background-color: #881337 !important;
         color: white !important;
     }
     .select2-results__group {
@@ -722,7 +722,7 @@
             
             if (p && c && p === c) {
                 badge.style.background = '#ecfdf5';
-                badge.style.color = '#10b981';
+                badge.style.color = '#881337';
             } else {
                 badge.style.background = '#fef2f2';
                 badge.style.color = '#ef4444';

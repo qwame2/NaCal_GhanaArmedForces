@@ -6,7 +6,7 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        background: rgba(22, 163, 74, 0.02);
+        background: rgba(136, 19, 55, 0.02);
         border: 1px solid var(--border-color);
         padding: 4px 8px;
         border-radius: 8px;
@@ -14,11 +14,11 @@
     }
     .serial-input-wrapper:focus-within {
         border-color: var(--primary) !important;
-        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15) !important;
+        box-shadow: 0 0 0 3px rgba(136, 19, 55, 0.15) !important;
         background: var(--bg-card) !important;
     }
     .btn-bulk-paste:hover {
-        background: rgba(22, 163, 74, 0.08) !important;
+        background: rgba(136, 19, 55, 0.08) !important;
         color: var(--primary-hover) !important;
     }
 </style>
@@ -27,14 +27,14 @@
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Stock Entry</span>
+                <span style="background: rgba(136, 19, 55, 0.1); color: #881337; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Stock Entry</span>
                 <!-- <span style="color: var(--text-muted); font-size: 0.85rem;"></span> -->
             </div>
             <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main); margin: 0;">Add New <span style="color: var(--primary);">Inventory Item</span></h2>
             <p style="color: var(--text-muted); margin: 0.5rem 0 0;">Categorize and record stock balance accurately.</p>
         </div>
         <div>
-            <a href="{{ route('dashboard') }}" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); text-decoration: none; transition: all 0.3s;" onmouseover="this.style.background='rgba(22, 163, 74, 0.05)'" onmouseout="this.style.background='var(--bg-card)'">
+            <a href="{{ route('dashboard') }}" class="glass-card" style="padding: 0.75rem 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); text-decoration: none; transition: all 0.3s;" onmouseover="this.style.background='rgba(136, 19, 55, 0.05)'" onmouseout="this.style.background='var(--bg-card)'">
                 <i data-lucide="arrow-left" style="width: 18px;"></i> Back to Dashboard
             </a>
         </div>
@@ -161,8 +161,8 @@
                                 </label>
                                 <select id="supplierStatusSelect" style="width: 100%;" required>
                                     <option value="">Select Status</option>
-                                    <option value="Full Delivery" data-icon="check-circle" data-color="#10b981">Full Delivery</option>
-                                    <option value="Partial Delivery" data-icon="alert-circle" data-color="#10b981">Partial Delivery</option>
+                                    <option value="Full Delivery" data-icon="check-circle" data-color="#881337">Full Delivery</option>
+                                    <option value="Partial Delivery" data-icon="alert-circle" data-color="#881337">Partial Delivery</option>
                                 </select>
 
                                 <div id="dateControl" class="form-group" style="display: none; opacity: 0; margin-top: 0.75rem;">
@@ -195,7 +195,7 @@
                 <a href="{{ route('dashboard') }}" class="glass-card" style="padding: 1.15rem 2.5rem; text-decoration: none; font-weight: 700; color: var(--text-muted); display: flex; align-items: center; justify-content: center; border-radius: 14px;">
                     Cancel
                 </a>
-                <button type="submit" class="btn-primary" style="padding: 1.15rem 3.5rem; border: none; border-radius: 14px; cursor: pointer; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; gap: 0.75rem; box-shadow: 0 10px 20px -5px rgba(22, 163, 74, 0.4);">
+                <button type="submit" class="btn-primary" style="padding: 1.15rem 3.5rem; border: none; border-radius: 14px; cursor: pointer; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; gap: 0.75rem; box-shadow: 0 10px 20px -5px rgba(136, 19, 55, 0.4);">
                     <i data-lucide="save" style="width: 20px;"></i>
                     Submit for approval
                 </button>
@@ -275,7 +275,7 @@
     #newEntryPageContainer input:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="hidden"]):not([readonly]):focus,
     #newEntryPageContainer select:focus,
     #newEntryPageContainer .select2-container--default .select2-selection--single:focus {
-        box-shadow: 0 4px 15px rgba(22, 163, 74, 0.15) !important;
+        box-shadow: 0 4px 15px rgba(136, 19, 55, 0.15) !important;
         border-color: var(--primary) !important;
     }
 
@@ -288,7 +288,7 @@
         border: 1px solid var(--border-color) !important;
         display: flex !important;
         align-items: center !important;
-        background: rgba(22, 163, 74, 0.03) !important;
+        background: rgba(136, 19, 55, 0.03) !important;
     }
     .unit-container-sleek .select2-container--default .select2-selection--single .select2-selection__rendered,
     .store-location-container-sleek .select2-container--default .select2-selection--single .select2-selection__rendered {
@@ -865,7 +865,7 @@ jQuery(document).ready(function($) {
                             icon: 'info',
                             title: 'REQUEST SUBMITTED',
                             text: 'Your entry is currently pending administrative approval. You will receive a notification once the request is authorized.',
-                            confirmButtonColor: '#16a34a',
+                            confirmButtonColor: '#881337',
                             confirmButtonText: 'Great, Thank you!'
                         }).then(() => {
                             window.location.href = '{{ route("dashboard") }}';
@@ -875,7 +875,7 @@ jQuery(document).ready(function($) {
                             icon: 'success',
                             title: 'Success',
                             text: 'Inventory records saved successfully!',
-                            confirmButtonColor: '#10b981',
+                            confirmButtonColor: '#881337',
                             timer: 1500,
                             showConfirmButton: false
                         }).then(() => {
@@ -1001,7 +1001,7 @@ jQuery(document).ready(function($) {
                         <div class="existing-stats full-width" style="display: none; margin-top: 0.85rem; padding: 1rem; background: var(--bg-main); border-radius: 14px; border: 1px dashed var(--border-color); animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
                             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="width: 32px; height: 32px; background: rgba(22, 163, 74, 0.15); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.15);">
+                                    <div style="width: 32px; height: 32px; background: rgba(136, 19, 55, 0.15); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(136, 19, 55, 0.15);">
                                         <i data-lucide="layers" style="width: 16px;"></i>
                                     </div>
                                     <div>
@@ -1010,7 +1010,7 @@ jQuery(document).ready(function($) {
                                     </div>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.15); color: var(--secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.15);">
+                                    <div style="width: 32px; height: 32px; background: rgba(136, 19, 55, 0.15); color: var(--secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(136, 19, 55, 0.15);">
                                         <i data-lucide="package" style="width: 16px;"></i>
                                     </div>
                                     <div>
@@ -1019,12 +1019,12 @@ jQuery(document).ready(function($) {
                                     </div>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="width: 32px; height: 32px; background: rgba(59, 130, 246, 0.15); color: #16a34a; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.15);">
+                                    <div style="width: 32px; height: 32px; background: rgba(59, 130, 246, 0.15); color: #881337; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.15);">
                                         <i data-lucide="plus-circle" style="width: 16px;"></i>
                                     </div>
                                     <div>
                                         <div class="lbl-dynamic-stock-balance" style="font-size: 0.6rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">Stock Balance</div>
-                                        <div class="stat-dynamic-stock-balance" style="font-size: 0.95rem; font-weight: 800; color: #16a34a;">0</div>
+                                        <div class="stat-dynamic-stock-balance" style="font-size: 0.95rem; font-weight: 800; color: #881337;">0</div>
                                     </div>
                                 </div>
                             </div>
@@ -1073,10 +1073,10 @@ jQuery(document).ready(function($) {
                                 </div>
                                 <div class="actual-qty-group" style="display: none;">
                                     <label style="display: flex; align-items: center; gap: 6px;">
-                                        <i data-lucide="check-circle" style="width: 12px; color: #10b981;"></i>
-                                        <span style="color: #10b981; font-weight: 800;">Physically Received Qty</span> <span style="color: #ef4444; margin-left: 2px;">*</span>
+                                        <i data-lucide="check-circle" style="width: 12px; color: #881337;"></i>
+                                        <span style="color: #881337; font-weight: 800;">Physically Received Qty</span> <span style="color: #ef4444; margin-left: 2px;">*</span>
                                     </label>
-                                    <input type="number" class="row-stock-balance" value="0" style="border-color: #10b981; width: 100%;" required>
+                                    <input type="number" class="row-stock-balance" value="0" style="border-color: #881337; width: 100%;" required>
                                 </div>
                             </div>
                         </div>
@@ -1340,11 +1340,11 @@ jQuery(document).ready(function($) {
                 varianceInput.val(result);
 
                 if (result > 0) {
-                    varianceInput.css('color', '#10b981');
+                    varianceInput.css('color', '#881337');
                 } else if (result < 0) {
                     varianceInput.css('color', '#ef4444');
                 } else {
-                    varianceInput.css('color', '#16a34a');
+                    varianceInput.css('color', '#881337');
                 }
             });
 
@@ -1352,7 +1352,7 @@ jQuery(document).ready(function($) {
             const initStatus = $('#supplierStatusSelect').val();
             if (initStatus === 'Partial Delivery') {
                 $row.find('.lbl-received-qty .lbl-text').text('Expected / Invoice Qty');
-                $row.find('.row-qty').css({'border-color': '#10b981', 'background': 'var(--bg-card)'}).prop('readonly', false);
+                $row.find('.row-qty').css({'border-color': '#881337', 'background': 'var(--bg-card)'}).prop('readonly', false);
                 $row.find('.actual-qty-group').show();
             } else {
                 $row.find('.lbl-received-qty .lbl-text').text('Received Qty');
@@ -1469,7 +1469,7 @@ jQuery(document).ready(function($) {
         if (status === 'Partial Delivery') {
             $('.item-entry-row').each(function() {
                 $(this).find('.lbl-received-qty .lbl-text').text('Expected / Invoice Qty');
-                $(this).find('.row-qty').css({'border-color': '#10b981', 'background': 'var(--bg-card)'}).prop('readonly', false);
+                $(this).find('.row-qty').css({'border-color': '#881337', 'background': 'var(--bg-card)'}).prop('readonly', false);
                 $(this).find('.actual-qty-group').slideDown(300);
                 updateSerialInputs($(this));
             });

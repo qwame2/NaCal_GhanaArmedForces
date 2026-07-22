@@ -93,7 +93,7 @@
 
             {{-- Requester profile --}}
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;">
-                <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(22, 163, 74, 0.08); color: var(--primary); border: 1px solid rgba(22, 163, 74, 0.15); display: flex; align-items: center; justify-content: center; font-weight: 850; font-size: 1.1rem; flex-shrink: 0;">
+                <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(136, 19, 55, 0.08); color: var(--primary); border: 1px solid rgba(136, 19, 55, 0.15); display: flex; align-items: center; justify-content: center; font-weight: 850; font-size: 1.1rem; flex-shrink: 0;">
                     {{ strtoupper(substr($req->requester_name ?? 'R', 0, 1)) }}
                 </div>
                 <div style="min-width: 0; flex: 1;">
@@ -192,7 +192,7 @@
             <span style="font-size: 0.74rem; color: var(--text-muted); font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
                 <i data-lucide="clock" style="width: 13px; height: 13px;"></i> {{ $req->created_at->diffForHumans() }}
             </span>
-            <button onclick="openRequisitionModal({{ $req->id }})" class="btn-track-details" style="background: rgba(22, 163, 74, 0.08); color: var(--primary); border: 1px solid rgba(22, 163, 74, 0.15); padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;">
+            <button onclick="openRequisitionModal({{ $req->id }})" class="btn-track-details" style="background: rgba(136, 19, 55, 0.08); color: var(--primary); border: 1px solid rgba(136, 19, 55, 0.15); padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;">
                 <span>Details</span> <i data-lucide="arrow-right" style="width: 13px; height: 13px;"></i>
             </button>
         </div>
@@ -200,7 +200,7 @@
     </div>
 @empty
     <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; box-shadow: var(--shadow-premium);">
-        <i data-lucide="compass" style="width: 44px; height: 44px; margin: 0 auto 1rem; display: block; opacity: .3; color: #10b981; animation: pulse-compass 2.5s infinite;"></i>
+        <i data-lucide="compass" style="width: 44px; height: 44px; margin: 0 auto 1rem; display: block; opacity: .3; color: #881337; animation: pulse-compass 2.5s infinite;"></i>
         <h3 style="font-weight: 900; color: var(--text-main); margin-bottom: 6px; font-size: 1.1rem;">No Requisitions in Pipeline</h3>
         <p style="font-size: 0.86rem; color: var(--text-muted); margin: 0;">No active staff requests match the selected criteria.</p>
     </div>

@@ -29,7 +29,7 @@
     }
 
     .sra-table-row:hover {
-        background: rgba(22, 163, 74, .03);
+        background: rgba(136, 19, 55, .03);
     }
 
     .sra-table-row:last-child {
@@ -112,16 +112,16 @@
     }
 
     .mini-step.completed .mini-dot {
-        background: #10b981;
-        border-color: #10b981;
+        background: #881337;
+        border-color: #881337;
         color: white;
     }
 
     .mini-step.active .mini-dot {
-        background: #15803d;
-        border-color: #15803d;
+        background: #4c0519;
+        border-color: #4c0519;
         color: white;
-        box-shadow: 0 0 8px rgba(22, 163, 74, 0.3);
+        box-shadow: 0 0 8px rgba(136, 19, 55, 0.3);
     }
 
     .mini-step.declined .mini-dot {
@@ -146,7 +146,7 @@
     }
 
     .mini-line.completed {
-        background: #10b981;
+        background: #881337;
     }
 
     .mini-label {
@@ -159,11 +159,11 @@
     }
 
     .mini-step.completed .mini-label {
-        color: #10b981;
+        color: #881337;
     }
 
     .mini-step.active .mini-label {
-        color: #15803d;
+        color: #4c0519;
         font-weight: 900;
     }
 
@@ -252,9 +252,9 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: rgba(22, 163, 74, 0.1);
+        background: rgba(136, 19, 55, 0.1);
         color: var(--primary);
-        border: 1px solid rgba(22, 163, 74, 0.2);
+        border: 1px solid rgba(136, 19, 55, 0.2);
         padding: 6px 12px;
         border-radius: 8px;
         font-weight: 800;
@@ -283,7 +283,7 @@
     .custom-pagination .page-item.active .page-link {
         background: var(--primary); color: white;
         border-color: var(--primary);
-        box-shadow: 0 10px 25px rgba(22, 163, 74, 0.25);
+        box-shadow: 0 10px 25px rgba(136, 19, 55, 0.25);
         transform: scale(1.1);
         z-index: 10;
     }
@@ -292,7 +292,7 @@
         color: var(--primary);
         transform: translateY(-4px);
         background: #f5f3ff;
-        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.1);
+        box-shadow: 0 8px 20px rgba(136, 19, 55, 0.1);
     }
     .custom-pagination .page-item.disabled .page-link {
         opacity: 0.5;

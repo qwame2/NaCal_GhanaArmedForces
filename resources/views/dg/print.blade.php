@@ -246,7 +246,7 @@
                     </td>
                     <td>{{ $ledgeMap[$item->ledge_category] ?? $item->ledge_category }}</td>
                     <td style="text-align: right; font-weight: 700;">{{ number_format($item->qty) }} {{ $item->unit }}</td>
-                    <td style="text-align: right; font-weight: 700; color: #16a34a;">{{ number_format($item->stock_balance) }} {{ $item->unit }}</td>
+                    <td style="text-align: right; font-weight: 700; color: #881337;">{{ number_format($item->stock_balance) }} {{ $item->unit }}</td>
                     <td style="text-align: right; font-weight: 700; color: {{ $item->variance > 0 ? '#ef4444' : '#0f172a' }};">{{ number_format($item->variance) }}</td>
                     <td>{{ $item->acquisition_type }}</td>
                     <td>

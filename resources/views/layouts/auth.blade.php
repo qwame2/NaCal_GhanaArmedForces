@@ -83,7 +83,7 @@
             position: absolute;
             width: 600px;
             height: 600px;
-            background: linear-gradient(135deg, var(--primary) 0%, #4ade80 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, #9f1239 100%);
             filter: blur(80px);
             opacity: 0.15;
             border-radius: 50%;
@@ -142,7 +142,7 @@
     <div id="accountApprovedOverlay" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); z-index: 9999; display: none; align-items: center; justify-content: center; text-align: center; animation: lockOverlayIn 0.4s ease;">
         <div style="background: white; padding: 3rem 2.5rem 2.5rem; border-radius: 36px; box-shadow: 0 40px 100px rgba(0,0,0,0.25), 0 0 0 1px rgba(34,197,94,0.15); width: 92%; max-width: 460px; position: relative; overflow: hidden;">
             {{-- Decorative top bar --}}
-            <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);"></div>
+            <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #22c55e 0%, #881337 100%);"></div>
 
             {{-- Icon --}}
             <div style="width: 88px; height: 88px; background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(34,197,94,0.06)); border: 2px solid rgba(34,197,94,0.2); border-radius: 28px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; animation: approvedPulse 2.5s infinite;">
@@ -159,14 +159,14 @@
 
             {{-- Message --}}
             <p style="color: #475569; font-size: 0.93rem; font-weight: 600; line-height: 1.7; margin: 0 0 0.5rem;">
-                Your account has been <strong style="color: #16a34a;">approved</strong> by the Head of Stores.
+                Your account has been <strong style="color: #881337;">approved</strong> by the Head of Stores.
             </p>
             <p style="color: #64748b; font-size: 0.83rem; font-weight: 500; line-height: 1.6; margin: 0 0 2rem;">
                 You can now log in with your registered credentials. Welcome aboard!
             </p>
 
             {{-- CTA Button --}}
-            <button id="approvedLoginBtn" onclick="dismissApprovedOverlay()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border: none; padding: 0.85rem 2.5rem; border-radius: 16px; font-size: 0.9rem; font-weight: 800; cursor: pointer; letter-spacing: 0.04em; box-shadow: 0 10px 30px rgba(34,197,94,0.3); transition: all 0.2s ease; width: 100%;">
+            <button id="approvedLoginBtn" onclick="dismissApprovedOverlay()" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #22c55e 0%, #881337 100%); color: white; border: none; padding: 0.85rem 2.5rem; border-radius: 16px; font-size: 0.9rem; font-weight: 800; cursor: pointer; letter-spacing: 0.04em; box-shadow: 0 10px 30px rgba(34,197,94,0.3); transition: all 0.2s ease; width: 100%;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
                 Go Ahead & Login
             </button>
@@ -191,7 +191,7 @@
 
     <div class="auth-background">
         <div class="auth-blob" style="top: -200px; right: -200px;"></div>
-        <div class="auth-blob" style="bottom: -200px; left: -200px; background: #16a34a;"></div>
+        <div class="auth-blob" style="bottom: -200px; left: -200px; background: #881337;"></div>
     </div>
 
     <div class="auth-page-wrapper">

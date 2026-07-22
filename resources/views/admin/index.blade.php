@@ -24,7 +24,7 @@
             <div class="metric-data">
                 <span class="m-label">Live Operations</span>
                 <h3 class="m-value">{{ $onlineCount }}</h3>
-                <div class="m-trend" style="color: #10b981;">
+                <div class="m-trend" style="color: #881337;">
                     <span class="pulse-mini"></span>
                     Concurrent Sessions
                 </div>
@@ -84,7 +84,7 @@
 
         <!-- Modern Premium Tab Selector -->
         <div class="registry-tabs" style="display: flex; gap: 1.5rem; border-bottom: 2px solid #f1f5f9; padding: 0 3rem 1.25rem; margin-top: 1rem;">
-            <button type="button" class="registry-tab-btn active" id="tabBtnActive" onclick="switchRegistryTab('active')" style="background: transparent; border: none; padding: 0.75rem 1.5rem; font-weight: 800; color: #16a34a; border-bottom: 3px solid #16a34a; cursor: pointer; font-size: 0.92rem; font-family: inherit; transition: all 0.3s ease; position: relative; outline: none;">
+            <button type="button" class="registry-tab-btn active" id="tabBtnActive" onclick="switchRegistryTab('active')" style="background: transparent; border: none; padding: 0.75rem 1.5rem; font-weight: 800; color: #881337; border-bottom: 3px solid #881337; cursor: pointer; font-size: 0.92rem; font-family: inherit; transition: all 0.3s ease; position: relative; outline: none;">
                 Active Staff ({{ $totalUsers }})
             </button>
             <button type="button" class="registry-tab-btn" id="tabBtnPending" onclick="switchRegistryTab('pending')" style="background: transparent; border: none; padding: 0.75rem 1.5rem; font-weight: 800; color: #64748b; border-bottom: 3px solid transparent; cursor: pointer; font-size: 0.92rem; font-family: inherit; transition: all 0.3s ease; position: relative; display: flex; align-items: center; gap: 8px; outline: none;">
@@ -169,7 +169,7 @@
                         </td>
                         <td><span class="sector-badge">{{ $user->department ?? 'UNASSIGNED' }}</span></td>
                         <td>
-                            <span class="sync-time" style="color: #10b981; font-weight: 800;">
+                            <span class="sync-time" style="color: #881337; font-weight: 800;">
                                 {{ $user->last_login_at ? $user->last_login_at->format('d/m/y H:i') : 'NO RECORD' }}
                             </span>
                         </td>
@@ -195,9 +195,9 @@
                                         status: '{{ $user->is_active ? 'ACTIVE' : 'DEACTIVATED' }}',
                                         avatar: '{{ $user->avatar ? asset('storage/' . $user->avatar) : '' }}'
                                     })"
-                                    style="border: 1px solid #e0e7ff; color: #16a34a; background: #f5f3ff;"
-                                    onmouseover="this.style.background='#16a34a'; this.style.color='white'"
-                                    onmouseout="this.style.background='#f5f3ff'; this.style.color='#16a34a'">
+                                    style="border: 1px solid #e0e7ff; color: #881337; background: #f5f3ff;"
+                                    onmouseover="this.style.background='#881337'; this.style.color='white'"
+                                    onmouseout="this.style.background='#f5f3ff'; this.style.color='#881337'">
                                     <i data-lucide="eye" style="width: 16px;"></i>
                                 </button>
                                 @if(!$user->is_active)
@@ -209,11 +209,11 @@
                                     @csrf
                                     @method('PATCH')
                                     @if($user->is_active)
-                                    <button type="submit" class="btn-purge" title="Deactivate Account" style="border: 1px solid #fef3c7; color: #10b981; background: #ecfdf5;" onmouseover="this.style.background='#10b981'; this.style.color='white'" onmouseout="this.style.background='#ecfdf5'; this.style.color='#10b981'">
+                                    <button type="submit" class="btn-purge" title="Deactivate Account" style="border: 1px solid #fef3c7; color: #881337; background: #ecfdf5;" onmouseover="this.style.background='#881337'; this.style.color='white'" onmouseout="this.style.background='#ecfdf5'; this.style.color='#881337'">
                                         <i data-lucide="power-off"></i>
                                     </button>
                                     @else
-                                    <button type="submit" class="btn-purge" title="Reactivate Account" style="border: 1px solid #d1fae5; color: #10b981; background: #ecfdf5;" onmouseover="this.style.background='#10b981'; this.style.color='white'" onmouseout="this.style.background='#ecfdf5'; this.style.color='#10b981'">
+                                    <button type="submit" class="btn-purge" title="Reactivate Account" style="border: 1px solid #d1fae5; color: #881337; background: #ecfdf5;" onmouseover="this.style.background='#881337'; this.style.color='white'" onmouseout="this.style.background='#ecfdf5'; this.style.color='#881337'">
                                         <i data-lucide="power"></i>
                                     </button>
                                     @endif
@@ -238,7 +238,7 @@
 
                 <form action="{{ route('admin.index') }}" method="GET" style="display: flex; align-items: center; gap: 0.75rem; border-left: 2px solid #e2e8f0; padding-left: 1.5rem;">
                     <span style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: #94a3b8;">Rows per page:</span>
-                    <select name="per_page" onchange="this.form.submit()" style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.5rem 2rem 0.5rem 1rem; font-size: 0.8rem; font-weight: 900; color: #16a34a; outline: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.2s; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%234f46e5%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 8px center; background-size: 14px;">
+                    <select name="per_page" onchange="this.form.submit()" style="background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0.5rem 2rem 0.5rem 1rem; font-size: 0.8rem; font-weight: 900; color: #881337; outline: none; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: 0.2s; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%234f46e5%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 8px center; background-size: 14px;">
                         @foreach([10, 25, 50, 100] as $count)
                             <option value="{{ $count }}" {{ request('per_page') == $count ? 'selected' : '' }}>{{ $count }}</option>
                         @endforeach
@@ -343,7 +343,7 @@
                                     <form action="{{ route('admin.users.approve_registration', $pUser->id) }}" method="POST" style="display: inline;">
                                         @csrf
                                         <input type="hidden" name="role" value="{{ $pUser->role }}">
-                                        <button type="submit" class="btn-purge" title="Approve Registration" style="border: 1px solid #d1fae5; color: #10b981; background: #ecfdf5; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#10b981'; this.style.color='white'" onmouseout="this.style.background='#ecfdf5'; this.style.color='#10b981'">
+                                        <button type="submit" class="btn-purge" title="Approve Registration" style="border: 1px solid #d1fae5; color: #881337; background: #ecfdf5; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#881337'; this.style.color='white'" onmouseout="this.style.background='#ecfdf5'; this.style.color='#881337'">
                                             <i data-lucide="check" style="width: 16px; height: 16px;"></i>
                                         </button>
                                     </form>
@@ -391,20 +391,20 @@
     .metric-module:hover { transform: translateY(-8px); box-shadow: 0 20px 60px rgba(0,0,0,0.06); }
 
     .metric-visual { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
-    .metric-visual.primary { background: #eef2ff; color: #16a34a; }
-    .metric-visual.success { background: #ecfdf5; color: #10b981; }
-    .metric-visual.warning { background: #ecfdf5; color: #10b981; }
+    .metric-visual.primary { background: #eef2ff; color: #881337; }
+    .metric-visual.success { background: #ecfdf5; color: #881337; }
+    .metric-visual.warning { background: #ecfdf5; color: #881337; }
 
     .m-label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 4px; }
     .m-value { font-size: 2rem; font-weight: 950; color: #0f172a; margin: 0; letter-spacing: -0.04em; }
-    .m-trend { font-size: 0.75rem; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+    .m-trend { font-size: 0.75rem; font-weight: 800; color: #881337; display: flex; align-items: center; gap: 4px; margin-top: 6px; }
     .m-sub, .m-status { font-size: 0.75rem; font-weight: 700; color: #64748b; margin-top: 6px; display: block; }
-    .m-status { color: #10b981; }
+    .m-status { color: #881337; }
 
     .pulse-mini {
         width: 8px;
         height: 8px;
-        background: #10b981;
+        background: #881337;
         border-radius: 50%;
         display: inline-block;
         margin-right: 6px;
@@ -412,9 +412,9 @@
     }
 
     @keyframes pulse-active {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(136, 19, 55, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(136, 19, 55, 0); }
     }
 
     /* Precision Registry Styles */
@@ -425,7 +425,7 @@
         width: 48px;
         height: 48px;
         background: #eef2ff;
-        color: #15803d;
+        color: #4c0519;
         border-radius: 14px;
         display: flex;
         align-items: center;
@@ -453,7 +453,7 @@
     .live-pulse {
         width: 6px;
         height: 6px;
-        background: #10b981;
+        background: #881337;
         border-radius: 50%;
         animation: status-glow 2s infinite;
     }
@@ -485,12 +485,12 @@
 
     .command-search input:focus {
         background: white;
-        border-color: #16a34a;
-        box-shadow: 0 12px 30px rgba(22, 163, 74, 0.08);
+        border-color: #881337;
+        box-shadow: 0 12px 30px rgba(136, 19, 55, 0.08);
     }
 
     .command-search input:focus + .shortcut-hint { opacity: 0; transform: translateX(10px); }
-    .command-search input:focus ~ .search-icon-wrap { color: #16a34a; transform: scale(1.1); }
+    .command-search input:focus ~ .search-icon-wrap { color: #881337; transform: scale(1.1); }
 
     .shortcut-hint {
         position: absolute;
@@ -526,7 +526,7 @@
 
     .btn-tool { border: none; padding: 12px; border-radius: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
     .btn-tool.primary { background: #0f172a; color: white; padding: 12px 24px; font-weight: 800; font-size: 0.85rem; gap: 10px; }
-    .btn-tool.primary:hover { background: #16a34a; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(22, 163, 74, 0.2); }
+    .btn-tool.primary:hover { background: #881337; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(136, 19, 55, 0.2); }
     .btn-tool.secondary { background: white; border: 1px solid #e2e8f0; color: #64748b; }
     .btn-tool.secondary:hover { background: #f8fafc; color: #0f172a; }
 
@@ -580,12 +580,12 @@
         border: 3px solid white;
         z-index: 10;
     }
-    .status-dot-mini.online { background: #10b981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.6); }
+    .status-dot-mini.online { background: #881337; box-shadow: 0 0 12px rgba(136, 19, 55, 0.6); }
     .status-dot-mini.offline { background: #cbd5e1; }
 
     .id-meta { display: flex; flex-direction: column; gap: 4px; }
     .full-name { font-weight: 850; color: #0f172a; font-size: 1.05rem; letter-spacing: -0.02em; }
-    .callsign { font-size: 0.75rem; color: #16a34a; font-weight: 800; font-family: 'JetBrains Mono', monospace; opacity: 0.8; }
+    .callsign { font-size: 0.75rem; color: #881337; font-weight: 800; font-family: 'JetBrains Mono', monospace; opacity: 0.8; }
 
     .clearance-pill {
         display: inline-flex;
@@ -598,16 +598,16 @@
         letter-spacing: 0.05em;
         white-space: nowrap;
     }
-    .clearance-pill.admin { background: #eef2ff; color: #16a34a; border: 1px solid rgba(22, 163, 74, 0.1); }
+    .clearance-pill.admin { background: #eef2ff; color: #881337; border: 1px solid rgba(136, 19, 55, 0.1); }
     .clearance-pill.dept-head { background: #ecfdf5; color: #047857; border: 1px solid rgba(4, 120, 87, 0.1); }
     .clearance-pill.store-officer { background: #f0fdf4; color: #c2410c; border: 1px solid rgba(194, 65, 12, 0.1); }
     .clearance-pill.requisitioner { background: #f5f3ff; color: #6d28d9; border: 1px solid rgba(109, 40, 217, 0.1); }
     .clearance-pill.standard { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
     .clearance-pill .dot { width: 8px; height: 8px; border-radius: 50%; }
-    .clearance-pill.admin .dot { background: #16a34a; box-shadow: 0 0 10px rgba(22, 163, 74, 0.4); }
+    .clearance-pill.admin .dot { background: #881337; box-shadow: 0 0 10px rgba(136, 19, 55, 0.4); }
     .clearance-pill.dept-head .dot { background: #059669; box-shadow: 0 0 10px rgba(5, 150, 105, 0.4); }
-    .clearance-pill.store-officer .dot { background: #15803d; box-shadow: 0 0 10px rgba(234, 88, 12, 0.4); }
-    .clearance-pill.requisitioner .dot { background: #15803d; box-shadow: 0 0 10px rgba(21, 128, 61, 0.4); }
+    .clearance-pill.store-officer .dot { background: #4c0519; box-shadow: 0 0 10px rgba(234, 88, 12, 0.4); }
+    .clearance-pill.requisitioner .dot { background: #4c0519; box-shadow: 0 0 10px rgba(76, 5, 25, 0.4); }
     .clearance-pill.standard .dot { background: #cbd5e1; }
 
     .sector-badge {
@@ -658,7 +658,7 @@
         background: white;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
-        color: #16a34a;
+        color: #881337;
         font-weight: 800;
         font-size: 0.8rem;
         text-decoration: none;
@@ -666,11 +666,11 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
     .page-btn:hover:not(.disabled) {
-        background: #16a34a;
+        background: #881337;
         color: white;
-        border-color: #16a34a;
+        border-color: #881337;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+        box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
     }
     .page-btn.disabled {
         background: #f8fafc;
@@ -694,8 +694,8 @@
         align-items: center;
         gap: 1.5rem;
         padding: 1.5rem;
-        background: linear-gradient(135deg, rgba(22, 163, 74, 0.05) 0%, rgba(21, 128, 61, 0.05) 100%);
-        border: 1px solid rgba(22, 163, 74, 0.1);
+        background: linear-gradient(135deg, rgba(136, 19, 55, 0.05) 0%, rgba(76, 5, 25, 0.05) 100%);
+        border: 1px solid rgba(136, 19, 55, 0.1);
         border-radius: 24px;
         position: relative;
         overflow: hidden;
@@ -708,7 +708,7 @@
         left: -20%;
         width: 150px;
         height: 150px;
-        background: radial-gradient(circle, rgba(22, 163, 74, 0.15) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(136, 19, 55, 0.15) 0%, transparent 70%);
         border-radius: 50%;
         pointer-events: none;
     }
@@ -726,7 +726,7 @@
         border-radius: 20px;
         object-fit: cover;
         border: 4px solid white;
-        box-shadow: 0 10px 25px rgba(22, 163, 74, 0.15);
+        box-shadow: 0 10px 25px rgba(136, 19, 55, 0.15);
     }
 
     .profile-status-ring {
@@ -740,7 +740,7 @@
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
     .profile-status-ring.online {
-        background: #10b981;
+        background: #881337;
     }
     .profile-status-ring.offline {
         background: #ef4444;
@@ -772,12 +772,12 @@
     .profile-username-badge {
         font-size: 0.75rem;
         font-weight: 800;
-        color: #16a34a;
+        color: #881337;
         background: #eef2ff;
         padding: 4px 10px;
         border-radius: 8px;
         text-transform: lowercase;
-        border: 1px solid rgba(22, 163, 74, 0.1);
+        border: 1px solid rgba(136, 19, 55, 0.1);
     }
 
     .profile-id-badge {
@@ -817,7 +817,7 @@
     .details-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.05);
-        border-color: rgba(22, 163, 74, 0.3);
+        border-color: rgba(136, 19, 55, 0.3);
     }
 
     .card-icon-box {
@@ -836,9 +836,9 @@
         height: 18px;
     }
 
-    .email-icon { background: #eef2ff; color: #16a34a; }
-    .phone-icon { background: #ecfdf5; color: #10b981; }
-    .dept-icon { background: #faf5ff; color: #4ade80; }
+    .email-icon { background: #eef2ff; color: #881337; }
+    .phone-icon { background: #ecfdf5; color: #881337; }
+    .dept-icon { background: #faf5ff; color: #9f1239; }
     .role-icon { background: #f0fdf4; color: #22c55e; }
 
     .details-card:hover .card-icon-box {
@@ -870,7 +870,7 @@
     }
 
     .card-value.highlighted-text {
-        color: #16a34a;
+        color: #881337;
     }
 
     .card-value-wrap {
@@ -897,7 +897,7 @@
     }
 
     .btn-copy-action:hover, .btn-call-action:hover {
-        background: #16a34a;
+        background: #881337;
         color: white;
     }
 
@@ -925,8 +925,8 @@
 
     .role-badge-pill.staff {
         background: #f0fdf4;
-        color: #15803d;
-        border: 1px solid rgba(21, 128, 61, 0.1);
+        color: #4c0519;
+        border: 1px solid rgba(76, 5, 25, 0.1);
     }
 
     .session-timeline-card {
@@ -955,7 +955,7 @@
     .timeline-title i {
         width: 16px;
         height: 16px;
-        color: #16a34a;
+        color: #881337;
     }
 
     .timeline-flow {
@@ -1004,8 +1004,8 @@
     }
 
     .login-node .node-icon-box {
-        color: #10b981;
-        border-color: rgba(16, 185, 129, 0.2);
+        color: #881337;
+        border-color: rgba(136, 19, 55, 0.2);
     }
 
     .logout-node .node-icon-box {
@@ -1059,8 +1059,8 @@
     }
 
     .status-indicator-dot.active {
-        background: #10b981;
-        box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+        background: #881337;
+        box-shadow: 0 0 8px rgba(136, 19, 55, 0.5);
     }
 
     .status-indicator-dot.inactive {
@@ -1157,7 +1157,7 @@
                         <td style="padding: 14px 16px; font-size: 0.85rem; font-weight: 800; color: #0f172a;">
                             {{ $log->user->name ?? 'System' }}
                         </td>
-                        <td style="padding: 14px 16px; font-size: 0.75rem; font-weight: 800; color: #16a34a;">
+                        <td style="padding: 14px 16px; font-size: 0.75rem; font-weight: 800; color: #881337;">
                             {{ $log->action }}
                         </td>
                         <td style="padding: 14px 16px; font-size: 0.85rem; color: #64748b; line-height: 1.5;">
@@ -1201,7 +1201,7 @@
                             <div class="profile-badges">
                                 <span class="profile-username-badge">@${user.username}</span>
                                 <span class="profile-id-badge">ID: ${(user.id || '').toString().padStart(5, '0')}</span>
-                                ${user.rank ? `<span class="profile-id-badge" style="background: #eef2ff; color: #15803d; border-color: #c7d2fe;">Rank: ${user.rank}</span>` : ''}
+                                ${user.rank ? `<span class="profile-id-badge" style="background: #eef2ff; color: #4c0519; border-color: #c7d2fe;">Rank: ${user.rank}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -1321,7 +1321,7 @@
             const icon = element.querySelector('i');
             const originalLucide = icon.getAttribute('data-lucide');
             icon.setAttribute('data-lucide', 'check');
-            element.style.background = '#10b981';
+            element.style.background = '#881337';
             element.style.color = 'white';
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
@@ -1379,8 +1379,8 @@
             pendingPane.style.display = 'none';
 
             activeBtn.classList.add('active');
-            activeBtn.style.color = '#16a34a';
-            activeBtn.style.borderBottom = '3px solid #16a34a';
+            activeBtn.style.color = '#881337';
+            activeBtn.style.borderBottom = '3px solid #881337';
 
             pendingBtn.classList.remove('active');
             pendingBtn.style.color = '#64748b';
@@ -1390,8 +1390,8 @@
             pendingPane.style.display = 'block';
 
             pendingBtn.classList.add('active');
-            pendingBtn.style.color = '#16a34a';
-            pendingBtn.style.borderBottom = '3px solid #16a34a';
+            pendingBtn.style.color = '#881337';
+            pendingBtn.style.borderBottom = '3px solid #881337';
 
             activeBtn.classList.remove('active');
             activeBtn.style.color = '#64748b';

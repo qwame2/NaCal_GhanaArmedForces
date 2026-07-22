@@ -23,7 +23,7 @@
     }
 
     .req-table-row:hover {
-        background: rgba(22, 163, 74, .03);
+        background: rgba(136, 19, 55, .03);
     }
 
     .req-table-row:last-child {
@@ -124,7 +124,7 @@
     }
 
     .modal-box.normal-priority {
-        border-top: 6px solid #16a34a;
+        border-top: 6px solid #881337;
     }
 
     .modal-box.low-priority {
@@ -160,7 +160,7 @@
         top: 50%;
         left: 4rem;
         height: 3px;
-        background: linear-gradient(90deg, var(--primary) 0%, #10b981 100%);
+        background: linear-gradient(90deg, var(--primary) 0%, #881337 100%);
         z-index: 1;
         transform: translateY(-50%);
         transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -208,32 +208,32 @@
     }
 
     .stepper-step.completed .stepper-bubble {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        border-color: #10b981;
+        background: linear-gradient(135deg, #881337 0%, #059669 100%);
+        border-color: #881337;
         color: white;
-        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 4px 10px rgba(136, 19, 55, 0.25);
     }
 
     .stepper-step.completed .stepper-label {
-        color: #10b981;
+        color: #881337;
     }
 
     @keyframes activePulse {
         0% {
-            box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4);
+            box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4);
         }
 
         70% {
-            box-shadow: 0 0 0 8px rgba(22, 163, 74, 0);
+            box-shadow: 0 0 0 8px rgba(136, 19, 55, 0);
         }
 
         100% {
-            box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+            box-shadow: 0 0 0 0 rgba(136, 19, 55, 0);
         }
     }
 
     .stepper-step.active .stepper-bubble {
-        background: linear-gradient(135deg, var(--primary) 0%, #15803d 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, #4c0519 100%);
         border-color: var(--primary);
         color: white;
         animation: activePulse 2s infinite;
@@ -313,8 +313,8 @@
     }
 
     .profile-card:hover {
-        border-color: rgba(22, 163, 74, 0.25);
-        background: rgba(22, 163, 74, 0.02);
+        border-color: rgba(136, 19, 55, 0.25);
+        background: rgba(136, 19, 55, 0.02);
         transform: translateY(-1px);
     }
 
@@ -329,7 +329,7 @@
         justify-content: center;
         font-weight: 800;
         font-size: 1.25rem;
-        border: 1.5px solid rgba(22, 163, 74, 0.15);
+        border: 1.5px solid rgba(136, 19, 55, 0.15);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
     }
 
@@ -362,7 +362,7 @@
     .purpose-quote:before {
         content: '“';
         font-size: 3.5rem;
-        color: rgba(22, 163, 74, 0.08);
+        color: rgba(136, 19, 55, 0.08);
         position: absolute;
         top: -0.8rem;
         left: 0.5rem;
@@ -404,7 +404,7 @@
     }
 
     .switch-input:checked+.switch-label {
-        background: #10b981;
+        background: #881337;
     }
 
     .switch-input:checked+.switch-label:after {
@@ -495,11 +495,11 @@
     }
 
     .item-decision-card.approved-row {
-        background: rgba(16, 185, 129, 0.008);
+        background: rgba(136, 19, 55, 0.008);
     }
 
     .item-decision-card:hover {
-        background: rgba(22, 163, 74, 0.012);
+        background: rgba(136, 19, 55, 0.012);
     }
 
     .item-card-header {
@@ -580,7 +580,7 @@
 
     /* Live Summary Board */
     .summary-dashboard {
-        background: linear-gradient(135deg, var(--bg-main) 0%, rgba(22, 163, 74, 0.02) 100%);
+        background: linear-gradient(135deg, var(--bg-main) 0%, rgba(136, 19, 55, 0.02) 100%);
         border: 1.5px solid var(--border-color);
         border-radius: 16px;
         padding: 1.25rem 1.5rem;
@@ -629,7 +629,7 @@
 
     .fulfill-progress-bar {
         height: 100%;
-        background: linear-gradient(90deg, #16a34a 0%, #10b981 100%);
+        background: linear-gradient(90deg, #881337 0%, #881337 100%);
         border-radius: 99px;
         transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -642,13 +642,13 @@
         border-radius: 6px;
         font-size: 0.68rem;
         font-weight: 800;
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
+        background: rgba(136, 19, 55, 0.1);
+        color: #881337;
     }
 
     .fulfill-ratio-badge.reduced {
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
+        background: rgba(136, 19, 55, 0.1);
+        color: #881337;
     }
 
     .fulfill-ratio-badge.declined {
@@ -670,15 +670,15 @@
     }
 
     #statusBar.all-approved {
-        background: rgba(16, 185, 129, .12);
+        background: rgba(136, 19, 55, .12);
         color: #065f46;
-        border: 1px solid rgba(16, 185, 129, .25);
+        border: 1px solid rgba(136, 19, 55, .25);
     }
 
     #statusBar.partial {
-        background: rgba(16, 185, 129, .12);
+        background: rgba(136, 19, 55, .12);
         color: #92400e;
-        border: 1px solid rgba(16, 185, 129, .25);
+        border: 1px solid rgba(136, 19, 55, .25);
     }
 
     #statusBar.all-declined {
@@ -814,13 +814,13 @@
     }
 
     .filter-control:focus {
-        border-color: #16a34a;
+        border-color: #881337;
         background: var(--bg-card);
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
+        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.15);
     }
 
     .filter-control:focus + .filter-icon {
-        color: #16a34a;
+        color: #881337;
     }
 
     .filter-control::placeholder {
@@ -882,14 +882,14 @@
     }
 
     .mini-step.completed .mini-dot {
-        background: #10b981;
-        border-color: #10b981;
+        background: #881337;
+        border-color: #881337;
         color: white;
     }
 
     .mini-step.active .mini-dot {
-        background: #15803d;
-        border-color: #15803d;
+        background: #4c0519;
+        border-color: #4c0519;
         color: white;
         box-shadow: 0 0 8px rgba(234, 88, 12, 0.35);
     }
@@ -916,7 +916,7 @@
     }
 
     .mini-line.completed {
-        background: #10b981;
+        background: #881337;
     }
 
     .mini-label {
@@ -929,11 +929,11 @@
     }
 
     .mini-step.completed .mini-label {
-        color: #10b981;
+        color: #881337;
     }
 
     .mini-step.active .mini-label {
-        color: #15803d;
+        color: #4c0519;
         font-weight: 900;
     }
 
@@ -950,7 +950,7 @@
 
     {{-- Header --}}
     <div style="margin-bottom:2rem;">
-        <div style="font-size:.7rem;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">Store Management</div>
+        <div style="font-size:.7rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">Store Management</div>
         <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Stores Requisition</h1>
         <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">Review and process department item requests</p>
     </div>
@@ -958,7 +958,7 @@
     {{-- Stats --}}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;">
         <div class="req-stat-card">
-            <div style="width:44px;height:44px;background:rgba(22,163,74,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:20px;color:#16a34a;"></i></div>
+            <div style="width:44px;height:44px;background:rgba(136,19,55,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:20px;color:#881337;"></i></div>
             <div>
                 <div id="stats-pending" style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['pending'] }}</div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Pending</div>
@@ -972,14 +972,14 @@
             </div>
         </div>
         <div class="req-stat-card">
-            <div style="width:44px;height:44px;background:rgba(16,185,129,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="check-circle" style="width:20px;color:#10b981;"></i></div>
+            <div style="width:44px;height:44px;background:rgba(136,19,55,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="check-circle" style="width:20px;color:#881337;"></i></div>
             <div>
                 <div id="stats-approved" style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['approved'] }}</div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Approved</div>
             </div>
         </div>
         <div class="req-stat-card">
-            <div style="width:44px;height:44px;background:rgba(16,185,129,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="git-merge" style="width:20px;color:#10b981;"></i></div>
+            <div style="width:44px;height:44px;background:rgba(136,19,55,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="git-merge" style="width:20px;color:#881337;"></i></div>
             <div>
                 <div id="stats-partially-approved" style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['partially_approved'] }}</div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Partial</div>
@@ -1035,7 +1035,7 @@
     {{-- Filters --}}
     <div class="filter-card">
         <div class="filter-header">
-            <i data-lucide="sliders-horizontal" style="width: 14px; height: 14px; color: #16a34a;"></i>
+            <i data-lucide="sliders-horizontal" style="width: 14px; height: 14px; color: #881337;"></i>
             <span>Filter Options</span>
         </div>
         <form method="GET" class="filter-row" id="filter-form" action="{{ route('admin.requisitions') }}">
@@ -1082,8 +1082,8 @@
     <div class="modal-box">
         <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
             <div style="display:flex;align-items:center;gap:1rem;">
-                <div style="width:44px;height:44px;background:rgba(22,163,74,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                    <i data-lucide="clipboard-list" style="width:20px;color:#16a34a;"></i>
+                <div style="width:44px;height:44px;background:rgba(136,19,55,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                    <i data-lucide="clipboard-list" style="width:20px;color:#881337;"></i>
                 </div>
                 <div>
                     <h2 style="margin:0;font-size:1.1rem;font-weight:900;color:var(--text-main);">Requisition Review</h2>
@@ -1128,7 +1128,7 @@
                 <button onclick="processOversightSra('declined')" id="sraBtnDecline" style="padding: 0.85rem 2rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: #ef4444; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
                     <i data-lucide="x-circle" style="width: 16px;"></i> Decline
                 </button>
-                <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(16,185,129,0.4);">
+                <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: linear-gradient(135deg, #881337, #059669); color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
                     <i data-lucide="check-circle" style="width: 16px;"></i> Approve
                 </button>
             </div>
@@ -1167,8 +1167,8 @@
             document.getElementById('sra-modal-number').textContent = sra.sra_number;
 
             const deliveryLabel = sra.delivery_type === 'full' ? 'Full Delivery' : 'Part Delivery';
-            const deliveryColor = sra.delivery_type === 'full' ? '#10b981' : '#10b981';
-            const deliveryBg = sra.delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.1)';
+            const deliveryColor = sra.delivery_type === 'full' ? '#881337' : '#881337';
+            const deliveryBg = sra.delivery_type === 'full' ? 'rgba(136,19,55,0.1)' : 'rgba(136,19,55,0.1)';
 
             document.getElementById('sra-modal-details').innerHTML = `
                 <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Submitted By</div><div style="font-weight:700;color:var(--text-main);">${sra.submitter ? sra.submitter.name : '—'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${sra.dept || ''}</div></div>
@@ -1183,7 +1183,7 @@
             document.getElementById('sra-modal-details-text').innerHTML = `
                 <div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">Details of Order / Service</div>
                 <div style="background:var(--bg-main);border-radius:12px;padding:1rem 1.25rem;font-size:0.88rem;font-weight:500;color:var(--text-main);white-space:pre-wrap;line-height:1.7;border:1px solid var(--border-color);">${sra.details}</div>
-                ${sra.previous_sra_nos ? `<div style="margin-top:0.75rem;font-size:0.72rem;font-weight:800;color:#10b981;">Previous SRA Nos: ${sra.previous_sra_nos}</div>` : ''}
+                ${sra.previous_sra_nos ? `<div style="margin-top:0.75rem;font-size:0.72rem;font-weight:800;color:#881337;">Previous SRA Nos: ${sra.previous_sra_nos}</div>` : ''}
             `;
 
             const isSraProcessed = sra.status === 'approved' || sra.status === 'declined' || (currentSraStage === 'admin' ? (sra.admin_status && sra.admin_status !== 'pending') : (sra.stores_status && sra.stores_status !== 'pending'));
@@ -1199,7 +1199,7 @@
                     </div>` : ''}
                     <div style="display: flex; gap: 1rem; margin-top: 1.25rem;">
                         ${isSraApproved ? `
-                            <button style="flex:1; padding: 0.85rem 2rem; border: none; background: #10b981; color: white; border-radius: 12px; cursor: default; pointer-events: none; font-weight: 950; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" disabled>
+                            <button style="flex:1; padding: 0.85rem 2rem; border: none; background: #881337; color: white; border-radius: 12px; cursor: default; pointer-events: none; font-weight: 950; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" disabled>
                                 <i data-lucide="check-circle" style="width: 16px;"></i> Approved
                             </button>
                         ` : `
@@ -1220,7 +1220,7 @@
                         <button onclick="processOversightSra('declined')" id="sraBtnDecline" style="padding: 0.85rem 2rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: #ef4444; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
                             <i data-lucide="x-circle" style="width: 16px;"></i> Decline
                         </button>
-                        <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(16,185,129,0.4);">
+                        <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: linear-gradient(135deg, #881337, #059669); color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
                             <i data-lucide="check-circle" style="width: 16px;"></i> Approve
                         </button>
                     </div>
@@ -1252,7 +1252,7 @@
             icon: action === 'approved' ? 'question' : 'warning',
             showCancelButton: true,
             confirmButtonText: label,
-            confirmButtonColor: action === 'approved' ? '#10b981' : '#ef4444',
+            confirmButtonColor: action === 'approved' ? '#881337' : '#ef4444',
             cancelButtonColor: '#64748b',
         }).then(async result => {
             if (!result.isConfirmed) return;
@@ -1360,7 +1360,7 @@
                 }
             } catch(e) {}
             returnDateBannerHtml = `
-            <div style="background:rgba(16, 185, 129, 0.06); border:1px solid rgba(16, 185, 129, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#047857; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(16, 185, 129, 0.03); width:100%;">
+            <div style="background:rgba(136, 19, 55, 0.06); border:1px solid rgba(136, 19, 55, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#047857; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(136, 19, 55, 0.03); width:100%;">
                 <i data-lucide="calendar-clock" style="width:16px; height:16px; color:#047857; flex-shrink:0;"></i>
                 <span>Expected Return Date: <strong style="color:#b45309; font-size:0.95rem; font-weight:950; text-decoration: underline;">${formattedDate}</strong></span>
             </div>`;
@@ -1380,7 +1380,7 @@
             </div>
         </div>
         <div class="profile-card">
-            <div class="profile-avatar" style="background:rgba(16, 185, 129, 0.08); color:#10b981; border-color:rgba(16,185,129,0.15);"><i data-lucide="building" style="width:20px;height:20px;"></i></div>
+            <div class="profile-avatar" style="background:rgba(136, 19, 55, 0.08); color:#881337; border-color:rgba(136,19,55,0.15);"><i data-lucide="building" style="width:20px;height:20px;"></i></div>
             <div style="flex:1; min-width:0;">
                 <div style="font-size:.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;letter-spacing:0.04em;">Requesting Department</div>
                 <div style="font-size:1.05rem;font-weight:900;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${data.department}">${data.department}</div>
@@ -1445,8 +1445,8 @@
                 }
 
                 const stockInfo = item.stock_sufficient ?
-                    `<span style="color:#10b981;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="check-circle-2" style="width:12px;height:12px;"></i> Sufficient Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>` :
-                    `<span style="color:#10b981;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-triangle" style="width:12px;height:12px;"></i> Critical Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>`;
+                    `<span style="color:#881337;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="check-circle-2" style="width:12px;height:12px;"></i> Sufficient Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>` :
+                    `<span style="color:#881337;font-size:.72rem;font-weight:800;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="alert-triangle" style="width:12px;height:12px;"></i> Critical Stock (${parseFloat(item.current_stock).toLocaleString()} ${item.unit})</span>`;
 
                 const descTextHtml = isAltAgreed ?
                     `<span>${item.description}</span> <span style="color:var(--store-orange); font-weight:800; margin-left:6px;"><i data-lucide="shuffle" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:2px;"></i>Alternative: ${item.alternative_description}</span>` :
@@ -1511,7 +1511,7 @@
                                 ${isAwaitingPriorApproval ? 'disabled' : ''}
                                 style="display:${isAltAgreed ? 'block' : 'none'}; margin-bottom: 6px;">${item.remarks||''}</textarea>
 
-                            <span id="reason-ok-${i}" style="font-size:.78rem;color:#10b981;font-weight:700;display:${isAltAgreed ? 'none' : 'inline-flex'};align-items:center;gap:4px;">
+                            <span id="reason-ok-${i}" style="font-size:.78rem;color:#881337;font-weight:700;display:${isAltAgreed ? 'none' : 'inline-flex'};align-items:center;gap:4px;">
                                 <i data-lucide="check-circle" style="width:14px;height:14px;"></i> Approved Allocation
                             </span>
 
@@ -1545,7 +1545,7 @@
                 }
 
                 const stockInfo = item.stock_sufficient ?
-                    `<span style="color:#10b981;font-size:.7rem;font-weight:700;">✔ Sufficient</span>` :
+                    `<span style="color:#881337;font-size:.7rem;font-weight:700;">✔ Sufficient</span>` :
                     `<span style="color:#ef4444;font-size:.7rem;font-weight:700;">⚠ Short Stock</span>`;
 
                 return `
@@ -1587,14 +1587,14 @@
                     <!-- Approved -->
                     <div style="flex:1; min-width:80px;">
                         <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;">Total Approved</div>
-                        <div style="font-size:1.15rem;font-weight:900;color:${totalApproved === 0 ? '#ef4444' : '#10b981'};margin-top:2px;">${totalApproved.toLocaleString()}</div>
+                        <div style="font-size:1.15rem;font-weight:900;color:${totalApproved === 0 ? '#ef4444' : '#881337'};margin-top:2px;">${totalApproved.toLocaleString()}</div>
                     </div>
 
                     <!-- Fulfillment Progress -->
                     <div style="flex:2; min-width:180px;">
                         <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:6px;">Fulfillment Progress</div>
                         <div class="fulfill-progress-container" style="margin-top:0;">
-                            <div class="fulfill-progress-bar" style="width: ${pct}%; background:${totalApproved === 0 ? '#ef4444' : (totalApproved < requested ? '#10b981' : 'linear-gradient(90deg, #16a34a 0%, #10b981 100%)')}"></div>
+                            <div class="fulfill-progress-bar" style="width: ${pct}%; background:${totalApproved === 0 ? '#ef4444' : (totalApproved < requested ? '#881337' : 'linear-gradient(90deg, #881337 0%, #881337 100%)')}"></div>
                         </div>
                     </div>
                 </div>
@@ -1618,10 +1618,10 @@
         if (['approved', 'partially_approved'].includes(data.status)) {
             if (data.collected_at) {
                 collectorInfoHtml = `
-                <div style="background:rgba(16,185,129,0.03); border:1.5px dashed rgba(16,185,129,0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; flex-direction:column; gap:1rem;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px dashed rgba(16,185,129,0.15); padding-bottom:8px;">
+                <div style="background:rgba(136,19,55,0.03); border:1.5px dashed rgba(136,19,55,0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; flex-direction:column; gap:1rem;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px dashed rgba(136,19,55,0.15); padding-bottom:8px;">
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <div style="width:34px; height:34px; background:rgba(16,185,129,0.08); color:#10b981; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                            <div style="width:34px; height:34px; background:rgba(136,19,55,0.08); color:#881337; border-radius:10px; display:flex; align-items:center; justify-content:center;">
                                 <i data-lucide="package-check" style="width:16px;"></i>
                             </div>
                             <div>
@@ -1629,7 +1629,7 @@
                                 <p style="margin:0; font-size:0.75rem; color:var(--text-muted);">Items have been successfully issued and collected</p>
                             </div>
                         </div>
-                        <span class="pill" style="background:rgba(16,185,129,0.1); color:#10b981; font-weight:800; font-size:0.7rem; padding:4px 10px;">COLLECTED</span>
+                        <span class="pill" style="background:rgba(136,19,55,0.1); color:#881337; font-weight:800; font-size:0.7rem; padding:4px 10px;">COLLECTED</span>
                     </div>
 
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
@@ -1657,8 +1657,8 @@
                 </div>`;
             } else {
                 collectorInfoHtml = `
-                <div style="background:rgba(16,185,129,0.03); border:1.5px dashed rgba(16,185,129,0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; align-items:center; gap:12px;">
-                    <div style="width:34px; height:34px; background:rgba(16,185,129,0.08); color:#10b981; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <div style="background:rgba(136,19,55,0.03); border:1.5px dashed rgba(136,19,55,0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; align-items:center; gap:12px;">
+                    <div style="width:34px; height:34px; background:rgba(136,19,55,0.08); color:#881337; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                         <i data-lucide="clock" style="width:16px;"></i>
                     </div>
                     <div>
@@ -1678,7 +1678,7 @@
                         <i data-lucide="x-circle" style="width: 18px;"></i>
                         Decline Request
                     </button>
-                    <button style="flex:1.5; background: #10b981; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; opacity: 0.9; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);" disabled title="Requisition already approved">
+                    <button style="flex:1.5; background: #881337; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; opacity: 0.9; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 4px 14px rgba(136, 19, 55, 0.2);" disabled title="Requisition already approved">
                         <i data-lucide="check-circle" style="width: 18px;"></i>
                         Approve (Processed)
                     </button>
@@ -1690,7 +1690,7 @@
                         <i data-lucide="x-circle" style="width: 18px;"></i>
                         Decline Request (Processed)
                     </button>
-                    <button style="flex:1; background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.18); padding: 0.75rem; border-radius: 12px; font-weight: 800; cursor: not-allowed; opacity: 0.45; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" disabled title="Decision already processed">
+                    <button style="flex:1; background: rgba(136, 19, 55, 0.08); color: #881337; border: 1.5px solid rgba(136, 19, 55, 0.18); padding: 0.75rem; border-radius: 12px; font-weight: 800; cursor: not-allowed; opacity: 0.45; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" disabled title="Decision already processed">
                         <i data-lucide="check-circle" style="width: 18px;"></i>
                         Approve
                     </button>
@@ -1731,7 +1731,7 @@
     <!-- Legend -->
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.85rem; font-size:.72rem; font-weight:700; color:var(--text-muted); background:var(--bg-main); padding:0.6rem 1rem; border-radius:10px; border:1.5px solid var(--border-color);">
         <div style="display:flex; gap:1.25rem;">
-            <span><span class="legend-dot" style="background:#10b981;"></span>Active = Approve item</span>
+            <span><span class="legend-dot" style="background:#881337;"></span>Active = Approve item</span>
             <span><span class="legend-dot" style="background:#cbd5e1;"></span>Inactive = Decline item</span>
         </div>
         <span style="color:var(--primary);"><i data-lucide="info" style="width:12px; display:inline-block; vertical-align:middle; margin-right:3px;"></i>Use − / + controls to adjust approved quantities</span>
@@ -1747,11 +1747,11 @@
     <div class="summary-dashboard" id="summaryDashboard">
         <div class="summary-metrics">
             <div class="metric-box">
-                <span class="metric-val" id="metricApproved" style="color:#10b981;">0</span>
+                <span class="metric-val" id="metricApproved" style="color:#881337;">0</span>
                 <span class="metric-lbl">Approved</span>
             </div>
             <div class="metric-box">
-                <span class="metric-val" id="metricReduced" style="color:#10b981;">0</span>
+                <span class="metric-val" id="metricReduced" style="color:#881337;">0</span>
                 <span class="metric-lbl">Reduced</span>
             </div>
             <div class="metric-box">
@@ -1779,7 +1779,7 @@
         </label>
         <textarea id="declineReason" rows="3" placeholder="State the reason for declining this requisition. The requester will see this message..." style="width:100%;padding:.85rem 1rem;border:1.5px solid rgba(239,68,68,0.3);border-radius:10px;font-family:inherit;font-size:.88rem;background:var(--bg-card);color:var(--text-main);resize:vertical;box-sizing:border-box;transition:all 0.25s ease;" onfocus="this.style.borderColor='#ef4444';" onblur="this.style.borderColor='rgba(239,68,68,0.3)'"></textarea>
     </div>` : `
-    ${data.admin_notes?`<div style="background:rgba(22,163,74,.03);border:1px solid rgba(22,163,74,.15);border-radius:16px;padding:1.25rem; margin-top: 1rem;"><div style="font-size:.68rem;font-weight:900;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:4px;margin-bottom:4px;"><i data-lucide="message-square" style="width:14px;"></i> Store Officer Notes</div><p style="margin:0;font-size:.9rem;color:var(--text-main);line-height:1.6;font-style:italic;">"${data.admin_notes}"</p></div>`:''}
+    ${data.admin_notes?`<div style="background:rgba(136,19,55,.03);border:1px solid rgba(136,19,55,.15);border-radius:16px;padding:1.25rem; margin-top: 1rem;"><div style="font-size:.68rem;font-weight:900;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:4px;margin-bottom:4px;"><i data-lucide="message-square" style="width:14px;"></i> Store Officer Notes</div><p style="margin:0;font-size:.9rem;color:var(--text-main);line-height:1.6;font-style:italic;">"${data.admin_notes}"</p></div>`:''}
 
     ${data.status === 'declined' && data.decline_reason ? `
     <div style="background:rgba(239,68,68,0.04); border:1px solid rgba(239,68,68,0.2); border-radius:16px; padding:1.25rem; margin-top:0.75rem;">
@@ -1791,7 +1791,7 @@
 
     <div style="background:var(--bg-main); border:1px solid var(--border-color); border-radius:16px; padding:1.15rem; margin-top:1.25rem; display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex; align-items:center; gap:8px;">
-            <div style="width:34px; height:34px; background:rgba(22,163,74,0.08); color:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+            <div style="width:34px; height:34px; background:rgba(136,19,55,0.08); color:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center;">
                 <i data-lucide="user-check" style="width:16px;"></i>
             </div>
             <div>
@@ -1825,7 +1825,7 @@
                 Cancel
             </button>
             <button onclick="submitDecision()" id="submitDecisionBtn"
-                style="background:#16a34a;color:white;border:none;padding:.75rem 2.25rem;border-radius:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.88rem;box-shadow:0 8px 20px rgba(22, 163, 74, 0.25);transition:0.2s;" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'">
+                style="background:#881337;color:white;border:none;padding:.75rem 2.25rem;border-radius:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.88rem;box-shadow:0 8px 20px rgba(136, 19, 55, 0.25);transition:0.2s;" onmouseover="this.style.background='#4c0519'" onmouseout="this.style.background='#881337'">
                 <i data-lucide="send" style="width:16px;"></i> Approve for final Collection
             </button>`;
             }
@@ -1838,7 +1838,7 @@
             if (data.collected_at) {
                 footerHtml = `
                 <a href="{{ request()->getBasePath() }}/requisitions/receipt/${id}" target="_blank"
-                    style="background:rgba(22, 163, 74, 0.08); border: 1.5px solid rgba(22, 163, 74, 0.2); color: #16a34a; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#16a34a'; this.style.color='white';" onmouseout="this.style.background='rgba(22, 163, 74, 0.08)'; this.style.color='#16a34a';">
+                    style="background:rgba(136, 19, 55, 0.08); border: 1.5px solid rgba(136, 19, 55, 0.2); color: #881337; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#881337'; this.style.color='white';" onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='#881337';">
                     <i data-lucide="printer" style="width: 16px;"></i> Print Collection Receipt
                 </a>` + footerHtml;
             }
@@ -2043,12 +2043,12 @@
                 summaryBadge.style.color = '#ef4444';
                 summaryBadge.textContent = '❌ Full Decline';
             } else if (cntApproved === checkboxes.length) {
-                summaryBadge.style.background = 'rgba(16,185,129,0.1)';
-                summaryBadge.style.color = '#10b981';
+                summaryBadge.style.background = 'rgba(136,19,55,0.1)';
+                summaryBadge.style.color = '#881337';
                 summaryBadge.textContent = '✅ Full Approval';
             } else {
-                summaryBadge.style.background = 'rgba(16,185,129,0.1)';
-                summaryBadge.style.color = '#10b981';
+                summaryBadge.style.background = 'rgba(136,19,55,0.1)';
+                summaryBadge.style.color = '#881337';
                 summaryBadge.textContent = '⚠️ Partial Approval';
             }
         }
@@ -2124,23 +2124,23 @@
             text.innerHTML = 'Approval blocked — <b>allocation exceeds available stock</b>';
         } else if (currentReqData && currentReqData.alternative_status === 'agreed' && cntReduced > 0) {
             bar.className = 'all-approved';
-            bar.style.background = 'rgba(16,185,129,.12)';
+            bar.style.background = 'rgba(136,19,55,.12)';
             bar.style.color = '#065f46';
-            bar.style.border = '1px solid rgba(16,185,129,.25)';
+            bar.style.border = '1px solid rgba(136,19,55,.25)';
             icon.textContent = '✅';
             text.innerHTML = 'Department has <b>agreed</b> to suggested quantity proposal. Proceed to Commit.';
         } else if (currentReqData && currentReqData.alternative_status === 'proposed' && cntReduced > 0) {
             bar.className = 'partial';
-            bar.style.background = 'rgba(16,185,129,.12)';
+            bar.style.background = 'rgba(136,19,55,.12)';
             bar.style.color = '#92400e';
-            bar.style.border = '1px solid rgba(16,185,129,.25)';
+            bar.style.border = '1px solid rgba(136,19,55,.25)';
             icon.textContent = '⏳';
             text.innerHTML = 'Suggested quantity proposed. <b>Awaiting department response...</b>';
         } else if (cntReduced > 0) {
             bar.className = 'partial';
-            bar.style.background = 'rgba(16,185,129,.12)';
+            bar.style.background = 'rgba(136,19,55,.12)';
             bar.style.color = '#92400e';
-            bar.style.border = '1px solid rgba(16,185,129,.25)';
+            bar.style.border = '1px solid rgba(136,19,55,.25)';
             icon.textContent = '🔀';
             text.innerHTML = 'Quantity reduced. <b>Click button below to suggest new quantity to department</b>';
         } else if (allDeclined) {
@@ -2152,16 +2152,16 @@
             text.innerHTML = 'All items will be <b>Declined</b>';
         } else if (allApproved && !anyPartial) {
             bar.className = 'all-approved';
-            bar.style.background = 'rgba(16,185,129,.12)';
+            bar.style.background = 'rgba(136,19,55,.12)';
             bar.style.color = '#065f46';
-            bar.style.border = '1px solid rgba(16,185,129,.25)';
+            bar.style.border = '1px solid rgba(136,19,55,.25)';
             icon.textContent = '✅';
             text.innerHTML = 'All items will be <b>Approved</b>';
         } else {
             bar.className = 'partial';
-            bar.style.background = 'rgba(16,185,129,.12)';
+            bar.style.background = 'rgba(136,19,55,.12)';
             bar.style.color = '#92400e';
-            bar.style.border = '1px solid rgba(16,185,129,.25)';
+            bar.style.border = '1px solid rgba(136,19,55,.25)';
             icon.textContent = '⚠️';
             text.innerHTML = 'Some items differ — will be <b>Partially Approved</b>';
         }
@@ -2545,7 +2545,7 @@
             },
             series: @json($deptCounts),
             labels: @json($deptLabels),
-            colors: ['#16a34a', '#10b981', '#10b981', '#db2777', '#4ade80', '#06b6d4', '#ec4899', '#22c55e', '#14b8a6'],
+            colors: ['#881337', '#881337', '#881337', '#db2777', '#9f1239', '#06b6d4', '#ec4899', '#22c55e', '#14b8a6'],
             dataLabels: {
                 enabled: false
             },
@@ -2630,7 +2630,7 @@
                     borderRadius: 4
                 }
             },
-            colors: ['#16a34a', '#10b981', '#10b981', '#db2777', '#4ade80', '#06b6d4', '#ec4899', '#22c55e', '#14b8a6'],
+            colors: ['#881337', '#881337', '#881337', '#db2777', '#9f1239', '#06b6d4', '#ec4899', '#22c55e', '#14b8a6'],
             xaxis: {
                 categories: @json($itemLabels),
                 axisBorder: {

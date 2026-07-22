@@ -48,7 +48,7 @@
                             @endif
                         </td>
                         <td style="padding: 1rem 1.5rem;">
-                            <span class="sra-status-badge" style="background: {{ $sra->delivery_type === 'full' ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.1)' }}; color: {{ $sra->delivery_type === 'full' ? '#10b981' : '#10b981' }};">
+                            <span class="sra-status-badge" style="background: {{ $sra->delivery_type === 'full' ? 'rgba(136,19,55,0.1)' : 'rgba(136,19,55,0.1)' }}; color: {{ $sra->delivery_type === 'full' ? '#881337' : '#881337' }};">
                                 {{ ucfirst($sra->delivery_type) }}
                             </span>
                         </td>
@@ -63,8 +63,8 @@
                         <td style="padding: 1rem 1.5rem; text-align: center;">
                             @if($sra->status === 'approved')
                                 <a href="{{ route('service-sra.receipt', $sra->id) }}" target="_blank"
-                                   style="display: inline-flex; align-items: center; gap: 6px; padding: 0.55rem 1.15rem; background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.25); border-radius: 10px; font-size: 0.78rem; font-weight: 800; text-decoration: none; transition: all 0.2s;"
-                                   onmouseover="this.style.background='rgba(16,185,129,0.2)'" onmouseout="this.style.background='rgba(16,185,129,0.1)'">
+                                   style="display: inline-flex; align-items: center; gap: 6px; padding: 0.55rem 1.15rem; background: rgba(136,19,55,0.1); color: #881337; border: 1px solid rgba(136,19,55,0.25); border-radius: 10px; font-size: 0.78rem; font-weight: 800; text-decoration: none; transition: all 0.2s;"
+                                   onmouseover="this.style.background='rgba(136,19,55,0.2)'" onmouseout="this.style.background='rgba(136,19,55,0.1)'">
                                     <i data-lucide="download" style="width: 14px;"></i> Download Receipt
                                 </a>
                             @else

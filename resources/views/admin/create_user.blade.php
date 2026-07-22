@@ -43,7 +43,7 @@
         left: 0;
         width: 6px;
         height: 100%;
-        background: linear-gradient(to bottom, #16a34a, #4ade80);
+        background: linear-gradient(to bottom, #881337, #9f1239);
     }
 
     /* Cards container */
@@ -61,7 +61,7 @@
 
     .user-row-card.premium-card:hover {
         border-color: #c7d2fe;
-        box-shadow: 0 20px 40px rgba(22, 163, 74, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+        box-shadow: 0 20px 40px rgba(136, 19, 55, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
         transform: translateY(-2px);
     }
 
@@ -78,7 +78,7 @@
     .user-card-title {
         font-weight: 900;
         font-size: 0.9rem;
-        color: #16a34a;
+        color: #881337;
         text-transform: uppercase;
         letter-spacing: 0.06em;
         display: flex;
@@ -160,8 +160,8 @@
 
     .input-wrapper:focus-within {
         background: white;
-        border-color: #16a34a;
-        box-shadow: 0 10px 25px rgba(22, 163, 74, 0.05), 0 0 0 4px rgba(22, 163, 74, 0.08);
+        border-color: #881337;
+        box-shadow: 0 10px 25px rgba(136, 19, 55, 0.05), 0 0 0 4px rgba(136, 19, 55, 0.08);
         transform: translateY(-1px);
     }
 
@@ -186,7 +186,7 @@
     }
 
     .input-wrapper:focus-within .icon-box::after {
-        background: #16a34a;
+        background: #881337;
         height: 26px;
     }
 
@@ -200,7 +200,7 @@
 
     .input-wrapper:focus-within i,
     .input-wrapper:focus-within svg {
-        color: #16a34a;
+        color: #881337;
         transform: scale(1.05);
     }
 
@@ -278,8 +278,8 @@
     .key-icon {
         width: 20px;
         height: 20px;
-        color: #16a34a;
-        background: rgba(22, 163, 74, 0.08);
+        color: #881337;
+        background: rgba(136, 19, 55, 0.08);
         padding: 8px;
         border-radius: 12px;
         flex-shrink: 0;
@@ -354,7 +354,7 @@
     }
 
     .key-btn:hover {
-        color: #16a34a;
+        color: #881337;
         background: #f8fafc;
     }
 
@@ -371,7 +371,7 @@
         padding: 1.25rem;
         font-weight: 900;
         font-size: 0.95rem;
-        color: #16a34a;
+        color: #881337;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -384,11 +384,11 @@
     }
 
     .add-account-dashed-btn:hover {
-        border-color: #16a34a;
+        border-color: #881337;
         background: #f5f6ff;
         color: #3730a3;
         transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(22, 163, 74, 0.08);
+        box-shadow: 0 10px 25px rgba(136, 19, 55, 0.08);
     }
 
     .add-account-dashed-btn:active {
@@ -428,7 +428,7 @@
         align-items: center;
         gap: 6px;
         background: #e0e7ff;
-        color: #16a34a;
+        color: #881337;
         font-size: 0.8rem;
         font-weight: 900;
         padding: 6px 16px;
@@ -471,20 +471,20 @@
         font-weight: 900;
         font-size: 0.9rem;
         color: white;
-        background: linear-gradient(135deg, #16a34a, #3730a3);
+        background: linear-gradient(135deg, #881337, #3730a3);
         border: none;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
         cursor: pointer;
-        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.25);
+        box-shadow: 0 8px 20px rgba(136, 19, 55, 0.25);
         transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .action-btn-submit:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(22, 163, 74, 0.35);
+        box-shadow: 0 12px 28px rgba(136, 19, 55, 0.35);
     }
 
     .action-btn-submit:active {
@@ -585,7 +585,7 @@
     }
 
     .select2-results__option--highlighted[aria-selected] {
-        background-color: #16a34a !important;
+        background-color: #881337 !important;
         color: white !important;
     }
 
@@ -1182,7 +1182,7 @@
                 icon: 'error',
                 title: 'Operation Denied',
                 text: 'At least one user must be registered.',
-                confirmButtonColor: '#16a34a'
+                confirmButtonColor: '#881337'
             });
             return;
         }
@@ -1308,7 +1308,7 @@
                 icon: 'warning',
                 title: 'Validation Error',
                 text: validationMsg,
-                confirmButtonColor: '#16a34a'
+                confirmButtonColor: '#881337'
             });
         }
     });

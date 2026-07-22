@@ -21,9 +21,9 @@
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     <style>
         :root {
-            --primary: #16a34a;
-            --primary-glow: rgba(22, 163, 74, 0.1);
-            --primary-hover: #15803d;
+            --primary: #881337;
+            --primary-glow: rgba(136, 19, 55, 0.1);
+            --primary-hover: #4c0519;
             --bg-main: #f8fafc;
             --bg-card: #ffffff;
             --text-main: #000000;
@@ -126,14 +126,14 @@
             flex-shrink: 0;
         }
 
-        .toast-success { border-left: 4px solid #10b981; }
-        .toast-success .toast-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .toast-success { border-left: 4px solid #881337; }
+        .toast-success .toast-icon { background: rgba(136, 19, 55, 0.1); color: #881337; }
 
         .toast-error { border-left: 4px solid #ef4444; }
         .toast-error .toast-icon { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
-        .toast-warning { border-left: 4px solid #10b981; }
-        .toast-warning .toast-icon { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .toast-warning { border-left: 4px solid #881337; }
+        .toast-warning .toast-icon { background: rgba(136, 19, 55, 0.1); color: #881337; }
 
         .toast-content { flex: 1; }
         .toast-title { display: block; font-weight: 800; font-size: 0.85rem; color: #0f172a; margin-bottom: 2px; }
@@ -242,7 +242,7 @@
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 8px 16px rgba(22, 163, 74, 0.2);
+            box-shadow: 0 8px 16px rgba(136, 19, 55, 0.2);
         }
 
         .brand-text h1 {
@@ -324,7 +324,7 @@
             background: white;
             color: var(--primary);
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 1px solid rgba(22, 163, 74, 0.1);
+            border: 1px solid rgba(136, 19, 55, 0.1);
         }
 
         .nav-link i {
@@ -500,7 +500,7 @@
             border: 1px solid #edf2f7;
             font-size: 0.75rem;
             font-weight: 800;
-            color: #10b981;
+            color: #881337;
             box-shadow: var(--shadow-luxe);
         }
 
@@ -518,7 +518,7 @@
 
         .title-capsule:hover {
             border-color: var(--primary);
-            box-shadow: 0 8px 20px rgba(22, 163, 74, 0.08);
+            box-shadow: 0 8px 20px rgba(136, 19, 55, 0.08);
         }
 
         .capsule-prefix {
@@ -596,8 +596,8 @@
             display: block !important;
         }
 
-        .pulse-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: shadow-pulse 2s infinite; }
-        @keyframes shadow-pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        .pulse-dot { width: 8px; height: 8px; background: #881337; border-radius: 50%; animation: shadow-pulse 2s infinite; }
+        @keyframes shadow-pulse { 0% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(136, 19, 55, 0); } 100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0); } }
 
         /* Minimize button styling */
         .sidebar-minimize-btn {
@@ -756,7 +756,7 @@
             </div>
             <div class="brand-text" style="flex: 1; min-width: 0;">
                 <h1 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ \App\Models\Setting::get('organization_name', 'ADMIN CORE') }}</h1>
-                <span>Stores Inventory Management System<span style="color:#10b981;">(NSIMs)</span></span>
+                <span>Stores Inventory Management System<span style="color:#881337;">(NSIMs)</span></span>
             </div>
             <button type="button" class="sidebar-minimize-btn" id="sidebar-minimize-btn" title="Minimize Sidebar">
                 <i data-lucide="chevron-left" id="minimize-icon" style="width: 16px; height: 16px;"></i>
@@ -1041,7 +1041,7 @@
                         <div style="max-height: 400px; overflow-y: auto;">
                             @forelse($globalNotifications as $notif)
                             <a href="{{ route($notif['route']) }}" class="notif-item" style="display: flex; gap: 1rem; padding: 1.25rem 1.5rem; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
-                                <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ $notif['type'] === 'warning' ? '#ecfdf5' : '#fef2f2' }}; color: {{ $notif['type'] === 'warning' ? '#10b981' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ $notif['type'] === 'warning' ? '#ecfdf5' : '#fef2f2' }}; color: {{ $notif['type'] === 'warning' ? '#881337' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                     <i data-lucide="{{ $notif['icon'] }}" style="width: 20px;"></i>
                                 </div>
                                 <div style="flex: 1;">
@@ -1273,7 +1273,7 @@
                                     html += `
                                         <div style="position: relative; border-bottom: 1px solid #f1f5f9;">
                                             <a href="${routeUrl}" class="notif-item" style="display: flex; gap: 1rem; padding: 1.25rem 1.5rem; padding-right: 3.5rem; text-decoration: none;">
-                                                <div style="width: 44px; height: 44px; border-radius: 12px; background: ${notif.type === 'warning' ? '#ecfdf5' : '#fef2f2'}; color: ${notif.type === 'warning' ? '#10b981' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                <div style="width: 44px; height: 44px; border-radius: 12px; background: ${notif.type === 'warning' ? '#ecfdf5' : '#fef2f2'}; color: ${notif.type === 'warning' ? '#881337' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                                     <i data-lucide="${notif.icon}" style="width: 20px;"></i>
                                                 </div>
                                                 <div style="flex: 1;">
@@ -1571,7 +1571,7 @@
                 <i data-lucide="x" style="width: 14px;"></i>
             </button>
             <div class="toast-progress">
-                <div class="toast-progress-bar" style="animation-duration: ${duration}ms; color: ${type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#10b981')}"></div>
+                <div class="toast-progress-bar" style="animation-duration: ${duration}ms; color: ${type === 'success' ? '#881337' : (type === 'error' ? '#ef4444' : '#881337')}"></div>
             </div>
         `;
 
@@ -1921,8 +1921,8 @@
                 50% { transform: translateY(-6px); }
             }
             @keyframes sigDotPulse {
-                0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
-                50% { box-shadow: 0 0 0 8px rgba(22, 163, 74, 0); }
+                0%, 100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); }
+                50% { box-shadow: 0 0 0 8px rgba(136, 19, 55, 0); }
             }
             @media (max-width: 576px) {
                 .sig-warning-btn-group {
@@ -1937,30 +1937,30 @@
         </style>
 
         <div id="signature-warning-overlay" class="modal-overlay" style="display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); align-items: center; justify-content: center; z-index: 10000000 !important; padding: 1.25rem; box-sizing: border-box;">
-            <div class="glass-card" style="max-width: 520px; width: 100%; border-radius: 32px; padding: 2.75rem 2.25rem 2.25rem; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 35px 90px -15px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(22, 163, 74, 0.08); text-align: center; position: relative; overflow: hidden; animation: sigModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-sizing: border-box;">
+            <div class="glass-card" style="max-width: 520px; width: 100%; border-radius: 32px; padding: 2.75rem 2.25rem 2.25rem; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 35px 90px -15px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(136, 19, 55, 0.08); text-align: center; position: relative; overflow: hidden; animation: sigModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-sizing: border-box;">
                 <!-- Top Accent Line -->
-                <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #16a34a 0%, #22c55e 50%, #4ade80 100%);"></div>
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #881337 0%, #22c55e 50%, #9f1239 100%);"></div>
 
                 <!-- Animated Signature Icon Box -->
-                <div style="width: 84px; height: 84px; background: linear-gradient(135deg, rgba(22,163,74,0.12), rgba(22,163,74,0.04)); border: 2px solid rgba(22,163,74,0.18); border-radius: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 12px 25px rgba(22, 163, 74, 0.12); animation: sigIconFloat 3s ease-in-out infinite;">
-                    <i data-lucide="signature" style="width: 42px; height: 42px; color: #16a34a;"></i>
+                <div style="width: 84px; height: 84px; background: linear-gradient(135deg, rgba(136,19,55,0.12), rgba(136,19,55,0.04)); border: 2px solid rgba(136,19,55,0.18); border-radius: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 12px 25px rgba(136, 19, 55, 0.12); animation: sigIconFloat 3s ease-in-out infinite;">
+                    <i data-lucide="signature" style="width: 42px; height: 42px; color: #881337;"></i>
                 </div>
 
                 <!-- Heading & Intro -->
                 <h3 style="font-size: 1.6rem; font-weight: 950; color: #0f172a; margin: 0 0 0.75rem; letter-spacing: -0.03em; line-height: 1.25;">Digital Signature Required</h3>
                 <p style="color: #475569; font-size: 0.92rem; line-height: 1.65; margin: 0 0 1.75rem; font-weight: 600;">
-                    Hello <strong style="color: #0f172a;">{{ auth()->user()->name }}</strong>, as an authorized official (<span style="color: #16a34a; font-weight: 800;">{{ auth()->user()->getRoleDisplayLabel() }}</span>), you are required to upload your official digital signature to validate inventory releases &amp; SRA vouchers.
+                    Hello <strong style="color: #0f172a;">{{ auth()->user()->name }}</strong>, as an authorized official (<span style="color: #881337; font-weight: 800;">{{ auth()->user()->getRoleDisplayLabel() }}</span>), you are required to upload your official digital signature to validate inventory releases &amp; SRA vouchers.
                 </p>
 
                 <!-- Instructions Card -->
                 <div style="background: #f8fafc; border-radius: 20px; padding: 1.25rem 1.5rem; border: 1px solid #e2e8f0; text-align: left; margin-bottom: 2rem;">
                     <div style="font-size: 0.72rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px; margin-bottom: 0.85rem;">
-                        <i data-lucide="info" style="width: 14px; height: 14px; color: #16a34a;"></i>
+                        <i data-lucide="info" style="width: 14px; height: 14px; color: #881337;"></i>
                         How to Upload:
                     </div>
                     <ol style="font-size: 0.82rem; color: #334155; margin: 0; padding-left: 1.2rem; line-height: 1.6; font-weight: 600;">
-                        <li style="margin-bottom: 4px;">Go to your personal <strong style="color: #16a34a;">User Settings</strong> page.</li>
-                        <li style="margin-bottom: 4px;">Locate the <strong style="color: #16a34a;">Official Digital Signature</strong> section.</li>
+                        <li style="margin-bottom: 4px;">Go to your personal <strong style="color: #881337;">User Settings</strong> page.</li>
+                        <li style="margin-bottom: 4px;">Locate the <strong style="color: #881337;">Official Digital Signature</strong> section.</li>
                         <li>Upload a photo of your signature (background is auto-cleaned).</li>
                     </ol>
                 </div>
@@ -1970,7 +1970,7 @@
                     <button type="button" onclick="dismissSignatureWarning()" class="modern-action-btn secondary" style="flex: 1; padding: 0.9rem 1.25rem; font-size: 0.88rem; border-radius: 16px; cursor: pointer; font-weight: 800; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; transition: all 0.2s ease;">
                         Configure Later
                     </button>
-                    <a href="{{ route('settings.index') }}" class="save-btn" style="flex: 1.3; justify-content: center; padding: 0.9rem 1.25rem; font-size: 0.88rem; border-radius: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; font-weight: 800; box-shadow: 0 10px 25px rgba(22, 163, 74, 0.35); border: none; transition: all 0.25s ease;">
+                    <a href="{{ route('settings.index') }}" class="save-btn" style="flex: 1.3; justify-content: center; padding: 0.9rem 1.25rem; font-size: 0.88rem; border-radius: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #881337 0%, #4c0519 100%); color: white; font-weight: 800; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.35); border: none; transition: all 0.25s ease;">
                         <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
                         <span>Upload Signature Now</span>
                     </a>

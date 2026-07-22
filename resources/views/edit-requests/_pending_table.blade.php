@@ -32,7 +32,7 @@
                         $itemsCount = count($payload['items'] ?? []);
                     @endphp
                     <tr class="sra-table-row" style="cursor: pointer;" onclick="window.location.href='{{ route('sra.preview', $req->id) }}'">
-                        <td style="padding: 1.25rem 1.5rem; font-weight: 800; color: #10b981;">REQ-{{ str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</td>
+                        <td style="padding: 1.25rem 1.5rem; font-weight: 800; color: #881337;">REQ-{{ str_pad($req->id, 5, '0', STR_PAD_LEFT) }}</td>
                         <td style="padding: 1.25rem 1.5rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
                             {{ $req->created_at->format('d M Y, h:i A') }}
                         </td>
@@ -53,10 +53,10 @@
                                 $isPendingB = str_contains($stLocPending, 'B');
                             @endphp
                             <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                                <span style="background: rgba(22, 163, 74, 0.08); color: var(--primary); padding: 4px 10px; border-radius: 6px; text-transform: uppercase;">
+                                <span style="background: rgba(136, 19, 55, 0.08); color: var(--primary); padding: 4px 10px; border-radius: 6px; text-transform: uppercase;">
                                     Cat {{ $payload['ledge_category'] ?? '—' }}
                                 </span>
-                                <span style="font-size: 0.7rem; font-weight: 800; color: {{ $isPendingB ? '#3b82f6' : '#16a34a' }}; background: {{ $isPendingB ? 'rgba(59, 130, 246, 0.1)' : 'rgba(22, 163, 74, 0.1)' }}; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;">
+                                <span style="font-size: 0.7rem; font-weight: 800; color: {{ $isPendingB ? '#3b82f6' : '#881337' }}; background: {{ $isPendingB ? 'rgba(59, 130, 246, 0.1)' : 'rgba(136, 19, 55, 0.1)' }}; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;">
                                     <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i>
                                     {{ $stLocPending }}
                                 </span>
@@ -77,7 +77,7 @@
                             @endif
                         </td>
                         <td style="padding: 1.25rem 1.5rem; text-align: center;">
-                            <button onclick="event.stopPropagation(); window.location.href='{{ route('sra.preview', $req->id) }}'" style="background: rgba(16,185,129,0.08); color: #10b981; border: 1px solid rgba(16,185,129,0.2); border-radius: 10px; padding: 0.5rem 1.25rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                            <button onclick="event.stopPropagation(); window.location.href='{{ route('sra.preview', $req->id) }}'" style="background: rgba(136,19,55,0.08); color: #881337; border: 1px solid rgba(136,19,55,0.2); border-radius: 10px; padding: 0.5rem 1.25rem; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
                                 <i data-lucide="eye" style="width: 14px;"></i> Review Entry
                             </button>
                         </td>

@@ -33,15 +33,15 @@
             --font-sans: 'Outfit', sans-serif;
 
             --store-orange: #22c55e;
-            --store-orange-hover: #15803d;
+            --store-orange-hover: #4c0519;
             --store-orange-light: rgba(34, 197, 94, 0.08);
 
-            --store-indigo: #16a34a;
-            --store-indigo-hover: #16a34a;
-            --store-indigo-light: rgba(22, 163, 74, 0.08);
+            --store-indigo: #881337;
+            --store-indigo-hover: #881337;
+            --store-indigo-light: rgba(136, 19, 55, 0.08);
 
-            --success-color: #10b981;
-            --warning-color: #10b981;
+            --success-color: #881337;
+            --warning-color: #881337;
             --danger-color: #ef4444;
 
             --bg-main: #f8fafc;
@@ -388,7 +388,7 @@
         .submit-btn {
             width: 100%;
             padding: 1rem;
-            background: linear-gradient(135deg, var(--store-orange), #15803d);
+            background: linear-gradient(135deg, var(--store-orange), #4c0519);
             color: white;
             border: none;
             border-radius: 14px;
@@ -596,7 +596,7 @@
                 </div>
                 <div>
                     <div class="brand-name">NACOC</div>
-                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:#10b981;">(NSIMs)</span></div>
+                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:#881337;">(NSIMs)</span></div>
                 </div>
             </a>
 

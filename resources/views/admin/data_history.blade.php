@@ -14,9 +14,9 @@
     </div>
 
     <!-- Filter Console -->
-    <div class="glass-card" style="padding: 2rem; margin-bottom: 2rem; border-radius: 24px; background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid rgba(22, 163, 74, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
+    <div class="glass-card" style="padding: 2rem; margin-bottom: 2rem; border-radius: 24px; background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid rgba(136, 19, 55, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(136, 19, 55, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="filter" style="width: 18px;"></i>
             </div>
             <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0; letter-spacing: -0.01em;">Search Filters</h3>
@@ -64,7 +64,7 @@
             </div>
 
             <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 3px;">
-                <button type="submit" class="btn-primary" style="padding: 0.95rem 2rem; border-radius: 16px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(22,163,74,0.2);">
+                <button type="submit" class="btn-primary" style="padding: 0.95rem 2rem; border-radius: 16px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(136,19,55,0.2);">
                     Apply Filter
                 </button>
                 @if(request()->hasAny(['user_id', 'date_from', 'date_to']) && (request('user_id') != '' || request('date_from') != '' || request('date_to') != ''))
@@ -89,8 +89,8 @@
     {{-- ── Tab: Stock History ── --}}
     <div id="panel-stock-history" class="pager-panel active">
         @if($stockHistory->isEmpty())
-            <div class="glass-card" style="padding: 4rem 2rem; text-align: center; border-radius: 24px; border: 1px dashed rgba(22, 163, 74, 0.2);">
-                <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(22, 163, 74, 0.05); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+            <div class="glass-card" style="padding: 4rem 2rem; text-align: center; border-radius: 24px; border: 1px dashed rgba(136, 19, 55, 0.2);">
+                <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(136, 19, 55, 0.05); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
                     <i data-lucide="package-open" style="width: 32px; height: 32px;"></i>
                 </div>
                 <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">No Stock Adjustments Found</h3>
@@ -186,8 +186,8 @@
     {{-- ── Tab: User Role History ── --}}
     <div id="panel-role-history" class="pager-panel">
         @if($roleHistory->isEmpty())
-            <div class="glass-card" style="padding: 4rem 2rem; text-align: center; border-radius: 24px; border: 1px dashed rgba(22, 163, 74, 0.2);">
-                <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(22, 163, 74, 0.05); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+            <div class="glass-card" style="padding: 4rem 2rem; text-align: center; border-radius: 24px; border: 1px dashed rgba(136, 19, 55, 0.2);">
+                <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(136, 19, 55, 0.05); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
                     <i data-lucide="shield-alert" style="width: 32px; height: 32px;"></i>
                 </div>
                 <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">No Role Modifications Found</h3>
@@ -258,12 +258,12 @@
                                                         <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; padding: 2px 6px; background: #f8fafc; border-radius: 6px; border: 1px solid #f1f5f9;">
                                                             <span style="font-weight: 700; color: #475569;">{{ $label }}</span>
                                                             @if($record->action === 'created')
-                                                                <span style="font-weight: 800; color: {{ $newVal ? '#10b981' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
+                                                                <span style="font-weight: 800; color: {{ $newVal ? '#881337' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
                                                             @else
                                                                 <span style="font-weight: 800;">
-                                                                    <span style="color: {{ $oldVal ? '#10b981' : '#dc2626' }}; text-decoration: line-through; opacity: 0.6;">{{ $oldVal ? 'Allowed' : 'Blocked' }}</span>
+                                                                    <span style="color: {{ $oldVal ? '#881337' : '#dc2626' }}; text-decoration: line-through; opacity: 0.6;">{{ $oldVal ? 'Allowed' : 'Blocked' }}</span>
                                                                     <span style="color: #64748b; margin: 0 2px;">&rarr;</span>
-                                                                    <span style="color: {{ $newVal ? '#10b981' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
+                                                                    <span style="color: {{ $newVal ? '#881337' : '#dc2626' }};">{{ $newVal ? 'Allowed' : 'Blocked' }}</span>
                                                                 </span>
                                                             @endif
                                                         </div>
@@ -303,7 +303,7 @@
     .pager-tab.active {
         background: var(--primary) !important;
         color: white !important;
-        box-shadow: 0 4px 14px rgba(22,163,74,0.25);
+        box-shadow: 0 4px 14px rgba(136,19,55,0.25);
     }
     .pager-tab:hover:not(.active) {
         background: #f8fafc;
@@ -331,7 +331,7 @@
     .custom-pagination .page-item.active .page-link {
         background: var(--primary); color: white;
         border-color: var(--primary);
-        box-shadow: 0 10px 25px rgba(22, 163, 74, 0.25);
+        box-shadow: 0 10px 25px rgba(136, 19, 55, 0.25);
         transform: scale(1.1);
         z-index: 10;
     }
@@ -340,7 +340,7 @@
         color: var(--primary);
         transform: translateY(-4px);
         background: #f5f3ff;
-        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.1);
+        box-shadow: 0 8px 20px rgba(136, 19, 55, 0.1);
     }
     .custom-pagination .page-item.disabled .page-link {
         opacity: 0.5;

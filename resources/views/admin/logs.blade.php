@@ -18,7 +18,7 @@
             </p>
         </div>
         <div style="display: flex; gap: 1rem;">
-            <button type="button" onclick="confirmBulkArchive()" style="background: rgba(22, 163, 74, 0.05); border: 1px solid rgba(22, 163, 74, 0.2); padding: 0.75rem 1.5rem; border-radius: 12px; color: var(--primary); font-weight: 800; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.boxShadow='0 4px 12px rgba(22, 163, 74, 0.2)'" onmouseout="this.style.background='rgba(22, 163, 74, 0.05)'; this.style.color='var(--primary)'; this.style.boxShadow='none'">
+            <button type="button" onclick="confirmBulkArchive()" style="background: rgba(136, 19, 55, 0.05); border: 1px solid rgba(136, 19, 55, 0.2); padding: 0.75rem 1.5rem; border-radius: 12px; color: var(--primary); font-weight: 800; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'; this.style.boxShadow='0 4px 12px rgba(136, 19, 55, 0.2)'" onmouseout="this.style.background='rgba(136, 19, 55, 0.05)'; this.style.color='var(--primary)'; this.style.boxShadow='none'">
                 <i data-lucide="archive" style="width: 18px;"></i>
                 Archive Selected
             </button>
@@ -26,9 +26,9 @@
     </div>
 
     <!-- Premium Filter Console -->
-    <div class="glass-card" style="padding: 2rem; margin-bottom: 2rem; border-radius: 24px; background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid rgba(22, 163, 74, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
+    <div class="glass-card" style="padding: 2rem; margin-bottom: 2rem; border-radius: 24px; background: linear-gradient(145deg, #ffffff, #f8fafc); border: 1px solid rgba(136, 19, 55, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
         <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
-            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(136, 19, 55, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="filter" style="width: 18px;"></i>
             </div>
             <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0; letter-spacing: -0.01em;">Search Filters</h3>
@@ -38,7 +38,7 @@
             <input type="hidden" name="per_page" value="{{ request('per_page') }}">
             @endif
             <div style="flex: 1; min-width: 240px;">
-                <div style="background: white; border: 1.5px solid #edf2f7; padding: 10px 18px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 8px 20px rgba(22,163,74,0.06)'" onmouseout="this.style.borderColor='#edf2f7'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.02)'">
+                <div style="background: white; border: 1.5px solid #edf2f7; padding: 10px 18px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 8px 20px rgba(136,19,55,0.06)'" onmouseout="this.style.borderColor='#edf2f7'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.02)'">
                     <div style="width: 36px; height: 36px; background: #fff1f2; color: #ef4444; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         <i data-lucide="alert-circle" style="width: 18px;"></i>
                     </div>
@@ -54,7 +54,7 @@
                 </div>
             </div>
             <div style="flex: 1; min-width: 240px;">
-                <div style="background: white; border: 1.5px solid #edf2f7; padding: 10px 18px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 8px 20px rgba(22,163,74,0.06)'" onmouseout="this.style.borderColor='#edf2f7'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.02)'">
+                <div style="background: white; border: 1.5px solid #edf2f7; padding: 10px 18px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 8px 20px rgba(136,19,55,0.06)'" onmouseout="this.style.borderColor='#edf2f7'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.02)'">
                     <div style="width: 36px; height: 36px; background: #eef2ff; color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         <i data-lucide="layers" style="width: 18px;"></i>
                     </div>
@@ -71,8 +71,8 @@
                 </div>
             </div>
             <div style="flex: 1; min-width: 240px;">
-                <div style="background: white; border: 1.5px solid #edf2f7; padding: 10px 18px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 8px 20px rgba(22,163,74,0.06)'" onmouseout="this.style.borderColor='#edf2f7'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.02)'">
-                    <div style="width: 36px; height: 36px; background: rgba(22, 163, 74, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <div style="background: white; border: 1.5px solid #edf2f7; padding: 10px 18px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 8px 20px rgba(136,19,55,0.06)'" onmouseout="this.style.borderColor='#edf2f7'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.02)'">
+                    <div style="width: 36px; height: 36px; background: rgba(136, 19, 55, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         <i data-lucide="user-cog" style="width: 18px;"></i>
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: column;">
@@ -86,7 +86,7 @@
                 </div>
             </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
-                <button type="submit" class="btn-primary" style="padding: 0.85rem 2rem; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(22,163,74,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(22,163,74,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(22,163,74,0.2)'">
+                <button type="submit" class="btn-primary" style="padding: 0.85rem 2rem; border-radius: 12px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(136,19,55,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(136,19,55,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(136,19,55,0.2)'">
                     <i data-lucide="search" style="width: 16px; display: inline-block; vertical-align: text-bottom; margin-right: 4px;"></i>
                 </button>
                 @if(request()->hasAny(['severity', 'event_type', 'authority']) && (request('severity') != '' || request('event_type') != '' || request('authority') != ''))
@@ -164,7 +164,7 @@
                             <td style="padding: 1.25rem 2rem; max-width: 400px;">
                                 <p style="font-size: 0.85rem; color: var(--text-main); line-height: 1.5; margin: 0;">
                                     @if(str_starts_with($log->action, 'DELEGATED_'))
-                                        <span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(22, 163, 74, 0.08); color: var(--primary); font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(22, 163, 74, 0.15); margin-right: 6px; text-transform: uppercase; letter-spacing: 0.02em;">
+                                        <span style="display: inline-flex; align-items: center; gap: 4px; background: rgba(136, 19, 55, 0.08); color: var(--primary); font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(136, 19, 55, 0.15); margin-right: 6px; text-transform: uppercase; letter-spacing: 0.02em;">
                                             <i data-lucide="user-cog" style="width: 10px; height: 10px;"></i> Delegated
                                         </span>
                                     @endif
@@ -200,7 +200,7 @@
                                     @else
                                     <!-- <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600; padding: 0.4rem 0.85rem;">No Details</span> -->
                                     @endif
-                                    <button type="button" onclick="archiveLog('{{ $log->id }}')" style="background: rgba(22, 163, 74, 0.05); color: var(--primary); border: 1px solid rgba(22, 163, 74, 0.2); padding: 0.4rem 0.65rem; border-radius: 10px; font-weight: 800; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='rgba(22, 163, 74, 0.05)'; this.style.color='var(--primary)'" title="Archive Log">
+                                    <button type="button" onclick="archiveLog('{{ $log->id }}')" style="background: rgba(136, 19, 55, 0.05); color: var(--primary); border: 1px solid rgba(136, 19, 55, 0.2); padding: 0.4rem 0.65rem; border-radius: 10px; font-weight: 800; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='rgba(136, 19, 55, 0.05)'; this.style.color='var(--primary)'" title="Archive Log">
                                         <i data-lucide="archive" style="width: 14px;"></i>
                                     </button>
                                 </div>
@@ -209,13 +209,13 @@
                         @empty
                         <tr>
                             <td colspan="7" style="padding: 6rem 2rem; text-align: center; color: var(--text-muted); background: #f8fafc;">
-                                <div style="width: 80px; height: 80px; background: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid rgba(22,163,74,0.1);">
+                                <div style="width: 80px; height: 80px; background: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid rgba(136,19,55,0.1);">
                                     <i data-lucide="shield-check" style="width: 40px; height: 40px; color: var(--primary); opacity: 0.9;"></i>
                                 </div>
                                 <h4 style="font-weight: 900; color: var(--text-heading); font-size: 1.25rem; margin-bottom: 0.5rem; letter-spacing: -0.02em;">No Activities Found</h4>
                                 <p style="font-size: 0.95rem; max-width: 400px; margin: 0 auto; line-height: 1.5;">No system events match your current filter criteria. The system is operating securely within normal parameters.</p>
                                 @if(request()->hasAny(['severity', 'event_type']))
-                                <a href="{{ route('admin.logs') }}" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 1.5rem; background: white; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; text-decoration: none; color: var(--primary); border: 1px solid rgba(22,163,74,0.2); box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='white'; this.style.color='var(--primary)'">
+                                <a href="{{ route('admin.logs') }}" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 1.5rem; background: white; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 800; text-decoration: none; color: var(--primary); border: 1px solid rgba(136,19,55,0.2); box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: all 0.3s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white'" onmouseout="this.style.background='white'; this.style.color='var(--primary)'">
                                     <i data-lucide="rotate-ccw" style="width: 16px;"></i> Clear All Filters
                                 </a>
                                 @endif
@@ -390,14 +390,14 @@
         gap: 6px;
         background: white;
         color: var(--primary);
-        border: 1px solid rgba(22, 163, 74, 0.2);
+        border: 1px solid rgba(136, 19, 55, 0.2);
         padding: 0.4rem 0.85rem;
         border-radius: 10px;
         font-weight: 800;
         font-size: 0.75rem;
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 2px 4px rgba(22, 163, 74, 0.05);
+        box-shadow: 0 2px 4px rgba(136, 19, 55, 0.05);
     }
 
     .btn-details:hover {
@@ -405,7 +405,7 @@
         color: white;
         border-color: var(--primary);
         transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(22, 163, 74, 0.25);
+        box-shadow: 0 6px 15px rgba(136, 19, 55, 0.25);
     }
 
     .btn-details i {
@@ -441,7 +441,7 @@
         color: white;
         border-color: var(--primary);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+        box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
     }
 
     .page-btn.disabled {
@@ -470,7 +470,7 @@
     <div class="bottom-sheet-header">
         <div>
             <h3 id="modalEventTitle" style="font-size: 1.85rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Event Details</h3>
-            <p id="modalEventAction" style="font-size: 0.8rem; background: var(--primary); color: white; padding: 4px 12px; border-radius: 8px; font-weight: 800; display: inline-block; letter-spacing: 0.05em; box-shadow: 0 4px 10px rgba(22,163,74,0.2);">ACTION</p>
+            <p id="modalEventAction" style="font-size: 0.8rem; background: var(--primary); color: white; padding: 4px 12px; border-radius: 8px; font-weight: 800; display: inline-block; letter-spacing: 0.05em; box-shadow: 0 4px 10px rgba(136,19,55,0.2);">ACTION</p>
         </div>
         <button onclick="closeLogModal()" style="background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.05); width: 44px; height: 44px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.background='#fef2f2'; this.style.color='#ef4444'; this.style.borderColor='#fecdd3'" onmouseout="this.style.background='rgba(0,0,0,0.04)'; this.style.color='var(--text-muted)'; this.style.borderColor='rgba(0,0,0,0.05)'">
             <i data-lucide="x" style="width: 20px;"></i>
@@ -580,7 +580,7 @@
                     row.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
                     row.style.opacity = '0';
                     row.style.transform = 'translateX(50px) scale(0.95)';
-                    row.style.background = 'rgba(22, 163, 74, 0.05)';
+                    row.style.background = 'rgba(136, 19, 55, 0.05)';
                 }
 
                 fetch(`{{ url('/admin/archive/log') }}/${id}`, {
@@ -639,7 +639,7 @@
             // Render Personnel Card at the top
             let html = `
                 <div class="detail-card" style="display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem; background: rgba(0,0,0,0.015); border: 1px solid var(--border-color); box-shadow: none;">
-                    ${userAvatar ? `<img src="${userAvatar}" style="width: 48px; height: 48px; border-radius: 14px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">` : `<div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 900; box-shadow: 0 4px 10px rgba(22,163,74,0.2);">${userName.charAt(0)}</div>`}
+                    ${userAvatar ? `<img src="${userAvatar}" style="width: 48px; height: 48px; border-radius: 14px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">` : `<div style="width: 48px; height: 48px; border-radius: 14px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 900; box-shadow: 0 4px 10px rgba(136,19,55,0.2);">${userName.charAt(0)}</div>`}
                     <div>
                         <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2px; letter-spacing: 0.05em;">Action Initiated By User</div>
                         <div style="font-size: 1.15rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em;">${userName}</div>
@@ -669,7 +669,7 @@
                     html += '<table class="items-table"><thead><tr><th>Description</th><th>Package Type</th><th>Stock Bal.</th><th>Rec. Qty</th><th>Variance</th></tr></thead><tbody>';
                     dataObj.items_added.forEach(item => {
                         const variance = parseFloat(item.variance || 0);
-                        const varColor = variance > 0 ? '#10b981' : (variance < 0 ? '#ef4444' : 'inherit');
+                        const varColor = variance > 0 ? '#881337' : (variance < 0 ? '#ef4444' : 'inherit');
                         const varPrefix = variance > 0 ? '+' : '';
 
                         html += `<tr>
@@ -703,7 +703,7 @@
                     html += '<table class="items-table"><thead><tr><th>Category</th><th>Description</th><th>Quantity Issued</th></tr></thead><tbody>';
                     dataObj.items_issued.forEach(item => {
                         html += `<tr>
-                            <td><span style="background: rgba(22,163,74,0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem;">${item.category || '-'}</span></td>
+                            <td><span style="background: rgba(136,19,55,0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem;">${item.category || '-'}</span></td>
                             <td style="font-weight: 800; color: var(--text-main);">${item.description}</td>
                             <td style="font-weight: 900; color: var(--primary);">${item.qty || '-'}</td>
                         </tr>`;
@@ -744,7 +744,7 @@
 
                 if (dataObj.batch_changes && Object.keys(dataObj.batch_changes).length > 0) {
                     html += `
-                        <div class="detail-card" style="border-color: #10b981; background: rgba(16, 185, 129, 0.02);">
+                        <div class="detail-card" style="border-color: #881337; background: rgba(136, 19, 55, 0.02);">
                             <div class="detail-label" style="color: #047857;">Batch Header Changes</div>
                             <div style="font-size: 0.85rem;">
                                 ${Object.entries(dataObj.batch_changes).map(([field, val]) => `
@@ -760,7 +760,7 @@
                 html += `</div>`; // close detail-grid
 
                 if (dataObj.item_changes && Object.keys(dataObj.item_changes).length > 0) {
-                    html += '<h4 style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase; display: flex; align-items: center; gap: 8px;"><i data-lucide="edit-3" style="width: 14px; color: #10b981;"></i> Granular Item Revisions</h4>';
+                    html += '<h4 style="font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; text-transform: uppercase; display: flex; align-items: center; gap: 8px;"><i data-lucide="edit-3" style="width: 14px; color: #881337;"></i> Granular Item Revisions</h4>';
                     html += '<table class="items-table"><thead><tr><th>Item ID</th><th>Field</th><th>Original State</th><th>New State</th></tr></thead><tbody>';
 
                     Object.entries(dataObj.item_changes).forEach(([itemId, changes]) => {
@@ -769,7 +769,7 @@
                                 ${fIdx === 0 ? `<td rowspan="${Object.keys(changes).length}" style="background: rgba(0,0,0,0.02); font-weight: 900; color: var(--text-muted); text-align: center; border-right: 1px solid var(--border-color);">#${itemId}</td>` : ''}
                                 <td style="text-transform: capitalize; font-weight: 700;">${field.replace('_', ' ')}</td>
                                 <td style="color: #ef4444; font-weight: 700; text-decoration: line-through;">${vals.old}</td>
-                                <td style="color: #10b981; font-weight: 900; background: rgba(16, 185, 129, 0.05);">
+                                <td style="color: #881337; font-weight: 900; background: rgba(136, 19, 55, 0.05);">
                                     <div style="display: flex; align-items: center; gap: 8px;">
                                         <i data-lucide="arrow-right" style="width: 12px;"></i>
                                         ${vals.new}

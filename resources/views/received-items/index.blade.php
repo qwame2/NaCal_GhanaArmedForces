@@ -14,9 +14,9 @@
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
                 @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head', 'Auditor']))
-                    <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · {{ auth()->user()->role === 'Auditor' ? 'Department Head' : 'Department Head Hub' }}</span>
+                    <span style="background: rgba(136, 19, 55, 0.1); color: #881337; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · {{ auth()->user()->role === 'Auditor' ? 'Department Head' : 'Department Head Hub' }}</span>
                 @else
-                    <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Item Records</span>
+                    <span style="background: rgba(136, 19, 55, 0.1); color: #881337; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Item Records</span>
                 @endif
                 <span style="color: var(--text-muted); font-size: 0.85rem;"></span>
             </div>
@@ -36,7 +36,7 @@
     <!-- Quick Stats -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
         <div class="glass-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem;">
-            <div style="width: 48px; height: 48px; background: rgba(22, 163, 74, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 48px; height: 48px; background: rgba(136, 19, 55, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="package" style="width: 24px;"></i>
             </div>
             <div>
@@ -45,7 +45,7 @@
             </div>
         </div>
         <div class="glass-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem;">
-            <div style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 48px; height: 48px; background: rgba(136, 19, 55, 0.1); color: #881337; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="layers" style="width: 24px;"></i>
             </div>
             <div>
@@ -54,7 +54,7 @@
             </div>
         </div>
         <div class="glass-card" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem;">
-            <div style="width: 48px; height: 48px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 48px; height: 48px; background: rgba(136, 19, 55, 0.1); color: #881337; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="trending-up" style="width: 24px;"></i>
             </div>
             <div>
@@ -100,25 +100,25 @@
     <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 3rem; flex-wrap: wrap;">
         <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
             <!-- Static Pending Partials Button -->
-            <a href="{{ request()->fullUrlWithQuery(['status' => request('status') === 'partial' ? null : 'partial']) }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: {{ request('status') === 'partial' ? '1.5px solid #10b981' : '1.5px solid var(--border-color)' }}; background: {{ request('status') === 'partial' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-card)' }}; color: {{ request('status') === 'partial' ? '#10b981' : 'var(--text-main)' }}; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 0.85rem;">
+            <a href="{{ request()->fullUrlWithQuery(['status' => request('status') === 'partial' ? null : 'partial']) }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: {{ request('status') === 'partial' ? '1.5px solid #881337' : '1.5px solid var(--border-color)' }}; background: {{ request('status') === 'partial' ? 'rgba(136, 19, 55, 0.1)' : 'var(--bg-card)' }}; color: {{ request('status') === 'partial' ? '#881337' : 'var(--text-main)' }}; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 0.85rem;">
                 <i data-lucide="{{ request('status') === 'partial' ? 'x-circle' : 'alert-circle' }}" style="width: 16px;"></i>
                 {{ request('status') === 'partial' ? 'Clear Partials' : 'Pending Partials' }}
             </a>
 
             <!-- Pending Approvals Button -->
-            <a href="{{ request()->fullUrlWithQuery(['status' => request('status') === 'pending_approval' ? null : 'pending_approval']) }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: {{ request('status') === 'pending_approval' ? '1.5px solid #16a34a' : '1.5px solid var(--border-color)' }}; background: {{ request('status') === 'pending_approval' ? 'rgba(22, 163, 74, 0.1)' : 'var(--bg-card)' }}; color: {{ request('status') === 'pending_approval' ? '#16a34a' : 'var(--text-main)' }}; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 0.85rem;">
+            <a href="{{ request()->fullUrlWithQuery(['status' => request('status') === 'pending_approval' ? null : 'pending_approval']) }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: {{ request('status') === 'pending_approval' ? '1.5px solid #881337' : '1.5px solid var(--border-color)' }}; background: {{ request('status') === 'pending_approval' ? 'rgba(136, 19, 55, 0.1)' : 'var(--bg-card)' }}; color: {{ request('status') === 'pending_approval' ? '#881337' : 'var(--text-main)' }}; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 0.85rem;">
                 <i data-lucide="{{ request('status') === 'pending_approval' ? 'x-circle' : 'clock' }}" style="width: 16px;"></i>
                 {{ request('status') === 'pending_approval' ? 'Clear Approvals' : 'Pending Approvals' }}
             </a>
 
             <!-- Baseline Stock Button -->
-            <a href="{{ request()->fullUrlWithQuery(['status' => request('status') === 'baseline' ? null : 'baseline']) }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: {{ request('status') === 'baseline' ? '1.5px solid #10b981' : '1.5px solid var(--border-color)' }}; background: {{ request('status') === 'baseline' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-card)' }}; color: {{ request('status') === 'baseline' ? '#10b981' : 'var(--text-main)' }}; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 0.85rem;">
+            <a href="{{ request()->fullUrlWithQuery(['status' => request('status') === 'baseline' ? null : 'baseline']) }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: {{ request('status') === 'baseline' ? '1.5px solid #881337' : '1.5px solid var(--border-color)' }}; background: {{ request('status') === 'baseline' ? 'rgba(136, 19, 55, 0.1)' : 'var(--bg-card)' }}; color: {{ request('status') === 'baseline' ? '#881337' : 'var(--text-main)' }}; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 0.85rem;">
                 <i data-lucide="{{ request('status') === 'baseline' ? 'x-circle' : 'database' }}" style="width: 16px;"></i>
                 {{ request('status') === 'baseline' ? 'Clear Baseline' : 'Baseline Stock' }}
             </a>
 
             <!-- Store A Button -->
-            <a href="{{ request()->fullUrlWithQuery(['store_location' => (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? null : 'Store A']) }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: {{ (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? '1.5px solid var(--primary)' : '1.5px solid var(--border-color)' }}; background: {{ (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? 'rgba(22, 163, 74, 0.1)' : 'var(--bg-card)' }}; color: {{ (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? 'var(--primary)' : 'var(--text-main)' }}; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 0.85rem;">
+            <a href="{{ request()->fullUrlWithQuery(['store_location' => (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? null : 'Store A']) }}" style="padding: 0.65rem 1.4rem; border-radius: 999px; border: {{ (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? '1.5px solid var(--primary)' : '1.5px solid var(--border-color)' }}; background: {{ (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? 'rgba(136, 19, 55, 0.1)' : 'var(--bg-card)' }}; color: {{ (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? 'var(--primary)' : 'var(--text-main)' }}; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 8px; transition: all 0.3s; font-size: 0.85rem;">
                 <i data-lucide="{{ (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? 'x-circle' : 'building-2' }}" style="width: 16px;"></i>
                 {{ (request('store_location') === 'Store A' || request('store_location') === 'Stores A') ? 'Clear Store A' : 'Store A' }}
             </a>
@@ -167,7 +167,7 @@
 
         .quick-ledge-btn.active {
             border-color: var(--primary) !important;
-            background: rgba(22, 163, 74, 0.1) !important;
+            background: rgba(136, 19, 55, 0.1) !important;
             color: var(--primary) !important;
         }
 
@@ -330,9 +330,9 @@
 
         <!-- Dynamic Search Analytics Dashboard -->
         @if(isset($isSearching) && $isSearching && request('search'))
-        <div style="background: var(--bg-card); border-radius: 20px 20px 0 0; border-bottom: 2px solid var(--primary); padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; box-shadow: 0 4px 20px rgba(22, 163, 74, 0.05); z-index: 10;">
+        <div style="background: var(--bg-card); border-radius: 20px 20px 0 0; border-bottom: 2px solid var(--primary); padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; box-shadow: 0 4px 20px rgba(136, 19, 55, 0.05); z-index: 10;">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <div style="width: 50px; height: 50px; background: rgba(22, 163, 74, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 50px; height: 50px; background: rgba(136, 19, 55, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                     <i data-lucide="search" style="width: 24px; height: 24px;"></i>
                 </div>
                 <div>
@@ -346,7 +346,7 @@
                     <div style="font-size: 2rem; font-weight: 900; color: var(--text-main); line-height: 1;">
                         <span style="color: var(--primary);">{{ number_format((float)($searchQtySum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Total Qty</span>
                         <span style="color: rgba(0,0,0,0.1); margin: 0 0.5rem;">|</span>
-                        <span style="color: #10b981;">{{ number_format((float)($searchIssuedQtySum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Qty Issued</span>
+                        <span style="color: #881337;">{{ number_format((float)($searchIssuedQtySum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Qty Issued</span>
                         <span style="color: rgba(0,0,0,0.1); margin: 0 0.5rem;">|</span>
                         <span>{{ number_format((float)($searchSum ?? 0)) }}</span> <span style="font-size: 1rem; color: var(--text-muted);">Stock Bal.</span>
                     </div>
@@ -356,15 +356,15 @@
         @endif
 
         <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(22, 163, 74, 0.08); padding: 0.25rem 0.5rem; border-radius: 10px; border: 1px dashed rgba(22, 163, 74, 0.3);">
-                <button type="button" onclick="document.querySelector('.table-scroll-wrapper').scrollBy({left: -400, behavior: 'smooth'})" style="background: transparent; border: none; cursor: pointer; padding: 0.35rem; border-radius: 6px; display: flex; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(22, 163, 74, 0.15)'" onmouseout="this.style.background='transparent'" title="Scroll Left">
+            <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(136, 19, 55, 0.08); padding: 0.25rem 0.5rem; border-radius: 10px; border: 1px dashed rgba(136, 19, 55, 0.3);">
+                <button type="button" onclick="document.querySelector('.table-scroll-wrapper').scrollBy({left: -400, behavior: 'smooth'})" style="background: transparent; border: none; cursor: pointer; padding: 0.35rem; border-radius: 6px; display: flex; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(136, 19, 55, 0.15)'" onmouseout="this.style.background='transparent'" title="Scroll Left">
                     <i data-lucide="chevron-left" style="width: 16px; color: var(--primary);"></i>
                 </button>
                 <div style="display: flex; align-items: center; gap: 6px; padding: 0 0.5rem; user-select: none;">
                     <i data-lucide="move-horizontal" style="width: 14px; color: var(--primary); opacity: 0.8;"></i>
                     <span style="font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Fast Navigate</span>
                 </div>
-                <button type="button" onclick="document.querySelector('.table-scroll-wrapper').scrollBy({left: 400, behavior: 'smooth'})" style="background: transparent; border: none; cursor: pointer; padding: 0.35rem; border-radius: 6px; display: flex; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(22, 163, 74, 0.15)'" onmouseout="this.style.background='transparent'" title="Scroll Right">
+                <button type="button" onclick="document.querySelector('.table-scroll-wrapper').scrollBy({left: 400, behavior: 'smooth'})" style="background: transparent; border: none; cursor: pointer; padding: 0.35rem; border-radius: 6px; display: flex; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(136, 19, 55, 0.15)'" onmouseout="this.style.background='transparent'" title="Scroll Right">
                     <i data-lucide="chevron-right" style="width: 16px; color: var(--primary);"></i>
                 </button>
             </div>
@@ -409,7 +409,7 @@
                             </div>
                             <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
                                 <span>Batch #{{ $item->batch_id }}</span>
-                                <span style="font-size: 0.65rem; font-weight: 800; color: {{ str_contains($item->store_location ?? 'Store A', 'B') ? '#3b82f6' : 'var(--primary)' }}; background: {{ str_contains($item->store_location ?? 'Store A', 'B') ? 'rgba(59, 130, 246, 0.1)' : 'rgba(22, 163, 74, 0.1)' }}; padding: 1px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;">
+                                <span style="font-size: 0.65rem; font-weight: 800; color: {{ str_contains($item->store_location ?? 'Store A', 'B') ? '#3b82f6' : 'var(--primary)' }}; background: {{ str_contains($item->store_location ?? 'Store A', 'B') ? 'rgba(59, 130, 246, 0.1)' : 'rgba(136, 19, 55, 0.1)' }}; padding: 1px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px;">
                                     <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i>
                                     {{ str_replace('Stores', 'Store', $item->store_location ?? 'Store A') }}
                                 </span>
@@ -421,12 +421,12 @@
                                 @endphp
                                 @if($count > 0)
                                     <div class="serial-numbers-wrapper" style="margin-top: 4px; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;">
-                                        <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(22, 163, 74, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
+                                        <div style="display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; background: rgba(136, 19, 55, 0.08); color: var(--primary); font-size: 0.72rem; padding: 2px 8px; border-radius: 6px; font-weight: 800; word-break: break-word; white-space: normal; max-width: 250px;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
                                             S/N: {{ implode(', ', array_slice($snList, 0, 3)) }}@if($count > 3)<span class="dots">...</span><span class="more-sns" style="display: none;">, {{ implode(', ', array_slice($snList, 3)) }}</span>@endif
                                         </div>
                                         @if($count > 3)
-                                            <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: var(--primary); outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(22, 163, 74, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
+                                            <button type="button" class="toggle-sns-btn" onclick="let container = this.previousElementSibling; let more = container.querySelector('.more-sns'); let dots = container.querySelector('.dots'); let isHidden = more.style.display === 'none'; more.style.display = isHidden ? 'inline' : 'none'; dots.style.display = isHidden ? 'none' : 'inline'; this.querySelector('.chevron-icon').style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';" style="background: transparent; border: none; padding: 2px; cursor: pointer; display: inline-flex; align-items: center; color: var(--primary); outline: none; transition: all 0.2s; border-radius: 4px;" onmouseover="this.style.background='rgba(136, 19, 55, 0.15)';" onmouseout="this.style.background='transparent';" title="Show more serial numbers">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="chevron-icon" style="transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"/></svg>
                                             </button>
                                         @endif
@@ -443,7 +443,7 @@
                             @endif
                         </td>
                         <td data-label="Category" style="padding: 1.25rem 1.5rem;">
-                            <span style="font-size: 0.75rem; background: rgba(22, 163, 74, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
+                            <span style="font-size: 0.75rem; background: rgba(136, 19, 55, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
                                 {{ $ledgeMap[$item->ledge_category] ?? "Category " . $item->ledge_category }}
                             </span>
                         </td>
@@ -458,15 +458,15 @@
                         $isIssuedOut = $item->hasActiveTemporaryLoan();
                         if ($isIssuedOut) {
                             $displayStatus = 'ISSUED OUT';
-                            $statusColor = '#10b981';
+                            $statusColor = '#881337';
                         } else {
                             $displayStatus = $dbStatus;
                             $statusColor = '#94a3b8';
                             if ($acquisitionType === 'Donor' || $displayStatus === 'DONOR') {
-                                $statusColor = '#4ade80';
+                                $statusColor = '#9f1239';
                                 $displayStatus = 'DONOR';
                             } elseif ($displayStatus === 'FULL DELIVERY' || str_contains($displayStatus, 'FULL')) {
-                                $statusColor = '#10b981';
+                                $statusColor = '#881337';
                                 $displayStatus = 'FULL DELIVERY';
                             } elseif ($displayStatus === 'PARTIAL DELIVERY' || str_contains($displayStatus, 'PARTIAL')) {
                                 $statusColor = '#ef4444';
@@ -476,7 +476,7 @@
                         @endphp
                         <td data-label="Supplier / Donor" style="padding: 1.25rem 1.5rem; color: var(--text-main);">
                             @if($acquisitionType === 'Donor')
-                                <div style="font-weight: 800; color: #4ade80;">{{ $donorName }}</div>
+                                <div style="font-weight: 800; color: #9f1239;">{{ $donorName }}</div>
                             @else
                                 <div>{{ $cleanSupplier ?: '-' }}</div>
                             @endif
@@ -511,12 +511,12 @@
                                             </div>
                                         @else
                                             <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                                                <span style="font-size: 0.7rem; font-weight: 800; color: #15803d; background: #f0fdf4; border: 1.5px solid #bbf7d0; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;" title="Expected Return Date">
+                                                <span style="font-size: 0.7rem; font-weight: 800; color: #4c0519; background: #f0fdf4; border: 1.5px solid #bbf7d0; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;" title="Expected Return Date">
                                                     <i data-lucide="clock" style="width: 10px; height: 10px;"></i>
                                                     {{ $ed['formatted'] }}
                                                 </span>
                                                 @if(!empty($ed['department']))
-                                                    <span style="font-size: 0.65rem; font-weight: 800; color: #15803d; background: rgba(21, 128, 61, 0.08); padding: 2px 6px; border-radius: 4px; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.15);">
+                                                    <span style="font-size: 0.65rem; font-weight: 800; color: #4c0519; background: rgba(76, 5, 25, 0.08); padding: 2px 6px; border-radius: 4px; text-transform: uppercase; border: 1px solid rgba(76, 5, 25, 0.15);">
                                                         Dept: {{ $ed['department'] }}
                                                     </span>
                                                 @endif
@@ -531,7 +531,7 @@
                         <td data-label="Received Qty" style="padding: 1.25rem 1.5rem; font-weight: 700; color: var(--text-main);">{{ number_format((float)($item->qty ?? 0)) }}</td>
                         <td data-label="Stock Balance" style="padding: 1.25rem 1.5rem; color: var(--text-main); font-weight: 700;">{{ number_format((float)(!is_null($item->book_qty) ? $item->book_qty : ($item->stock_balance ?? 0))) }}</td>
                         <td data-label="Variance" style="padding: 1.25rem 1.5rem;">
-                            <span style="font-weight: 800; color: {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '#10b981' : (is_numeric($item->variance) && (float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">
+                            <span style="font-weight: 800; color: {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '#881337' : (is_numeric($item->variance) && (float)$item->variance < 0 ? '#ef4444' : '#94a3b8') }};">
                                 {{ is_numeric($item->variance) && (float)$item->variance > 0 ? '+' : '' }}{{ is_numeric($item->variance) ? number_format((float)$item->variance) : $item->variance }}
                             </span>
                         </td>
@@ -543,7 +543,7 @@
                                     $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
                                     $isItemLow = $totalStock <= $threshold;
                                     $itemHealthStatus = $isItemLow ? 'LOW STOCK' : 'IN STOCK';
-                                    $itemHealthColor = $isItemLow ? '#ef4444' : '#10b981';
+                                    $itemHealthColor = $isItemLow ? '#ef4444' : '#881337';
                                 @endphp
                                 <div style="display: flex; flex-direction: column; gap: 4px;">
                                     <div style="display: flex; align-items: center; gap: 6px;">
@@ -562,7 +562,7 @@
                                          $isPending = !empty($item->is_pending_creation);
                                          $batchOrReqId = $isPending ? $item->edit_request_id : $item->batch_id;
                                      @endphp
-                                     <button type="button" onclick="viewItemDetails('{{ $batchOrReqId }}', '{{ $item->id }}', {{ $isPending ? 'true' : 'false' }})" class="action-icon-btn" title="View Details" style="width: 38px; height: 38px; border-radius: 10px; color: #16a34a; background: rgba(22, 163, 74, 0.05); border: 1px solid rgba(22, 163, 74, 0.1); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                                     <button type="button" onclick="viewItemDetails('{{ $batchOrReqId }}', '{{ $item->id }}', {{ $isPending ? 'true' : 'false' }})" class="action-icon-btn" title="View Details" style="width: 38px; height: 38px; border-radius: 10px; color: #881337; background: rgba(136, 19, 55, 0.05); border: 1px solid rgba(136, 19, 55, 0.1); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
                                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                      </button>
 
@@ -575,11 +575,11 @@
                                                      ->exists();
                                              @endphp
                                              @if($pendingRemainder)
-                                                 <div title="Awaiting Approval" style="width: 38px; height: 38px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 10px; display: flex; align-items: center; justify-content: center; opacity: 0.7;">
+                                                 <div title="Awaiting Approval" style="width: 38px; height: 38px; background: rgba(136, 19, 55, 0.1); color: #881337; border-radius: 10px; display: flex; align-items: center; justify-content: center; opacity: 0.7;">
                                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                                  </div>
                                              @else
-                                                 <button @if(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin']) || (!auth()->user()->is_admin && !auth()->user()->can_add_inventory)) disabled title="Permission Denied" style="opacity: 0.4; cursor: not-allowed; width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1);" @else onclick="continueDelivery('{{ $item->batch_id }}')" class="action-icon-btn" title="Continue Delivery" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1);" @endif>
+                                                 <button @if(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin']) || (!auth()->user()->is_admin && !auth()->user()->can_add_inventory)) disabled title="Permission Denied" style="opacity: 0.4; cursor: not-allowed; width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(136, 19, 55, 0.05); border: 1px solid rgba(136, 19, 55, 0.1);" @else onclick="continueDelivery('{{ $item->batch_id }}')" class="action-icon-btn" title="Continue Delivery" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(136, 19, 55, 0.05); border: 1px solid rgba(136, 19, 55, 0.1);" @endif>
                                                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16h6"/><path d="M19 13v6"/><path d="M21 10V8a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7"/><circle cx="12" cy="12" r="3"/></svg>
                                                  </button>
                                              @endif
@@ -593,11 +593,11 @@
                                                  ->exists();
                                          @endphp
                                          @if($pendingEdit)
-                                             <div title="Edit Pending Approval" style="width: 38px; height: 38px; background: rgba(22, 163, 74, 0.08); color: #16a34a; border-radius: 10px; border: 1px dashed rgba(22, 163, 74, 0.3); display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: default;">
+                                             <div title="Edit Pending Approval" style="width: 38px; height: 38px; background: rgba(136, 19, 55, 0.08); color: #881337; border-radius: 10px; border: 1px dashed rgba(136, 19, 55, 0.3); display: flex; align-items: center; justify-content: center; opacity: 0.8; cursor: default;">
                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                              </div>
                                          @else
-                                             <button @if(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin']) || (!auth()->user()->is_admin && !auth()->user()->can_add_inventory)) disabled title="Permission Denied" style="opacity: 0.4; cursor: not-allowed; width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(22, 163, 74, 0.05); border: 1px solid rgba(22, 163, 74, 0.1);" @else onclick="openEditBatchModal('{{ $item->batch_id }}')" class="action-icon-btn" title="Edit Entry" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(22, 163, 74, 0.05); border: 1px solid rgba(22, 163, 74, 0.1);" @endif>
+                                             <button @if(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin']) || (!auth()->user()->is_admin && !auth()->user()->can_add_inventory)) disabled title="Permission Denied" style="opacity: 0.4; cursor: not-allowed; width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(136, 19, 55, 0.05); border: 1px solid rgba(136, 19, 55, 0.1);" @else onclick="openEditBatchModal('{{ $item->batch_id }}')" class="action-icon-btn" title="Edit Entry" style="width: 38px; height: 38px; border-radius: 10px; color: #111827; background: rgba(136, 19, 55, 0.05); border: 1px solid rgba(136, 19, 55, 0.1);" @endif>
                                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                              </button>
                                          @endif
@@ -609,7 +609,7 @@
         <tr>
             <td colspan="{{ in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin']) ? 10 : 12 }}" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; margin: 0 auto;">
-                    <div style="background: rgba(22, 163, 74, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(22, 163, 74, 0.2); animation: pulse 2s infinite;">
+                    <div style="background: rgba(136, 19, 55, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(136, 19, 55, 0.2); animation: pulse 2s infinite;">
                         <i data-lucide="package-search" style="width: 44px; stroke-width: 1.5px;"></i>
                     </div>
                     <div style="max-width: 500px; text-align: center;">
@@ -621,7 +621,7 @@
                                 <i data-lucide="refresh-ccw" style="width: 18px;"></i>
                                 Reset Filters
                             </a>
-                            <button onclick="window.location.href='/'" class="btn-primary" style="padding: 0.85rem 1.75rem; border-radius: 14px; border: none; font-size: 0.95rem; background: var(--primary-gradient); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 12px 24px -6px rgba(22, 163, 74, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <button onclick="window.location.href='/'" class="btn-primary" style="padding: 0.85rem 1.75rem; border-radius: 14px; border: none; font-size: 0.95rem; background: var(--primary-gradient); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 12px 24px -6px rgba(136, 19, 55, 0.4); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
                                 <i data-lucide="plus-circle" style="width: 20px;"></i>
                                 New Inventory Entry
                             </button>
@@ -637,15 +637,15 @@
 
     <!-- Bottom Fast Navigate Control Pad -->
     <div style="display: flex; justify-content: flex-end; margin-top: 0.75rem; margin-bottom: 0.75rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(22, 163, 74, 0.08); padding: 0.25rem 0.5rem; border-radius: 10px; border: 1px dashed rgba(22, 163, 74, 0.3);">
-            <button type="button" onclick="document.querySelector('.table-scroll-wrapper').scrollBy({left: -400, behavior: 'smooth'})" style="background: transparent; border: none; cursor: pointer; padding: 0.35rem; border-radius: 6px; display: flex; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(22, 163, 74, 0.15)'" onmouseout="this.style.background='transparent'" title="Scroll Left">
+        <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(136, 19, 55, 0.08); padding: 0.25rem 0.5rem; border-radius: 10px; border: 1px dashed rgba(136, 19, 55, 0.3);">
+            <button type="button" onclick="document.querySelector('.table-scroll-wrapper').scrollBy({left: -400, behavior: 'smooth'})" style="background: transparent; border: none; cursor: pointer; padding: 0.35rem; border-radius: 6px; display: flex; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(136, 19, 55, 0.15)'" onmouseout="this.style.background='transparent'" title="Scroll Left">
                 <i data-lucide="chevron-left" style="width: 16px; color: var(--primary);"></i>
             </button>
             <div style="display: flex; align-items: center; gap: 6px; padding: 0 0.5rem; user-select: none;">
                 <i data-lucide="move-horizontal" style="width: 14px; color: var(--primary); opacity: 0.8;"></i>
                 <span style="font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Fast Navigate</span>
             </div>
-            <button type="button" onclick="document.querySelector('.table-scroll-wrapper').scrollBy({left: 400, behavior: 'smooth'})" style="background: transparent; border: none; cursor: pointer; padding: 0.35rem; border-radius: 6px; display: flex; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(22, 163, 74, 0.15)'" onmouseout="this.style.background='transparent'" title="Scroll Right">
+            <button type="button" onclick="document.querySelector('.table-scroll-wrapper').scrollBy({left: 400, behavior: 'smooth'})" style="background: transparent; border: none; cursor: pointer; padding: 0.35rem; border-radius: 6px; display: flex; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='rgba(136, 19, 55, 0.15)'" onmouseout="this.style.background='transparent'" title="Scroll Right">
                 <i data-lucide="chevron-right" style="width: 16px; color: var(--primary);"></i>
             </button>
         </div>
@@ -803,7 +803,7 @@
                 <a href="" id="viewPrintBtn"></a>
                 <a href="" id="viewSraBtn"></a>
             </div>
-            <button onclick="closeViewDetailsModal()" style="padding: 0.85rem 3rem; border-radius: 12px; font-weight: 800; font-size: 1rem; background: var(--primary); border: none; color: white; cursor: pointer; transition: all 0.3s; box-shadow: 0 8px 20px rgba(22, 163, 74, 0.25);">Close</button>
+            <button onclick="closeViewDetailsModal()" style="padding: 0.85rem 3rem; border-radius: 12px; font-weight: 800; font-size: 1rem; background: var(--primary); border: none; color: white; cursor: pointer; transition: all 0.3s; box-shadow: 0 8px 20px rgba(136, 19, 55, 0.25);">Close</button>
         </div>
     </div>
 </div>
@@ -814,7 +814,7 @@
         <div class="modal-header">
             <div>
                 <h3 style="margin: 0; font-size: 1.5rem; font-weight: 900; color: var(--text-main); display: flex; align-items: center; gap: 10px;">
-                    <span style="width: 32px; height: 32px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <span style="width: 32px; height: 32px; background: rgba(136, 19, 55, 0.1); color: #881337; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                         <i data-lucide="package-plus" style="width: 18px;"></i>
                     </span>
                     Receive Pending Remainder
@@ -830,7 +830,7 @@
         </div>
         <div style="border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 1rem; padding: 1.5rem; background: var(--bg-card); border-radius: 0 0 28px 28px;">
             <button onclick="closeContinueDeliveryModal()" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer; transition: all 0.3s; opacity: 0.8;">Cancel</button>
-            <button onclick="submitContinueDelivery()" id="submitContinueBtn" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: #10b981; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 20px rgba(22, 163, 74, 0.3); transition: all 0.3s;">
+            <button onclick="submitContinueDelivery()" id="submitContinueBtn" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: #881337; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 20px rgba(136, 19, 55, 0.3); transition: all 0.3s;">
                 <i data-lucide="check-circle" style="width: 18px;"></i> Process Remaining Delivery
             </button>
         </div>
@@ -882,9 +882,9 @@
                         <label>Avail. Qty</label>
                         <div id="auditPrevAvail">0</div>
                     </div>
-                    <div class="audit-stat-card" style="border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.02);" title="Package Types currently out on temporary loan">
-                        <label style="color: #10b981;">Active Loans</label>
-                        <div id="auditActiveLoans" style="color: #10b981;">0</div>
+                    <div class="audit-stat-card" style="border-color: rgba(136, 19, 55, 0.3); background: rgba(136, 19, 55, 0.02);" title="Package Types currently out on temporary loan">
+                        <label style="color: #881337;">Active Loans</label>
+                        <div id="auditActiveLoans" style="color: #881337;">0</div>
                     </div>
                 </div>
 
@@ -919,7 +919,7 @@
                     </div>
 
                     <div id="auditInsightArea">
-                        <div class="insight-pill" id="auditInsight" style="background: rgba(22, 163, 74, 0.05); color: var(--primary);">
+                        <div class="insight-pill" id="auditInsight" style="background: rgba(136, 19, 55, 0.05); color: var(--primary);">
                             <i data-lucide="brain"></i>
                             <span>Waiting for physical input...</span>
                         </div>
@@ -931,7 +931,7 @@
                         <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Condition</label>
                         <select id="auditReason">
                             <option value="">Status...</option>
-                            <option value="Donor" data-icon="heart" data-color="#4ade80">Donation</option>
+                            <option value="Donor" data-icon="heart" data-color="#9f1239">Donation</option>
                             <option value="Missing">Missing</option>
                             <option value="Damaged">Damaged</option>
                             <option value="Found">Found</option>
@@ -940,12 +940,12 @@
                     </div>
                     <div style="grid-column: span 2;">
                         <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase;">Verifier Remarks / Variance Documentation</label>
-                        <textarea id="auditNotes" placeholder="Describe the situation, location, or damage details in depth..." style="width: 100%; height: 80px; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); color: var(--text-main); font-family: inherit; resize: none; outline: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 4px rgba(22, 163, 74, 0.1)'" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none'"></textarea>
+                        <textarea id="auditNotes" placeholder="Describe the situation, location, or damage details in depth..." style="width: 100%; height: 80px; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); color: var(--text-main); font-family: inherit; resize: none; outline: none; transition: all 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 4px rgba(136, 19, 55, 0.1)'" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none'"></textarea>
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;">
-                    <button type="submit" class="btn-primary" style="width: 100%; padding: 1.1rem; border-radius: 18px; border: none; background: var(--primary-gradient); color: white; font-weight: 900; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 10px 20px rgba(22, 163, 74, 0.2); transition: all 0.3s;">
+                    <button type="submit" class="btn-primary" style="width: 100%; padding: 1.1rem; border-radius: 18px; border: none; background: var(--primary-gradient); color: white; font-weight: 900; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 10px 20px rgba(136, 19, 55, 0.2); transition: all 0.3s;">
                         <i data-lucide="shield-check" style="width: 18px;"></i>
                         Seal Record
                     </button>
@@ -965,7 +965,7 @@
                             </div>
                             <h4 style="font-size: 0.9rem; font-weight: 900; color: var(--text-main); text-transform: uppercase; margin:0;">Report Composer</h4>
                         </div>
-                        <span style="font-size: 0.65rem; color: var(--text-main); font-weight: 800; background: rgba(22, 163, 74, 0.1); padding: 4px 10px; border-radius: 100px;">Internal Verification Mode</span>
+                        <span style="font-size: 0.65rem; color: var(--text-main); font-weight: 800; background: rgba(136, 19, 55, 0.1); padding: 4px 10px; border-radius: 100px;">Internal Verification Mode</span>
                     </div>
 
                     <div style="margin-bottom: 1rem;">
@@ -995,9 +995,9 @@
 <style>
     /* Premium Design System */
     :root {
-        --primary-gradient: linear-gradient(135deg, #16a34a 0%, #4ade80 100%);
-        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        --warning-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
+        --primary-gradient: linear-gradient(135deg, #881337 0%, #9f1239 100%);
+        --success-gradient: linear-gradient(135deg, #881337 0%, #059669 100%);
+        --warning-gradient: linear-gradient(135deg, #881337 0%, #047857 100%);
         --glass-bg: rgba(255, 255, 255, 0.7);
         --glass-border: rgba(255, 255, 255, 0.3);
     }
@@ -1012,24 +1012,24 @@
         position: relative;
         display: inline-flex;
         align-items: center;
-        background: rgba(22, 163, 74, 0.04);
-        border: 1.5px solid rgba(22, 163, 74, 0.15);
+        background: rgba(136, 19, 55, 0.04);
+        border: 1.5px solid rgba(136, 19, 55, 0.15);
         border-radius: 999px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
     }
 
     .modern-pagination-select:hover {
-        background: rgba(22, 163, 74, 0.08);
-        border-color: rgba(22, 163, 74, 0.3);
+        background: rgba(136, 19, 55, 0.08);
+        border-color: rgba(136, 19, 55, 0.3);
         transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(22, 163, 74, 0.1);
+        box-shadow: 0 6px 15px rgba(136, 19, 55, 0.1);
     }
 
     .modern-pagination-select:focus-within {
         background: var(--bg-main);
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
+        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.15);
     }
 
     .modern-pagination-select .select-icon-left {
@@ -1155,7 +1155,7 @@
 
     .custom-select-wrapper select:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
+        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.15);
     }
 
     .audit-stat-card {
@@ -1185,7 +1185,7 @@
         transform: translateY(-5px) scale(1.02);
         background: var(--bg-main);
         border-color: var(--primary);
-        box-shadow: 0 15px 35px -10px rgba(22, 163, 74, 0.2);
+        box-shadow: 0 15px 35px -10px rgba(136, 19, 55, 0.2);
     }
 
     .audit-stat-card:hover::before {
@@ -1244,7 +1244,7 @@
         width: 40px;
         height: 40px;
         border-radius: 10px;
-        background: rgba(22, 163, 74, 0.1);
+        background: rgba(136, 19, 55, 0.1);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1377,9 +1377,9 @@
     }
     .custom-premium-select:focus {
         outline: none !important;
-        border-color: #16a34a !important;
+        border-color: #881337 !important;
         background-color: #ffffff !important;
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05) !important;
     }
 
     [data-theme='dark'] .custom-premium-select {
@@ -1394,9 +1394,9 @@
         background-color: #334155 !important;
     }
     [data-theme='dark'] .custom-premium-select:focus {
-        border-color: #16a34a !important;
+        border-color: #881337 !important;
         background-color: #0f172a !important;
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.2), 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.2), 0 4px 10px rgba(0, 0, 0, 0.3) !important;
     }
 
     [data-theme='dark'] .modal-content {
@@ -1547,7 +1547,7 @@
         color: white !important;
         border-color: var(--primary);
         transform: translateY(-2px) scale(1.05);
-        box-shadow: 0 10px 20px rgba(22, 163, 74, 0.2);
+        box-shadow: 0 10px 20px rgba(136, 19, 55, 0.2);
     }
 
     /* Icon-only action buttons — keep icon dark on hover */
@@ -1561,10 +1561,10 @@
     }
     .action-icon-btn:hover {
         transform: translateY(-2px) scale(1.08);
-        box-shadow: 0 6px 16px rgba(22, 163, 74, 0.18);
+        box-shadow: 0 6px 16px rgba(136, 19, 55, 0.18);
         color: #111827 !important;
-        background: rgba(22, 163, 74, 0.12) !important;
-        border-color: rgba(22, 163, 74, 0.25) !important;
+        background: rgba(136, 19, 55, 0.12) !important;
+        border-color: rgba(136, 19, 55, 0.25) !important;
     }
 
     /* Advanced Pagination */
@@ -1595,7 +1595,7 @@
         border-radius: 14px;
         font-size: 0.85rem;
         font-weight: 800;
-        box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3);
+        box-shadow: 0 4px 15px rgba(136, 19, 55, 0.3);
     }
 
     .pagination-nav {
@@ -1644,7 +1644,7 @@
         background: var(--primary-gradient);
         color: white;
         border-color: transparent;
-        box-shadow: 0 8px 20px rgba(22, 163, 74, 0.4);
+        box-shadow: 0 8px 20px rgba(136, 19, 55, 0.4);
     }
 
     .per-page-select {
@@ -1669,7 +1669,7 @@
     }
 
     .activity-row:hover {
-        background: rgba(22, 163, 74, 0.05) !important;
+        background: rgba(136, 19, 55, 0.05) !important;
         box-shadow: inset 4px 0 0 var(--primary);
     }
 
@@ -1718,7 +1718,7 @@
     }
 
     .menu-item:hover {
-        background: rgba(22, 163, 74, 0.1);
+        background: rgba(136, 19, 55, 0.1);
         color: var(--primary) !important;
         transform: translateX(5px);
     }
@@ -1797,14 +1797,14 @@
             margin-bottom: 0.75rem !important;
             margin-right: 1rem !important;
             /* Added margin right */
-            background: rgba(22, 163, 74, 0.1);
+            background: rgba(136, 19, 55, 0.1);
             color: var(--primary);
             padding: 0.35rem 0.85rem;
             border-radius: 8px;
             font-size: 0.65rem !important;
             font-weight: 900 !important;
             letter-spacing: 1.5px !important;
-            border: 1px solid rgba(22, 163, 74, 0.15);
+            border: 1px solid rgba(136, 19, 55, 0.15);
             content: 'PRODUCT SPECIFICATION' !important;
         }
 
@@ -1942,7 +1942,7 @@
             padding: 1.25rem !important;
             background: var(--bg-card) !important;
             border: 1px solid var(--primary) !important;
-            box-shadow: 0 10px 25px rgba(22, 163, 74, 0.1) !important;
+            box-shadow: 0 10px 25px rgba(136, 19, 55, 0.1) !important;
         }
 
         .filter-buttons-mobile {
@@ -2091,9 +2091,9 @@
         const sns = serialStr.split(',').map(s => s.trim()).filter(Boolean);
         if (sns.length === 0) return '';
 
-        const badgeBg = isProposed ? 'rgba(22, 163, 74, 0.05)' : 'rgba(239, 68, 68, 0.05)';
+        const badgeBg = isProposed ? 'rgba(136, 19, 55, 0.05)' : 'rgba(239, 68, 68, 0.05)';
         const badgeColor = isProposed ? 'var(--primary)' : '#ef4444';
-        const borderColor = isProposed ? 'rgba(22, 163, 74, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+        const borderColor = isProposed ? 'rgba(136, 19, 55, 0.15)' : 'rgba(239, 68, 68, 0.15)';
 
         function makeChipHtml(sn) {
             const match = sn.match(/^(.*?)\s*\(Rim:\s*(\d+)\)$/i);
@@ -2304,7 +2304,7 @@
                     itemsArray.forEach(item => {
                         const isCurrentSelected = String(item.id) === String(itemId);
                         const rowStyle = isCurrentSelected 
-                            ? 'background: rgba(22, 163, 74, 0.08); font-weight: bold; border-left: 3px solid var(--primary);' 
+                            ? 'background: rgba(136, 19, 55, 0.08); font-weight: bold; border-left: 3px solid var(--primary);' 
                             : '';
                             
                         const expQty = parseFloat(item.qty) || 0;
@@ -2313,7 +2313,7 @@
                         
                         let varianceHtml = '';
                         if (variance > 0) {
-                            varianceHtml = `<span style="color: #10b981; font-weight: 800;">+${Math.round(variance).toLocaleString()}</span>`;
+                            varianceHtml = `<span style="color: #881337; font-weight: 800;">+${Math.round(variance).toLocaleString()}</span>`;
                         } else if (variance < 0) {
                             varianceHtml = `<span style="color: #ef4444; font-weight: 800;">${Math.round(variance).toLocaleString()}</span>`;
                         } else {
@@ -2438,7 +2438,7 @@
                                 </div>
                                 <div style="display: flex; flex-direction: column;">
                                     <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Already Brought</span>
-                                    <span style="font-weight: 900; color: #10b981; font-size: 1rem;">${stockBalance}</span>
+                                    <span style="font-weight: 900; color: #881337; font-size: 1rem;">${stockBalance}</span>
                                 </div>
                                 <div style="display: flex; flex-direction: column;">
                                     <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 800;">Pending Deficit</span>
@@ -2453,7 +2453,7 @@
                                     oninput="previewRecalculation(${item.id}, ${expected}, ${item.stock_balance}, ${stockBalance}, ${outstanding})">
                             </div>
 
-                            <div id="recalc_preview_${item.id}" style="display: none; background: rgba(16, 185, 129, 0.05); border-left: 3px solid #10b981; padding: 0.75rem 1rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.85rem;">
+                            <div id="recalc_preview_${item.id}" style="display: none; background: rgba(136, 19, 55, 0.05); border-left: 3px solid #881337; padding: 0.75rem 1rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.85rem;">
                                 <!-- Preview injected here -->
                             </div>
                         </div>
@@ -2464,7 +2464,7 @@
                     if (!hasPending) {
                         html += `
                             <div style="text-align: center; padding: 3rem 1rem;">
-                                <i data-lucide="check-circle" style="width: 48px; height: 48px; color: #10b981; margin-bottom: 1rem;"></i>
+                                <i data-lucide="check-circle" style="width: 48px; height: 48px; color: #881337; margin-bottom: 1rem;"></i>
                                 <h3 style="margin: 0 0 0.5rem; font-weight: 900; color: var(--text-main);">Fully Delivered</h3>
                                 <p style="margin: 0; color: var(--text-muted);">There are no outstanding items to receive for this transaction.</p>
                             </div>
@@ -2522,15 +2522,15 @@
         // Let's determine variance reason - if newQty == expected but the newStock != expected due to past damage
         let varText = '';
         if (newVariance == 0) {
-            varText = '<span style="color:#10b981">Perfect match (No variance)</span>';
+            varText = '<span style="color:#881337">Perfect match (No variance)</span>';
         } else if (newVariance < 0) {
             if (newQty >= expected) {
-                varText = `<span style="color:#10b981">Variance of ${newVariance} due to previously declared faults</span>`;
+                varText = `<span style="color:#881337">Variance of ${newVariance} due to previously declared faults</span>`;
             } else {
                 varText = `<span style="color:#ef4444">Still missing ${Math.abs(newVariance)}</span>`;
             }
         } else {
-            varText = `<span style="color:#16a34a">Surplus of ${newVariance}</span>`;
+            varText = `<span style="color:#881337">Surplus of ${newVariance}</span>`;
         }
 
         preview.style.display = 'block';
@@ -2588,7 +2588,7 @@
                         title: 'Request Submitted',
                         text: result.message || 'Waiting for administrator approval.',
                         icon: 'info',
-                        confirmButtonColor: '#10b981'
+                        confirmButtonColor: '#881337'
                     });
                 } else {
                     performSearch(true); // Silent refresh to show updated values on UI
@@ -2923,7 +2923,7 @@
         if (insightPill) {
             insightPill.innerHTML = '<i data-lucide="info"></i> <span>Enter count to begin analysis...</span>';
             insightPill.className = 'insight-pill';
-            insightPill.style.background = 'rgba(22, 163, 74, 0.05)';
+            insightPill.style.background = 'rgba(136, 19, 55, 0.05)';
             insightPill.style.color = 'var(--text-muted)';
         }
 
@@ -3018,15 +3018,15 @@
         // Smart Insight Engine (factor in active loans)
         const totalAccounted = physical + onLoan;
         if (variance === 0) {
-            display.style.color = '#10b981';
-            indicatorFill.style.background = '#10b981';
-            insight.style.background = 'rgba(16, 185, 129, 0.1)';
-            insight.style.color = '#10b981';
+            display.style.color = '#881337';
+            indicatorFill.style.background = '#881337';
+            insight.style.background = 'rgba(136, 19, 55, 0.1)';
+            insight.style.color = '#881337';
             insight.innerHTML = `<i data-lucide="check-sparkles"></i> <span>Perfect Audit! Physical matches System.</span>`;
         } else if (totalAccounted === stockBal) {
-            display.style.color = '#10b981';
-            indicatorFill.style.background = '#10b981';
-            insight.style.background = 'rgba(16, 185, 129, 0.1)';
+            display.style.color = '#881337';
+            indicatorFill.style.background = '#881337';
+            insight.style.background = 'rgba(136, 19, 55, 0.1)';
             insight.style.color = '#047857';
             insight.innerHTML = `<i data-lucide="info"></i> <span>Technically Balanced: ${physical} present + ${onLoan} on loan = ${stockBal} expected.</span>`;
         } else if (variance < 0) {
@@ -3036,10 +3036,10 @@
             insight.style.color = '#ef4444';
             insight.innerHTML = `<i data-lucide="alert-triangle"></i> <span>Shortage: Even with ${onLoan} on loan, ${Math.abs(stockBal - totalAccounted)} package types are still missing.</span>`;
         } else {
-            display.style.color = '#16a34a';
-            indicatorFill.style.background = '#16a34a';
+            display.style.color = '#881337';
+            indicatorFill.style.background = '#881337';
             insight.style.background = 'rgba(59, 130, 246, 0.1)';
-            insight.style.color = '#16a34a';
+            insight.style.color = '#881337';
             insight.innerHTML = `<i data-lucide="package-plus"></i> <span>Surplus Noted: ${variance} extra package types identified beyond system expectations.</span>`;
         }
         insight.style.display = 'flex';
@@ -3093,7 +3093,7 @@
             });
             const val = item[key] ?? 0;
             const sign = val > 0 ? '+' : '';
-            const valColor = val < 0 ? '#ef4444' : (val > 0 ? '#10b981' : 'var(--text-main)');
+            const valColor = val < 0 ? '#ef4444' : (val > 0 ? '#881337' : 'var(--text-main)');
 
             html += `
                 <div class="batch-audit-card" style="display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start;">
@@ -3105,7 +3105,7 @@
                         <div style="font-family: monospace; font-size: 0.65rem; color: var(--text-muted); margin-bottom: 4px;">BATCH ID: #${item.batch_id} | ORIG QTY: ${item.qty}</div>
 
                         ${item.remarks ? `
-                            <div style="background: rgba(22, 163, 74, 0.03); padding: 0.5rem; border-radius: 8px; border-left: 2px solid var(--primary); font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: 6px; margin-top: 4px;">
+                            <div style="background: rgba(136, 19, 55, 0.03); padding: 0.5rem; border-radius: 8px; border-left: 2px solid var(--primary); font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: flex-start; gap: 6px; margin-top: 4px;">
                                 <i data-lucide="message-circle" style="width: 12px; min-width: 12px; margin-top: 1px;"></i>
                                 <span style="font-style: italic;">${item.remarks}</span>
                             </div>
@@ -3254,14 +3254,14 @@
         const totalAccounted = parseFloat(physical) + onLoan;
 
         if (varValue === 0) {
-            conclusion += `<div style="color: #10b981;">SUCCESS: No variance detected. Physical stock perfectly aligns with system ledger records.</div>`;
+            conclusion += `<div style="color: #881337;">SUCCESS: No variance detected. Physical stock perfectly aligns with system ledger records.</div>`;
         } else if (totalAccounted === parseFloat(stockBal)) {
-            conclusion += `<div style="color: #10b981;">BALANCED: System registry is balanced. Although physical stock is lower, all ${Math.abs(varValue)} missing package types are accounted for via active temporary loans.</div>`;
+            conclusion += `<div style="color: #881337;">BALANCED: System registry is balanced. Although physical stock is lower, all ${Math.abs(varValue)} missing package types are accounted for via active temporary loans.</div>`;
         } else if (totalAccounted < parseFloat(stockBal)) {
             const netShortage = parseFloat(stockBal) - totalAccounted;
             conclusion += `<div style="color: #ef4444;">WARNING: A shortage of ${netShortage} package types has been identified. Even after accounting for ${onLoan} package types on loan, the system remains unreconciled. Immediate investigation required.</div>`;
         } else {
-            conclusion += `<div style="color: #16a34a;">NOTICE: A surplus of ${varValue} package types has been discovered. Update requested for system ledger records to incorporate identified surplus.</div>`;
+            conclusion += `<div style="color: #881337;">NOTICE: A surplus of ${varValue} package types has been discovered. Update requested for system ledger records to incorporate identified surplus.</div>`;
         }
 
         document.getElementById('finalReportBody').value = narrative;
@@ -3379,7 +3379,7 @@
                         <div class="meta-item"><label>Subject Material</label><div>${item}</div></div>
                         <div class="meta-item"><label>Date of Audit</label><div>${dateStr}</div></div>
                         <div class="meta-item"><label>Time of Verification</label><div>${timeStr}</div></div>
-                        <div class="meta-item"><label>Active Loans (Temp)</label><div style="color: #10b981;">${document.getElementById('auditActiveLoans').innerText}</div></div>
+                        <div class="meta-item"><label>Active Loans (Temp)</label><div style="color: #881337;">${document.getElementById('auditActiveLoans').innerText}</div></div>
                         <div class="meta-item"><label>Audit Status</label><div style="color: #ef4444;">FORMAL</div></div>
                     </div>
 
@@ -3394,18 +3394,18 @@
                         </div>
                         <div>
                             <div class="section-title">III. PHYSICAL VERIFICATION DATA</div>
-                            <div style="background: #f0fdf4; border: 1px solid #10b981; padding: 15px; border-radius: 8px;">
+                            <div style="background: #f0fdf4; border: 1px solid #881337; padding: 15px; border-radius: 8px;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05);">
                                     <span style="font-size: 0.7rem; font-weight: 800;">PHYSICAL QUANTITY:</span>
                                     <span style="font-weight: 900; color: #000;">${physical} Package Types</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.05);">
                                     <span style="font-size: 0.7rem; font-weight: 800;">ACTIVE LOANS (TEMP):</span>
-                                    <span style="font-weight: 900; color: #10b981;">${document.getElementById('auditActiveLoans').innerText} Package Types</span>
+                                    <span style="font-weight: 900; color: #881337;">${document.getElementById('auditActiveLoans').innerText} Package Types</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between;">
                                     <span style="font-size: 0.7rem; font-weight: 800;">AUDIT VARIANCE:</span>
-                                    <span style="font-weight: 900; color: ${parseFloat(variance) < 0 ? '#ef4444' : '#10b981'};">${variance} Package Types</span>
+                                    <span style="font-weight: 900; color: ${parseFloat(variance) < 0 ? '#ef4444' : '#881337'};">${variance} Package Types</span>
                                 </div>
                             </div>
 
@@ -3433,7 +3433,7 @@
 <div id="editBatchModal" class="modal-backdrop">
     <div class="modal-content glass-card animate-scale-up" style="max-width: 1000px; width: 95%; padding: 0; overflow: hidden; border: none; background: #ffffff; display: flex; flex-direction: column; max-height: 90vh;">
         <!-- Premium Modal Header -->
-        <div style="padding: 1.5rem 2.5rem; background: linear-gradient(to right, #16a34a, #16a34a); display: flex; justify-content: space-between; align-items: center; color: white;">
+        <div style="padding: 1.5rem 2.5rem; background: linear-gradient(to right, #881337, #881337); display: flex; justify-content: space-between; align-items: center; color: white;">
             <div>
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
                     <div style="background: rgba(255, 255, 255, 0.2); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
@@ -3460,7 +3460,7 @@
                     <!-- Metadata Section -->
                     <div style="margin-bottom: 2.5rem;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem;">
-                            <span style="font-size: 0.75rem; font-weight: 900; color: #16a34a; text-transform: uppercase; letter-spacing: 0.1em;">Received Details</span>
+                            <span style="font-size: 0.75rem; font-weight: 900; color: #881337; text-transform: uppercase; letter-spacing: 0.1em;">Received Details</span>
                             <div style="flex: 1; height: 1px; background: #f1f5f9;"></div>
                         </div>
 
@@ -3517,7 +3517,7 @@
                     <div>
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
                             <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                                <span style="font-size: 0.75rem; font-weight: 900; color: #16a34a; text-transform: uppercase; letter-spacing: 0.1em;">Item Information</span>
+                                <span style="font-size: 0.75rem; font-weight: 900; color: #881337; text-transform: uppercase; letter-spacing: 0.1em;">Item Information</span>
                                 <div style="flex: 1; height: 1px; background: #f1f5f9; margin-right: 1.5rem;"></div>
                             </div>
                             <span id="editItemsCountLabel" style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">0 Items Identified</span>
@@ -3535,7 +3535,7 @@
                 <button type="button" onclick="closeEditBatchModal()" style="padding: 0.85rem 2rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; background: #ffffff; border: 1.5px solid #e2e8f0; color: #475569; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Discard
                 </button>
-                <button type="submit" id="saveEditBtn" style="padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; background: #16a34a; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(22, 163, 74, 0.2); transition: 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 30px rgba(22, 163, 74, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 20px rgba(22, 163, 74, 0.2)'">
+                <button type="submit" id="saveEditBtn" style="padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; background: #881337; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(136, 19, 55, 0.2); transition: 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 30px rgba(136, 19, 55, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 20px rgba(136, 19, 55, 0.2)'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19 7-7-7-7"/><path d="M5 19l7-7-7-7"/></svg> {{ auth()->user()->is_admin ? 'Commit Changes' : 'Submit for Approval' }}
                 </button>
             </div>
@@ -3568,7 +3568,7 @@ function promptActionReason(batchId, type = 'edit') {
         inputPlaceholder: 'Type your detailed reason here...',
         showCancelButton: true,
         confirmButtonText: 'Submit Request',
-        confirmButtonColor: type === 'delete' ? '#ef4444' : '#16a34a',
+        confirmButtonColor: type === 'delete' ? '#ef4444' : '#881337',
         inputValidator: (value) => {
             if (!value) {
                 return 'Justification is mandatory for audit trails!'
@@ -3671,7 +3671,7 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
             batch.items.forEach((item, index) => {
                 const stock = parseFloat(item.stock_balance);
                 const threshold = {{ \App\Models\Setting::get('low_stock_threshold', 100) }};
-                const healthColor = stock <= 0 ? '#ef4444' : (stock <= threshold ? '#10b981' : '#10b981');
+                const healthColor = stock <= 0 ? '#ef4444' : (stock <= threshold ? '#881337' : '#881337');
 
                 const itemHtml = `
                     <div class="edit-item-card" data-id="${item.id}" style="background: #ffffff; padding: 1.5rem; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s; position: relative;">
@@ -3679,8 +3679,8 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
                         <input type="hidden" class="item-id" value="${item.id}">
                         <input type="hidden" class="item-stock-balance" value="${item.stock_balance}">
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;">
-                            <div style="background: #eff6ff; color: #16a34a; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900;">${index + 1}</div>
-                            <input type="text" class="item-description" value="${item.description}" placeholder="Asset Description" style="flex: 1; border: none; background: transparent; font-size: 0.95rem; font-weight: 800; color: #1e293b; outline: none; padding: 4px 0; border-bottom: 2px solid transparent; transition: 0.3s;" onfocus="this.style.borderBottomColor='#16a34a'">
+                            <div style="background: #eff6ff; color: #881337; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900;">${index + 1}</div>
+                            <input type="text" class="item-description" value="${item.description}" placeholder="Asset Description" style="flex: 1; border: none; background: transparent; font-size: 0.95rem; font-weight: 800; color: #1e293b; outline: none; padding: 4px 0; border-bottom: 2px solid transparent; transition: 0.3s;" onfocus="this.style.borderBottomColor='#881337'">
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
@@ -3698,7 +3698,7 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
                         <div style="display: grid; grid-template-columns: 100px 1fr; gap: 1rem; align-items: flex-end;">
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Variance</label>
-                                <input type="number" class="item-variance" value="${item.variance}" readonly style="width: 100%; padding: 0.85rem; border: none; background: #f8fafc; border-radius: 12px; font-size: 0.85rem; font-weight: 900; color: ${item.variance < 0 ? '#ef4444' : '#10b981'}; text-align: center;">
+                                <input type="number" class="item-variance" value="${item.variance}" readonly style="width: 100%; padding: 0.85rem; border: none; background: #f8fafc; border-radius: 12px; font-size: 0.85rem; font-weight: 900; color: ${item.variance < 0 ? '#ef4444' : '#881337'}; text-align: center;">
                             </div>
                             <div style="position: relative;">
                                 <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">User Remarks</label>
@@ -3713,7 +3713,7 @@ function _openEditBatchModal(batchId, expiresIn = 62) {
             // Update Entry Info Panel
             const infoPanel = document.getElementById('editBatchInfo');
             infoPanel.innerHTML = `
-                <div style="margin-bottom: 1.5rem; padding: 1.25rem; background: rgba(22, 163, 74, 0.03); border: 1px dashed rgba(22, 163, 74, 0.2); border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="margin-bottom: 1.5rem; padding: 1.25rem; background: rgba(136, 19, 55, 0.03); border: 1px dashed rgba(136, 19, 55, 0.2); border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <i data-lucide="info" style="width: 20px; color: var(--primary);"></i>
                         <div>
@@ -3777,14 +3777,14 @@ function recalcEditVariance(input) {
 
     // Visual feedback for variance
     if (variance > 0) {
-        varInput.style.color = '#10b981'; // Green for surplus
-        varInput.style.background = 'rgba(16, 185, 129, 0.1)';
+        varInput.style.color = '#881337'; // Green for surplus
+        varInput.style.background = 'rgba(136, 19, 55, 0.1)';
     } else if (variance < 0) {
         varInput.style.color = '#ef4444'; // Red for shortage
         varInput.style.background = 'rgba(239, 68, 68, 0.1)';
     } else {
-        varInput.style.color = '#16a34a';
-        varInput.style.background = 'rgba(22, 163, 74, 0.05)';
+        varInput.style.color = '#881337';
+        varInput.style.background = 'rgba(136, 19, 55, 0.05)';
     }
 }
 
@@ -3864,7 +3864,7 @@ async function submitEditBatch() {
             title: 'No Changes Detected',
             text: 'You have not modified anything. Please make at least one change before submitting.',
             icon: 'warning',
-            confirmButtonColor: '#16a34a'
+            confirmButtonColor: '#881337'
         });
         return;
     }
@@ -3875,7 +3875,7 @@ async function submitEditBatch() {
         const { value: text, isConfirmed } = await Swal.fire({
             html: `
                 <div style="text-align: left;">
-                    <div style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                    <div style="background: linear-gradient(135deg, #881337 0%, #4c0519 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
                         <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.06); border-radius: 50%;"></div>
                         <div style="position: absolute; bottom: -30px; left: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.04); border-radius: 50%;"></div>
                         <div style="display: flex; align-items: center; gap: 14px; position: relative;">
@@ -3893,9 +3893,9 @@ async function submitEditBatch() {
                         Explain why you are modifying this record. Your justification will be reviewed by an administrator before changes take effect.
                     </p>
 
-                    <textarea id="swal-edit-justification" placeholder="e.g., Correcting a quantity typo, updating supplier info after delivery confirmation..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: all 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#16a34a'; this.style.boxShadow='0 0 0 4px rgba(22,163,74,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
+                    <textarea id="swal-edit-justification" placeholder="e.g., Correcting a quantity typo, updating supplier info after delivery confirmation..." style="width: 100%; min-height: 110px; font-size: 0.9rem; border-radius: 14px; border: 2px solid #f1f5f9; padding: 1rem 1.25rem; font-family: inherit; resize: vertical; outline: none; transition: all 0.3s; box-sizing: border-box; color: #0f172a; background: #f8fafc;" onfocus="this.style.borderColor='#881337'; this.style.boxShadow='0 0 0 4px rgba(136,19,55,0.08)'" onblur="this.style.borderColor='#f1f5f9'; this.style.boxShadow='none'"></textarea>
 
-                    <div style="margin-top: 1rem; padding: 10px 14px; background: rgba(16, 185, 129, 0.07); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px;">
+                    <div style="margin-top: 1rem; padding: 10px 14px; background: rgba(136, 19, 55, 0.07); border: 1px solid rgba(136, 19, 55, 0.2); border-radius: 10px; display: flex; align-items: center; gap: 10px;">
                         <svg style="width: 16px; height: 16px; color: #047857; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                         <span style="font-size: 0.78rem; font-weight: 700; color: #92400e;">This justification is mandatory and will be permanently logged in the audit trail.</span>
                     </div>
@@ -3904,7 +3904,7 @@ async function submitEditBatch() {
             showCancelButton: true,
             confirmButtonText: '&#10003; &nbsp;Submit for Approval',
             cancelButtonText: 'Cancel',
-            confirmButtonColor: '#16a34a',
+            confirmButtonColor: '#881337',
             cancelButtonColor: '#94a3b8',
             focusConfirm: false,
             customClass: {
@@ -3987,7 +3987,7 @@ async function submitEditBatch() {
                         if (supplierDonorTd) {
                             if (payload.acquisition_type === 'Donor') {
                                 supplierDonorTd.innerHTML = `
-                                    <div style="font-weight: 800; color: #4ade80;">${payload.donor_name || '-'}</div>
+                                    <div style="font-weight: 800; color: #9f1239;">${payload.donor_name || '-'}</div>
                                 `;
                             } else {
                                 let cleanSupplier = payload.supplier_name || '-';
@@ -4001,13 +4001,13 @@ async function submitEditBatch() {
                         const statusTd = r.querySelector('td[data-label="Delivery Status"] span');
                         if (statusTd) {
                             let status = 'FULL DELIVERY';
-                            let color = '#10b981';
+                            let color = '#881337';
                             if (payload.supplier_name.toLowerCase().includes('partial')) {
                                 status = 'PARTIAL DELIVERY';
                                 color = '#ef4444';
                             } else if (payload.acquisition_type === 'Donor') {
                                 status = 'DONOR';
-                                color = '#4ade80';
+                                color = '#9f1239';
                             }
                             statusTd.innerText = status;
                             statusTd.style.background = color;
@@ -4028,7 +4028,7 @@ async function submitEditBatch() {
                     if (varianceSpan) {
                         const v = parseFloat(item.variance);
                         varianceSpan.innerText = (v > 0 ? '+' : '') + v;
-                        varianceSpan.style.color = v > 0 ? '#10b981' : (v < 0 ? '#ef4444' : '#94a3b8');
+                        varianceSpan.style.color = v > 0 ? '#881337' : (v < 0 ? '#ef4444' : '#94a3b8');
                     }
                 }
             });

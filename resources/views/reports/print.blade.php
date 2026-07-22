@@ -43,7 +43,7 @@
             font-family: 'Arial', sans-serif;
             font-weight: bold;
             margin: 5px 0 0;
-            color: #16a34a;
+            color: #881337;
             text-transform: uppercase;
         }
         .print-header p {
@@ -137,10 +137,10 @@
             text-transform: uppercase;
         }
         .green-label {
-            color: #10b981;
+            color: #881337;
         }
         .orange-label {
-            color: #10b981;
+            color: #881337;
         }
 
         /* ── Tables ── */
@@ -213,7 +213,7 @@
 
         /* Pills & Badges */
         .badge-received {
-            border: 1px solid #10b981;
+            border: 1px solid #881337;
             color: #047857;
             background: #f0fdf4;
             border-radius: 99px;
@@ -226,7 +226,7 @@
             gap: 3px;
         }
         .badge-issued {
-            border: 1px solid #10b981;
+            border: 1px solid #881337;
             color: #b45309;
             background: #ecfdf5;
             border-radius: 99px;
@@ -239,7 +239,7 @@
             gap: 3px;
         }
         .badge-category {
-            border: 1px solid #16a34a;
+            border: 1px solid #881337;
             color: #1d4ed8;
             background: #eff6ff;
             border-radius: 4px;
@@ -498,7 +498,7 @@
     @if($totalReceivedQty > 0 && $receivedDistribution->count() > 0)
     <div class="visualization-container">
         <div class="visualization-header">
-            <span class="vis-icon-wrap" style="background: #10b981;">
+            <span class="vis-icon-wrap" style="background: #881337;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
             </span>
             <h2>Stock Receipts Visualization</h2>
@@ -512,7 +512,7 @@
     @if($totalIssuedQty > 0 && $issuedDistribution->count() > 0)
     <div class="visualization-container">
         <div class="visualization-header">
-            <span class="vis-icon-wrap" style="background: #10b981;">
+            <span class="vis-icon-wrap" style="background: #881337;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
             </span>
             <h2>Issuance Visualization</h2>
@@ -647,7 +647,7 @@
                                 $count = count($snList);
                             @endphp
                             @if($count > 0)
-                                <div style="font-size: 8px; color: #16a34a; font-weight: bold; margin-top: 3px; text-transform: none; display: flex; align-items: center; gap: 3px;">
+                                <div style="font-size: 8px; color: #881337; font-weight: bold; margin-top: 3px; text-transform: none; display: flex; align-items: center; gap: 3px;">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
                                     S/N: {{ implode(', ', $snList) }}
                                 </div>
@@ -689,7 +689,7 @@
                     <td style="font-weight: 700;">
                         {{ is_numeric($row['stock_bal']) ? number_format((float)$row['stock_bal']) : $row['stock_bal'] }}
                     </td>
-                    <td style="font-weight: 700; color: {{ is_numeric($row['variance']) && $row['variance'] > 0 ? '#ef4444' : (is_numeric($row['variance']) && $row['variance'] < 0 ? '#16a34a' : '#94a3b8') }};">
+                    <td style="font-weight: 700; color: {{ is_numeric($row['variance']) && $row['variance'] > 0 ? '#ef4444' : (is_numeric($row['variance']) && $row['variance'] < 0 ? '#881337' : '#94a3b8') }};">
                         {{ is_numeric($row['variance']) && $row['variance'] > 0 ? '+' : '' }}{{ is_numeric($row['variance']) ? number_format((float)$row['variance']) : $row['variance'] }}
                     </td>
                 </tr>
@@ -802,7 +802,7 @@
                 const recLabels = @json($receivedDistribution->pluck('description'));
                 const recData   = @json($receivedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
                 const recBarH   = Math.max(140, recLabels.length * 36);
-                const recColors = ['#16a34a','#4ade80','#16a34a','#15803d','#4ade80','#a78bfa','#15803d','#3730a3','#06b6d4','#0ea5e9'];
+                const recColors = ['#881337','#9f1239','#881337','#4c0519','#9f1239','#a78bfa','#4c0519','#3730a3','#06b6d4','#0ea5e9'];
                 
                 const recOptions = Object.assign({}, barDefaults, {
                     chart: Object.assign({}, barDefaults.chart, { 
@@ -824,7 +824,7 @@
                 const issLabels = @json($issuedDistribution->pluck('description'));
                 const issData   = @json($issuedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
                 const issBarH   = Math.max(140, issLabels.length * 36);
-                const issColors = ['#10b981','#fbbf24','#047857','#b45309','#ef4444','#f87171','#dc2626','#10b981','#06b6d4','#ec4899'];
+                const issColors = ['#881337','#fbbf24','#047857','#b45309','#ef4444','#f87171','#dc2626','#881337','#06b6d4','#ec4899'];
                 
                 const issOptions = Object.assign({}, barDefaults, {
                     chart: Object.assign({}, barDefaults.chart, { 

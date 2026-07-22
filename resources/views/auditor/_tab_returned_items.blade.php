@@ -7,7 +7,7 @@
         <td>
             <span class="badge-event">{{ $ledgeMap[$item->ledge_category] ?? $item->ledge_category }}</span>
         </td>
-        <td style="font-weight: 800; text-align: center; color: #10b981;">
+        <td style="font-weight: 800; text-align: center; color: #881337;">
             {{ number_format($item->returned_qty) }}
         </td>
         <td style="font-weight: 800;">{{ $item->beneficiary }}</td>

@@ -6,17 +6,17 @@
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Stock Monitor</span>
+                <span style="background: rgba(136, 19, 55, 0.1); color: #881337; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Stock Monitor</span>
                 <span style="color: var(--text-muted); font-size: 0.85rem;">Safety Threshold Monitoring</span>
             </div>
             <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main); margin: 0;">Low Stock <span style="color: var(--primary);">Monitor</span></h2>
             <p style="color: var(--text-muted); margin: 0.5rem 0 0;">Review and replenish items that are running below safety limits.</p>
         </div>
         <div style="display: flex; gap: 0.75rem;">
-            <a href="{{ route('notifications.index') }}" class="glass-card" style="padding: 0.75rem 1.25rem; border: 1px solid var(--border-color); border-radius: 12px; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); background: var(--bg-card); transition: all 0.3s;" onmouseover="this.style.background='rgba(22, 163, 74, 0.05)'" onmouseout="this.style.background='var(--bg-card)'">
+            <a href="{{ route('notifications.index') }}" class="glass-card" style="padding: 0.75rem 1.25rem; border: 1px solid var(--border-color); border-radius: 12px; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); background: var(--bg-card); transition: all 0.3s;" onmouseover="this.style.background='rgba(136, 19, 55, 0.05)'" onmouseout="this.style.background='var(--bg-card)'">
                 <i data-lucide="bell" style="width: 18px;"></i> Notifications Center
             </a>
-            <button onclick="window.print()" class="glass-card" style="padding: 0.75rem 1.25rem; border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); background: var(--bg-card); transition: all 0.3s;" onmouseover="this.style.background='rgba(22, 163, 74, 0.05)'" onmouseout="this.style.background='var(--bg-card)'">
+            <button onclick="window.print()" class="glass-card" style="padding: 0.75rem 1.25rem; border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text-main); background: var(--bg-card); transition: all 0.3s;" onmouseover="this.style.background='rgba(136, 19, 55, 0.05)'" onmouseout="this.style.background='var(--bg-card)'">
                 <i data-lucide="printer" style="width: 18px;"></i> Print Report
             </button>
         </div>
@@ -36,8 +36,8 @@
         $ledgesCount = count($affectedLedges);
     @endphp
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-        <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid #10b981; background: var(--bg-card); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
-            <div style="width: 54px; height: 54px; border-radius: 14px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid #881337; background: var(--bg-card); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+            <div style="width: 54px; height: 54px; border-radius: 14px; background: rgba(136, 19, 55, 0.1); color: #881337; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                 <i data-lucide="alert-triangle" style="width: 28px; height: 28px;"></i>
             </div>
             <div>
@@ -57,7 +57,7 @@
         </div>
 
         <div class="glass-card" style="padding: 1.5rem; border-radius: 20px; display: flex; align-items: center; gap: 1.25rem; border-left: 4px solid var(--primary); background: var(--bg-card); border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
-            <div style="width: 54px; height: 54px; border-radius: 14px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <div style="width: 54px; height: 54px; border-radius: 14px; background: rgba(136, 19, 55, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                 <i data-lucide="layers" style="width: 28px; height: 28px;"></i>
             </div>
             <div>
@@ -97,12 +97,12 @@
                     @php
                         function getLedgeBadgeStyle($category) {
                             $colors = [
-                                'A' => ['bg' => 'rgba(22, 163, 74, 0.1)', 'color' => 'var(--primary)'],
+                                'A' => ['bg' => 'rgba(136, 19, 55, 0.1)', 'color' => 'var(--primary)'],
                                 'B' => ['bg' => 'rgba(239, 68, 68, 0.1)', 'color' => '#ef4444'],
-                                'C' => ['bg' => 'rgba(16, 185, 129, 0.1)', 'color' => '#10b981'],
-                                'D' => ['bg' => 'rgba(16, 185, 129, 0.1)', 'color' => '#10b981'],
-                                'E' => ['bg' => 'rgba(59, 130, 246, 0.1)', 'color' => '#16a34a'],
-                                'G' => ['bg' => 'rgba(139, 92, 246, 0.1)', 'color' => '#4ade80'],
+                                'C' => ['bg' => 'rgba(136, 19, 55, 0.1)', 'color' => '#881337'],
+                                'D' => ['bg' => 'rgba(136, 19, 55, 0.1)', 'color' => '#881337'],
+                                'E' => ['bg' => 'rgba(59, 130, 246, 0.1)', 'color' => '#881337'],
+                                'G' => ['bg' => 'rgba(139, 92, 246, 0.1)', 'color' => '#9f1239'],
                                 'J' => ['bg' => 'rgba(236, 72, 153, 0.1)', 'color' => '#ec4899'],
                             ];
                             return $colors[strtoupper($category)] ?? ['bg' => 'rgba(100, 116, 139, 0.1)', 'color' => '#64748b'];
@@ -122,7 +122,7 @@
                                     Ledge {{ $item->ledge_category }} ({{ $item->category_name }})
                                 </span>
                             </td>
-                            <td style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); font-weight: 900; color: {{ $isOutOfStock ? '#ef4444' : '#10b981' }}; font-size: 1.1rem;">
+                            <td style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); font-weight: 900; color: {{ $isOutOfStock ? '#ef4444' : '#881337' }}; font-size: 1.1rem;">
                                 {{ number_format($item->stock_balance, 0) }} <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">{{ $item->unit }}</span>
                             </td>
                             <td style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); font-weight: 700; color: var(--text-main); font-size: 1rem;">
@@ -132,7 +132,7 @@
                                 @if($isOutOfStock)
                                     <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;"><div style="width:6px; height:6px; border-radius:50%; background:#ef4444;"></div> OUT OF STOCK</span>
                                 @else
-                                    <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;"><div style="width:6px; height:6px; border-radius:50%; background:#10b981;"></div> LOW STOCK</span>
+                                    <span style="background: rgba(136, 19, 55, 0.1); color: #881337; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;"><div style="width:6px; height:6px; border-radius:50%; background:#881337;"></div> LOW STOCK</span>
                                 @endif
                             </td>
                             <td style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); text-align: right;">
@@ -144,7 +144,7 @@
                     @empty
                         <tr id="empty-state-row">
                             <td colspan="6" style="padding: 8rem 2rem; text-align: center;">
-                                <div style="background: var(--bg-main); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem auto; color: #10b981; border: 1px solid var(--border-color); box-shadow: 0 15px 35px rgba(0,0,0,0.03);">
+                                <div style="background: var(--bg-main); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem auto; color: #881337; border: 1px solid var(--border-color); box-shadow: 0 15px 35px rgba(0,0,0,0.03);">
                                     <i data-lucide="check-circle" style="width: 48px; opacity: 0.8;"></i>
                                 </div>
                                 <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">All stock levels healthy!</h3>

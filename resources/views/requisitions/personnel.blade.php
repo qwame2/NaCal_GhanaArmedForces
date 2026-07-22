@@ -17,7 +17,7 @@
     }
 
     .req-table-row:hover {
-        background: rgba(22, 163, 74, .03);
+        background: rgba(136, 19, 55, .03);
     }
 
     .req-table-row:last-child {
@@ -118,7 +118,7 @@
     }
 
     .modal-box.normal-priority {
-        border-top: 6px solid #16a34a;
+        border-top: 6px solid #881337;
     }
 
     .modal-box.low-priority {
@@ -154,7 +154,7 @@
         top: 50%;
         left: 4rem;
         height: 3px;
-        background: linear-gradient(90deg, var(--primary) 0%, #10b981 100%);
+        background: linear-gradient(90deg, var(--primary) 0%, #881337 100%);
         z-index: 1;
         transform: translateY(-50%);
         transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -202,32 +202,32 @@
     }
 
     .stepper-step.completed .stepper-bubble {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        border-color: #10b981;
+        background: linear-gradient(135deg, #881337 0%, #059669 100%);
+        border-color: #881337;
         color: white;
-        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 4px 10px rgba(136, 19, 55, 0.25);
     }
 
     .stepper-step.completed .stepper-label {
-        color: #10b981;
+        color: #881337;
     }
 
     @keyframes activePulse {
         0% {
-            box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4);
+            box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4);
         }
 
         70% {
-            box-shadow: 0 0 0 8px rgba(22, 163, 74, 0);
+            box-shadow: 0 0 0 8px rgba(136, 19, 55, 0);
         }
 
         100% {
-            box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+            box-shadow: 0 0 0 0 rgba(136, 19, 55, 0);
         }
     }
 
     .stepper-step.active .stepper-bubble {
-        background: linear-gradient(135deg, var(--primary) 0%, #15803d 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, #4c0519 100%);
         border-color: var(--primary);
         color: white;
         animation: activePulse 2s infinite;
@@ -261,8 +261,8 @@
     }
 
     .profile-card:hover {
-        border-color: rgba(22, 163, 74, 0.25);
-        background: rgba(22, 163, 74, 0.02);
+        border-color: rgba(136, 19, 55, 0.25);
+        background: rgba(136, 19, 55, 0.02);
         transform: translateY(-1px);
     }
 
@@ -277,7 +277,7 @@
         justify-content: center;
         font-weight: 800;
         font-size: 1.25rem;
-        border: 1.5px solid rgba(22, 163, 74, 0.15);
+        border: 1.5px solid rgba(136, 19, 55, 0.15);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
     }
 
@@ -310,7 +310,7 @@
     .purpose-quote:before {
         content: '“';
         font-size: 3.5rem;
-        color: rgba(22, 163, 74, 0.08);
+        color: rgba(136, 19, 55, 0.08);
         position: absolute;
         top: -0.8rem;
         left: 0.5rem;
@@ -337,7 +337,7 @@
     }
 
     .item-decision-card.approved-row {
-        background: rgba(16, 185, 129, 0.008);
+        background: rgba(136, 19, 55, 0.008);
     }
 
     .item-card-header {
@@ -390,7 +390,7 @@
 
     .fulfill-progress-bar {
         height: 100%;
-        background: linear-gradient(90deg, #16a34a 0%, #10b981 100%);
+        background: linear-gradient(90deg, #881337 0%, #881337 100%);
         border-radius: 99px;
         transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -403,13 +403,13 @@
         border-radius: 6px;
         font-size: 0.68rem;
         font-weight: 800;
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
+        background: rgba(136, 19, 55, 0.1);
+        color: #881337;
     }
 
     .fulfill-ratio-badge.reduced {
-        background: rgba(16, 185, 129, 0.1);
-        color: #10b981;
+        background: rgba(136, 19, 55, 0.1);
+        color: #881337;
     }
 
     .fulfill-ratio-badge.declined {
@@ -499,13 +499,13 @@
     }
 
     .filter-control:focus {
-        border-color: #16a34a;
+        border-color: #881337;
         background: var(--bg-card);
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
+        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.15);
     }
 
     .filter-control:focus + .filter-icon {
-        color: #16a34a;
+        color: #881337;
     }
 
     .filter-control::placeholder {
@@ -542,15 +542,15 @@
     {{-- Header --}}
     <div style="margin-bottom:2rem; display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
         <div>
-            <div style="font-size:.7rem;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">Store Operations</div>
+            <div style="font-size:.7rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">Store Operations</div>
             <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Store Requisitions Management</h1>
             <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">Track, review, and confirm physical collection of department items</p>
         </div>
         @if(auth()->user()->can_make_requisition)
         <button onclick="openNewReqPanel()" id="new-req-btn"
-            style="display:inline-flex;align-items:center;gap:8px;padding:.75rem 1.5rem;background:linear-gradient(135deg,#16a34a 0%,#15803d 100%);color:white;border:none;border-radius:14px;font-weight:800;font-size:.875rem;cursor:pointer;box-shadow:0 4px 15px rgba(22,163,74,.3);transition:all .25s cubic-bezier(.16,1,.3,1);flex-shrink:0;"
-            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 25px rgba(22,163,74,.4)'"
-            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 15px rgba(22,163,74,.3)'">
+            style="display:inline-flex;align-items:center;gap:8px;padding:.75rem 1.5rem;background:linear-gradient(135deg,#881337 0%,#4c0519 100%);color:white;border:none;border-radius:14px;font-weight:800;font-size:.875rem;cursor:pointer;box-shadow:0 4px 15px rgba(136,19,55,.3);transition:all .25s cubic-bezier(.16,1,.3,1);flex-shrink:0;"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 25px rgba(136,19,55,.4)'"
+            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 15px rgba(136,19,55,.3)'">
             <i data-lucide="plus-circle" style="width:17px;height:17px;"></i>
             New Requisition
         </button>
@@ -560,7 +560,7 @@
     {{-- Stats --}}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;">
         <div class="req-stat-card">
-            <div style="width:44px;height:44px;background:rgba(22,163,74,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:20px;color:#16a34a;"></i></div>
+            <div style="width:44px;height:44px;background:rgba(136,19,55,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:20px;color:#881337;"></i></div>
             <div>
                 <div id="stats-pending" style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['pending'] }}</div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Pending</div>
@@ -574,14 +574,14 @@
             </div>
         </div>
         <div class="req-stat-card">
-            <div style="width:44px;height:44px;background:rgba(16,185,129,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="check-circle" style="width:20px;color:#10b981;"></i></div>
+            <div style="width:44px;height:44px;background:rgba(136,19,55,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="check-circle" style="width:20px;color:#881337;"></i></div>
             <div>
                 <div id="stats-approved" style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['approved'] }}</div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Approved</div>
             </div>
         </div>
         <div class="req-stat-card">
-            <div style="width:44px;height:44px;background:rgba(16,185,129,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="git-merge" style="width:20px;color:#10b981;"></i></div>
+            <div style="width:44px;height:44px;background:rgba(136,19,55,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="git-merge" style="width:20px;color:#881337;"></i></div>
             <div>
                 <div id="stats-partially-approved" style="font-size:1.5rem;font-weight:900;color:var(--text-main);">{{ $stats['partially_approved'] }}</div>
                 <div style="font-size:.72rem;font-weight:700;color:var(--text-muted);">Partial</div>
@@ -599,7 +599,7 @@
     {{-- Filters --}}
     <div class="filter-card">
         <div class="filter-header">
-            <i data-lucide="sliders-horizontal" style="width: 14px; height: 14px; color: #16a34a;"></i>
+            <i data-lucide="sliders-horizontal" style="width: 14px; height: 14px; color: #881337;"></i>
             <span>Filter Options</span>
         </div>
         <form method="GET" class="filter-row" id="filter-form" action="{{ route('personnel.requisitions') }}">
@@ -677,7 +677,7 @@
                             </span>
                             @endforeach
                             @if($req->items->count() > 3)
-                            <span style="font-size:.7rem;font-weight:700;color:#16a34a;background:rgba(22,163,74,.1);padding:2px 8px;border-radius:6px;">+{{ $req->items->count()-3 }} more</span>
+                            <span style="font-size:.7rem;font-weight:700;color:#881337;background:rgba(136,19,55,.1);padding:2px 8px;border-radius:6px;">+{{ $req->items->count()-3 }} more</span>
                             @endif
                         </div>
                     </td>
@@ -687,7 +687,7 @@
                     <td style="padding:1rem 1.5rem;text-align:center;">
                         @if(in_array($req->status, ['approved', 'partially_approved']))
                             @if($req->collected_at)
-                            <span style="font-size:.78rem;color:#10b981;font-weight:800;display:inline-flex;align-items:center;gap:4px;">
+                            <span style="font-size:.78rem;color:#881337;font-weight:800;display:inline-flex;align-items:center;gap:4px;">
                                 <i data-lucide="check-circle" style="width:14px;"></i> Collected
                             </span>
                             @elseif(auth()->user()->can_operate_logistics)
@@ -716,7 +716,7 @@
                     </td>
                     <td style="padding:1rem 1.5rem;text-align:center;">
                         <button onclick="openRequisitionModal({{ $req->id }})"
-                            style="background:rgba(22,163,74,.1);color:#16a34a;border:none;padding:.5rem 1rem;border-radius:10px;font-weight:800;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;" onmouseover="this.style.background='#16a34a';this.style.color='white'" onmouseout="this.style.background='rgba(22,163,74,.1)';this.style.color='#16a34a'">
+                            style="background:rgba(136,19,55,.1);color:#881337;border:none;padding:.5rem 1rem;border-radius:10px;font-weight:800;font-size:.78rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;" onmouseover="this.style.background='#881337';this.style.color='white'" onmouseout="this.style.background='rgba(136,19,55,.1)';this.style.color='#881337'">
                             <i data-lucide="eye" style="width:14px;"></i> View Detail
                         </button>
                     </td>
@@ -756,7 +756,7 @@
                 <div style="display: flex; gap: 0.25rem;">
                     @foreach($requisitions->appends(request()->query())->getUrlRange(max(1, $requisitions->currentPage()-2), min($requisitions->lastPage(), $requisitions->currentPage()+2)) as $page => $url)
                         @if($page == $requisitions->currentPage())
-                            <span style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--primary); color: white; font-size: 0.85rem; font-weight: 900; box-shadow: 0 4px 10px rgba(22,163,74,0.2);">{{ $page }}</span>
+                            <span style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--primary); color: white; font-size: 0.85rem; font-weight: 900; box-shadow: 0 4px 10px rgba(136,19,55,0.2);">{{ $page }}</span>
                         @else
                             <a href="{{ $url }}" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.85rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">{{ $page }}</a>
                         @endif
@@ -780,8 +780,8 @@
     <div class="modal-box">
         <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
             <div style="display:flex;align-items:center;gap:1rem;">
-                <div style="width:44px;height:44px;background:rgba(22,163,74,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                    <i data-lucide="clipboard-list" style="width:20px;color:#16a34a;"></i>
+                <div style="width:44px;height:44px;background:rgba(136,19,55,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                    <i data-lucide="clipboard-list" style="width:20px;color:#881337;"></i>
                 </div>
                 <div>
                     <h2 style="margin:0;font-size:1.1rem;font-weight:900;color:var(--text-main);">Requisition Summary</h2>
@@ -806,9 +806,9 @@
     <div id="newReqPanel" style="background:var(--bg-card);width:100%;max-width:1100px;height:100vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:-30px 0 80px rgba(15,23,42,.18);transform:translateX(100%);transition:transform .4s cubic-bezier(.16,1,.3,1);">
 
         {{-- Panel Header --}}
-        <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:linear-gradient(135deg,rgba(22,163,74,.04) 0%,transparent 100%);">
+        <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:linear-gradient(135deg,rgba(136,19,55,.04) 0%,transparent 100%);">
             <div style="display:flex;align-items:center;gap:1rem;">
-                <div style="width:44px;height:44px;background:linear-gradient(135deg,#16a34a,#15803d);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(22,163,74,.3);">
+                <div style="width:44px;height:44px;background:linear-gradient(135deg,#881337,#4c0519);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(136,19,55,.3);">
                     <i data-lucide="clipboard-plus" style="width:20px;color:white;"></i>
                 </div>
                 <div>
@@ -829,14 +829,14 @@
                     <span class="nr-step-label active" id="nr-label-1">Details</span>
                 </div>
                 <div style="flex:1;height:2px;background:var(--border-color);margin:0 .75rem;border-radius:2px;position:relative;">
-                    <div id="nr-progress-1" style="position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,#16a34a,#15803d);border-radius:2px;transition:width .4s;"></div>
+                    <div id="nr-progress-1" style="position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,#881337,#4c0519);border-radius:2px;transition:width .4s;"></div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
                     <div class="nr-step-bubble" id="nr-bubble-2">2</div>
                     <span class="nr-step-label" id="nr-label-2">Items</span>
                 </div>
                 <div style="flex:1;height:2px;background:var(--border-color);margin:0 .75rem;border-radius:2px;position:relative;">
-                    <div id="nr-progress-2" style="position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,#16a34a,#15803d);border-radius:2px;transition:width .4s;"></div>
+                    <div id="nr-progress-2" style="position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,#881337,#4c0519);border-radius:2px;transition:width .4s;"></div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
                     <div class="nr-step-bubble" id="nr-bubble-3">3</div>
@@ -851,7 +851,7 @@
             {{-- STEP 1: REQUESTER DETAILS --}}
             <div id="nr-step-1">
                 <div style="margin-bottom:1.5rem;">
-                    <div style="font-size:.7rem;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Requester Information</div>
+                    <div style="font-size:.7rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Requester Information</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                         <div style="display:flex;flex-direction:column;gap:6px;">
                             <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Full Name <span style="color:#ef4444;">*</span></label>
@@ -863,23 +863,23 @@
                         </div>
                         <div style="display:flex;flex-direction:column;gap:6px;">
                             <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Rank</label>
-                            <input type="text" id="nr-rank" value="{{ auth()->user()->rank_or_title ?? '' }}" placeholder="e.g. Sergeant, Officer" style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;transition:.2s;" onfocus="this.style.borderColor='#16a34a';this.style.boxShadow='0 0 0 4px rgba(22,163,74,.12)'" onblur="this.style.borderColor='var(--border-color)';this.style.boxShadow=''">
+                            <input type="text" id="nr-rank" value="{{ auth()->user()->rank_or_title ?? '' }}" placeholder="e.g. Sergeant, Officer" style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;transition:.2s;" onfocus="this.style.borderColor='#881337';this.style.boxShadow='0 0 0 4px rgba(136,19,55,.12)'" onblur="this.style.borderColor='var(--border-color)';this.style.boxShadow=''">
                         </div>
                         <input type="hidden" id="nr-priority" value="normal">
                     </div>
                 </div>
                 <div style="margin-bottom:1.5rem;">
-                    <div style="font-size:.7rem;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Usage Type <span style="color:#ef4444;">*</span></div>
+                    <div style="font-size:.7rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Usage Type <span style="color:#ef4444;">*</span></div>
                     <div style="display:flex;gap:1rem;">
-                        <label style="flex:1;display:flex;align-items:center;gap:.75rem;padding:1rem;border:1.5px solid #16a34a;background:rgba(22,163,74,.04);border-radius:12px;cursor:pointer;transition:.2s;" id="nr-usage-perm-label" onclick="selectNrUsage('permanent')">
-                            <input type="radio" name="nr_usage" id="nr-usage-permanent" value="permanent" checked style="accent-color:#16a34a;width:16px;height:16px;">
+                        <label style="flex:1;display:flex;align-items:center;gap:.75rem;padding:1rem;border:1.5px solid #881337;background:rgba(136,19,55,.04);border-radius:12px;cursor:pointer;transition:.2s;" id="nr-usage-perm-label" onclick="selectNrUsage('permanent')">
+                            <input type="radio" name="nr_usage" id="nr-usage-permanent" value="permanent" checked style="accent-color:#881337;width:16px;height:16px;">
                             <div>
                                 <div style="font-weight:800;font-size:.88rem;color:var(--text-main);">Permanent</div>
                                 <div style="font-size:.72rem;color:var(--text-muted);">Item will not be returned</div>
                             </div>
                         </label>
                         <label style="flex:1;display:flex;align-items:center;gap:.75rem;padding:1rem;border:1.5px solid var(--border-color);border-radius:12px;cursor:pointer;transition:.2s;" id="nr-usage-temp-label" onclick="selectNrUsage('temporary')">
-                            <input type="radio" name="nr_usage" id="nr-usage-temporary" value="temporary" style="accent-color:#10b981;width:16px;height:16px;">
+                            <input type="radio" name="nr_usage" id="nr-usage-temporary" value="temporary" style="accent-color:#881337;width:16px;height:16px;">
                             <div>
                                 <div style="font-weight:800;font-size:.88rem;color:var(--text-main);">Temporary</div>
                                 <div style="font-size:.72rem;color:var(--text-muted);">Item will be returned after use</div>
@@ -889,13 +889,13 @@
                 </div>
                 <div style="display:flex;flex-direction:column;gap:6px;">
                     <label style="font-size:.78rem;font-weight:800;color:var(--text-muted);">Purpose / Justification <span style="color:#ef4444;">*</span></label>
-                    <textarea id="nr-purpose" rows="3" placeholder="State the reason for this requisition..." style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;resize:vertical;transition:.2s;" onfocus="this.style.borderColor='#16a34a';this.style.boxShadow='0 0 0 4px rgba(22,163,74,.12)'" onblur="this.style.borderColor='var(--border-color)';this.style.boxShadow=''"></textarea>
+                    <textarea id="nr-purpose" rows="3" placeholder="State the reason for this requisition..." style="padding:.75rem 1rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.88rem;font-weight:600;outline:none;resize:vertical;transition:.2s;" onfocus="this.style.borderColor='#881337';this.style.boxShadow='0 0 0 4px rgba(136,19,55,.12)'" onblur="this.style.borderColor='var(--border-color)';this.style.boxShadow=''"></textarea>
                 </div>
             </div>
 
             {{-- STEP 2: ITEM SELECTION --}}
             <div id="nr-step-2" style="display:none;">
-                <div style="font-size:.7rem;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;">Select Items to Request</div>
+                <div style="font-size:.7rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;">Select Items to Request</div>
 
                 {{-- Layout: Catalog (left) | Cart (right) --}}
                 <div style="display:grid;grid-template-columns:1fr 420px;gap:1.25rem;height:calc(100vh - 320px);min-height:420px;">
@@ -908,7 +908,7 @@
                                 <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:14px;color:var(--text-muted);pointer-events:none;"></i>
                                 <input type="text" id="nr-item-search" placeholder="Search items..." autocomplete="off"
                                     style="width:100%;box-sizing:border-box;padding:.6rem 1rem .6rem 2.2rem;border:1.5px solid var(--border-color);border-radius:10px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.83rem;font-weight:600;outline:none;transition:.2s;"
-                                    onfocus="this.style.borderColor='#16a34a'"
+                                    onfocus="this.style.borderColor='#881337'"
                                     onblur="this.style.borderColor='var(--border-color)'"
                                     oninput="nrFilterCatalog(this.value)">
                             </div>
@@ -929,7 +929,7 @@
                     <div style="display:flex;flex-direction:column;gap:.5rem;background:var(--bg-main);border:1.5px solid var(--border-color);border-radius:14px;padding:.85rem;overflow:hidden;">
                         <div style="font-size:.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;justify-content:space-between;">
                             <span>Selected Items</span>
-                            <span id="nr-cart-count" style="background:#16a34a;color:white;font-size:.65rem;font-weight:900;padding:2px 7px;border-radius:8px;">0</span>
+                            <span id="nr-cart-count" style="background:#881337;color:white;font-size:.65rem;font-weight:900;padding:2px 7px;border-radius:8px;">0</span>
                         </div>
                         <div id="nr-items-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;"></div>
                         <div id="nr-items-empty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--text-muted);padding:1rem;">
@@ -942,7 +942,7 @@
 
             {{-- STEP 3: REVIEW --}}
             <div id="nr-step-3" style="display:none;">
-                <div style="font-size:.7rem;font-weight:800;color:#16a34a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Review Your Requisition</div>
+                <div style="font-size:.7rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Review Your Requisition</div>
                 <div id="nr-review-content"></div>
             </div>
 
@@ -957,10 +957,10 @@
             <button id="nr-btn-cancel" onclick="closeNewReqPanel()" style="padding:.75rem 1.5rem;border:1.5px solid var(--border-color);border-radius:12px;background:var(--bg-main);color:var(--text-muted);font-weight:800;font-size:.85rem;cursor:pointer;transition:.2s;">
                 Cancel
             </button>
-            <button id="nr-btn-next" onclick="nrGoNext()" style="padding:.75rem 1.75rem;border:none;border-radius:12px;background:linear-gradient(135deg,#16a34a,#15803d);color:white;font-weight:800;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(22,163,74,.25);transition:.2s;">
+            <button id="nr-btn-next" onclick="nrGoNext()" style="padding:.75rem 1.75rem;border:none;border-radius:12px;background:linear-gradient(135deg,#881337,#4c0519);color:white;font-weight:800;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(136,19,55,.25);transition:.2s;">
                 Next <i data-lucide="arrow-right" style="width:15px;"></i>
             </button>
-            <button id="nr-btn-submit" onclick="submitNewReq()" style="display:none;padding:.75rem 1.75rem;border:none;border-radius:12px;background:linear-gradient(135deg,#10b981,#059669);color:white;font-weight:800;font-size:.85rem;cursor:pointer;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(16,185,129,.25);transition:.2s;">
+            <button id="nr-btn-submit" onclick="submitNewReq()" style="display:none;padding:.75rem 1.75rem;border:none;border-radius:12px;background:linear-gradient(135deg,#881337,#059669);color:white;font-weight:800;font-size:.85rem;cursor:pointer;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(136,19,55,.25);transition:.2s;">
                 <i data-lucide="send" style="width:15px;"></i> Submit Requisition
             </button>
         </div>
@@ -974,16 +974,16 @@
     transition:all .3s cubic-bezier(.16,1,.3,1);
 }
 .nr-step-bubble.active {
-    background:linear-gradient(135deg,#16a34a,#15803d);border-color:#16a34a;color:white;
-    box-shadow:0 4px 10px rgba(22,163,74,.3);
+    background:linear-gradient(135deg,#881337,#4c0519);border-color:#881337;color:white;
+    box-shadow:0 4px 10px rgba(136,19,55,.3);
 }
 .nr-step-bubble.done {
-    background:linear-gradient(135deg,#10b981,#059669);border-color:#10b981;color:white;
-    box-shadow:0 4px 10px rgba(16,185,129,.25);
+    background:linear-gradient(135deg,#881337,#059669);border-color:#881337;color:white;
+    box-shadow:0 4px 10px rgba(136,19,55,.25);
 }
 .nr-step-label { font-size:.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;transition:color .3s; }
-.nr-step-label.active { color:#16a34a; }
-.nr-step-label.done { color:#10b981; }
+.nr-step-label.active { color:#881337; }
+.nr-step-label.done { color:#881337; }
 </style>
 
 <script>
@@ -1034,7 +1034,7 @@
                 }
             } catch(e) {}
             returnDateBannerHtml = `
-            <div style="background:rgba(16, 185, 129, 0.06); border:1px solid rgba(16, 185, 129, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#047857; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(16, 185, 129, 0.03); width:100%;">
+            <div style="background:rgba(136, 19, 55, 0.06); border:1px solid rgba(136, 19, 55, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#047857; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(136, 19, 55, 0.03); width:100%;">
                 <i data-lucide="calendar-clock" style="width:16px; height:16px; color:#047857; flex-shrink:0;"></i>
                 <span>Expected Return Date: <strong style="color:#b45309; font-size:0.95rem; font-weight:950; text-decoration: underline;">${formattedDate}</strong></span>
             </div>`;
@@ -1054,7 +1054,7 @@
             </div>
         </div>
         <div class="profile-card">
-            <div class="profile-avatar" style="background:rgba(16, 185, 129, 0.08); color:#10b981; border-color:rgba(16,185,129,0.15);"><i data-lucide="building" style="width:20px;height:20px;"></i></div>
+            <div class="profile-avatar" style="background:rgba(136, 19, 55, 0.08); color:#881337; border-color:rgba(136,19,55,0.15);"><i data-lucide="building" style="width:20px;height:20px;"></i></div>
             <div style="flex:1; min-width:0;">
                 <div style="font-size:.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;letter-spacing:0.04em;">Originating Department</div>
                 <div style="font-size:1.05rem;font-weight:900;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${data.department}">${data.department}</div>
@@ -1100,7 +1100,7 @@
             }
 
             const stockInfo = item.stock_sufficient ?
-                `<span style="color:#10b981;font-size:.7rem;font-weight:700;">✔ Sufficient</span>` :
+                `<span style="color:#881337;font-size:.7rem;font-weight:700;">✔ Sufficient</span>` :
                 `<span style="color:#ef4444;font-size:.7rem;font-weight:700;">⚠ Short Stock</span>`;
 
             return `
@@ -1138,13 +1138,13 @@
 
                 <div style="flex:1; min-width:80px;">
                     <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;">Total Approved</div>
-                    <div style="font-size:1.15rem;font-weight:900;color:${totalApproved === 0 ? '#ef4444' : '#10b981'};margin-top:2px;">${totalApproved.toLocaleString()}</div>
+                    <div style="font-size:1.15rem;font-weight:900;color:${totalApproved === 0 ? '#ef4444' : '#881337'};margin-top:2px;">${totalApproved.toLocaleString()}</div>
                 </div>
 
                 <div style="flex:2; min-width:180px;">
                     <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:6px;">Fulfillment Progress</div>
                     <div class="fulfill-progress-container" style="margin-top:0;">
-                        <div class="fulfill-progress-bar" style="width: ${pct}%; background:${approved === 0 ? '#ef4444' : (approved < requested ? '#10b981' : 'linear-gradient(90deg, #16a34a 0%, #10b981 100%)')}"></div>
+                        <div class="fulfill-progress-bar" style="width: ${pct}%; background:${approved === 0 ? '#ef4444' : (approved < requested ? '#881337' : 'linear-gradient(90deg, #881337 0%, #881337 100%)')}"></div>
                     </div>
                 </div>
             </div>
@@ -1166,10 +1166,10 @@
         if (['approved', 'partially_approved'].includes(data.status)) {
             if (data.collected_at) {
                 collectorInfoHtml = `
-                <div style="background:rgba(16,185,129,0.03); border:1.5px dashed rgba(16,185,129,0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; flex-direction:column; gap:1rem;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px dashed rgba(16,185,129,0.15); padding-bottom:8px;">
+                <div style="background:rgba(136,19,55,0.03); border:1.5px dashed rgba(136,19,55,0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; flex-direction:column; gap:1rem;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px dashed rgba(136,19,55,0.15); padding-bottom:8px;">
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <div style="width:34px; height:34px; background:rgba(16,185,129,0.08); color:#10b981; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                            <div style="width:34px; height:34px; background:rgba(136,19,55,0.08); color:#881337; border-radius:10px; display:flex; align-items:center; justify-content:center;">
                                 <i data-lucide="package-check" style="width:16px;"></i>
                             </div>
                             <div>
@@ -1177,7 +1177,7 @@
                                 <p style="margin:0; font-size:0.75rem; color:var(--text-muted);">Items have been successfully issued and collected</p>
                             </div>
                         </div>
-                        <span class="pill" style="background:rgba(16,185,129,0.1); color:#10b981; font-weight:800; font-size:0.7rem; padding:4px 10px;">COLLECTED</span>
+                        <span class="pill" style="background:rgba(136,19,55,0.1); color:#881337; font-weight:800; font-size:0.7rem; padding:4px 10px;">COLLECTED</span>
                     </div>
                     
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
@@ -1211,7 +1211,7 @@
                 collectorInfoHtml = `
                 <div style="background:var(--bg-main); border:1.5px solid var(--border-color); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; flex-direction:column; gap:1rem;">
                     <div style="display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
-                        <div style="width:34px; height:34px; background:rgba(16,185,129,0.08); color:#10b981; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                        <div style="width:34px; height:34px; background:rgba(136,19,55,0.08); color:#881337; border-radius:10px; display:flex; align-items:center; justify-content:center;">
                             <i data-lucide="package-check" style="width:16px;"></i>
                         </div>
                         <div>
@@ -1223,19 +1223,19 @@
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
                         <div style="position:relative; display:flex; align-items:center;">
                             <i data-lucide="user" style="position:absolute; left:12px; color:var(--text-muted); width:16px; height:16px; pointer-events:none;"></i>
-                            <input type="text" id="modalCollectorName" oninput="validateModalCollectorInputs()" placeholder="Collector Full Name *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 4px rgba(16, 185, 129, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
+                            <input type="text" id="modalCollectorName" oninput="validateModalCollectorInputs()" placeholder="Collector Full Name *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#881337'; this.style.boxShadow='0 0 0 4px rgba(136, 19, 55, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
                         </div>
                         <div style="position:relative; display:flex; align-items:center;">
                             <i data-lucide="user" style="position:absolute; left:12px; color:var(--text-muted); width:16px; height:16px; pointer-events:none;"></i>
-                            <input type="text" id="modalCollectorStaffId" oninput="validateModalCollectorInputs()" placeholder="Collector Staff ID *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 4px rgba(16, 185, 129, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
+                            <input type="text" id="modalCollectorStaffId" oninput="validateModalCollectorInputs()" placeholder="Collector Staff ID *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#881337'; this.style.boxShadow='0 0 0 4px rgba(136, 19, 55, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
                         </div>
                         <div style="position:relative; display:flex; align-items:center; grid-column: span 2;">
                             <i data-lucide="phone" style="position:absolute; left:12px; color:var(--text-muted); width:16px; height:16px; pointer-events:none;"></i>
-                            <input type="text" id="modalCollectorContact" oninput="validateModalCollectorInputs()" placeholder="Collector Contact Number *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 4px rgba(16, 185, 129, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
+                            <input type="text" id="modalCollectorContact" oninput="validateModalCollectorInputs()" placeholder="Collector Contact Number *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#881337'; this.style.boxShadow='0 0 0 4px rgba(136, 19, 55, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
                         </div>
                         <div style="position:relative; display:flex; align-items:center; grid-column: span 2;">
                             <i data-lucide="map-pin" style="position:absolute; left:12px; color:var(--text-muted); width:16px; height:16px; pointer-events:none;"></i>
-                            <input type="text" id="modalCollectorLocation" oninput="validateModalCollectorInputs()" placeholder="Collection Destination / Location *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 4px rgba(16, 185, 129, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
+                            <input type="text" id="modalCollectorLocation" oninput="validateModalCollectorInputs()" placeholder="Collection Destination / Location *" style="width:100%; padding:10px 12px 10px 36px; height:44px; border-radius:12px; font-weight:700; font-family:inherit; font-size:0.85rem; border:1.5px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; transition:all 0.25s ease;" onfocus="this.style.borderColor='#881337'; this.style.boxShadow='0 0 0 4px rgba(136, 19, 55, 0.15)';" onblur="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none';">
                         </div>
                     </div>
                 </div>`;
@@ -1254,7 +1254,7 @@
     ${itemRowsHtml}
 
     ${data.admin_notes ? `
-        <div style="background:rgba(22,163,74,.03);border:1px solid rgba(22,163,74,.15);border-radius:16px;padding:1.25rem; margin-top: 1.25rem;">
+        <div style="background:rgba(136,19,55,.03);border:1px solid rgba(136,19,55,.15);border-radius:16px;padding:1.25rem; margin-top: 1.25rem;">
             <div style="font-size:.68rem;font-weight:900;color:var(--primary);text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:4px;margin-bottom:4px;"><i data-lucide="message-square" style="width:14px;"></i> Store Officer Notes</div>
             <p style="margin:0;font-size:.9rem;color:var(--text-main);line-height:1.6;font-style:italic;">"${data.admin_notes}"</p>
         </div>
@@ -1271,7 +1271,7 @@
 
     <div style="background:var(--bg-main); border:1px solid var(--border-color); border-radius:16px; padding:1.15rem; margin-top:1.25rem; display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex; align-items:center; gap:8px;">
-            <div style="width:34px; height:34px; background:rgba(22,163,74,0.08); color:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+            <div style="width:34px; height:34px; background:rgba(136,19,55,0.08); color:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center;">
                 <i data-lucide="user-check" style="width:16px;"></i>
             </div>
             <div>
@@ -1311,7 +1311,7 @@
             } else {
                 footerHtml = `
                 <a href="{{ request()->getBasePath() }}/requisitions/receipt/${id}" target="_blank"
-                    style="background:rgba(22, 163, 74, 0.08); border: 1.5px solid rgba(22, 163, 74, 0.2); color: #16a34a; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#16a34a'; this.style.color='white';" onmouseout="this.style.background='rgba(22, 163, 74, 0.08)'; this.style.color='#16a34a';">
+                    style="background:rgba(136, 19, 55, 0.08); border: 1.5px solid rgba(136, 19, 55, 0.2); color: #881337; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#881337'; this.style.color='white';" onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='#881337';">
                     <i data-lucide="printer" style="width: 16px;"></i> Print Collection Receipt
                 </a>` + footerHtml;
             }
@@ -1388,7 +1388,7 @@
                     icon: 'warning',
                     title: 'Required Fields Missing',
                     text: 'Please enter the Collector Name, Staff ID, Contact Number, and Location inside the Collector Information section before confirming collection.',
-                    confirmButtonColor: '#10b981'
+                    confirmButtonColor: '#881337'
                 });
                 if (!collector_name) modalNameInput.style.borderColor = '#ef4444';
                 if (!collector_staff_id) modalStaffIdInput.style.borderColor = '#ef4444';
@@ -1410,7 +1410,7 @@
                 showCancelButton: true,
                 confirmButtonText: 'Yes, Confirm Collection',
                 cancelButtonText: 'Cancel',
-                confirmButtonColor: '#10b981',
+                confirmButtonColor: '#881337',
                 cancelButtonColor: '#94a3b8'
             }).then(async (result) => {
                 if (result.isConfirmed) {
@@ -1432,7 +1432,7 @@
                 showCancelButton: true,
                 confirmButtonText: 'Confirm Collection',
                 cancelButtonText: 'Cancel',
-                confirmButtonColor: '#10b981',
+                confirmButtonColor: '#881337',
                 cancelButtonColor: '#94a3b8',
                 preConfirm: () => {
                     const name = document.getElementById('swal-input-name').value.trim();
@@ -1483,7 +1483,7 @@
                     showCancelButton: true,
                     confirmButtonText: 'Yes, Print Receipt',
                     cancelButtonText: 'Dismiss',
-                    confirmButtonColor: '#16a34a',
+                    confirmButtonColor: '#881337',
                     cancelButtonColor: '#94a3b8'
                 }).then((result) => {
                     if (result.isConfirmed) {
@@ -1847,17 +1847,17 @@
             const dept    = document.getElementById('nr-department').value.trim();
             const purpose = document.getElementById('nr-purpose').value.trim();
             if (!name || !dept || !purpose) {
-                Swal.fire({ icon:'warning', title:'Missing Fields', text:'Please fill in Full Name, Department, and Purpose.', confirmButtonColor:'#16a34a' });
+                Swal.fire({ icon:'warning', title:'Missing Fields', text:'Please fill in Full Name, Department, and Purpose.', confirmButtonColor:'#881337' });
                 return;
             }
         } else if (nrCurrentStep === 2) {
             if (nrCartItems.length === 0) {
-                Swal.fire({ icon:'warning', title:'No Items Added', text:'Please add at least one item to your requisition.', confirmButtonColor:'#16a34a' });
+                Swal.fire({ icon:'warning', title:'No Items Added', text:'Please add at least one item to your requisition.', confirmButtonColor:'#881337' });
                 return;
             }
             const invalidQty = nrCartItems.find(i => !i.qty || parseFloat(i.qty) <= 0);
             if (invalidQty) {
-                Swal.fire({ icon:'warning', title:'Invalid Quantity', text:`Please enter a valid quantity for: ${invalidQty.description}`, confirmButtonColor:'#16a34a' });
+                Swal.fire({ icon:'warning', title:'Invalid Quantity', text:`Please enter a valid quantity for: ${invalidQty.description}`, confirmButtonColor:'#881337' });
                 return;
             }
             nrBuildReview();
@@ -1878,7 +1878,7 @@
             const v = btn.dataset.val;
             if (v === val) {
                 if (v === 'urgent')      { btn.style.borderColor='#dc2626'; btn.style.background='rgba(220,38,38,.08)'; btn.style.color='#dc2626'; }
-                else if (v === 'normal') { btn.style.borderColor='#16a34a'; btn.style.background='rgba(22,163,74,.08)'; btn.style.color='#16a34a'; }
+                else if (v === 'normal') { btn.style.borderColor='#881337'; btn.style.background='rgba(136,19,55,.08)'; btn.style.color='#881337'; }
                 else                     { btn.style.borderColor='#64748b'; btn.style.background='rgba(100,116,139,.08)'; btn.style.color='#64748b'; }
             } else {
                 btn.style.borderColor='var(--border-color)'; btn.style.background='var(--bg-card)'; btn.style.color='var(--text-muted)';
@@ -1893,10 +1893,10 @@
         const permLabel = document.getElementById('nr-usage-perm-label');
         const tempLabel = document.getElementById('nr-usage-temp-label');
         if (val === 'permanent') {
-            permLabel.style.borderColor = '#16a34a'; permLabel.style.background = 'rgba(22,163,74,.04)';
+            permLabel.style.borderColor = '#881337'; permLabel.style.background = 'rgba(136,19,55,.04)';
             tempLabel.style.borderColor = 'var(--border-color)'; tempLabel.style.background = '';
         } else {
-            tempLabel.style.borderColor = '#10b981'; tempLabel.style.background = 'rgba(16,185,129,.04)';
+            tempLabel.style.borderColor = '#881337'; tempLabel.style.background = 'rgba(136,19,55,.04)';
             permLabel.style.borderColor = 'var(--border-color)'; permLabel.style.background = '';
         }
     }
@@ -1916,7 +1916,7 @@
         });
         const allCount = nrAvailableItems.length;
         let html = `<button onclick="nrSetCat('all')" id="nr-tab-all"
-            style="padding:.35rem .85rem;border-radius:999px;border:1.5px solid #16a34a;background:rgba(22,163,74,.1);color:#16a34a;font-weight:800;font-size:.7rem;cursor:pointer;transition:.2s;white-space:nowrap;">
+            style="padding:.35rem .85rem;border-radius:999px;border:1.5px solid #881337;background:rgba(136,19,55,.1);color:#881337;font-weight:800;font-size:.7rem;cursor:pointer;transition:.2s;white-space:nowrap;">
             All <span style="opacity:.7;">(${allCount})</span>
         </button>`;
         Object.entries(cats).sort((a,b) => b[1]-a[1]).forEach(([cat, cnt]) => {
@@ -1934,9 +1934,9 @@
         // Update tab styles
         document.querySelectorAll('[id^="nr-tab-"]').forEach(btn => {
             const isSel = btn.id === `nr-tab-${cat}`;
-            btn.style.borderColor  = isSel ? '#16a34a' : 'var(--border-color)';
-            btn.style.background   = isSel ? 'rgba(22,163,74,.1)' : 'var(--bg-card)';
-            btn.style.color        = isSel ? '#16a34a' : 'var(--text-muted)';
+            btn.style.borderColor  = isSel ? '#881337' : 'var(--border-color)';
+            btn.style.background   = isSel ? 'rgba(136,19,55,.1)' : 'var(--bg-card)';
+            btn.style.color        = isSel ? '#881337' : 'var(--text-muted)';
         });
         nrRenderCatalog();
     }
@@ -1974,15 +1974,15 @@
         grid.innerHTML = items.map((item, idx) => {
             const catName    = (item.ledge_category && nrLedgeMap[item.ledge_category]) ? nrLedgeMap[item.ledge_category] : (item.ledge_category || '');
             const stock      = parseFloat(item.total_stock) || 0;
-            const stockColor = stock > 10 ? '#10b981' : stock > 0 ? '#10b981' : '#ef4444';
+            const stockColor = stock > 10 ? '#881337' : stock > 0 ? '#881337' : '#ef4444';
             const stockLabel = stock > 10 ? 'In Stock' : stock > 0 ? 'Low Stock' : 'Out of Stock';
             const inCart     = !!nrCartItems.find(c => c.description === item.description && c.category === item.ledge_category);
 
             return `<div class="nr-catalog-card" data-nr-idx="${idx}"
-                style="background:var(--bg-card);border:1.5px solid ${inCart ? '#16a34a' : 'var(--border-color)'};border-radius:12px;padding:.85rem;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:.4rem;position:relative;${inCart ? 'background:rgba(22,163,74,.04);' : ''}">
-                ${inCart ? `<div style="position:absolute;top:8px;right:8px;width:18px;height:18px;background:#16a34a;border-radius:50%;display:flex;align-items:center;justify-content:center;"><svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg></div>` : ''}
+                style="background:var(--bg-card);border:1.5px solid ${inCart ? '#881337' : 'var(--border-color)'};border-radius:12px;padding:.85rem;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:.4rem;position:relative;${inCart ? 'background:rgba(136,19,55,.04);' : ''}">
+                ${inCart ? `<div style="position:absolute;top:8px;right:8px;width:18px;height:18px;background:#881337;border-radius:50%;display:flex;align-items:center;justify-content:center;"><svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg></div>` : ''}
                 <div style="font-size:.78rem;font-weight:800;color:var(--text-main);line-height:1.3;${inCart ? 'padding-right:22px;' : ''}">${item.description}</div>
-                ${catName ? `<div style="font-size:.65rem;font-weight:700;color:#16a34a;background:rgba(22,163,74,.08);padding:1px 6px;border-radius:5px;align-self:flex-start;">${catName}</div>` : ''}
+                ${catName ? `<div style="font-size:.65rem;font-weight:700;color:#881337;background:rgba(136,19,55,.08);padding:1px 6px;border-radius:5px;align-self:flex-start;">${catName}</div>` : ''}
                 <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;">
                     <span style="font-size:.65rem;font-weight:800;color:${stockColor};background:${stockColor}18;padding:2px 6px;border-radius:5px;">${stockLabel}</span>
                     <span style="font-size:.65rem;font-weight:700;color:var(--text-muted);">${stock} ${item.unit || 'units'}</span>
@@ -2004,9 +2004,9 @@
         grid.onmouseover = function(e) {
             const card = e.target.closest('.nr-catalog-card');
             if (!card) return;
-            card.style.boxShadow = '0 4px 14px rgba(22,163,74,.12)';
+            card.style.boxShadow = '0 4px 14px rgba(136,19,55,.12)';
             if (!nrCartItems.find(c => c.description === nrFilteredItems[parseInt(card.dataset.nrIdx,10)]?.description)) {
-                card.style.borderColor = 'rgba(22,163,74,.4)';
+                card.style.borderColor = 'rgba(136,19,55,.4)';
             }
         };
         grid.onmouseout = function(e) {
@@ -2015,7 +2015,7 @@
             card.style.boxShadow = '';
             const item = nrFilteredItems[parseInt(card.dataset.nrIdx, 10)];
             if (item && nrCartItems.find(c => c.description === item.description && c.category === item.ledge_category)) {
-                card.style.borderColor = '#16a34a';
+                card.style.borderColor = '#881337';
             } else {
                 card.style.borderColor = 'var(--border-color)';
             }
@@ -2065,7 +2065,7 @@
         } else {
             if (empty) empty.style.display = 'none';
             list.innerHTML = nrCartItems.map((item, idx) => {
-                const stockColor = item.stock > 10 ? '#10b981' : item.stock > 0 ? '#10b981' : '#ef4444';
+                const stockColor = item.stock > 10 ? '#881337' : item.stock > 0 ? '#881337' : '#ef4444';
                 return `<div style="background:var(--bg-card);border:1.5px solid var(--border-color);border-radius:10px;padding:.65rem .85rem;">
                     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;margin-bottom:.5rem;">
                         <div style="font-size:.78rem;font-weight:800;color:var(--text-main);line-height:1.3;flex:1;">${item.description}</div>
@@ -2079,7 +2079,7 @@
                             <input type="number" min="0.01" step="0.01" value="${item.qty}" onchange="updateNrQty(${idx},this.value)" style="width:38px;text-align:center;border:none;background:transparent;font-family:inherit;font-weight:700;font-size:.8rem;color:var(--text-main);outline:none;padding:.2rem 0;">
                             <button type="button" onclick="adjustNrQty(${idx},1)" style="padding:.2rem .5rem;border:none;background:transparent;cursor:pointer;color:var(--text-muted);font-weight:900;font-size:.9rem;transition:.15s;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='transparent'">+</button>
                         </div>
-                        <input type="text" value="${item.remarks}" placeholder="Remarks..." oninput="updateNrRemarks(${idx},this.value)" style="flex:1;min-width:0;padding:.3rem .5rem;border:1.5px solid var(--border-color);border-radius:7px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.72rem;font-weight:600;outline:none;transition:.2s;" onfocus="this.style.borderColor='#16a34a'" onblur="this.style.borderColor='var(--border-color)'">
+                        <input type="text" value="${item.remarks}" placeholder="Remarks..." oninput="updateNrRemarks(${idx},this.value)" style="flex:1;min-width:0;padding:.3rem .5rem;border:1.5px solid var(--border-color);border-radius:7px;background:var(--bg-main);color:var(--text-main);font-family:inherit;font-size:.72rem;font-weight:600;outline:none;transition:.2s;" onfocus="this.style.borderColor='#881337'" onblur="this.style.borderColor='var(--border-color)'">
                     </div>
                 </div>`;
             }).join('');
@@ -2106,8 +2106,8 @@
         const dept    = document.getElementById('nr-department').value.trim();
         const rank    = document.getElementById('nr-rank').value.trim();
         const purpose = document.getElementById('nr-purpose').value.trim();
-        const priorityColors = { urgent:'#dc2626', normal:'#16a34a', low:'#64748b' };
-        const usageColors    = { permanent:'#16a34a', temporary:'#10b981' };
+        const priorityColors = { urgent:'#dc2626', normal:'#881337', low:'#64748b' };
+        const usageColors    = { permanent:'#881337', temporary:'#881337' };
 
         let html = `
         <div style="background:var(--bg-main);border:1.5px solid var(--border-color);border-radius:14px;padding:1.25rem;margin-bottom:1rem;">
@@ -2132,7 +2132,7 @@
                 return `<div style="padding:.85rem 1.25rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;gap:1rem;">
                     <div>
                         <div style="font-size:.88rem;font-weight:800;color:var(--text-main);">${item.description}</div>
-                        ${catName ? `<div style="font-size:.7rem;color:#16a34a;font-weight:700;">${catName}</div>` : ''}
+                        ${catName ? `<div style="font-size:.7rem;color:#881337;font-weight:700;">${catName}</div>` : ''}
                         ${item.remarks ? `<div style="font-size:.72rem;color:var(--text-muted);font-style:italic;">${item.remarks}</div>` : ''}
                     </div>
                     <div style="text-align:right;flex-shrink:0;">
@@ -2142,8 +2142,8 @@
                 </div>`;
             }).join('')}
         </div>
-        <div style="background:rgba(16,185,129,.05);border:1.5px solid rgba(16,185,129,.2);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:.75rem;">
-            <i data-lucide="info" style="width:16px;color:#10b981;flex-shrink:0;margin-top:2px;"></i>
+        <div style="background:rgba(136,19,55,.05);border:1.5px solid rgba(136,19,55,.2);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:.75rem;">
+            <i data-lucide="info" style="width:16px;color:#881337;flex-shrink:0;margin-top:2px;"></i>
             <p style="margin:0;font-size:.8rem;font-weight:600;color:var(--text-muted);">Please review all details carefully. Once submitted, this requisition will be routed to the department head and stores admin for approval.</p>
         </div>`;
 
@@ -2190,16 +2190,16 @@
                     icon:'success',
                     title:'Requisition Submitted!',
                     html:`Your store requisition for <b>${itemNames}</b> has been submitted successfully and the relevant approvers have been notified.`,
-                    confirmButtonColor:'#16a34a'
+                    confirmButtonColor:'#881337'
                 }).then(() => location.reload());
             } else {
-                Swal.fire({ icon:'error', title:'Submission Failed', text: data.message || 'An error occurred.', confirmButtonColor:'#16a34a' });
+                Swal.fire({ icon:'error', title:'Submission Failed', text: data.message || 'An error occurred.', confirmButtonColor:'#881337' });
                 btn.disabled = false;
                 btn.style.opacity = '1';
                 btn.innerHTML = originalHTML;
             }
         } catch (err) {
-            Swal.fire({ icon:'error', title:'Network Error', text:'Could not connect to the server. Please try again.', confirmButtonColor:'#16a34a' });
+            Swal.fire({ icon:'error', title:'Network Error', text:'Could not connect to the server. Please try again.', confirmButtonColor:'#881337' });
             btn.disabled = false;
             btn.style.opacity = '1';
             btn.innerHTML = originalHTML;

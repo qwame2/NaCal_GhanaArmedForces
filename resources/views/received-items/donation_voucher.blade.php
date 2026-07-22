@@ -169,14 +169,14 @@
     
     <div class="review-banner" style="position: sticky; top: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); color: #fff; padding: 15px 30px; display: flex; align-items: center; justify-content: space-between; z-index: 10000; box-shadow: 0 4px 20px rgba(0,0,0,0.3); border-bottom: 2px solid #334155; font-family: system-ui, -apple-system, sans-serif; margin-bottom: 20px;">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <div style="width: 42px; height: 42px; background: rgba(22, 163, 74, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(22, 163, 74, 0.4);">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            <div style="width: 42px; height: 42px; background: rgba(136, 19, 55, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(136, 19, 55, 0.4);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9f1239" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-alert"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
             </div>
             <div style="text-align: left;">
                 <div style="font-weight: 800; font-size: 0.95rem; letter-spacing: -0.01em;">Donation SRA Review Board</div>
                 <div style="font-size: 0.78rem; color: #94a3b8; font-weight: 500; margin-top: 2px;">
                     @if($hasApproved)
-                        <span style="color: #10b981; font-weight: bold;">✓ You have approved this Donation.</span> Waiting for the other review authority.
+                        <span style="color: #881337; font-weight: bold;">✓ You have approved this Donation.</span> Waiting for the other review authority.
                     @elseif($hasDeclined)
                         <span style="color: #ef4444; font-weight: bold;">✗ You have declined this Donation.</span>
                     @else
@@ -188,7 +188,7 @@
         
         @if(!$hasApproved && !$hasDeclined)
             <div style="display: flex; gap: 12px;">
-                <button onclick="processSraReviewAction('approve')" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 750; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); transition: all 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+                <button onclick="processSraReviewAction('approve')" style="background: #881337; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 750; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(136, 19, 55, 0.25); transition: all 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#881337'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                     Accept & Approve
                 </button>
@@ -203,7 +203,7 @@
         function processSraReviewAction(action) {
             const batchId = "{{ $batch->id }}";
             const actionText = action === 'approve' ? 'approve' : 'decline';
-            const actionColor = action === 'approve' ? '#10b981' : '#ef4444';
+            const actionColor = action === 'approve' ? '#881337' : '#ef4444';
             const confirmBtnText = action === 'approve' ? 'Yes, Approve' : 'Yes, Decline';
             
             Swal.fire({
@@ -261,7 +261,7 @@
                                 icon: 'success',
                                 title: 'SRA Processed!',
                                 text: data.message,
-                                confirmButtonColor: '#16a34a'
+                                confirmButtonColor: '#881337'
                             }).then(() => {
                                 window.location.reload();
                             });

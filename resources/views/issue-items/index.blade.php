@@ -5,15 +5,15 @@
 
     <!-- Operations Header -->
     <div class="glass-card header-mesh" style="padding: 3rem; border-radius: 32px; margin-bottom: 3rem; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08);">
-        <div style="position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(22, 163, 74, 0.1) 0%, transparent 70%); z-index: 0;"></div>
-        <div style="position: absolute; bottom: -50px; left: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%); z-index: 0;"></div>
+        <div style="position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(136, 19, 55, 0.1) 0%, transparent 70%); z-index: 0;"></div>
+        <div style="position: absolute; bottom: -50px; left: -50px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(136, 19, 55, 0.05) 0%, transparent 70%); z-index: 0;"></div>
 
         <div style="position: relative; z-index: 1;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.5rem;">
                 <div>
                     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
                         @if(in_array(auth()->user()->role, ['Main Admin', 'Department Head', 'Auditor']))
-                            <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · {{ auth()->user()->role === 'Auditor' ? 'Department Head' : 'Department Head Hub' }}</span>
+                            <span style="background: rgba(136, 19, 55, 0.1); color: #881337; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">{{ strtoupper(auth()->user()->department) }} · {{ auth()->user()->role === 'Auditor' ? 'Department Head' : 'Department Head Hub' }}</span>
                         @else
                             <span class="inventory-badge">Issuance</span>
                         @endif
@@ -32,7 +32,7 @@
     <!-- Statistical Insight Cards -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
         <div class="glass-card stat-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem; transition: transform 0.3s;">
-            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(22, 163, 74, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(136, 19, 55, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="package-2" style="width: 32px; height: 32px;"></i>
             </div>
             <div>
@@ -42,7 +42,7 @@
         </div>
 
         <div class="glass-card stat-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem; transition: transform 0.3s;">
-            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(136, 19, 55, 0.1); color: #881337; display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="check-square" style="width: 32px; height: 32px;"></i>
             </div>
             <div>
@@ -52,7 +52,7 @@
         </div>
 
         <div class="glass-card stat-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem; transition: transform 0.3s;">
-            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(16, 185, 129, 0.1); color: #10b981; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(136, 19, 55, 0.1); color: #881337; display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="clock" style="width: 32px; height: 32px;"></i>
             </div>
             <div>
@@ -62,7 +62,7 @@
         </div>
 
         <div class="glass-card stat-card" style="padding: 2rem; border-radius: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem; transition: transform 0.3s;">
-            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(139, 92, 246, 0.1); color: #4ade80; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(139, 92, 246, 0.1); color: #9f1239; display: flex; align-items: center; justify-content: center;">
                 <i data-lucide="map-pin" style="width: 32px; height: 32px;"></i>
             </div>
             <div>
@@ -163,8 +163,8 @@
                             if ($item->quantity === 0 && $item->issuance_type === 'Temporary') {
                                 $statusBadge = '<span class="status-badge" style="background: rgba(100, 116, 139, 0.1); color: var(--text-muted); font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em; border: 1px dashed rgba(100, 116, 139, 0.3);">RETURNED</span>';
                             } else {
-                                $statusColor = $item->issuance_type === 'Temporary' ? '#15803d' : '#10b981';
-                                $statusBg = $item->issuance_type === 'Temporary' ? 'rgba(234,88,12,0.1)' : 'rgba(16,185,129,0.1)';
+                                $statusColor = $item->issuance_type === 'Temporary' ? '#4c0519' : '#881337';
+                                $statusBg = $item->issuance_type === 'Temporary' ? 'rgba(234,88,12,0.1)' : 'rgba(136,19,55,0.1)';
                                 $statusBadge = '<span class="status-badge" style="background: ' . $statusBg . '; color: ' . $statusColor . '; font-size: 0.7rem; padding: 0.4rem 1.15rem; border-radius: 10px; font-weight: 900; letter-spacing: 0.05em;">' . strtoupper($item->issuance_type) . '</span>';
                             }
                         @endphp
@@ -178,7 +178,7 @@
                             <td data-label="Items" style="padding: 1.25rem 1.5rem;">
                                 <div style="font-weight: 700; color: var(--text-main);">{{ $item->description }}</div>
                                 <div style="margin-top: 4px;">
-                                    <span style="font-size: 0.65rem; background: rgba(22, 163, 74, 0.1); color: var(--primary); padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600; text-transform: uppercase;">
+                                    <span style="font-size: 0.65rem; background: rgba(136, 19, 55, 0.1); color: var(--primary); padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600; text-transform: uppercase;">
                                         Category {{ $item->ledge_category }}
                                     </span>
                                 </div>
@@ -198,7 +198,7 @@
                             <td data-label="Head of Stores" style="padding: 1.25rem 1.5rem; font-weight: 600; color: var(--text-main); font-size: 0.9rem; white-space: nowrap;">{{ $item->authority ?: 'Adomako Emmanuel' }}</td>
                             <td data-label="Store Officer" style="padding: 1.25rem 1.5rem; font-weight: 600; color: var(--text-main); font-size: 0.9rem; white-space: nowrap;">
                                 <div style="display: flex; align-items: center; gap: 6px;">
-                                    <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #10b981;"></i>
+                                    <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #881337;"></i>
                                     {{ $item->confirming_officer_name ?: 'Adomako Emmanuel' }}
                                 </div>
                             </td>
@@ -240,7 +240,7 @@
                     <div style="display: flex; gap: 0.25rem;">
                         @foreach($issuedItems->appends(request()->query())->getUrlRange(max(1, $issuedItems->currentPage()-2), min($issuedItems->lastPage(), $issuedItems->currentPage()+2)) as $page => $url)
                             @if($page == $issuedItems->currentPage())
-                                <span style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--primary); color: white; font-size: 0.85rem; font-weight: 900; box-shadow: 0 4px 10px rgba(22,163,74,0.2);">{{ $page }}</span>
+                                <span style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--primary); color: white; font-size: 0.85rem; font-weight: 900; box-shadow: 0 4px 10px rgba(136,19,55,0.2);">{{ $page }}</span>
                             @else
                                 <a href="{{ $url }}" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 0.85rem; font-weight: 800; border: 1px solid var(--border-color); text-decoration: none; transition: 0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-main)'">{{ $page }}</a>
                             @endif
@@ -271,14 +271,14 @@
     .inventory-badge {
         background: var(--primary); color: white; font-size: 0.65rem; font-weight: 900;
         padding: 0.4rem 1.25rem; border-radius: 99px; text-transform: uppercase;
-        letter-spacing: 0.1em; box-shadow: 0 5px 15px rgba(22, 163, 74, 0.3);
+        letter-spacing: 0.1em; box-shadow: 0 5px 15px rgba(136, 19, 55, 0.3);
     }
     .gradient-text {
         background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
     .header-mesh {
-        background: radial-gradient(at 0% 0%, rgba(22, 163, 74, 0.05) 0, transparent 50%),
-                    radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0, transparent 50%),
+        background: radial-gradient(at 0% 0%, rgba(136, 19, 55, 0.05) 0, transparent 50%),
+                    radial-gradient(at 100% 100%, rgba(136, 19, 55, 0.05) 0, transparent 50%),
                     var(--bg-card);
         backdrop-filter: blur(20px);
     }
@@ -306,7 +306,7 @@
         transition: all 0.3s ease;
     }
     .activity-row:hover {
-        background: rgba(22, 163, 74, 0.04) !important;
+        background: rgba(136, 19, 55, 0.04) !important;
         box-shadow: inset 4px 0 0 var(--primary);
     }
     .status-badge {

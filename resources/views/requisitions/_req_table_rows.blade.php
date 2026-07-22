@@ -4,8 +4,8 @@
             $sraStatus = $req->approval_status;
             
             if ($sraStatus === 'approved') {
-                $badgeColor = '#10b981';
-                $badgeBg = 'rgba(16, 185, 129, 0.1)';
+                $badgeColor = '#881337';
+                $badgeBg = 'rgba(136, 19, 55, 0.1)';
                 $badgeLabel = 'Approved';
             } elseif ($sraStatus === 'declined') {
                 $badgeColor = '#ef4444';
@@ -16,8 +16,8 @@
                 $auditorApproved = ($req->auditor_status === 'approved');
                 
                 if ($adminApproved && $auditorApproved) {
-                    $badgeColor = '#10b981';
-                    $badgeBg = 'rgba(16, 185, 129, 0.1)';
+                    $badgeColor = '#881337';
+                    $badgeBg = 'rgba(136, 19, 55, 0.1)';
                     $badgeLabel = 'Approved';
                 } elseif ($adminApproved) {
                     $badgeColor = '#3b82f6';
@@ -35,14 +35,14 @@
             }
             
             $usageLabel = 'Inventory SRA';
-            $usageBg = 'rgba(16, 185, 129, 0.08)';
-            $usageColor = '#10b981';
+            $usageBg = 'rgba(136, 19, 55, 0.08)';
+            $usageColor = '#881337';
             
             $reviewUrl = route('receiveditems.sra', ['id' => $req->id]);
         @endphp
-        <tr class="oversight-row" style="background: rgba(16, 185, 129, 0.015);">
+        <tr class="oversight-row" style="background: rgba(136, 19, 55, 0.015);">
             <td data-label="Ref">
-                <span class="history-ref" style="font-size:0.75rem; color:#10b981; font-weight:800;">
+                <span class="history-ref" style="font-size:0.75rem; color:#881337; font-weight:800;">
                     SRA-{{ str_pad($req->id, 5, '0', STR_PAD_LEFT) }}
                 </span>
             </td>
@@ -56,8 +56,8 @@
             </td>
             <td data-label="Items Requested">
                 <div style="display:flex;flex-wrap:wrap;gap:4px;">
-                    <span class="table-item-pill" title="{{ $req->supplier_name }}" style="background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.15);">
-                        <i data-lucide="truck" style="width:12px;height:12px;display:inline-block;margin-right:3px;vertical-align:middle;color:#10b981;"></i>
+                    <span class="table-item-pill" title="{{ $req->supplier_name }}" style="background: rgba(136,19,55,0.06); border-color: rgba(136,19,55,0.15);">
+                        <i data-lucide="truck" style="width:12px;height:12px;display:inline-block;margin-right:3px;vertical-align:middle;color:#881337;"></i>
                         {{ Str::limit($req->supplier_name ?: ($req->donor_name ?: 'Supplier'), 25) }}
                     </span>
                 </div>
@@ -91,7 +91,7 @@
             </td>
             <td data-label="Actions">
                 @if($req->approval_status === 'approved')
-                    <a href="{{ $reviewUrl }}" target="_blank" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+                    <a href="{{ $reviewUrl }}" target="_blank" style="background: rgba(136, 19, 55, 0.08); color: #881337; border: 1.5px solid rgba(136, 19, 55, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136, 19, 55, 0.2)';">
                         <i data-lucide="file-text" style="width:13px;height:13px;"></i> View Receipt
                     </a>
                 @elseif($req->approval_status === 'declined')
@@ -99,7 +99,7 @@
                         <i data-lucide="x-circle" style="width:13px;height:13px;"></i> Declined
                     </button>
                 @else
-                    <a href="{{ $reviewUrl }}" target="_blank" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+                    <a href="{{ $reviewUrl }}" target="_blank" style="background: rgba(136, 19, 55, 0.08); color: #881337; border: 1.5px solid rgba(136, 19, 55, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136, 19, 55, 0.2)';">
                         <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
                     </a>
                 @endif
@@ -115,8 +115,8 @@
             
             if (empty($pendingActors)) {
                 if ($sraStatus === 'approved') {
-                    $badgeColor = '#10b981';
-                    $badgeBg = 'rgba(16,185,129,0.1)';
+                    $badgeColor = '#881337';
+                    $badgeBg = 'rgba(136,19,55,0.1)';
                     $badgeLabel = 'Approved';
                 } else {
                     $badgeColor = '#ef4444';
@@ -136,8 +136,8 @@
             }
             
             $usageLabel = 'Service SRA';
-            $usageBg = 'rgba(22, 163, 74, 0.08)';
-            $usageColor = '#16a34a';
+            $usageBg = 'rgba(136, 19, 55, 0.08)';
+            $usageColor = '#881337';
             
             $currentUser = auth()->user();
             if ($currentUser->role === 'Auditor') {
@@ -161,9 +161,9 @@
                 $isUserProcessed = ($req->admin_status !== 'pending');
             }
         @endphp
-        <tr class="oversight-row" style="background: rgba(22, 163, 74, 0.015);">
+        <tr class="oversight-row" style="background: rgba(136, 19, 55, 0.015);">
             <td data-label="Ref">
-                <span class="history-ref" style="font-size:0.75rem; color:#16a34a; font-weight:800;">
+                <span class="history-ref" style="font-size:0.75rem; color:#881337; font-weight:800;">
                     {{ $req->sra_number }}
                 </span>
             </td>
@@ -177,8 +177,8 @@
             </td>
             <td data-label="Items Requested">
                 <div style="display:flex;flex-wrap:wrap;gap:4px;">
-                    <span class="table-item-pill" title="{{ $req->supplier_name }}" style="background: rgba(22,163,74,0.06); border-color: rgba(22,163,74,0.15);">
-                        <i data-lucide="wrench" style="width:12px;height:12px;display:inline-block;margin-right:3px;vertical-align:middle;color:#16a34a;"></i>
+                    <span class="table-item-pill" title="{{ $req->supplier_name }}" style="background: rgba(136,19,55,0.06); border-color: rgba(136,19,55,0.15);">
+                        <i data-lucide="wrench" style="width:12px;height:12px;display:inline-block;margin-right:3px;vertical-align:middle;color:#881337;"></i>
                         {{ Str::limit($req->supplier_name, 25) }}
                     </span>
                 </div>
@@ -209,7 +209,7 @@
             </td>
             <td data-label="Actions">
                 @if($req->status === 'approved')
-                    <a href="{{ route('service-sra.receipt', $req->id) }}" target="_blank" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+                    <a href="{{ route('service-sra.receipt', $req->id) }}" target="_blank" style="background: rgba(136, 19, 55, 0.08); color: #881337; border: 1.5px solid rgba(136, 19, 55, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136, 19, 55, 0.2)';">
                         <i data-lucide="file-text" style="width:13px;height:13px;"></i> View Receipt
                     </a>
                 @elseif($req->status === 'declined')
@@ -232,11 +232,11 @@
                         }
                     @endphp
                     @if($currentUser->role === 'Auditor')
-                        <a href="{{ $reviewUrl }}" target="_blank" style="background: rgba(22,163,74,0.08); color: #16a34a; border: 1.5px solid rgba(22,163,74,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';" onmouseout="this.style.background='rgba(22,163,74,0.08)'; this.style.color='#16a34a'; this.style.borderColor='rgba(22,163,74,0.2)';">
+                        <a href="{{ $reviewUrl }}" target="_blank" style="background: rgba(136,19,55,0.08); color: #881337; border: 1.5px solid rgba(136,19,55,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136,19,55,0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136,19,55,0.2)';">
                             <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
                         </a>
                     @else
-                        <button type="button" onclick="openSraOversightModal({{ $req->id }}, '{{ $sraModalStage }}')" style="background: rgba(22,163,74,0.08); color: #16a34a; border: 1.5px solid rgba(22,163,74,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';" onmouseout="this.style.background='rgba(22,163,74,0.08)'; this.style.color='#16a34a'; this.style.borderColor='rgba(22,163,74,0.2)';">
+                        <button type="button" onclick="openSraOversightModal({{ $req->id }}, '{{ $sraModalStage }}')" style="background: rgba(136,19,55,0.08); color: #881337; border: 1.5px solid rgba(136,19,55,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136,19,55,0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136,19,55,0.2)';">
                             <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
                         </button>
                     @endif
@@ -363,7 +363,7 @@
                 }
             @endphp
             @if($req->status === 'approved' || $req->status === 'partially_approved')
-                <a href="{{ route('requisitions.receipt.print', $req->id) }}" target="_blank" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+                <a href="{{ route('requisitions.receipt.print', $req->id) }}" target="_blank" style="background: rgba(136, 19, 55, 0.08); color: #881337; border: 1.5px solid rgba(136, 19, 55, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration:none;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136, 19, 55, 0.2)';">
                     <i data-lucide="file-text" style="width:13px;height:13px;"></i> View Receipt
                 </a>
             @elseif($req->status === 'declined')
@@ -371,11 +371,11 @@
                     <i data-lucide="x-circle" style="width:13px;height:13px;"></i> Declined
                 </button>
             @elseif($isReqProcessed)
-                <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#10b981'; this.style.color='white'; this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.color='#10b981'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+                <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(136, 19, 55, 0.08); color: #881337; border: 1.5px solid rgba(136, 19, 55, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136, 19, 55, 0.2)';">
                     <i data-lucide="check" style="width:13px;height:13px;"></i> Processed
                 </button>
             @else
-                <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(22,163,74,0.08); color: #16a34a; border: 1.5px solid rgba(22,163,74,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#16a34a'; this.style.color='white'; this.style.borderColor='#16a34a';" onmouseout="this.style.background='rgba(22,163,74,0.08)'; this.style.color='#16a34a'; this.style.borderColor='rgba(22,163,74,0.2)';">
+                <button onclick="openRequisitionModal({{ $req->id }})" style="background: rgba(136,19,55,0.08); color: #881337; border: 1.5px solid rgba(136,19,55,0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136,19,55,0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136,19,55,0.2)';">
                     <i data-lucide="clipboard-check" style="width:13px;height:13px;"></i> Review
                 </button>
             @endif
@@ -385,7 +385,7 @@
 @empty
     <tr>
         <td colspan="9" style="text-align:center;padding:4rem 2rem;border-bottom:none;">
-            <i data-lucide="inbox" style="width:36px;height:36px;margin:0 auto 0.75rem;display:block;opacity:.25;color:#10b981;"></i>
+            <i data-lucide="inbox" style="width:36px;height:36px;margin:0 auto 0.75rem;display:block;opacity:.25;color:#881337;"></i>
             <div style="font-weight:900;color:var(--text-main);margin-bottom:4px;">All Caught Up!</div>
             <div style="font-size:.82rem;color:var(--text-muted);">No requisitions match your current filter.</div>
         </td>

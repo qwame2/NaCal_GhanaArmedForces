@@ -164,7 +164,7 @@
                                 $stLowLoc = str_replace('Stores', 'Store', $rawLowLoc);
                                 $isLowB = str_contains($stLowLoc, 'B');
                             @endphp
-                            <div style="font-size: 0.65rem; font-weight: 800; color: {{ $isLowB ? '#3b82f6' : '#16a34a' }}; margin-top: 2px; display: inline-flex; align-items: center; gap: 3px;">
+                            <div style="font-size: 0.65rem; font-weight: 800; color: {{ $isLowB ? '#3b82f6' : '#881337' }}; margin-top: 2px; display: inline-flex; align-items: center; gap: 3px;">
                                 <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i>
                                 {{ $stLowLoc }}
                             </div>
@@ -196,7 +196,7 @@
                 <span style="font-size: 0.72rem; font-weight: 700; color: #94a3b8;">
                     {{ $lowStockItems->count() }} flagged item{{ $lowStockItems->count() !== 1 ? 's' : '' }} — scroll to view all
                 </span>
-                <a href="{{ route('admin.inventory') }}?stock_level=low" style="display: inline-flex; align-items: center; gap: 6px; color: #16a34a; text-decoration: none; font-size: 0.78rem; font-weight: 800; padding: 7px 16px; border-radius: 10px; border: 1px solid #e0e7ff; background: #eef2ff; transition: 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'">
+                <a href="{{ route('admin.inventory') }}?stock_level=low" style="display: inline-flex; align-items: center; gap: 6px; color: #881337; text-decoration: none; font-size: 0.78rem; font-weight: 800; padding: 7px 16px; border-radius: 10px; border: 1px solid #e0e7ff; background: #eef2ff; transition: 0.2s;" onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'">
                     <i data-lucide="arrow-right" style="width: 13px; height: 13px;"></i>
                     View All Low Stock
                 </a>
@@ -361,7 +361,7 @@
                     </div>
 
                     <div onclick="selectStock(event, 'in_stock', 'In Stock')" class="stock-opt" style="padding: 12px 15px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #1e293b; transition: 0.2s; display: flex; align-items: center; gap: 10px;">
-                        <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>
+                        <span style="width: 8px; height: 8px; background: #881337; border-radius: 50%;"></span>
                         In Stock
                     </div>
 
@@ -376,7 +376,7 @@
             <div class="filter-segment" style="display: flex; align-items: center; gap: 6px; padding: 0 1rem; border-right: 1px solid #f1f5f9;">
                 <input type="hidden" name="store_location" id="store-location-input" value="{{ request('store_location') }}">
                 <button type="button" onclick="setStoreLocFilter('')" id="btn-store-all" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; border: 1.5px solid #e2e8f0; background: {{ !request('store_location') ? '#0f172a' : 'white' }}; color: {{ !request('store_location') ? 'white' : '#64748b' }}; cursor: pointer; transition: 0.2s;">All Stores</button>
-                <button type="button" onclick="setStoreLocFilter('Store A')" id="btn-store-a" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; border: 1.5px solid rgba(22, 163, 74, 0.2); background: {{ request('store_location') === 'Store A' ? '#16a34a' : 'rgba(22, 163, 74, 0.05)' }}; color: {{ request('store_location') === 'Store A' ? 'white' : '#16a34a' }}; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 4px;">
+                <button type="button" onclick="setStoreLocFilter('Store A')" id="btn-store-a" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; border: 1.5px solid rgba(136, 19, 55, 0.2); background: {{ request('store_location') === 'Store A' ? '#881337' : 'rgba(136, 19, 55, 0.05)' }}; color: {{ request('store_location') === 'Store A' ? 'white' : '#881337' }}; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 4px;">
                     <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i> Store A
                 </button>
                 <button type="button" onclick="setStoreLocFilter('Store B')" id="btn-store-b" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; border: 1.5px solid rgba(59, 130, 246, 0.2); background: {{ request('store_location') === 'Store B' ? '#3b82f6' : 'rgba(59, 130, 246, 0.05)' }}; color: {{ request('store_location') === 'Store B' ? 'white' : '#3b82f6' }}; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 4px;">
@@ -507,7 +507,7 @@
 
             <!-- Segment 4: Actions -->
             <div class="filter-actions" style="padding-left: 1rem; display: flex; gap: 8px;">
-                <button type="submit" class="audit-btn" style="background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 16px rgba(22, 163, 74, 0.2);">
+                <button type="submit" class="audit-btn" style="background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 16px rgba(136, 19, 55, 0.2);">
                     <i data-lucide="filter" style="width: 16px;"></i> Filter
                 </button>
                 <a href="{{ route('admin.inventory') }}" style="width: 44px; height: 44px; background: #f8fafc; color: #94a3b8; border: 1px solid #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.3s; margin-right: 8px;" title="Reset Category">
@@ -516,8 +516,8 @@
 
                 <!-- Per Page Dropdown -->
                 <div style="display: flex; align-items: center; gap: 10px; border-left: 1px solid #f1f5f9; padding-left: 1.5rem;">
-                    <div class="per-page-capsule" style="display: flex; align-items: center; gap: 6px; background: white; padding: 6px 14px; border-radius: 14px; border: 1.5px solid #eef2ff; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.04); transition: all 0.3s ease;">
-                        <div style="width: 24px; height: 24px; background: #eef2ff; color: #16a34a; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <div class="per-page-capsule" style="display: flex; align-items: center; gap: 6px; background: white; padding: 6px 14px; border-radius: 14px; border: 1.5px solid #eef2ff; box-shadow: 0 4px 10px rgba(136, 19, 55, 0.04); transition: all 0.3s ease;">
+                        <div style="width: 24px; height: 24px; background: #eef2ff; color: #881337; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                             <i data-lucide="layers" style="width: 14px;"></i>
                         </div>
                         <div style="display: flex; flex-direction: column;">
@@ -608,12 +608,12 @@
                                 @endif
                             </td>
                             <td data-label="Category" style="padding: 1.25rem 1.5rem;">
-                                <span style="font-size: 0.75rem; background: rgba(22, 163, 74, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
+                                <span style="font-size: 0.75rem; background: rgba(136, 19, 55, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">
                                     {{ $ledgeMap[$item->ledge_category] ?? "Category " . $item->ledge_category }}
                                 </span>
                             </td>
                             <td data-label="Store Location" style="padding: 1.25rem 1.5rem;">
-                                <span style="font-size: 0.72rem; font-weight: 800; color: {{ $isStoreBItem ? '#3b82f6' : '#16a34a' }}; background: {{ $isStoreBItem ? 'rgba(59, 130, 246, 0.1)' : 'rgba(22, 163, 74, 0.1)' }}; padding: 0.35rem 0.75rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid {{ $isStoreBItem ? 'rgba(59, 130, 246, 0.2)' : 'rgba(22, 163, 74, 0.2)' }};">
+                                <span style="font-size: 0.72rem; font-weight: 800; color: {{ $isStoreBItem ? '#3b82f6' : '#881337' }}; background: {{ $isStoreBItem ? 'rgba(59, 130, 246, 0.1)' : 'rgba(136, 19, 55, 0.1)' }}; padding: 0.35rem 0.75rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid {{ $isStoreBItem ? 'rgba(59, 130, 246, 0.2)' : 'rgba(136, 19, 55, 0.2)' }};">
                                     <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i>
                                     {{ $stLocBadgeItem }}
                                 </span>
@@ -629,15 +629,15 @@
                                 $isIssuedOut = $item->hasActiveTemporaryLoan();
                                 if ($isIssuedOut) {
                                     $displayStatus = 'ISSUED OUT';
-                                    $statusColor = '#10b981';
+                                    $statusColor = '#881337';
                                 } else {
                                     $displayStatus = $dbStatus;
                                     $statusColor = '#94a3b8';
                                     if ($acquisitionType === 'Donor' || $displayStatus === 'DONOR') {
-                                        $statusColor = '#4ade80';
+                                        $statusColor = '#9f1239';
                                         $displayStatus = 'DONOR';
                                     } elseif ($displayStatus === 'FULL DELIVERY' || str_contains($displayStatus, 'FULL')) {
-                                        $statusColor = '#10b981';
+                                        $statusColor = '#881337';
                                         $displayStatus = 'FULL DELIVERY';
                                     } elseif ($displayStatus === 'PARTIAL DELIVERY' || str_contains($displayStatus, 'PARTIAL')) {
                                         $statusColor = '#ef4444';
@@ -647,7 +647,7 @@
                             @endphp
                             <td data-label="Supplier / Donor" style="padding: 1.25rem 1.5rem; color: var(--text-main);">
                                 @if($acquisitionType === 'Donor')
-                                    <div style="font-weight: 800; color: #4ade80;">{{ $donorName }}</div>
+                                    <div style="font-weight: 800; color: #9f1239;">{{ $donorName }}</div>
                                 @else
                                     <div>{{ $cleanSupplier ?: '-' }}</div>
                                 @endif
@@ -682,12 +682,12 @@
                                                 </div>
                                             @else
                                                 <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                                                    <span style="font-size: 0.7rem; font-weight: 800; color: #15803d; background: #f0fdf4; border: 1.5px solid #bbf7d0; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;" title="Expected Return Date">
+                                                    <span style="font-size: 0.7rem; font-weight: 800; color: #4c0519; background: #f0fdf4; border: 1.5px solid #bbf7d0; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;" title="Expected Return Date">
                                                         <i data-lucide="clock" style="width: 10px; height: 10px;"></i>
                                                         {{ $ed['formatted'] }}
                                                     </span>
                                                     @if(!empty($ed['department']))
-                                                        <span style="font-size: 0.65rem; font-weight: 800; color: #15803d; background: rgba(21, 128, 61, 0.08); padding: 2px 6px; border-radius: 4px; text-transform: uppercase; border: 1px solid rgba(21, 128, 61, 0.15);">
+                                                        <span style="font-size: 0.65rem; font-weight: 800; color: #4c0519; background: rgba(76, 5, 25, 0.08); padding: 2px 6px; border-radius: 4px; text-transform: uppercase; border: 1px solid rgba(76, 5, 25, 0.15);">
                                                             Dept: {{ $ed['department'] }}
                                                         </span>
                                                     @endif
@@ -709,7 +709,7 @@
                                 @php
                                     $varVal = (float)str_replace(',', '', $item->variance ?? 0);
                                 @endphp
-                                <span style="font-weight: 800; color: {{ $varVal > 0 ? '#10b981' : ($varVal < 0 ? '#ef4444' : '#94a3b8') }};">
+                                <span style="font-weight: 800; color: {{ $varVal > 0 ? '#881337' : ($varVal < 0 ? '#ef4444' : '#94a3b8') }};">
                                     {{ $varVal > 0 ? '+' : '' }}{{ number_format($varVal, 0) }}
                                 </span>
                             </td>
@@ -718,7 +718,7 @@
                                     $threshold = \App\Models\Setting::getItemThreshold($item->description, $item->ledge_category);
                                     $isItemLow = $totalStock <= $threshold;
                                     $itemHealthStatus = $isItemLow ? 'LOW STOCK' : 'IN STOCK';
-                                    $itemHealthColor = $isItemLow ? '#ef4444' : '#10b981';
+                                    $itemHealthColor = $isItemLow ? '#ef4444' : '#881337';
                                 @endphp
                                 <div style="display: flex; flex-direction: column; gap: 4px;">
                                     <div style="display: flex; align-items: center; gap: 6px;">
@@ -735,7 +735,7 @@
                         <tr>
                             <td colspan="12" style="padding: 10rem 2rem; text-align: center; vertical-align: middle;">
                                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; margin: 0 auto;">
-                                    <div style="background: rgba(22, 163, 74, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(22, 163, 74, 0.2); animation: pulse 2s infinite;">
+                                    <div style="background: rgba(136, 19, 55, 0.05); width: 100px; height: 100px; border-radius: 30px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 2px dashed rgba(136, 19, 55, 0.2); animation: pulse 2s infinite;">
                                         <i data-lucide="package-search" style="width: 44px; stroke-width: 1.5px;"></i>
                                     </div>
                                     <div style="max-width: 500px; text-align: center;">
@@ -1064,12 +1064,12 @@
 
 
     .id-badge { background: #f1f5f9; color: #475569; padding: 4px 8px; border-radius: 6px; font-weight: 800; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
-    .category-tag { background: rgba(22, 163, 74, 0.05); color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; }
+    .category-tag { background: rgba(136, 19, 55, 0.05); color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; }
     
     .type-tag { padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; }
-    .type-tag.permanent { background: #eef2ff; color: #16a34a; }
-    .type-tag.temporary { background: #ecfdf5; color: #10b981; }
-    .type-tag.consumption { background: #ecfdf5; color: #10b981; }
+    .type-tag.permanent { background: #eef2ff; color: #881337; }
+    .type-tag.temporary { background: #ecfdf5; color: #881337; }
+    .type-tag.consumption { background: #ecfdf5; color: #881337; }
 
     /* Custom Pagination Styling */
     .custom-pagination {
@@ -1093,7 +1093,7 @@
         color: white;
         border-color: var(--primary);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+        box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
     }
     .page-btn.disabled {
         background: #f8fafc;
@@ -1158,9 +1158,9 @@
     }
     .custom-premium-select:focus {
         outline: none !important;
-        border-color: #16a34a !important;
+        border-color: #881337 !important;
         background-color: #ffffff !important;
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05) !important;
     }
     
     [data-theme='dark'] .custom-premium-select {
@@ -1175,9 +1175,9 @@
         background-color: #334155 !important;
     }
     [data-theme='dark'] .custom-premium-select:focus {
-        border-color: #16a34a !important;
+        border-color: #881337 !important;
         background-color: #0f172a !important;
-        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.2), 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.2), 0 4px 10px rgba(0, 0, 0, 0.3) !important;
     }
 
     .modal-body {
@@ -1245,7 +1245,7 @@
 <div id="editBatchModal" class="modal-backdrop">
     <div class="modal-content glass-card animate-scale-up" style="max-width: 1000px; width: 95%; padding: 0; overflow: hidden; border: none; background: #ffffff; display: flex; flex-direction: column; max-height: 90vh;">
         <!-- Premium Modal Header -->
-        <div style="padding: 1.5rem 2.5rem; background: linear-gradient(to right, #16a34a, #16a34a); display: flex; justify-content: space-between; align-items: center; color: white;">
+        <div style="padding: 1.5rem 2.5rem; background: linear-gradient(to right, #881337, #881337); display: flex; justify-content: space-between; align-items: center; color: white;">
             <div>
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
                     <div style="background: rgba(255, 255, 255, 0.2); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
@@ -1271,7 +1271,7 @@
                     <!-- Metadata Section -->
                     <div style="margin-bottom: 2.5rem;">
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem;">
-                            <span style="font-size: 0.75rem; font-weight: 900; color: #16a34a; text-transform: uppercase; letter-spacing: 0.1em;">Record Details</span>
+                            <span style="font-size: 0.75rem; font-weight: 900; color: #881337; text-transform: uppercase; letter-spacing: 0.1em;">Record Details</span>
                             <div style="flex: 1; height: 1px; background: #f1f5f9;"></div>
                         </div>
                         
@@ -1328,7 +1328,7 @@
                     <div>
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
                             <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
-                                <span style="font-size: 0.75rem; font-weight: 900; color: #16a34a; text-transform: uppercase; letter-spacing: 0.1em;">Batch Contents</span>
+                                <span style="font-size: 0.75rem; font-weight: 900; color: #881337; text-transform: uppercase; letter-spacing: 0.1em;">Batch Contents</span>
                                 <div style="flex: 1; height: 1px; background: #f1f5f9; margin-right: 1.5rem;"></div>
                             </div>
                             <span id="editItemsCountLabel" style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">0 Items Identified</span>
@@ -1346,7 +1346,7 @@
                 <button type="button" onclick="closeEditBatchModal()" style="padding: 0.85rem 2rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; background: #ffffff; border: 1.5px solid #e2e8f0; color: #475569; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg> Discard
                 </button>
-                <button type="submit" id="saveEditBtn" style="padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; background: #16a34a; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(22, 163, 74, 0.2); transition: 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 30px rgba(22, 163, 74, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 20px rgba(22, 163, 74, 0.2)'">
+                <button type="submit" id="saveEditBtn" style="padding: 0.85rem 2.5rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; background: #881337; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(136, 19, 55, 0.2); transition: 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 30px rgba(136, 19, 55, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 20px rgba(136, 19, 55, 0.2)'">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> Commit Changes
                 </button>
             </div>
@@ -1374,10 +1374,10 @@
             </div>
             
             <div id="continueModalContent" style="display: none;">
-                <div style="background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px;">
-                    <i data-lucide="truck" style="color: #10b981; width: 24px;"></i>
+                <div style="background: rgba(136, 19, 55, 0.05); border: 1px dashed rgba(136, 19, 55, 0.3); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px;">
+                    <i data-lucide="truck" style="color: #881337; width: 24px;"></i>
                     <div style="font-size: 0.85rem; color: #1e293b; line-height: 1.5;">
-                        <span style="font-weight: 800; display: block; color: #10b981; text-transform: uppercase; font-size: 0.7rem; margin-bottom: 2px;">Protocol: Remainder Entry</span>
+                        <span style="font-weight: 800; display: block; color: #881337; text-transform: uppercase; font-size: 0.7rem; margin-bottom: 2px;">Protocol: Remainder Entry</span>
                         Update the quantities for the remaining items received in this shipment.
                     </div>
                 </div>
@@ -1388,7 +1388,7 @@
 
         <div style="border-top: 1px solid var(--border-color); padding: 1.25rem 2rem; display: flex; justify-content: flex-end; gap: 1rem; background: var(--bg-card); border-radius: 0 0 28px 28px;">
             <button type="button" onclick="closeContinueDeliveryModal()" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: transparent; border: 1px solid var(--border-color); color: var(--text-main); cursor: pointer;">Cancel</button>
-            <button type="button" id="submitContinueBtn" onclick="submitContinueDelivery()" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: #10b981; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);">
+            <button type="button" id="submitContinueBtn" onclick="submitContinueDelivery()" style="padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; font-size: 0.95rem; background: #881337; border: none; color: white; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 20px rgba(136, 19, 55, 0.2);">
                 <i data-lucide="check-circle" style="width: 18px;"></i> Complete Delivery
             </button>
         </div>
@@ -1442,8 +1442,8 @@ function openEditBatchModal(batchId) {
                     <div class="edit-item-card" data-id="${item.id}" style="background: #ffffff; padding: 1.5rem; border: 1.5px solid #f1f5f9; border-radius: 16px; transition: 0.3s; position: relative;">
                         <input type="hidden" class="item-id" value="${item.id}">
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;">
-                            <div style="background: #eff6ff; color: #16a34a; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900;">${index + 1}</div>
-                            <input type="text" class="item-description" value="${item.description}" placeholder="Asset Description" style="flex: 1; border: none; background: transparent; font-size: 0.95rem; font-weight: 800; color: #1e293b; outline: none; padding: 4px 0; border-bottom: 2px solid transparent; transition: 0.3s;" onfocus="this.style.borderBottomColor='#16a34a'">
+                            <div style="background: #eff6ff; color: #881337; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900;">${index + 1}</div>
+                            <input type="text" class="item-description" value="${item.description}" placeholder="Asset Description" style="flex: 1; border: none; background: transparent; font-size: 0.95rem; font-weight: 800; color: #1e293b; outline: none; padding: 4px 0; border-bottom: 2px solid transparent; transition: 0.3s;" onfocus="this.style.borderBottomColor='#881337'">
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
@@ -1457,14 +1457,14 @@ function openEditBatchModal(batchId) {
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Ledger Balance</label>
-                                <input type="number" class="item-stock-balance" value="${item.stock_balance}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.75rem; border: 1.5px solid #16a34a; border-radius: 10px; font-size: 0.85rem; font-weight: 900; color: #16a34a; background: #f5f3ff;">
+                                <input type="number" class="item-stock-balance" value="${item.stock_balance}" oninput="recalcEditVariance(this)" style="width: 100%; padding: 0.75rem; border: 1.5px solid #881337; border-radius: 10px; font-size: 0.85rem; font-weight: 900; color: #881337; background: #f5f3ff;">
                             </div>
                         </div>
 
                         <div style="display: grid; grid-template-columns: 100px 1fr; gap: 1rem; align-items: flex-end;">
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Variance</label>
-                                <input type="number" class="item-variance" value="${item.variance}" readonly style="width: 100%; padding: 0.75rem; border: none; background: #f8fafc; border-radius: 10px; font-size: 0.85rem; font-weight: 900; color: ${item.variance < 0 ? '#ef4444' : '#10b981'}; text-align: center;">
+                                <input type="number" class="item-variance" value="${item.variance}" readonly style="width: 100%; padding: 0.75rem; border: none; background: #f8fafc; border-radius: 10px; font-size: 0.85rem; font-weight: 900; color: ${item.variance < 0 ? '#ef4444' : '#881337'}; text-align: center;">
                             </div>
                             <div style="position: relative;">
                                 <label style="display: block; font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">Registry Remarks</label>
@@ -1697,7 +1697,7 @@ function openItemHistory(event, itemId, description) {
                 data.history.forEach(record => {
                     let qtyStr = '';
                     if (record.action === 'Create') {
-                        qtyStr = `<span style="color: #10b981; font-weight: 800;">+${record.new_qty}</span>`;
+                        qtyStr = `<span style="color: #881337; font-weight: 800;">+${record.new_qty}</span>`;
                     } else if (record.action === 'Delete') {
                         qtyStr = `<span style="color: #ef4444; font-weight: 800; text-decoration: line-through;">-${record.old_qty}</span>`;
                     } else {
@@ -1708,7 +1708,7 @@ function openItemHistory(event, itemId, description) {
 
                     let balStr = '';
                     if (record.action === 'Create') {
-                        balStr = `<span style="color: #10b981; font-weight: 800;">+${record.new_stock_balance}</span>`;
+                        balStr = `<span style="color: #881337; font-weight: 800;">+${record.new_stock_balance}</span>`;
                     } else if (record.action === 'Delete') {
                         balStr = `<span style="color: #ef4444; font-weight: 800; text-decoration: line-through;">-${record.old_stock_balance}</span>`;
                     } else {
