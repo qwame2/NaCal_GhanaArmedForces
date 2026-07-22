@@ -83,7 +83,7 @@
             el.innerHTML = rowsHtml;
         };
     </script>
-
+    <style>
         /* Toast System */
         .toast-container {
             position: fixed;
