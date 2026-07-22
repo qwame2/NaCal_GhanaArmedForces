@@ -989,4 +989,3 @@
         lucide.createIcons();
     }
 </script>
-@endsection

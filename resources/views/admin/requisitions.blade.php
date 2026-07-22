@@ -2656,4 +2656,3 @@
         @endif
     });
 </script>
-@endsection
