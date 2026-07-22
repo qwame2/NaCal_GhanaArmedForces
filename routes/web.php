@@ -804,7 +804,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                     'requester'        => $req->requester_name,
                     'department'       => $req->department,
                     'status_label'     => $req->status === 'approved' ? 'Approved' : 'Partially Approved',
-                    'status_color'     => $req->status === 'approved' ? '#10b981' : '#f59e0b',
+                    'status_color'     => $req->status === 'approved' ? '#881337' : '#9f1239',
                     'total_items'      => $totalItems,
                     'approved_qty_sum' => $approvedQtySum,
                     'purpose'          => \Illuminate\Support\Str::limit($req->purpose ?? '', 90),

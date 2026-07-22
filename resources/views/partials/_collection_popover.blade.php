@@ -1,18 +1,18 @@
 @auth
-{{-- Approved Requisition Collection Pop-over Container --}}
-<div id="approvedCollectionPopoverOverlay" style="display: none; position: fixed; inset: 0; z-index: 999999; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 1.5rem;">
-    <div style="background: var(--bg-card, #ffffff); border-radius: 28px; width: 100%; max-width: 520px; padding: 2.25rem; border: 1px solid var(--border-color, rgba(0,0,0,0.1)); box-shadow: 0 30px 90px rgba(0, 0, 0, 0.35); text-align: center; position: relative; animation: popoverSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+{{-- Approved Requisition Collection Pop-over Container (Burgundy, Black & White Theme) --}}
+<div id="approvedCollectionPopoverOverlay" style="display: none; position: fixed; inset: 0; z-index: 999999; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 1.5rem;">
+    <div style="background: var(--bg-card, #ffffff); border-radius: 28px; width: 100%; max-width: 520px; padding: 2.25rem; border: 1px solid var(--border-color, rgba(0,0,0,0.1)); box-shadow: 0 30px 90px rgba(0, 0, 0, 0.4); text-align: center; position: relative; animation: popoverSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
         
-        {{-- Icon header --}}
-        <div style="width: 72px; height: 72px; background: rgba(16, 185, 129, 0.12); color: #10b981; border: 2px solid rgba(16, 185, 129, 0.25); border-radius: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);">
+        {{-- Icon header in Burgundy --}}
+        <div style="width: 72px; height: 72px; background: rgba(136, 19, 55, 0.12); color: #881337; border: 2px solid rgba(136, 19, 55, 0.25); border-radius: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.25);">
             <i data-lucide="package-check" style="width: 36px; height: 36px;"></i>
         </div>
 
-        <div style="font-size: 0.72rem; font-weight: 850; color: #10b981; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 4px;">Requisition Approved</div>
+        <div style="font-size: 0.72rem; font-weight: 850; color: #881337; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 4px;">Requisition Approved</div>
         <h2 style="font-size: 1.5rem; font-weight: 900; color: var(--text-main, #0f172a); margin: 0 0 0.75rem; letter-spacing: -0.02em;">Awaiting Collection</h2>
         
-        <p style="font-size: 0.95rem; color: var(--text-main, #1e293b); font-weight: 600; line-height: 1.55; margin: 0 0 1.5rem; background: rgba(16, 185, 129, 0.06); padding: 1rem 1.25rem; border-radius: 14px; border: 1px solid rgba(16, 185, 129, 0.2); text-align: center;">
-            Your requisition request(s) has been <strong style="color: #047857;">approved</strong> and is <strong style="color: #047857;">awaiting collection</strong> from the store officer.
+        <p style="font-size: 0.95rem; color: var(--text-main, #1e293b); font-weight: 600; line-height: 1.55; margin: 0 0 1.5rem; background: rgba(136, 19, 55, 0.05); padding: 1rem 1.25rem; border-radius: 14px; border: 1px solid rgba(136, 19, 55, 0.2); text-align: center;">
+            Your requisition request(s) has been <strong style="color: #881337;">approved</strong> and is <strong style="color: #881337;">awaiting collection</strong> from the store officer.
         </p>
 
         {{-- Approved Requisitions Summary Cards --}}
@@ -20,8 +20,8 @@
             {{-- Injected dynamically --}}
         </div>
 
-        {{-- Action Button --}}
-        <button id="popoverOkayBtn" onclick="acknowledgeCollectionPopover()" style="width: 100%; padding: 0.9rem 2rem; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; border: none; border-radius: 14px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 8px 24px rgba(22, 163, 74, 0.3); transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 12px 28px rgba(22, 163, 74, 0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 8px 24px rgba(22, 163, 74, 0.3)';">
+        {{-- Action Button in Burgundy --}}
+        <button id="popoverOkayBtn" onclick="acknowledgeCollectionPopover()" style="width: 100%; padding: 0.9rem 2rem; background: linear-gradient(135deg, #881337 0%, #4c0519 100%); color: #ffffff; border: none; border-radius: 14px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 8px 24px rgba(136, 19, 55, 0.35); transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 12px 28px rgba(136, 19, 55, 0.45)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 8px 24px rgba(136, 19, 55, 0.35)';">
             <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
             <span>Okay</span>
         </button>
@@ -59,7 +59,7 @@
                         <div style="background: var(--bg-main, #f8fafc); border: 1px solid var(--border-color, #e2e8f0); border-radius: 14px; padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 4px;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <span style="font-size: 0.85rem; font-weight: 900; color: var(--text-main, #0f172a);">${req.ref}</span>
-                                <span style="font-size: 0.68rem; font-weight: 850; padding: 2px 8px; border-radius: 99px; background: ${req.status_color}18; color: ${req.status_color}; border: 1px solid ${req.status_color}30;">
+                                <span style="font-size: 0.68rem; font-weight: 850; padding: 2px 8px; border-radius: 99px; background: rgba(136, 19, 55, 0.1); color: #881337; border: 1px solid rgba(136, 19, 55, 0.25);">
                                     ${req.status_label}
                                 </span>
                             </div>
