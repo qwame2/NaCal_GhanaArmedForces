@@ -237,6 +237,9 @@
     html:not([data-theme='dark']) #newEntryPageContainer p:not(.unassigned-warning-hint p),
     html:not([data-theme='dark']) #newEntryPageContainer span:not(.existing-indicator):not(.badge):not(.select2-results__option--highlighted span):not(.required-asterisk):not(:last-child),
     html:not([data-theme='dark']) #newEntryPageContainer input:not([type="submit"]):not([type="button"]):not(.row-variance),
+    .select2-dropdown {
+        z-index: 9999999 !important;
+    }
     html:not([data-theme='dark']) #newEntryPageContainer select,
     html:not([data-theme='dark']) #newEntryPageContainer .select2-container--default .select2-selection--single .select2-selection__rendered,
     html:not([data-theme='dark']) #newEntryPageContainer .select2-results__option:not(.select2-results__option--highlighted),
@@ -899,9 +902,13 @@ jQuery(document).ready(function($) {
     });
 
     // Handle Ledge Selection
-    ledgeSelect.on('change select2:select', function() {
+    ledgeSelect.on('change select2:select', function(e) {
         try {
-            const selectedLedge = ($(this).val() || '').toUpperCase().trim();
+            let val = $(this).val();
+            if (e && e.params && e.params.data && e.params.data.id !== undefined) {
+                val = e.params.data.id;
+            }
+            const selectedLedge = String(val || '').toUpperCase().trim();
             if (selectedLedge) {
                 $('#qtyControl').show().animate({
                     opacity: 1
@@ -913,7 +920,7 @@ jQuery(document).ready(function($) {
                     opacity: 1
                 }, 400);
 
-                itemDetails.slideDown(400);
+                itemDetails.show().css('display', 'block');
                 $('#formFooter').fadeIn(400);
 
                 // Update any existing row categories to reflect the new master category
@@ -1157,7 +1164,7 @@ jQuery(document).ready(function($) {
             });
 
             if (selectedLedge) {
-                $rowLedgeSelect.val(selectedLedge).trigger('change');
+                $rowLedgeSelect.val(selectedLedge).trigger('change.select2').trigger('change');
             } else {
                 updateRowItemsAndSerials();
             }

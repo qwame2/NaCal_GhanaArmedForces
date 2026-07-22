@@ -36,6 +36,78 @@
     .rotate-180 {
         transform: rotate(180deg) !important;
     }
+
+    /* Premium Select2 Dropdown Visibility & Theme Styling Overrides */
+    .select2-container {
+        z-index: 100000 !important;
+    }
+    .select2-dropdown {
+        z-index: 9999999 !important;
+        background-color: var(--bg-card) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 14px !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25) !important;
+        overflow: hidden !important;
+    }
+    .select2-container--default .select2-selection--single {
+        background-color: var(--bg-card) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        height: 48px !important;
+        display: flex !important;
+        align-items: center !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+        transition: all 0.3s ease !important;
+    }
+    .select2-container--default .select2-selection--single:focus,
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: #ef4444 !important;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2) !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--text-main) !important;
+        font-weight: 700 !important;
+        font-size: 0.9rem !important;
+        line-height: 46px !important;
+        padding-left: 1rem !important;
+        padding-right: 2rem !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 46px !important;
+        right: 10px !important;
+    }
+    .select2-container--default .select2-results__option {
+        color: var(--text-main) !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        padding: 10px 14px !important;
+    }
+    html:not([data-theme='dark']) .select2-container--default .select2-results__option:not(.select2-results__option--highlighted) {
+        color: #0f172a !important;
+        background-color: #ffffff !important;
+    }
+    html:not([data-theme='dark']) .select2-dropdown {
+        background-color: #ffffff !important;
+        border-color: #cbd5e1 !important;
+    }
+    html:not([data-theme='dark']) .select2-dropdown .select2-search__field {
+        color: #0f172a !important;
+        background-color: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+    }
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #ef4444 !important;
+        color: #ffffff !important;
+    }
+    .select2-container--default .select2-search--dropdown {
+        padding: 8px !important;
+    }
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border-radius: 8px !important;
+        padding: 8px 12px !important;
+    }
 </style>
 
 <div class="animate-slide-up" id="discrepancyPageContainer">
@@ -231,12 +303,8 @@
 <script>
     const existingDBItems = @json($existingItems);
     const ledgeMap = @json($ledgeMap);
-</script>
+    const suppliersRegistry = @json($suppliersRegistry);
 
-@endsection
-
-@push('scripts')
-<script>
     jQuery(document).ready(function($) {
         const ledgeSelect = $('#ledgeSelect');
         const itemDetails = $('#itemDetails');
@@ -250,7 +318,7 @@
         const supplierToggleArrow = $('#supplierToggleArrow');
         const supplierSummaryBadge = $('#supplierSummaryBadge');
 
-        // Ensure hidden state is tracked by jQuery (allows .show() to restore correct display: flex)
+        // Ensure hidden state is tracked by jQuery
         formFooter.hide();
         itemDetails.hide();
 
@@ -268,16 +336,7 @@
 
         // Toggle Supplier Section
         toggleSupplierSection.on('click', function() {
-            supplierContent.slideToggle(300, function() {
-                // If it becomes visible, make sure Select2 works correctly
-                if ($(this).is(':visible')) {
-                    supplierSelect.select2({
-                        placeholder: 'Select Supplier/Source',
-                        width: '100%',
-                        tags: true
-                    });
-                }
-            });
+            supplierContent.slideToggle(300);
             supplierToggleArrow.toggleClass('rotate-180');
         });
 
@@ -346,12 +405,16 @@
         $('#arrivalDate').val(new Date().toISOString().split('T')[0]);
 
         // Handle Ledge Selection change
-        function handleLedgeChange() {
+        function handleLedgeChange(e) {
             try {
-                const selectedLedge = String(ledgeSelect.val() || '').toUpperCase().trim();
+                let val = ledgeSelect.val();
+                if (e && e.params && e.params.data && e.params.data.id !== undefined) {
+                    val = e.params.data.id;
+                }
+                const selectedLedge = String(val || '').toUpperCase().trim();
                 if (selectedLedge) {
                     $('#qtyControl').show().animate({ opacity: 1 }, 400);
-                    itemDetails.slideDown(400);
+                    itemDetails.show().css('display', 'block');
                     formFooter.css('display', 'flex');
 
                     if (container.children().length === 0) {
@@ -363,14 +426,14 @@
                             const $row = $(this);
                             const rowLedge = $row.find('.row-ledge-select');
                             if (rowLedge.val() !== selectedLedge) {
-                                rowLedge.val(selectedLedge).trigger('change');
+                                rowLedge.val(selectedLedge).trigger('change.select2').trigger('change');
                             }
                         });
                         updateRowBadges();
                     }
                 } else {
                     $('#qtyControl').hide().css('opacity', 0);
-                    itemDetails.slideUp(400);
+                    itemDetails.hide();
                     formFooter.hide();
                     container.empty();
                     multiQtyInput.val(1);
@@ -380,12 +443,10 @@
             }
         }
 
-        ledgeSelect.on('change', handleLedgeChange);
-        ledgeSelect.on('select2:select', handleLedgeChange);
+        ledgeSelect.on('change select2:select', handleLedgeChange);
         ledgeSelect.on('select2:unselect', handleLedgeChange);
 
         // Supplier Registry autofill
-        const suppliersRegistry = @json($suppliersRegistry);
         $('#supplierSelect').on('change', function() {
             const name = $(this).val();
             const deliveryInput = $('#deliveryPersonInput');
@@ -603,33 +664,15 @@
 
                 const $rowLedgeSelect = $row.find('.row-ledge-select');
                 const $itemSelect = $row.find('.row-item-select');
+                const $rowUnitSelect = $row.find('.row-unit-select');
+                const $rowStoreLocationSelect = $row.find('.row-store-location-select');
+                const $rowExplanationSelect = $row.find('.row-explanation');
+                const $othersWrapper = $row.find('.others-textarea-wrapper');
 
                 // Initialize Select2 on row category section
                 $rowLedgeSelect.select2({
                     placeholder: 'Search/Select Category',
                     width: '100%'
-                });
-
-                // Function to update item options dynamically based on row Category Section
-                function updateItemSelectOptions() {
-                    const rowLedge = String($rowLedgeSelect.val() || '').toUpperCase().trim();
-                    const filteredItems = (existingDBItems || []).filter(item => item && String(item.ledge_category || '').toUpperCase().trim() === rowLedge);
-                    let optionsHtml = '<option value=""></option>';
-                    filteredItems.forEach(item => {
-                        optionsHtml += `<option value="${item.description}">${item.description}</option>`;
-                    });
-                    $itemSelect.html(optionsHtml).trigger('change');
-                }
-
-                // Default to header selection and populate
-                if (selectedLedge) {
-                    $rowLedgeSelect.val(selectedLedge).trigger('change');
-                }
-                updateItemSelectOptions();
-
-                $rowLedgeSelect.on('change select2:select', function() {
-                    updateItemSelectOptions();
-                    updateRowBadges();
                 });
 
                 // Initialize Select2 on the item dropdown
@@ -649,7 +692,6 @@
                 });
 
                 // Initialize Select2 on package type dropdown
-                const $rowUnitSelect = $row.find('.row-unit-select');
                 $rowUnitSelect.select2({
                     placeholder: 'Select Package Type',
                     width: '100%',
@@ -657,7 +699,6 @@
                 });
 
                 // Initialize Select2 on store location dropdown
-                const $rowStoreLocationSelect = $row.find('.row-store-location-select');
                 $rowStoreLocationSelect.select2({
                     placeholder: 'Select Store Location',
                     width: '100%',
@@ -665,12 +706,33 @@
                 });
 
                 // Initialize Select2 on discrepancy explanation dropdown
-                const $rowExplanationSelect = $row.find('.row-explanation');
-                const $othersWrapper = $row.find('.others-textarea-wrapper');
                 $rowExplanationSelect.select2({
                     placeholder: 'Select Discrepancy Explanation',
                     width: '100%'
                 });
+
+                // Function to update item options dynamically based on row Category Section
+                function updateItemSelectOptions() {
+                    const rowLedge = String($rowLedgeSelect.val() || '').toUpperCase().trim();
+                    const filteredItems = (existingDBItems || []).filter(item => item && String(item.ledge_category || '').toUpperCase().trim() === rowLedge);
+                    let optionsHtml = '<option value=""></option>';
+                    filteredItems.forEach(item => {
+                        optionsHtml += `<option value="${item.description}">${item.description}</option>`;
+                    });
+                    $itemSelect.html(optionsHtml).trigger('change.select2').trigger('change');
+                }
+
+                $rowLedgeSelect.on('change select2:select', function() {
+                    updateItemSelectOptions();
+                    updateRowBadges();
+                });
+
+                // Default to header selection and populate
+                if (selectedLedge) {
+                    $rowLedgeSelect.val(selectedLedge).trigger('change.select2').trigger('change');
+                } else {
+                    updateItemSelectOptions();
+                }
 
                 $rowExplanationSelect.on('change select2:select', function() {
                     const val = $(this).val();
@@ -692,9 +754,9 @@
                         if ($rowUnitSelect.find('option[value="' + unitVal + '"]').length === 0) {
                             $rowUnitSelect.append(new Option(unitVal, unitVal, true, true));
                         }
-                        $rowUnitSelect.val(unitVal).trigger('change');
+                        $rowUnitSelect.val(unitVal).trigger('change.select2').trigger('change');
                     } else {
-                        $rowUnitSelect.val(null).trigger('change');
+                        $rowUnitSelect.val(null).trigger('change.select2').trigger('change');
                     }
                 });
 
@@ -1274,13 +1336,13 @@
             window.isRestoringDraft = true;
 
             if (state.ledge_category) {
-                $('#ledgeSelect').val(state.ledge_category).trigger('change');
+                $('#ledgeSelect').val(state.ledge_category).trigger('change.select2').trigger('change');
             }
             if (state.arrival_date) {
                 $('#arrivalDate').val(state.arrival_date);
             }
             if (state.supplier_status) {
-                $('#supplierStatusSelect').val(state.supplier_status).trigger('change');
+                $('#supplierStatusSelect').val(state.supplier_status).trigger('change.select2').trigger('change');
             }
             if (state.multiQty) {
                 $('#multiQty').val(state.multiQty);
@@ -1290,7 +1352,7 @@
                 if ($('#supplierSelect option[value="' + cleanName + '"]').length === 0) {
                     $('#supplierSelect').append(new Option(cleanName, cleanName, true, true));
                 }
-                $('#supplierSelect').val(cleanName).trigger('change');
+                $('#supplierSelect').val(cleanName).trigger('change.select2').trigger('change');
             }
             if (state.supplier_phone) $('#supplierPhoneInput').val(state.supplier_phone);
             if (state.supplier_email) $('#supplierEmailInput').val(state.supplier_email);
@@ -1333,4 +1395,4 @@
         }
     });
 </script>
-@endpush
+@endsection
