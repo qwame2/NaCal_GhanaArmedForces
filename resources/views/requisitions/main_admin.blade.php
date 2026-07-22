@@ -1965,17 +1965,25 @@
             if (statusVal === 'approved' || data.alternative_status === 'agreed') {
                 readOnlyBtnHtml = `
                 <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
-                    <button style="flex:1; background: #10b981; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 950; cursor: default; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" disabled>
+                    <button style="flex:1; background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.18); padding: 0.75rem; border-radius: 12px; font-weight: 800; cursor: not-allowed; opacity: 0.45; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" disabled title="Decision already processed">
+                        <i data-lucide="x-circle" style="width: 18px;"></i>
+                        Decline Request
+                    </button>
+                    <button style="flex:1.5; background: #10b981; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; opacity: 0.9; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);" disabled title="Requisition already approved">
                         <i data-lucide="check-circle" style="width: 18px;"></i>
-                        Approved
+                        Approve (Processed)
                     </button>
                 </div>`;
             } else {
                 readOnlyBtnHtml = `
                 <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
-                    <button style="flex:1; background: #ef4444; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 950; cursor: default; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" disabled>
+                    <button style="flex:1.5; background: #ef4444; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; opacity: 0.9; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" disabled title="Requisition already declined">
                         <i data-lucide="x-circle" style="width: 18px;"></i>
-                        Declined
+                        Decline Request (Processed)
+                    </button>
+                    <button style="flex:1; background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1.5px solid rgba(16, 185, 129, 0.18); padding: 0.75rem; border-radius: 12px; font-weight: 800; cursor: not-allowed; opacity: 0.45; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" disabled title="Decision already processed">
+                        <i data-lucide="check-circle" style="width: 18px;"></i>
+                        Approve
                     </button>
                 </div>`;
             }
