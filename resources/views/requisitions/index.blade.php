@@ -87,7 +87,7 @@
         }
 
         .header-container {
-            max-width: 1440px;
+            max-width: 1750px;
             margin: 0 auto;
             display: flex;
             align-items: center;
@@ -283,7 +283,7 @@
 
         /* --- HERO BANNER --- */
         .store-hero {
-            max-width: 1440px;
+            max-width: 1750px;
             margin: 1.5rem auto;
             padding: 0 2rem;
         }
@@ -400,7 +400,7 @@
 
         /* --- MAIN STOREFRONT LAYOUT --- */
         .store-layout {
-            max-width: 1440px;
+            max-width: 1750px;
             margin: 0 auto;
             padding: 0 2rem 3rem 2rem;
             display: grid;

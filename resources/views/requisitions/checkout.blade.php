@@ -77,7 +77,7 @@
         }
 
         .header-container {
-            max-width: 1200px;
+            max-width: 1750px;
             margin: 0 auto;
             display: flex;
             align-items: center;
@@ -141,11 +141,11 @@
         }
 
         .checkout-layout {
-            max-width: 1200px;
+            max-width: 1750px;
             margin: 2rem auto 4rem auto;
             padding: 0 2rem;
             display: grid;
-            grid-template-columns: 1fr 420px;
+            grid-template-columns: 1fr 450px;
             gap: 2rem;
             align-items: start;
         }
@@ -619,7 +619,7 @@
     </div>
 
     @if($isDepartmentDisabled)
-    <div style="max-width: 1200px; margin: 2rem auto 0; padding: 1.5rem 2rem; background: #fef2f2; border: 2px dashed #fca5a5; border-radius: 24px; display: flex; align-items: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(220, 38, 38, 0.05); animation: slideIn 0.4s ease; box-sizing: border-box;">
+    <div style="max-width: 1750px; margin: 2rem auto 0; padding: 1.5rem 2rem; background: #fef2f2; border: 2px dashed #fca5a5; border-radius: 24px; display: flex; align-items: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(220, 38, 38, 0.05); animation: slideIn 0.4s ease; box-sizing: border-box;">
         <div style="width: 52px; height: 52px; background: #fee2e2; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #dc2626; flex-shrink: 0;">
             <i data-lucide="shield-alert" style="width: 26px; height: 26px;"></i>
         </div>
