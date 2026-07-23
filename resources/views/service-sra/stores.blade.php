@@ -204,7 +204,7 @@
                                         </td>
                                         <td style="padding: 1rem 1.5rem; color: var(--text-muted);">{{ $supplierName }}</td>
                                         <td style="padding: 1rem 1.5rem;">
-                                            <span class="sra-badge" style="background: rgba(136,19,55,0.1); color: #881337;">
+                                            <span class="sra-badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1.5px solid #10b981; font-weight: 800;">
                                                 Approved
                                             </span>
                                         </td>
@@ -227,7 +227,7 @@
                                         </td>
                                         <td style="padding: 1rem 1.5rem; color: var(--text-muted);">{{ $sra->supplier_name }}</td>
                                         <td style="padding: 1rem 1.5rem;">
-                                            <span class="sra-badge" style="background: {{ $sra->stores_status === 'approved' ? 'rgba(136,19,55,0.1)' : 'rgba(239,68,68,0.1)' }}; color: {{ $sra->stores_status === 'approved' ? '#881337' : '#ef4444' }};">
+                                            <span class="sra-badge" style="background: {{ $sra->stores_status === 'approved' ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.1)' }}; color: {{ $sra->stores_status === 'approved' ? '#10b981' : '#ef4444' }}; border: {{ $sra->stores_status === 'approved' ? '1.5px solid #10b981' : '1px solid rgba(239,68,68,0.2)' }}; font-weight: 800;">
                                                 {{ ucfirst($sra->stores_status) }}
                                             </span>
                                         </td>

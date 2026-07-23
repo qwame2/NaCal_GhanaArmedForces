@@ -10,7 +10,7 @@
         --dg-danger-glow: rgba(239, 68, 68, 0.08);
         --dg-warning-glow: rgba(136, 19, 55, 0.08);
         --dg-info-glow: rgba(59, 130, 246, 0.08);
-        --dg-success-glow: rgba(136, 19, 55, 0.08);
+        --dg-success-glow: rgba(16, 185, 129, 0.12);
         --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
     }
 
@@ -112,7 +112,7 @@
     .dg-badge.danger { background: var(--dg-danger-glow); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
     .dg-badge.warning { background: var(--dg-warning-glow); color: #881337; border: 1px solid rgba(136, 19, 55, 0.2); }
     .dg-badge.info { background: var(--dg-info-glow); color: #881337; border: 1px solid rgba(59, 130, 246, 0.2); }
-    .dg-badge.success { background: var(--dg-success-glow); color: #881337; border: 1px solid rgba(136, 19, 55, 0.2); }
+    .dg-badge.success { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1.5px solid #10b981; font-weight: 800; }
 
     .dg-table {
         width: 100%;

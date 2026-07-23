@@ -4,8 +4,8 @@
             $sraStatus = $req->approval_status;
             
             if ($sraStatus === 'approved') {
-                $badgeColor = '#881337';
-                $badgeBg = 'rgba(136, 19, 55, 0.1)';
+                $badgeColor = '#10b981';
+                $badgeBg = 'rgba(16, 185, 129, 0.12)';
                 $badgeLabel = 'Approved';
             } elseif ($sraStatus === 'declined') {
                 $badgeColor = '#ef4444';
@@ -16,8 +16,8 @@
                 $auditorApproved = ($req->auditor_status === 'approved');
                 
                 if ($adminApproved && $auditorApproved) {
-                    $badgeColor = '#881337';
-                    $badgeBg = 'rgba(136, 19, 55, 0.1)';
+                    $badgeColor = '#10b981';
+                    $badgeBg = 'rgba(16, 185, 129, 0.12)';
                     $badgeLabel = 'Approved';
                 } elseif ($adminApproved) {
                     $badgeColor = '#3b82f6';
