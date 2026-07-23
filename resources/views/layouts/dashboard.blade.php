@@ -1572,6 +1572,9 @@
                             badgeItemEntry.style.display = 'none';
                         }
                     }
+                    if (typeof window.checkApprovedCollectionPopover === 'function') {
+                        window.checkApprovedCollectionPopover();
+                    }
                 })
                 .catch(() => {});
             }

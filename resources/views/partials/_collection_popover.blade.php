@@ -107,9 +107,14 @@
         if (overlay) {
             overlay.style.display = 'none';
         }
+        // Force page refresh to update the requisition status in any list tables
+        location.reload();
     };
 
+    window.checkApprovedCollectionPopover = checkApprovedCollectionPopover;
     document.addEventListener('DOMContentLoaded', checkApprovedCollectionPopover);
+    // Poll for approved collection alerts every 8 seconds for real-time response
+    setInterval(checkApprovedCollectionPopover, 8000);
 })();
 </script>
 @endauth
