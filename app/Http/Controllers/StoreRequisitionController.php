@@ -1591,6 +1591,16 @@ class StoreRequisitionController extends Controller
                                      });
                               });
                           }
+                          $q->orWhere(function($q2) {
+                              $q2->where('origin_admin_status', 'pending')
+                                 ->whereNotIn('department', function($subQuery) {
+                                     $subQuery->select('department')
+                                              ->from('users')
+                                              ->where('role', 'Department Head')
+                                              ->where('is_active', true)
+                                              ->whereNotNull('department');
+                                 });
+                          });
                       });
             } else {
                 $query->where('status', 'pending');
@@ -1675,9 +1685,18 @@ class StoreRequisitionController extends Controller
         $sraDeclined = 0;
 
         if ($showSRAs) {
-            $sraPending = \App\Models\InventoryBatch::where('approval_status', 'pending_auditor_admin')
-                ->where('supplier_status', '!=', 'System Draft')
-                ->count();
+            // For Main Admin/Sub Main Admin: only count batches where THEIR action is still needed (admin_status = pending)
+            $isAdminUser = auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Main Admin';
+            if ($isAdminUser) {
+                $sraPending = \App\Models\InventoryBatch::where('approval_status', 'pending_auditor_admin')
+                    ->where('supplier_status', '!=', 'System Draft')
+                    ->where('admin_status', 'pending')
+                    ->count();
+            } else {
+                $sraPending = \App\Models\InventoryBatch::where('approval_status', 'pending_auditor_admin')
+                    ->where('supplier_status', '!=', 'System Draft')
+                    ->count();
+            }
             $sraApproved = \App\Models\InventoryBatch::where('approval_status', 'approved')
                 ->where('supplier_status', '!=', 'System Draft')
                 ->count();
@@ -1685,8 +1704,12 @@ class StoreRequisitionController extends Controller
                 ->where('supplier_status', '!=', 'System Draft')
                 ->count();
 
-            // Include ServiceSra counts
-            $sraPending += \App\Models\ServiceSra::where('status', '!=', 'approved')->where('status', '!=', 'declined')->count();
+            // Include ServiceSra counts — only count ones where this user's action is still needed
+            if ($isAdminUser) {
+                $sraPending += \App\Models\ServiceSra::where('admin_status', 'pending')->whereNotIn('status', ['approved', 'declined'])->count();
+            } else {
+                $sraPending += \App\Models\ServiceSra::where('status', '!=', 'approved')->where('status', '!=', 'declined')->count();
+            }
             $sraApproved += \App\Models\ServiceSra::where('status', 'approved')->count();
             $sraDeclined += \App\Models\ServiceSra::where('status', 'declined')->count();
         }
@@ -1699,7 +1722,12 @@ class StoreRequisitionController extends Controller
                 ->where('supplier_status', '!=', 'System Draft');
 
             if ($statusFilter === 'pending') {
-                $sraQuery->where('approval_status', 'pending_auditor_admin');
+                if ($isAdminUser) {
+                    // Admin: only show batches where their action is still needed
+                    $sraQuery->where('approval_status', 'pending_auditor_admin')->where('admin_status', 'pending');
+                } else {
+                    $sraQuery->where('approval_status', 'pending_auditor_admin');
+                }
             } elseif ($statusFilter === 'approved') {
                 $sraQuery->where('approval_status', 'approved');
             } elseif ($statusFilter === 'declined') {
@@ -1740,7 +1768,12 @@ class StoreRequisitionController extends Controller
             // Query ServiceSra requests for authorizers
             $serviceQuery = \App\Models\ServiceSra::with('submitter');
             if ($statusFilter === 'pending') {
-                $serviceQuery->where('status', '!=', 'approved')->where('status', '!=', 'declined');
+                if ($isAdminUser) {
+                    // Admin: only show SRAs where their approval is still needed
+                    $serviceQuery->where('admin_status', 'pending')->whereNotIn('status', ['approved', 'declined']);
+                } else {
+                    $serviceQuery->where('status', '!=', 'approved')->where('status', '!=', 'declined');
+                }
             } elseif ($statusFilter === 'approved') {
                 $serviceQuery->where('status', 'approved');
             } elseif ($statusFilter === 'declined') {
@@ -1804,7 +1837,6 @@ class StoreRequisitionController extends Controller
                 $statsData = StoreRequisition::selectRaw("
                     SUM(CASE WHEN status = 'pending' AND (
                         (origin_admin_status = 'approved' AND main_admin_status = 'pending' AND (requires_dg_approval = 0 OR dg_status = 'approved'))
-                        OR (origin_admin_status = 'approved' AND main_admin_status = 'approved' AND (requires_dg_approval = 0 OR dg_status = 'approved'))
                         OR (department IN ($placeholders) AND (origin_admin_status = 'pending' OR alternative_status = 'proposed'))
                     ) THEN 1 ELSE 0 END) as pending,
                     SUM(CASE WHEN status IN ('approved', 'partially_approved') OR (department IN ($placeholders) AND status IN ('approved', 'partially_approved')) THEN 1 ELSE 0 END) as approved,
@@ -1814,8 +1846,8 @@ class StoreRequisitionController extends Controller
                 $statsData = StoreRequisition::selectRaw("
                     SUM(CASE WHEN store_requisitions.status = 'pending' AND (
                         (store_requisitions.origin_admin_status = 'approved' AND store_requisitions.main_admin_status = 'pending' AND " . ($isStoresHOD ? "1 = 1" : "1 = 0") . " AND (store_requisitions.requires_dg_approval = 0 OR store_requisitions.dg_status = 'approved'))
-                        OR (store_requisitions.origin_admin_status = 'approved' AND store_requisitions.main_admin_status = 'approved' AND (store_requisitions.requires_dg_approval = 0 OR store_requisitions.dg_status = 'approved'))
                         " . ($isStoresHOD ? "OR (store_requisitions.origin_admin_status = 'pending' AND store_requisitions.department IN ('Stores', 'Store'))" : "") . "
+                        OR (store_requisitions.origin_admin_status = 'pending' AND store_requisitions.department NOT IN (SELECT department FROM users WHERE role = 'Department Head' AND is_active = 1 AND department IS NOT NULL))
                     ) THEN 1 ELSE 0 END) as pending,
                     SUM(CASE WHEN store_requisitions.status IN ('approved', 'partially_approved') THEN 1 ELSE 0 END) as approved,
                     SUM(CASE WHEN store_requisitions.status = 'declined' THEN 1 ELSE 0 END) as declined
@@ -1916,9 +1948,11 @@ class StoreRequisitionController extends Controller
             || $isBackupActive;
 
         // Check if the stores head is acting as the originating HOD for a Stores department request
+        $isFallbackHOD = auth()->user()->isMainAdminOrSub() && $req->origin_admin_status === 'pending' && !\App\Models\User::where('role', 'Department Head')->where('department', $req->department)->where('is_active', true)->exists();
         $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
             || (auth()->user()->isDepartmentHead() && ($this->departmentsMatch($req->department, auth()->user()->department) || $req->department === 'Audit Department' || ($req->requester && $req->requester->sponsored_by === auth()->id())) && $req->origin_admin_status === 'pending')
-            || (auth()->user()->role === 'Sub Main Admin' && $this->departmentsMatch($req->department, auth()->user()->department) && $req->origin_admin_status === 'pending');
+            || (auth()->user()->role === 'Sub Main Admin' && $this->departmentsMatch($req->department, auth()->user()->department) && $req->origin_admin_status === 'pending')
+            || $isFallbackHOD;
 
         if (!$isStoresHead || $isActingAsOriginHOD) {
             // Originating department head check
@@ -1950,9 +1984,11 @@ class StoreRequisitionController extends Controller
         }
 
         if ($request->status === 'approved') {
+            $isFallbackHOD = auth()->user()->isMainAdminOrSub() && $req->origin_admin_status === 'pending' && !\App\Models\User::where('role', 'Department Head')->where('department', $req->department)->where('is_active', true)->exists();
             $isActingAsOriginHOD = ($isStoresHOD && (strcasecmp($req->department, 'Stores') === 0 || strcasecmp($req->department, 'Store') === 0) && $req->origin_admin_status === 'pending')
                 || (auth()->user()->isDepartmentHead() && $this->departmentsMatch($req->department, auth()->user()->department) && $req->origin_admin_status === 'pending')
-                || (auth()->user()->role === 'Sub Main Admin' && $this->departmentsMatch($req->department, auth()->user()->department) && $req->origin_admin_status === 'pending');
+                || (auth()->user()->role === 'Sub Main Admin' && $this->departmentsMatch($req->department, auth()->user()->department) && $req->origin_admin_status === 'pending')
+                || $isFallbackHOD;
 
             $requiresStoresDeptHeadApproval = false;
             if (!$isStoresHead || $isActingAsOriginHOD) {
@@ -1968,8 +2004,8 @@ class StoreRequisitionController extends Controller
                 $req->origin_admin_status = 'approved';
                 $req->origin_approved_by  = auth()->user()->name;
 
-                if ($isSubMainAdminActingAsHOD) {
-                    // Delegator/Authorizer covers both HOD approval AND Authorizer approval in one step.
+                if ($isSubMainAdminActingAsHOD || $isFallbackHOD) {
+                    // Delegator/Authorizer or Fallback HOD covers both HOD approval AND Authorizer approval in one step.
                     $req->main_admin_status  = 'approved';
                     $req->stores_approved_by = auth()->user()->name;
                     $actionName = 'DELEGATOR_DUAL_APPROVE';

@@ -646,9 +646,9 @@ class EditRequestController extends Controller
         $requestType = $editReq->request_type;
         $color = $request->status === 'approved' ? '#10b981' : '#dc2626';
         
-        $statusHeader = $request->status === 'approved' ? 'AUTHORIZED & COMMITTED' : 'REQUEST HAS BEEN REJECTED';
+        $statusHeader = $request->status === 'approved' ? 'Item Entry Authorized' : 'REQUEST HAS BEEN REJECTED';
         if ($requestType === 'remainder_submission' && $request->status === 'approved') {
-            $statusHeader = 'REMAINDER FULFILLMENT AUTHORIZED';
+            $statusHeader = 'Item Entry Authorized';
         }
         
         $approvedClass = $request->status === 'approved' ? ' sra-approved-msg' : '';
@@ -662,13 +662,13 @@ class EditRequestController extends Controller
         if ($request->status === 'approved' && isset($batch) && $batch) {
             $printUrl = route('receiveditems.sra', ['id' => $batch->id]);
             if ($requestType === 'remainder_submission') {
-                $desc = "The remainder items for Batch #{$batch->id} have been authorized and added to stock. You can now download the updated SRA voucher.";
+                $desc = "Stock entry request successfully authorized and added to live stock. The remainder items for Batch #{$batch->id} have been authorized and added to stock. You can now download the updated SRA voucher.";
                 $btnText = "Download / Print SRA";
             } else if ($isDiscrepancy) {
-                $desc = "Your existing items entry has been approved by the Head of Stores and saved directly into inventory.";
+                $desc = "Stock entry request successfully authorized and added to live stock. Your existing items entry has been approved by the Head of Stores and saved directly into inventory.";
                 $btnText = "Download / Print SRA";
             } else {
-                $desc = "Your inventory entry request has been approved by the Head of Stores. It has now been routed to the Auditor and Head of Admin for final verification. Once approved, the SRA receipt will become live and show their signatures.";
+                $desc = "Stock entry request successfully authorized and added to live stock. It has now been routed to the Auditor and Head of Admin for final verification. Once approved, the SRA receipt will become live and show their signatures.";
                 $btnText = "View SRA (Draft)";
             }
             $finalMsg .= "{$desc}<br><br>";
@@ -741,7 +741,7 @@ class EditRequestController extends Controller
 
         foreach ($adminMsgs as $adminMsg) {
             $statusColor = $request->status === 'approved' ? '#10b981' : '#dc2626';
-            $statusLabel = $request->status === 'approved' ? 'AUTHORIZED & COMMITTED' : 'REJECTED';
+            $statusLabel = $request->status === 'approved' ? 'Item Entry Authorized' : 'REJECTED';
             $logType = $editReq->request_type === 'remainder_submission' ? 'REMAINDER' : 'AUTHORIZATION';
             
             $printLink = "";

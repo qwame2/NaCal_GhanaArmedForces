@@ -374,7 +374,7 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('pendingItemEntryApprovalsCount', $pendingItemEntryApprovalsCount);
                 
                 // Fetch Pending Password Requests Count (for Admin)
-                if ((auth()->user()->is_admin || auth()->user()->isDelegatedApprover()) && !auth()->user()->isMainAdminOrSub()) {
+                if ((auth()->user()->is_admin || auth()->user()->isDelegatedApprover()) && !auth()->user()->isMainAdminOrSub() && !in_array(auth()->user()->role, ['Head of Stores', 'Department Head', 'Auditor'])) {
                     $pendingPasswordRequests = \App\Models\PasswordResetRequest::where('status', 'pending')->count();
                     $view->with('pendingPasswordRequests', $pendingPasswordRequests);
                     // Heads only see pending requisitions that have been approved by Main Admin
@@ -383,7 +383,6 @@ class AppServiceProvider extends ServiceProvider
                     $view->with('mainRequisitionsCount', 0);
                 } else {
                     $view->with('pendingPasswordRequests', 0);
-                    $view->with('pendingRequisitionsCount', 0);
                     
                     // Main Admin / Sub Main Admin count of pending requisitions awaiting review
                     $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
@@ -404,32 +403,9 @@ class AppServiceProvider extends ServiceProvider
                     $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
 
                     if ($isStoresHead) {
+                        // Badge shows ALL pending requisitions still in the workflow
+                        // (disappears only when Head of Stores fully approves/declines)
                         $mainStoreRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
-                            ->where(function($q) use ($isStoresHOD, $isBackupActive) {
-                                $q->where(function($q2) {
-                                    $q2->where('origin_admin_status', 'approved')
-                                       ->where('main_admin_status', 'pending')
-                                       ->where(function($q3) {
-                                           $q3->where('requires_dg_approval', false)
-                                              ->orWhere('dg_status', 'approved');
-                                       });
-                                });
-                                if ($isStoresHOD && !$isBackupActive) {
-                                    $q->orWhere(function($q2) {
-                                        $q2->where('origin_admin_status', 'pending')
-                                           ->whereIn('department', ['Stores', 'Store']);
-                                    });
-                                }
-                                if ($isBackupActive) {
-                                    $q->orWhere(function($q2) {
-                                        $q2->where('department', auth()->user()->department)
-                                           ->where(function($q3) {
-                                               $q3->where('origin_admin_status', 'pending')
-                                                  ->orWhere('alternative_status', 'proposed');
-                                           });
-                                    });
-                                }
-                            })
                             ->count();
                     } else {
                         $mainStoreRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
@@ -437,24 +413,30 @@ class AppServiceProvider extends ServiceProvider
                             ->where('origin_admin_status', 'pending')
                             ->count();
                     }
+                    $view->with('pendingRequisitionsCount', $mainStoreRequisitionsCount);
 
-                    // Count pending Service SRAs awaiting review for current user's role
+                    // Count Service SRAs still in the workflow (not yet fully approved/declined)
+                    // Badge stays until the request is fully resolved
                     if (auth()->user()->role === 'Auditor') {
                         $pendingSrasCount = \App\Models\ServiceSra::where('auditor_status', 'pending')
                             ->whereNotIn('status', ['approved', 'declined'])
                             ->count();
-                    } elseif (auth()->user()->isMainAdminOrSub() || in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin'])) {
-                        $pendingSrasCount = \App\Models\ServiceSra::where('admin_status', 'pending')
-                            ->whereNotIn('status', ['approved', 'declined'])
-                            ->count();
-                    } elseif (auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0) {
-                        $pendingSrasCount = \App\Models\ServiceSra::where('stores_status', 'pending')
-                            ->whereNotIn('status', ['approved', 'declined'])
-                            ->count();
                     } else {
-                        $pendingSrasCount = \App\Models\ServiceSra::where('admin_status', 'pending')
-                            ->whereNotIn('status', ['approved', 'declined'])
-                            ->count();
+                        // For admin roles: count all ServiceSRAs not yet fully resolved
+                        $pendingSrasCount = \App\Models\ServiceSra::whereNotIn('status', ['approved', 'declined'])->count();
+                        // For inventory SRAs: only count ones where admin action is still needed
+                        // (once admin approves, it moves to Auditor's queue — don't inflate admin badge)
+                        $isAdminUser = auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Main Admin';
+                        if ($isAdminUser) {
+                            $pendingSrasCount += \App\Models\InventoryBatch::where('approval_status', 'pending_auditor_admin')
+                                ->where('supplier_status', '!=', 'System Draft')
+                                ->where('admin_status', 'pending')
+                                ->count();
+                        } else {
+                            $pendingSrasCount += \App\Models\InventoryBatch::where('approval_status', 'pending_auditor_admin')
+                                ->where('supplier_status', '!=', 'System Draft')
+                                ->count();
+                        }
                     }
 
                     $mainRequisitionsCount = $mainStoreRequisitionsCount + $pendingSrasCount;

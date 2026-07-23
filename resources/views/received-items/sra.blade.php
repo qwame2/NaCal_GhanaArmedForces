@@ -567,48 +567,48 @@
         @endphp
         <div class="signatures-grid">
             <div class="sig-cell">
-                <div class="sig-top-label">I certify that the service has been performed according to order.</div>
-                <div class="sig-line" style="height: auto; min-height: 40px; text-align: center;">
-                    @if($adminApproved && $adminUser->signature)
-                        <img src="{{ asset('storage/' . $adminUser->signature) }}" style="max-height: 80px; object-fit: contain; vertical-align: middle; margin-bottom: -10px; transform: translateY(-5px);">
-                    @else
-                        &nbsp;
-                    @endif
-                </div>
+                <div class="sig-top-label" style="margin-bottom: 5px;">I certify that the service has been performed according to order.</div>
                 <div class="sig-label">Officer-in-Charge</div>
                 <div class="sig-name-date">
-                    <div>Name: {{ $adminApproved ? $adminUser->name : '______________________' }}</div>
-                    <div>Date: {{ $adminApproved && $batch->admin_approved_at ? \Carbon\Carbon::parse($batch->admin_approved_at)->format('d/m/y') : '______________________' }}</div>
+                    <div><strong>Name:</strong> {{ $adminApproved ? $adminUser->name : '______________________' }}</div>
+                    <div><strong>Role:</strong> 
+                        @if($adminApproved && $adminUser)
+                            {{ ($adminUser->role === 'Sub Main Admin' || $adminUser->role === 'Main Admin') ? ('Head of ' . preg_replace('/\s+department$/i', '', trim($adminUser->department ?: 'Administration')) . ' (Delegator Authorizer)') : $adminUser->role }}
+                        @else
+                            {{ $batch->admin_status === 'approved' ? 'Delegator Authorizer' : '______________________' }}
+                        @endif
+                    </div>
+                    <div><strong>Date:</strong> {{ $adminApproved && $batch->admin_approved_at ? \Carbon\Carbon::parse($batch->admin_approved_at)->format('d/m/y') : '______________________' }}</div>
                 </div>
             </div>
             <div class="sig-cell">
-                <div class="sig-top-label">Taken on charge</div>
-                <div class="sig-line" style="height: auto; min-height: 40px; text-align: center;">
-                    @if($storesUser && $storesUser->signature)
-                        <img src="{{ asset('storage/' . $storesUser->signature) }}" style="max-height: 80px; object-fit: contain; vertical-align: middle; margin-bottom: -10px; transform: translateY(-5px);">
-                    @else
-                        &nbsp;
-                    @endif
-                </div>
+                <div class="sig-top-label" style="margin-bottom: 5px; text-align: center;">Taken on charge</div>
                 <div class="sig-label">Storekeeper/Officer-in-Charge</div>
                 <div class="sig-name-date">
-                    <div>Name: {{ $storesUser->name ?? '______________________' }}</div>
-                    <div>Date: {{ $storesDate ? \Carbon\Carbon::parse($storesDate)->format('d/m/y') : '______________________' }}</div>
+                    <div><strong>Name:</strong> {{ $storesUser->name ?? '______________________' }}</div>
+                    <div><strong>Role:</strong> 
+                        @if(isset($storesUser))
+                            {{ ($storesUser->role === 'Sub Main Admin' || $storesUser->role === 'Main Admin') ? ('Head of ' . preg_replace('/\s+department$/i', '', trim($storesUser->department ?: 'Stores')) . ' (Delegator Authorizer)') : ($storesUser->role ?? 'Head of Stores') }}
+                        @else
+                            {{ 'Head of Stores' }}
+                        @endif
+                    </div>
+                    <div><strong>Date:</strong> {{ $storesDate ? \Carbon\Carbon::parse($storesDate)->format('d/m/y') : '______________________' }}</div>
                 </div>
             </div>
             <div class="sig-cell">
-                <div class="sig-top-label">Verified by</div>
-                <div class="sig-line" style="height: auto; min-height: 40px; text-align: center;">
-                    @if($auditorApproved && $auditorUser->signature)
-                        <img src="{{ asset('storage/' . $auditorUser->signature) }}" style="max-height: 80px; object-fit: contain; vertical-align: middle; margin-bottom: -10px; transform: translateY(-5px);">
-                    @else
-                        &nbsp;
-                    @endif
-                </div>
+                <div class="sig-top-label" style="margin-bottom: 5px; text-align: center;">Verified by</div>
                 <div class="sig-label">Internal Audit/Stores Verifier</div>
                 <div class="sig-name-date">
-                    <div>Name: {{ $auditorApproved ? $auditorUser->name : '______________________' }}</div>
-                    <div>Date: {{ $auditorApproved && $batch->auditor_approved_at ? \Carbon\Carbon::parse($batch->auditor_approved_at)->format('d/m/y') : '______________________' }}</div>
+                    <div><strong>Name:</strong> {{ $auditorApproved ? $auditorUser->name : '______________________' }}</div>
+                    <div><strong>Role:</strong> 
+                        @if($auditorApproved && $auditorUser)
+                            {{ ($auditorUser->role === 'Sub Main Admin' || $auditorUser->role === 'Main Admin') ? ('Head of ' . preg_replace('/\s+department$/i', '', trim($auditorUser->department ?: 'Internal Audit')) . ' (Delegator Authorizer)') : $auditorUser->role }}
+                        @else
+                            {{ $batch->auditor_status === 'approved' ? 'Auditor' : '______________________' }}
+                        @endif
+                    </div>
+                    <div><strong>Date:</strong> {{ $auditorApproved && $batch->auditor_approved_at ? \Carbon\Carbon::parse($batch->auditor_approved_at)->format('d/m/y') : '______________________' }}</div>
                 </div>
             </div>
         </div>

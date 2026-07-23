@@ -1981,7 +1981,7 @@
         width: 38px;
         height: 38px;
         border-radius: 12px;
-        background: linear-gradient(135deg, #881337, #06b6d4);
+        background: #881337;
         display: flex;
         align-items: center;
         justify-content: center;

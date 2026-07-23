@@ -197,6 +197,14 @@ Route::get('/dev-login-atto', function() {
     }
     return 'atto not found';
 });
+Route::get('/dev-login-as/{id}', function($id) {
+    $user = \App\Models\User::find($id);
+    if ($user) {
+        \Illuminate\Support\Facades\Auth::login($user);
+        return redirect('/dashboard');
+    }
+    return 'user not found';
+});
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
