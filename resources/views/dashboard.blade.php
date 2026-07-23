@@ -324,6 +324,42 @@
             </div>
         </div>
     </div>
+    <script>
+    function claimDelegationAccess() {
+        var input = document.getElementById('delegation-otp-input');
+        if (!input) return;
+        var otp = input.value.trim();
+        if (!otp || otp.length < 4) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'warning', title: 'OTP Required', text: 'Please enter the OTP code provided by the Head of Stores.', confirmButtonColor: '#881337' });
+            } else { alert('Please enter the OTP code.'); }
+            return;
+        }
+        fetch('{{ route("officer.delegation.claim") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ otp: otp })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'success', title: 'Access Granted', text: data.message || 'Delegated admin authority activated.', confirmButtonColor: '#881337' })
+                        .then(function() { window.location.reload(); });
+                } else { alert(data.message || 'Access granted.'); window.location.reload(); }
+            } else {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'error', title: 'Invalid OTP', text: data.message || 'The OTP is invalid or expired.', confirmButtonColor: '#881337' });
+                } else { alert(data.message || 'Invalid OTP.'); }
+            }
+        })
+        .catch(function() {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'An error occurred. Please try again.', confirmButtonColor: '#881337' });
+            } else { alert('Error. Please try again.'); }
+        });
+    }
+    </script>
     @endif
 
     @if(auth()->user()->role === 'Officer' && auth()->user()->isDelegatedApprover())
@@ -629,123 +665,153 @@
 @endphp
 
 @push('scripts')
-<script src="{{ asset('js/apexcharts.js') }}"></script>
 <script>
-function initAllDashboardCharts() {
-    if (typeof ApexCharts === 'undefined') {
-        setTimeout(initAllDashboardCharts, 100);
-        return;
-    }
+(function() {
+    var _chartsDone = false;
 
-    var areaEl = document.getElementById("advancedAreaChart");
-    if (areaEl && !areaEl.dataset.rendered) {
-        areaEl.dataset.rendered = "true";
-        var receivedData = {!! $jsonReceivedSeries !!};
-        var varianceData = {!! $jsonVarianceSeries !!};
-        var monthCategories = {!! $jsonChartMonths !!};
-
-        var areaOptions = {
-            series: [
-                { name: 'Received', data: receivedData },
-                { name: 'Net Variance', data: varianceData }
-            ],
-            chart: {
-                type: 'area',
-                height: 350,
-                toolbar: { show: false }
-            },
-            colors: ['#881337', '#ef4444'],
-            fill: {
-                type: 'gradient',
-                gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: 0.45,
-                    opacityTo: 0.05,
-                    stops: [20, 100]
-                }
-            },
-            dataLabels: { enabled: false },
-            stroke: { curve: 'smooth', width: 3 },
-            xaxis: {
-                categories: monthCategories
-            },
-            legend: {
-                position: 'top',
-                horizontalAlign: 'right'
-            }
-        };
-
-        try {
-            var areaChart = new ApexCharts(areaEl, areaOptions);
-            areaChart.render();
-            window._areaChart = areaChart;
-        } catch (e) {
-            console.error("Area chart error:", e);
+    function renderDashboardCharts() {
+        if (_chartsDone) return;
+        if (typeof ApexCharts === 'undefined') {
+            setTimeout(renderDashboardCharts, 200);
+            return;
         }
-    }
+        _chartsDone = true;
 
-    var donutEl = document.getElementById("enhancedDonutChart");
-    if (donutEl && !donutEl.dataset.rendered) {
-        donutEl.dataset.rendered = "true";
-        var rawSeries = {!! $jsonDistSeries !!};
-        var rawLabels = {!! $jsonDistLabels !!};
-        var isEmpty = {!! $jsonIsEmptyDist !!};
+        var isDark = (document.documentElement.getAttribute('data-theme') === 'dark');
 
-        var donutOptions = {
-            series: rawSeries,
-            chart: {
-                type: 'donut',
-                height: 380
-            },
-            labels: rawLabels,
-            colors: isEmpty ? ['#cbd5e1'] : ['#881337', '#9f1239', '#be123c', '#e11d48', '#f43f5e', '#fb7185', '#fda4af', '#991b1b', '#7f1d1d'],
-            dataLabels: { enabled: false },
-            legend: {
-                position: 'bottom'
-            },
-            stroke: {
-                show: true,
-                width: 4
-            },
-            plotOptions: {
-                pie: {
-                    donut: {
-                        size: '72%',
-                        labels: {
-                            show: true,
-                            total: {
-                                show: true,
-                                label: isEmpty ? 'Awaiting Records' : 'Total Units',
-                                formatter: function(w) {
-                                    if (isEmpty || !w || !w.globals || !w.globals.seriesTotals) return "0";
-                                    var sum = 0;
-                                    for (var i = 0; i < w.globals.seriesTotals.length; i++) {
-                                        sum += Number(w.globals.seriesTotals[i]) || 0;
+        // ── 1. Area Chart ─────────────────────────────────────────────
+        var areaEl = document.getElementById('advancedAreaChart');
+        if (areaEl) {
+            try {
+                var aC = new ApexCharts(areaEl, {
+                    series: [
+                        { name: 'Received',     data: {!! $jsonReceivedSeries !!} },
+                        { name: 'Net Variance', data: {!! $jsonVarianceSeries !!} }
+                    ],
+                    chart: {
+                        type: 'area', height: 350,
+                        toolbar: { show: false },
+                        fontFamily: 'Outfit, sans-serif',
+                        background: 'transparent'
+                    },
+                    theme: { mode: isDark ? 'dark' : 'light' },
+                    colors: ['#881337', '#ef4444'],
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [20, 100] } },
+                    dataLabels: { enabled: false },
+                    stroke: { curve: 'smooth', width: 3 },
+                    xaxis: {
+                        categories: {!! $jsonChartMonths !!},
+                        labels: { style: { fontFamily: 'Outfit, sans-serif', fontWeight: 600 } }
+                    },
+                    legend: { position: 'top', horizontalAlign: 'right', fontFamily: 'Outfit, sans-serif', fontWeight: 600 },
+                    tooltip: { theme: isDark ? 'dark' : 'light' }
+                });
+                aC.render();
+                window._areaChart = aC;
+
+                // Period toggle
+                function setBtn(active) {
+                    ['btnDaily','btnWeekly','btnMonthly'].forEach(function(id) {
+                        var b = document.getElementById(id);
+                        if (b) { b.style.background = 'var(--bg-main)'; b.style.color = 'var(--text-main)'; }
+                    });
+                    if (active) { active.style.background = 'var(--primary)'; active.style.color = 'white'; }
+                }
+                var dayBtn = document.getElementById('btnDaily');
+                var weekBtn = document.getElementById('btnWeekly');
+                var monthBtn = document.getElementById('btnMonthly');
+                if (dayBtn) dayBtn.addEventListener('click', function() {
+                    setBtn(dayBtn);
+                    aC.updateOptions({ series: [{ name:'Received', data:{!! $jsonDayReceived !!} },{ name:'Net Variance', data:{!! $jsonDayVariance !!} }], xaxis: { categories:{!! $jsonDayLabels !!} } });
+                });
+                if (weekBtn) weekBtn.addEventListener('click', function() {
+                    setBtn(weekBtn);
+                    aC.updateOptions({ series: [{ name:'Received', data:{!! $jsonWeekReceived !!} },{ name:'Net Variance', data:{!! $jsonWeekVariance !!} }], xaxis: { categories:{!! $jsonWeekLabels !!} } });
+                });
+                if (monthBtn) monthBtn.addEventListener('click', function() {
+                    setBtn(monthBtn);
+                    aC.updateOptions({ series: [{ name:'Received', data:{!! $jsonReceivedSeries !!} },{ name:'Net Variance', data:{!! $jsonVarianceSeries !!} }], xaxis: { categories:{!! $jsonChartMonths !!} } });
+                });
+            } catch(e) { console.error('Area chart error:', e); }
+        }
+
+        // ── 2. Donut Chart ────────────────────────────────────────────
+        var donutEl = document.getElementById('enhancedDonutChart');
+        if (donutEl) {
+            try {
+                var rawSeries = {!! $jsonDistSeries !!};
+                var rawLabels = {!! $jsonDistLabels !!};
+                var isEmpty   = {!! $jsonIsEmptyDist !!};
+                var dC = new ApexCharts(donutEl, {
+                    series: rawSeries,
+                    chart: {
+                        type: 'donut', height: 380,
+                        fontFamily: 'Outfit, sans-serif',
+                        background: 'transparent',
+                        animations: { enabled: true, easing: 'easeinout', speed: 800 }
+                    },
+                    theme: { mode: isDark ? 'dark' : 'light' },
+                    labels: rawLabels,
+                    colors: isEmpty
+                        ? ['#cbd5e1']
+                        : ['#881337','#9f1239','#be123c','#e11d48','#f43f5e','#fb7185','#3b82f6','#10b981','#f59e0b','#8b5cf6'],
+                    dataLabels: {
+                        enabled: !isEmpty,
+                        formatter: function(v) { return v.toFixed(1) + '%'; },
+                        dropShadow: { enabled: false }
+                    },
+                    legend: {
+                        position: 'bottom', horizontalAlign: 'center',
+                        fontFamily: 'Outfit, sans-serif', fontSize: '13px', fontWeight: 600,
+                        markers: { radius: 12, width: 12, height: 12 }
+                    },
+                    tooltip: {
+                        theme: isDark ? 'dark' : 'light',
+                        y: { formatter: function(v) { return isEmpty ? 'No inventory recorded' : Number(v).toLocaleString() + ' units'; } }
+                    },
+                    stroke: { show: true, width: 4, colors: [isDark ? '#1e293b' : '#ffffff'] },
+                    plotOptions: {
+                        pie: {
+                            expandOnClick: true,
+                            donut: {
+                                size: '70%',
+                                labels: {
+                                    show: true,
+                                    name: { show: true, fontSize: '13px', fontFamily: 'Outfit, sans-serif', color: '#64748b' },
+                                    value: {
+                                        show: true, fontSize: '24px',
+                                        fontFamily: 'Outfit, sans-serif', fontWeight: '800',
+                                        color: 'var(--text-main)',
+                                        formatter: function(v) { return isEmpty ? '0' : Number(v).toLocaleString() + ' units'; }
+                                    },
+                                    total: {
+                                        show: true,
+                                        label: isEmpty ? 'Awaiting Records' : 'Total Stock',
+                                        fontSize: '13px', fontFamily: 'Outfit, sans-serif', color: '#64748b',
+                                        formatter: function(w) {
+                                            if (isEmpty || !w || !w.globals || !w.globals.seriesTotals) return '0 units';
+                                            var s = 0;
+                                            for (var i = 0; i < w.globals.seriesTotals.length; i++) s += Number(w.globals.seriesTotals[i]) || 0;
+                                            return s.toLocaleString() + ' units';
+                                        }
                                     }
-                                    return sum.toLocaleString();
                                 }
                             }
                         }
                     }
-                }
-            }
-        };
-
-        try {
-            var donutChart = new ApexCharts(donutEl, donutOptions);
-            donutChart.render();
-            window._donutChart = donutChart;
-        } catch (e) {
-            console.error("Donut chart error:", e);
+                });
+                dC.render();
+                window._donutChart = dC;
+            } catch(e) { console.error('Donut chart error:', e); }
         }
     }
-}
 
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    setTimeout(initAllDashboardCharts, 50);
-} else {
-    document.addEventListener('DOMContentLoaded', initAllDashboardCharts);
-    window.addEventListener('load', initAllDashboardCharts);
-}
+    // Use window.load which fires absolutely last — after DebugBar and all other injected scripts
+    if (document.readyState === 'complete') {
+        setTimeout(renderDashboardCharts, 200);
+    } else {
+        window.addEventListener('load', function() { setTimeout(renderDashboardCharts, 100); });
+    }
+})();
 </script>
 @endpush

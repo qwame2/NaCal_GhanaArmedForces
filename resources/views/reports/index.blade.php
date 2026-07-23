@@ -21,10 +21,10 @@
             <p class="rpt-hero-sub">Collect data from different time periods for official review.</p>
         </div>
         <div style="display: flex; gap: 1rem; position: relative; z-index: 1; flex-wrap: wrap; align-items: center;">
-            <div class="period-toggle-group {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
-                <a href="{{ (auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'daily']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'daily' ? 'active' : '' }}">Daily</a>
-                <a href="{{ (auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'monthly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'monthly' ? 'active' : '' }}">Monthly</a>
-                <a href="{{ (auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'yearly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'yearly' ? 'active' : '' }}">Yearly</a>
+            <div class="period-toggle-group {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
+                <a href="{{ (auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'daily']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'daily' ? 'active' : '' }}">Daily</a>
+                <a href="{{ (auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'monthly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'monthly' ? 'active' : '' }}">Monthly</a>
+                <a href="{{ (auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? route('reports.index', ['period' => 'yearly']) : 'javascript:void(0)' }}" class="period-btn {{ $period === 'yearly' ? 'active' : '' }}">Yearly</a>
                 <a href="javascript:void(0)" id="custom-period-btn" onclick="toggleCustomDateBar()" class="period-btn {{ $period === 'custom' ? 'active' : '' }}">Choose dates</a>
             </div>
         </div>
@@ -125,7 +125,7 @@
                         </select>
                     </div>
                     <div class="filter-actions">
-                        <button type="submit" class="filter-apply-btn {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
+                        <button type="submit" class="filter-apply-btn {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}">
                             <i data-lucide="bar-chart-2" style="width:16px;height:16px;"></i>
                             <span>Generate Report</span>
                         </button>
@@ -158,7 +158,7 @@
 
     <div class="print-actions-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
         <h3 class="print-date-label" style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin: 0;">{{ $dateLabel }}</h3>
-        <button onclick="triggerPrintMode()" id="print-report-btn" class="btn-primary {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}" {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports) ? 'disabled' : '' }} style="padding: 0.75rem 1.5rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #881337 0%, #881337 100%); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(136, 19, 55, 0.25);">
+        <button onclick="triggerPrintMode()" id="print-report-btn" class="btn-primary {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? 'restricted-btn' : '' }}" {{ !(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports) ? 'disabled' : '' }} style="padding: 0.75rem 1.5rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #881337 0%, #881337 100%); color: white; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px rgba(136, 19, 55, 0.25);">
             <i data-lucide="printer" style="width: 18px;"></i> Export or Print
         </button>
     </div>
@@ -1506,10 +1506,10 @@
             });
 
             // Collect selected items from Select2
-            const itemsSelect = document.getElementById('items-select');
-            if (itemsSelect) {
-                Array.from(itemsSelect.selectedOptions).forEach(opt => {
-                    params.append('items[]', opt.value);
+            if (typeof $ !== 'undefined' && $('#items-select').length) {
+                const vals = $('#items-select').val() || [];
+                vals.forEach(val => {
+                    params.append('items[]', val);
                 });
             }
 
@@ -1850,10 +1850,10 @@
                 period: 'monthly'
             });
 
-            const itemsSelect = document.getElementById('items-select');
-            if (itemsSelect) {
-                Array.from(itemsSelect.selectedOptions).forEach(opt => {
-                    params.append('items[]', opt.value);
+            if (typeof $ !== 'undefined' && $('#items-select').length) {
+                const vals = $('#items-select').val() || [];
+                vals.forEach(val => {
+                    params.append('items[]', val);
                 });
             }
 
@@ -2283,7 +2283,7 @@
 @endsection
 
 @push('scripts')
-    @if(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->can_generate_reports)
+    @if(auth()->user()->is_admin || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Auditor' || auth()->user()->isDelegatedApprover() || auth()->user()->can_generate_reports)
         <script src="{{ asset('js/apexcharts.js') }}"></script>
     @endif
 

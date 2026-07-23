@@ -1502,6 +1502,7 @@ class AdminController extends Controller
 
         \App\Models\Setting::set('delegation_otp_code', '', 'string', 'security', 'Active delegation OTP code');
         \App\Models\Setting::set('delegation_otp_expires_at', '', 'string', 'security', 'Expiration timestamp for delegation OTP');
+        \App\Models\Setting::set('delegated_approver_id', '', 'integer', 'general', 'ID of the delegated Store Officer for approval authority');
 
         \App\Models\SystemLog::create([
             'user_id' => auth()->id(),

@@ -1254,6 +1254,8 @@
                     title: 'OTP Revoked',
                     text: 'Delegation OTP has been revoked successfully.',
                     confirmButtonColor: '#881337'
+                }).then(() => {
+                    window.location.reload();
                 });
             }
         });
