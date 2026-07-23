@@ -419,15 +419,73 @@ class AppServiceProvider extends ServiceProvider
 
                     $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
 
+                    $dept = auth()->user()->department;
+                    $depts = [$dept];
+                    $dLower = strtolower(trim($dept ?? ''));
+                    if (in_array($dLower, ['hr', 'human resource', 'human resource management department', 'human resources'])) {
+                        $depts = ['HR', 'Human Resource', 'Human Resource Management Department', 'Human Resources'];
+                    } elseif (in_array($dLower, ['welfare', 'welfare department'])) {
+                        $depts = ['Welfare', 'Welfare Department'];
+                    } elseif (in_array($dLower, ['stores', 'store', 'stores department', 'store department'])) {
+                        $depts = ['Stores', 'Store', 'Stores Department', 'Store Department'];
+                    }
+
                     if ($isStoresHead) {
-                        // Badge shows ALL pending requisitions still in the workflow
-                        // (disappears only when Head of Stores fully approves/declines)
+                        // Badge shows pending requisitions awaiting Stores Head action
+                        // (Disappears if a request is awaiting other heads like Origin HOD or DG)
                         $mainStoreRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
+                            ->where('main_admin_status', 'pending')
+                            ->where(function($q) use ($isStoresHOD, $isBackupActive, $depts) {
+                                $q->whereRaw('1 = 0');
+                                if ($isStoresHOD) {
+                                    $q->orWhere(function($q2) {
+                                        $q2->where('origin_admin_status', 'approved')
+                                           ->where(function($q3) {
+                                               $q3->where('requires_dg_approval', false)
+                                                  ->orWhere('dg_status', 'approved');
+                                           });
+                                    });
+                                }
+                                if ($isStoresHOD && !$isBackupActive) {
+                                    $q->orWhere(function($q2) {
+                                        $q2->where('origin_admin_status', 'pending')
+                                           ->whereIn('department', ['Stores', 'Store']);
+                                    });
+                                }
+                                if ($isBackupActive) {
+                                    $q->orWhere(function($q2) use ($depts) {
+                                        $q2->whereIn('department', $depts)
+                                           ->where(function($q3) {
+                                               $q3->where('origin_admin_status', 'pending')
+                                                  ->orWhere('alternative_status', 'proposed');
+                                           });
+                                    });
+                                }
+                                $q->orWhere(function($q2) {
+                                    $q2->where('origin_admin_status', 'pending')
+                                       ->whereNotIn('department', function($subQuery) {
+                                           $subQuery->select('department')
+                                                    ->from('users')
+                                                    ->where('role', 'Department Head')
+                                                    ->where('is_active', true)
+                                                    ->whereNotNull('department');
+                                       });
+                                });
+                            })
                             ->count();
                     } else {
                         $mainStoreRequisitionsCount = \App\Models\StoreRequisition::where('status', 'pending')
-                            ->where('department', auth()->user()->department)
-                            ->where('origin_admin_status', 'pending')
+                            ->where(function($q) use ($depts) {
+                                $q->whereIn('department', $depts)
+                                  ->orWhereIn('department', ['Audit Department', 'Non Departmental'])
+                                  ->orWhereHas('requester', function($sq) {
+                                      $sq->where('sponsored_by', auth()->id());
+                                  });
+                            })
+                            ->where(function($q) {
+                                $q->where('origin_admin_status', 'pending')
+                                  ->orWhere('alternative_status', 'proposed');
+                            })
                             ->count();
                     }
                     $view->with('pendingRequisitionsCount', $mainStoreRequisitionsCount);
@@ -456,8 +514,9 @@ class AppServiceProvider extends ServiceProvider
                         }
                     }
 
-                    $mainRequisitionsCount = $mainStoreRequisitionsCount + $pendingSrasCount;
+                    $mainRequisitionsCount = $mainStoreRequisitionsCount;
                     $view->with('mainRequisitionsCount', $mainRequisitionsCount);
+                    $view->with('pendingServiceSraBadgeCount', $pendingSrasCount);
 
                     if (auth()->user()->role === 'Requisitioner') {
                         // Requisitioners: count their own approved reqs awaiting collection

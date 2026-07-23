@@ -582,4 +582,82 @@ class DGRequisitionTest extends TestCase
         $this->assertEquals('Awaiting Head of Stores Review', $badge['label'],
             'Status should be Awaiting Head of Stores Review immediately after Sub Main Admin self-submission.');
     }
+
+    /**
+     * Test that sidebar badge count disappears (becomes 0) when a request is awaiting other heads.
+     */
+    public function test_sidebar_badge_count_disappears_when_awaiting_other_heads(): void
+    {
+        $hrHOD = User::factory()->create([
+            'name' => 'HR HOD',
+            'role' => 'Department Head',
+            'department' => 'HR',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $headOfStores = User::factory()->create([
+            'name' => 'Head of Stores',
+            'is_admin' => true,
+            'role' => 'Head of Stores',
+            'department' => 'Stores',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        $hrStaff = User::factory()->create([
+            'role' => 'Requisitioner',
+            'department' => 'HR',
+            'registration_status' => 'approved',
+            'is_active' => true,
+        ]);
+
+        // 1. Requisition submitted by HR staff -> awaiting HR HOD (origin_admin_status = pending)
+        $requisition = StoreRequisition::create([
+            'requester_name' => $hrStaff->name,
+            'department' => 'HR',
+            'requested_by' => $hrStaff->id,
+            'purpose' => 'HR Stationeries',
+            'priority' => 'normal',
+            'status' => 'pending',
+            'origin_admin_status' => 'pending',
+            'main_admin_status' => 'pending',
+            'usage_type' => 'permanent',
+        ]);
+
+        // For Head of Stores, request is awaiting HR HOD (other head), so badge is hidden (display: none)
+        $viewStores = $this->actingAs($headOfStores)->get(route('main-admin.requisitions'));
+        $viewStores->assertStatus(200);
+        $contentStores = $viewStores->getContent();
+        $this->assertStringContainsString('id="sidebar-badge-main-reqs"', $contentStores);
+        $this->assertStringContainsString('display: none', $contentStores);
+
+        // For HR HOD, request is awaiting HR HOD, so badge is visible (display: flex) with count 1
+        $viewHOD = $this->actingAs($hrHOD)->get(route('main-admin.requisitions'));
+        $viewHOD->assertStatus(200);
+        $contentHOD = $viewHOD->getContent();
+        $this->assertStringContainsString('id="sidebar-badge-main-reqs"', $contentHOD);
+        $this->assertStringContainsString('display: flex', $contentHOD);
+
+        // 2. HR HOD approves the requisition
+        $response = $this->actingAs($hrHOD)->postJson("/main-admin/requisitions/{$requisition->id}/process", [
+            'status' => 'approved',
+        ]);
+        $response->assertStatus(200);
+
+        // After HR HOD approves:
+        // For HR HOD, request is now awaiting Stores Head (other head), so badge is hidden (display: none)
+        $viewHOD2 = $this->actingAs($hrHOD)->get(route('main-admin.requisitions'));
+        $viewHOD2->assertStatus(200);
+        $contentHOD2 = $viewHOD2->getContent();
+        $this->assertStringContainsString('id="sidebar-badge-main-reqs"', $contentHOD2);
+        $this->assertStringContainsString('display: none', $contentHOD2);
+
+        // For Stores Head, request is now ready for Stores Head action, so badge is visible (display: flex)
+        $viewStores2 = $this->actingAs($headOfStores)->get(route('main-admin.requisitions'));
+        $viewStores2->assertStatus(200);
+        $contentStores2 = $viewStores2->getContent();
+        $this->assertStringContainsString('id="sidebar-badge-main-reqs"', $contentStores2);
+        $this->assertStringContainsString('display: flex', $contentStores2);
+    }
 }
