@@ -289,6 +289,23 @@
         100% { transform: scale(0.9); opacity: 0.8; }
     }
 
+    @keyframes pulse-red-blink {
+        0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 rgba(220, 38, 38, 0.4); }
+        50% { opacity: 0.3; transform: scale(0.95); box-shadow: 0 0 10px rgba(220, 38, 38, 0.7); }
+    }
+
+    .dg-badge-pending-blink {
+        background: rgba(220, 38, 38, 0.15) !important;
+        color: #dc2626 !important;
+        border: 1.5px solid #dc2626 !important;
+        font-weight: 900 !important;
+        animation: pulse-red-blink 1.2s infinite ease-in-out !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25) !important;
+    }
+
     @media(max-width: 1024px) {
         .workflow-info-grid {
             grid-template-columns: 1fr !important;
@@ -556,7 +573,13 @@
                 <option value="declined" {{ request('req_status') === 'declined' ? 'selected' : '' }}>Declined</option>
             </select>
 
-            @if(request()->anyFilled(['search_query', 'date_from', 'date_to', 'req_status']))
+            <select id="dg-sra-type" name="sra_type" class="filter-control-dg" style="display: none;">
+                <option value="">-- All SRA Types --</option>
+                <option value="inventory" {{ request('sra_type') === 'inventory' ? 'selected' : '' }}>Inventory SRA</option>
+                <option value="service" {{ request('sra_type') === 'service' ? 'selected' : '' }}>Service SRA</option>
+            </select>
+
+            @if(request()->anyFilled(['search_query', 'date_from', 'date_to', 'req_status', 'sra_type']))
                 <a id="btn-dg-clear" href="{{ route('dg.dashboard') }}" class="filter-control-dg" style="background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1.5px solid #ef4444; text-decoration: none; text-align: center; font-weight: 800; min-width: 100px; display: inline-flex; align-items: center; justify-content: center;">
                     Clear
                 </a>
@@ -583,6 +606,14 @@
                     {{ $dgPendingCount }}
                 </span>
             @endif
+        </button>
+        <button id="tab-btn-req-receipts" class="dg-tab-btn" onclick="switchDGTab('dg-req-receipts-tab', this)">
+            <i data-lucide="receipt" style="width: 16px;"></i>
+            Requisition Receipts
+        </button>
+        <button id="tab-btn-sra-receipts" class="dg-tab-btn" onclick="switchDGTab('dg-sra-receipts-tab', this)">
+            <i data-lucide="file-check" style="width: 16px;"></i>
+            SRA Receipts
         </button>
         <button id="tab-btn-user-presence" class="dg-tab-btn" onclick="switchDGTab('dg-user-presence-tab', this)">
             <i data-lucide="users" style="width: 16px;"></i>
@@ -795,7 +826,7 @@
                                 </td>
                                 <td>
                                     @php $s = $req->status_badge; @endphp
-                                    <span class="dg-badge" style="background: {{ $s['bg'] }}; color: {{ $s['color'] }}; border: 1px solid {{ $s['color'] }}40;">
+                                    <span class="dg-badge {{ str_contains($s['label'], 'Awaiting DG') ? 'dg-badge-pending-blink' : '' }}" style="background: {{ str_contains($s['label'], 'Awaiting DG') ? 'rgba(220, 38, 38, 0.15)' : $s['bg'] }}; color: {{ str_contains($s['label'], 'Awaiting DG') ? '#dc2626' : $s['color'] }}; border: 1px solid {{ str_contains($s['label'], 'Awaiting DG') ? '#dc2626' : $s['color'].'40' }}; font-size: 0.65rem;">
                                         {{ $s['label'] }}
                                     </span>
                                 </td>
@@ -858,7 +889,7 @@
                                                      <i data-lucide="x" style="width: 10px; height: 10px;"></i> Declined
                                                  </span>
                                              @elseif($req->is_ready_for_dg_approval)
-                                                 <span class="dg-badge warning" style="font-size: 0.65rem; background: rgba(136, 19, 55, 0.08); color: #881337; border: 1px solid rgba(136, 19, 55, 0.3);">
+                                                 <span class="dg-badge warning dg-badge-pending-blink" style="font-size: 0.65rem;">
                                                      <i data-lucide="clock" style="width: 10px; height: 10px;"></i> Pending
                                                  </span>
                                              @endif
@@ -893,6 +924,191 @@
                             <a href="{{ $requisitions->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></a>
                         @else
                             <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i></span>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- PANEL: REQUISITION RECEIPTS --}}
+    <div id="dg-req-receipts-tab" class="dg-tab-panel">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; box-shadow: var(--shadow-premium); position: relative; overflow: hidden;">
+            <div style="overflow-x: auto;">
+                <table class="dg-table">
+                    <thead>
+                        <tr>
+                            <th>Ref / Voucher</th>
+                            <th>Requester</th>
+                            <th>Department</th>
+                            <th>Purpose / Items</th>
+                            <th>Status</th>
+                            <th>Fulfilled Date</th>
+                            <th style="text-align: center;">Receipt Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($reqReceipts as $req)
+                            <tr class="dg-row">
+                                <td style="font-weight: 800; color: #881337; font-size: 0.78rem;">
+                                    {{ $req->unique_id ?: ('REQ-'.str_pad($req->id,5,'0',STR_PAD_LEFT)) }}
+                                </td>
+                                <td style="color: var(--text-main);">
+                                    <div style="font-weight: 800; font-size: 0.85rem;">{{ $req->requester_name }}</div>
+                                    <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                                        {{ $req->rank_or_title ?: 'Requisitioner' }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge-event">{{ $req->department }}</span>
+                                </td>
+                                <td style="color: var(--text-muted); font-size: 0.8rem;">
+                                    <div style="font-weight: 700; color: var(--text-main); max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        {{ Str::limit($req->purpose, 45) }}
+                                    </div>
+                                    <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+                                        {{ $req->items->count() }} item(s): {{ Str::limit($req->items->pluck('description')->join(', '), 40) }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="dg-badge" style="background: rgba(136, 19, 55, 0.08); color: #881337; border: 1px solid rgba(136, 19, 55, 0.2); font-size: 0.68rem;">
+                                        ● {{ ucfirst($req->status) }}
+                                    </span>
+                                </td>
+                                <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
+                                    {{ $req->updated_at ? $req->updated_at->format('d/m/Y H:i') : $req->created_at->format('d/m/Y H:i') }}
+                                </td>
+                                <td style="text-align: center;">
+                                    <a href="{{ route('requisitions.receipt.print', $req->id) }}" target="_blank" style="background: rgba(136, 19, 55, 0.08); color: #881337; border: 1.5px solid rgba(136, 19, 55, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration: none;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136, 19, 55, 0.2)';">
+                                        <i data-lucide="receipt" style="width: 13px; height: 13px;"></i> View Receipt
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+                                    <i data-lucide="receipt" style="width: 40px; height: 40px; margin-bottom: 1rem; opacity: 0.25;"></i>
+                                    <p style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">No requisition receipts found.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if($reqReceipts->hasPages())
+                <div class="dg-pagination-container" style="padding: 1.25rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div class="dg-pagination-info">
+                        Showing <span>{{ $reqReceipts->firstItem() ?? 0 }}</span> to <span>{{ $reqReceipts->lastItem() ?? 0 }}</span> of <span>{{ $reqReceipts->total() }}</span> receipts
+                    </div>
+                    <div class="dg-pagination-buttons">
+                        @if($reqReceipts->onFirstPage())
+                            <span class="dg-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px;"></i> Previous</span>
+                        @else
+                            <a href="{{ $reqReceipts->appends(request()->query())->previousPageUrl() }}" class="dg-page-btn"><i data-lucide="chevron-left" style="width: 14px;"></i> Previous</a>
+                        @endif
+
+                        @if($reqReceipts->hasMorePages())
+                            <a href="{{ $reqReceipts->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px;"></i></a>
+                        @else
+                            <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px;"></i></span>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- PANEL: SRA RECEIPTS --}}
+    <div id="dg-sra-receipts-tab" class="dg-tab-panel">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; box-shadow: var(--shadow-premium); position: relative; overflow: hidden;">
+            <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; background: var(--bg-main);">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="filter" style="width: 16px; height: 16px; color: #881337;"></i>
+                    <span style="font-weight: 800; font-size: 0.82rem; color: var(--text-main);">Filter SRA Receipts:</span>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <button type="button" class="dg-page-btn {{ empty(request('sra_type')) ? 'active' : '' }}" onclick="filterSraCategory('')" style="{{ empty(request('sra_type')) ? 'background:#881337;color:white;border-color:#881337;' : '' }}">
+                        <i data-lucide="layers" style="width: 13px; height: 13px;"></i> All SRA Receipts
+                    </button>
+                    <button type="button" class="dg-page-btn {{ request('sra_type') === 'inventory' ? 'active' : '' }}" onclick="filterSraCategory('inventory')" style="{{ request('sra_type') === 'inventory' ? 'background:#881337;color:white;border-color:#881337;' : '' }}">
+                        <i data-lucide="archive" style="width: 13px; height: 13px;"></i> Inventory SRA
+                    </button>
+                    <button type="button" class="dg-page-btn {{ request('sra_type') === 'service' ? 'active' : '' }}" onclick="filterSraCategory('service')" style="{{ request('sra_type') === 'service' ? 'background:#881337;color:white;border-color:#881337;' : '' }}">
+                        <i data-lucide="wrench" style="width: 13px; height: 13px;"></i> Service SRA
+                    </button>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="dg-table">
+                    <thead>
+                        <tr>
+                            <th>SRA Number</th>
+                            <th>SRA Type</th>
+                            <th>Supplier / Donor</th>
+                            <th>Order Details / Items</th>
+                            <th>Recorded By</th>
+                            <th>Receipt Date</th>
+                            <th style="text-align: center;">SRA Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($sraReceipts as $sra)
+                            <tr class="dg-row">
+                                <td style="font-weight: 800; color: #881337; font-size: 0.78rem;">
+                                    {{ $sra->sra_number }}
+                                </td>
+                                <td>
+                                    <span class="badge-event" style="background: rgba(136, 19, 55, 0.08); color: #881337;">
+                                        {{ $sra->type }}
+                                    </span>
+                                </td>
+                                <td style="color: var(--text-main); font-weight: 700;">
+                                    {{ $sra->supplier_or_donor }}
+                                </td>
+                                <td style="color: var(--text-muted); font-size: 0.8rem;">
+                                    <div style="font-weight: 600; color: var(--text-main); max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        {{ Str::limit($sra->details, 50) }}
+                                    </div>
+                                </td>
+                                <td style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">
+                                    {{ $sra->creator }}
+                                </td>
+                                <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
+                                    {{ $sra->date ? $sra->date->format('d/m/Y H:i') : '-' }}
+                                </td>
+                                <td style="text-align: center;">
+                                    <a href="{{ $sra->receipt_url }}" target="_blank" style="background: rgba(136, 19, 55, 0.08); color: #881337; border: 1.5px solid rgba(136, 19, 55, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration: none;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136, 19, 55, 0.2)';">
+                                        <i data-lucide="file-check" style="width: 13px; height: 13px;"></i> View SRA Receipt
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+                                    <i data-lucide="file-check" style="width: 40px; height: 40px; margin-bottom: 1rem; opacity: 0.25;"></i>
+                                    <p style="font-weight: 800; font-size: 0.95rem; color: var(--text-main);">No SRA receipts registered.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if($sraReceipts->hasPages())
+                <div class="dg-pagination-container" style="padding: 1.25rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div class="dg-pagination-info">
+                        Showing <span>{{ $sraReceipts->firstItem() ?? 0 }}</span> to <span>{{ $sraReceipts->lastItem() ?? 0 }}</span> of <span>{{ $sraReceipts->total() }}</span> SRA receipts
+                    </div>
+                    <div class="dg-pagination-buttons">
+                        @if($sraReceipts->onFirstPage())
+                            <span class="dg-page-btn disabled"><i data-lucide="chevron-left" style="width: 14px;"></i> Previous</span>
+                        @else
+                            <a href="{{ $sraReceipts->appends(request()->query())->previousPageUrl() }}" class="dg-page-btn"><i data-lucide="chevron-left" style="width: 14px;"></i> Previous</a>
+                        @endif
+
+                        @if($sraReceipts->hasMorePages())
+                            <a href="{{ $sraReceipts->appends(request()->query())->nextPageUrl() }}" class="dg-page-btn">Next <i data-lucide="chevron-right" style="width: 14px;"></i></a>
+                        @else
+                            <span class="dg-page-btn disabled">Next <i data-lucide="chevron-right" style="width: 14px;"></i></span>
                         @endif
                     </div>
                 </div>
@@ -1529,11 +1745,15 @@
         // Store active tab in localStorage
         localStorage.setItem('active_dg_tab', panelId);
 
-        // Dynamically show/hide Status dropdown
+        // Dynamically show/hide Status & SRA Type dropdowns
         const statusSelect = document.getElementById('dg-req-status');
-        
         if (statusSelect) {
             statusSelect.style.display = (panelId === 'dg-staff-reqs-tab') ? 'inline-block' : 'none';
+        }
+
+        const sraTypeSelect = document.getElementById('dg-sra-type');
+        if (sraTypeSelect) {
+            sraTypeSelect.style.display = (panelId === 'dg-sra-receipts-tab') ? 'inline-block' : 'none';
         }
 
         const filterForm = document.getElementById('dg-filter-form');
@@ -1544,6 +1764,14 @@
         const printBtn = document.getElementById('btn-print-dg-report');
         if (printBtn) {
             printBtn.style.display = (panelId === 'dg-workflow-config-tab') ? 'none' : 'inline-flex';
+        }
+    }
+
+    function filterSraCategory(type) {
+        const sraTypeSelect = document.getElementById('dg-sra-type');
+        if (sraTypeSelect) {
+            sraTypeSelect.value = type;
+            reloadDGData();
         }
     }
 
@@ -1577,7 +1805,7 @@
 
         // Show/hide Clear button dynamically
         let anyFilled = false;
-        const inputsToCheck = ['search_query', 'date_from', 'date_to', 'req_status'];
+        const inputsToCheck = ['search_query', 'date_from', 'date_to', 'req_status', 'sra_type'];
         inputsToCheck.forEach(name => {
             if (params.get(name)) anyFilled = true;
         });
@@ -1622,7 +1850,7 @@
                 });
 
                 // 2. Update all tab panels
-                const tabPanels = ['dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab', 'dg-issued-returned-tab', 'dg-workflow-config-tab'];
+                const tabPanels = ['dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-req-receipts-tab', 'dg-sra-receipts-tab', 'dg-user-presence-tab', 'dg-issued-returned-tab', 'dg-workflow-config-tab'];
                 tabPanels.forEach(panelId => {
                     const oldPanel = document.getElementById(panelId);
                     const newPanel = doc.getElementById(panelId);
@@ -1663,7 +1891,7 @@
                             const doc = parser.parseFromString(html, 'text/html');
                             
                             // Only update tab panels and pagination
-                            const tabPanels = ['dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-user-presence-tab', 'dg-issued-returned-tab', 'dg-workflow-config-tab'];
+                            const tabPanels = ['dg-stock-oversight-tab', 'dg-staff-reqs-tab', 'dg-req-receipts-tab', 'dg-sra-receipts-tab', 'dg-user-presence-tab', 'dg-issued-returned-tab', 'dg-workflow-config-tab'];
                             tabPanels.forEach(panelId => {
                                 const oldPanel = document.getElementById(panelId);
                                 const newPanel = doc.getElementById(panelId);

@@ -528,24 +528,24 @@
                         REQUISITIONER INFO
                     </div>
                     <div class="dashboard-row">
-                        <span class="dashboard-label">Officer:</span>
+                        <span class="dashboard-label">Name:</span>
                         <span class="dashboard-value" title="{{ $req->requester_name }}">{{ $req->requester_name }}</span>
                     </div>
                     <div class="dashboard-row">
-                        <span class="dashboard-label">Service No:</span>
-                        <span class="dashboard-value">{{ $req->requester?->service_number ?? 'N/A' }}</span>
-                    </div>
-                    <div class="dashboard-row">
-                        <span class="dashboard-label">Rank/Title:</span>
-                        <span class="dashboard-value">{{ $req->rank_or_title ?? 'N/A' }}</span>
+                        <span class="dashboard-label">Role:</span>
+                        <span class="dashboard-value">{{ $req->requester?->role ?? ($req->rank_or_title ?: 'Requisitioner') }}</span>
                     </div>
                     <div class="dashboard-row">
                         <span class="dashboard-label">Department:</span>
                         <span class="dashboard-value">{{ $req->department }}</span>
                     </div>
                     <div class="dashboard-row">
-                        <span class="dashboard-label">Contact No:</span>
-                        <span class="dashboard-value">{{ $req->requester?->phone ?? 'N/A' }}</span>
+                        <span class="dashboard-label">Service No:</span>
+                        <span class="dashboard-value">{{ $req->requester?->service_number ?? 'N/A' }}</span>
+                    </div>
+                    <div class="dashboard-row">
+                        <span class="dashboard-label">Date &amp; Time:</span>
+                        <span class="dashboard-value">{{ $req->created_at->format('d/m/Y H:i') }}</span>
                     </div>
                 </div>
 
@@ -555,38 +555,32 @@
                         STORE ISSUER INFO
                     </div>
                     <div class="dashboard-row">
+                        <span class="dashboard-label">Name:</span>
+                        <span class="dashboard-value" title="{{ $receipt->issuer?->name ?? $req->processor?->name ?? 'Store Officer' }}">{{ $receipt->issuer?->name ?? $req->processor?->name ?? 'Store Officer' }}</span>
+                    </div>
+                    <div class="dashboard-row">
+                        <span class="dashboard-label">Role:</span>
+                        <span class="dashboard-value">
+                            @php
+                                $issuerRole = $receipt->issuer?->role ?? $req->processor?->role ?? 'Head of Stores';
+                                if (in_array($issuerRole, ['Main Admin', 'Sub Main Admin'])) {
+                                    $issuerRole = 'Head of Admin';
+                                }
+                            @endphp
+                            {{ $issuerRole }}
+                        </span>
+                    </div>
+                    <div class="dashboard-row">
+                        <span class="dashboard-label">Department:</span>
+                        <span class="dashboard-value">{{ $receipt->issuer?->department ?? 'Stores Department' }}</span>
+                    </div>
+                    <div class="dashboard-row">
                         <span class="dashboard-label">Requisition Ref:</span>
                         <span class="dashboard-value">{{ $req->unique_id }}</span>
                     </div>
                     <div class="dashboard-row">
-                        <span class="dashboard-label">Requested Date:</span>
-                        <span class="dashboard-value">{{ $req->created_at->format('d/m/Y H:i') }}</span>
-                    </div>
-                    <div class="dashboard-row">
-                        <span class="dashboard-label">Priority Level:</span>
-                        <span class="dashboard-value">
-                            @if($req->priority === 'urgent')
-                                <span style="color: var(--danger); font-weight: 900;">URGENT</span>
-                            @elseif($req->priority === 'low')
-                                <span style="color: var(--text-muted); font-weight: 900;">LOW</span>
-                            @else
-                                <span style="color: var(--accent); font-weight: 900;">NORMAL</span>
-                            @endif
-                        </span>
-                    </div>
-                    <div class="dashboard-row">
-                        <span class="dashboard-label">Allocation Limit:</span>
-                        <span class="dashboard-value">
-                            @if($req->usage_type === 'temporary')
-                                <span style="color: var(--warning); font-weight: 800;">Temporary Loan</span>
-                            @else
-                                <span style="color: var(--success); font-weight: 800;">Permanent Release</span>
-                            @endif
-                        </span>
-                    </div>
-                    <div class="dashboard-row">
-                        <span class="dashboard-label">Released By:</span>
-                        <span class="dashboard-value" title="{{ $receipt->issuer?->name ?? $req->processor?->name ?? 'Store Officer' }}">{{ $receipt->issuer?->name ?? $req->processor?->name ?? 'Store Officer' }}</span>
+                        <span class="dashboard-label">Date &amp; Time:</span>
+                        <span class="dashboard-value">{{ $req->processed_at ? \Carbon\Carbon::parse($req->processed_at)->format('d/m/Y H:i') : ($receipt->created_at ? $receipt->created_at->format('d/m/Y H:i') : $req->updated_at->format('d/m/Y H:i')) }}</span>
                     </div>
                 </div>
 
@@ -596,57 +590,30 @@
                         PHYSICAL COLLECTION INFO
                     </div>
                     <div class="dashboard-row">
-                        <span class="dashboard-label">Collector:</span>
+                        <span class="dashboard-label">Name:</span>
                         <span class="dashboard-value" title="{{ $receipt->collector_name }}">{{ $receipt->collector_name }}</span>
                     </div>
                     <div class="dashboard-row">
-                        <span class="dashboard-label">Staff ID:</span>
-                        <span class="dashboard-value">{{ $receipt->collector_staff_id ?? 'N/A' }}</span>
+                        <span class="dashboard-label">Role / Staff ID:</span>
+                        <span class="dashboard-value">{{ $receipt->collector_staff_id ? 'ID: ' . $receipt->collector_staff_id : 'Collector' }}</span>
+                    </div>
+                    <div class="dashboard-row">
+                        <span class="dashboard-label">Department:</span>
+                        <span class="dashboard-value" title="{{ $receipt->collector_location }}">{{ $receipt->collector_location ?: $req->department }}</span>
                     </div>
                     <div class="dashboard-row">
                         <span class="dashboard-label">Contact No:</span>
                         <span class="dashboard-value">{{ $receipt->collector_contact }}</span>
                     </div>
                     <div class="dashboard-row">
-                        <span class="dashboard-label">Destination:</span>
-                        <span class="dashboard-value" title="{{ $receipt->collector_location }}">{{ $receipt->collector_location }}</span>
-                    </div>
-                    <div class="dashboard-row">
-                        <span class="dashboard-label">Released Date:</span>
+                        <span class="dashboard-label">Date &amp; Time:</span>
                         <span class="dashboard-value">{{ $receipt->collected_at ? $receipt->collected_at->format('d/m/Y H:i') : 'N/A' }}</span>
-                    </div>
-                    <div class="dashboard-row">
-                        <span class="dashboard-label">Verify Code:</span>
-                        <span class="dashboard-value" style="font-family: monospace;">#{{ str_pad($receipt->id ?? $req->id, 4, '0', STR_PAD_LEFT) }}</span>
                     </div>
                 </div>
             </div>
 
             <!-- Narratives / Purposes -->
             <div class="text-details-container">
-                <!-- Requisition Narrative 
-                <div class="text-block-card">
-                    <div class="text-block-title">
-                        REQUISITION PURPOSE
-                    </div>
-                    <p class="text-block-content">
-                        "{{ $req->purpose }}"
-                    </p>
-                </div> -->
-
-                <!-- Stores Remarks
-                <div class="text-block-card" style="border-left-color: var(--success);">
-                    <div class="text-block-title">
-                        STORES DECISION EVALUATION & STORES REMARKS
-                    </div>
-                    <p class="text-block-content">
-                        @if(!empty($req->admin_notes))
-                            "{{ $req->admin_notes }}"
-                        @else
-                            "Requisition evaluation complete. Requested items were validated against central inventory stock balances and issued out under formal guidelines."
-                        @endif
-                    </p>
-                </div> -->
             </div>
 
             <!-- Table breakdown -->
@@ -731,76 +698,94 @@
                 // 1. Department HOD
                 if ($req->origin_approved_by && stripos($req->origin_approved_by, 'bypassed') === false) {
                     $user = \App\Models\User::where('name', $req->origin_approved_by)->first();
+                    $hodRole = $user?->role ?? 'Department Head';
+                    if (in_array($hodRole, ['Main Admin', 'Sub Main Admin'])) {
+                        $hodRole = 'Head of Admin';
+                    }
                     $approvals[] = [
-                        'title' => 'Department HOD',
+                        'stage' => 'HOD Approval',
                         'name' => $req->origin_approved_by,
-                        'sub' => ($req->department ?: 'Originating') . ' Dept Head',
-                        'signature' => $user && $user->signature ? Storage::url($user->signature) : null,
-                        'date' => $req->created_at->format('d M Y')
+                        'role' => $hodRole,
+                        'department' => $req->department ?: ($user?->department ?? 'Originating Department'),
+                        'date_time' => $req->origin_approved_at ? \Carbon\Carbon::parse($req->origin_approved_at)->format('d M Y, h:i A') : $req->created_at->format('d M Y, h:i A')
                     ];
                 }
                 
                 // 2. Stores HOD / Head of Admin
                 if ($req->stores_approved_by && stripos($req->stores_approved_by, 'bypassed') === false) {
                     $user = \App\Models\User::where('name', $req->stores_approved_by)->first();
+                    $adminRole = $user?->role ?? 'Head of Admin';
+                    if (in_array($adminRole, ['Main Admin', 'Sub Main Admin'])) {
+                        $adminRole = 'Head of Admin';
+                    }
                     $approvals[] = [
-                        'title' => 'Head of Admin',
+                        'stage' => 'Head of Admin Review',
                         'name' => $req->stores_approved_by,
-                        'sub' => 'Stores Dept Head / Authorizer',
-                        'signature' => $user && $user->signature ? Storage::url($user->signature) : null,
-                        'date' => $req->created_at->format('d M Y')
+                        'role' => $adminRole,
+                        'department' => $user?->department ?? 'Stores Department',
+                        'date_time' => $req->stores_approved_at ? \Carbon\Carbon::parse($req->stores_approved_at)->format('d M Y, h:i A') : $req->created_at->format('d M Y, h:i A')
                     ];
                 }
                 
                 // 3. Director General
                 if ($req->dg_approved_by && stripos($req->dg_approved_by, 'bypassed') === false) {
                     $user = \App\Models\User::where('name', $req->dg_approved_by)->first();
+                    $dgRole = $user?->role ?? 'Director General';
+                    if (in_array($dgRole, ['Main Admin', 'Sub Main Admin'])) {
+                        $dgRole = 'Head of Admin';
+                    }
                     $approvals[] = [
-                        'title' => 'Director General',
+                        'stage' => 'Director General Approval',
                         'name' => $req->dg_approved_by,
-                        'sub' => 'DG / Final Authorizer',
-                        'signature' => $user && $user->signature ? Storage::url($user->signature) : null,
-                        'date' => $req->dg_approved_at ? \Carbon\Carbon::parse($req->dg_approved_at)->format('d M Y') : $req->created_at->format('d M Y')
+                        'role' => $dgRole,
+                        'department' => $user?->department ?? 'Executive Directorate',
+                        'date_time' => $req->dg_approved_at ? \Carbon\Carbon::parse($req->dg_approved_at)->format('d M Y, h:i A') : $req->created_at->format('d M Y, h:i A')
                     ];
                 }
                 
                 // 4. Head of Stores (Processor)
                 if ($req->processor?->name && stripos($req->processor->name, 'bypassed') === false) {
+                    $processorRole = $req->processor->role ?? 'Head of Stores';
+                    if (in_array($processorRole, ['Main Admin', 'Sub Main Admin'])) {
+                        $processorRole = 'Head of Admin';
+                    }
                     $approvals[] = [
-                        'title' => 'Head of Stores',
+                        'stage' => 'Stores Processing & Release',
                         'name' => $req->processor->name,
-                        'sub' => 'Stores Controller',
-                        'signature' => $req->processor->signature ? Storage::url($req->processor->signature) : null,
-                        'date' => $req->processed_at ? \Carbon\Carbon::parse($req->processed_at)->format('d M Y') : $req->created_at->format('d M Y')
+                        'role' => $processorRole,
+                        'department' => $req->processor->department ?? 'Stores Department',
+                        'date_time' => $req->processed_at ? \Carbon\Carbon::parse($req->processed_at)->format('d M Y, h:i A') : $req->created_at->format('d M Y, h:i A')
                     ];
                 }
             @endphp
 
             @if(count($approvals) > 0)
                 <div class="table-section-title" style="margin-top: 2rem;">
-                    Requisition Approvals &amp; Authorizations
+                    Requisition Approvals &amp; Authorizations Log
                 </div>
-                <div class="signatures-section" style="grid-template-columns: repeat({{ count($approvals) }}, 1fr); margin-top: 1.5rem; margin-bottom: 2rem;">
+                <div class="signatures-section" style="grid-template-columns: repeat({{ min(count($approvals), 4) }}, 1fr); margin-top: 1rem; margin-bottom: 2rem; gap: 1.25rem; display: grid;">
                     @foreach($approvals as $appr)
-                        <div class="signature-block">
-                            <div class="signature-space">
-                                @if($appr['signature'])
-                                    <img src="{{ $appr['signature'] }}" class="signature-img" alt="{{ $appr['title'] }} Signature">
-                                @else
-                                    <div style="height: 65px; border-bottom: 1px dashed var(--border-color); width: 140px; margin: 0 auto; opacity: 0.45;"></div>
-                                @endif
+                        @php
+                            $displayRole = $appr['role'];
+                            if (in_array($displayRole, ['Main Admin', 'Sub Main Admin'])) {
+                                $displayRole = 'Head of Admin';
+                            }
+                        @endphp
+                        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; text-align: left; box-sizing: border-box;">
+                            <div style="font-size: 0.68rem; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem;">
+                                {{ $appr['stage'] }}
                             </div>
-                            <div class="signature-line">
-                                <strong>{{ $appr['name'] }}</strong>
+                            <div style="font-size: 0.92rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.25rem;">
+                                {{ $appr['name'] }}
                             </div>
-                            <div class="signature-title">
-                                {{ $appr['title'] }}
+                            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.2rem;">
+                                <strong>Role:</strong> {{ $displayRole }}
                             </div>
-                            <div class="signature-sub">
-                                {{ $appr['sub'] }}
+                            <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.2rem;">
+                                <strong>Dept:</strong> {{ $appr['department'] }}
                             </div>
-                            <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">
-                                Date: {{ $appr['date'] }}
+                            <div style="font-size: 0.7rem; font-weight: 800; color: var(--primary); margin-top: 0.5rem; padding-top: 0.4rem; border-top: 1px dashed var(--border-color);">
+                                <strong>Date &amp; Time:</strong> {{ $appr['date_time'] }}
                             </div>
                         </div>
                     @endforeach

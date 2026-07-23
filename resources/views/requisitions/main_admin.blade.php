@@ -1004,21 +1004,21 @@
         <div class="req-stat-card">
             <div style="width:48px;height:48px;background:rgba(136,19,55,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:24px;color:#881337;"></i></div>
             <div>
-                <div style="font-size:1.75rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['pending'] }}</div>
+                <div class="stat-number-val" style="font-size:1.75rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['pending'] }}</div>
                 <div style="font-size:.75rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">Awaiting My Review</div>
             </div>
         </div>
         <div class="req-stat-card">
             <div style="width:48px;height:48px;background:rgba(136,19,55,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="check-circle" style="width:24px;color:#881337;"></i></div>
             <div>
-                <div style="font-size:1.75rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['approved'] }}</div>
+                <div class="stat-number-val" style="font-size:1.75rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['approved'] }}</div>
                 <div style="font-size:.75rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">Approved by Me</div>
             </div>
         </div>
         <div class="req-stat-card">
             <div style="width:48px;height:48px;background:rgba(239,68,68,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="x-circle" style="width:24px;color:#ef4444;"></i></div>
             <div>
-                <div style="font-size:1.75rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['declined'] }}</div>
+                <div class="stat-number-val" style="font-size:1.75rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['declined'] }}</div>
                 <div style="font-size:.75rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">Declined by Me</div>
             </div>
         </div>
@@ -2177,6 +2177,9 @@
             return;
         }
 
+        // Close the underlying modal container so it disappears when the confirmation SweetAlert displays
+        closeModal();
+
         const isActingAsHOD = isBackupActive && (window.currentReqData && window.currentReqData.department === "{{ auth()->user()->department }}");
 
         Swal.fire({
@@ -2233,7 +2236,6 @@
                             icon: 'success',
                             confirmButtonColor: '#881337'
                         }).then(() => {
-                            closeModal();
                             window.location.reload();
                         });
                     } else {
@@ -2270,7 +2272,7 @@
                     if (abortRes.isConfirmed) {
                         closeModal();
                     } else {
-                        setTimeout(() => processDecision(decision), 150);
+                        openRequisitionModal(currentReqId);
                     }
                 });
             }
@@ -2865,6 +2867,26 @@
         if (typeof lucide !== 'undefined') lucide.createIcons();
         loadProvisioningData();
 
+        // Auto-submit filter form on select/date changes
+        const filterForm = document.getElementById('filter-form');
+        if (filterForm) {
+            filterForm.querySelectorAll('select, input[type="date"]').forEach(el => {
+                el.addEventListener('change', () => {
+                    filterForm.submit();
+                });
+            });
+            const deptInput = document.getElementById('filter-department');
+            if (deptInput) {
+                let deptTimeout = null;
+                deptInput.addEventListener('input', () => {
+                    clearTimeout(deptTimeout);
+                    deptTimeout = setTimeout(() => {
+                        filterForm.submit();
+                    }, 600);
+                });
+            }
+        }
+
         // Auto-open specific requisition if open_id is present in query parameters
         const urlParams = new URLSearchParams(window.location.search);
         const openId = urlParams.get('open_id');
@@ -2874,14 +2896,14 @@
     });
 
     // Helper to normalize HTML content for stable comparison (ignores Lucide icon expansions and whitespace differences)
-    function getNormalizedHTML(element) {
+    function cleanHtmlForComparison(element) {
         if (!element) return '';
         const clone = element.cloneNode(true);
         
-        // Remove all icon elements to prevent Lucide translation differences from causing false change detection
+        // Remove all icon elements and SVG expansions to prevent false change detection
         clone.querySelectorAll('svg, i, [data-lucide]').forEach(el => el.remove());
         
-        // Normalize all follow-up buttons to prevent differences in "Follow Up" vs "Reminder Sent" states from triggering a false update
+        // Normalize follow-up buttons
         clone.querySelectorAll('button[onclick*="sendFollowUp"]').forEach(btn => {
             const placeholder = document.createElement('button');
             placeholder.className = 'follow-up-placeholder';
@@ -2891,76 +2913,93 @@
         return clone.innerHTML.replace(/\s+/g, ' ').trim();
     }
 
-    // Auto silent refresh every 30 seconds (paused when tab is hidden)
-    let _mainAdminRefreshPaused = document.hidden;
-    document.addEventListener('visibilitychange', () => { _mainAdminRefreshPaused = document.hidden; });
-    setInterval(async () => {
-        if (_mainAdminRefreshPaused) return;
+    // Auto silent refresh every 8 seconds (zero-blink update)
+    async function pollMainAdminRequisitions() {
+        if (document.hidden) return;
+
         const reqModal = document.getElementById('reqModal');
-        
-        const isModalOpen = (reqModal && reqModal.classList.contains('open'));
-                            
+        const sraModal = document.getElementById('sraOversightModal');
+        const isReqModalOpen = (reqModal && reqModal.classList.contains('open'));
+        const isSraModalOpen = (sraModal && sraModal.classList.contains('open'));
         const isSwalOpen = typeof Swal !== 'undefined' && Swal.isVisible();
         
-        if (isModalOpen || isSwalOpen) {
+        if (isReqModalOpen || isSraModalOpen || isSwalOpen) {
+            return;
+        }
+
+        // Skip refresh if user is actively interacting with an input/select/textarea
+        if (document.activeElement && ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
             return;
         }
         
         try {
-            const response = await fetch(window.location.href);
+            const response = await fetch(window.location.href, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
             if (!response.ok) return;
             const html = await response.text();
             
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
-            let updated = false;
             
-            // Update stats cards
-            const newStats = doc.getElementById('oversight-stats-container');
-            const currentStats = document.getElementById('oversight-stats-container');
-            if (newStats && currentStats) {
-                const normNewStats = getNormalizedHTML(newStats);
-                const normCurStats = getNormalizedHTML(currentStats);
-                if (normNewStats !== normCurStats) {
-                    currentStats.innerHTML = newStats.innerHTML;
-                    updated = true;
+            // 1. Update stats cards numbers cleanly without touching icon DOMs or layout
+            const newStatEls = doc.querySelectorAll('#oversight-stats-container .stat-number-val');
+            const curStatEls = document.querySelectorAll('#oversight-stats-container .stat-number-val');
+            curStatEls.forEach((el, idx) => {
+                if (newStatEls[idx]) {
+                    const newVal = newStatEls[idx].textContent.trim();
+                    if (el.textContent.trim() !== newVal) {
+                        el.textContent = newVal;
+                    }
                 }
-            }
+            });
             
-            // Update table & pagination wrapper
-            const newTable = doc.getElementById('oversight-table-wrapper');
-            const currentTable = document.getElementById('oversight-table-wrapper');
-            if (newTable && currentTable) {
-                const normNewTable = getNormalizedHTML(newTable);
-                const normCurTable = getNormalizedHTML(currentTable);
-                if (normNewTable !== normCurTable) {
-                    // Remove animate-slide-up class from the fetched table rows to prevent layout flashing/blinking
-                    newTable.querySelectorAll('.animate-slide-up').forEach(el => {
+            // 2. Table row signature diffing — update ONLY tbody if table text content actually changed
+            const currentTbody = document.querySelector('#oversight-table-wrapper .oversight-table tbody');
+            const newTbody = doc.querySelector('#oversight-table-wrapper .oversight-table tbody');
+
+            if (currentTbody && newTbody) {
+                const currentRows = Array.from(currentTbody.querySelectorAll('tr'));
+                const newRows = Array.from(newTbody.querySelectorAll('tr'));
+
+                const currentSig = currentRows.map(r => r.innerText.replace(/\s+/g, ' ').trim()).join('||');
+                const newSig = newRows.map(r => r.innerText.replace(/\s+/g, ' ').trim()).join('||');
+
+                if (currentSig !== newSig) {
+                    newTbody.querySelectorAll('.animate-slide-up').forEach(el => {
                         el.classList.remove('animate-slide-up');
                     });
-                    currentTable.innerHTML = newTable.innerHTML;
+                    currentTbody.innerHTML = newTbody.innerHTML;
                     
-                    // Reapply local "Reminder Sent" states to the newly loaded buttons if applicable
                     sentFollowUps.forEach(id => {
-                        const btn = currentTable.querySelector(`button[onclick*="sendFollowUp(${id},"]`);
-                        if (btn) {
-                            applyFollowUpSentStyle(btn);
-                        }
+                        const btn = currentTbody.querySelector(`button[onclick*="sendFollowUp(${id},"]`);
+                        if (btn) applyFollowUpSentStyle(btn);
                     });
-                    
-                    updated = true;
+
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
                 }
             }
-            
-            if (updated && typeof lucide !== 'undefined') {
-                lucide.createIcons();
+
+            // 3. Update pagination if changed
+            const currentPag = document.querySelector('#oversight-table-wrapper .pagination-container');
+            const newPag = doc.querySelector('#oversight-table-wrapper .pagination-container');
+            if (currentPag && newPag) {
+                if (currentPag.innerText.replace(/\s+/g, ' ').trim() !== newPag.innerText.replace(/\s+/g, ' ').trim()) {
+                    currentPag.innerHTML = newPag.innerHTML;
+                }
             }
 
             await loadProvisioningData(true);
         } catch (e) {
             console.error('Silent refresh failed:', e);
         }
-    }, 30000);
+    }
+
+    setInterval(pollMainAdminRequisitions, 8000);
 
 
     function toggleWorkflowCategory(code, card) {

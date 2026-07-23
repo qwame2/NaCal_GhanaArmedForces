@@ -660,4 +660,56 @@ class DGRequisitionTest extends TestCase
         $this->assertStringContainsString('id="sidebar-badge-main-reqs"', $contentStores2);
         $this->assertStringContainsString('display: flex', $contentStores2);
     }
+
+    /**
+     * Test that when Head of HR (Sub Main Admin) makes a requisition request
+     * for an item category requiring DG approval, it requires DG approval.
+     */
+    public function test_head_of_hr_self_submission_for_dg_category_requires_dg_approval(): void
+    {
+        \App\Models\Setting::set('dg_approval_categories', ['B']);
+
+        $headOfHr = User::factory()->create([
+            'name'                => 'Head of HR',
+            'username'            => 'headofhr',
+            'phone'               => '0241234567',
+            'service_number'      => 'HR001',
+            'role'                => 'Sub Main Admin',
+            'department'          => 'Human Resource Management Department',
+            'registration_status' => 'approved',
+            'is_active'           => true,
+        ]);
+
+        $this->createStock('Patrol Armored SUV', 'B', 10);
+
+        $response = $this->actingAs($headOfHr)->postJson('/requisitions', [
+            'requester_name' => 'Head of HR',
+            'department'     => 'Human Resource Management Department',
+            'rank_or_title'  => 'HR Director',
+            'purpose'        => 'Staff Transport Operations',
+            'priority'       => 'urgent',
+            'usage_type'     => 'permanent',
+            'items'          => [
+                [
+                    'description'        => 'Patrol Armored SUV',
+                    'category'           => 'B',
+                    'unit'               => 'Vehicle',
+                    'quantity_requested' => 1,
+                    'remarks'            => 'Requires DG clearance',
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(200)->assertJson(['success' => true]);
+
+        $requisition = StoreRequisition::latest()->first();
+        $this->assertNotNull($requisition);
+
+        // HOD and Authorizer steps should be auto-approved, but DG approval MUST be required
+        $this->assertEquals('approved', $requisition->origin_admin_status);
+        $this->assertEquals('approved', $requisition->main_admin_status);
+        $this->assertTrue((bool)$requisition->requires_dg_approval, 'Head of HR request for DG category must require DG approval.');
+        $this->assertEquals('pending', $requisition->dg_status);
+        $this->assertTrue((bool)$requisition->is_ready_for_dg_approval, 'Requisition must be ready for DG approval.');
+    }
 }

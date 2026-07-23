@@ -53,8 +53,16 @@ class DGController extends Controller
             $itemsQuery->whereDate('inventory_batches.entry_date', '<=', $request->date_to);
         }
         if ($request->filled('search_query')) {
-            $search = $request->search_query;
-            $itemsQuery->where('inventory_items.description', 'LIKE', "%{$search}%");
+            $search = trim($request->search_query);
+            $itemsQuery->where(function($q) use ($search) {
+                $q->where('inventory_items.description', 'LIKE', "%{$search}%")
+                  ->orWhere('inventory_items.serial_number', 'LIKE', "%{$search}%")
+                  ->orWhere('inventory_items.remarks', 'LIKE', "%{$search}%")
+                  ->orWhere('inventory_batches.supplier_name', 'LIKE', "%{$search}%")
+                  ->orWhere('inventory_batches.donor_name', 'LIKE', "%{$search}%")
+                  ->orWhere('inventory_batches.ledge_category', 'LIKE', "%{$search}%")
+                  ->orWhere('inventory_batches.acquisition_type', 'LIKE', "%{$search}%");
+            });
         }
         $inventoryItems = $itemsQuery->paginate(10, ['*'], 'items_page')->withQueryString();
 
@@ -70,24 +78,38 @@ class DGController extends Controller
             $reqsQuery->whereDate('created_at', '<=', $request->date_to);
         }
         if ($request->filled('search_query')) {
-            $search = $request->search_query;
+            $search = trim($request->search_query);
             $reqsQuery->where(function ($q) use ($search) {
-                $q->where('requester_name', 'LIKE', "%{$search}%")
+                $q->where('unique_id', 'LIKE', "%{$search}%")
+                  ->orWhere('requester_name', 'LIKE', "%{$search}%")
                   ->orWhere('department', 'LIKE', "%{$search}%")
-                  ->orWhere('purpose', 'LIKE', "%{$search}%");
+                  ->orWhere('purpose', 'LIKE', "%{$search}%")
+                  ->orWhere('rank_or_title', 'LIKE', "%{$search}%")
+                  ->orWhereHas('items', function($sq) use ($search) {
+                      $sq->where('description', 'LIKE', "%{$search}%");
+                  });
             });
         }
         $requisitions = $reqsQuery->paginate(10, ['*'], 'reqs_page')->withQueryString();
 
         // 4. User Presence Overview (Active / online user accounts)
         $usersQuery = User::where('registration_status', 'approved')->orderBy('name', 'asc');
+        if ($request->filled('date_from')) {
+            $usersQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $usersQuery->whereDate('created_at', '<=', $request->date_to);
+        }
         if ($request->filled('search_query')) {
-            $search = $request->search_query;
+            $search = trim($request->search_query);
             $usersQuery->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
                   ->orWhere('username', 'LIKE', "%{$search}%")
                   ->orWhere('role', 'LIKE', "%{$search}%")
-                  ->orWhere('department', 'LIKE', "%{$search}%");
+                  ->orWhere('department', 'LIKE', "%{$search}%")
+                  ->orWhere('service_number', 'LIKE', "%{$search}%")
+                  ->orWhere('phone', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%");
             });
         }
         $users = $usersQuery->paginate(10, ['*'], 'users_page')->withQueryString();
@@ -116,6 +138,8 @@ class DGController extends Controller
                 $q->where('issued_items.description', 'LIKE', "%{$search}%")
                   ->orWhere('issuances.beneficiary', 'LIKE', "%{$search}%")
                   ->orWhere('issuances.authority', 'LIKE', "%{$search}%")
+                  ->orWhere('issuances.issuance_type', 'LIKE', "%{$search}%")
+                  ->orWhere('store_requisitions.unique_id', 'LIKE', "%{$search}%")
                   ->orWhere('store_requisitions.collector_name', 'LIKE', "%{$search}%")
                   ->orWhere('confirming_officers.name', 'LIKE', "%{$search}%");
             });
@@ -157,6 +181,7 @@ class DGController extends Controller
                 $q->where('issued_items.description', 'LIKE', "%{$search}%")
                   ->orWhere('issuances.beneficiary', 'LIKE', "%{$search}%")
                   ->orWhere('returned_items.remarks', 'LIKE', "%{$search}%")
+                  ->orWhere('store_requisitions.unique_id', 'LIKE', "%{$search}%")
                   ->orWhere('store_requisitions.collector_name', 'LIKE', "%{$search}%")
                   ->orWhere('confirming_officers.name', 'LIKE', "%{$search}%");
             });
@@ -168,6 +193,123 @@ class DGController extends Controller
             $returnedItemsQuery->whereDate('returned_items.return_date', '<=', $request->date_to);
         }
         $returnedItems = $returnedItemsQuery->paginate(10, ['*'], 'returned_page')->withQueryString();
+
+        // 5. Requisition Receipts (Fulfilled/Approved requisitions with printable receipts)
+        $reqReceiptsQuery = StoreRequisition::with(['items', 'requester'])
+            ->whereIn('status', ['approved', 'partially_approved'])
+            ->orderBy('updated_at', 'desc');
+
+        if ($request->filled('date_from')) {
+            $reqReceiptsQuery->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $reqReceiptsQuery->whereDate('created_at', '<=', $request->date_to);
+        }
+        if ($request->filled('search_query')) {
+            $search = trim($request->search_query);
+            $reqReceiptsQuery->where(function ($q) use ($search) {
+                $q->where('unique_id', 'LIKE', "%{$search}%")
+                  ->orWhere('requester_name', 'LIKE', "%{$search}%")
+                  ->orWhere('department', 'LIKE', "%{$search}%")
+                  ->orWhere('purpose', 'LIKE', "%{$search}%")
+                  ->orWhere('rank_or_title', 'LIKE', "%{$search}%")
+                  ->orWhereHas('items', function($sq) use ($search) {
+                      $sq->where('description', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
+        $reqReceipts = $reqReceiptsQuery->paginate(10, ['*'], 'req_receipts_page')->withQueryString();
+
+        // 6. SRA Receipts (Inventory SRAs & Service SRAs approved/processed)
+        $sraTypeFilter = $request->sra_type;
+
+        $inventorySraBatches = collect();
+        if (empty($sraTypeFilter) || $sraTypeFilter === 'inventory') {
+            $inventorySrasQuery = \App\Models\InventoryBatch::with(['items', 'recorder'])
+                ->where('supplier_status', '!=', 'System Draft')
+                ->where('approval_status', 'approved');
+
+            if ($request->filled('date_from')) {
+                $inventorySrasQuery->whereDate('entry_date', '>=', $request->date_from);
+            }
+            if ($request->filled('date_to')) {
+                $inventorySrasQuery->whereDate('entry_date', '<=', $request->date_to);
+            }
+            if ($request->filled('search_query')) {
+                $search = trim($request->search_query);
+                $inventorySrasQuery->where(function($q) use ($search) {
+                    $q->where('supplier_name', 'LIKE', "%{$search}%")
+                      ->orWhere('donor_name', 'LIKE', "%{$search}%")
+                      ->orWhere('id', 'LIKE', "%{$search}%")
+                      ->orWhereHas('items', function($sq) use ($search) {
+                          $sq->where('description', 'LIKE', "%{$search}%");
+                      });
+                });
+            }
+            $inventorySraBatches = $inventorySrasQuery->get();
+        }
+
+        $serviceSraList = collect();
+        if (empty($sraTypeFilter) || $sraTypeFilter === 'service') {
+            $serviceSrasQuery = \App\Models\ServiceSra::with('submitter')
+                ->where('status', 'approved');
+
+            if ($request->filled('date_from')) {
+                $serviceSrasQuery->whereDate('created_at', '>=', $request->date_from);
+            }
+            if ($request->filled('date_to')) {
+                $serviceSrasQuery->whereDate('created_at', '<=', $request->date_to);
+            }
+            if ($request->filled('search_query')) {
+                $search = trim($request->search_query);
+                $serviceSrasQuery->where(function($q) use ($search) {
+                    $q->where('sra_number', 'LIKE', "%{$search}%")
+                      ->orWhere('supplier_name', 'LIKE', "%{$search}%")
+                      ->orWhere('details', 'LIKE', "%{$search}%")
+                      ->orWhere('dept', 'LIKE', "%{$search}%");
+                });
+            }
+            $serviceSraList = $serviceSrasQuery->get();
+        }
+
+        $sraMerged = collect();
+        foreach ($inventorySraBatches as $batch) {
+            $sraMerged->push((object)[
+                'id' => $batch->id,
+                'sra_number' => 'SRA-' . str_pad($batch->id, 5, '0', STR_PAD_LEFT),
+                'type' => 'Inventory SRA',
+                'supplier_or_donor' => $batch->supplier_name ?: ($batch->donor_name ?: 'NACOC Stores'),
+                'details' => $batch->items->pluck('description')->take(3)->join(', '),
+                'creator' => $batch->recorder->name ?? 'Store Officer',
+                'date' => $batch->entry_date ? \Carbon\Carbon::parse($batch->entry_date) : $batch->created_at,
+                'receipt_url' => route('receiveditems.sra', $batch->id)
+            ]);
+        }
+        foreach ($serviceSraList as $sra) {
+            $sraMerged->push((object)[
+                'id' => $sra->id,
+                'sra_number' => $sra->sra_number,
+                'type' => 'Service SRA',
+                'supplier_or_donor' => $sra->supplier_name,
+                'details' => $sra->details,
+                'creator' => $sra->submitter->name ?? 'Store Officer',
+                'date' => $sra->created_at,
+                'receipt_url' => route('service-sra.receipt', $sra->id)
+            ]);
+        }
+
+        $sraMergedSorted = $sraMerged->sortByDesc('date');
+        $sraPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage('sra_receipts_page');
+        $sraPerPage = 10;
+        $sraCurrentItems = $sraMergedSorted->slice(($sraPage - 1) * $sraPerPage, $sraPerPage)->values();
+        $sraReceipts = new \Illuminate\Pagination\LengthAwarePaginator(
+            $sraCurrentItems,
+            $sraMergedSorted->count(),
+            $sraPerPage,
+            $sraPage,
+            ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath(), 'pageName' => 'sra_receipts_page']
+        );
+        $sraReceipts->withQueryString();
 
         $ledgeMap = Setting::getCategories();
 
@@ -182,6 +324,8 @@ class DGController extends Controller
             'users',
             'issuedItems',
             'returnedItems',
+            'reqReceipts',
+            'sraReceipts',
             'ledgeMap'
         ));
     }

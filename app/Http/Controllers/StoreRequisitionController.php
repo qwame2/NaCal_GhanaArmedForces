@@ -223,9 +223,8 @@ class StoreRequisitionController extends Controller
             'origin_approved_by'  => $originApprovedBy,
             'main_admin_status'   => $mainAdminStatus,
             'stores_approved_by'  => $isSubMainAdminOwnDept ? $user->name . ' (Delegator/Authorizer)' : null,
-            // Sub Main Admin self-submissions bypass ALL intermediate steps including DG — straight to Head of Stores
-            'requires_dg_approval' => $isSubMainAdminOwnDept ? false : $requiresDgApproval,
-            'dg_status'            => $isSubMainAdminOwnDept ? null : ($requiresDgApproval ? 'pending' : null),
+            'requires_dg_approval' => $requiresDgApproval,
+            'dg_status'            => $requiresDgApproval ? 'pending' : null,
         ]);
 
         foreach ($request->items as $item) {
