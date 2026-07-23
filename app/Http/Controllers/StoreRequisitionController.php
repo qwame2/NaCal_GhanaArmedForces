@@ -336,7 +336,7 @@ class StoreRequisitionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Requisition submitted successfully. The department head/store will review and process your request.',
+            'message' => 'Requisition submitted successfully. Your department head will review and process your request.',
             'id'      => $requisition->id,
         ]);
     }
@@ -1421,6 +1421,8 @@ class StoreRequisitionController extends Controller
         if (auth()->user()->role === 'Requisitioner') {
             abort(403, 'Unauthorized.');
         }
+
+
 
         $query = StoreRequisition::with(['items', 'requester', 'processor', 'collector'])
             ->orderByRaw("CASE WHEN (status IN ('approved', 'partially_approved') AND collected_at IS NULL) THEN 0 ELSE 1 END")

@@ -76,13 +76,18 @@
     }
 
     .modal-overlay {
-        position: fixed;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
         inset: 0 !important;
         width: 100vw !important;
         height: 100vh !important;
-        background: rgba(15, 23, 42, 0.45);
-        backdrop-filter: blur(6px);
-        z-index: 99999 !important;
+        background: rgba(15, 23, 42, 0.65) !important;
+        backdrop-filter: blur(14px) !important;
+        -webkit-backdrop-filter: blur(14px) !important;
+        z-index: 1000000 !important;
         display: none;
         align-items: center;
         justify-content: center;
@@ -1586,6 +1591,9 @@
             console.error('Modal element #reqModal not found in DOM.');
             return;
         }
+        if (reqModal.parentElement !== document.body) {
+            document.body.appendChild(reqModal);
+        }
         reqModal.classList.add('open');
         document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);"><div style="width:24px;height:24px;border:2px solid rgba(0,0,0,.1);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px;"></div>Loading details...</div>';
         document.getElementById('modalFooter').innerHTML = '';
@@ -1824,7 +1832,7 @@
                 isProcessed = true;
             } else if (data.origin_admin_status === 'pending') {
                 isProcessed = true;
-            } else if (data.main_admin_status === 'approved' && data.requires_dg_approval && data.dg_status !== 'approved') {
+            } else if (data.main_admin_status !== 'pending') {
                 isProcessed = true;
             }
         } else {
@@ -2244,6 +2252,27 @@
                         confirmButtonColor: '#881337'
                     });
                 }
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'Are you sure you want to abort the request?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes',
+                    cancelButtonText: 'No',
+                    confirmButtonColor: '#881337',
+                    cancelButtonColor: '#64748b',
+                    customClass: {
+                        confirmButton: 'premium-swal-btn',
+                        cancelButton: 'premium-swal-cancel-btn'
+                    }
+                }).then((abortRes) => {
+                    if (abortRes.isConfirmed) {
+                        closeModal();
+                    } else {
+                        setTimeout(() => processDecision(decision), 150);
+                    }
+                });
             }
         });
     }
@@ -2441,6 +2470,27 @@
                         confirmButtonColor: '#881337'
                     });
                 }
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'Are you sure you want to abort the request?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes',
+                    cancelButtonText: 'No',
+                    confirmButtonColor: '#881337',
+                    cancelButtonColor: '#64748b',
+                    customClass: {
+                        confirmButton: 'premium-swal-btn',
+                        cancelButton: 'premium-swal-cancel-btn'
+                    }
+                }).then((abortRes) => {
+                    if (abortRes.isConfirmed) {
+                        closeModal();
+                    } else {
+                        setTimeout(() => processAlternativeResponse(response), 150);
+                    }
+                });
             }
         });
     }
@@ -3136,6 +3186,10 @@
         currentSraId = id;
         currentSraStage = stage;
 
+        const sraModal = document.getElementById('sraOversightModal');
+        if (sraModal && sraModal.parentElement !== document.body) {
+            document.body.appendChild(sraModal);
+        }
         document.getElementById('sra-modal-notes').value = '';
         document.getElementById('sraOversightModal').classList.add('open');
         document.getElementById('sra-modal-stage-title').textContent = stage === 'stores' ? 'Final Stores Review' : 'Admin SRA Review';
@@ -3241,47 +3295,73 @@
             icon: action === 'approved' ? 'question' : 'warning',
             showCancelButton: true,
             confirmButtonText: label,
+            cancelButtonText: 'Abort',
             confirmButtonColor: action === 'approved' ? '#881337' : '#ef4444',
-            cancelButtonColor: '#64748b',
+            cancelButtonColor: '#ef4444',
+            customClass: {
+                confirmButton: 'premium-swal-btn',
+                cancelButton: 'premium-swal-cancel-btn'
+            }
         }).then(async result => {
-            if (!result.isConfirmed) return;
+            if (result.isConfirmed) {
+                const endpoint = currentSraStage === 'stores' 
+                    ? `{{ url('/stores/service-sra') }}/${currentSraId}/process`
+                    : `{{ url('/admin/service-sra') }}/${currentSraId}/process`;
 
-            const endpoint = currentSraStage === 'stores' 
-                ? `{{ url('/stores/service-sra') }}/${currentSraId}/process`
-                : `{{ url('/admin/service-sra') }}/${currentSraId}/process`;
+                const $btn = document.getElementById(action === 'approved' ? 'sraBtnApprove' : 'sraBtnDecline');
+                const origHtml = $btn.innerHTML;
+                $btn.innerHTML = '<i data-lucide="loader" style="width:16px;"></i> Processing...';
+                $btn.disabled = true;
+                if (window.lucide) lucide.createIcons();
 
-            const $btn = document.getElementById(action === 'approved' ? 'sraBtnApprove' : 'sraBtnDecline');
-            const origHtml = $btn.innerHTML;
-            $btn.innerHTML = '<i data-lucide="loader" style="width:16px;"></i> Processing...';
-            $btn.disabled = true;
-            if (window.lucide) lucide.createIcons();
-
-            try {
-                const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({ action, notes }),
-                });
-                const json = await res.json();
-                if (json.success) {
-                    closeSraOversightModal();
-                    Swal.fire('Success', json.message, 'success').then(() => {
-                        window.location.reload();
+                try {
+                    const res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({ action, notes }),
                     });
-                } else {
-                    Swal.fire('Error', json.message, 'error');
+                    const json = await res.json();
+                    if (json.success) {
+                        closeSraOversightModal();
+                        Swal.fire('Success', json.message, 'success').then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', json.message, 'error');
+                        $btn.innerHTML = origHtml;
+                        $btn.disabled = false;
+                    }
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire('Error', 'Network error. Please try again.', 'error');
                     $btn.innerHTML = origHtml;
                     $btn.disabled = false;
                 }
-            } catch (err) {
-                console.error(err);
-                Swal.fire('Error', 'Network error. Please try again.', 'error');
-                $btn.innerHTML = origHtml;
-                $btn.disabled = false;
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'Are you sure you want to abort the request?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes',
+                    cancelButtonText: 'No',
+                    confirmButtonColor: '#881337',
+                    cancelButtonColor: '#64748b',
+                    customClass: {
+                        confirmButton: 'premium-swal-btn',
+                        cancelButton: 'premium-swal-cancel-btn'
+                    }
+                }).then((abortRes) => {
+                    if (abortRes.isConfirmed) {
+                        closeSraOversightModal();
+                    } else {
+                        setTimeout(() => window.processOversightSra(action), 150);
+                    }
+                });
             }
         });
     };

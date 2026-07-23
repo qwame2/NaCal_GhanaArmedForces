@@ -302,6 +302,23 @@ class AppServiceProvider extends ServiceProvider
 
         view()->composer(['layouts.dashboard', 'layouts.admin'], function ($view) {
             if (auth()->check()) {
+                // Check SRA batch creation approvals for this user
+                try {
+                    $approvedCreations = \App\Models\EditRequest::where('user_id', auth()->id())
+                        ->where('item_type', 'batch_creation')
+                        ->where('status', 'approved')
+                        ->get();
+                    if ($approvedCreations->isNotEmpty()) {
+                        $view->with('customToastMessage', 'Stock entry request successfully authorized and added to live stock.');
+                        foreach ($approvedCreations as $ac) {
+                            $ac->status = 'completed';
+                            $ac->save();
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Fail silently
+                }
+
                 // Fetch acknowledged notifications from Database (Permanent) or Session (Fallback)
                 try {
                     $acknowledged = \App\Models\NotificationAcknowledgement::where('user_id', auth()->id())

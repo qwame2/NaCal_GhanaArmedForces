@@ -70,12 +70,16 @@
         #messageDetailModal {
             z-index: 1000000 !important;
             position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
             inset: 0 !important;
             width: 100vw !important;
             height: 100vh !important;
-            background: rgba(15, 23, 42, 0.5) !important;
-            backdrop-filter: blur(8px) !important;
-            -webkit-backdrop-filter: blur(8px) !important;
+            background: rgba(15, 23, 42, 0.65) !important;
+            backdrop-filter: blur(14px) !important;
+            -webkit-backdrop-filter: blur(14px) !important;
         }
         .bottom-sheet {
             z-index: 1000001 !important;
@@ -1221,6 +1225,10 @@
                     showToast(tObj.title, tObj.message, tObj.type || 'success', tObj.duration || 300000);
                 }
             } catch(e) {}
+
+            @if(isset($customToastMessage))
+                showToast('Item Entry Authorized', "{!! addslashes($customToastMessage) !!}", 'success', 300000);
+            @endif
 
             @if(session('success'))
                 showToast('Success', "{{ session('success') }}", 'success', {{ session('flash_duration', 10000) }});

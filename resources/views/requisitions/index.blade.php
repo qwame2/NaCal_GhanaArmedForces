@@ -1488,7 +1488,7 @@
         }
 
         .sticky-cart-info strong {
-            color: var(--store-orange);
+            color: #ffffff;
             font-weight: 800;
             font-size: 1.15rem;
         }

@@ -1605,6 +1605,10 @@
             }
         } catch(e) {}
 
+        @if(isset($customToastMessage))
+            showToast('Item Entry Authorized', "{!! addslashes($customToastMessage) !!}", 'success', 300000);
+        @endif
+
         @if(session('success'))
             showToast('Success', "{!! addslashes(session('success')) !!}", 'success', {{ session('flash_duration', 10000) }});
         @endif
