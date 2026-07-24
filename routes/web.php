@@ -1211,7 +1211,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
             }
         }
 
-        $pendingRequisitions = \App\Models\StoreRequisition::where('status', 'pending')->where('main_admin_status', 'approved')->count();
+        $pendingRequisitions = \App\Models\StoreRequisition::awaitingHeadOfStoresReview()->count();
         $pendingRegistrations = \App\Models\User::where('registration_status', 'pending')->count();
 
         return response()->json([

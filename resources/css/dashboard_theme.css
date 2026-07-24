@@ -20,7 +20,7 @@ body {
     overflow-x: hidden;
 }
 
-/* Sidebar Styling */
+/* Sidebar & Layout Core Styling */
 .sidebar {
     width: var(--sidebar-width);
     height: 100vh;
@@ -31,8 +31,190 @@ body {
     color: white;
     padding: 1.5rem;
     z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
     transition: var(--transition);
 }
+
+.main-wrapper {
+    margin-left: var(--sidebar-width);
+    padding: 0 2rem 4rem 2rem;
+    min-height: 100vh;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom Scrollbar for Sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+/* Desktop Collapsed/Minimized Sidebar Mode (min-width: 1025px) */
+@media (min-width: 1025px) {
+    .sidebar.collapsed,
+    .sidebar.minimized {
+        width: 80px !important;
+        padding: 1.25rem 0.5rem !important;
+    }
+
+    .sidebar.collapsed .logo-container h1,
+    .sidebar.minimized .logo-container h1,
+    .sidebar.collapsed .sidebar-branding-subtitle,
+    .sidebar.minimized .sidebar-branding-subtitle,
+    .sidebar.collapsed .brand-text,
+    .sidebar.minimized .brand-text,
+    .sidebar.collapsed .nav-section-title,
+    .sidebar.minimized .nav-section-title,
+    .sidebar.collapsed .nav-label,
+    .sidebar.minimized .nav-label,
+    .sidebar.collapsed .nav-link span:not([id^="sidebar-badge-"]),
+    .sidebar.minimized .nav-link span:not([id^="sidebar-badge-"]),
+    .sidebar.collapsed .user-profile-card div:not(.logo-icon),
+    .sidebar.minimized .user-profile-card div:not(.logo-icon),
+    .sidebar.collapsed .user-profile-card span,
+    .sidebar.minimized .user-profile-card span,
+    .sidebar.collapsed .user-meta,
+    .sidebar.minimized .user-meta,
+    .sidebar.collapsed .sidebar-footer form button span,
+    .sidebar.minimized .sidebar-footer form button span {
+        display: none !important;
+    }
+
+    .sidebar.collapsed .logo-container,
+    .sidebar.minimized .logo-container,
+    .sidebar.collapsed .sidebar-brand,
+    .sidebar.minimized .sidebar-brand {
+        justify-content: center !important;
+        padding: 0.5rem 0 1.5rem 0 !important;
+    }
+
+    .sidebar.collapsed .nav-menu,
+    .sidebar.minimized .nav-menu,
+    .sidebar.collapsed .nav-list,
+    .sidebar.minimized .nav-list,
+    .sidebar.collapsed .nav-scroller,
+    .sidebar.minimized .nav-scroller {
+        padding: 0 !important;
+    }
+
+    .sidebar.collapsed .nav-link,
+    .sidebar.minimized .nav-link {
+        justify-content: center !important;
+        padding: 0.85rem 0.5rem !important;
+        gap: 0 !important;
+        position: relative !important;
+    }
+
+    .sidebar.collapsed .nav-link svg,
+    .sidebar.minimized .nav-link svg,
+    .sidebar.collapsed .nav-link i,
+    .sidebar.minimized .nav-link i,
+    .sidebar.collapsed .nav-link .lucide,
+    .sidebar.minimized .nav-link .lucide {
+        width: 20px !important;
+        height: 20px !important;
+        min-width: 20px !important;
+        min-height: 20px !important;
+        flex-shrink: 0 !important;
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 0.85;
+    }
+
+    .sidebar.collapsed .nav-link:hover svg,
+    .sidebar.minimized .nav-link:hover svg,
+    .sidebar.collapsed .nav-link.active svg,
+    .sidebar.minimized .nav-link.active svg,
+    .sidebar.collapsed .nav-link:hover i,
+    .sidebar.minimized .nav-link:hover i,
+    .sidebar.collapsed .nav-link.active i,
+    .sidebar.minimized .nav-link.active i {
+        opacity: 1 !important;
+    }
+
+    .sidebar.collapsed .nav-link span[id^="sidebar-badge-"],
+    .sidebar.minimized .nav-link span[id^="sidebar-badge-"] {
+        display: flex !important;
+        position: absolute !important;
+        top: 2px !important;
+        right: 4px !important;
+        margin-left: 0 !important;
+        border-radius: 99px !important;
+        border: 2px solid var(--bg-sidebar) !important;
+        z-index: 10 !important;
+    }
+
+    .sidebar.collapsed .sidebar-footer,
+    .sidebar.minimized .sidebar-footer {
+        padding: 1rem 0.25rem !important;
+    }
+
+    .sidebar.collapsed .user-profile-card,
+    .sidebar.minimized .user-profile-card,
+    .sidebar.collapsed .profile-pill,
+    .sidebar.minimized .profile-pill {
+        justify-content: center !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .main-wrapper.expanded,
+    .main-wrapper.sidebar-minimized {
+        margin-left: 80px !important;
+    }
+}
+
+/* Mobile & Tablet Responsive Layout (max-width: 1024px) */
+@media (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: 290px !important;
+        max-width: 85vw !important;
+        box-shadow: 20px 0 60px rgba(0, 0, 0, 0.3);
+        z-index: 1050 !important;
+    }
+
+    .sidebar.active {
+        transform: translateX(0) !important;
+    }
+
+    .main-wrapper,
+    .main-content {
+        margin-left: 0 !important;
+        padding: 0 1rem 2rem 1rem !important;
+    }
+
+    #mobile-toggle,
+    .mobile-nav-toggle {
+        display: flex !important;
+    }
+
+    #sidebar-toggle,
+    .sidebar-minimize-btn {
+        display: none !important;
+    }
+
+    #sidebar-close,
+    .mobile-sidebar-close {
+        display: flex !important;
+    }
+
+    #sidebar-overlay,
+    .sidebar-overlay {
+        z-index: 1040 !important;
+    }
+}
+
 
 .logo-container {
     padding: 1rem 0 2rem 0;

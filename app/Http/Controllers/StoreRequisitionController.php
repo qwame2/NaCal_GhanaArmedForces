@@ -835,7 +835,11 @@ class StoreRequisitionController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            if ($request->status === 'pending') {
+                $query->awaitingHeadOfStoresReview();
+            } else {
+                $query->where('status', $request->status);
+            }
         }
         if ($request->filled('priority')) {
             $query->where('priority', $request->priority);
@@ -867,7 +871,6 @@ class StoreRequisitionController extends Controller
 
         $stats = \Illuminate\Support\Facades\Cache::remember('admin_requisitions_stats', 300, function() {
             $statsData = StoreRequisition::selectRaw("
-                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
                 SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
                 SUM(CASE WHEN status = 'partially_approved' THEN 1 ELSE 0 END) as partially_approved,
                 SUM(CASE WHEN status = 'declined' THEN 1 ELSE 0 END) as declined,
@@ -875,7 +878,7 @@ class StoreRequisitionController extends Controller
             ")->first();
 
             return [
-                'pending'            => (int) ($statsData->pending ?? 0),
+                'pending'            => StoreRequisition::awaitingHeadOfStoresReview()->count(),
                 'approved'           => (int) ($statsData->approved ?? 0),
                 'partially_approved' => (int) ($statsData->partially_approved ?? 0),
                 'declined'           => (int) ($statsData->declined ?? 0),

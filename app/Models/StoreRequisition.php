@@ -279,40 +279,32 @@ class StoreRequisition extends Model
         $user = auth()->user();
         $userDept = $user?->department;
 
-        return $query->where('status', 'pending')
-            ->where(function($q) use ($userDept) {
-                // 1. Requisitions ready for Stores Head review (origin HOD & DG approved, status pending)
-                $q->where(function($q2) {
-                    $q2->whereIn('main_admin_status', ['pending', 'approved'])
-                       ->where('origin_admin_status', 'approved')
-                       ->where(function($q3) {
-                           $q3->where('requires_dg_approval', false)
-                              ->orWhere('dg_status', 'approved');
-                       });
+        $isStoresHead = ($user?->isMainAdminOrSub() || $user?->role === 'Head of Stores' || strcasecmp($userDept ?? '', 'Stores') === 0 || strcasecmp($userDept ?? '', 'Store') === 0);
+
+        if ($isStoresHead) {
+            return $query->where('status', 'pending')
+                ->where('origin_admin_status', 'approved')
+                ->where(function($q) {
+                    $q->where('requires_dg_approval', false)
+                      ->orWhere('dg_status', 'approved');
                 })
-                // 2. Stores department requisitions pending origin HOD action
-                ->orWhere(function($q2) {
-                    $q2->where('origin_admin_status', 'pending')
-                       ->whereIn('department', ['Stores', 'Store', 'Stores Department', 'Store Department']);
+                ->where(function($q) {
+                    $q->where('main_admin_status', 'approved')
+                      ->orWhereNull('main_admin_status');
                 })
-                // 3. User's own department requisitions pending origin HOD action
-                ->orWhere(function($q2) use ($userDept) {
-                    if ($userDept) {
-                        $q2->where('origin_admin_status', 'pending')
-                           ->where('department', $userDept);
-                    }
-                })
-                // 4. Requisitions in departments without an active Department Head
-                ->orWhere(function($q2) {
-                    $q2->where('origin_admin_status', 'pending')
-                       ->whereNotIn('department', function($subQuery) {
-                           $subQuery->select('department')
-                                    ->from('users')
-                                    ->where('role', 'Department Head')
-                                    ->where('is_active', true)
-                                    ->whereNotNull('department');
-                       });
+                ->where(function($q) {
+                    $q->whereNull('alternative_status')
+                      ->orWhereNotIn('alternative_status', ['proposed', 'agreed']);
                 });
+        }
+
+        // For originating department heads viewing pending register:
+        return $query->where('status', 'pending')
+            ->where('origin_admin_status', 'pending')
+            ->where(function($q) use ($userDept) {
+                if ($userDept) {
+                    $q->where('department', $userDept);
+                }
             });
     }
 }

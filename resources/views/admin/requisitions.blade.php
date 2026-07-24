@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('content')
 
-@section('title', 'Requisitions')
+@section('title', 'Store Requisitions')
 <style>
     .main-wrapper > *:not(header) {
         max-width: 2000px !important;
@@ -952,13 +952,6 @@
 </style>
 
 <div style="padding:2rem; width:100%; box-sizing:border-box; overflow-x:hidden;">
-
-    {{-- Header --}}
-    <div style="margin-bottom:2rem;">
-        
-        <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Stores Requisition</h1>
-        <p style="font-size:.9rem;color:var(--text-muted);margin:6px 0 0;">Review and process department item requests</p>
-    </div>
 
     {{-- Stats --}}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem;">

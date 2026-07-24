@@ -773,29 +773,29 @@
             const isSidebarCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
             const isMobile = window.innerWidth <= 1024;
 
-            if (isSidebarCollapsed && !isMobile) {
+            if (isSidebarCollapsed && !isMobile && sidebar && mainWrapper) {
                 sidebar.classList.add('collapsed');
                 mainWrapper.classList.add('expanded');
                 if (sidebarToggle) sidebarToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>';
             }
 
-            // Mobile/Tablet Default: Keep hidden on load to avoid layout shifts
+            function toggleSidebar(show) {
+                if (!sidebar) return;
+                if (show) {
+                    sidebar.classList.add('active');
+                    if (overlay) overlay.style.display = 'block';
+                    if (sidebarClose) sidebarClose.style.display = 'flex';
+                } else {
+                    sidebar.classList.remove('active');
+                    if (overlay) overlay.style.display = 'none';
+                }
+            }
+
             if (isMobile) {
                 toggleSidebar(false);
             }
 
-            function toggleSidebar(show) {
-                if (show) {
-                    sidebar.classList.add('active');
-                    overlay.style.display = 'block';
-                    sidebarClose.style.display = 'flex';
-                } else {
-                    sidebar.classList.remove('active');
-                    overlay.style.display = 'none';
-                }
-            }
-
-            if (sidebarToggle) {
+            if (sidebarToggle && sidebar && mainWrapper) {
                 sidebarToggle.addEventListener('click', () => {
                     const isNowCollapsed = sidebar.classList.toggle('collapsed');
                     mainWrapper.classList.toggle('expanded');
@@ -811,6 +811,46 @@
             if (mobileToggle) mobileToggle.addEventListener('click', () => toggleSidebar(true));
             if (sidebarClose) sidebarClose.addEventListener('click', () => toggleSidebar(false));
             if (overlay) overlay.addEventListener('click', () => toggleSidebar(false));
+
+            // Auto close mobile drawer on navigation click
+            if (sidebar) {
+                sidebar.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth <= 1024) {
+                            toggleSidebar(false);
+                        }
+                    });
+                });
+            }
+
+            // Close mobile drawer on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && sidebar && sidebar.classList.contains('active')) {
+                    toggleSidebar(false);
+                }
+            });
+
+            // Handle window resize dynamically
+            window.addEventListener('resize', () => {
+                const isNowMobile = window.innerWidth <= 1024;
+                if (isNowMobile) {
+                    if (sidebar) sidebar.classList.remove('collapsed');
+                    if (mainWrapper) mainWrapper.classList.remove('expanded');
+                    toggleSidebar(false);
+                } else {
+                    toggleSidebar(false);
+                    const savedCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+                    if (savedCollapsed && sidebar && mainWrapper) {
+                        sidebar.classList.add('collapsed');
+                        mainWrapper.classList.add('expanded');
+                        if (sidebarToggle) sidebarToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="15" y1="3" x2="15" y2="21"/></svg>';
+                    } else if (sidebar && mainWrapper) {
+                        sidebar.classList.remove('collapsed');
+                        mainWrapper.classList.remove('expanded');
+                        if (sidebarToggle) sidebarToggle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>';
+                    }
+                }
+            });
 
             // Global Real-time Search Logic with Results Dropdown
             const globalSearchInput = document.getElementById('global-search-input');
