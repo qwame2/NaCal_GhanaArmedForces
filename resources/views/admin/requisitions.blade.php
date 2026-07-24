@@ -62,7 +62,7 @@
     }
 
     .swal2-container {
-        z-index: 99999 !important;
+        z-index: 1000005 !important;
     }
 
     .modal-overlay.open {
@@ -165,7 +165,7 @@
         top: 50%;
         left: 4rem;
         height: 3px;
-        background: linear-gradient(90deg, var(--primary) 0%, #059669 100%);
+        background: var(--primary);
         z-index: 1;
         transform: translateY(-50%);
         transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -214,7 +214,7 @@
 
     .stepper-step.completed .stepper-bubble {
         background: #059669;
-        border-color: #059669;
+        border-color: #0ea5e9;
         color: white;
         box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);
     }
@@ -249,7 +249,7 @@
     }
 
     .stepper-step.declined-step .stepper-bubble {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        background: #ef4444;
         border-color: #ef4444;
         color: white;
         box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
@@ -585,7 +585,7 @@
 
     /* Live Summary Board */
     .summary-dashboard {
-        background: linear-gradient(135deg, var(--bg-main) 0%, rgba(5, 150, 105, 0.02) 100%);
+        background: var(--bg-main);
         border: 1.5px solid var(--border-color);
         border-radius: 16px;
         padding: 1.25rem 1.5rem;
@@ -634,7 +634,7 @@
 
     .fulfill-progress-bar {
         height: 100%;
-        background: linear-gradient(90deg, #059669 0%, #059669 100%);
+        background: #059669;
         border-radius: 99px;
         transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -888,7 +888,7 @@
 
     .mini-step.completed .mini-dot {
         background: #059669;
-        border-color: #059669;
+        border-color: #0ea5e9;
         color: white;
     }
 

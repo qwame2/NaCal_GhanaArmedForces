@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -609,9 +609,6 @@
                     <div class="sig-top-label">I certify that the service has been performed according to order.</div>
                     <div>
                         <div class="sig-line" style="text-align: center;">
-                            @if($adminUser && $adminUser->signature)
-                                <img src="{{ asset('storage/' . $adminUser->signature) }}" style="max-height: 95px; object-fit: contain; vertical-align: middle; margin-bottom: -20px; transform: translateY(12px);">
-                            @endif
                         </div>
                         <div class="sig-label">Officer-in-Charge</div>
                         <div class="sig-name-date">
@@ -647,9 +644,6 @@
                                     $auditorUser = \App\Models\User::where('name', $sra->auditor_approved_by)->first();
                                 }
                             @endphp
-                            @if($auditorUser && $auditorUser->signature)
-                                <img src="{{ asset('storage/' . $auditorUser->signature) }}" style="max-height: 95px; object-fit: contain; vertical-align: middle; margin-bottom: -20px; transform: translateY(12px);">
-                            @endif
                         </div>
                         <div class="sig-label">Internal Audit/Stores Verifier</div>
                         <div class="sig-name-date">

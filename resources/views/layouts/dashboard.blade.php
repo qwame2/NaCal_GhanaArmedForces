@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
@@ -341,14 +341,6 @@
                     </a>
                 </li>
                 @endif
-                @if(auth()->user()->role === 'Main Admin')
-                <li class="nav-item">
-                     <a href="{{ route('admin.admin_suppliers') }}" class="nav-link {{ request()->routeIs('admin.admin_suppliers') ? 'active' : '' }}" data-tooltip="Suppliers Details">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
-                         <span>Suppliers Details</span>
-                     </a>
-                </li>
-                @endif
             @else
                 <li class="nav-item">
                     @php
@@ -398,7 +390,7 @@
                         @php $approvedReqCount = $approvedRequisitionsCount ?? 0; @endphp
                         <span id="sidebar-badge-approved-reqs"
                               style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $approvedReqCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
-                              title="{{ $approvedReqCount }} requisition(s) approved — tap to confirm collection">
+                              title="{{ $approvedReqCount }} requisition(s) approved â€” tap to confirm collection">
                             {{ $approvedReqCount }}
                         </span>
                     </a>
@@ -411,7 +403,7 @@
                         @php $approvedReqCount = $approvedRequisitionsCount ?? 0; @endphp
                         <span id="sidebar-badge-approved-reqs"
                               style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $approvedReqCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
-                              title="{{ $approvedReqCount }} requisition(s) approved — tap to confirm collection">
+                              title="{{ $approvedReqCount }} requisition(s) approved â€” tap to confirm collection">
                             {{ $approvedReqCount }}
                         </span>
                     </a>
@@ -612,7 +604,7 @@
     </div>
 
     <script>
-        // Global Notification sound player — plays /img/notification.wav (hard-coded public asset)
+        // Global Notification sound player â€” plays /img/notification.wav (hard-coded public asset)
         window.playNotificationSound = function(type = 'sent') {
             try {
                 const audio = new Audio('/img/notification.wav');
@@ -1123,8 +1115,8 @@
                 if (isMessagePage) {
                     const badge = document.getElementById('global-unread-badge');
                     if (badge) badge.style.display = 'none';
-                    _stopNotifAlarm();       // User is on messages page — stop alarm
-                    _notifAlarmLastCount = 0; // Reset so alarm doesn’t restart on next page
+                    _stopNotifAlarm();       // User is on messages page â€” stop alarm
+                    _notifAlarmLastCount = 0; // Reset so alarm doesnâ€™t restart on next page
                     
                     // Write active timestamp to localStorage so other tabs know messages page is open
                     localStorage.setItem('messages_page_active', Date.now());
@@ -1176,7 +1168,7 @@
                         const lastActiveCheck = localStorage.getItem('messages_page_active');
                         const isMessagesOpenElsewhere = lastActiveCheck && (Date.now() - parseInt(lastActiveCheck)) < 15000;
 
-                        // Skip ALL beeps on the first poll (page load/refresh) — just record baseline
+                        // Skip ALL beeps on the first poll (page load/refresh) â€” just record baseline
                         if (window._firstUnreadPoll) {
                             window._firstUnreadPoll = false;
                             _notifAlarmLastCount = data.count || 0;
@@ -1548,7 +1540,7 @@
 
 
             @if(auth()->check() && auth()->user()->role === 'Auditor')
-            // ── Auditor Sidebar Badge: Pending Approvals in Auditing Center ──
+            // â”€â”€ Auditor Sidebar Badge: Pending Approvals in Auditing Center â”€â”€
             function pollAuditorPendingApprovals() {
                 fetch("{{ route('api.auditor.sidebar-counts') }}", {
                     credentials: 'same-origin',
@@ -1577,7 +1569,7 @@
             @endif
 
             @if(auth()->check() && auth()->user()->role !== 'Auditor')
-            // ── Sidebar Badge Polling: Approved Requisitions & Item Entry Approvals ──
+            // â”€â”€ Sidebar Badge Polling: Approved Requisitions & Item Entry Approvals â”€â”€
             function pollSidebarCounts() {
                 let url = "{{ auth()->user()->is_admin ? route('api.admin.sidebar-counts') : route('api.personnel.sidebar-counts') }}";
                 fetch(url, {

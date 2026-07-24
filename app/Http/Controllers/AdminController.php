@@ -1426,7 +1426,7 @@ class AdminController extends Controller
 
     public function adminSuppliers()
     {
-        if (!auth()->user()->isMainAdminOrSub()) {
+        if (!auth()->user()->is_admin) {
             abort(403, 'Unauthorized access.');
         }
 

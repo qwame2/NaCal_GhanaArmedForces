@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'User Details')
 
@@ -485,7 +485,7 @@
 
     .command-search input:focus {
         background: white;
-        border-color: #059669;
+        border-color: #0ea5e9;
         box-shadow: 0 12px 30px rgba(5, 150, 105, 0.08);
     }
 
@@ -668,7 +668,7 @@
     .page-btn:hover:not(.disabled) {
         background: #059669;
         color: white;
-        border-color: #059669;
+        border-color: #0ea5e9;
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
     }
@@ -694,7 +694,7 @@
         align-items: center;
         gap: 1.5rem;
         padding: 1.5rem;
-        background: linear-gradient(135deg, rgba(5, 150, 105, 0.05) 0%, rgba(4, 120, 87, 0.05) 100%);
+        background: rgba(5, 150, 105, 0.05);
         border: 1px solid rgba(5, 150, 105, 0.15);
         border-radius: 24px;
         position: relative;
@@ -1037,7 +1037,7 @@
     .timeline-connector {
         flex: 1;
         height: 2px;
-        background: repeating-linear-gradient(to right, #cbd5e1 0px, #cbd5e1 4px, transparent 4px, transparent 8px);
+        background: #cbd5e1;
         max-width: 100px;
     }
 

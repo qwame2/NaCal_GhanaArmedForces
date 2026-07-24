@@ -1,4 +1,4 @@
-{{-- Partial: pagination controls (rendered for AJAX requests) --}}
+﻿{{-- Partial: pagination controls (rendered for AJAX requests) --}}
 @if($requisitions->hasPages())
 <div id="req-pagination" style="padding:1.25rem 1.5rem;border:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;background:var(--bg-card);border-radius:16px;box-shadow:0 4px 20px rgba(15,23,42,0.04);margin-top:1rem;">
     <div style="font-size:0.82rem;font-weight:700;color:var(--text-muted);">

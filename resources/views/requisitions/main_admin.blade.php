@@ -21,14 +21,14 @@
 @endphp
 <style>
     :root {
-        --store-orange: #881337;
-        --store-orange-hover: #4c0519;
-        --store-orange-light: rgba(136, 19, 55, 0.08);
-        --store-indigo: #881337;
-        --store-indigo-hover: #881337;
-        --store-indigo-light: rgba(136, 19, 55, 0.08);
-        --success-color: #881337;
-        --warning-color: #881337;
+        --store-orange: #059669;
+        --store-orange-hover: #065f46;
+        --store-orange-light: rgba(5, 150, 105, 0.08);
+        --store-indigo: #059669;
+        --store-indigo-hover: #059669;
+        --store-indigo-light: rgba(5, 150, 105, 0.08);
+        --success-color: #059669;
+        --warning-color: #059669;
         --danger-color: #ef4444;
         --text-muted: #64748b;
         --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
@@ -56,7 +56,7 @@
     }
 
     .req-table-row:hover {
-        background: rgba(136, 19, 55, .03);
+        background: rgba(5, 150, 105, .03);
     }
 
     .req-table-row:last-child {
@@ -95,7 +95,7 @@
     }
 
     .swal2-container {
-        z-index: 99999 !important;
+        z-index: 1000005 !important;
     }
 
     .modal-overlay.open {
@@ -148,7 +148,7 @@
 
     /* Priority-specific visual accents */
     .modal-box.urgent-priority { border-top: 6px solid #dc2626; }
-    .modal-box.normal-priority { border-top: 6px solid #881337; }
+    .modal-box.normal-priority { border-top: 6px solid #059669; }
     .modal-box.low-priority { border-top: 6px solid #64748b; }
 
     /* Profile Panel & Grid */
@@ -164,8 +164,8 @@
     }
 
     .profile-card:hover {
-        border-color: rgba(136, 19, 55, 0.25);
-        background: rgba(136, 19, 55, 0.02);
+        border-color: rgba(5, 150, 105, 0.25);
+        background: rgba(5, 150, 105, 0.02);
         transform: translateY(-1px);
     }
 
@@ -180,7 +180,7 @@
         justify-content: center;
         font-weight: 800;
         font-size: 1.25rem;
-        border: 1.5px solid rgba(136, 19, 55, 0.15);
+        border: 1.5px solid rgba(5, 150, 105, 0.15);
     }
 
     .stat-pill {
@@ -211,7 +211,7 @@
     .purpose-quote:before {
         content: '“';
         font-size: 3.5rem;
-        color: rgba(136, 19, 55, 0.08);
+        color: rgba(5, 150, 105, 0.08);
         position: absolute;
         top: -0.8rem;
         left: 0.5rem;
@@ -334,9 +334,9 @@
     }
 
     .filter-control:focus {
-        border-color: #881337;
+        border-color: #0ea5e9;
         background: var(--bg-card);
-        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.15);
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
     }
 
     .filter-clear-btn {
@@ -392,7 +392,7 @@
 
     .decision-text-area:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.15);
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
     }
 
     /* --- CARD REQUISITION LIST VIEW --- */
@@ -424,7 +424,7 @@
     .history-ref {
         font-size: 0.82rem;
         font-weight: 800;
-        color: #4c0519;
+        color: #065f46;
         background: rgba(234, 88, 12, 0.08);
         padding: 5px 12px;
         border-radius: 99px;
@@ -519,10 +519,10 @@
 
     /* Timeline Step States */
     .tracker-step.completed .tracker-dot {
-        background: #881337;
+        background: #059669;
         border-color: var(--success-color);
         color: white;
-        box-shadow: 0 4px 10px rgba(136, 19, 55, 0.25);
+        box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);
     }
 
     .tracker-step.completed .tracker-label {
@@ -530,7 +530,7 @@
     }
 
     .tracker-step.active .tracker-dot {
-        background: #881337;
+        background: #059669;
         border-color: var(--store-orange);
         color: white;
         animation: pulse-orange-stepper 2s infinite;
@@ -541,7 +541,7 @@
     }
 
     .tracker-step.declined .tracker-dot {
-        background: linear-gradient(135deg, var(--danger-color) 0%, #b91c1c 100%);
+        background: var(--danger-color);
         border-color: var(--danger-color);
         color: white;
         box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
@@ -552,9 +552,9 @@
     }
 
     @keyframes pulse-orange-stepper {
-        0% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); }
-        70% { box-shadow: 0 0 0 8px rgba(136, 19, 55, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0); }
+        0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); }
+        70% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
     }
     @keyframes alertPulse {
         0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
@@ -608,7 +608,7 @@
     }
 
     .oversight-row:hover {
-        background: rgba(136, 19, 55, 0.02);
+        background: rgba(5, 150, 105, 0.02);
     }
 
     /* Table Stepper/Tracker */
@@ -653,7 +653,7 @@
         background: var(--store-orange);
         border-color: var(--store-orange);
         color: white;
-        box-shadow: 0 0 8px rgba(136, 19, 55, 0.35);
+        box-shadow: 0 0 8px rgba(5, 150, 105, 0.35);
     }
 
     .mini-step.declined .mini-dot {
@@ -811,7 +811,7 @@
         background: white;
         border-radius: 28px;
         border: 1.5px solid var(--border-color);
-        box-shadow: 0 10px 30px rgba(136, 19, 55, 0.03);
+        box-shadow: 0 10px 30px rgba(5, 150, 105, 0.03);
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         overflow: hidden;
         margin-bottom: 2rem;
@@ -819,7 +819,7 @@
 
     .workflow-card-modern:hover {
         border-color: #c7d2fe;
-        box-shadow: 0 16px 40px rgba(136, 19, 55, 0.06);
+        box-shadow: 0 16px 40px rgba(5, 150, 105, 0.06);
     }
 
     .workflow-cat-grid-modern {
@@ -851,14 +851,14 @@
     }
 
     .workflow-cat-card-modern.active {
-        background: linear-gradient(145deg, #f5f7ff 0%, #edf1ff 100%);
-        border-color: #881337;
-        box-shadow: 0 8px 24px rgba(136, 19, 55, 0.06);
+        background: #f5f7ff;
+        border-color: #0ea5e9;
+        box-shadow: 0 8px 24px rgba(5, 150, 105, 0.06);
     }
 
     .workflow-cat-card-modern.active:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(136, 19, 55, 0.1);
+        box-shadow: 0 12px 28px rgba(5, 150, 105, 0.1);
     }
 
     .workflow-cat-card-modern .corner-glow {
@@ -867,7 +867,7 @@
         right: -20px;
         width: 50px;
         height: 50px;
-        background: radial-gradient(circle, rgba(136, 19, 55, 0.2) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(5, 150, 105, 0.2) 0%, transparent 70%);
         opacity: 0;
         transition: opacity 0.25s ease;
         pointer-events: none;
@@ -882,7 +882,7 @@
         height: 38px;
         border-radius: 12px;
         background: #ffffff;
-        color: #881337;
+        color: #059669;
         font-weight: 900;
         font-size: 0.85rem;
         display: flex;
@@ -894,10 +894,10 @@
     }
 
     .workflow-cat-card-modern.active .cat-circle {
-        background: #881337;
+        background: #059669;
         color: #ffffff;
         border-color: transparent;
-        box-shadow: 0 4px 8px rgba(136, 19, 55, 0.18);
+        box-shadow: 0 4px 8px rgba(5, 150, 105, 0.18);
     }
 
     .workflow-cat-card-modern .status-label {
@@ -909,7 +909,7 @@
     }
 
     .workflow-cat-card-modern.active .status-label {
-        color: #881337;
+        color: #059669;
     }
 
     .workflow-cat-card-modern .indicator-dot {
@@ -927,9 +927,9 @@
     }
 
     .workflow-cat-card-modern.active .indicator-dot {
-        background: #881337;
-        border-color: #881337;
-        box-shadow: 0 2px 6px rgba(136, 19, 55, 0.25);
+        background: #059669;
+        border-color: #0ea5e9;
+        box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
     }
 
     .flow-line {
@@ -941,12 +941,12 @@
     }
 
     .flow-line.active {
-        background: #881337;
-        box-shadow: 0 0 8px rgba(136, 19, 55, 0.25);
+        background: #059669;
+        box-shadow: 0 0 8px rgba(5, 150, 105, 0.25);
     }
 
     .flow-line.dashed {
-        background: repeating-linear-gradient(to right, #cbd5e1 0px, #cbd5e1 6px, transparent 6px, transparent 12px);
+        background: #cbd5e1;
     }
 
     .flow-node-icon {
@@ -975,20 +975,20 @@
     <div style="margin-bottom:2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
         <div>
             @if(auth()->user()->role === 'Sub Main Admin')
-                <div style="font-size:.7rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }}</div>
+                <div style="font-size:.7rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }}</div>
             @elseif(auth()->user()->role === 'Main Admin')
-                <div style="font-size:.7rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Head of Administration</div>
+                <div style="font-size:.7rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Head of Administration</div>
             @elseif(auth()->user()->role === 'Auditor')
-                <div style="font-size:.7rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Department Head</div>
+                <div style="font-size:.7rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Department Head</div>
             @else
-                <div style="font-size:.7rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Department Head Hub</div>
+                <div style="font-size:.7rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;">{{ strtoupper(auth()->user()->department ?? auth()->user()->getRoleDisplayLabel()) }} · Department Head Hub</div>
             @endif
             <h1 style="font-size:1.75rem;font-weight:900;color:var(--text-main);letter-spacing:-.03em;margin:0;">Oversight & Approvals</h1>
             @php
                 $isBackupActive = $isStoresHead && !in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
             @endphp
             @if($isBackupActive)
-                <div style="margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 99px; background: rgba(136, 19, 55, 0.08); border: 1px solid rgba(136, 19, 55, 0.2); color: #881337; font-size: 0.75rem; font-weight: 800;">
+                <div style="margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 99px; background: rgba(5, 150, 105, 0.08); border: 1px solid rgba(5, 150, 105, 0.2); color: #059669; font-size: 0.75rem; font-weight: 800;">
                     <span>ACTING AS STORES DEPARTMENT HEAD (DELEGATED AUTHORITY)</span>
                 </div>
             @endif
@@ -1002,14 +1002,14 @@
     {{-- Stats Cards --}}
     <div id="oversight-stats-container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;margin-bottom:2rem;">
         <div class="req-stat-card">
-            <div style="width:48px;height:48px;background:rgba(136,19,55,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:24px;color:#881337;"></i></div>
+            <div style="width:48px;height:48px;background:rgba(5, 150, 105,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="clock" style="width:24px;color:#059669;"></i></div>
             <div>
                 <div class="stat-number-val" style="font-size:1.75rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['pending'] }}</div>
                 <div style="font-size:.75rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">{{ $isStoresHead ? 'Awaiting Head of Stores Approvals' : 'Awaiting My Review' }}</div>
             </div>
         </div>
         <div class="req-stat-card">
-            <div style="width:48px;height:48px;background:rgba(136,19,55,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="check-circle" style="width:24px;color:#881337;"></i></div>
+            <div style="width:48px;height:48px;background:rgba(5, 150, 105,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="check-circle" style="width:24px;color:#059669;"></i></div>
             <div>
                 <div class="stat-number-val" style="font-size:1.75rem;font-weight:950;color:var(--text-main); line-height: 1.1;">{{ $stats['approved'] }}</div>
                 <div style="font-size:.75rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-top:2px;">Approved by Me</div>
@@ -1037,9 +1037,9 @@
     @endphp
     {{-- Stores Department Head Approval Workflow --}}
     <div class="workflow-card-modern" style="display: none;">
-        <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
+        <div class="cfg-card-header" style="background: #f8fafc; padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
             <div style="display: flex; align-items: center; gap: 1.25rem;">
-                <div class="cfg-icon-box" style="background: #881337; box-shadow: 0 8px 20px rgba(136,19,55,0.15); width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white;">
+                <div class="cfg-icon-box" style="background: #059669; box-shadow: 0 8px 20px rgba(5, 150, 105,0.15); width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white;">
                     <i data-lucide="shield-check" style="width: 24px; height: 24px; color: white;"></i>
                 </div>
                 <div>
@@ -1047,8 +1047,8 @@
                     <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review by the Department Head (Stores).</p>
                 </div>
             </div>
-            <span id="workflow-active-badge" style="background: rgba(136,19,55,0.08); color: #881337; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(136,19,55,0.15); box-shadow: 0 2px 4px rgba(136,19,55,0.02); transition: all 0.3s ease;">
-                <span style="width: 6px; height: 6px; border-radius: 50%; background: #881337; transition: all 0.3s ease;" id="workflow-badge-dot"></span>
+            <span id="workflow-active-badge" style="background: rgba(5, 150, 105,0.08); color: #059669; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(5, 150, 105,0.15); box-shadow: 0 2px 4px rgba(5, 150, 105,0.02); transition: all 0.3s ease;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #059669; transition: all 0.3s ease;" id="workflow-badge-dot"></span>
                 <span id="workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($selectedCats) }}</span>
             </span>
         </div>
@@ -1109,14 +1109,14 @@
                     <div style="display: grid; grid-template-columns: 1fr 480px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
 
                         <!-- Sleek Gradient Alert Card -->
-                        <div style="background: linear-gradient(135deg, rgba(136, 19, 55, 0.03) 0%, rgba(136, 19, 55, 0.01) 100%);
+                        <div style="background: rgba(5, 150, 105, 0.02);
                                         border: 1.5px solid #edf2f7;
                                         border-radius: 24px;
                                         padding: 1.75rem 2rem;
                                         display: flex;
                                         gap: 1.25rem;
                                         align-items: flex-start;">
-                            <div style="width: 42px; height: 42px; background: rgba(136,19,55,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #881337; flex-shrink: 0; margin-top: 2px;">
+                            <div style="width: 42px; height: 42px; background: rgba(5, 150, 105,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #059669; flex-shrink: 0; margin-top: 2px;">
                                 <i data-lucide="info" style="width: 20px; height: 20px;"></i>
                             </div>
                             <div style="flex: 1;">
@@ -1128,18 +1128,18 @@
                         </div>
 
                         <!-- Dynamic Mini Infographic Visualizer Card -->
-                        <div style="background: linear-gradient(to bottom, #fafbff, #ffffff); border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
+                        <div style="background: #fafbff; border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
                             <div style="font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; text-align: center; margin-bottom: 0.25rem;">Live Approval Routing Pathway</div>
 
                             <div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%; padding: 0.5rem 0;" class="flow-nodes-container">
 
                                 <!-- Origin Node -->
                                 <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                    <div class="flow-node-icon" style="background: #881337; color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                    <div class="flow-node-icon" style="background: #059669; color: white; box-shadow: 0 4px 12px rgba(5, 150, 105,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                         <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
                                     </div>
                                     <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Dept. Head</span>
-                                    <span class="flow-node-badge" style="background: #e0e7ff; color: #881337; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
+                                    <span class="flow-node-badge" style="background: #e0e7ff; color: #059669; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
                                 </div>
 
                                 <!-- Connector 1 (Now connects to DG Node, so controlled by DG active state) -->
@@ -1171,7 +1171,7 @@
 
                                 <!-- Head of Stores Node -->
                                 <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                    <div class="flow-node-icon" style="background: #881337; color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                    <div class="flow-node-icon" style="background: #059669; color: white; box-shadow: 0 4px 12px rgba(5, 150, 105,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                         <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
                                     </div>
                                     <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
@@ -1188,7 +1188,7 @@
 
                     <!-- Submit trigger -->
                     <div style="display: flex; justify-content: flex-end; margin-top: 1rem; margin-bottom: 1.5rem;">
-                        <button type="submit" style="padding: 0.75rem 2rem; border-radius: 12px; border: none; background: #881337; color: white; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#3730a3'" onmouseout="this.style.background='#881337'">
+                        <button type="submit" style="padding: 0.75rem 2rem; border-radius: 12px; border: none; background: #059669; color: white; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#3730a3'" onmouseout="this.style.background='#059669'">
                             <i data-lucide="save" style="width: 18px; height: 18px;"></i> Save Workflow Changes
                         </button>
                     </div>
@@ -1208,7 +1208,7 @@
     @endphp
     <div id="provisioningSection" style="background:var(--bg-card);border-radius:20px;border:1px solid var(--border-color);padding:1.75rem;margin-bottom:2rem;box-shadow:0 4px 20px rgba(0,0,0,0.04); display: {{ $hideProvisioning ? 'none' : 'block' }};">
         @if(!empty($hasOverdueReturn))
-        <div style="background: linear-gradient(135deg, rgba(254, 242, 242, 0.65) 0%, rgba(254, 226, 226, 0.35) 100%); border-left: 5px solid #ef4444; border-top: 1px solid rgba(239, 68, 68, 0.1); border-right: 1px solid rgba(239, 68, 68, 0.1); border-bottom: 1px solid rgba(239, 68, 68, 0.1); border-radius: 16px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 1.25rem; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.05); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+        <div style="background: rgba(254, 242, 242, 0.65); border-left: 5px solid #ef4444; border-top: 1px solid rgba(239, 68, 68, 0.1); border-right: 1px solid rgba(239, 68, 68, 0.1); border-bottom: 1px solid rgba(239, 68, 68, 0.1); border-radius: 16px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 1.25rem; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.05); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
             <div style="width: 40px; height: 40px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; animation: alertPulse 2s infinite;">
                 <i data-lucide="alert-triangle" style="width: 20px; height: 20px; color: #ef4444;"></i>
             </div>
@@ -1230,11 +1230,11 @@
 
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
             <div style="display:flex;align-items:center;gap:0.85rem;">
-                <div style="width:42px;height:42px;background:rgba(136,19,55,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(136,19,55,0.2);">
-                    <i data-lucide="user-plus" style="width:20px;height:20px;color:#881337;"></i>
+                <div style="width:42px;height:42px;background:rgba(5, 150, 105,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(5, 150, 105,0.2);">
+                    <i data-lucide="user-plus" style="width:20px;height:20px;color:#059669;"></i>
                 </div>
                 <div>
-                    <div style="font-size:.68rem;font-weight:800;color:#881337;text-transform:uppercase;letter-spacing:.1em;">Dept. Access Management</div>
+                    <div style="font-size:.68rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.1em;">Dept. Access Management</div>
                     <div style="font-size:1rem;font-weight:800;color:var(--text-main);margin-top:1px;">Staff Access &amp; Approvals</div>
                 </div>
             </div>
@@ -1266,7 +1266,7 @@
     {{-- Filters Toolbar --}}
     <div class="filter-card">
         <div class="filter-header">
-            <i data-lucide="sliders-horizontal" style="width:14px;height:14px;color:#881337;"></i>
+            <i data-lucide="sliders-horizontal" style="width:14px;height:14px;color:#059669;"></i>
             <span>Filter Criteria</span>
         </div>
         <form method="GET" class="filter-row" id="filter-form" action="{{ route('main-admin.requisitions') }}">
@@ -1324,7 +1324,7 @@
         {{-- Loading overlay --}}
         <div id="table-loading" style="display:none;position:absolute;inset:0;background:rgba(var(--bg-card-rgb,255,255,255),.75);backdrop-filter:blur(2px);z-index:10;border-radius:20px;align-items:center;justify-content:center;">
             <div style="display:flex;align-items:center;gap:10px;padding:1rem 1.75rem;background:var(--bg-card);border:1px solid var(--border-color);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.06);">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#881337" stroke-width="2.5" style="animation:spin 0.7s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" style="animation:spin 0.7s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                 <span style="font-size:0.82rem;font-weight:800;color:var(--text-muted);">Loading...</span>
             </div>
         </div>
@@ -1525,8 +1525,8 @@
     <div class="modal-box">
         <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
             <div style="display:flex;align-items:center;gap:1rem;">
-                <div style="width:44px;height:44px;background:rgba(136,19,55,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                    <i data-lucide="shield-check" style="width:20px;color:#881337;"></i>
+                <div style="width:44px;height:44px;background:rgba(5, 150, 105,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                    <i data-lucide="shield-check" style="width:20px;color:#059669;"></i>
                 </div>
                 <div>
                     <h2 style="margin:0;font-size:1.1rem;font-weight:900;color:var(--text-main);">Strategic Oversight Review</h2>
@@ -1571,7 +1571,7 @@
                 <button onclick="processOversightSra('declined')" id="sraBtnDecline" style="padding: 0.85rem 2rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: #ef4444; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
                     <i data-lucide="x-circle" style="width: 16px;"></i> Decline
                 </button>
-                <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: #881337; color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
+                <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: #059669; color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(5, 150, 105,0.4);">
                     <i data-lucide="check-circle" style="width: 16px;"></i> Approve
                 </button>
             </div>
@@ -1644,7 +1644,7 @@
                 }
             } catch(e) {}
             returnDateBannerHtml = `
-            <div style="background:rgba(136, 19, 55, 0.06); border:1px solid rgba(136, 19, 55, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#047857; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(136, 19, 55, 0.03);">
+            <div style="background:rgba(5, 150, 105, 0.06); border:1px solid rgba(5, 150, 105, 0.25); border-radius:12px; padding:0.85rem 1.15rem; display:flex; align-items:center; gap:10px; color:#047857; font-weight:800; font-size:0.88rem; margin-top:0.5rem; margin-bottom:0.25rem; box-shadow:0 2px 8px rgba(5, 150, 105, 0.03);">
                 <i data-lucide="calendar-clock" style="width:16px; height:16px; color:#047857; flex-shrink:0;"></i>
                 <span>Expected Return Date: <strong style="color:#b45309; font-size:0.95rem; font-weight:950; text-decoration: underline;">${formattedDate}</strong></span>
             </div>`;
@@ -1664,7 +1664,7 @@
                 </div>
             </div>
             <div class="profile-card">
-                <div class="profile-avatar" style="background:rgba(136, 19, 55, 0.08); color:#881337; border-color:rgba(136,19,55,0.15);"><i data-lucide="building" style="width:20px;height:20px;"></i></div>
+                <div class="profile-avatar" style="background:rgba(5, 150, 105, 0.08); color:#059669; border-color:rgba(5, 150, 105,0.15);"><i data-lucide="building" style="width:20px;height:20px;"></i></div>
                 <div style="flex:1; min-width:0;">
                     <div style="font-size:.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;letter-spacing:0.04em;">Originating Department</div>
                     <div style="font-size:1.05rem;font-weight:900;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${data.department}">${data.department}</div>
@@ -1672,7 +1672,7 @@
                         <i data-lucide="calendar" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:3px;"></i>Submitted ${data.created_at}
                     </div>
                     ${isStoresHead && data.origin_approved_by ? `
-                    <div style="font-size:.7rem;color:#881337;font-weight:750;margin-top:4px;display:inline-flex;align-items:center;gap:3px;background:rgba(136,19,55,0.06);padding:2px 8px;border-radius:6px;border:1px solid rgba(136,19,55,0.15);width:fit-content;">
+                    <div style="font-size:.7rem;color:#059669;font-weight:750;margin-top:4px;display:inline-flex;align-items:center;gap:3px;background:rgba(5, 150, 105,0.06);padding:2px 8px;border-radius:6px;border:1px solid rgba(5, 150, 105,0.15);width:fit-content;">
                         <i data-lucide="shield-check" style="width:11px;height:11px;"></i>Approved by: ${data.origin_approved_by}
                     </div>
                     ` : ''}
@@ -1707,7 +1707,7 @@
             const totalApproved = approved !== null ? (approved + altApproved) : null;
 
             const stockInfo = item.stock_sufficient ?
-                `<span style="color:#881337;font-size:.7rem;font-weight:700;">✔ Sufficient Stock</span>` :
+                `<span style="color:#059669;font-size:.7rem;font-weight:700;">✔ Sufficient Stock</span>` :
                 `<span style="color:#ef4444;font-size:.7rem;font-weight:700;">⚠ Short Stock</span>`;
 
             const stockLine = isStoresHead && !isBackupActive ?
@@ -1717,8 +1717,8 @@
             // If stores has approved/processed the requisition items, show full tracking details
             if (totalApproved !== null) {
                 const pct = requested > 0 ? Math.min(Math.round((totalApproved / requested) * 100), 100) : 0;
-                let fulfillBadgeBg = 'rgba(136, 19, 55, 0.1)';
-                let fulfillBadgeColor = '#881337';
+                let fulfillBadgeBg = 'rgba(5, 150, 105, 0.1)';
+                let fulfillBadgeColor = '#059669';
                 let fulfillLabel = `${pct}% Fulfill`;
 
                 if (totalApproved === 0) {
@@ -1726,8 +1726,8 @@
                     fulfillBadgeColor = '#ef4444';
                     fulfillLabel = 'Declined';
                 } else if (totalApproved < requested) {
-                    fulfillBadgeBg = 'rgba(136, 19, 55, 0.1)';
-                    fulfillBadgeColor = '#881337';
+                    fulfillBadgeBg = 'rgba(5, 150, 105, 0.1)';
+                    fulfillBadgeColor = '#059669';
                     fulfillLabel = `${pct}% Reduced`;
                 }
 
@@ -1738,7 +1738,7 @@
                             ${item.alternative_description ? `
                                 <div style="font-size:.95rem;font-weight:800;color:var(--text-main); display:flex; align-items:center; gap:6px;">
                                     <span>${item.description}</span>
-                                    <span style="font-size:0.75rem; font-weight:800; color:#881337;">(Approved: ${approved.toLocaleString()} ${item.unit})</span>
+                                    <span style="font-size:0.75rem; font-weight:800; color:#059669;">(Approved: ${approved.toLocaleString()} ${item.unit})</span>
                                 </div>
                                 <div style="font-size:.92rem;font-weight:800;color:var(--store-orange); display:flex; align-items:center; gap:6px; margin-top:4px;">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:2px;"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3 14 10"/><path d="M3 21 10 14"/></svg>
@@ -1770,13 +1770,13 @@
 
                         <div style="flex:1; min-width:80px;">
                             <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;">Approved</div>
-                            <div style="font-size:1.15rem;font-weight:900;color:${totalApproved === 0 ? '#ef4444' : '#881337'};margin-top:2px;">${totalApproved.toLocaleString()}</div>
+                            <div style="font-size:1.15rem;font-weight:900;color:${totalApproved === 0 ? '#ef4444' : '#059669'};margin-top:2px;">${totalApproved.toLocaleString()}</div>
                         </div>
 
                         <div style="flex:2; min-width:180px;">
                             <div style="font-size:.65rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.02em;margin-bottom:6px;">Fulfillment Progress</div>
                             <div style="background:rgba(0,0,0,0.05); height:6px; border-radius:10px; overflow:hidden; width:100%;">
-                                <div style="height:100%; width: ${pct}%; background:${approved === 0 ? '#ef4444' : '#881337'}; border-radius:10px;"></div>
+                                <div style="height:100%; width: ${pct}%; background:${approved === 0 ? '#ef4444' : '#059669'}; border-radius:10px;"></div>
                             </div>
                         </div>
                     </div>
@@ -1842,10 +1842,10 @@
 
         if (isStoresHead && !isActingAsHOD && data.origin_admin_status === 'pending') {
             decisionHtml = `
-            <div style="background: rgba(136, 19, 55, 0.05); border: 1.5px dashed rgba(136, 19, 55, 0.25); border-radius: 16px; padding: 1.25rem; margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="background: rgba(5, 150, 105, 0.05); border: 1.5px dashed rgba(5, 150, 105, 0.25); border-radius: 16px; padding: 1.25rem; margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width:34px; height:34px; background:rgba(136, 19, 55, 0.1); color:#881337; border-radius:10px; display:flex; align-items:center; justify-content:center;">
-                        <i data-lucide="clock" style="width:16px; height:16px; color:#881337;"></i>
+                    <div style="width:34px; height:34px; background:rgba(5, 150, 105, 0.1); color:#059669; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="clock" style="width:16px; height:16px; color:#059669;"></i>
                     </div>
                     <div>
                         <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Pending HOD Approval</h4>
@@ -1859,8 +1859,8 @@
             decisionHtml = `
             <div style="background: rgba(139, 92, 246, 0.05); border: 1.5px dashed rgba(139, 92, 246, 0.25); border-radius: 16px; padding: 1.25rem; margin-top: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <div style="width:34px; height:34px; background:rgba(139, 92, 246, 0.1); color:#9f1239; border-radius:10px; display:flex; align-items:center; justify-content:center;">
-                        <i data-lucide="clock" style="width:16px; height:16px; color:#9f1239;"></i>
+                    <div style="width:34px; height:34px; background:rgba(139, 92, 246, 0.1); color:#047857; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="clock" style="width:16px; height:16px; color:#047857;"></i>
                     </div>
                     <div>
                         <h4 style="margin:0; font-size:0.85rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.04em;">Pending DG Approval</h4>
@@ -1874,7 +1874,7 @@
             if (data.alternative_status === 'proposed' && !isStoresHead) {
                 // Render suggested quantity proposal review buttons with Yes/No choices and comment box
                 decisionHtml = `
-                <div class="decision-area animate-slide-up" style="background: rgba(136, 19, 55, 0.04); border: 1.5px dashed rgba(136, 19, 55, 0.2); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                <div class="decision-area animate-slide-up" style="background: rgba(5, 150, 105, 0.04); border: 1.5px dashed rgba(5, 150, 105, 0.2); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
                     <div style="font-size: 0.72rem; font-weight: 800; color: var(--store-orange); text-transform: uppercase; letter-spacing: 0.05em; display:flex; align-items:center; gap:6px;">
                         <i data-lucide="shuffle" style="width: 14px; color: var(--store-orange);"></i>
                         Suggested Quantity Proposal
@@ -1885,7 +1885,7 @@
                     
                     <div style="display: flex; gap: 1.5rem; align-items: center; margin-top: 0.25rem; margin-bottom: 0.25rem;">
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 800; color: var(--text-main);">
-                            <input type="radio" name="altAgreement" id="altAgreeYes" value="yes" onchange="checkAltOptions()" style="width: 18px; height: 18px; accent-color: #881337; cursor: pointer;">
+                            <input type="radio" name="altAgreement" id="altAgreeYes" value="yes" onchange="checkAltOptions()" style="width: 18px; height: 18px; accent-color: #059669; cursor: pointer;">
                             Yes
                         </label>
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 800; color: var(--text-main);">
@@ -1916,7 +1916,7 @@
                             <i data-lucide="x-circle" style="width: 18px;"></i>
                             <span id="declineAltBtnText">Decline Suggested Qty</span>
                         </button>
-                        <button id="agreeAltBtn" onclick="processAlternativeResponse('agree')" disabled style="flex:1.5; background: #881337; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; opacity: 0.4; box-shadow: 0 8px 20px rgba(136, 19, 55, 0.25);" onmouseover="if(!this.disabled)this.style.background='#4c0519';" onmouseout="if(!this.disabled)this.style.background='#881337';">
+                        <button id="agreeAltBtn" onclick="processAlternativeResponse('agree')" disabled style="flex:1.5; background: #059669; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; opacity: 0.4; box-shadow: 0 8px 20px rgba(5, 150, 105, 0.25);" onmouseover="if(!this.disabled)this.style.background='#065f46';" onmouseout="if(!this.disabled)this.style.background='#059669';">
                             <i data-lucide="check-circle" style="width: 18px;"></i>
                             Agree to Suggested Qty
                         </button>
@@ -1944,7 +1944,7 @@
                             Approve (Awaiting DG Approval)
                         </button>
                         ` : `
-                        <button onclick="processDecision('approved')" style="flex:1.5; background: #881337; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 8px 20px rgba(136, 19, 55, 0.25);" onmouseover="this.style.background='#4c0519';" onmouseout="this.style.background='#881337';">
+                        <button onclick="processDecision('approved')" style="flex:1.5; background: #059669; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 8px 20px rgba(5, 150, 105, 0.25);" onmouseover="this.style.background='#065f46';" onmouseout="this.style.background='#059669';">
                             <i data-lucide="check-circle" style="width: 18px;"></i>
                             Approve
                         </button>
@@ -1956,18 +1956,18 @@
             // Render decision log status
             const statusVal = (isStoresHead && !isActingAsHOD) ? data.main_admin_status : data.origin_admin_status;
             let decisionLabel = statusVal === 'approved' ? 'APPROVED & ESCALATED' : 'DECLINED';
-            let decisionColor = statusVal === 'approved' ? '#881337' : '#ef4444';
+            let decisionColor = statusVal === 'approved' ? '#059669' : '#ef4444';
             
             if (data.alternative_status === 'agreed') {
                 decisionLabel = 'SUGGESTED QUANTITY AGREED';
-                decisionColor = '#881337';
+                decisionColor = '#059669';
             } else if (data.alternative_status === 'declined') {
                 decisionLabel = 'SUGGESTED QUANTITY DECLINED';
                 decisionColor = '#ef4444';
             }
 
-            let decisionBg = decisionColor === '#881337' ? 'rgba(136, 19, 55, 0.05)' : 'rgba(239, 68, 68, 0.05)';
-            let decisionBorder = decisionColor === '#881337' ? 'rgba(136, 19, 55, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+            let decisionBg = decisionColor === '#059669' ? 'rgba(5, 150, 105, 0.05)' : 'rgba(239, 68, 68, 0.05)';
+            let decisionBorder = decisionColor === '#059669' ? 'rgba(5, 150, 105, 0.2)' : 'rgba(239, 68, 68, 0.2)';
 
             let readOnlyBtnHtml = '';
             if (statusVal === 'approved' || data.alternative_status === 'agreed') {
@@ -1977,7 +1977,7 @@
                         <i data-lucide="x-circle" style="width: 18px;"></i>
                         Decline Request
                     </button>
-                    <button style="flex:1.5; background: #881337; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; opacity: 0.9; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 4px 14px rgba(136, 19, 55, 0.2);" disabled title="Requisition already approved">
+                    <button style="flex:1.5; background: #059669; color: white; border: none; padding: 0.75rem; border-radius: 12px; font-weight: 900; cursor: not-allowed; opacity: 0.9; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.2);" disabled title="Requisition already approved">
                         <i data-lucide="check-circle" style="width: 18px;"></i>
                         Approve (Processed)
                     </button>
@@ -1989,7 +1989,7 @@
                         <i data-lucide="x-circle" style="width: 18px;"></i>
                         Decline Request (Processed)
                     </button>
-                    <button style="flex:1; background: rgba(136, 19, 55, 0.08); color: #881337; border: 1.5px solid rgba(136, 19, 55, 0.18); padding: 0.75rem; border-radius: 12px; font-weight: 800; cursor: not-allowed; opacity: 0.45; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" disabled title="Decision already processed">
+                    <button style="flex:1; background: rgba(5, 150, 105, 0.08); color: #059669; border: 1.5px solid rgba(5, 150, 105, 0.18); padding: 0.75rem; border-radius: 12px; font-weight: 800; cursor: not-allowed; opacity: 0.45; pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;" disabled title="Decision already processed">
                         <i data-lucide="check-circle" style="width: 18px;"></i>
                         Approve
                     </button>
@@ -2027,20 +2027,20 @@
         let storesFeedbackHtml = '';
         if (data.status !== 'pending') {
             let storeStatusLabel = 'PROCESSING';
-            let storeStatusColor = '#881337';
-            let storeStatusBg = 'rgba(136, 19, 55, 0.05)';
-            let storeStatusBorder = 'rgba(136, 19, 55, 0.2)';
+            let storeStatusColor = '#059669';
+            let storeStatusBg = 'rgba(5, 150, 105, 0.05)';
+            let storeStatusBorder = 'rgba(5, 150, 105, 0.2)';
 
             if (data.status === 'approved') {
                 storeStatusLabel = 'STORES APPROVED';
-                storeStatusColor = '#881337';
-                storeStatusBg = 'rgba(136, 19, 55, 0.05)';
-                storeStatusBorder = 'rgba(136, 19, 55, 0.2)';
+                storeStatusColor = '#059669';
+                storeStatusBg = 'rgba(5, 150, 105, 0.05)';
+                storeStatusBorder = 'rgba(5, 150, 105, 0.2)';
             } else if (data.status === 'partially_approved') {
                 storeStatusLabel = 'STORES PARTIALLY APPROVED';
-                storeStatusColor = '#881337';
-                storeStatusBg = 'rgba(136, 19, 55, 0.05)';
-                storeStatusBorder = 'rgba(136, 19, 55, 0.2)';
+                storeStatusColor = '#059669';
+                storeStatusBg = 'rgba(5, 150, 105, 0.05)';
+                storeStatusBorder = 'rgba(5, 150, 105, 0.2)';
             } else if (data.status === 'declined') {
                 storeStatusLabel = 'STORES DECLINED';
                 storeStatusColor = '#ef4444';
@@ -2079,10 +2079,10 @@
         if (['approved', 'partially_approved'].includes(data.status)) {
             if (data.collected_at) {
                 collectorInfoHtml = `
-                <div style="background:rgba(136,19,55,0.03); border:1.5px dashed rgba(136,19,55,0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; flex-direction:column; gap:1rem;">
-                    <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px dashed rgba(136,19,55,0.15); padding-bottom:8px;">
+                <div style="background:rgba(5, 150, 105,0.03); border:1.5px dashed rgba(5, 150, 105,0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; flex-direction:column; gap:1rem;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px dashed rgba(5, 150, 105,0.15); padding-bottom:8px;">
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <div style="width:34px; height:34px; background:rgba(136,19,55,0.08); color:#881337; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                            <div style="width:34px; height:34px; background:rgba(5, 150, 105,0.08); color:#059669; border-radius:10px; display:flex; align-items:center; justify-content:center;">
                                 <i data-lucide="package-check" style="width:16px;"></i>
                             </div>
                             <div>
@@ -2090,7 +2090,7 @@
                                 <p style="margin:0; font-size:0.75rem; color:var(--text-muted);">Items have been physically issued and collected</p>
                             </div>
                         </div>
-                        <span class="pill" style="background:rgba(136,19,55,0.1); color:#881337; font-weight:800; font-size:0.7rem; padding:4px 10px;">COLLECTED</span>
+                        <span class="pill" style="background:rgba(5, 150, 105,0.1); color:#059669; font-weight:800; font-size:0.7rem; padding:4px 10px;">COLLECTED</span>
                     </div>
 
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
@@ -2118,7 +2118,7 @@
                 </div>`;
             } else {
                 collectorInfoHtml = `
-                <div style="background:rgba(136, 19, 55, 0.03); border:1.5px dashed rgba(136, 19, 55, 0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; align-items:center; gap:10px; color:#047857; font-weight:800; font-size:0.85rem;">
+                <div style="background:rgba(5, 150, 105, 0.03); border:1.5px dashed rgba(5, 150, 105, 0.25); border-radius:16px; padding:1.25rem; margin-top:1.25rem; display:flex; align-items:center; gap:10px; color:#047857; font-weight:800; font-size:0.85rem;">
                     <i data-lucide="clock" style="width:16px; height:16px; color:#047857; flex-shrink:0;"></i>
                     <span>Status: Requisition is approved by stores. Awaiting physical collection by staff.</span>
                 </div>`;
@@ -2130,7 +2130,7 @@
 
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; margin-top:1.5rem;">
             <h3 style="margin:0; font-size:0.95rem; font-weight:900; color:var(--text-main); display:flex; align-items:center; gap:6px;">
-                <i data-lucide="list-checks" style="width:16px; color:#881337;"></i> Requested Items
+                <i data-lucide="list-checks" style="width:16px; color:#059669;"></i> Requested Items
             </h3>
         </div>
 
@@ -2148,7 +2148,7 @@
         if (data.collected_at) {
             footerHtml = `
             <a href="{{ request()->getBasePath() }}/requisitions/receipt/${id}" target="_blank"
-                style="background:rgba(136, 19, 55, 0.08); border: 1.5px solid rgba(136, 19, 55, 0.2); color: #881337; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#881337'; this.style.color='white';" onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='#881337';">
+                style="background:rgba(5, 150, 105, 0.08); border: 1.5px solid rgba(5, 150, 105, 0.2); color: #059669; padding: .75rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: .88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; margin-right: auto;" onmouseover="this.style.background='#059669'; this.style.color='white';" onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669';">
                 <i data-lucide="printer" style="width: 16px;"></i> Print Collection Receipt
             </a>` + footerHtml;
         }
@@ -2172,7 +2172,7 @@
                 title: 'Strategic Security Alert',
                 text: 'A formal decline reason must be recorded in the feedback form before de-activating a requisition request.',
                 icon: 'warning',
-                confirmButtonColor: '#881337'
+                confirmButtonColor: '#059669'
             });
             return;
         }
@@ -2193,7 +2193,7 @@
             showCancelButton: true,
             confirmButtonText: decision === 'approved' ? 'Yes' : 'Yes, Decline',
             cancelButtonText: 'Abort',
-            confirmButtonColor: decision === 'approved' ? '#881337' : '#ef4444',
+            confirmButtonColor: decision === 'approved' ? '#059669' : '#ef4444',
             cancelButtonColor: '#ef4444',
             customClass: {
                 confirmButton: 'premium-swal-btn',
@@ -2234,7 +2234,7 @@
                             title: 'Success!',
                             text: responseData.message || 'Requisition processed successfully.',
                             icon: 'success',
-                            confirmButtonColor: '#881337'
+                            confirmButtonColor: '#059669'
                         }).then(() => {
                             window.location.reload();
                         });
@@ -2243,7 +2243,7 @@
                             title: 'Failure!',
                             text: responseData.message || 'An error occurred during submission.',
                             icon: 'error',
-                            confirmButtonColor: '#881337'
+                            confirmButtonColor: '#059669'
                         });
                     }
                 } catch (e) {
@@ -2251,7 +2251,7 @@
                         title: 'Failure!',
                         text: 'Critical communication sync error.',
                         icon: 'error',
-                        confirmButtonColor: '#881337'
+                        confirmButtonColor: '#059669'
                     });
                 }
             } else if (result.dismiss === Swal.DismissReason.cancel) {
@@ -2262,7 +2262,7 @@
                     showCancelButton: true,
                     confirmButtonText: 'Yes',
                     cancelButtonText: 'No',
-                    confirmButtonColor: '#881337',
+                    confirmButtonColor: '#059669',
                     cancelButtonColor: '#64748b',
                     customClass: {
                         confirmButton: 'premium-swal-btn',
@@ -2383,7 +2383,7 @@
                     title: 'Feedback Required',
                     text: 'Please enter a comment or feedback regarding this decision in the text area.',
                     icon: 'warning',
-                    confirmButtonColor: '#881337'
+                    confirmButtonColor: '#059669'
                 });
                 return;
             }
@@ -2392,7 +2392,7 @@
         let confirmTitle = 'Agree to Suggested Quantity?';
         let confirmText = 'This will confirm your department\'s agreement to the suggested quantity proposal. Requisition will return to stores for final allocation.';
         let confirmBtnText = 'Yes, Agree';
-        let confirmColor = '#881337';
+        let confirmColor = '#059669';
 
         if (response === 'decline') {
             confirmColor = '#ef4444';
@@ -2451,7 +2451,7 @@
                             title: 'Success!',
                             text: responseData.message || 'Alternative response processed successfully.',
                             icon: 'success',
-                            confirmButtonColor: '#881337'
+                            confirmButtonColor: '#059669'
                         }).then(() => {
                             closeModal();
                             window.location.reload();
@@ -2461,7 +2461,7 @@
                             title: 'Failure!',
                             text: responseData.message || 'An error occurred during submission.',
                             icon: 'error',
-                            confirmButtonColor: '#881337'
+                            confirmButtonColor: '#059669'
                         });
                     }
                 } catch (e) {
@@ -2469,7 +2469,7 @@
                         title: 'Failure!',
                         text: 'Critical communication sync error.',
                         icon: 'error',
-                        confirmButtonColor: '#881337'
+                        confirmButtonColor: '#059669'
                     });
                 }
             } else if (result.dismiss === Swal.DismissReason.cancel) {
@@ -2480,7 +2480,7 @@
                     showCancelButton: true,
                     confirmButtonText: 'Yes',
                     cancelButtonText: 'No',
-                    confirmButtonColor: '#881337',
+                    confirmButtonColor: '#059669',
                     cancelButtonColor: '#64748b',
                     customClass: {
                         confirmButton: 'premium-swal-btn',
@@ -2555,7 +2555,7 @@
                             return `
                             <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
                                 <div style="display:flex;align-items:center;gap:.75rem;">
-                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(136,19,55,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#881337;">
+                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(5, 150, 105,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#059669;">
                                         ${(reg.name || reg.username).charAt(0).toUpperCase()}
                                     </div>
                                     <div>
@@ -2564,10 +2564,10 @@
                                     </div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
-                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(136,19,55,.1);color:#047857;">
+                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(5, 150, 105,.1);color:#047857;">
                                         PENDING HOD APPROVAL
                                     </span>
-                                    <button onclick="approveRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(136,19,55,.1);border:1px solid rgba(136,19,55,.3);color:#881337;">
+                                    <button onclick="approveRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(5, 150, 105,.1);border:1px solid rgba(5, 150, 105,.3);color:#059669;">
                                         <i data-lucide="user-check" style="width:13px;height:13px;"></i> Approve
                                     </button>
                                     <button onclick="rejectRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;">
@@ -2604,20 +2604,20 @@
                         let rows = data.accounts.map(acc => {
                             const isAccessActive = acc.can_make_requisition;
                             const badgeStyle = isAccessActive 
-                                ? 'background:rgba(136,19,55,.1);color:#881337;' 
+                                ? 'background:rgba(5, 150, 105,.1);color:#059669;' 
                                 : 'background:rgba(239,68,68,.1);color:#ef4444;';
                             const badgeText = isAccessActive ? 'Active Access' : 'Access Suspended';
                             
                             const btnStyle = isAccessActive
                                 ? 'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;'
-                                : 'background:rgba(136,19,55,.1);border:1px solid rgba(136,19,55,.3);color:#881337;';
+                                : 'background:rgba(5, 150, 105,.1);border:1px solid rgba(5, 150, 105,.3);color:#059669;';
                             const btnText = isAccessActive ? 'Suspend Access' : 'Grant Access';
                             const btnIcon = isAccessActive ? 'user-minus' : 'user-check';
 
                             return `
                             <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
                                 <div style="display:flex;align-items:center;gap:.75rem;">
-                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(136,19,55,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#881337;">
+                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(5, 150, 105,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#059669;">
                                         ${(acc.name || acc.username).charAt(0).toUpperCase()}
                                     </div>
                                     <div>
@@ -2626,7 +2626,7 @@
                                     </div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
-                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(136,19,55,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#881337' : '#64748b'};">
+                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(5, 150, 105,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#059669' : '#64748b'};">
                                         ${acc.is_online ? '● ONLINE' : '○ OFFLINE'}
                                     </span>
                                     <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;${badgeStyle}">
@@ -2669,7 +2669,7 @@
             text: `Are you sure you want to approve requisitioner privileges for @${username}?`,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#881337',
+            confirmButtonColor: '#059669',
             cancelButtonColor: '#64748b',
             confirmButtonText: 'Yes, Approve',
             cancelButtonText: 'Cancel'
@@ -2757,7 +2757,7 @@
 
     async function toggleStaffAccess(id, username, isCurrentlyActive) {
         const actionWord = isCurrentlyActive ? 'Suspend' : 'Grant';
-        const actionColor = isCurrentlyActive ? '#ef4444' : '#881337';
+        const actionColor = isCurrentlyActive ? '#ef4444' : '#059669';
         
         const confirm = await Swal.fire({
             title: `${actionWord} Requisition Access?`,
@@ -3066,11 +3066,11 @@
         const badgeContainerStores = document.getElementById('workflow-active-badge');
         if (badgeTextStores) badgeTextStores.textContent = `Active Categories: ${activeCountStores}`;
         if (activeCountStores > 0) {
-            if (badgeDotStores) badgeDotStores.style.background = '#881337';
+            if (badgeDotStores) badgeDotStores.style.background = '#059669';
             if (badgeContainerStores) {
-                badgeContainerStores.style.background = 'rgba(136, 19, 55, 0.08)';
-                badgeContainerStores.style.color = '#881337';
-                badgeContainerStores.style.borderColor = 'rgba(136, 19, 55, 0.2)';
+                badgeContainerStores.style.background = 'rgba(5, 150, 105, 0.08)';
+                badgeContainerStores.style.color = '#059669';
+                badgeContainerStores.style.borderColor = 'rgba(5, 150, 105, 0.2)';
             }
         } else {
             if (badgeDotStores) badgeDotStores.style.background = '#64748b';
@@ -3090,10 +3090,10 @@
             if (activeCountStores > 0) {
                 node.className = 'flow-node flow-node-stores active';
                 if (iconBox) {
-                    iconBox.style.background = '#881337';
+                    iconBox.style.background = '#059669';
                     iconBox.style.color = '#ffffff';
                     iconBox.style.borderColor = 'transparent';
-                    iconBox.style.boxShadow = '0 6px 15px rgba(136,19,55,0.2)';
+                    iconBox.style.boxShadow = '0 6px 15px rgba(5, 150, 105,0.2)';
                 }
                 if (label) {
                     label.style.color = '#1e293b';
@@ -3101,8 +3101,8 @@
                 }
                 if (badge) {
                     badge.textContent = 'Required';
-                    badge.style.background = 'rgba(136, 19, 55, 0.1)';
-                    badge.style.color = '#881337';
+                    badge.style.background = 'rgba(5, 150, 105, 0.1)';
+                    badge.style.color = '#059669';
                     badge.style.borderColor = 'transparent';
                 }
             } else {
@@ -3135,7 +3135,7 @@
             if (activeCountDG > 0) {
                 node.className = 'flow-node flow-node-dg active';
                 if (iconBox) {
-                    iconBox.style.background = 'linear-gradient(135deg, #9f1239, #6d28d9)';
+                    iconBox.style.background = '#0ea5e9';
                     iconBox.style.color = '#ffffff';
                     iconBox.style.borderColor = 'transparent';
                     iconBox.style.boxShadow = '0 6px 15px rgba(139,92,246,0.2)';
@@ -3147,7 +3147,7 @@
                 if (badge) {
                     badge.textContent = 'Required';
                     badge.style.background = 'rgba(139, 92, 246, 0.1)';
-                    badge.style.color = '#9f1239';
+                    badge.style.color = '#047857';
                     badge.style.borderColor = 'transparent';
                 }
             } else {
@@ -3175,7 +3175,7 @@
         document.querySelectorAll('.flow-line-1').forEach(line => {
             if (activeCountStores > 0) {
                 line.className = 'flow-line flow-line-1 active';
-                line.style.background = '#881337';
+                line.style.background = '#059669';
             } else {
                 line.className = 'flow-line flow-line-1 dashed';
                 line.style.background = '';
@@ -3185,7 +3185,7 @@
         document.querySelectorAll('.flow-line-2').forEach(line => {
             if (activeCountDG > 0) {
                 line.className = 'flow-line flow-line-2 active';
-                line.style.background = '#9f1239';
+                line.style.background = '#047857';
             } else {
                 line.className = 'flow-line flow-line-2 dashed';
                 line.style.background = '';
@@ -3194,7 +3194,7 @@
 
         document.querySelectorAll('.flow-line-3').forEach(line => {
             line.className = 'flow-line flow-line-3 active';
-            line.style.background = '#881337';
+            line.style.background = '#059669';
         });
 
         // Update hints
@@ -3202,13 +3202,13 @@
             const isStoresCard = hint.closest('.workflow-card-modern').querySelector('h3').textContent.includes('Stores');
             if (isStoresCard) {
                 if (activeCountStores > 0) {
-                    hint.innerHTML = `Routing through <strong>Head of Admin(Authorizer)</strong> for <strong style="color: #881337;">${activeCountStores}</strong> selected category${activeCountStores == 1 ? '' : 'ies'}.`;
+                    hint.innerHTML = `Routing through <strong>Head of Admin(Authorizer)</strong> for <strong style="color: #059669;">${activeCountStores}</strong> selected category${activeCountStores == 1 ? '' : 'ies'}.`;
                 } else {
                     hint.innerHTML = 'Currently bypassing intermediate Stores Head step due to settings configuration.';
                 }
             } else {
                 if (activeCountDG > 0) {
-                    hint.innerHTML = `Routing through <strong>Director General</strong> for <strong style="color: #9f1239;">${activeCountDG}</strong> selected category${activeCountDG == 1 ? '' : 'ies'}.`;
+                    hint.innerHTML = `Routing through <strong>Director General</strong> for <strong style="color: #047857;">${activeCountDG}</strong> selected category${activeCountDG == 1 ? '' : 'ies'}.`;
                 } else {
                     hint.innerHTML = 'Currently bypassing intermediate Director General step due to settings configuration.';
                 }
@@ -3249,8 +3249,8 @@
             document.getElementById('sra-modal-number').textContent = sra.sra_number;
 
             const deliveryLabel = sra.delivery_type === 'full' ? 'Full Delivery' : 'Part Delivery';
-            const deliveryColor = sra.delivery_type === 'full' ? '#881337' : '#881337';
-            const deliveryBg = sra.delivery_type === 'full' ? 'rgba(136,19,55,0.1)' : 'rgba(136,19,55,0.1)';
+            const deliveryColor = sra.delivery_type === 'full' ? '#059669' : '#059669';
+            const deliveryBg = sra.delivery_type === 'full' ? 'rgba(5, 150, 105,0.1)' : 'rgba(5, 150, 105,0.1)';
 
             document.getElementById('sra-modal-details').innerHTML = `
                 <div><div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Submitted By</div><div style="font-weight:700;color:var(--text-main);">${sra.submitter ? sra.submitter.name : '—'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${sra.dept || ''}</div></div>
@@ -3265,7 +3265,7 @@
             document.getElementById('sra-modal-details-text').innerHTML = `
                 <div style="font-size:0.72rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px;">Details of Order / Service</div>
                 <div style="background:var(--bg-main);border-radius:12px;padding:1rem 1.25rem;font-size:0.88rem;font-weight:500;color:var(--text-main);white-space:pre-wrap;line-height:1.7;border:1px solid var(--border-color);">${sra.details}</div>
-                ${sra.previous_sra_nos ? `<div style="margin-top:0.75rem;font-size:0.72rem;font-weight:800;color:#881337;">Previous SRA Nos: ${sra.previous_sra_nos}</div>` : ''}
+                ${sra.previous_sra_nos ? `<div style="margin-top:0.75rem;font-size:0.72rem;font-weight:800;color:#059669;">Previous SRA Nos: ${sra.previous_sra_nos}</div>` : ''}
             `;
 
             const isSraProcessed = sra.status === 'approved' || sra.status === 'declined' || (currentSraStage === 'admin' ? (sra.admin_status && sra.admin_status !== 'pending') : (sra.stores_status && sra.stores_status !== 'pending'));
@@ -3281,7 +3281,7 @@
                     </div>` : ''}
                     <div style="display: flex; gap: 1rem; margin-top: 1.25rem;">
                         ${isSraApproved ? `
-                            <button style="flex:1; padding: 0.85rem 2rem; border: none; background: #881337; color: white; border-radius: 12px; cursor: default; pointer-events: none; font-weight: 950; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" disabled>
+                            <button style="flex:1; padding: 0.85rem 2rem; border: none; background: #059669; color: white; border-radius: 12px; cursor: default; pointer-events: none; font-weight: 950; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" disabled>
                                 <i data-lucide="check-circle" style="width: 16px;"></i> Approved
                             </button>
                         ` : `
@@ -3302,7 +3302,7 @@
                         <button onclick="processOversightSra('declined')" id="sraBtnDecline" style="padding: 0.85rem 2rem; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); color: #ef4444; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
                             <i data-lucide="x-circle" style="width: 16px;"></i> Decline
                         </button>
-                        <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: #881337; color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(136,19,55,0.4);">
+                        <button onclick="processOversightSra('approved')" id="sraBtnApprove" style="padding: 0.85rem 2rem; border: none; background: #059669; color: white; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 8px 20px -5px rgba(5, 150, 105,0.4);">
                             <i data-lucide="check-circle" style="width: 16px;"></i> Approve
                         </button>
                     </div>
@@ -3335,7 +3335,7 @@
             showCancelButton: true,
             confirmButtonText: label,
             cancelButtonText: 'Abort',
-            confirmButtonColor: action === 'approved' ? '#881337' : '#ef4444',
+            confirmButtonColor: action === 'approved' ? '#059669' : '#ef4444',
             cancelButtonColor: '#ef4444',
             customClass: {
                 confirmButton: 'premium-swal-btn',
@@ -3388,7 +3388,7 @@
                     showCancelButton: true,
                     confirmButtonText: 'Yes',
                     cancelButtonText: 'No',
-                    confirmButtonColor: '#881337',
+                    confirmButtonColor: '#059669',
                     cancelButtonColor: '#64748b',
                     customClass: {
                         confirmButton: 'premium-swal-btn',

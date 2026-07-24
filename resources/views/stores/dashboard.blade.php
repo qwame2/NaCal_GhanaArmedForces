@@ -1,4 +1,4 @@
-@php
+﻿@php
     $layout = auth()->user()->isMainAdminOrSub() ? 'layouts.dashboard' : 'layouts.admin';
 @endphp
 @extends($layout)

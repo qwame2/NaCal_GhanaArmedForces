@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('content')
     @php
@@ -32,16 +32,16 @@
             --font-display: 'Outfit', sans-serif;
             --font-sans: 'Outfit', sans-serif;
 
-            --store-orange: #881337;
-            --store-orange-hover: #4c0519;
-            --store-orange-light: rgba(136, 19, 55, 0.08);
+            --store-orange: #059669;
+            --store-orange-hover: #065f46;
+            --store-orange-light: rgba(5, 150, 105, 0.08);
 
-            --store-indigo: #881337;
-            --store-indigo-hover: #881337;
-            --store-indigo-light: rgba(136, 19, 55, 0.08);
+            --store-indigo: #059669;
+            --store-indigo-hover: #059669;
+            --store-indigo-light: rgba(5, 150, 105, 0.08);
 
-            --success-color: #881337;
-            --warning-color: #881337;
+            --success-color: #059669;
+            --warning-color: #059669;
             --danger-color: #ef4444;
 
             --bg-main: #f8fafc;
@@ -95,13 +95,13 @@
         .brand-logo-container {
             width: 42px;
             height: 42px;
-            background: #881337;
+            background: #059669;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
         }
 
         .brand-name {
@@ -228,7 +228,7 @@
             align-items: center;
             gap: 8px;
             text-decoration: none;
-            box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
             transition: all 0.2s;
         }
 
@@ -382,13 +382,13 @@
         .form-input:focus {
             border-color: var(--store-orange);
             background: var(--bg-card);
-            box-shadow: 0 0 0 3px rgba(136, 19, 55, 0.08);
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.08);
         }
 
         .submit-btn {
             width: 100%;
             padding: 1rem;
-            background: #881337;
+            background: #059669;
             color: white;
             border: none;
             border-radius: 14px;
@@ -399,14 +399,14 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 6px 16px rgba(136, 19, 55, 0.2);
+            box-shadow: 0 6px 16px rgba(5, 150, 105, 0.2);
             transition: all 0.25s ease;
             margin-top: 1.5rem;
         }
 
         .submit-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(136, 19, 55, 0.35);
+            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.35);
         }
 
         .submit-btn:disabled {
@@ -453,7 +453,7 @@
             border-color: var(--store-orange);
             color: var(--store-orange);
             background: var(--store-orange-light);
-            box-shadow: 0 4px 12px rgba(136, 19, 55, 0.1);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.1);
         }
 
         .usage-pill-label .pill-icon {
@@ -495,7 +495,7 @@
         .select2-container--default.select2-container--focus .select2-selection--single {
             border-color: var(--store-orange) !important;
             background: var(--bg-card) !important;
-            box-shadow: 0 0 0 3px rgba(136, 19, 55, 0.08) !important;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.08) !important;
         }
         .select2-container--default .select2-selection--single .select2-selection__arrow {
             height: 44px !important;
@@ -596,7 +596,7 @@
                 </div>
                 <div>
                     <div class="brand-name">NACOC</div>
-                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:#881337;">(NSIMs)</span></div>
+                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:#059669;">(NSIMs)</span></div>
                 </div>
             </a>
 

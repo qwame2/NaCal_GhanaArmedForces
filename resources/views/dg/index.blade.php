@@ -1,14 +1,14 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('content')
 <style>
     :root {
-        --dg-primary: #881337;
-        --dg-primary-hover: #881337;
+        --dg-primary: #059669;
+        --dg-primary-hover: #059669;
         --dg-slate: #0f172a;
         --dg-slate-light: #1e293b;
         --dg-danger-glow: rgba(239, 68, 68, 0.08);
-        --dg-warning-glow: rgba(136, 19, 55, 0.08);
+        --dg-warning-glow: rgba(5, 150, 105, 0.08);
         --dg-info-glow: rgba(59, 130, 246, 0.08);
         --dg-success-glow: rgba(16, 185, 129, 0.12);
         --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
@@ -70,7 +70,7 @@
     .dg-tab-btn.active {
         background: var(--bg-card);
         color: var(--dg-primary);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(136, 19, 55, 0.1);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(5, 150, 105, 0.1);
     }
 
     .dg-tab-panel {
@@ -94,7 +94,7 @@
     }
 
     .dg-row:hover {
-        background: rgba(136, 19, 55, 0.01);
+        background: rgba(5, 150, 105, 0.01);
     }
 
     .dg-badge {
@@ -110,8 +110,8 @@
     }
 
     .dg-badge.danger { background: var(--dg-danger-glow); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-    .dg-badge.warning { background: var(--dg-warning-glow); color: #881337; border: 1px solid rgba(136, 19, 55, 0.2); }
-    .dg-badge.info { background: var(--dg-info-glow); color: #881337; border: 1px solid rgba(59, 130, 246, 0.2); }
+    .dg-badge.warning { background: var(--dg-warning-glow); color: #059669; border: 1px solid rgba(5, 150, 105, 0.2); }
+    .dg-badge.info { background: var(--dg-info-glow); color: #059669; border: 1px solid rgba(59, 130, 246, 0.2); }
     .dg-badge.success { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1.5px solid #10b981; font-weight: 800; }
 
     .dg-table {
@@ -170,7 +170,7 @@
 
     .filter-control-dg:focus {
         border-color: var(--dg-primary);
-        box-shadow: 0 0 0 3px rgba(136, 19, 55, 0.15);
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
         background: white;
     }
 
@@ -235,7 +235,7 @@
         color: white;
         border-color: var(--dg-primary);
         transform: translateY(-1.5px);
-        box-shadow: 0 8px 16px rgba(136, 19, 55, 0.2);
+        box-shadow: 0 8px 16px rgba(5, 150, 105, 0.2);
     }
 
     .dg-page-btn.disabled {
@@ -266,12 +266,12 @@
     }
 
     .online-indicator.online {
-        color: #881337;
+        color: #059669;
     }
 
     .online-indicator.online::before {
-        background: #881337;
-        box-shadow: 0 0 8px #881337;
+        background: #059669;
+        box-shadow: 0 0 8px #059669;
         animation: pulse-online 2s infinite;
     }
 
@@ -317,7 +317,7 @@
         background: white;
         border-radius: 28px;
         border: 1.5px solid var(--border-color);
-        box-shadow: 0 10px 30px rgba(136, 19, 55, 0.03);
+        box-shadow: 0 10px 30px rgba(5, 150, 105, 0.03);
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         overflow: hidden;
         margin-bottom: 2rem;
@@ -325,7 +325,7 @@
 
     .workflow-card-modern:hover {
         border-color: #c7d2fe;
-        box-shadow: 0 16px 40px rgba(136, 19, 55, 0.06);
+        box-shadow: 0 16px 40px rgba(5, 150, 105, 0.06);
     }
 
     .workflow-cat-grid-modern {
@@ -357,8 +357,8 @@
     }
 
     .workflow-cat-card-modern.active {
-        background: linear-gradient(145deg, #f5f7ff 0%, #edf1ff 100%);
-        border-color: #9f1239;
+        background: #f5f7ff;
+        border-color: #047857;
         box-shadow: 0 8px 24px rgba(139, 92, 246, 0.06);
     }
 
@@ -388,7 +388,7 @@
         height: 38px;
         border-radius: 12px;
         background: #ffffff;
-        color: #9f1239;
+        color: #047857;
         font-weight: 900;
         font-size: 0.85rem;
         display: flex;
@@ -400,7 +400,7 @@
     }
 
     .workflow-cat-card-modern.active .cat-circle {
-        background: linear-gradient(135deg, #9f1239, #6d28d9);
+        background: #059669;
         color: #ffffff;
         border-color: transparent;
         box-shadow: 0 4px 8px rgba(139, 92, 246, 0.18);
@@ -415,7 +415,7 @@
     }
 
     .workflow-cat-card-modern.active .status-label {
-        color: #9f1239;
+        color: #047857;
     }
 
     .workflow-cat-card-modern .indicator-dot {
@@ -433,8 +433,8 @@
     }
 
     .workflow-cat-card-modern.active .indicator-dot {
-        background: #9f1239;
-        border-color: #9f1239;
+        background: #047857;
+        border-color: #047857;
         box-shadow: 0 2px 6px rgba(139, 92, 246, 0.25);
     }
 
@@ -447,12 +447,12 @@
     }
 
     .flow-line.active {
-        background: #881337;
-        box-shadow: 0 0 8px rgba(136, 19, 55, 0.25);
+        background: #059669;
+        box-shadow: 0 0 8px rgba(5, 150, 105, 0.25);
     }
 
     .flow-line.dashed {
-        background: repeating-linear-gradient(to right, #cbd5e1 0px, #cbd5e1 6px, transparent 6px, transparent 12px);
+        background: #cbd5e1;
     }
 
     .flow-node-icon {
@@ -492,7 +492,7 @@
 
         </div>
         <div style="display: flex; gap: 10px;">
-            <a id="btn-print-dg-report" href="{{ route('dg.print') }}?date_from={{ request('date_from') }}&date_to={{ request('date_to') }}" target="_blank" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: var(--dg-primary); border-radius: 12px; border: 1.5px solid var(--dg-primary); background: rgba(136,19,55,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(136,19,55,0.1)'" onmouseout="this.style.background='rgba(136,19,55,0.05)'">
+            <a id="btn-print-dg-report" href="{{ route('dg.print') }}?date_from={{ request('date_from') }}&date_to={{ request('date_to') }}" target="_blank" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: var(--dg-primary); border-radius: 12px; border: 1.5px solid var(--dg-primary); background: rgba(5, 150, 105,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(5, 150, 105,0.1)'" onmouseout="this.style.background='rgba(5, 150, 105,0.05)'">
                 <i data-lucide="printer" style="width: 18px;"></i>
                 Print Consolidated Ledger
             </a>
@@ -507,7 +507,7 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
         <div class="dg-card">
             <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(136,19,55,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="layers" style="color: var(--dg-primary); width: 16px;"></i></div>
+                <div style="width: 32px; height: 32px; background: rgba(5, 150, 105,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="layers" style="color: var(--dg-primary); width: 16px;"></i></div>
                 Total Store Items
             </div>
             <div class="stat-number">{{ number_format($totalItemsCount) }}</div>
@@ -525,7 +525,7 @@
 
         <div class="dg-card">
             <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(139,92,246,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="shopping-bag" style="color: #9f1239; width: 16px;"></i></div>
+                <div style="width: 32px; height: 32px; background: rgba(139,92,246,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="shopping-bag" style="color: #047857; width: 16px;"></i></div>
                 Total Items Issued
             </div>
             <div class="stat-number">{{ number_format($totalItemsIssued) }}</div>
@@ -534,16 +534,16 @@
 
         <div class="dg-card">
             <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(136,19,55,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="file-text" style="color: #881337; width: 16px;"></i></div>
+                <div style="width: 32px; height: 32px; background: rgba(5, 150, 105,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="file-text" style="color: #059669; width: 16px;"></i></div>
                 Pending Requisitions
             </div>
-            <div class="stat-number" style="color: {{ $pendingRequisitionsCount > 0 ? '#4c0519' : 'var(--text-main)' }}">{{ number_format($pendingRequisitionsCount) }}</div>
+            <div class="stat-number" style="color: {{ $pendingRequisitionsCount > 0 ? '#065f46' : 'var(--text-main)' }}">{{ number_format($pendingRequisitionsCount) }}</div>
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Requisitions awaiting approval</div>
         </div>
 
         <div class="dg-card">
             <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(59,130,246,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="users" style="color: #881337; width: 16px;"></i></div>
+                <div style="width: 32px; height: 32px; background: rgba(59,130,246,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="users" style="color: #059669; width: 16px;"></i></div>
                 Approved Officers
             </div>
             <div class="stat-number">{{ number_format($totalActiveUsers) }}</div>
@@ -692,7 +692,7 @@
                                          <div style="display: flex; align-items: center; gap: 6px;">
                                              <div style="font-weight: 800; color: var(--text-main);">{{ $item->supplier_name }}</div>
                                              @if($supDetails)
-                                                 <button onclick="toggleSupplierDetails(this)" style="background: rgba(136, 19, 55, 0.1); border: 1.5px solid rgba(136, 19, 55, 0.2); cursor: pointer; padding: 4px; color: var(--dg-primary); display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; transition: all 0.2s; outline: none; margin-left: 4px;" class="supplier-toggle-btn" onmouseover="this.style.background='rgba(136, 19, 55, 0.2)'; this.style.borderColor='rgba(136, 19, 55, 0.3)';" onmouseout="this.style.background='rgba(136, 19, 55, 0.1)'; this.style.borderColor='rgba(136, 19, 55, 0.2)';">
+                                                 <button onclick="toggleSupplierDetails(this)" style="background: rgba(5, 150, 105, 0.1); border: 1.5px solid rgba(5, 150, 105, 0.2); cursor: pointer; padding: 4px; color: var(--dg-primary); display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; transition: all 0.2s; outline: none; margin-left: 4px;" class="supplier-toggle-btn" onmouseover="this.style.background='rgba(5, 150, 105, 0.2)'; this.style.borderColor='rgba(5, 150, 105, 0.3)';" onmouseout="this.style.background='rgba(5, 150, 105, 0.1)'; this.style.borderColor='rgba(5, 150, 105, 0.2)';">
                                                      <i data-lucide="chevron-down" style="width: 12px; height: 12px; stroke-width: 3.5;"></i>
                                                  </button>
                                              @endif
@@ -808,7 +808,7 @@
                                         </span>
                                         @endforeach
                                         @if($req->items->count() > 3)
-                                        <span style="font-size: .7rem; font-weight: 700; color: var(--dg-primary); background: rgba(136, 19, 55, 0.1); padding: 2px 8px; border-radius: 6px; white-space: nowrap;">+{{ $req->items->count() - 3 }} more</span>
+                                        <span style="font-size: .7rem; font-weight: 700; color: var(--dg-primary); background: rgba(5, 150, 105, 0.1); padding: 2px 8px; border-radius: 6px; white-space: nowrap;">+{{ $req->items->count() - 3 }} more</span>
                                         @endif
                                     </div>
                                 </td>
@@ -853,7 +853,7 @@
                                                       'quantity' => number_format($i->quantity_requested, 0),
                                                       'unit' => $i->unit
                                                   ])->toArray()
-                                              ]), ENT_QUOTES, 'UTF-8') !!}, this)" class="dg-action-btn view-details" style="padding: 6px 12px; background: rgba(136, 19, 55, 0.08); border: 1.5px solid rgba(136, 19, 55, 0.2); color: #881337; border-radius: 8px; font-size: 0.72rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: transform 0.15s;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136, 19, 55, 0.2)'" type="button">
+                                              ]), ENT_QUOTES, 'UTF-8') !!}, this)" class="dg-action-btn view-details" style="padding: 6px 12px; background: rgba(5, 150, 105, 0.08); border: 1.5px solid rgba(5, 150, 105, 0.2); color: #059669; border-radius: 8px; font-size: 0.72rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: transform 0.15s;" onmouseover="this.style.background='#059669'; this.style.color='white'; this.style.borderColor='#059669';" onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669'; this.style.borderColor='rgba(5, 150, 105, 0.2)'" type="button">
                                                   <i data-lucide="check" style="width: 13px; height: 13px;"></i> Processed
                                               </button>
                                           @else
@@ -874,7 +874,7 @@
                                                       'quantity' => number_format($i->quantity_requested, 0),
                                                       'unit' => $i->unit
                                                   ])->toArray()
-                                              ]), ENT_QUOTES, 'UTF-8') !!}, this)" class="dg-action-btn view-details" style="padding: 6px 12px; background: rgba(136, 19, 55, 0.1); border: 1.5px solid rgba(136, 19, 55, 0.25); color: var(--dg-primary); border-radius: 8px; font-size: 0.72rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: transform 0.15s;" onmouseover="this.style.background='rgba(136,19,55,0.2)'" onmouseout="this.style.background='rgba(136,19,55,0.1)'" type="button">
+                                              ]), ENT_QUOTES, 'UTF-8') !!}, this)" class="dg-action-btn view-details" style="padding: 6px 12px; background: rgba(5, 150, 105, 0.1); border: 1.5px solid rgba(5, 150, 105, 0.25); color: var(--dg-primary); border-radius: 8px; font-size: 0.72rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: transform 0.15s;" onmouseover="this.style.background='rgba(5, 150, 105,0.2)'" onmouseout="this.style.background='rgba(5, 150, 105,0.1)'" type="button">
                                                   <i data-lucide="eye" style="width: 13px; height: 13px;"></i> View Details
                                               </button>
                                           @endif
@@ -950,7 +950,7 @@
                     <tbody>
                         @forelse($reqReceipts as $req)
                             <tr class="dg-row">
-                                <td style="font-weight: 800; color: #881337; font-size: 0.78rem;">
+                                <td style="font-weight: 800; color: #059669; font-size: 0.78rem;">
                                     {{ $req->unique_id ?: ('REQ-'.str_pad($req->id,5,'0',STR_PAD_LEFT)) }}
                                 </td>
                                 <td style="color: var(--text-main);">
@@ -971,7 +971,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="dg-badge" style="background: rgba(136, 19, 55, 0.08); color: #881337; border: 1px solid rgba(136, 19, 55, 0.2); font-size: 0.68rem;">
+                                    <span class="dg-badge" style="background: rgba(5, 150, 105, 0.08); color: #059669; border: 1px solid rgba(5, 150, 105, 0.2); font-size: 0.68rem;">
                                         ● {{ ucfirst($req->status) }}
                                     </span>
                                 </td>
@@ -979,7 +979,7 @@
                                     {{ $req->updated_at ? $req->updated_at->format('d/m/Y H:i') : $req->created_at->format('d/m/Y H:i') }}
                                 </td>
                                 <td style="text-align: center;">
-                                    <a href="{{ route('requisitions.receipt.print', $req->id) }}" target="_blank" style="background: rgba(136, 19, 55, 0.08); color: #881337; border: 1.5px solid rgba(136, 19, 55, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration: none;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136, 19, 55, 0.2)';">
+                                    <a href="{{ route('requisitions.receipt.print', $req->id) }}" target="_blank" style="background: rgba(5, 150, 105, 0.08); color: #059669; border: 1.5px solid rgba(5, 150, 105, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration: none;" onmouseover="this.style.background='#059669'; this.style.color='white'; this.style.borderColor='#059669';" onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669'; this.style.borderColor='rgba(5, 150, 105, 0.2)';">
                                         <i data-lucide="receipt" style="width: 13px; height: 13px;"></i> View Receipt
                                     </a>
                                 </td>
@@ -1023,17 +1023,17 @@
         <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; box-shadow: var(--shadow-premium); position: relative; overflow: hidden;">
             <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; background: var(--bg-main);">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <i data-lucide="filter" style="width: 16px; height: 16px; color: #881337;"></i>
+                    <i data-lucide="filter" style="width: 16px; height: 16px; color: #059669;"></i>
                     <span style="font-weight: 800; font-size: 0.82rem; color: var(--text-main);">Filter SRA Receipts:</span>
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                    <button type="button" class="dg-page-btn {{ empty(request('sra_type')) ? 'active' : '' }}" onclick="filterSraCategory('')" style="{{ empty(request('sra_type')) ? 'background:#881337;color:white;border-color:#881337;' : '' }}">
+                    <button type="button" class="dg-page-btn {{ empty(request('sra_type')) ? 'active' : '' }}" onclick="filterSraCategory('')" style="{{ empty(request('sra_type')) ? 'background:#059669;color:white;border-color:#059669;' : '' }}">
                         <i data-lucide="layers" style="width: 13px; height: 13px;"></i> All SRA Receipts
                     </button>
-                    <button type="button" class="dg-page-btn {{ request('sra_type') === 'inventory' ? 'active' : '' }}" onclick="filterSraCategory('inventory')" style="{{ request('sra_type') === 'inventory' ? 'background:#881337;color:white;border-color:#881337;' : '' }}">
+                    <button type="button" class="dg-page-btn {{ request('sra_type') === 'inventory' ? 'active' : '' }}" onclick="filterSraCategory('inventory')" style="{{ request('sra_type') === 'inventory' ? 'background:#059669;color:white;border-color:#059669;' : '' }}">
                         <i data-lucide="archive" style="width: 13px; height: 13px;"></i> Inventory SRA
                     </button>
-                    <button type="button" class="dg-page-btn {{ request('sra_type') === 'service' ? 'active' : '' }}" onclick="filterSraCategory('service')" style="{{ request('sra_type') === 'service' ? 'background:#881337;color:white;border-color:#881337;' : '' }}">
+                    <button type="button" class="dg-page-btn {{ request('sra_type') === 'service' ? 'active' : '' }}" onclick="filterSraCategory('service')" style="{{ request('sra_type') === 'service' ? 'background:#059669;color:white;border-color:#059669;' : '' }}">
                         <i data-lucide="wrench" style="width: 13px; height: 13px;"></i> Service SRA
                     </button>
                 </div>
@@ -1054,11 +1054,11 @@
                     <tbody>
                         @forelse($sraReceipts as $sra)
                             <tr class="dg-row">
-                                <td style="font-weight: 800; color: #881337; font-size: 0.78rem;">
+                                <td style="font-weight: 800; color: #059669; font-size: 0.78rem;">
                                     {{ $sra->sra_number }}
                                 </td>
                                 <td>
-                                    <span class="badge-event" style="background: rgba(136, 19, 55, 0.08); color: #881337;">
+                                    <span class="badge-event" style="background: rgba(5, 150, 105, 0.08); color: #059669;">
                                         {{ $sra->type }}
                                     </span>
                                 </td>
@@ -1077,7 +1077,7 @@
                                     {{ $sra->date ? $sra->date->format('d/m/Y H:i') : '-' }}
                                 </td>
                                 <td style="text-align: center;">
-                                    <a href="{{ $sra->receipt_url }}" target="_blank" style="background: rgba(136, 19, 55, 0.08); color: #881337; border: 1.5px solid rgba(136, 19, 55, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration: none;" onmouseover="this.style.background='#881337'; this.style.color='white'; this.style.borderColor='#881337';" onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='#881337'; this.style.borderColor='rgba(136, 19, 55, 0.2)';">
+                                    <a href="{{ $sra->receipt_url }}" target="_blank" style="background: rgba(5, 150, 105, 0.08); color: #059669; border: 1.5px solid rgba(5, 150, 105, 0.2); padding: 0.45rem 1rem; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; text-decoration: none;" onmouseover="this.style.background='#059669'; this.style.color='white'; this.style.borderColor='#059669';" onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='#059669'; this.style.borderColor='rgba(5, 150, 105, 0.2)';">
                                         <i data-lucide="file-check" style="width: 13px; height: 13px;"></i> View SRA Receipt
                                     </a>
                                 </td>
@@ -1280,7 +1280,7 @@
         <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-premium);">
             <div style="padding: 1.5rem 1.75rem; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.01);">
                 <h3 style="margin: 0; font-size: 1.1rem; font-weight: 850; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
-                    <i data-lucide="arrow-down-left" style="width: 18px; color: #881337;"></i>
+                    <i data-lucide="arrow-down-left" style="width: 18px; color: #059669;"></i>
                     Returned Items Registry
                 </h3>
             </div>
@@ -1308,7 +1308,7 @@
                                 <td>
                                     <span class="badge-event">{{ $ledgeMap[$item->ledge_category] ?? $item->ledge_category }}</span>
                                 </td>
-                                <td style="font-weight: 800; color: #881337;">
+                                <td style="font-weight: 800; color: #059669;">
                                     {{ number_format($item->returned_qty) }}
                                 </td>
                                 <td style="font-weight: 700; color: var(--text-main);">
@@ -1365,9 +1365,9 @@
             }
         @endphp
         <div class="workflow-card-modern dg-workflow-container">
-            <div class="cfg-card-header" style="background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%); padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
+            <div class="cfg-card-header" style="background: #f8fafc; padding: 2.25rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 1rem;">
                 <div style="display: flex; align-items: center; gap: 1.25rem;">
-                    <div class="cfg-icon-box" style="background: linear-gradient(135deg, #9f1239 0%, #6d28d9 100%); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15); width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white;">
+                    <div class="cfg-icon-box" style="background: #059669; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15); width: 50px; height: 50px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white;">
                         <i data-lucide="user-cog" style="width: 24px; height: 24px; color: white;"></i>
                     </div>
                     <div>
@@ -1375,8 +1375,8 @@
                         <p style="color: #64748b; font-weight: 600; font-size: 0.82rem; margin: 4px 0 0;">Select the specific item categories that require intermediate review and sign-off by you (Director General).</p>
                     </div>
                 </div>
-                <span id="dg-workflow-active-badge" style="background: rgba(139,92,246,0.08); color: #9f1239; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(139,92,246,0.15); box-shadow: 0 2px 4px rgba(139,92,246,0.02); transition: all 0.3s ease;">
-                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #9f1239; transition: all 0.3s ease;" id="dg-workflow-badge-dot"></span>
+                <span id="dg-workflow-active-badge" style="background: rgba(139,92,246,0.08); color: #047857; font-size: 0.72rem; font-weight: 800; padding: 6px 14px; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(139,92,246,0.15); box-shadow: 0 2px 4px rgba(139,92,246,0.02); transition: all 0.3s ease;">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #047857; transition: all 0.3s ease;" id="dg-workflow-badge-dot"></span>
                     <span id="dg-workflow-badge-text" style="letter-spacing: 0.02em;">Active Categories: {{ count($dgSelectedCats) }}</span>
                 </span>
             </div>
@@ -1437,14 +1437,14 @@
                         <div style="display: grid; grid-template-columns: 1fr 480px; gap: 2rem; align-items: stretch; margin-top: 0.5rem;" class="workflow-info-grid">
 
                             <!-- Sleek Gradient Alert Card -->
-                            <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(136, 19, 55, 0.01) 100%);
+                            <div style="background: rgba(5, 150, 105, 0.02);
                                             border: 1.5px solid #edf2f7;
                                             border-radius: 24px;
                                             padding: 1.75rem 2rem;
                                             display: flex;
                                             gap: 1.25rem;
                                             align-items: flex-start;">
-                                <div style="width: 42px; height: 42px; background: rgba(139,92,246,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #9f1239; flex-shrink: 0; margin-top: 2px;">
+                                <div style="width: 42px; height: 42px; background: rgba(139,92,246,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #047857; flex-shrink: 0; margin-top: 2px;">
                                     <i data-lucide="info" style="width: 20px; height: 20px;"></i>
                                 </div>
                                 <div style="flex: 1;">
@@ -1456,18 +1456,18 @@
                             </div>
 
                             <!-- Dynamic Mini Infographic Visualizer Card -->
-                            <div style="background: linear-gradient(to bottom, #fafbff, #ffffff); border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
+                            <div style="background: #fafbff; border: 1.5px solid #edf2f7; border-radius: 24px; padding: 1.75rem 2rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.015);">
                                 <div style="font-size: 0.65rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; text-align: center; margin-bottom: 0.25rem;">Live Approval Routing Pathway</div>
 
                                 <div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%; padding: 0.5rem 0;" class="flow-nodes-container">
 
                                     <!-- Origin Node -->
                                     <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                        <div class="flow-node-icon" style="background: linear-gradient(135deg, #881337, #3730a3); color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <div class="flow-node-icon" style="background: #059669; color: white; box-shadow: 0 4px 12px rgba(5, 150, 105,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                             <i data-lucide="user-check" style="width: 15px; height: 15px;"></i>
                                         </div>
                                         <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Dept. Head</span>
-                                        <span class="flow-node-badge" style="background: #e0e7ff; color: #881337; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
+                                        <span class="flow-node-badge" style="background: #e0e7ff; color: #059669; font-size: 0.55rem; font-weight: 800; padding: 1px 6px; border-radius: 30px; transition: all 0.3s ease;">Required</span>
                                     </div>
 
                                     <!-- Connector 1 (Now connects to DG Node, so controlled by DG active state) -->
@@ -1499,7 +1499,7 @@
 
                                     <!-- Head of Stores Node -->
                                     <div class="flow-node" style="display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 2; position: relative; width: 68px;">
-                                        <div class="flow-node-icon" style="background: #881337; color: white; box-shadow: 0 4px 12px rgba(136,19,55,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+                                        <div class="flow-node-icon" style="background: #059669; color: white; box-shadow: 0 4px 12px rgba(5, 150, 105,0.15); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
                                             <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i>
                                         </div>
                                         <span style="font-size: 0.65rem; font-weight: 855; color: #1e293b; white-space: nowrap;">Head of Stores</span>
@@ -1516,7 +1516,7 @@
 
                         <!-- Submit trigger -->
                         <div style="display: flex; justify-content: flex-end; margin-top: 1rem; margin-bottom: 1.5rem;">
-                            <button type="submit" style="padding: 0.75rem 2rem; border-radius: 12px; border: none; background: #9f1239; color: white; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#9f1239'">
+                            <button type="submit" style="padding: 0.75rem 2rem; border-radius: 12px; border: none; background: #047857; color: white; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='#6d28d9'" onmouseout="this.style.background='#047857'">
                                 <i data-lucide="save" style="width: 18px; height: 18px;"></i> Save DG Workflow Changes
                             </button>
                         </div>
@@ -1530,14 +1530,14 @@
 
 {{-- Requisition Details Popover Modal --}}
 <div id="dg-details-modal" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: 99998; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
-    <div style="background: linear-gradient(145deg, #ffffff, #fafbfc); border-radius: 28px; padding: 0; width: 820px; max-width: 94%; max-height: 90vh; box-shadow: 0 60px 140px -40px rgba(15, 23, 42, 0.7), 0 0 0 1px rgba(136, 19, 55, 0.08); display: flex; flex-direction: column; transform: scale(0.92) translateY(10px); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease; overflow: hidden;" id="dg-details-modal-content">
+    <div style="background: #ffffff; border-radius: 28px; padding: 0; width: 820px; max-width: 94%; max-height: 90vh; box-shadow: 0 60px 140px -40px rgba(15, 23, 42, 0.7), 0 0 0 1px rgba(5, 150, 105, 0.08); display: flex; flex-direction: column; transform: scale(0.92) translateY(10px); transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease; overflow: hidden;" id="dg-details-modal-content">
         
         <!-- Header with Gradient Accent -->
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 28px 36px 22px 36px; border-bottom: 1px solid #eef2f6; position: relative; background: linear-gradient(180deg, rgba(136, 19, 55, 0.02) 0%, transparent 100%);">
-            <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #881337, #9f1239, #a78bfa, #9f1239, #881337); background-size: 200% 100%; animation: shimmer 3s ease-in-out infinite;"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 28px 36px 22px 36px; border-bottom: 1px solid #eef2f6; position: relative; background: transparent;">
+            <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: #059669; background-size: 200% 100%; animation: shimmer 3s ease-in-out infinite;"></div>
             
             <div style="display: flex; align-items: center; gap: 16px;">
-                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #881337, #9f1239); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 8px 24px rgba(136, 19, 55, 0.25);">
+                <div style="width: 48px; height: 48px; background: #059669; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 8px 24px rgba(5, 150, 105, 0.25);">
                     <i data-lucide="file-text" style="width: 24px; height: 24px; stroke-width: 2px;"></i>
                 </div>
                 <div>
@@ -1558,7 +1558,7 @@
         <div style="padding: 28px 36px 24px 36px; overflow-y: auto; flex: 1;">
             
             <!-- Requester Row - Modern Card Design -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; padding: 20px 24px; background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: 16px; border: 1px solid #e2e8f0;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 24px; padding: 20px 24px; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0;">
                 <div>
                     <div style="display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;">
                         <i data-lucide="user" style="width: 12px; height: 12px;"></i>
@@ -1571,7 +1571,7 @@
                         <i data-lucide="badge" style="width: 12px; height: 12px;"></i>
                         Staff ID
                     </div>
-                    <div style="font-weight: 600; color: #0f172a; font-size: 0.95rem; font-family: 'SF Mono', 'Monaco', monospace; background: rgba(136, 19, 55, 0.06); padding: 2px 12px; border-radius: 6px; display: inline-block;" id="details-modal-staff-id">646545</div>
+                    <div style="font-weight: 600; color: #0f172a; font-size: 0.95rem; font-family: 'SF Mono', 'Monaco', monospace; background: rgba(5, 150, 105, 0.06); padding: 2px 12px; border-radius: 6px; display: inline-block;" id="details-modal-staff-id">646545</div>
                 </div>
                 <div>
                     <div style="display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;">
@@ -1583,9 +1583,9 @@
             </div>
 
             <!-- Purpose Row - Enhanced -->
-            <div style="margin-bottom: 24px; padding: 18px 24px; background: linear-gradient(135deg, rgba(136, 19, 55, 0.03), rgba(136, 19, 55, 0.01)); border-radius: 16px; border: 1px solid #e2e8f0; border-left: 4px solid #881337;">
+            <div style="margin-bottom: 24px; padding: 18px 24px; background: rgba(5, 150, 105, 0.02); border-radius: 16px; border: 1px solid #e2e8f0; border-left: 4px solid #059669;">
                 <div style="display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
-                    <i data-lucide="target" style="width: 14px; height: 14px; color: #881337;"></i>
+                    <i data-lucide="target" style="width: 14px; height: 14px; color: #059669;"></i>
                     Purpose
                 </div>
                 <div style="font-weight: 500; color: #0f172a; font-size: 0.95rem; line-height: 1.6;" id="details-modal-purpose">nataraj</div>
@@ -1606,16 +1606,16 @@
                             <i data-lucide="package" style="width: 14px; height: 14px;"></i>
                             Requested Items
                         </div>
-                        <span style="background: #881337; color: white; font-size: 0.55rem; font-weight: 700; padding: 1px 12px; border-radius: 20px;" id="details-modal-item-count">1</span>
+                        <span style="background: #059669; color: white; font-size: 0.55rem; font-weight: 700; padding: 1px 12px; border-radius: 20px;" id="details-modal-item-count">1</span>
                     </div>
                     <div id="details-modal-items" style="display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; padding-right: 4px;" class="custom-scrollbar">
                         <!-- Items populated via JS -->
-                        <div style="background: white; border-radius: 10px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; transition: all 0.2s;" onmouseover="this.style.borderColor='#881337'; this.style.background='#fafbfc'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='white'">
+                        <div style="background: white; border-radius: 10px; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; transition: all 0.2s;" onmouseover="this.style.borderColor='#059669'; this.style.background='#fafbfc'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='white'">
                             <div style="display: flex; flex-direction: column; gap: 1px;">
                                 <span style="font-weight: 600; color: #0f172a; font-size: 0.9rem;">PEN</span>
                                 <span style="font-size: 0.6rem; color: #94a3b8; font-weight: 500;">Unit: PIECE(S)</span>
                             </div>
-                            <span style="font-weight: 700; color: #881337; font-size: 0.95rem; background: rgba(136, 19, 55, 0.08); padding: 2px 14px; border-radius: 8px;">×5</span>
+                            <span style="font-weight: 700; color: #0ea5e9; font-size: 0.95rem; background: rgba(14, 165, 233, 0.08); padding: 2px 14px; border-radius: 8px;">×5</span>
                         </div>
                     </div>
                 </div>
@@ -1623,7 +1623,7 @@
         </div>
 
         <!-- Footer - Enhanced Buttons -->
-        <div style="padding: 18px 36px 26px 36px; border-top: 1px solid #eef2f6; background: linear-gradient(0deg, rgba(255,255,255,0.8) 0%, transparent 100%);">
+        <div style="padding: 18px 36px 26px 36px; border-top: 1px solid #eef2f6; background: rgba(255,255,255,0.8);">
             <div id="details-modal-actions" style="display: flex; gap: 12px; justify-content: flex-end; align-items: center;">
                 <!-- Actions populated via JS -->
             </div>
@@ -1677,7 +1677,7 @@
             <button onclick="closeDeclineModal()" style="padding: 10px 18px; background: var(--bg-main); border: 1.5px solid var(--border-color); color: var(--text-main); border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: background 0.2s;">
                 Cancel
             </button>
-            <button id="decline-submit-btn" onclick="submitDecline()" style="padding: 10px 20px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 12px; font-weight: 900; font-size: 0.8rem; cursor: pointer; transition: transform 0.25s, box-shadow 0.25s;">
+            <button id="decline-submit-btn" onclick="submitDecline()" style="padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 12px; font-weight: 900; font-size: 0.8rem; cursor: pointer; transition: transform 0.25s, box-shadow 0.25s;">
                 Decline Requisition
             </button>
         </div>
@@ -2058,7 +2058,7 @@
                 icon: 'warning',
                 title: 'Reason Required',
                 text: 'Please provide a reason for declining this requisition.',
-                confirmButtonColor: '#881337'
+                confirmButtonColor: '#059669'
             });
             return;
         }
@@ -2091,7 +2091,7 @@
                     icon: 'success',
                     title: 'Requisition Declined',
                     text: data.message,
-                    confirmButtonColor: '#881337'
+                    confirmButtonColor: '#059669'
                 });
                 reloadDGData();
             } else {
@@ -2123,7 +2123,7 @@
             text: `Are you sure you want to approve store requisition ${displayName}?`,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#881337',
+            confirmButtonColor: '#059669',
             cancelButtonColor: '#64748b',
             confirmButtonText: 'Yes, Approve'
         });
@@ -2155,7 +2155,7 @@
                     icon: 'success',
                     title: 'Approved Successfully',
                     text: data.message,
-                    confirmButtonColor: '#881337'
+                    confirmButtonColor: '#059669'
                 });
                 reloadDGData();
             } else {
@@ -2244,10 +2244,10 @@
         const badgeContainerDG = document.getElementById('dg-workflow-active-badge');
         if (badgeTextDG) badgeTextDG.textContent = `Active Categories: ${activeCountDG}`;
         if (activeCountDG > 0) {
-            if (badgeDotDG) badgeDotDG.style.background = '#9f1239';
+            if (badgeDotDG) badgeDotDG.style.background = '#047857';
             if (badgeContainerDG) {
                 badgeContainerDG.style.background = 'rgba(139, 92, 246, 0.08)';
-                badgeContainerDG.style.color = '#9f1239';
+                badgeContainerDG.style.color = '#047857';
                 badgeContainerDG.style.borderColor = 'rgba(139, 92, 246, 0.2)';
             }
         } else {
@@ -2268,10 +2268,10 @@
             if (activeCountStores > 0) {
                 node.className = 'flow-node flow-node-stores active';
                 if (iconBox) {
-                    iconBox.style.background = 'linear-gradient(135deg, #881337, #3730a3)';
+                    iconBox.style.background = '#0ea5e9';
                     iconBox.style.color = '#ffffff';
                     iconBox.style.borderColor = 'transparent';
-                    iconBox.style.boxShadow = '0 6px 15px rgba(136,19,55,0.2)';
+                    iconBox.style.boxShadow = '0 6px 15px rgba(5, 150, 105,0.2)';
                 }
                 if (label) {
                     label.style.color = '#1e293b';
@@ -2279,8 +2279,8 @@
                 }
                 if (badge) {
                     badge.textContent = 'Required';
-                    badge.style.background = 'rgba(136, 19, 55, 0.1)';
-                    badge.style.color = '#881337';
+                    badge.style.background = 'rgba(5, 150, 105, 0.1)';
+                    badge.style.color = '#059669';
                     badge.style.borderColor = 'transparent';
                 }
             } else {
@@ -2313,7 +2313,7 @@
             if (activeCountDG > 0) {
                 node.className = 'flow-node flow-node-dg active';
                 if (iconBox) {
-                    iconBox.style.background = 'linear-gradient(135deg, #9f1239, #6d28d9)';
+                    iconBox.style.background = '#0ea5e9';
                     iconBox.style.color = '#ffffff';
                     iconBox.style.borderColor = 'transparent';
                     iconBox.style.boxShadow = '0 6px 15px rgba(139,92,246,0.2)';
@@ -2325,7 +2325,7 @@
                 if (badge) {
                     badge.textContent = 'Required';
                     badge.style.background = 'rgba(139, 92, 246, 0.1)';
-                    badge.style.color = '#9f1239';
+                    badge.style.color = '#047857';
                     badge.style.borderColor = 'transparent';
                 }
             } else {
@@ -2353,7 +2353,7 @@
         document.querySelectorAll('.flow-line-1').forEach(line => {
             if (activeCountStores > 0) {
                 line.className = 'flow-line flow-line-1 active';
-                line.style.background = '#881337';
+                line.style.background = '#059669';
             } else {
                 line.className = 'flow-line flow-line-1 dashed';
                 line.style.background = '';
@@ -2363,7 +2363,7 @@
         document.querySelectorAll('.flow-line-2').forEach(line => {
             if (activeCountDG > 0) {
                 line.className = 'flow-line flow-line-2 active';
-                line.style.background = '#9f1239';
+                line.style.background = '#047857';
             } else {
                 line.className = 'flow-line flow-line-2 dashed';
                 line.style.background = '';
@@ -2372,13 +2372,13 @@
 
         document.querySelectorAll('.flow-line-3').forEach(line => {
             line.className = 'flow-line flow-line-3 active';
-            line.style.background = '#881337';
+            line.style.background = '#059669';
         });
 
         // Update hints
         document.querySelectorAll('.workflow-helper-hint').forEach(hint => {
             if (activeCountDG > 0) {
-                hint.innerHTML = `Routing through <strong>Director General</strong> for <strong style="color: #9f1239;">${activeCountDG}</strong> selected category${activeCountDG == 1 ? '' : 'ies'}.`;
+                hint.innerHTML = `Routing through <strong>Director General</strong> for <strong style="color: #047857;">${activeCountDG}</strong> selected category${activeCountDG == 1 ? '' : 'ies'}.`;
             } else {
                 hint.innerHTML = 'Currently bypassing intermediate Director General step due to settings configuration.';
             }
@@ -2409,9 +2409,9 @@
         if (statusEl) {
             statusEl.textContent = req.dg_status.charAt(0).toUpperCase() + req.dg_status.slice(1);
             if (req.dg_status === 'approved') {
-                statusEl.style.background = 'rgba(136, 19, 55, 0.12)';
-                statusEl.style.color = '#881337';
-                statusEl.style.borderColor = 'rgba(136, 19, 55, 0.15)';
+                statusEl.style.background = 'rgba(5, 150, 105, 0.12)';
+                statusEl.style.color = '#059669';
+                statusEl.style.borderColor = 'rgba(5, 150, 105, 0.15)';
             } else if (req.dg_status === 'declined') {
                 statusEl.style.background = 'rgba(239, 68, 68, 0.12)';
                 statusEl.style.color = '#ef4444';
@@ -2437,7 +2437,7 @@
                         <span style="font-weight: 600; color: #0f172a; font-size: 0.9rem;">${item.description}</span>
                         <span style="font-size: 0.6rem; color: #94a3b8; font-weight: 500;">Unit: ${item.unit}</span>
                     </div>
-                    <span style="font-weight: 700; color: #881337; font-size: 0.95rem; background: rgba(136, 19, 55, 0.08); padding: 2px 14px; border-radius: 8px;">×${item.quantity}</span>
+                    <span style="font-weight: 700; color: #0ea5e9; font-size: 0.95rem; background: rgba(14, 165, 233, 0.08); padding: 2px 14px; border-radius: 8px;">×${item.quantity}</span>
                 `;
                 itemsContainer.appendChild(itemRow);
             });
@@ -2457,10 +2457,10 @@
         if (req.is_ready) {
             // Render Approve & Decline buttons (Close button is removed as requested)
             buttonsHtml = `
-                <button onclick="declineRequisitionFromModal(${req.id}, this, '${req.unique_id}', '${req.requester_name.replace(/'/g, "\\'")}', '${itemsSummary.replace(/'/g, "\\'")}')" style="padding: 10px 30px; background: linear-gradient(135deg, #ef4444, #dc2626); border: none; border-radius: 12px; color: white; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 16px rgba(239, 68, 68, 0.25);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 24px rgba(239, 68, 68, 0.35)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(239, 68, 68, 0.25)'">
+                <button onclick="declineRequisitionFromModal(${req.id}, this, '${req.unique_id}', '${req.requester_name.replace(/'/g, "\\'")}', '${itemsSummary.replace(/'/g, "\\'")}')" style="padding: 10px 30px; background: #ef4444; border: none; border-radius: 12px; color: white; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 16px rgba(239, 68, 68, 0.25);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 24px rgba(239, 68, 68, 0.35)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(239, 68, 68, 0.25)'">
                     <i data-lucide="thumbs-down" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i> Decline
                 </button>
-                <button onclick="approveRequisitionFromModal(${req.id}, this, '${req.unique_id}', '${req.requester_name.replace(/'/g, "\\'")}', '${itemsSummary.replace(/'/g, "\\'")}')" style="padding: 10px 36px; background: linear-gradient(135deg, #881337, #881337); border: none; border-radius: 12px; color: white; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 20px rgba(136, 19, 55, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 30px rgba(136, 19, 55, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(136, 19, 55, 0.3)'">
+                <button onclick="approveRequisitionFromModal(${req.id}, this, '${req.unique_id}', '${req.requester_name.replace(/'/g, "\\'")}', '${itemsSummary.replace(/'/g, "\\'")}')" style="padding: 10px 36px; background: #059669; border: none; border-radius: 12px; color: white; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 20px rgba(5, 150, 105, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 30px rgba(5, 150, 105, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(5, 150, 105, 0.3)'">
                     <i data-lucide="check-circle" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i> Approve
                 </button>
             `;

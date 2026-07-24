@@ -199,7 +199,7 @@
     }
 
     .search-vault:focus-within {
-        border-color: #059669;
+        border-color: #0ea5e9;
         box-shadow: 0 10px 30px rgba(5, 150, 105, 0.1);
     }
 
@@ -241,7 +241,7 @@
     }
 
     .msg-input-vault:focus-within {
-        border-color: #059669;
+        border-color: #0ea5e9;
         box-shadow: 0 10px 30px rgba(5, 150, 105, 0.1);
         transform: translateY(-2px);
     }

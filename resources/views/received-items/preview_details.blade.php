@@ -514,7 +514,7 @@
                 inlineDiv.innerHTML = `
                     <div style="margin-bottom: 2rem; background: #f8fafc; border-radius: 18px; border: 1px solid #e2e8f0; overflow: hidden;">
                         <div style="display: flex; align-items: stretch; gap: 0;">
-                            <div style="background: linear-gradient(170deg, #f0f9ff 0%, #e0f2fe 100%); padding: 1.5rem 1.25rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-width: 130px; flex-shrink: 0; border-right: 1px solid #bae6fd; position: relative; overflow: hidden;">
+                            <div style="background: #f0f9ff; padding: 1.5rem 1.25rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-width: 130px; flex-shrink: 0; border-right: 1px solid #bae6fd; position: relative; overflow: hidden;">
                                 <div style="position: absolute; top: -18px; right: -18px; width: 80px; height: 80px; border-radius: 50%; background: rgba(14, 165, 233, 0.08);"></div>
                                 <div style="width: 52px; height: 52px; border-radius: 50%; background: white; border: 3px solid #7dd3fc; display: flex; align-items: center; justify-content: center; z-index: 1;">
                                     <i data-lucide="building-2" style="width: 24px; height: 24px; color: #0284c7;"></i>
@@ -559,7 +559,7 @@
                             inlineDiv.innerHTML = `
                                 <div style="margin-bottom: 2rem; background: #f8fafc; border-radius: 18px; border: 1px solid #e2e8f0; overflow: hidden;">
                                     <div style="display: flex; align-items: stretch; gap: 0;">
-                                        <div style="background: linear-gradient(170deg, #f0f9ff 0%, #e0f2fe 100%); padding: 1.5rem 1.25rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-width: 130px; flex-shrink: 0; border-right: 1px solid #bae6fd; position: relative; overflow: hidden;">
+                                        <div style="background: #f0f9ff; padding: 1.5rem 1.25rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-width: 130px; flex-shrink: 0; border-right: 1px solid #bae6fd; position: relative; overflow: hidden;">
                                             <div style="position: absolute; top: -18px; right: -18px; width: 80px; height: 80px; border-radius: 50%; background: rgba(14, 165, 233, 0.08);"></div>
                                             <div style="width: 52px; height: 52px; border-radius: 50%; background: white; border: 3px solid #7dd3fc; display: flex; align-items: center; justify-content: center; z-index: 1;">
                                                 <i data-lucide="building-2" style="width: 24px; height: 24px; color: #0284c7;"></i>
@@ -859,7 +859,7 @@
             Swal.fire({
                 html: `
                     <div style="text-align: left;">
-                        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
+                        <div style="background: #ef4444; margin: -1.25em -1.25em 1.5em; padding: 2rem 2rem 1.5rem; border-radius: 4px 4px 0 0; position: relative; overflow: hidden;">
                             <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.06); border-radius: 50%;"></div>
                             <div style="position: absolute; bottom: -30px; left: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.04); border-radius: 50%;"></div>
                             <div style="display: flex; align-items: center; gap: 14px; position: relative;">

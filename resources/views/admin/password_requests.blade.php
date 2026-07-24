@@ -560,7 +560,7 @@
     border: 1px solid #e2e8f0; text-decoration: none; transition: 0.2s;
 }
 .rt-pagination-wrapper .page-item.active .page-link {
-    background: #059669; color: white; border-color: #059669;
+    background: #059669; color: white; border-color: #0ea5e9;
 }
 .rt-pagination-wrapper .page-item .page-link:hover:not(.active) {
     background: #f1f5f9;

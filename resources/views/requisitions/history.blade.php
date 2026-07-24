@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('content')
     @php
@@ -32,16 +32,16 @@
             --font-display: 'Outfit', sans-serif;
             --font-sans: 'Outfit', sans-serif;
             
-            --store-orange: #881337;
-            --store-orange-hover: #4c0519;
-            --store-orange-light: rgba(136, 19, 55, 0.08);
+            --store-orange: #059669;
+            --store-orange-hover: #065f46;
+            --store-orange-light: rgba(5, 150, 105, 0.08);
             
-            --store-indigo: #881337;
-            --store-indigo-hover: #881337;
-            --store-indigo-light: rgba(136, 19, 55, 0.08);
+            --store-indigo: #059669;
+            --store-indigo-hover: #059669;
+            --store-indigo-light: rgba(5, 150, 105, 0.08);
             
-            --success-color: #881337;
-            --warning-color: #881337;
+            --success-color: #059669;
+            --warning-color: #059669;
             --danger-color: #ef4444;
             
             --bg-main: #f8fafc;
@@ -100,13 +100,13 @@
         .brand-logo-container {
             width: 42px;
             height: 42px;
-            background: linear-gradient(135deg, var(--store-orange), var(--store-indigo));
+            background: #0ea5e9;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 4px 12px rgba(136, 19, 55, 0.2);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
         }
 
         .brand-name {
@@ -149,7 +149,7 @@
         .store-search-input:focus {
             border-color: var(--store-orange);
             background: var(--bg-card);
-            box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.12);
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12);
         }
 
         .store-search-icon {
@@ -210,14 +210,14 @@
         .cart-toggle-btn:hover {
             background: var(--store-orange);
             color: white;
-            box-shadow: 0 4px 14px rgba(136, 19, 55, 0.3);
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
             transform: translateY(-1px);
         }
 
         .cart-toggle-btn.has-items {
             background: var(--store-orange);
             color: white;
-            box-shadow: 0 6px 20px rgba(136, 19, 55, 0.4);
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
         }
 
         .user-widget {
@@ -266,7 +266,7 @@
 
         /* --- HERO BANNER --- */
         .history-card-header {
-            background: rgba(136, 19, 55, 0.05);
+            background: rgba(5, 150, 105, 0.05);
             padding: 3rem 2rem 2.5rem 2rem;
             border-bottom: 1px solid var(--border-color);
         }
@@ -299,7 +299,7 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 1.25rem;
-            border: 1px solid rgba(136, 19, 55, 0.12);
+            border: 1px solid rgba(5, 150, 105, 0.12);
         }
 
         .hero-title {
@@ -309,7 +309,7 @@
             letter-spacing: -0.03em;
             margin: 0 0 1rem 0;
             line-height: 1.15;
-            background: linear-gradient(135deg, var(--text-main) 30%, #475569 100%);
+            background: var(--text-main);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -527,7 +527,7 @@
             background: var(--store-orange);
             border-color: var(--store-orange);
             color: white;
-            box-shadow: 0 4px 10px rgba(136, 19, 55, 0.25);
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);
         }
 
         .tracker-step.completed .tracker-label {
@@ -535,7 +535,7 @@
         }
 
         .tracker-step.active .tracker-dot {
-            background: linear-gradient(135deg, var(--store-orange) 0%, var(--store-orange-hover) 100%);
+            background: var(--store-orange);
             border-color: var(--store-orange);
             color: white;
             animation: pulse-orange 2s infinite;
@@ -546,7 +546,7 @@
         }
 
         .tracker-step.declined .tracker-dot {
-            background: linear-gradient(135deg, var(--danger-color) 0%, #b91c1c 100%);
+            background: var(--danger-color);
             border-color: var(--danger-color);
             color: white;
             box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
@@ -557,9 +557,9 @@
         }
 
         @keyframes pulse-orange {
-            0% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); }
-            70% { box-shadow: 0 0 0 8px rgba(136, 19, 55, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
         }
 
         /* --- SUPPLIES LIST GRID --- */
@@ -587,8 +587,8 @@
         }
 
         .history-notes-box {
-            background: rgba(136, 19, 55, 0.03);
-            border: 1px dashed rgba(136, 19, 55, 0.25);
+            background: rgba(5, 150, 105, 0.03);
+            border: 1px dashed rgba(5, 150, 105, 0.25);
             border-radius: 14px;
             padding: 1rem;
             margin-top: 1rem;
@@ -608,7 +608,7 @@
         }
 
         @keyframes card-pulse {
-            0% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); border-color: var(--store-orange); }
+            0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); border-color: var(--store-orange); }
             100% { box-shadow: var(--shadow-premium); border-color: var(--border-color); }
         }
 
@@ -650,7 +650,7 @@
             font-weight: 800 !important;
             font-size: 0.85rem !important;
             letter-spacing: 0.02em !important;
-            box-shadow: 0 10px 20px rgba(136, 19, 55, 0.2) !important;
+            box-shadow: 0 10px 20px rgba(5, 150, 105, 0.2) !important;
         }
         .premium-swal-cancel-btn {
             height: 48px !important;
@@ -712,7 +712,7 @@
         .swal-field-input:focus {
             border-color: var(--store-orange) !important;
             background: white !important;
-            box-shadow: 0 8px 20px rgba(136, 19, 55, 0.06) !important;
+            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.06) !important;
         }
         .swal-field-input[readonly] {
             opacity: 0.65;
@@ -731,7 +731,7 @@
                 </div>
                 <div>
                     <div class="brand-name">NACOC</div>
-                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:#881337;">(NSIMs)</span></div>
+                    <div class="brand-subtitle">Stores Inventory Management System<span style="color:#059669;">(NSIMs)</span></div>
                 </div>
             </a>
 
@@ -791,7 +791,7 @@
                 </div>
             </div>
             <div class="hero-art">
-                <i data-lucide="history" style="width: 240px; height: 240px; color: rgba(136, 19, 55, 0.15); stroke-width: 1;"></i>
+                <i data-lucide="history" style="width: 240px; height: 240px; color: rgba(5, 150, 105, 0.15); stroke-width: 1;"></i>
             </div>
         </div>
     </section>
@@ -1127,12 +1127,12 @@
 
                         <div class="requisition-actions-row" style="margin-top: 1rem; display: flex; gap: 0.75rem; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
                             ${req.status === 'pending' && req.origin_admin_status === 'approved' ? `
-                                <button class="action-btn-followup" onclick="sendFollowUp(${req.id}, this)" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(136, 19, 55, 0.08); border: 1px solid rgba(136, 19, 55, 0.2); color: var(--warning-color); padding: 8px 16px; border-radius: 10px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;">
+                                <button class="action-btn-followup" onclick="sendFollowUp(${req.id}, this)" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(5, 150, 105, 0.08); border: 1px solid rgba(5, 150, 105, 0.2); color: var(--warning-color); padding: 8px 16px; border-radius: 10px; font-weight: 800; font-size: 0.78rem; cursor: pointer; transition: all 0.2s;">
                                     <i data-lucide="bell" style="width: 14px;"></i> Follow Up
                                 </button>
                             ` : ''}
                             ${req.collected_at ? `
-                                <div class="collection-status-indicator" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(136, 19, 55, 0.05); border: 1px solid rgba(136, 19, 55, 0.15); color: var(--success-color); padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 0.78rem;">
+                                <div class="collection-status-indicator" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(5, 150, 105, 0.05); border: 1px solid rgba(5, 150, 105, 0.15); color: var(--success-color); padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 0.78rem;">
                                     <i data-lucide="check-circle" style="width: 14px; color: var(--success-color);"></i> Collected on ${req.collected_at} ${req.collected_by_name ? `by ${req.collected_by_name}` : ''}
                                 </div>
                             ` : ''}
@@ -1284,7 +1284,7 @@
             Swal.fire({
                 title: `
                     <div style="display: flex; align-items: center; gap: 15px; text-align: left; width: 100%;">
-                        <div style="width: 48px; height: 48px; background: rgba(136, 19, 55, 0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #881337;">
+                        <div style="width: 48px; height: 48px; background: rgba(5, 150, 105, 0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #059669;">
                             <i data-lucide="user-check"></i>
                         </div>
                         <div>
@@ -1302,7 +1302,7 @@
                                 ${user.avatar ? `
                                     <img src="${user.avatar}" id="swal-avatar-preview" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
                                 ` : `
-                                    <div id="swal-avatar-placeholder" style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--store-indigo) 0%, #4c0519 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 950; color: white; border: 4px solid white; box-shadow: 0 10px 20px rgba(136,19,55,0.25);">
+                                    <div id="swal-avatar-placeholder" style="width: 100px; height: 100px; background: #0ea5e9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; font-weight: 950; color: white; border: 4px solid white; box-shadow: 0 10px 20px rgba(5, 150, 105,0.25);">
                                         ${user.name.substring(0, 1).toUpperCase()}
                                     </div>
                                 `}
@@ -1380,7 +1380,7 @@
                 showCancelButton: true,
                 confirmButtonText: 'Save Profile Settings',
                 cancelButtonText: 'Close',
-                confirmButtonColor: '#881337',
+                confirmButtonColor: '#059669',
                 cancelButtonColor: '#f1f5f9',
                 customClass: {
                     popup: 'glass-monolith-popup',
@@ -1455,7 +1455,7 @@
                         title: 'Profile Updated',
                         text: 'Your details have been successfully synchronized.',
                         icon: 'success',
-                        confirmButtonColor: '#881337'
+                        confirmButtonColor: '#059669'
                     }).then(() => {
                         location.reload();
                     });
@@ -1483,7 +1483,7 @@
                 const originalHTML = container.innerHTML;
                 container.innerHTML = `
                     <div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
-                        <i data-lucide="loader-2" class="spin" style="width: 24px; color: #881337;"></i>
+                        <i data-lucide="loader-2" class="spin" style="width: 24px; color: #059669;"></i>
                     </div>
                 `;
                 if (typeof lucide !== 'undefined') lucide.createIcons();

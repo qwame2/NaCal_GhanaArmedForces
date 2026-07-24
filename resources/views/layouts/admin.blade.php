@@ -845,15 +845,13 @@
                         <span>Inventory Oversight</span>
                     </a>
                 </li>
-                @endif
 
-                @if(auth()->user()->role === 'Main Admin')
-                    <li>
-                        <a href="{{ route('admin.admin_suppliers') }}" class="nav-link {{ request()->routeIs('admin.admin_suppliers') ? 'active' : '' }}" title="Suppliers Details">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
-                            <span>Suppliers Details</span>
-                        </a>
-                    </li>
+                <li>
+                    <a href="{{ route('admin.suppliers') }}" class="nav-link {{ request()->routeIs(['admin.suppliers', 'admin.admin_suppliers']) ? 'active' : '' }}" title="Suppliers Details">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
+                        <span>Suppliers Details</span>
+                    </a>
+                </li>
                 @endif
 
                 @if(auth()->user()->is_admin)
@@ -864,6 +862,24 @@
                     </a>
                 </li>
                 @endif
+                @if(in_array(auth()->user()->role, ['Main Admin', 'Sub Main Admin', 'Department Head', 'Head of Stores', 'Dept. Head (Stores)']))
+                <li>
+                    <a href="{{ route('main-admin.requisitions') }}" class="nav-link {{ (request()->routeIs('main-admin.requisitions') && (!request()->has('status') || request('status') === 'pending')) ? 'active' : '' }}" title="{{ in_array(auth()->user()->role, ['Sub Main Admin', 'Head of Stores', 'Main Admin']) ? 'Review & Approve Requests' : 'Review Requests' }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        @if(in_array(auth()->user()->role, ['Sub Main Admin', 'Head of Stores', 'Main Admin']))
+                            <span>Review & Approve Requests</span>
+                        @else
+                            <span>Review Requests</span>
+                        @endif
+                        @php $mainReqsCount = $mainRequisitionsCount ?? 0; @endphp
+                        <span id="sidebar-badge-main-reqs"
+                              style="background: #ef4444; color: white; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 50%; display: {{ $mainReqsCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; margin-left: auto; animation: reqs-pulse 1.8s infinite;"
+                              title="{{ $mainReqsCount }} requisition(s) awaiting your review">
+                            {{ $mainReqsCount }}
+                        </span>
+                    </a>
+                </li>
+                @else
                 <li>
                     <a href="{{ route('admin.requisitions') }}" class="nav-link {{ request()->routeIs('admin.requisitions') ? 'active' : '' }}" title="Store Requisitions">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -873,6 +889,7 @@
                         </span>
                     </a>
                 </li>
+                @endif
                 @if($isSraStoresHead)
                 <li>
                     <a href="{{ route('stores.item-entry-approval') }}" class="nav-link {{ request()->routeIs('stores.item-entry-approval') ? 'active' : '' }}" title="Item Entry Approval">
