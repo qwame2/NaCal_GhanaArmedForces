@@ -1393,11 +1393,11 @@ class AdminController extends Controller
 
     public function suppliers()
     {
-        if (auth()->user()->isMainAdminOrSub()) {
+        if (auth()->user()->isMainAdminOrSub() && auth()->user()->role !== 'Head of Stores' && auth()->user()->role !== 'Dept. Head (Stores)') {
             return redirect()->route('admin.admin_suppliers');
         }
 
-        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover() && strcasecmp(auth()->user()->department ?? '', 'Stores') !== 0 && strcasecmp(auth()->user()->department ?? '', 'Store') !== 0) {
+        if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover() && auth()->user()->role !== 'Head of Stores' && auth()->user()->role !== 'Dept. Head (Stores)' && strcasecmp(auth()->user()->department ?? '', 'Stores') !== 0 && strcasecmp(auth()->user()->department ?? '', 'Store') !== 0) {
             abort(403);
         }
         $suppliersRegistry = \App\Models\Setting::get('suppliers_registry', []);

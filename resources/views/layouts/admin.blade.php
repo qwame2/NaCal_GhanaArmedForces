@@ -785,30 +785,13 @@
                 </li>
                 @endif
 
-                @php
-                    $showSuppliersDetails = auth()->user()->role === 'Main Admin'
-                        || auth()->user()->role === 'Head of Stores'
-                        || auth()->user()->role === 'Store Officer'
-                        || auth()->user()->role === 'Dept. Head (Stores)'
-                        || in_array(strtoupper(auth()->user()->department ?? ''), ['STORES', 'STORE']);
-                @endphp
-
-                @if($showSuppliersDetails)
-                    @if(auth()->user()->role === 'Main Admin')
+                @if(auth()->user()->role === 'Main Admin')
                     <li>
                         <a href="{{ route('admin.admin_suppliers') }}" class="nav-link {{ request()->routeIs('admin.admin_suppliers') ? 'active' : '' }}" title="Suppliers Details">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
                             <span>Suppliers Details</span>
                         </a>
                     </li>
-                    @elseif(!$isActingStoresHead)
-                    <li>
-                        <a href="{{ route('admin.suppliers') }}" class="nav-link {{ request()->routeIs('admin.suppliers') ? 'active' : '' }}" title="Suppliers Details">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><circle cx="7" cy="18" r="2"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-3.07-4H14v10Z"/><circle cx="17" cy="18" r="2"/></svg>
-                            <span>Suppliers Details</span>
-                        </a>
-                    </li>
-                    @endif
                 @endif
 
                 @if(auth()->user()->is_admin)

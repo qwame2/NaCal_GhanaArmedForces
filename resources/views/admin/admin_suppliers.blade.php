@@ -194,7 +194,7 @@
         </div>
         <div class="cfg-card-body">
              @php
-                 $isHeadOfStores = true;
+                 $isHeadOfStores = false;
              @endphp
             <div style="display: grid; grid-template-columns: {{ $isHeadOfStores ? '1fr' : '1fr 360px' }}; gap: 2rem; align-items: start;">
 
