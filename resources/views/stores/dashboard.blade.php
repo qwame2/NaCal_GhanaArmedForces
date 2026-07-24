@@ -218,7 +218,7 @@
                                 <td style="padding: 0.85rem 0.5rem; font-weight: 600; color: var(--text-main);">{{ $req->requester_name ?? optional($req->requester)->name ?? 'Staff' }}</td>
                                 <td style="padding: 0.85rem 0.5rem; color: var(--text-muted);">{{ $req->department }}</td>
                                 <td style="padding: 0.85rem 0.5rem; text-align: right;">
-                                    <a href="{{ route('admin.requisitions', ['search' => $req->id]) }}" style="background: rgba(5, 150, 105, 0.1); color: var(--primary); padding: 0.35rem 0.75rem; border-radius: 8px; font-weight: 800; font-size: 0.75rem; text-decoration: none;">
+                                    <a href="{{ route('admin.requisitions', ['open_id' => $req->id]) }}" style="background: rgba(5, 150, 105, 0.1); color: var(--primary); padding: 0.35rem 0.75rem; border-radius: 8px; font-weight: 800; font-size: 0.75rem; text-decoration: none;">
                                         Review
                                     </a>
                                 </td>

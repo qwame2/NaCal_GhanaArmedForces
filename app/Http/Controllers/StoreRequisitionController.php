@@ -824,7 +824,7 @@ class StoreRequisitionController extends Controller
     {
         self::checkOverdueTemporaryItems();
         if (auth()->user()->isMainAdminOrSub()) {
-            return redirect()->route('main-admin.requisitions');
+            return redirect()->route('main-admin.requisitions', $request->query());
         }
 
         if (!auth()->user()->is_admin && !auth()->user()->isDelegatedApprover()) abort(403);
