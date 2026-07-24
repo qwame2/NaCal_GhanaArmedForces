@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Inventory Oversight')
 
@@ -208,16 +208,16 @@
         </div>
         <div style="display: flex; gap: 1rem; align-items: center;">
             @if($partialCount > 0)
-            <div onclick="togglePartials()" id="partialFilterBtn" style="background: #fff1f2; border: 1px solid #fecaca; padding: 10px 20px; border-radius: 14px; box-shadow: var(--shadow-luxe); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s;">
+            <div onclick="togglePartials()" id="partialFilterBtn" style="background: #f0fdf4; border: 1px solid #fecaca; padding: 10px 20px; border-radius: 14px; box-shadow: var(--shadow-luxe); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s;">
                 <div style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: pulse 2s infinite;"></div>
-                <span style="font-size: 0.75rem; font-weight: 800; color: #e11d48;">{{ $partialCount }} PARTIAL DELIVERIES PENDING</span>
-                <i data-lucide="filter" style="width: 14px; color: #e11d48;"></i>
+                <span style="font-size: 0.75rem; font-weight: 800; color: #ef4444;">{{ $partialCount }} PARTIAL DELIVERIES PENDING</span>
+                <i data-lucide="filter" style="width: 14px; color: #ef4444;"></i>
             </div>
             @endif
         </div>
     </div>
 
-    {{-- ═══════════════════════ LOW STOCK MONITOR ═══════════════════════ --}}
+    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• LOW STOCK MONITOR â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
     @if($lowStockItems->count() > 0)
     @php
         $outOfStock  = $lowStockItems->filter(fn($i) => (float)$i->total_available <= 0)->count();
@@ -346,7 +346,7 @@
             {{-- Footer --}}
             <div style="padding: 1rem 1.75rem; background: #fafcff; border-top: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
                 <span style="font-size: 0.72rem; font-weight: 700; color: #94a3b8;">
-                    {{ $lowStockItems->count() }} flagged item{{ $lowStockItems->count() !== 1 ? 's' : '' }} — scroll to view all
+                    {{ $lowStockItems->count() }} flagged item{{ $lowStockItems->count() !== 1 ? 's' : '' }} â€” scroll to view all
                 </span>
                 <a href="{{ route('admin.inventory') }}?stock_level=low" style="display: inline-flex; align-items: center; gap: 6px; color: #059669; text-decoration: none; font-size: 0.78rem; font-weight: 800; padding: 7px 16px; border-radius: 10px; border: 1px solid #a7f3d0; background: #ecfdf5; transition: 0.2s;" onmouseover="this.style.background='#d1fae5'" onmouseout="this.style.background='#ecfdf5'">
                     <i data-lucide="arrow-right" style="width: 13px; height: 13px;"></i>
@@ -359,7 +359,7 @@
     </div>
     @endif
 
-    {{-- ═════════════════════ LUXURY OVERSIGHT PILL BAR ═════════════════════ --}}
+    {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• LUXURY OVERSIGHT PILL BAR â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
     <div class="inventory-filter-card">
         <form action="{{ route('admin.inventory') }}" method="GET" onsubmit="event.preventDefault(); performLiveUpdate();" class="inventory-filter-form">
             <!-- Segment 1: Search -->
@@ -1332,10 +1332,10 @@
                 }
             });
         } else {
-            btn.style.background = '#fff1f2';
+            btn.style.background = '#f0fdf4';
             btn.style.borderColor = '#fecaca';
-            btn.querySelector('span').style.color = '#e11d48';
-            btn.querySelector('i').style.color = '#e11d48';
+            btn.querySelector('span').style.color = '#ef4444';
+            btn.querySelector('i').style.color = '#ef4444';
             
             rows.forEach(row => row.style.display = '');
         }
@@ -1888,3 +1888,4 @@ function closeItemHistoryModal() {
 }
 </script>
 @endsection
+

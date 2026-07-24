@@ -1,4 +1,4 @@
-﻿@extends('layouts.dashboard')
+@extends('layouts.dashboard')
 
 @section('content')
     @php
@@ -81,7 +81,7 @@
         }
 
         .header-container {
-            max-width: 1440px;
+            max-width: 1800px;
             margin: 0 auto;
             display: flex;
             align-items: center;
@@ -272,7 +272,7 @@
         }
 
         .hero-banner {
-            max-width: 1440px;
+            max-width: 1800px;
             margin: 0 auto;
             display: flex;
             align-items: center;
@@ -282,7 +282,7 @@
         }
 
         .hero-content {
-            max-width: 680px;
+            max-width: 900px;
             z-index: 2;
         }
 
@@ -319,7 +319,7 @@
             color: var(--text-muted);
             line-height: 1.6;
             margin: 0 0 2rem 0;
-            max-width: 580px;
+            max-width: 780px;
         }
 
         .hero-actions-container {
@@ -353,9 +353,9 @@
 
         /* --- HISTORY TIMELINE PANEL --- */
         .history-container {
-            max-width: 1440px;
+            max-width: 1800px;
             margin: 2rem auto 4rem auto;
-            padding: 0 2rem;
+            padding: 0 1.5rem;
         }
 
         .history-card {
@@ -779,9 +779,6 @@
     <section class="store-hero">
         <div class="hero-banner">
             <div class="hero-content">
-                <div class="hero-badge">
-                    <i data-lucide="clock" style="width: 13px;"></i> Requisition Logs & Tracking
-                </div>
                 <h2 class="hero-title">Track Requisition Pipelines in Real Time</h2>
                 <p class="hero-desc">Monitor approval states, check store notes, and view physical pick-up metadata for all store supply requests originating from your profile account.</p>
                 <div class="hero-actions-container">

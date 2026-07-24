@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('content')
 <div class="animate-slide-up">
@@ -424,7 +424,7 @@
     </div>
 
     <style>
-        /* ── Scrollable wrapper on small screens ── */
+        /* â”€â”€ Scrollable wrapper on small screens â”€â”€ */
         .activity-table-wrap {
             width: 100%;
             overflow-x: auto;
@@ -488,7 +488,7 @@
                 min-width: 110px;
             }
 
-            /* ── Column 1 – Entry Date: acts as card header ── */
+            /* â”€â”€ Column 1 â€“ Entry Date: acts as card header â”€â”€ */
             .activity-row td:nth-child(1) {
                 border-bottom: 1px dashed var(--border-color) !important;
                 margin-bottom: 0.5rem;
@@ -497,25 +497,25 @@
                 color: var(--text-main);
             }
 
-            /* ── Column 2 – Received Date ── */
+            /* â”€â”€ Column 2 â€“ Received Date â”€â”€ */
             .activity-row td:nth-child(2) {
                 font-weight: 700;
                 color: var(--primary);
             }
 
-            /* ── Column 3 – Product: prominent ── */
+            /* â”€â”€ Column 3 â€“ Product: prominent â”€â”€ */
             .activity-row td:nth-child(3) {
                 font-weight: 700;
                 font-size: 0.9rem;
                 color: var(--text-main);
             }
 
-            /* ── Column 8 – Qty/Variance: align badge right ── */
+            /* â”€â”€ Column 8 â€“ Qty/Variance: align badge right â”€â”€ */
             .activity-row td:nth-child(8) {
                 font-weight: 700;
             }
 
-            /* ── Column 10 – Stock Balance: bottom divider ── */
+            /* â”€â”€ Column 10 â€“ Stock Balance: bottom divider â”€â”€ */
             .activity-row td:nth-child(10) {
                 border-top: 1px dashed var(--border-color) !important;
                 margin-top: 0.4rem;
@@ -679,7 +679,7 @@
 
         var isDark = (document.documentElement.getAttribute('data-theme') === 'dark');
 
-        // ── 1. Area Chart ─────────────────────────────────────────────
+        // â”€â”€ 1. Area Chart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         var areaEl = document.getElementById('advancedAreaChart');
         if (areaEl) {
             try {
@@ -695,7 +695,7 @@
                         background: 'transparent'
                     },
                     theme: { mode: isDark ? 'dark' : 'light' },
-                    colors: ['#881337', '#ef4444'],
+                    colors: ['#059669', '#ef4444'],
                     fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [20, 100] } },
                     dataLabels: { enabled: false },
                     stroke: { curve: 'smooth', width: 3 },
@@ -735,7 +735,7 @@
             } catch(e) { console.error('Area chart error:', e); }
         }
 
-        // ── 2. Donut Chart ────────────────────────────────────────────
+        // â”€â”€ 2. Donut Chart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         var donutEl = document.getElementById('enhancedDonutChart');
         if (donutEl) {
             try {
@@ -806,7 +806,7 @@
         }
     }
 
-    // Use window.load which fires absolutely last — after DebugBar and all other injected scripts
+    // Use window.load which fires absolutely last â€” after DebugBar and all other injected scripts
     if (document.readyState === 'complete') {
         setTimeout(renderDashboardCharts, 200);
     } else {

@@ -1,4 +1,4 @@
-@forelse($requisitions as $req)
+﻿@forelse($requisitions as $req)
     <tr class="log-row">
         <td style="font-weight: 900; font-family: monospace; color: var(--audit-primary);">
             {{ $req->unique_id ?: ('REQ-'.str_pad($req->id,5,'0',STR_PAD_LEFT)) }}
@@ -27,9 +27,9 @@
                 <a href="{{ route('requisitions.receipt.print', $req->id) }}"
                    target="_blank"
                    class="btn-view-receipt"
-                   style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(136, 19, 55, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
+                   style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(5, 150, 105, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
                    onmouseover="this.style.background='var(--audit-primary)'; this.style.color='white';"
-                   onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='var(--audit-primary)';"
+                   onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='var(--audit-primary)';"
                    title="Print Requisition Receipt">
                     <i data-lucide="receipt" style="width: 13px; height: 13px;"></i>
                     <span>Receipt</span>
@@ -48,3 +48,4 @@
         </td>
     </tr>
 @endforelse
+

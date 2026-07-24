@@ -201,7 +201,7 @@
                                     <i data-lucide="eye" style="width: 16px;"></i>
                                 </button>
                                 @if(!$user->is_active)
-                                <span style="background: #fef2f2; color: #ef4444; border: 1px solid #fecdd3; padding: 4px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: 900; letter-spacing: 0.05em;">INACTIVE</span>
+                                <span style="background: #fef2f2; color: #ef4444; border: 1px solid #dcfce7; padding: 4px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: 900; letter-spacing: 0.05em;">INACTIVE</span>
                                 @endif
 
                                 @if($user->id !== auth()->id())
@@ -1404,3 +1404,4 @@
     }
 </script>
 @endsection
+

@@ -1,4 +1,4 @@
-@extends('layouts.auth')
+﻿@extends('layouts.auth')
 
 @section('content')
 <div class="sync-wrapper">
@@ -128,7 +128,7 @@
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
     body {
-        background: radial-gradient(circle at 10% 20%, rgba(136, 19, 55, 0.05) 0%, rgba(15, 23, 42, 0.05) 90.1%), #f8fafc;
+        background: radial-gradient(circle at 10% 20%, rgba(5, 150, 105, 0.05) 0%, rgba(15, 23, 42, 0.05) 90.1%), #f8fafc;
         font-family: 'Outfit', sans-serif;
     }
 
@@ -165,7 +165,7 @@
         gap: 10px;
         font-size: 0.72rem;
         font-weight: 800;
-        color: #881337;
+        color: #059669;
         text-transform: uppercase;
         letter-spacing: 0.1em;
     }
@@ -173,16 +173,16 @@
     .live-dot {
         width: 8px;
         height: 8px;
-        background: #881337;
+        background: #059669;
         border-radius: 50%;
-        box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4);
+        box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4);
         animation: livePulse 2s infinite;
     }
 
     @keyframes livePulse {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(136, 19, 55, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(136, 19, 55, 0); }
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(5, 150, 105, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
     }
 
     .status-step {
@@ -207,27 +207,27 @@
     }
 
     .step-pip.done {
-        background: #881337;
+        background: #059669;
     }
 
     .step-pip.active {
-        background: #881337;
+        background: #059669;
         width: 30px;
-        box-shadow: 0 1px 4px rgba(136, 19, 55, 0.3);
+        box-shadow: 0 1px 4px rgba(5, 150, 105, 0.3);
     }
 
     /* Main Card Styling */
     .sync-card {
         background: #ffffff;
-        border: 1px solid rgba(136, 19, 55, 0.08);
+        border: 1px solid rgba(5, 150, 105, 0.08);
         border-radius: 32px;
         overflow: hidden;
-        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.03), 0 30px 60px -15px rgba(136, 19, 55, 0.12);
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.03), 0 30px 60px -15px rgba(5, 150, 105, 0.12);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .sync-card:hover {
-        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.04), 0 35px 70px -10px rgba(136, 19, 55, 0.15);
+        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.04), 0 35px 70px -10px rgba(5, 150, 105, 0.15);
     }
 
     /* Hero Banner Styling */
@@ -253,7 +253,7 @@
         right: -30px;
         width: 250px;
         height: 250px;
-        background: radial-gradient(circle, rgba(136, 19, 55, 0.3) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(5, 150, 105, 0.3) 0%, transparent 70%);
         filter: blur(20px);
     }
 
@@ -579,3 +579,4 @@
     });
 </script>
 @endsection
+

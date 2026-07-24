@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('content')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -8,7 +8,7 @@
     <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1.5rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="background: rgba(136, 19, 55, 0.1); color: #881337; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Logistics Audit</span>
+                <span style="background: rgba(5, 150, 105, 0.1); color: #059669; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">Logistics Audit</span>
             </div>
             <h2 style="font-size: 2rem; font-weight: 900; color: var(--text-main);">Batch Stock <span style="color: var(--primary);">Verification</span></h2>
             <p style="color: var(--text-muted);">Perform physical inventory checks for multiple items simultaneously in a full-screen ledger.</p>
@@ -53,7 +53,7 @@
                             </td>
                             <td style="padding: 1.25rem 1rem; vertical-align: middle;">
                                 @if($onLoanCount > 0)
-                                    <span style="font-size: 0.75rem; font-weight: 800; color: #881337; background: rgba(136, 19, 55, 0.1); padding: 0.25rem 0.6rem; border-radius: 6px; border: 1px solid rgba(136, 19, 55, 0.2);">
+                                    <span style="font-size: 0.75rem; font-weight: 800; color: #059669; background: rgba(5, 150, 105, 0.1); padding: 0.25rem 0.6rem; border-radius: 6px; border: 1px solid rgba(5, 150, 105, 0.2);">
                                         {{ number_format($onLoanCount) }} on loan
                                     </span>
                                 @else
@@ -88,14 +88,14 @@
             <!-- Active Loans details -->
             @if($loans->count() > 0)
             <div id="batchLoansContainer" style="margin-top: 1rem;">
-                <h4 style="font-size: 1.1rem; font-weight: 800; color: #881337; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
+                <h4 style="font-size: 1.1rem; font-weight: 800; color: #059669; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
                     <i data-lucide="info" style="width: 18px; height: 18px;"></i>
                     Active Temporary Loans for Selected Assets
                 </h4>
                 <div style="overflow-x: auto; max-height: 350px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-main); margin-bottom: 1.5rem;">
                     <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.82rem;">
                         <thead>
-                            <tr style="background: rgba(136, 19, 55, 0.05); border-bottom: 1.5px solid var(--border-color); height: 40px;">
+                            <tr style="background: rgba(5, 150, 105, 0.05); border-bottom: 1.5px solid var(--border-color); height: 40px;">
                                 <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-weight: 700;">Asset Item</th>
                                 <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-weight: 700;">Borrower / Beneficiary</th>
                                 <th style="padding: 0.75rem 1rem; color: var(--text-muted); font-weight: 700;">Qty Out</th>
@@ -118,7 +118,7 @@
                                     @if($loan->is_overdue)
                                         <span style="font-size: 0.7rem; font-weight: 800; color: #ef4444; background: rgba(239, 68, 68, 0.1); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.2); text-transform: uppercase;">Overdue</span>
                                     @else
-                                        <span style="font-size: 0.7rem; font-weight: 800; color: #881337; background: rgba(136, 19, 55, 0.1); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid rgba(136, 19, 55, 0.2); text-transform: uppercase;">Active</span>
+                                        <span style="font-size: 0.7rem; font-weight: 800; color: #059669; background: rgba(5, 150, 105, 0.1); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid rgba(5, 150, 105, 0.2); text-transform: uppercase;">Active</span>
                                     @endif
                                 </td>
                             </tr>
@@ -132,12 +132,12 @@
             <!-- Submit / Action buttons -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
                 @if(auth()->user()->role === 'Auditor')
-                <button type="button" onclick="generateBatchVerificationReport()" class="btn-primary" style="width: 100%; padding: 1.1rem; border-radius: 18px; border: none; background: linear-gradient(135deg, #881337 0%, #881337 100%) !important; color: white !important; font-weight: 900 !important; font-size: 1.05rem; cursor: pointer; box-shadow: 0 10px 20px rgba(136, 19, 55, 0.2); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <button type="button" onclick="generateBatchVerificationReport()" class="btn-primary" style="width: 100%; padding: 1.1rem; border-radius: 18px; border: none; background: linear-gradient(135deg, #059669 0%, #059669 100%) !important; color: white !important; font-weight: 900 !important; font-size: 1.05rem; cursor: pointer; box-shadow: 0 10px 20px rgba(5, 150, 105, 0.2); display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <i data-lucide="printer" style="width: 20px; color: white !important;"></i>
                     <span style="color: white !important;">Print Batch PDF</span>
                 </button>
                 @else
-                <button type="submit" class="btn-primary" style="width: 100%; padding: 1.1rem; border-radius: 18px; border: none; background: linear-gradient(135deg, #881337 0%, #881337 100%) !important; color: white !important; font-weight: 900 !important; font-size: 1.05rem; cursor: pointer; box-shadow: 0 10px 20px rgba(136, 19, 55, 0.2); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <button type="submit" class="btn-primary" style="width: 100%; padding: 1.1rem; border-radius: 18px; border: none; background: linear-gradient(135deg, #059669 0%, #059669 100%) !important; color: white !important; font-weight: 900 !important; font-size: 1.05rem; cursor: pointer; box-shadow: 0 10px 20px rgba(5, 150, 105, 0.2); display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <i data-lucide="shield-check" style="width: 20px; color: white !important;"></i>
                     <span style="color: white !important;">
                         @if(auth()->user()->is_admin)
@@ -172,7 +172,7 @@ function calculateBatchRowVariance(inputEl, stock) {
 
     const variance = physical - stock;
     varDisplay.innerText = (variance > 0 ? '+' : '') + variance;
-    varDisplay.style.color = variance === 0 ? '#881337' : (variance > 0 ? '#9f1239' : '#ef4444');
+    varDisplay.style.color = variance === 0 ? '#059669' : (variance > 0 ? '#047857' : '#ef4444');
 }
 
 function submitBatchStockCheck() {
@@ -314,7 +314,7 @@ function generateBatchVerificationReport() {
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(8.5);
         doc.setTextColor(...primaryColor);
-        doc.text("NARCOTICS CONTROL COMMISSION · NACOC", 20, 16);
+        doc.text("NARCOTICS CONTROL COMMISSION Â· NACOC", 20, 16);
 
         doc.setFontSize(18);
         doc.setTextColor(...slateDark);
@@ -451,7 +451,7 @@ function generateBatchVerificationReport() {
         doc.text("Date: ________________________", 130, currentY);
 
         // Footer
-        doc.text("Page 1 of 1  ·  NACOC Stores Logistics & Inventory Control System", 105, 282, { align: "center" });
+        doc.text("Page 1 of 1  Â·  NACOC Stores Logistics & Inventory Control System", 105, 282, { align: "center" });
 
         doc.autoPrint();
         const blobUrl = doc.output('bloburl');
@@ -463,3 +463,4 @@ function generateBatchVerificationReport() {
 }
 </script>
 @endsection
+

@@ -182,12 +182,6 @@ class ServiceSraController extends Controller
             abort(403, 'Unauthorized access to SRA receipt.');
         }
 
-        // Gate: receipt only available when fully approved
-        if ($sra->status !== 'approved') {
-            return redirect()->route('service-sra.index')
-                ->with('warning', 'The SRA receipt is only available after full approval by all required actors.');
-        }
-
         $orgName = Setting::get('organization_name', 'NACOC');
 
         return view('service-sra.receipt', compact('sra', 'orgName'));

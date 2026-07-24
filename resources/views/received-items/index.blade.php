@@ -516,7 +516,7 @@
                                                     {{ $ed['formatted'] }}
                                                 </span>
                                                 @if(!empty($ed['department']))
-                                                    <span style="font-size: 0.65rem; font-weight: 800; color: #065f46; background: rgba(76, 5, 25, 0.08); padding: 2px 6px; border-radius: 4px; text-transform: uppercase; border: 1px solid rgba(76, 5, 25, 0.15);">
+                                                    <span style="font-size: 0.65rem; font-weight: 800; color: #065f46; background: rgba(6, 95, 70, 0.08); padding: 2px 6px; border-radius: 4px; text-transform: uppercase; border: 1px solid rgba(6, 95, 70, 0.15);">
                                                         Dept: {{ $ed['department'] }}
                                                     </span>
                                                 @endif
@@ -3351,7 +3351,7 @@
                         .section-title { font-weight: 900; font-size: 1rem; background: #000; color: #fff; padding: 6px 15px; margin: 25px 0 15px 0; display: inline-block; page-break-after: avoid; }
                         .audit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
                         .narrative { font-size: 0.85rem; white-space: pre-wrap; }
-                        .conclusion-inner { background: #fff1f2; border: 2px solid #ef4444; padding: 15px; border-radius: 6px; margin-top: 10px; }
+                        .conclusion-inner { background: #f0fdf4; border: 2px solid #ef4444; padding: 15px; border-radius: 6px; margin-top: 10px; }
                         .avoid-break { page-break-inside: avoid; break-inside: avoid; }
                         .sig-line { border-top: 1px solid #000; padding-top: 8px; font-weight: 800; text-align: center; font-size: 0.7rem; }
                     </style>
@@ -4109,3 +4109,4 @@ async function submitEditBatch() {
 })();
 </script>
 @endsection
+

@@ -23,7 +23,7 @@
                     @endif
                 </span>
                 @if($user->department)
-                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #065f46; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(76, 5, 25, 0.1); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
+                <span class="badge-dept" style="font-size: 0.65rem; background: #f0fdf4; color: #065f46; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-family: sans-serif; text-transform: uppercase; border: 1px solid rgba(6, 95, 70, 0.1); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $user->department }}">
                     {{ $user->department }}
                 </span>
                 @endif
@@ -108,3 +108,4 @@
     No store officers registered.
 </div>
 @endforelse
+

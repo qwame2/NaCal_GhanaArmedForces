@@ -1,16 +1,16 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('content')
 <style>
     :root {
-        --audit-primary: #881337;
-        --audit-primary-hover: #881337;
+        --audit-primary: #059669;
+        --audit-primary-hover: #047857;
         --audit-slate: #0f172a;
         --audit-slate-light: #1e293b;
         --audit-danger-glow: rgba(239, 68, 68, 0.08);
-        --audit-warning-glow: rgba(136, 19, 55, 0.08);
+        --audit-warning-glow: rgba(5, 150, 105, 0.08);
         --audit-info-glow: rgba(59, 130, 246, 0.08);
-        --audit-success-glow: rgba(136, 19, 55, 0.08);
+        --audit-success-glow: rgba(5, 150, 105, 0.08);
         --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
     }
 
@@ -70,7 +70,7 @@
     .audit-tab-btn.active {
         background: var(--bg-card);
         color: var(--audit-primary);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(136, 19, 55, 0.1);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(5, 150, 105, 0.1);
     }
 
     .audit-tab-panel {
@@ -94,7 +94,7 @@
     }
 
     .log-row:hover {
-        background: rgba(136, 19, 55, 0.01);
+        background: rgba(5, 150, 105, 0.01);
     }
 
     .log-badge {
@@ -110,9 +110,9 @@
     }
 
     .log-badge.danger { background: var(--audit-danger-glow); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-    .log-badge.warning { background: var(--audit-warning-glow); color: #881337; border: 1px solid rgba(136, 19, 55, 0.2); }
-    .log-badge.info { background: var(--audit-info-glow); color: #881337; border: 1px solid rgba(59, 130, 246, 0.2); }
-    .log-badge.success { background: var(--audit-success-glow); color: #881337; border: 1px solid rgba(136, 19, 55, 0.2); }
+    .log-badge.warning { background: var(--audit-warning-glow); color: #059669; border: 1px solid rgba(5, 150, 105, 0.2); }
+    .log-badge.info { background: var(--audit-info-glow); color: #059669; border: 1px solid rgba(59, 130, 246, 0.2); }
+    .log-badge.success { background: var(--audit-success-glow); color: #059669; border: 1px solid rgba(5, 150, 105, 0.2); }
 
     .audit-table {
         width: 100%;
@@ -228,7 +228,7 @@
 
     .filter-control-audit:focus {
         border-color: var(--audit-primary);
-        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.1);
+        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
         background: var(--bg-card);
     }
 
@@ -316,7 +316,7 @@
         color: white;
         border-color: var(--audit-primary);
         transform: translateY(-1.5px);
-        box-shadow: 0 8px 16px rgba(136, 19, 55, 0.2);
+        box-shadow: 0 8px 16px rgba(5, 150, 105, 0.2);
     }
 
     .audit-page-btn.disabled {
@@ -328,7 +328,7 @@
         opacity: 0.6;
     }
 
-    /* ── Select2 overrides for Audit User ── */
+    /* â”€â”€ Select2 overrides for Audit User â”€â”€ */
     #audit-user-select + .select2-container {
         min-width: 220px !important;
     }
@@ -344,7 +344,7 @@
     .select2-container--default.select2-container--focus .select2-selection--single,
     .select2-container--default.select2-container--open .select2-selection--single {
         border-color: var(--audit-primary) !important;
-        box-shadow: 0 0 0 4px rgba(136, 19, 55, 0.1) !important;
+        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1) !important;
         background: var(--bg-card) !important;
     }
     .select2-container--default .select2-selection--single .select2-selection__rendered {
@@ -434,7 +434,7 @@
             </p>
         </div>
         <div style="display: flex; gap: 10px;">
-            <a href="{{ route('stockcheck.index') }}" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: #881337; border-radius: 12px; border: 1.5px solid #881337; background: rgba(136,19,55,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(136,19,55,0.1)'" onmouseout="this.style.background='rgba(136,19,55,0.05)'">
+            <a href="{{ route('stockcheck.index') }}" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: #059669; border-radius: 12px; border: 1.5px solid #059669; background: rgba(5, 150, 105,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(5, 150, 105,0.1)'" onmouseout="this.style.background='rgba(5, 150, 105,0.05)'">
                 <i data-lucide="clipboard-check" style="width: 18px;"></i>
                 Perform Stock Check
             </a>
@@ -445,7 +445,7 @@
                 'log_severity' => request('log_severity'),
                 'log_event' => request('log_event'),
                 'user_id' => request('user_id')
-            ], fn($val) => !is_null($val) && $val !== '')) }}" target="_blank" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: var(--audit-primary); border-radius: 12px; border: 1.5px solid var(--audit-primary); background: rgba(136,19,55,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(136,19,55,0.1)'" onmouseout="this.style.background='rgba(136,19,55,0.05)'">
+            ], fn($val) => !is_null($val) && $val !== '')) }}" target="_blank" class="glass-card" style="padding: 0.75rem 1.25rem; text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 800; color: var(--audit-primary); border-radius: 12px; border: 1.5px solid var(--audit-primary); background: rgba(5, 150, 105,0.05); transition: all 0.2s;" onmouseover="this.style.background='rgba(5, 150, 105,0.1)'" onmouseout="this.style.background='rgba(5, 150, 105,0.05)'">
                 <i data-lucide="printer" style="width: 18px;"></i>
                 Print Audit Ledger
             </a>
@@ -460,7 +460,7 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
         <div class="auditor-card">
             <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(136,19,55,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="database" style="color: var(--audit-primary); width: 16px;"></i></div>
+                <div style="width: 32px; height: 32px; background: rgba(5, 150, 105,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="database" style="color: var(--audit-primary); width: 16px;"></i></div>
                 Audit Trail Logs
             </div>
             <div class="stat-number" id="stat-total-logs">{{ number_format($totalLogsCount) }}</div>
@@ -478,7 +478,7 @@
 
         <div class="auditor-card">
             <div style="display: flex; align-items: center; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
-                <div style="width: 32px; height: 32px; background: rgba(136,19,55,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="clock" style="color: #881337; width: 16px;"></i></div>
+                <div style="width: 32px; height: 32px; background: rgba(5, 150, 105,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i data-lucide="clock" style="color: #059669; width: 16px;"></i></div>
                 Active Loans (Temp)
             </div>
             <div class="stat-number" id="stat-active-loans">{{ number_format($activeLoansCount) }}</div>
@@ -767,9 +767,9 @@
                                                     data-acquisition="{{ $item->acquisition_type }}"
                                                     data-delivery-person="{{ $item->delivery_person ?: '-' }}"
                                                     data-delivery-phone="{{ $item->delivery_phone ?: '-' }}"
-                                                    style="border: none; background: rgba(136, 19, 55, 0.08); cursor: pointer; color: var(--audit-primary); width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;"
-                                                    onmouseover="this.style.background='rgba(136, 19, 55, 0.18)';"
-                                                    onmouseout="this.style.background='rgba(136, 19, 55, 0.08)';"
+                                                    style="border: none; background: rgba(5, 150, 105, 0.08); cursor: pointer; color: var(--audit-primary); width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                                                    onmouseover="this.style.background='rgba(5, 150, 105, 0.18)';"
+                                                    onmouseout="this.style.background='rgba(5, 150, 105, 0.08)';"
                                                     onclick="toggleSupplierPopover(this, event)">
                                                 <i data-lucide="chevron-down" style="width: 14px; height: 14px; transition: transform 0.2s;"></i>
                                             </button>
@@ -843,14 +843,14 @@
                                 <td style="text-align: center; vertical-align: middle;">
                                     @if($item->issuance_type === 'Temporary' && $item->total_returned > 0)
                                         @if($item->quantity == 0)
-                                            <div style="font-weight: 800; color: #881337;">
+                                            <div style="font-weight: 800; color: #059669;">
                                                 {{ number_format($item->total_returned) }} <span style="font-size: 0.7rem; color: var(--text-muted);">{{ $item->unit }}</span>
                                             </div>
                                             <div style="margin-top: 4px; display: flex; justify-content: center;">
                                                 <span class="log-badge success" style="padding: 2px 6px; font-size: 0.6rem; font-weight: 900;">Returned</span>
                                             </div>
                                         @else
-                                            <div style="font-weight: 800; color: #4c0519;">
+                                            <div style="font-weight: 800; color: #065f46;">
                                                 {{ number_format($item->quantity + $item->total_returned) }} <span style="font-size: 0.7rem; color: var(--text-muted);">{{ $item->unit }}</span>
                                             </div>
                                             <div style="margin-top: 4px; display: flex; flex-direction: column; align-items: center; gap: 2px;">
@@ -859,7 +859,7 @@
                                             </div>
                                         @endif
                                     @else
-                                        <div style="font-weight: 800; color: #4c0519; text-align: center;">
+                                        <div style="font-weight: 800; color: #065f46; text-align: center;">
                                             {{ number_format($item->quantity) }} <span style="font-size: 0.7rem; color: var(--text-muted);">{{ $item->unit }}</span>
                                         </div>
                                     @endif
@@ -878,16 +878,16 @@
                                             <div>{{ $item->origin_approved_by }} <span style="font-size: 0.68rem; color: var(--audit-primary); font-weight: 800;">(Dept Head)</span></div>
                                         @endif
                                         @if($item->stores_approved_by)
-                                            <div style="margin-top: 2px;">{{ $item->stores_approved_by }} <span style="font-size: 0.68rem; color: #881337; font-weight: 800;">(Head of Admin(Authorizer))</span></div>
+                                            <div style="margin-top: 2px;">{{ $item->stores_approved_by }} <span style="font-size: 0.68rem; color: #059669; font-weight: 800;">(Head of Admin(Authorizer))</span></div>
                                         @endif
                                         @if($item->dg_approved_by)
-                                            <div style="margin-top: 2px;">{{ $item->dg_approved_by }} <span style="font-size: 0.68rem; color: #9f1239; font-weight: 800;">(Director General)</span></div>
+                                            <div style="margin-top: 2px;">{{ $item->dg_approved_by }} <span style="font-size: 0.68rem; color: #047857; font-weight: 800;">(Director General)</span></div>
                                         @endif
                                         @if($item->final_approved_by)
-                                            <div style="margin-top: 2px;">{{ $item->final_approved_by }} <span style="font-size: 0.68rem; color: #881337; font-weight: 800;">(Head of Stores)</span></div>
+                                            <div style="margin-top: 2px;">{{ $item->final_approved_by }} <span style="font-size: 0.68rem; color: #059669; font-weight: 800;">(Head of Stores)</span></div>
                                         @endif
                                         @if($item->store_officer_name)
-                                            <div style="margin-top: 2px;">{{ $item->store_officer_name }} <span style="font-size: 0.68rem; color: #881337; font-weight: 800;">(Store Officer)</span></div>
+                                            <div style="margin-top: 2px;">{{ $item->store_officer_name }} <span style="font-size: 0.68rem; color: #059669; font-weight: 800;">(Store Officer)</span></div>
                                         @endif
                                     @else
                                         {{ $item->authority ?: 'N/A' }}
@@ -898,9 +898,9 @@
                                         <a href="{{ route('requisitions.receipt.print', $item->requisition_id) }}" 
                                            target="_blank" 
                                            class="btn-view-receipt" 
-                                           style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(136, 19, 55, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
+                                           style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(5, 150, 105, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
                                            onmouseover="this.style.background='var(--audit-primary)'; this.style.color='white';"
-                                           onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='var(--audit-primary)';"
+                                           onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='var(--audit-primary)';"
                                            title="Print Requisition Receipt">
                                             <i data-lucide="receipt" style="width: 13px; height: 13px;"></i>
                                             <span>Receipt</span>
@@ -971,7 +971,7 @@
                                 <td>
                                     <span class="badge-event">{{ $ledgeMap[$item->ledge_category] ?? $item->ledge_category }}</span>
                                 </td>
-                                <td style="font-weight: 800; text-align: center; color: #881337;">
+                                <td style="font-weight: 800; text-align: center; color: #059669;">
                                     {{ number_format($item->returned_qty) }}
                                 </td>
                                 <td style="font-weight: 800;">
@@ -1065,9 +1065,9 @@
                                         <a href="{{ route('requisitions.receipt.print', $req->id) }}" 
                                            target="_blank" 
                                            class="btn-view-receipt" 
-                                           style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(136, 19, 55, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
+                                           style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(5, 150, 105, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
                                            onmouseover="this.style.background='var(--audit-primary)'; this.style.color='white';"
-                                           onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='var(--audit-primary)';"
+                                           onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='var(--audit-primary)';"
                                            title="Print Requisition Receipt">
                                             <i data-lucide="receipt" style="width: 13px; height: 13px;"></i>
                                             <span>Receipt</span>
@@ -1157,9 +1157,9 @@
                                     <a href="{{ route('receiveditems.sra', $batch->id) }}" 
                                        target="_blank" 
                                        class="btn-view-receipt" 
-                                       style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(136, 19, 55, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
+                                       style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 8px; background: rgba(5, 150, 105, 0.08); color: var(--audit-primary); font-size: 0.72rem; font-weight: 800; text-decoration: none; border: 1px solid transparent; transition: all 0.2s;"
                                        onmouseover="this.style.background='var(--audit-primary)'; this.style.color='white';"
-                                       onmouseout="this.style.background='rgba(136, 19, 55, 0.08)'; this.style.color='var(--audit-primary)';"
+                                       onmouseout="this.style.background='rgba(5, 150, 105, 0.08)'; this.style.color='var(--audit-primary)';"
                                        title="Review SRA Receipt">
                                         <i data-lucide="file-signature" style="width: 13px; height: 13px;"></i>
                                         <span>Review & Approve</span>
@@ -1252,13 +1252,13 @@
             <div style="font-size: 0.85rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px;">
                     <span style="font-weight: 900; color: var(--text-main);">Entity Details</span>
-                    <span style="background: rgba(136, 19, 55, 0.1); color: var(--audit-primary); font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+                    <span style="background: rgba(5, 150, 105, 0.1); color: var(--audit-primary); font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
                         ${acq}
                     </span>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 8px;" id="popover-registry-details">
                     <div style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0;">
-                        <span class="animate-spin" style="display: inline-block;">⚙</span>
+                        <span class="animate-spin" style="display: inline-block;">âš™</span>
                         <span>Querying logs & registry...</span>
                     </div>
                 </div>
@@ -1304,7 +1304,7 @@
                         <div style="display: flex; gap: 12px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
                             <div style="flex: 1;">
                                 <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">First Delivery</span>
-                                <span style="font-weight: 800; color: #881337; font-size: 0.75rem;">${data.first_delivery || '-'}</span>
+                                <span style="font-weight: 800; color: #059669; font-size: 0.75rem;">${data.first_delivery || '-'}</span>
                             </div>
                             <div style="flex: 1;">
                                 <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Last Delivery</span>
@@ -1534,7 +1534,7 @@
 
 
 
-    // ── Staff Provisioning (AJAX wrappers) ──────────────────────────────────────
+    // â”€â”€ Staff Provisioning (AJAX wrappers) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function loadProvisioningData(isSilent = false) {
         const pendingContainer = document.getElementById('pendingRegistrationsList');
         const tempContainer = document.getElementById('tempAccountsList');
@@ -1568,7 +1568,7 @@
                 if (!data.pending || data.pending.length === 0) {
                     const emptyHtml = `
                         <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
-                            <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
+                            <div style="font-size:1.75rem;margin-bottom:.4rem;">ðŸ‘¥</div>
                             <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No pending registrations</div>
                             <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any pending staff registrations in your department will appear here.</div>
                         </div>`;
@@ -1585,19 +1585,19 @@
                             return `
                             <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
                                 <div style="display:flex;align-items:center;gap:.75rem;">
-                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(136,19,55,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#881337;">
+                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(5, 150, 105,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#059669;">
                                         ${(reg.name || reg.username).charAt(0).toUpperCase()}
                                     </div>
                                     <div>
                                         <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${reg.name}</div>
-                                        <div style="font-size:.7rem;color:var(--text-muted);">Requisitioner · @${reg.username} · Phone: ${reg.phone} · Staff ID: ${reg.service_number}</div>
+                                        <div style="font-size:.7rem;color:var(--text-muted);">Requisitioner Â· @${reg.username} Â· Phone: ${reg.phone} Â· Staff ID: ${reg.service_number}</div>
                                     </div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
-                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(136,19,55,.1);color:#047857;">
+                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(5, 150, 105,.1);color:#047857;">
                                         PENDING HOD APPROVAL
                                     </span>
-                                    <button onclick="approveRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(136,19,55,.1);border:1px solid rgba(136,19,55,.3);color:#881337;">
+                                    <button onclick="approveRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(5, 150, 105,.1);border:1px solid rgba(5, 150, 105,.3);color:#059669;">
                                         <i data-lucide="user-check" style="width:13px;height:13px;"></i> Approve
                                     </button>
                                     <button onclick="rejectRegistration(${reg.id}, '${reg.username}')" style="padding:.4rem .7rem;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;">
@@ -1618,7 +1618,7 @@
                 if (!data.accounts || data.accounts.length === 0) {
                     const emptyHtml = `
                         <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
-                            <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
+                            <div style="font-size:1.75rem;margin-bottom:.4rem;">ðŸ‘¥</div>
                             <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No department staff found</div>
                             <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any registered staff in your department will appear here.</div>
                         </div>`;
@@ -1634,30 +1634,30 @@
                         let rows = data.accounts.map(acc => {
                             const isAccessActive = acc.can_make_requisition;
                             const badgeStyle = isAccessActive 
-                                ? 'background:rgba(136,19,55,.1);color:#881337;' 
+                                ? 'background:rgba(5, 150, 105,.1);color:#059669;' 
                                 : 'background:rgba(239,68,68,.1);color:#ef4444;';
                             const badgeText = isAccessActive ? 'Active Access' : 'Access Suspended';
                             
                             const btnStyle = isAccessActive
                                 ? 'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;'
-                                : 'background:rgba(136,19,55,.1);border:1px solid rgba(136,19,55,.3);color:#881337;';
+                                : 'background:rgba(5, 150, 105,.1);border:1px solid rgba(5, 150, 105,.3);color:#059669;';
                             const btnText = isAccessActive ? 'Suspend Access' : 'Grant Access';
                             const btnIcon = isAccessActive ? 'user-minus' : 'user-check';
 
                             return `
                             <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
                                 <div style="display:flex;align-items:center;gap:.75rem;">
-                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(136,19,55,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#881337;">
+                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(5, 150, 105,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#059669;">
                                         ${(acc.name || acc.username).charAt(0).toUpperCase()}
                                     </div>
                                     <div>
                                         <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${acc.name || '@' + acc.username}</div>
-                                        <div style="font-size:.7rem;color:var(--text-muted);">${acc.role} · @${acc.username}</div>
+                                        <div style="font-size:.7rem;color:var(--text-muted);">${acc.role} Â· @${acc.username}</div>
                                     </div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
-                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(136,19,55,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#881337' : '#64748b'};">
-                                        ${acc.is_online ? '● ONLINE' : '○ OFFLINE'}
+                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(5, 150, 105,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#059669' : '#64748b'};">
+                                        ${acc.is_online ? 'â— ONLINE' : 'â—‹ OFFLINE'}
                                     </span>
                                     <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;${badgeStyle}">
                                         ${badgeText}
@@ -1695,7 +1695,7 @@
 
     async function toggleStaffAccess(id, username, isCurrentlyActive) {
         const actionWord = isCurrentlyActive ? 'Suspend' : 'Grant';
-        const actionColor = isCurrentlyActive ? '#ef4444' : '#881337';
+        const actionColor = isCurrentlyActive ? '#ef4444' : '#059669';
         
         const confirm = await Swal.fire({
             title: `${actionWord} Requisition Access?`,
@@ -1745,7 +1745,7 @@
             text: `Are you sure you want to approve requisitioner privileges for @${username}?`,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#881337',
+            confirmButtonColor: '#059669',
             cancelButtonColor: '#64748b',
             confirmButtonText: 'Yes, Approve',
             cancelButtonText: 'Cancel'
@@ -1820,7 +1820,7 @@
         }
     }
 
-    // ── Silent Background Refresh ─────────────────────────────────────────────
+    // â”€â”€ Silent Background Refresh â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Polls every 30s and patches only tbody + pagination HTML per tab.
     // Never runs if: a modal is open, a filter is active, or user is interacting.
 
@@ -1898,7 +1898,7 @@
                 if (_auditLastHtml[sig] !== tabData.pager) {
                     _auditLastHtml[sig] = tabData.pager;
                     if (tabData.pager.trim() === '') {
-                        // Server says no pages needed — remove old pager if present
+                        // Server says no pages needed â€” remove old pager if present
                         if (existingPager) existingPager.remove();
                     } else {
                         if (existingPager) {
@@ -1974,4 +1974,5 @@
     setInterval(_auditSilentRefresh, 5000);
 </script>
 @endsection
+
 

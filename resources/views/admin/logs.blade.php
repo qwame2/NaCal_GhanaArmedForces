@@ -39,7 +39,7 @@
             @endif
             <div style="flex: 1; min-width: 240px;">
                 <div style="background: white; border: 1.5px solid #edf2f7; padding: 10px 18px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 12px; transition: all 0.3s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 8px 20px rgba(5, 150, 105,0.06)'" onmouseout="this.style.borderColor='#edf2f7'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.02)'">
-                    <div style="width: 36px; height: 36px; background: #fff1f2; color: #ef4444; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <div style="width: 36px; height: 36px; background: #f0fdf4; color: #ef4444; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         <i data-lucide="alert-circle" style="width: 18px;"></i>
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: column;">
@@ -472,7 +472,7 @@
             <h3 id="modalEventTitle" style="font-size: 1.85rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.5rem; letter-spacing: -0.02em;">Event Details</h3>
             <p id="modalEventAction" style="font-size: 0.8rem; background: var(--primary); color: white; padding: 4px 12px; border-radius: 8px; font-weight: 800; display: inline-block; letter-spacing: 0.05em; box-shadow: 0 4px 10px rgba(5, 150, 105,0.2);">ACTION</p>
         </div>
-        <button onclick="closeLogModal()" style="background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.05); width: 44px; height: 44px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.background='#fef2f2'; this.style.color='#ef4444'; this.style.borderColor='#fecdd3'" onmouseout="this.style.background='rgba(0,0,0,0.04)'; this.style.color='var(--text-muted)'; this.style.borderColor='rgba(0,0,0,0.05)'">
+        <button onclick="closeLogModal()" style="background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.05); width: 44px; height: 44px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.background='#fef2f2'; this.style.color='#ef4444'; this.style.borderColor='#dcfce7'" onmouseout="this.style.background='rgba(0,0,0,0.04)'; this.style.color='var(--text-muted)'; this.style.borderColor='rgba(0,0,0,0.05)'">
             <i data-lucide="x" style="width: 20px;"></i>
         </button>
     </div>

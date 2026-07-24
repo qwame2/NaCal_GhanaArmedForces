@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -177,7 +177,7 @@
     {{-- Floating Print Button for Screen Mode --}}
     <div class="no-print" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
         <button onclick="window.print()" style="padding: 10px 20px; background: #0f172a; color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.15); font-size: 12px; display: flex; align-items: center; gap: 8px;">
-            🖨️ Trigger Browser Print
+            ðŸ–¨ï¸ Trigger Browser Print
         </button>
     </div>
 
@@ -258,7 +258,7 @@
                             }
                         @endphp
                         <strong>{{ $log->user ? $log->user->name : 'System Automated' }}</strong><br>
-                        <span style="font-size: 8px; color: #881337; font-weight: 800;">{{ $roleDisplay }}</span><br>
+                        <span style="font-size: 8px; color: #059669; font-weight: 800;">{{ $roleDisplay }}</span><br>
                         <span style="font-size: 8px; color: #64748b;">{{ $log->user ? '@' . $log->user->username : '' }}</span>
                     </td>
                     <td>{{ $log->event_type }}</td>
@@ -334,8 +334,8 @@
                     <td style="text-align: right; font-weight: 700; vertical-align: middle;">
                         @if($item->issuance_type === 'Temporary' && $item->total_returned > 0)
                             @if($item->quantity == 0)
-                                <span style="color: #881337;">{{ number_format($item->total_returned) }} {{ $item->unit }}</span><br>
-                                <span style="font-size: 7.5px; color: #881337; font-weight: 800; text-transform: uppercase;">[Returned]</span>
+                                <span style="color: #059669;">{{ number_format($item->total_returned) }} {{ $item->unit }}</span><br>
+                                <span style="font-size: 7.5px; color: #059669; font-weight: 800; text-transform: uppercase;">[Returned]</span>
                             @else
                                 <span>{{ number_format($item->quantity + $item->total_returned) }} {{ $item->unit }}</span><br>
                                 <span style="font-size: 7.5px; color: #047857; font-weight: 800; text-transform: uppercase;">[Partial Return]</span><br>
@@ -434,3 +434,4 @@
 
 </body>
 </html>
+

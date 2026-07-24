@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRA Receipt Review Board – {{ $sra->sra_number }}</title>
+    <title>SRA Receipt Review Board â€“ {{ $sra->sra_number }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     <!-- Google Fonts -->
@@ -13,8 +13,8 @@
     
     <style>
         :root {
-            --primary: #8b5cf6;
-            --primary-hover: #7c3aed;
+            --primary: #059669;
+            --primary-hover: #047857;
             --bg-dark: #0f172a;
             --bg-page: #f8fafc;
             --border-color: #e2e8f0;
@@ -52,8 +52,8 @@
         .icon-badge {
             width: 44px;
             height: 44px;
-            background: rgba(139, 92, 246, 0.15);
-            border: 1px solid rgba(139, 92, 246, 0.3);
+            background: rgba(5, 150, 105, 0.15);
+            border: 1px solid rgba(5, 150, 105, 0.3);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -98,13 +98,13 @@
         .btn-approve {
             background: var(--primary);
             color: #ffffff;
-            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
         }
 
         .btn-approve:hover {
             background: var(--primary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
         }
 
         /* Document Container */
@@ -517,11 +517,11 @@
                         <div class="checkbox-row">
                             <div class="checkbox-item">
                                 <span class="info-label" style="margin: 0;">FULL</span>
-                                <div class="box">{{ $sra->delivery_type === 'full' ? '✓' : '' }}</div>
+                                <div class="box">{{ $sra->delivery_type === 'full' ? 'âœ“' : '' }}</div>
                             </div>
                             <div class="checkbox-item">
                                 <span class="info-label" style="margin: 0;">PART</span>
-                                <div class="box">{{ $sra->delivery_type === 'partial' ? '✓' : '' }}</div>
+                                <div class="box">{{ $sra->delivery_type === 'partial' ? 'âœ“' : '' }}</div>
                             </div>
                         </div>
                     </div>
@@ -665,7 +665,7 @@
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Yes, Approve',
-                confirmButtonColor: '#8b5cf6',
+                confirmButtonColor: '#059669',
                 cancelButtonColor: '#64748b',
             }).then(result => {
                 if (!result.isConfirmed) return;
@@ -721,3 +721,4 @@
     </script>
 </body>
 </html>
+

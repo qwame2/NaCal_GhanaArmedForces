@@ -1,4 +1,4 @@
-@extends('layouts.auth')
+﻿@extends('layouts.auth')
 
 @section('content')
     <style>
@@ -48,7 +48,7 @@
         .code-input:focus {
             border-color: var(--primary);
             background: white;
-            box-shadow: 0 10px 25px rgba(136, 19, 55, 0.1);
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.1);
             transform: translateY(-2px);
             outline: none;
         }
@@ -91,7 +91,7 @@
     <div class="auth-vault glass-monolith">
         
         <div style="text-align: center; margin-bottom: 3rem;">
-            <div style="width: 64px; height: 64px; background: rgba(136, 19, 55, 0.1); border-radius: 22px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+            <div style="width: 64px; height: 64px; background: rgba(5, 150, 105, 0.1); border-radius: 22px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
                 <i data-lucide="shield-alert" style="width: 32px; color: var(--primary);"></i>
             </div>
             <h2 style="color: var(--text-main); font-size: 1.75rem; font-weight: 950; letter-spacing: -0.04em; margin-bottom: 0.5rem;">Verify Protocol</h2>
@@ -113,7 +113,7 @@
                 <input type="text" maxlength="1" class="code-input">
             </div>
 
-            <button type="submit" class="auth-btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, #4c0519 100%); height: 60px; font-size: 1rem; border-radius: 20px; width: 100%; border: none; color: white; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer;">
+            <button type="submit" class="auth-btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, #065f46 100%); height: 60px; font-size: 1rem; border-radius: 20px; width: 100%; border: none; color: white; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer;">
                 <span>Confirm Identity</span>
                 <i data-lucide="key-round"></i>
             </button>
@@ -125,7 +125,7 @@
                 <a href="#" style="color: var(--primary); font-weight: 800; text-decoration: none; margin-left: 5px;">Re-transmit Secret</a>
             </p>
             <a href="{{ route('login') }}" style="display: inline-block; margin-top: 1.5rem; font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em;">
-                ← Return to Login
+                â† Return to Login
             </a>
         </div>
     </div>
@@ -166,3 +166,4 @@
         });
     </script>
 @endsection
+

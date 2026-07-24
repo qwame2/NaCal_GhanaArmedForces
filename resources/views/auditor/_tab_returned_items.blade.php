@@ -1,4 +1,4 @@
-@forelse($returnedItems as $item)
+﻿@forelse($returnedItems as $item)
     <tr class="log-row">
         <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
             {{ \Carbon\Carbon::parse($item->return_date)->format('d/m/Y') }}
@@ -7,7 +7,7 @@
         <td>
             <span class="badge-event">{{ $ledgeMap[$item->ledge_category] ?? $item->ledge_category }}</span>
         </td>
-        <td style="font-weight: 800; text-align: center; color: #881337;">
+        <td style="font-weight: 800; text-align: center; color: #059669;">
             {{ number_format($item->returned_qty) }}
         </td>
         <td style="font-weight: 800;">{{ $item->beneficiary }}</td>
@@ -22,3 +22,4 @@
         </td>
     </tr>
 @endforelse
+

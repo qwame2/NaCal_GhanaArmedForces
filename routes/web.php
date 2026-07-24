@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use Illuminate\Support\Facades\Route;
 
@@ -758,7 +758,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/stock-check', [\App\Http\Controllers\StockCheckController::class, 'index'])->name('stockcheck.index');
     Route::get('/stock-check/batch', [\App\Http\Controllers\StockCheckController::class, 'batchView'])->name('stockcheck.batch');
 
-    // ── Service SRA Routes ────────────────────────────────────────────────────
+    // â”€â”€ Service SRA Routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     Route::get('/service-sra/create', [ServiceSraController::class, 'create'])->name('service-sra.create');
     Route::post('/service-sra', [ServiceSraController::class, 'store'])->name('service-sra.store');
     Route::get('/service-sra', [ServiceSraController::class, 'index'])->name('service-sra.index');
@@ -857,7 +857,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                     'requester'        => $req->requester_name,
                     'department'       => $req->department,
                     'status_label'     => $req->status === 'approved' ? 'Approved' : 'Partially Approved',
-                    'status_color'     => $req->status === 'approved' ? '#881337' : '#9f1239',
+                    'status_color'     => $req->status === 'approved' ? '#059669' : '#047857',
                     'total_items'      => $totalItems,
                     'approved_qty_sum' => $approvedQtySum,
                     'purpose'          => \Illuminate\Support\Str::limit($req->purpose ?? '', 90),
@@ -951,7 +951,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
                 ->toArray();
         });
 
-        // Count total alert notifications (used for navbar red badge — low stock only)
+        // Count total alert notifications (used for navbar red badge â€” low stock only)
         $alertCount = 0;
         foreach ($lowStockAlerts as $alert) {
             if (!in_array(trim($alert['description']), $acknowledgedClean)) {
@@ -1627,7 +1627,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
     Route::get('/edit-requests/status/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'checkStatus'])->name('edit-requests.checkStatus');
     Route::post('/edit-requests/complete/{itemId}', [\App\Http\Controllers\EditRequestController::class, 'complete'])->name('edit-requests.complete');
 
-    // Remainder Preview API — returns preview data for an edit request
+    // Remainder Preview API â€” returns preview data for an edit request
     Route::get('/api/edit-requests/{id}/remainder-preview', function ($id) {
         if (!auth()->user()->is_admin) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -1685,7 +1685,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         ]);
     })->name('api.remainder-preview');
 
-    // Recovery Preview API — returns preview data for an item recovery request
+    // Recovery Preview API â€” returns preview data for an item recovery request
     Route::get('/api/edit-requests/{id}/recovery-preview', function ($id) {
         if (!auth()->user()->is_admin) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -1727,7 +1727,7 @@ Route::middleware(['auth', 'check_status', 'temp_account'])->group(function () {
         ]);
     })->name('api.recovery-preview');
 
-    // Reconciliation Preview API — returns preview data for a stock verification request
+    // Reconciliation Preview API â€” returns preview data for a stock verification request
     Route::get('/api/edit-requests/{id}/reconciliation-preview', function ($id) {
         if (!auth()->user()->is_admin) {
             return response()->json(['error' => 'Unauthorized'], 403);

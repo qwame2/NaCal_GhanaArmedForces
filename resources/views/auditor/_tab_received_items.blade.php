@@ -1,4 +1,4 @@
-@forelse($receivedItems as $item)
+﻿@forelse($receivedItems as $item)
     <tr class="log-row">
         <td style="font-weight: 700; color: var(--text-muted); font-size: 0.78rem;">
             {{ $item->entry_date ? \Carbon\Carbon::parse($item->entry_date)->format('d/m/Y') : '-' }}
@@ -32,9 +32,9 @@
                             data-acquisition="{{ $item->acquisition_type }}"
                             data-delivery-person="{{ $item->delivery_person ?: '-' }}"
                             data-delivery-phone="{{ $item->delivery_phone ?: '-' }}"
-                            style="border: none; background: rgba(136, 19, 55, 0.08); cursor: pointer; color: var(--audit-primary); width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;"
-                            onmouseover="this.style.background='rgba(136, 19, 55, 0.18)';"
-                            onmouseout="this.style.background='rgba(136, 19, 55, 0.08)';"
+                            style="border: none; background: rgba(5, 150, 105, 0.08); cursor: pointer; color: var(--audit-primary); width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                            onmouseover="this.style.background='rgba(5, 150, 105, 0.18)';"
+                            onmouseout="this.style.background='rgba(5, 150, 105, 0.08)';"
                             onclick="toggleSupplierPopover(this, event)">
                         <i data-lucide="chevron-down" style="width: 14px; height: 14px; transition: transform 0.2s;"></i>
                     </button>
@@ -49,3 +49,4 @@
         </td>
     </tr>
 @endforelse
+

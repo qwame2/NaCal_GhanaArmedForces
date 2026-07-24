@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -128,14 +128,14 @@
             flex-shrink: 0;
         }
 
-        .toast-success { border-left: 4px solid #881337; }
-        .toast-success .toast-icon { background: rgba(136, 19, 55, 0.1); color: #881337; }
+        .toast-success { border-left: 4px solid #059669; }
+        .toast-success .toast-icon { background: rgba(5, 150, 105, 0.1); color: #059669; }
 
         .toast-error { border-left: 4px solid #ef4444; }
         .toast-error .toast-icon { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
-        .toast-warning { border-left: 4px solid #881337; }
-        .toast-warning .toast-icon { background: rgba(136, 19, 55, 0.1); color: #881337; }
+        .toast-warning { border-left: 4px solid #059669; }
+        .toast-warning .toast-icon { background: rgba(5, 150, 105, 0.1); color: #059669; }
 
         .toast-content { flex: 1; }
         .toast-title { display: block; font-weight: 800; font-size: 0.85rem; color: #0f172a; margin-bottom: 2px; }
@@ -245,7 +245,7 @@
             align-items: center;
             justify-content: center;
             color: white;
-            box-shadow: 0 8px 16px rgba(136, 19, 55, 0.2);
+            box-shadow: 0 8px 16px rgba(5, 150, 105, 0.2);
         }
 
         .brand-text h1 {
@@ -328,7 +328,7 @@
             background: white;
             color: var(--primary);
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 1px solid rgba(136, 19, 55, 0.1);
+            border: 1px solid rgba(5, 150, 105, 0.1);
         }
 
         .nav-link i {
@@ -371,16 +371,16 @@
         .u-role { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; }
 
         .exit-btn {
-            background: #fff1f2;
-            color: #e11d48;
-            border: 1px solid #fecdd3;
+            background: #f0fdf4;
+            color: #ef4444;
+            border: 1px solid #dcfce7;
             padding: 6px;
             border-radius: 8px;
             cursor: pointer;
             transition: 0.3s;
         }
 
-        .exit-btn:hover { background: #e11d48; color: white; transform: scale(1.1); }
+        .exit-btn:hover { background: #ef4444; color: white; transform: scale(1.1); }
 
         /* Main Viewport */
         .main-wrapper {
@@ -391,7 +391,7 @@
             transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Content width cap — prevents extreme stretching on ultrawide monitors */
+        /* Content width cap â€” prevents extreme stretching on ultrawide monitors */
         .main-wrapper > *:not(header) {
             max-width: 1600px;
             width: 100%;
@@ -505,7 +505,7 @@
             border: 1px solid #edf2f7;
             font-size: 0.75rem;
             font-weight: 800;
-            color: #881337;
+            color: #059669;
             box-shadow: var(--shadow-luxe);
         }
 
@@ -523,7 +523,7 @@
 
         .title-capsule:hover {
             border-color: var(--primary);
-            box-shadow: 0 8px 20px rgba(136, 19, 55, 0.08);
+            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.08);
         }
 
         .capsule-prefix {
@@ -802,7 +802,7 @@
             </div>
             <div class="brand-text" style="flex: 1; min-width: 0;">
                 <h1 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ \App\Models\Setting::get('organization_name', 'ADMIN CORE') }}</h1>
-                <span>Stores Inventory Management System<span style="color:#881337;">(NSIMs)</span></span>
+                <span>Stores Inventory Management System<span style="color:#059669;">(NSIMs)</span></span>
             </div>
             <button type="button" class="sidebar-minimize-btn" id="sidebar-minimize-btn" title="Minimize Sidebar">
                 <i data-lucide="chevron-left" id="minimize-icon" style="width: 16px; height: 16px;"></i>
@@ -1095,7 +1095,7 @@
                         <div style="max-height: 400px; overflow-y: auto;">
                             @forelse($globalNotifications as $notif)
                             <a href="{{ route($notif['route']) }}" class="notif-item" style="display: flex; gap: 1rem; padding: 1.25rem 1.5rem; text-decoration: none; border-bottom: 1px solid #f1f5f9;">
-                                <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ $notif['type'] === 'warning' ? '#ecfdf5' : '#fef2f2' }}; color: {{ $notif['type'] === 'warning' ? '#881337' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: {{ $notif['type'] === 'warning' ? '#ecfdf5' : '#fef2f2' }}; color: {{ $notif['type'] === 'warning' ? '#059669' : '#ef4444' }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                     <i data-lucide="{{ $notif['icon'] }}" style="width: 20px;"></i>
                                 </div>
                                 <div style="flex: 1;">
@@ -1124,7 +1124,7 @@
     </main>
 
     <script>
-        // Global Notification sound player — plays /img/notification.wav (hard-coded public asset)
+        // Global Notification sound player â€” plays /img/notification.wav (hard-coded public asset)
         window.playNotificationSound = function(type = 'sent') {
             try {
                 const audio = new Audio('/img/notification.wav');
@@ -1356,7 +1356,7 @@
                                     html += `
                                         <div style="position: relative; border-bottom: 1px solid #f1f5f9;">
                                             <a href="${routeUrl}" class="notif-item" style="display: flex; gap: 1rem; padding: 1.25rem 1.5rem; padding-right: 3.5rem; text-decoration: none;">
-                                                <div style="width: 44px; height: 44px; border-radius: 12px; background: ${notif.type === 'warning' ? '#ecfdf5' : '#fef2f2'}; color: ${notif.type === 'warning' ? '#881337' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                <div style="width: 44px; height: 44px; border-radius: 12px; background: ${notif.type === 'warning' ? '#ecfdf5' : '#fef2f2'}; color: ${notif.type === 'warning' ? '#059669' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                                     <i data-lucide="${notif.icon}" style="width: 20px;"></i>
                                                 </div>
                                                 <div style="flex: 1;">
@@ -1454,8 +1454,8 @@
             if (isMessagePage) {
                 const badge = document.getElementById('global-unread-badge');
                 if (badge) badge.style.display = 'none';
-                _stopNotifAlarm();       // User is on messages page — stop alarm
-                _notifAlarmLastCount = 0; // Reset so alarm doesn’t restart on next page
+                _stopNotifAlarm();       // User is on messages page â€” stop alarm
+                _notifAlarmLastCount = 0; // Reset so alarm doesnâ€™t restart on next page
                 
                 // Write active timestamp to localStorage so other tabs know messages page is open
                 localStorage.setItem('messages_page_active', Date.now());
@@ -1507,7 +1507,7 @@
                     const lastActiveCheck = localStorage.getItem('messages_page_active');
                     const isMessagesOpenElsewhere = lastActiveCheck && (Date.now() - parseInt(lastActiveCheck)) < 15000;
 
-                    // Skip ALL beeps on the first poll (page load/refresh) — just record baseline
+                    // Skip ALL beeps on the first poll (page load/refresh) â€” just record baseline
                     if (window._firstUnreadPoll) {
                         window._firstUnreadPoll = false;
                         _notifAlarmLastCount = data.count || 0;
@@ -1654,7 +1654,7 @@
                 <i data-lucide="x" style="width: 14px;"></i>
             </button>
             <div class="toast-progress">
-                <div class="toast-progress-bar" style="animation-duration: ${duration}ms; color: ${type === 'success' ? '#881337' : (type === 'error' ? '#ef4444' : '#881337')}"></div>
+                <div class="toast-progress-bar" style="animation-duration: ${duration}ms; color: ${type === 'success' ? '#059669' : (type === 'error' ? '#ef4444' : '#059669')}"></div>
             </div>
         `;
 
@@ -2011,8 +2011,8 @@
                 50% { transform: translateY(-6px); }
             }
             @keyframes sigDotPulse {
-                0%, 100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); }
-                50% { box-shadow: 0 0 0 8px rgba(136, 19, 55, 0); }
+                0%, 100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); }
+                50% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
             }
             @media (max-width: 576px) {
                 .sig-warning-btn-group {
@@ -2104,3 +2104,4 @@
     @include('partials._collection_popover')
 </body>
 </html>
+

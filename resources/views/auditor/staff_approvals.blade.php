@@ -1,10 +1,10 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('content')
 <style>
     :root {
-        --audit-primary: #881337;
-        --audit-primary-hover: #4c0519;
+        --audit-primary: #059669;
+        --audit-primary-hover: #065f46;
         --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.03);
     }
 </style>
@@ -28,7 +28,7 @@
     {{-- Provisioning Section --}}
     <div id="provisioningSection" style="background:var(--bg-card); border-radius:20px; border:1px solid var(--border-color); padding:2rem; box-shadow:var(--shadow-premium);">
         @if(!empty($hasOverdueReturn))
-        <div style="background: linear-gradient(135deg, rgba(254, 242, 242, 0.65) 0%, rgba(254, 226, 226, 0.35) 100%); border-left: 5px solid #ef4444; border-top: 1px solid rgba(239, 68, 68, 0.1); border-right: 1px solid rgba(239, 68, 68, 0.1); border-bottom: 1px solid rgba(239, 68, 68, 0.1); border-radius: 16px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 1.25rem; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.05); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+        <div style="background: #059669 0%, rgba(254, 226, 226, 0.35) 100%); border-left: 5px solid #ef4444; border-top: 1px solid rgba(239, 68, 68, 0.1); border-right: 1px solid rgba(239, 68, 68, 0.1); border-bottom: 1px solid rgba(239, 68, 68, 0.1); border-radius: 16px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 1.25rem; box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.05); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
             <div style="width: 40px; height: 40px; background: rgba(239, 68, 68, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; animation: alertPulse 2s infinite;">
                 <i data-lucide="alert-triangle" style="width: 20px; height: 20px; color: #ef4444;"></i>
             </div>
@@ -50,11 +50,11 @@
 
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
             <div style="display:flex; align-items:center; gap:0.85rem;">
-                <div style="width:42px; height:42px; background:linear-gradient(135deg,rgba(136,19,55,0.15),rgba(5,150,105,0.1)); border-radius:12px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(136,19,55,0.2);">
-                    <i data-lucide="user-plus" style="width:20px; height:20px; color:#881337;"></i>
+                <div style="width:42px; height:42px; background:#059669,rgba(5,150,105,0.1)); border-radius:12px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(5, 150, 105,0.2);">
+                    <i data-lucide="user-plus" style="width:20px; height:20px; color:#059669;"></i>
                 </div>
                 <div>
-                    <div style="font-size:.68rem; font-weight:800; color:#881337; text-transform:uppercase; letter-spacing:.1em;">Dept. Access Management</div>
+                    <div style="font-size:.68rem; font-weight:800; color:#059669; text-transform:uppercase; letter-spacing:.1em;">Dept. Access Management</div>
                     <div style="font-size:1rem; font-weight:800; color:var(--text-main); margin-top:1px;">Staff Access &amp; Approvals</div>
                 </div>
             </div>
@@ -95,7 +95,7 @@
         }, 30000);
     });
 
-    // ── Staff Provisioning (AJAX wrappers) ──────────────────────────────────────
+    // â”€â”€ Staff Provisioning (AJAX wrappers) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     async function loadProvisioningData(isSilent = false) {
         const tempContainer = document.getElementById('tempAccountsList');
         const pendingContainer = document.getElementById('pendingRegistrationsList');
@@ -135,7 +135,7 @@
                 if (!data.accounts || data.accounts.length === 0) {
                     const emptyHtml = `
                         <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
-                            <div style="font-size:1.75rem;margin-bottom:.4rem;">👥</div>
+                            <div style="font-size:1.75rem;margin-bottom:.4rem;">ðŸ‘¥</div>
                             <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No department staff found</div>
                             <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">Any registered staff in your department will appear here.</div>
                         </div>`;
@@ -151,30 +151,30 @@
                         let rows = data.accounts.map(acc => {
                             const isAccessActive = acc.can_make_requisition;
                             const badgeStyle = isAccessActive 
-                                ? 'background:rgba(136,19,55,.1);color:#881337;' 
+                                ? 'background:rgba(5, 150, 105,.1);color:#059669;' 
                                 : 'background:rgba(239,68,68,.1);color:#ef4444;';
                             const badgeText = isAccessActive ? 'Active Access' : 'Access Suspended';
                             
                             const btnStyle = isAccessActive
                                 ? 'background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#ef4444;'
-                                : 'background:rgba(136,19,55,.1);border:1px solid rgba(136,19,55,.3);color:#881337;';
+                                : 'background:rgba(5, 150, 105,.1);border:1px solid rgba(5, 150, 105,.3);color:#059669;';
                             const btnText = isAccessActive ? 'Suspend Access' : 'Grant Access';
                             const btnIcon = isAccessActive ? 'user-minus' : 'user-check';
 
                             return `
                             <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;border-bottom:1px solid var(--border-color);gap:1rem;flex-wrap:wrap;">
                                 <div style="display:flex;align-items:center;gap:.75rem;">
-                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(136,19,55,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#881337;">
+                                    <div style="width:38px;height:38px;border-radius:10px;background:rgba(5, 150, 105,0.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800;color:#059669;">
                                         ${(acc.name || acc.username).charAt(0).toUpperCase()}
                                     </div>
                                     <div>
                                         <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${acc.name || '@' + acc.username}</div>
-                                        <div style="font-size:.7rem;color:var(--text-muted);">${acc.role} · @${acc.username}</div>
+                                        <div style="font-size:.7rem;color:var(--text-muted);">${acc.role} Â· @${acc.username}</div>
                                     </div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
-                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(136,19,55,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#881337' : '#64748b'};">
-                                        ${acc.is_online ? '● ONLINE' : '○ OFFLINE'}
+                                    <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;background:${acc.is_online ? 'rgba(5, 150, 105,.1)' : 'rgba(100,116,139,.1)'};color:${acc.is_online ? '#059669' : '#64748b'};">
+                                        ${acc.is_online ? 'â— ONLINE' : 'â—‹ OFFLINE'}
                                     </span>
                                     <span style="font-size:.65rem;font-weight:800;padding:3px 8px;border-radius:99px;${badgeStyle}">
                                         ${badgeText}
@@ -197,7 +197,7 @@
                 if (!data.pending || data.pending.length === 0) {
                     const emptyHtml = `
                         <div style="text-align:center;padding:1.5rem 1rem;border:1px dashed var(--border-color);border-radius:12px;">
-                            <div style="font-size:1.75rem;margin-bottom:.4rem;">📝</div>
+                            <div style="font-size:1.75rem;margin-bottom:.4rem;">ðŸ“</div>
                             <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);">No pending registrations</div>
                             <div style="font-size:.73rem;color:var(--text-muted);margin-top:.2rem;">New staff registration requests will show up here.</div>
                         </div>`;
@@ -216,12 +216,12 @@
                                 <div>
                                     <div style="font-size:.85rem;font-weight:700;color:var(--text-main);">${req.name}</div>
                                     <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;">
-                                        Username: <b>@${req.username}</b> · Service No: <b>${req.service_number || 'N/A'}</b> · Phone: <b>${req.phone || 'N/A'}</b>
+                                        Username: <b>@${req.username}</b> Â· Service No: <b>${req.service_number || 'N/A'}</b> Â· Phone: <b>${req.phone || 'N/A'}</b>
                                     </div>
                                     <div style="font-size:.65rem;color:var(--text-muted);margin-top:4px;">Requested: ${req.created_at}</div>
                                 </div>
                                 <div style="display:flex;align-items:center;gap:.75rem;">
-                                    <button onclick="approveRegistration(${req.id}, '${req.username}')" style="padding:.45rem .9rem;border:none;background:rgba(136,19,55,.1);color:#881337;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;" onmouseover="this.style.background='#881337';this.style.color='white';" onmouseout="this.style.background='rgba(136,19,55,.1)';this.style.color='#881337';">
+                                    <button onclick="approveRegistration(${req.id}, '${req.username}')" style="padding:.45rem .9rem;border:none;background:rgba(5, 150, 105,.1);color:#059669;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;" onmouseover="this.style.background='#059669';this.style.color='white';" onmouseout="this.style.background='rgba(5, 150, 105,.1)';this.style.color='#059669';">
                                         <i data-lucide="user-check" style="width:13px;height:13px;"></i> Approve
                                     </button>
                                     <button onclick="declineRegistration(${req.id}, '${req.username}')" style="padding:.45rem .9rem;border:none;background:rgba(239,68,68,.08);color:#ef4444;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:.3rem;transition:all 0.2s;" onmouseover="this.style.background='#ef4444';this.style.color='white';" onmouseout="this.style.background='rgba(239,68,68,.08)';this.style.color='#ef4444';">
@@ -257,7 +257,7 @@
 
     async function toggleStaffAccess(id, username, isCurrentlyActive) {
         const actionWord = isCurrentlyActive ? 'Suspend' : 'Grant';
-        const actionColor = isCurrentlyActive ? '#ef4444' : '#881337';
+        const actionColor = isCurrentlyActive ? '#ef4444' : '#059669';
         
         const confirm = await Swal.fire({
             title: `${actionWord} Requisition Access?`,
@@ -307,7 +307,7 @@
             text: `Are you sure you want to approve user account registration for @${username}?`,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#881337',
+            confirmButtonColor: '#059669',
             cancelButtonColor: '#64748b',
             confirmButtonText: 'Yes, Approve',
             cancelButtonText: 'Cancel'
@@ -381,3 +381,4 @@
 </script>
 @endpush
 @endsection
+

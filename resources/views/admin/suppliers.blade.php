@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @section('title', 'Suppliers Details')
 
@@ -7,7 +7,7 @@
     .main-wrapper > *:not(header) {
         max-width: 100% !important;
     }
-    /* ── Page Layout ── */
+    /* â”€â”€ Page Layout â”€â”€ */
     .settings-shell {
         display: block;
         margin-top: 0.5rem;
@@ -536,7 +536,7 @@
                         <input type="hidden" name="_token" value="${csrfToken}">
                         <input type="hidden" name="_method" value="DELETE">
                         <input type="hidden" name="name" value="${escapeHtml(supplier.name)}">
-                        <button type="submit" style="width: 28px; height: 28px; border-radius: 8px; background: #fff1f2; border: none; color: #f43f5e; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'">
+                        <button type="submit" style="width: 28px; height: 28px; border-radius: 8px; background: #f0fdf4; border: none; color: #f43f5e; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#f0fdf4'">
                             <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                         </button>
                     </form>
@@ -800,3 +800,4 @@
     });
 </script>
 @endsection
+

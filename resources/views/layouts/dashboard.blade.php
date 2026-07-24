@@ -217,7 +217,7 @@
                                 ->count();
                         @endphp
                         <span id="sidebar-badge-auditor-staff-regs"
-                              style="background: #881337; color: white; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 50%; display: {{ $pendingRegCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; margin-left: auto;"
+                              style="background: #059669; color: white; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 50%; display: {{ $pendingRegCount <= 0 ? 'none' : 'flex' }}; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 900; margin-left: auto;"
                               title="{{ $pendingRegCount }} pending registration request(s)">
                             {{ $pendingRegCount }}
                         </span>
@@ -458,8 +458,8 @@
         </ul>
 
         @if(auth()->user()->isDelegatedApprover())
-            <div class="nav-section-title" style="color: #881337; display: flex; align-items: center; gap: 6px;">
-                <span style="width: 6px; height: 6px; border-radius: 50%; background: #881337;"></span>
+            <div class="nav-section-title" style="color: #059669; display: flex; align-items: center; gap: 6px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #059669;"></span>
                 Delegated Admin Authority
             </div>
             <ul class="nav-menu">
@@ -467,7 +467,7 @@
                     <a href="{{ route('admin.requisitions') }}" class="nav-link {{ request()->routeIs('admin.requisitions') ? 'active' : '' }}" data-tooltip="Admin Store Requisitions">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                         <span>Store Requisitions</span>
-                        <span id="sidebar-badge-delegated-reqs" style="background: #881337; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingRequisitionsCount) || $pendingRequisitionsCount <= 0) ? 'display: none;' : '' }}">
+                        <span id="sidebar-badge-delegated-reqs" style="background: #059669; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingRequisitionsCount) || $pendingRequisitionsCount <= 0) ? 'display: none;' : '' }}">
                             {{ $pendingRequisitionsCount ?? 0 }}
                         </span>
                     </a>
@@ -476,7 +476,7 @@
                     <a href="{{ route('admin.messages') }}" class="nav-link {{ request()->routeIs('admin.messages') ? 'active' : '' }}" data-tooltip="Admin Staff Messages">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         <span>Staff Messages</span>
-                        <span id="sidebar-badge-delegated-messages" style="background: #881337; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($unreadMessagesCount) || $unreadMessagesCount <= 0) ? 'display: none;' : '' }}">
+                        <span id="sidebar-badge-delegated-messages" style="background: #059669; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($unreadMessagesCount) || $unreadMessagesCount <= 0) ? 'display: none;' : '' }}">
                             {{ $unreadMessagesCount ?? 0 }}
                         </span>
                     </a>
@@ -491,7 +491,7 @@
                     <a href="{{ route('admin.password.requests') }}" class="nav-link {{ request()->routeIs('admin.password.requests') ? 'active' : '' }}" data-tooltip="Password Reset Requests">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                         <span>Password Resets</span>
-                        <span id="sidebar-badge-delegated-password-reqs" style="background: #881337; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingPasswordRequests) || $pendingPasswordRequests <= 0) ? 'display: none;' : '' }}">
+                        <span id="sidebar-badge-delegated-password-reqs" style="background: #059669; color: white; padding: 2px 6px; border-radius: 99px; font-size: 0.65rem; font-weight: 800; margin-left: auto; {{ (!isset($pendingPasswordRequests) || $pendingPasswordRequests <= 0) ? 'display: none;' : '' }}">
                             {{ $pendingPasswordRequests ?? 0 }}
                         </span>
                     </a>
@@ -527,7 +527,7 @@
                 @if(auth()->user()->avatar)
                 <img src="{{ Storage::url(auth()->user()->avatar) }}" style="width: 44px; height: 44px; border-radius: 12px; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid white;">
                 @else
-                <div style="width: 44px; height: 44px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; box-shadow: 0 4px 10px rgba(136, 19, 55, 0.3);">
+                <div style="width: 44px; height: 44px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: white; box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);">
                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', auth()->user()->name)[1] ?? '', 0, 1)) }}
                 </div>
                 @endif
@@ -883,7 +883,7 @@
                                     data.forEach(item => {
                                         html += `
                                             <a href="${item.url}" style="padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; text-decoration: none; border-bottom: 1px solid var(--border-color); transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.03)'" onmouseout="this.style.background='transparent'">
-                                                <div style="width: 36px; height: 36px; background: rgba(136, 19, 55, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                <div style="width: 36px; height: 36px; background: rgba(5, 150, 105, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                                                 </div>
                                                 <div style="flex: 1; overflow: hidden;">
@@ -1018,7 +1018,7 @@
                                          html += `
                                              <div style="position: relative; border-bottom: 1px solid var(--border-color);">
                                                  <a href="${routeUrl}" style="display: flex; gap: 1rem; padding: 1.25rem; padding-right: 3rem; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background='transparent'">
-                                                     <div style="width: 40px; height: 40px; border-radius: 12px; background: ${notif.type === 'warning' ? 'rgba(136, 19, 55, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; color: ${notif.type === 'warning' ? '#881337' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                     <div style="width: 40px; height: 40px; border-radius: 12px; background: ${notif.type === 'warning' ? 'rgba(5, 150, 105, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; color: ${notif.type === 'warning' ? '#059669' : '#ef4444'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                                          <i data-lucide="${notif.icon}" style="width: 20px;"></i>
                                                      </div>
                                                      <div style="flex: 1; text-align: left;">
@@ -1633,8 +1633,8 @@
                 50% { transform: translateY(-6px); }
             }
             @keyframes sigDotPulse {
-                0%, 100% { box-shadow: 0 0 0 0 rgba(136, 19, 55, 0.4); }
-                50% { box-shadow: 0 0 0 8px rgba(136, 19, 55, 0); }
+                0%, 100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); }
+                50% { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
             }
             @media (max-width: 576px) {
                 .sig-warning-btn-group {
@@ -1726,3 +1726,4 @@
     @include('partials._collection_popover')
 </body>
 </html>
+

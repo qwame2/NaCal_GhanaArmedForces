@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -18,7 +18,7 @@
             line-height: 1.4;
         }
 
-        /* ── Header ── */
+        /* â”€â”€ Header â”€â”€ */
         .print-header {
             text-align: center;
             margin-bottom: 20px;
@@ -43,7 +43,7 @@
             font-family: 'Arial', sans-serif;
             font-weight: bold;
             margin: 5px 0 0;
-            color: #881337;
+            color: #059669;
             text-transform: uppercase;
         }
         .print-header p {
@@ -67,7 +67,7 @@
             color: #0f172a;
         }
 
-        /* ── Stats Summary Bar ── */
+        /* â”€â”€ Stats Summary Bar â”€â”€ */
         .stats-summary-bar {
             display: flex;
             justify-content: space-around;
@@ -137,13 +137,13 @@
             text-transform: uppercase;
         }
         .green-label {
-            color: #881337;
+            color: #059669;
         }
         .orange-label {
-            color: #881337;
+            color: #059669;
         }
 
-        /* ── Tables ── */
+        /* â”€â”€ Tables â”€â”€ */
         .table-card {
             border: 1.5px solid #cbd5e1;
             border-radius: 4px;
@@ -213,7 +213,7 @@
 
         /* Pills & Badges */
         .badge-received {
-            border: 1px solid #881337;
+            border: 1px solid #059669;
             color: #047857;
             background: #f0fdf4;
             border-radius: 99px;
@@ -226,7 +226,7 @@
             gap: 3px;
         }
         .badge-issued {
-            border: 1px solid #881337;
+            border: 1px solid #059669;
             color: #b45309;
             background: #ecfdf5;
             border-radius: 99px;
@@ -239,7 +239,7 @@
             gap: 3px;
         }
         .badge-category {
-            border: 1px solid #881337;
+            border: 1px solid #059669;
             color: #1d4ed8;
             background: #eff6ff;
             border-radius: 4px;
@@ -269,7 +269,7 @@
             text-transform: uppercase;
         }
 
-        /* ── Signature Block ── */
+        /* â”€â”€ Signature Block â”€â”€ */
         .signature-block {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -289,7 +289,7 @@
         }
         .sig-subtitle { font-size: 7.5px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-top: 2px; }
 
-        /* ── Page Break ── */
+        /* â”€â”€ Page Break â”€â”€ */
         .page-break {
             page-break-before: always;
             break-before: page;
@@ -298,7 +298,7 @@
             padding: 0;
         }
 
-        /* ── Floating Screen Button ── */
+        /* â”€â”€ Floating Screen Button â”€â”€ */
         .no-print-btn {
             position: fixed;
             top: 20px;
@@ -365,7 +365,7 @@
 <body>
 
     {{-- Floating Screen-Only Print Button --}}
-    <button class="no-print-btn" onclick="window.print()">🖨️ Print Report</button>
+    <button class="no-print-btn" onclick="window.print()">ðŸ–¨ï¸ Print Report</button>
 
     {{-- Header --}}
     <div class="print-header">
@@ -499,12 +499,12 @@
     @if($totalReceivedQty > 0 && $receivedDistribution->count() > 0)
     <div class="visualization-container">
         <div class="visualization-header">
-            <span class="vis-icon-wrap" style="background: #881337;">
+            <span class="vis-icon-wrap" style="background: #059669;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
             </span>
             <h2>Stock Receipts Visualization</h2>
         </div>
-        <div class="vis-sub-label green-label">● STOCK RECEIPTS — TOP {{ $receivedDistribution->count() }} ITEMS</div>
+        <div class="vis-sub-label green-label">â— STOCK RECEIPTS â€” TOP {{ $receivedDistribution->count() }} ITEMS</div>
         <div id="received-bar-chart"></div>
     </div>
     @endif
@@ -513,12 +513,12 @@
     @if($totalIssuedQty > 0 && $issuedDistribution->count() > 0)
     <div class="visualization-container">
         <div class="visualization-header">
-            <span class="vis-icon-wrap" style="background: #881337;">
+            <span class="vis-icon-wrap" style="background: #059669;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
             </span>
             <h2>Issuance Visualization</h2>
         </div>
-        <div class="vis-sub-label orange-label">● ISSUANCE — TOP {{ $issuedDistribution->count() }} ITEMS</div>
+        <div class="vis-sub-label orange-label">â— ISSUANCE â€” TOP {{ $issuedDistribution->count() }} ITEMS</div>
         <div id="issued-bar-chart"></div>
     </div>
     @endif
@@ -571,10 +571,10 @@
                 'ref'           => preg_replace('/\s\[.*\]$/', '', $source ?: 'System'),
                 'ref_label'     => 'Supplier / Source',
                 'quantity'      => $r->qty ?? 0,
-                'stock_bal'     => !is_null($r->book_qty) ? $r->book_qty : ($r->stock_balance ?? '—'),
-                'variance'      => $r->variance ?? '—',
-                'status'        => '—',
-                'department'    => '—',
+                'stock_bal'     => !is_null($r->book_qty) ? $r->book_qty : ($r->stock_balance ?? 'â€”'),
+                'variance'      => $r->variance ?? 'â€”',
+                'status'        => 'â€”',
+                'department'    => 'â€”',
                 'sources'       => null,
             ];
         })->merge($recentIssues->map(function($i) use ($ledgeMap, $itemSources) {
@@ -585,13 +585,13 @@
                 'category'      => $ledgeMap[$i->ledge_category] ?? ('Category ' . $i->ledge_category),
                 'description'   => $i->description,
                 'serial_number' => null,
-                'ref'           => $i->beneficiary ?? '—',
+                'ref'           => $i->beneficiary ?? 'â€”',
                 'ref_label'     => 'Beneficiary / Dept.',
                 'quantity'      => $i->original_quantity ?? $i->quantity ?? 0,
-                'stock_bal'     => '—',
-                'variance'      => '—',
+                'stock_bal'     => 'â€”',
+                'variance'      => 'â€”',
                 'status'        => $i->issuance_type ?? 'Permanent',
-                'department'    => $i->department ?? '—',
+                'department'    => $i->department ?? 'â€”',
                 'sources'       => $itemSources[trim($i->description)] ?? null,
             ];
         }))->sortByDesc(function($item) {
@@ -624,8 +624,8 @@
             <tbody>
                 @foreach($allTransactions as $row)
                 <tr>
-                    <td>{{ $row['date_received'] ? \Carbon\Carbon::parse($row['date_received'])->format('d M Y') : '—' }}</td>
-                    <td>{{ $row['date_issued'] ? \Carbon\Carbon::parse($row['date_issued'])->format('d M Y') : '—' }}</td>
+                    <td>{{ $row['date_received'] ? \Carbon\Carbon::parse($row['date_received'])->format('d M Y') : 'â€”' }}</td>
+                    <td>{{ $row['date_issued'] ? \Carbon\Carbon::parse($row['date_issued'])->format('d M Y') : 'â€”' }}</td>
                     <td>
                         @if($row['type'] === 'Received')
                             <span class="badge-received">
@@ -648,7 +648,7 @@
                                 $count = count($snList);
                             @endphp
                             @if($count > 0)
-                                <div style="font-size: 8px; color: #881337; font-weight: bold; margin-top: 3px; text-transform: none; display: flex; align-items: center; gap: 3px;">
+                                <div style="font-size: 8px; color: #059669; font-weight: bold; margin-top: 3px; text-transform: none; display: flex; align-items: center; gap: 3px;">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
                                     S/N: {{ implode(', ', $snList) }}
                                 </div>
@@ -663,14 +663,14 @@
                                 <span class="status-pill-permanent">Permanent</span>
                             @endif
                         @else
-                            <span style="color: #94a3b8;">—</span>
+                            <span style="color: #94a3b8;">â€”</span>
                         @endif
                     </td>
                     <td>
-                        @if($row['type'] === 'Issued' && $row['department'] !== '—')
+                        @if($row['type'] === 'Issued' && $row['department'] !== 'â€”')
                             <span style="font-weight: 800; text-transform: uppercase; color: #0f172a;">{{ $row['department'] }}</span>
                         @else
-                            <span style="color: #94a3b8;">—</span>
+                            <span style="color: #94a3b8;">â€”</span>
                         @endif
                     </td>
                     <td>
@@ -680,7 +680,7 @@
                             @if(!empty($row['sources']))
                                 <span style="color: #475569; font-style: italic;">{{ $row['sources'] }}</span>
                             @else
-                                <span style="color: #94a3b8;">—</span>
+                                <span style="color: #94a3b8;">â€”</span>
                             @endif
                         @endif
                     </td>
@@ -690,7 +690,7 @@
                     <td style="font-weight: 700;">
                         {{ is_numeric($row['stock_bal']) ? number_format((float)$row['stock_bal']) : $row['stock_bal'] }}
                     </td>
-                    <td style="font-weight: 700; color: {{ is_numeric($row['variance']) && $row['variance'] > 0 ? '#ef4444' : (is_numeric($row['variance']) && $row['variance'] < 0 ? '#881337' : '#94a3b8') }};">
+                    <td style="font-weight: 700; color: {{ is_numeric($row['variance']) && $row['variance'] > 0 ? '#ef4444' : (is_numeric($row['variance']) && $row['variance'] < 0 ? '#059669' : '#94a3b8') }};">
                         {{ is_numeric($row['variance']) && $row['variance'] > 0 ? '+' : '' }}{{ is_numeric($row['variance']) ? number_format((float)$row['variance']) : $row['variance'] }}
                     </td>
                 </tr>
@@ -702,8 +702,8 @@
                         PERIOD TOTALS
                     </td>
                     <td style="text-align: right; font-weight: 800; color: #1e3b8b; background: #e0e7ff; border-top: 2px solid #1e3b8b; padding: 8px 12px;" colspan="3">
-                        ↓ {{ number_format((float)$totalReceivedQty) }} received &nbsp;|&nbsp;
-                        ↑ {{ number_format((float)$totalIssuedQty) }} issued
+                        â†“ {{ number_format((float)$totalReceivedQty) }} received &nbsp;|&nbsp;
+                        â†‘ {{ number_format((float)$totalIssuedQty) }} issued
                     </td>
                 </tr>
             </tfoot>
@@ -793,7 +793,7 @@
                 const recLabels = @json($receivedDistribution->pluck('description'));
                 const recData   = @json($receivedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
                 const recBarH   = Math.max(140, recLabels.length * 36);
-                const recColors = ['#881337','#9f1239','#881337','#4c0519','#9f1239','#a78bfa','#4c0519','#3730a3','#06b6d4','#0ea5e9'];
+                const recColors = ['#059669','#047857','#059669','#065f46','#047857','#a78bfa','#065f46','#3730a3','#06b6d4','#0ea5e9'];
                 
                 const recOptions = Object.assign({}, barDefaults, {
                     chart: Object.assign({}, barDefaults.chart, { 
@@ -815,7 +815,7 @@
                 const issLabels = @json($issuedDistribution->pluck('description'));
                 const issData   = @json($issuedDistribution->pluck('total_qty')->map(fn($q) => (float)$q));
                 const issBarH   = Math.max(140, issLabels.length * 36);
-                const issColors = ['#881337','#fbbf24','#047857','#b45309','#ef4444','#f87171','#dc2626','#881337','#06b6d4','#ec4899'];
+                const issColors = ['#059669','#fbbf24','#047857','#b45309','#ef4444','#f87171','#dc2626','#059669','#06b6d4','#ec4899'];
                 
                 const issOptions = Object.assign({}, barDefaults, {
                     chart: Object.assign({}, barDefaults.chart, { 
@@ -856,3 +856,4 @@
 
 </body>
 </html>
+
